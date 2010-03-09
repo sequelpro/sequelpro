@@ -84,6 +84,7 @@ extern NSString *SPDefaultEncoding;
 extern NSString *SPUseMonospacedFonts;
 extern NSString *SPDisplayTableViewVerticalGridlines;
 extern NSString *SPCustomQueryMaxHistoryItems;
+extern NSString *SPDisplayServerVersionInWindowTitle;
 
 // Tables Prefpane
 extern NSString *SPReloadAfterAddingRow;
@@ -96,6 +97,7 @@ extern NSString *SPNewFieldsAllowNulls;
 extern NSString *SPLimitResults;
 extern NSString *SPLimitResultsValue;
 extern NSString *SPNullValue;
+extern NSString *SPGlobalResultTableFont;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;
@@ -132,6 +134,10 @@ extern NSString *SPCustomQueryAutoUppercaseKeywords;
 extern NSString *SPCustomQueryUpdateAutoHelp;
 extern NSString *SPCustomQueryAutoHelpDelay;
 extern NSString *SPCustomQueryHighlightCurrentQuery;
+extern NSString *SPCustomQueryEditorTabStopWidth;
+extern NSString *SPCustomQueryAutoComplete;
+extern NSString *SPCustomQueryAutoCompleteDelay;
+extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;
@@ -151,6 +157,7 @@ extern NSString *SPCSVImportLineTerminator;
 extern NSString *SPCSVImportFieldEnclosedBy;
 extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
+extern NSString *SPCSVFieldImportMappingAlignment;
 
 // Misc
 extern NSString *SPContentFilters;
@@ -188,6 +195,7 @@ extern NSString *SPMainToolbarTableContent;
 extern NSString *SPMainToolbarCustomQuery;
 extern NSString *SPMainToolbarTableInfo;
 extern NSString *SPMainToolbarTableRelations;
+extern NSString *SPMainToolbarTableTriggers;
 extern NSString *SPMainToolbarUserManager;
 
 // Preferences toolbar

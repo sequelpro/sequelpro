@@ -42,10 +42,23 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 @implementation SPSQLParser : NSMutableString
 
-- (void)setIgnoringCommentStrings:(BOOL)ignoringCommentStrings
+/*
+ * Control whether comment strings should be skipped during parsing.
+ */
+- (void)setIgnoreCommentStrings:(BOOL)ignoringCommentStrings
 {
 	ignoreCommentStrings = ignoringCommentStrings;
 }
+
+/*
+ * Control whether DELIMITER commands are recognised and used to override
+ * supported characters.
+ */
+- (void) setDelimiterSupport:(BOOL)shouldSupportDelimiters
+{
+	supportDelimiters = shouldSupportDelimiters;
+}
+
 
 /*
  * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
@@ -167,10 +180,12 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (BOOL) trimToCharacter:(unichar)character inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	NSUInteger stringIndex;
+	NSUInteger stringIndex = -1;
 	
 	// Get the first occurrence of the specified character, returning NO if not found
-	stringIndex = [self firstOccurrenceOfCharacter:character ignoringQuotedStrings:ignoreQuotedStrings];
+	do {
+		stringIndex = [self firstOccurrenceOfCharacter:character afterIndex:stringIndex ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && stringIndex != NSNotFound);
 	if (stringIndex == NSNotFound) return NO;
 	
 	// If it has been found, trim the string appropriately and return YES
@@ -193,14 +208,18 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * are ignored.
  */
 - (NSString *) stringToCharacter:(unichar)character inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings {
-	NSUInteger stringIndex;
+	NSUInteger stringIndex = -1;
+	NSUInteger returnFromPosition;
 	
 	// Get the first occurrence of the specified character, returning nil if not found
-	stringIndex = [self firstOccurrenceOfCharacter:character ignoringQuotedStrings:ignoreQuotedStrings];
+	do {
+		returnFromPosition = stringIndex + 1;
+		stringIndex = [self firstOccurrenceOfCharacter:character afterIndex:stringIndex ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && stringIndex != NSNotFound);
 	if (stringIndex == NSNotFound) return nil;
 	
 	// If it has been found, return the appropriate string range
-	return [string substringWithRange:NSMakeRange(0, stringIndex + (inclusive?1:0))];
+	return [string substringWithRange:NSMakeRange(returnFromPosition, stringIndex + (inclusive?1:0) - returnFromPosition)];
 }
 
 
@@ -220,7 +239,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSString *) trimAndReturnStringToCharacter:(unichar)character trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	NSUInteger stringIndex;
+	NSUInteger returnFromPosition;
+	NSUInteger stringIndex = 0;
 	NSString *resultString;
 
 	if (character != parsedToChar) {
@@ -229,11 +249,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	}
 
 	// Get the first occurrence of the specified character, returning nil if it could not be found
-	stringIndex = [self firstOccurrenceOfCharacter:character afterIndex:parsedToPosition ignoringQuotedStrings:ignoreQuotedStrings];
+	do {
+		returnFromPosition = stringIndex;
+		stringIndex = [self firstOccurrenceOfCharacter:character afterIndex:parsedToPosition ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && stringIndex != NSNotFound);
 	if (stringIndex == NSNotFound) return nil;
 	
 	// Select the appropriate string range, truncate the current string, and return the selected string
-	resultString = [NSString stringWithString:[string substringWithRange:NSMakeRange(0, stringIndex + (inclusiveReturn?1:0))]];
+	resultString = [NSString stringWithString:[string substringWithRange:NSMakeRange(returnFromPosition, stringIndex + (inclusiveReturn?1:0) - returnFromPosition)]];
 	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusiveTrim?1:0))];
 	return resultString;
 }
@@ -275,14 +298,19 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	NSUInteger fromCharacterIndex, toCharacterIndex;
+	NSUInteger toCharacterIndex, fromCharacterIndex = -1;
 
 	// Look for the first occurrence of the from: character
-	fromCharacterIndex = [self firstOccurrenceOfCharacter:fromCharacter afterIndex:-1 skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	do {
+		fromCharacterIndex = [self firstOccurrenceOfCharacter:fromCharacter afterIndex:fromCharacterIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && fromCharacterIndex != NSNotFound);
 	if (fromCharacterIndex == NSNotFound) return nil;
 	
 	// Look for the first/balancing occurrence of the to: character
-	toCharacterIndex = [self firstOccurrenceOfCharacter:toCharacter afterIndex:fromCharacterIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	toCharacterIndex = fromCharacterIndex;
+	do {
+		toCharacterIndex = [self firstOccurrenceOfCharacter:toCharacter afterIndex:toCharacterIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && toCharacterIndex != NSNotFound);
 	if (toCharacterIndex == NSNotFound) return nil;
 	
 	// Return the correct part of the string.
@@ -326,15 +354,20 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSString *) trimAndReturnStringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
 {
-	NSUInteger fromCharacterIndex, toCharacterIndex;
+	NSUInteger fromCharacterIndex = -1, toCharacterIndex;
 	NSString *resultString;
 
 	// Look for the first occurrence of the from: character
-	fromCharacterIndex = [self firstOccurrenceOfCharacter:fromCharacter afterIndex:-1 skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	do {
+		fromCharacterIndex = [self firstOccurrenceOfCharacter:fromCharacter afterIndex:fromCharacterIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && fromCharacterIndex != NSNotFound);
 	if (fromCharacterIndex == NSNotFound) return nil;
 
 	// Look for the first/balancing occurrence of the to: character
-	toCharacterIndex = [self firstOccurrenceOfCharacter:toCharacter afterIndex:fromCharacterIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	toCharacterIndex = fromCharacterIndex;
+	do {
+		toCharacterIndex = [self firstOccurrenceOfCharacter:toCharacter afterIndex:toCharacterIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
+	} while (lastMatchIsDelimiter && toCharacterIndex != NSNotFound);
 	if (toCharacterIndex == NSNotFound) return nil;
 	
 	// Select the correct part of the string, truncate the current string, and return the selected string.
@@ -378,115 +411,87 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	NSMutableArray *resultsArray = [NSMutableArray array];
 	NSInteger stringIndex = -1;
 	NSUInteger nextIndex = 0;
-	
-	// Walk through the string finding the character to split by, and add all strings to the array.
-	while (1) {
-		nextIndex = [self firstOccurrenceOfCharacter:character afterIndex:stringIndex skippingBrackets:skipBrackets ignoringQuotedStrings:ignoreQuotedStrings];
-		if (nextIndex == NSNotFound) {
-			break;
-		}
-		
-		[resultsArray addObject:[string substringWithRange:NSMakeRange(stringIndex+1, nextIndex - stringIndex - 1)]];
-		stringIndex = nextIndex;
-	}
-	
-	// Add the end of the string after the previously matched character where appropriate.
-	if (stringIndex + 1 < [string length]) {
-		[resultsArray addObject:[string substringWithRange:NSMakeRange(stringIndex+1, [string length] - stringIndex - 1)]];
-	}
-	
-	return resultsArray;
-}
-
-/*
- * As splitStringByCharacter: ..., but allows control over both bracketing and quoting.
- */
-- (NSArray *) splitSqlStringByCharacter:(unichar)character
-{
-	NSMutableArray *resultsArray = [NSMutableArray arrayWithCapacity:2000];
-
-	NSInteger stringIndex = -1;
-	NSUInteger nextIndex = 0;
 	NSInteger queryLength;
 
-	// these delimiter variables will be set in firstOccurrenceOfCharacter:
-	delimiter = nil;
-	delimiterLength = 0;    // is delimiter length minus 1
-	charIsDelimiter = YES;  // flag if passed character is the current delimiter
-	isDelimiterCommand = NO;
-	
-	IMP firstOccOfChar = [self methodForSelector:@selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:)];
+	IMP firstOccOfChar = [self methodForSelector:@selector(firstOccurrenceOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:)];
 	IMP subString = [string methodForSelector:@selector(substringWithRange:)];
-	
+
 	// Walk through the string finding the character to split by, and add all strings to the array.
 	while (1) {
-
-		nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
+		nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, skipBrackets, ignoreQuotedStrings);
+		while (lastMatchIsDelimiter && nextIndex != NSNotFound) {
+			stringIndex = nextIndex;
+			nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, skipBrackets, ignoreQuotedStrings);
+		}
 		if (nextIndex == NSNotFound)
 			break;
 
-		stringIndex += 1;
-		// Ignore a delimiter command and check range length
-		queryLength = nextIndex - stringIndex - delimiterLength;
-		if(!isDelimiterCommand && queryLength > 0)
-			[resultsArray addObject:(NSString *)(*subString)(string, @selector(substringWithRange:), NSMakeRange(stringIndex, queryLength))];
-		if(isDelimiterCommand) isDelimiterCommand = NO;
-		stringIndex = nextIndex;
-	}
-	
-	// Add the end of the string after the previously matched character where appropriate
-	// if it does not contain only white space characters and if the last query is not a
-	// "delimiter" statement to avoid unnecessary error messages.
-	if (stringIndex + 1 < [string length]) {
-		NSString *lastQuery = [[string substringFromIndex:stringIndex + 1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-		if([lastQuery length] && ![lastQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
-			[resultsArray addObject:lastQuery];
-	}
+		// Add queries to the result array if they have a length
+		stringIndex++;
+		queryLength = nextIndex - stringIndex - delimiterLengthMinusOne;
+		if (queryLength > 0)
+			CFArrayAppendValue((CFMutableArrayRef)resultsArray, (NSString *)(*subString)(string, @selector(substringWithRange:), NSMakeRange(stringIndex, queryLength)));
 
-	return resultsArray;
-}
-
-/*
- * As splitStringByCharacter: but it returns only the ranges of queries as NSValues
- */
-- (NSArray *) splitSqlStringIntoRangesByCharacter:(unichar)character
-{
-	NSMutableArray *resultsArray = [NSMutableArray arrayWithCapacity:2000];
-
-	NSInteger stringIndex = -1;
-	NSUInteger nextIndex = 0;
-	NSInteger queryLength;
-
-	// these delimiter variables will be set in firstOccurrenceOfCharacter:
-	delimiter = nil;
-	delimiterLength = 0;    // is delimiter length minus 1
-	charIsDelimiter = YES;  // flag if passed character is the current delimiter
-	isDelimiterCommand = NO;
-
-	IMP firstOccOfChar = [self methodForSelector:@selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:)];
-	
-	// Walk through the string finding the character to split by, and add all strings to the array.
-	while (1) {
-
-		nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceInSqlOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
-		if (nextIndex == NSNotFound)
-			break;
-
-		stringIndex += 1;
-		// Ignore a delimiter command and check range length
-		queryLength = nextIndex - stringIndex - delimiterLength;
-		if(!isDelimiterCommand && queryLength > 0)
-			[resultsArray addObject:[NSValue valueWithRange:NSMakeRange(stringIndex, queryLength)]];
-		if(isDelimiterCommand) isDelimiterCommand = NO;
 		stringIndex = nextIndex;
 	}
 	
 	// Add the end of the string after the previously matched character where appropriate.
-	if (stringIndex + 1 < [string length])
-		[resultsArray addObject:[NSValue valueWithRange:NSMakeRange(stringIndex + 1, [string length] - stringIndex - 1)]];
+	if (stringIndex + 1 < [string length]) {
+		NSString *finalQuery = [[string substringFromIndex:stringIndex + 1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		if (supportDelimiters && [finalQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
+			finalQuery = nil;
+		if ([finalQuery length])
+			[resultsArray addObject:finalQuery];
+	}
+	
+	return resultsArray;
+}
+
+
+/*
+ * As splitStringByCharacter:, but returning only the ranges of queries, stored as NSValues.
+ */
+- (NSArray *) splitStringIntoRangesByCharacter:(unichar)character
+{
+	NSMutableArray *resultsArray = [NSMutableArray array];
+	NSInteger stringIndex = -1;
+	NSUInteger nextIndex = 0;
+	NSInteger queryLength;
+
+	IMP firstOccOfChar = [self methodForSelector:@selector(firstOccurrenceOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:)];
+
+	// Walk through the string finding the character to split by, and add all ranges to the array.
+	while (1) {
+		nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
+		while (lastMatchIsDelimiter && nextIndex != NSNotFound) {
+			stringIndex = nextIndex;
+			nextIndex = (NSUInteger)(*firstOccOfChar)(self, @selector(firstOccurrenceOfCharacter:afterIndex:skippingBrackets:ignoringQuotedStrings:), character, stringIndex, NO, YES);
+		}
+		if (nextIndex == NSNotFound)
+			break;
+
+		// Add ranges to the result array if they have a length
+		stringIndex++;
+		queryLength = nextIndex - stringIndex - delimiterLengthMinusOne;
+		if (queryLength > 0)
+			CFArrayAppendValue((CFMutableArrayRef)resultsArray, [NSValue valueWithRange:NSMakeRange(stringIndex, queryLength)]);
+
+		stringIndex = nextIndex;
+	}
+	
+	// Add the end of the string after the previously matched character where appropriate.
+	stringIndex++;
+	if (stringIndex < [string length]) {
+		NSString *finalQuery = [[string substringFromIndex:stringIndex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		if (supportDelimiters && [finalQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
+			finalQuery = nil;
+		if ([finalQuery length])
+			[resultsArray addObject:[NSValue valueWithRange:NSMakeRange(stringIndex, [string length] - stringIndex - delimiterLengthMinusOne)]];
+	}
 
 	return resultsArray;
 }
+
 
 /*
  * A method intended for use by the functions above.
@@ -512,10 +517,12 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	unichar currentCharacter;
 	NSUInteger stringLength = [string length];
 	NSInteger bracketingLevel = 0;
+	lastMatchIsDelimiter = NO;
 
 	// Cache frequently used selectors, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
 	IMP endIndex = [self methodForSelector:@selector(endIndexOfStringQuotedByCharacter:startingAtIndex:)];
+	IMP substringWithRange = [self methodForSelector:@selector(substringWithRange:)];
 
 	// Sanity check inputs
 	if (startIndex < -1) startIndex = -1;
@@ -525,7 +532,15 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex);
 
 		// Check for the ending character, and if it has been found and quoting/brackets is valid, return.
-		if (currentCharacter == character) {
+		// If delimiter support is active and a delimiter is set, check for the delimiter
+		if (supportDelimiters && delimiter) {
+			if (currentStringIndex >= delimiterLengthMinusOne && [delimiter isEqualToString:(NSString *)(*substringWithRange)(self, @selector(substringWithRange:), NSMakeRange(currentStringIndex - delimiterLengthMinusOne, delimiterLengthMinusOne + 1))]) {
+				if (!skipBrackets || bracketingLevel <= 0) {
+					parsedToPosition = currentStringIndex;
+					return currentStringIndex;
+				}
+			}
+		} else if (currentCharacter == character) {
 			if (!skipBrackets || bracketingLevel <= 0) {
 				parsedToPosition = currentStringIndex;
 				return currentStringIndex;
@@ -577,6 +592,57 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '*') break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
 				break;
+
+			// Check for delimiter strings, by first checking letter-by-letter to "deli" for speed (as there's no default
+			// commands which start with it), and then switching to regex for simplicty.
+			case 'd':
+			case 'D':
+
+				// Only proceed if delimiter support is enabled and the remaining string is long enough,
+				// and that the "d" is the start of a word
+				if (supportDelimiters && stringLength >= currentStringIndex + 11
+					&& (currentStringIndex == 0
+						|| [[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex-1)]))
+				{
+					switch((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1)) {
+						case 'e':
+						case 'E':
+						switch((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+2)) {
+							case 'l':
+							case 'L':
+							switch((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+3)) {
+								case 'i':
+								case 'I':
+									if([self isMatchedByRegex:@"^(delimiter[ \\t]+(\\S+))(?=\\s)" 
+													  options:RKLCaseless 
+													  inRange:NSMakeRange(currentStringIndex, stringLength - currentStringIndex) 
+														error:nil])
+									{
+										
+										// Delimiter command found.  Extract the delimiter string itself
+										NSArray *delimiterCommandParts = [[self arrayOfCaptureComponentsMatchedByRegex:@"(?i)^(delimiter[ \\t]+(\\S+))(?=\\s)"
+																			range:NSMakeRange(currentStringIndex, stringLength - currentStringIndex)] objectAtIndex:0];
+										delimiter = [delimiterCommandParts objectAtIndex:2];
+										delimiterLengthMinusOne = [delimiter length] - 1;
+										parsedToPosition = currentStringIndex + [[delimiterCommandParts objectAtIndex:1] length];
+										
+										// Drop back to standard non-delimiter mode if the delimiter has ended
+										if ([delimiter isEqualToString:[NSString stringWithFormat:@"%C", character]]) {
+											delimiter = nil;
+											delimiterLengthMinusOne = 0;
+										}
+										
+										// With the internal state updated, return the match, clearly marked as a delimiter
+										lastMatchIsDelimiter = YES;
+										return parsedToPosition;
+									}
+								default: break;
+							}
+							default: break;
+						}
+					default: break;
+				}
+			}
 		}
 	}
 
@@ -585,131 +651,6 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	return NSNotFound;
 }
 
-/*
- * Look for the first occurence of a char and reset the split char on runtime
- * via “delimiter” command for splitSqlStringIntoRangesByCharacter: and splitSqlStringByCharacter.
- */
-- (NSUInteger) firstOccurrenceInSqlOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings
-{
-	NSUInteger currentStringIndex, quotedStringEndIndex;
-	unichar currentCharacter;
-	NSUInteger stringLength = [string length];
-	NSInteger bracketingLevel = 0;
-
-	// Cache frequently used selectors, avoiding dynamic binding overhead
-	IMP charAtIndex = [self methodForSelector:@selector(charAtIndex:)];
-	IMP endIndex = [self methodForSelector:@selector(endIndexOfStringQuotedByCharacter:startingAtIndex:)];
-
-	// Sanity check inputs
-	if (startIndex < -1) startIndex = -1;
-
-	// Walk along the string, processing characters
-	for (currentStringIndex = startIndex + 1; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex);
-
-		// Check for the ending character, and if it has been found and quoting/brackets is valid, return.
-		// no “delimiter” is set by the user
-		if (charIsDelimiter)
-		{
-			if(currentCharacter == character)
-				if (!skipBrackets || bracketingLevel <= 0)
-					return currentStringIndex;
-		}
-		// a “delimiter” other than 'character' is set by the user
-		else
-		{
-			if([[self substringWithRange:NSMakeRange(currentStringIndex - delimiterLength, delimiterLength + 1)] isEqualToString:delimiter])
-				if (!skipBrackets || bracketingLevel <= 0)
-					return currentStringIndex;
-		}
-		
-		// Process strings and comments as appropriate
-		switch (currentCharacter) {
-
-			// When quote characters are encountered and strings are not being ignored, walk to the end of the quoted string.
-			case '\'':
-			case '"':
-			case '`':
-				if (!ignoreQuotedStrings) break;
-				quotedStringEndIndex = (NSUInteger)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
-				if (quotedStringEndIndex == NSNotFound) {
-					return NSNotFound;
-				}
-				currentStringIndex = quotedStringEndIndex;
-				break;
-
-			// For opening brackets increment the bracket count
-			case '(':
-				bracketingLevel++;
-				break;
-
-			// For closing brackets decrement the bracket count
-			case ')':
-				bracketingLevel--;
-
-			// For comments starting "--[\s]", ensure the start syntax is valid before proceeding.
-			case '-':
-				if (stringLength < currentStringIndex + 2) break;
-				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '-') break;
-				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+2)]) break;
-				currentStringIndex = [self endIndexOfCommentOfType:SPDoubleDashComment startingAtIndex:currentStringIndex];
-				break;
-
-			case '#':
-				if(ignoreCommentStrings) break;
-				currentStringIndex = [self endIndexOfCommentOfType:SPHashComment startingAtIndex:currentStringIndex];
-				break;
-
-			// For comments starting "/*", ensure the start syntax is valid before proceeding.
-			case '/':
-				if(ignoreCommentStrings) break;
-				if (stringLength < currentStringIndex + 1) break;
-				if ((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1) != '*') break;
-				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
-				break;
-			case 'd':
-			case 'D': // only parse to “deli” because there's no default command which begins with it; then check via regex
-				// Check for length of “elimiter x\s”
-				if (stringLength >= currentStringIndex + 11) {
-					// Check for “(^|\s)delimiter”
-					if(currentStringIndex == 0 
-						|| (currentStringIndex && [[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex-1)])) {
-						NSArray *delimiterString;
-						switch((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+1)) {
-							case 'e':
-							case 'E':
-							switch((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+2)) {
-								case 'l':
-								case 'L':
-								switch((unichar)(long)(*charAtIndex)(self, @selector(charAtIndex:), currentStringIndex+3)) {
-									case 'i':
-									case 'I':
-										if([self isMatchedByRegex:@"^(delimiter[ \\t]+(\\S+))(?=\\s)" 
-																options:RKLCaseless 
-																inRange:NSMakeRange(currentStringIndex, stringLength - currentStringIndex) 
-																error:nil]) {
-											isDelimiterCommand = YES;
-											delimiterString = [[self arrayOfCaptureComponentsMatchedByRegex:@"(?i)^(delimiter[ \\t]+(\\S+))(?=\\s)"
-													range:NSMakeRange(currentStringIndex, stringLength - currentStringIndex)] objectAtIndex:0];
-											delimiter = [delimiterString objectAtIndex:2];
-											delimiterLength = [delimiter length] - 1;
-											charIsDelimiter = ([delimiter isEqualToString:[NSString stringWithFormat:@"%C", character]]);
-											return currentStringIndex + [[delimiterString objectAtIndex:1] length] - delimiterLength;
-										}
-									default: break;
-								}
-								default: break;
-							}
-							default: break;
-						}
-					}
-				}
-		}
-	}
-
-	// If no matches have been made in this string, return NSNotFound.
-	return NSNotFound;
-}
 
 /*
  * A method intended for use by the functions above.
@@ -870,71 +811,52 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (self = [super init]) {
 		string = [[NSMutableString string] retain];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
-	ignoreCommentStrings = NO;
-
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithBytes:(const void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytes:bytes length:length encoding:encoding];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithBytesNoCopy:(void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithBytesNoCopy:bytes length:length encoding:encoding freeWhenDone:flag];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithCapacity:(NSUInteger)capacity {
 	if (self = [super init]) {
 		string = [[NSMutableString stringWithCapacity:capacity] retain];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithCharactersNoCopy:(unichar *)characters length:(NSUInteger)length freeWhenDone:(BOOL)flag {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCharactersNoCopy:characters length:length freeWhenDone:flag];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithContentsOfFile:(id)path {
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
 	return [self initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
 }
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)encoding error:(NSError **)error {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithContentsOfFile:path encoding:encoding error:error];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithCString:(const char *)nullTerminatedCString encoding:(NSStringEncoding)encoding {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithCString:nullTerminatedCString encoding:encoding];
 	}
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithFormat:(NSString *)format, ... {
@@ -942,19 +864,26 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	va_start(argList, format);
 	id str = [self initWithFormat:format arguments:argList];
 	va_end(argList);
-	parsedToChar = '\0';
-	parsedToPosition = -1;
-	charCacheEnd = -1;
+	[self initSQLExtensions];
 	return str;
 }
 - (id) initWithFormat:(NSString *)format arguments:(va_list)argList {
 	if (self = [super init]) {
 		string = [[NSMutableString alloc] initWithFormat:format arguments:argList];
 	}
+	[self initSQLExtensions];
+	return self;
+}
+- (void) initSQLExtensions {
 	parsedToChar = '\0';
 	parsedToPosition = -1;
 	charCacheEnd = -1;
-	return self;
+	ignoreCommentStrings = NO;
+	supportDelimiters = NO;
+	delimiter = nil;
+	delimiterLengthMinusOne = 0;
+	lastMatchIsDelimiter = NO;
+	
 }
 - (NSUInteger) length {
 	return [string length];
@@ -971,6 +900,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 - (void) setString:(NSString *)aString {
 	[string setString:aString];
+	delimiter = nil;
+	delimiterLengthMinusOne = 0;
+	lastMatchIsDelimiter = NO;
 	[self clearCharCache];
 }
 - (void) replaceCharactersInRange:(NSRange)range withString:(NSString *)aString {
@@ -984,75 +916,3 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 
 @end
-
-/*
- * As splitStringByCharacter: ..., but allows control over quoting
- * - it recognises CREATE ... BEGIN ... END statements
- * - it can detect a SINGLE SQL statement in between
- *     delimiter foo ... foo delimiter ; 
- *     ['delimiter ;' MUST be given!]
- * - it returns an array of ranges (as NSString "{loc, length}").
- * FromPosition: is needed if a subrange is passed to sync the ranges 
- * according to the CQ textView ones.
- */
-// - (NSArray *) splitStringIntoRangesOfSQLQueries
-// {
-// 	return [self splitStringIntoRangesOfSQLQueriesFromPosition:0];
-// }
-// - (NSArray *) splitStringIntoRangesOfSQLQueriesFromPosition:(long)position
-// {
-// 	NSMutableArray *resultsArray = [NSMutableArray array];
-// 
-// 	//initialise flex
-// 	yyuoffset = 0; yyuleng = 0;
-// 	to_switch_to_buffer(to_scan_string([string UTF8String]));
-// 
-// 	unsigned long token;
-// 	unsigned long lastFoundToken = 0;
-// 	unsigned long delimLength = 0;
-// 	unsigned long commentStart = 0;
-// 	unsigned long commentLength = 0;
-// 	
-// 	NSString *delimString;
-// 
-// 	//now loop through all queries
-// 	while (token=tolex()){
-// 		switch (token) {
-// 			case SP_SQL_TOKEN_SEMICOLON:
-// 				[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, yyuoffset-lastFoundToken]];
-// 				break;
-// 			case SP_SQL_TOKEN_SINGLE_LINE_COMMENT:
-// 				commentStart = yyuoffset+position;
-// 				commentLength = yyuleng;
-// 				break;
-// 			case SP_SQL_TOKEN_DELIM_END:
-// 				[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, yyuoffset-lastFoundToken-delimLength]];
-// 				delimLength = 0;
-// 				delimString = nil;
-// 				break;
-// 			case SP_SQL_TOKEN_DELIM_VALUE:
-// 				delimString = [string substringWithRange:NSMakeRange(yyuoffset,yyuleng)];
-// 				// NSLog(@"del: %@", delimString);
-// 				delimLength = yyuleng;
-// 				break;
-// 			case SP_SQL_TOKEN_COMPOUND_END:
-// 				[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, yyuoffset+yyuleng-lastFoundToken]];
-// 				break;
-// 			default:
-// 				continue;
-// 		}
-// 		if(token<SP_SQL_TOKEN_IGNORE)
-// 		{
-// 			lastFoundToken = yyuoffset+yyuleng;
-// 			// ignore sinlge comment lines at the very beginning of a query
-// 			if(commentStart == lastFoundToken)
-// 				lastFoundToken += commentLength;
-// 		}
-// 	}
-// 
-// 	// add the last text chunk as query
-// 	if(lastFoundToken+1<[self length])
-// 		[resultsArray addObject:[NSString stringWithFormat:@"{%d,%d}", lastFoundToken+position, [self length]-lastFoundToken-delimLength]];
-// 
-// 	return resultsArray;
-// }

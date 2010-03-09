@@ -340,6 +340,15 @@
 }
 
 /**
+ * Insert placeholder - the placeholder string is stored as tooltip
+ */
+- (IBAction)insertPlaceholder:(id)sender
+{
+	NSString *placeholder = [[[sender selectedItem] toolTip] substringToIndex:[[[sender selectedItem] toolTip] rangeOfString:@" – "].location];
+	[favoriteQueryTextView insertText:placeholder];
+}
+
+/**
  * Closes the query favorite manager
  */
 - (IBAction)closeQueryManagerSheet:(id)sender

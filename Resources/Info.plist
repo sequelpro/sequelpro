@@ -63,6 +63,10 @@
 	<string>0.9.7</string>
 	<key>CFBundleVersion</key>
 	<string></string>
+	<key>FRFeedbackReporter.targetURL</key>
+	<string>http://log.sequelpro.com/submit</string>
+	<key>FRFeedbackReporter.maxConsoleLogSize</key>
+	<integer>10000</integer>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -81,7 +85,7 @@
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
+	<string>FRExceptionReportingApplication</string>
 	<key>NSServices</key>
 	<array>
 		<dict>

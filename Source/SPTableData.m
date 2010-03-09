@@ -33,6 +33,7 @@
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "RegexKitLite.h"
 
 @implementation SPTableData
 
@@ -44,6 +45,7 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		triggers = [[NSMutableArray alloc] init];
 		
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
@@ -115,6 +117,11 @@
 - (NSArray *) getConstraints
 {
 	return constraints;
+}
+
+- (NSArray *) triggers
+{
+	return (NSArray *)triggers;
 }
 
 /*
@@ -297,7 +304,7 @@
 
 /*
  * Retrieve the CREATE TABLE string for a table and analyse it to extract the field
- * details and table encoding.
+ * details, primary key, unique keys, and table encoding.
  * In future this could also be used to retrieve the majority of index information
  * assuming information like cardinality isn't needed.
  * This function is rather long due to the painful parsing required, but is fast.
@@ -330,6 +337,11 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
+			// If the current table doesn't exist anymore reload table list
+			if([mySQLConnection getLastErrorID] == 1146) {
+				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
+				[tableListInstance updateTables:self];
+			}
 		}
 		
 		return nil;
@@ -360,7 +372,9 @@
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
 	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
-	
+
+	tableData = [NSMutableDictionary dictionary];
+
 	for (i = 0; i < [fieldStrings count]; i++) {
 
 		// Take this field/key string, trim whitespace from both ends and remove comments
@@ -378,7 +392,7 @@
 
 			// Capture the area between the two backticks as the name
 			// Set the parser to ignoreCommentStrings since a field name can contain # or /*
-			[fieldsParser setIgnoringCommentStrings:YES];
+			[fieldsParser setIgnoreCommentStrings:YES];
 			NSString *fieldName = [fieldsParser trimAndReturnStringFromCharacter: quoteCharacter
 																	 toCharacter: quoteCharacter
 															 trimmingInclusively: YES
@@ -405,7 +419,7 @@
 																						 ignoringQuotedStrings: NO]
 																];
 			}
-			[fieldsParser setIgnoringCommentStrings:NO];
+			[fieldsParser setIgnoreCommentStrings:NO];
 			
 			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
@@ -419,7 +433,9 @@
 			}
 			
 			// Store the column.
-			[tableColumns addObject:[NSDictionary dictionaryWithDictionary:tableColumn]];
+			NSMutableDictionary *d = [NSMutableDictionary dictionaryWithCapacity:1];
+			[d setDictionary:tableColumn];
+			[tableColumns addObject:d];
 
 		// TODO: Otherwise it's a key definition, check, or other 'metadata'.  Would be useful to parse/display these!
 		} else {
@@ -512,15 +528,36 @@
 				[constraintDetails release];
 			}
 			// primary key
-			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] ) {
+			// add "isprimarykey" to the corresponding tableColumn
+			// add dict root "primarykeyfield" = <field> for faster accessing
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] && [parts count] == 3) {
+				NSString *parsedString = [(NSString*)NSArrayObjectAtIndex(parts, 2) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+				if([parsedString length]>4) {
+					NSString *priFieldName = [[parsedString substringWithRange:NSMakeRange(2,[parsedString length]-4)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+					[tableData setObject:priFieldName forKey:@"primarykeyfield"];
+					for(id tableColumn in tableColumns)
+						if([[tableColumn objectForKey:@"name"] isEqualToString:priFieldName]) {
+							[tableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+							break;
+						}
+				}
 			}
-			// key
-			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"KEY"] ) {
-				/*
-				 NSLog( @"key %@.%@", 
-				 [[parts objectAtIndex:1] stringByTrimmingCharactersInSet:junk],
-				 [[parts objectAtIndex:2] stringByTrimmingCharactersInSet:junk] );				
-				 */
+			// unique keys
+			// add to each corresponding tableColumn the tag "unique" if given
+			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"UNIQUE"]  && [parts count] == 4) {
+				NSString *parsedString = [(NSString*)NSArrayObjectAtIndex(parts, 3) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+				if([parsedString length]>4) {
+					NSArray *uniqueFieldNames = [parsedString componentsSeparatedByString:@"`,`"];
+					for(NSString* uniq in uniqueFieldNames) {
+						NSString *uniqField = [[uniq stringByReplacingOccurrencesOfRegex:@"^\\(`|`\\)" withString:@""] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+						for(id tableColumn in tableColumns)
+							if([[tableColumn objectForKey:@"name"] isEqualToString:uniqField]) {
+								[tableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+								break;
+							}
+					}
+					
+				}
 			}
 			// who knows
 			else {
@@ -558,13 +595,40 @@
 
 	[createTableParser release];
 	[fieldParser release];
+	
+	// Triggers
+	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
+											  [tableName tickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
+	
+	// Check for any errors, but only display them if a connection still exists
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+							   tableName, [mySQLConnection getLastErrorMessage]]);
+		}
+		[tableColumns release];
+		[encodingString release];
 
-	tableData = [NSMutableDictionary dictionary];
+		return nil;
+	}
+	
+	[triggers removeAllObjects];
+	if( [theResult numOfRows] ) {
+		for(int i=0; i<[theResult numOfRows]; i++){
+			[triggers addObject:[theResult fetchRowAsDictionary]];
+		}
+	}
+	
+
 	// this will be 'Table' or 'View'
 	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
+	[tableData setObject:[NSArray arrayWithArray:triggers] forKey:@"triggers"];
 
 	[encodingString release];
 	[tableColumns release];
@@ -636,7 +700,7 @@
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
@@ -654,7 +718,7 @@
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving view information.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
 		return nil;
@@ -1030,6 +1094,7 @@
 	[columns release];
 	[columnNames release];
 	[constraints release];
+	[triggers release];
 	[status release];
 	
 	if (tableEncoding) [tableEncoding release];

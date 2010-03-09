@@ -866,7 +866,7 @@ const OUR_CHARSET our_charsets60[] =
 - (NSUInteger)fetchFlagsForKey:(NSString *)key
 {
    NSUInteger theRet;
-   NSUInteger theNumFields, index;
+   NSUInteger index;
    MYSQL_FIELD *theField;
 	
    if (mResult == NULL) {
@@ -878,7 +878,6 @@ const OUR_CHARSET our_charsets60[] =
       [self fetchFieldNames];
    }
 	
-   theNumFields = [self numOfFields];
    theField = mysql_fetch_fields(mResult);
 	
    if ([mNames indexOfObject:key] == NSNotFound) {
@@ -952,7 +951,7 @@ const OUR_CHARSET our_charsets60[] =
 - (BOOL)isBlobForKey:(NSString *)key
 {
 	BOOL theRet;
-	NSUInteger theNumFields, index;
+	NSUInteger index;
 	MYSQL_FIELD *theField;
 	
 	if (mResult == NULL) {
@@ -964,7 +963,6 @@ const OUR_CHARSET our_charsets60[] =
 		[self fetchFieldNames];
 	}
 	
-	theNumFields = [self numOfFields];
 	theField = mysql_fetch_fields(mResult);
 		
 	if ([mNames indexOfObject:key] == NSNotFound) {

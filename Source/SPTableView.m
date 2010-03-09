@@ -97,4 +97,15 @@
 
 }
 
+- (void)setFont:(NSFont *)font;
+{
+	NSArray *tableColumns;
+	NSUInteger columnIndex;
+
+	tableColumns = [self tableColumns];
+	columnIndex = [tableColumns count];
+	while (columnIndex--)
+		[[(NSTableColumn *)[tableColumns objectAtIndex:columnIndex] dataCell] setFont:font];
+}
+
 @end

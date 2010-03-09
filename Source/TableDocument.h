@@ -41,6 +41,7 @@
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;
 	IBOutlet id tableRelationsInstance;
+	IBOutlet id tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
@@ -48,6 +49,10 @@
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
+	
+	IBOutlet id statusTableAccessoryView;
+	IBOutlet id statusTableView;
+	IBOutlet id statusTableCopyChecksum;
 	
 	IBOutlet SPUserManager *userManagerInstance;
 	
@@ -157,6 +162,8 @@
 	NSMutableDictionary *spfDocData;
 	
 	NSString *keyChainID;
+	
+	id statusValues;
 }
 
 - (NSString *)getHTMLforPrint;
@@ -220,6 +227,8 @@
 - (IBAction)checksumTable:(id)sender;
 - (IBAction)saveCreateSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
+- (IBAction)focusOnTableContentFilter:(id)sender;
+- (IBAction)focusOnTableListFilter:(id)sender;
 
 // Other methods
 - (void) setQueryMode:(NSInteger)theQueryMode;
@@ -238,6 +247,9 @@
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
+- (IBAction)copyChecksumFromSheet:(id)sender;
+
+- (void)showConsole:(id)sender;
 
 // Accessor methods
 - (NSString *)host;
@@ -267,6 +279,7 @@
 - (IBAction)viewQuery:(id)sender;
 - (IBAction)viewStatus:(id)sender;
 - (IBAction)viewRelations:(id)sender;
+- (IBAction)viewTriggers:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
 
 // Titlebar methods

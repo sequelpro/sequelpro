@@ -54,6 +54,7 @@
 @interface CustomQuery : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
+	IBOutlet id tablesListInstance;
 	IBOutlet id tableWindow;
 
 	IBOutlet id queryFavoritesButton;
@@ -100,6 +101,8 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
+	IBOutlet NSMenuItem *previousHistoryMenuItem;
+	IBOutlet NSMenuItem *nextHistoryMenuItem;
 
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
@@ -137,15 +140,22 @@
 	NSRect editedScrollViewRect;
 
 	BOOL isWorking;
-	BOOL tableReloadAfterEditing;
+	BOOL tableRowsSelectable;
+	BOOL reloadingExistingResult;
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	NSNumber *sortField;
+
+	NSIndexSet *selectionIndexToRestore;
+	NSRect selectionViewportToRestore;
 
 	NSString *fieldIDQueryString;
 
 	NSUInteger numberOfQueries;
 	NSUInteger queryTextViewStartPosition;
+
+	NSInteger currentHistoryOffsetIndex;
+	BOOL historyItemWasJustInserted;
 }
 
 // IBAction methods
@@ -170,6 +180,7 @@
 - (IBAction)saveQueryHistory:(id)sender;
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
+- (IBAction)showCompletionList:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
@@ -181,6 +192,14 @@
 // Accessors
 - (NSArray *)currentResult;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
+
+// Retrieving and setting table state
+- (NSIndexSet *) resultSelectedRowIndexes;
+- (NSRect) resultViewport;
+- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void) setResultViewportToRestore:(NSRect)theViewport;
+- (void) storeCurrentResultViewForRestoration;
+- (void) clearResultViewDetailsToRestore;
 
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;
@@ -205,6 +224,10 @@
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
 - (NSUInteger)numberOfQueries;
+
 - (NSString *)buildHistoryString;
+- (void)addHistoryEntry:(NSString *)entryString;
+
+- (void)historyItemsHaveBeenUpdated:(id)manager;
 
 @end

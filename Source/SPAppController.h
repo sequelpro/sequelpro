@@ -24,10 +24,11 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#import <FeedbackReporter/FRFeedbackReporter.h>
 
 @class SPPreferenceController, SPAboutController;
 
-@interface SPAppController : NSObject 
+@interface SPAppController : NSObject <FRFeedbackReporterDelegate>
 {
 	BOOL isNewFavorite;
 	
@@ -54,6 +55,9 @@
 
 // Getters
 - (SPPreferenceController *)preferenceController;
+
+// Feedback controller delegate methods
+- (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;
 
 // Others
 - (NSString *)contentOfFile:(NSString *)aPath;

@@ -43,13 +43,14 @@ enum sphistory_view_types
 	TableContent *tableContentInstance;
 	TablesList *tablesListInstance;
 	NSMutableArray *history;
+	NSMutableDictionary *tableContentStates;
 	NSUInteger historyPosition;
-	BOOL modifyingHistoryState;
+	BOOL modifyingState;
 }
 
 @property (readonly) NSUInteger historyPosition;
 @property (readonly) NSMutableArray *history;
-@property (readwrite, assign) BOOL modifyingHistoryState;
+@property (readwrite, assign) BOOL modifyingState;
 
 // Interface interaction
 - (void) updateToolbarItem;
@@ -66,6 +67,9 @@ enum sphistory_view_types
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber;
 - (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool;
 - (void) loadEntryFromMenuItem:(id)theMenuItem;
+
+// Restoring view states
+- (void) restoreViewStates;
 
 // History entry details and description
 - (NSMenuItem *) menuEntryForHistoryEntryAtIndex:(NSInteger)theIndex;

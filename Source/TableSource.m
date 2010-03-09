@@ -25,6 +25,7 @@
 
 #import "TableSource.h"
 #import "TableDocument.h"
+#import "SPTableInfo.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "SPSQLParser.h"
@@ -99,6 +100,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
   
 	//perform queries and load results in array (each row as a dictionary)
 	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[tablesListInstance updateTables:self];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+		[editTableButton setEnabled:NO];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+				   errorMessage]);
+		return;
+	}
+
 	[tableSourceResult setReturnDataAsStrings:YES];
 	
 	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
@@ -108,6 +130,27 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableSourceResult release];
 
 	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
+		[tableFields removeAllObjects];
+		[indexes removeAllObjects];
+		[tableSourceView reloadData];
+		[tablesListInstance updateTables:self];
+		[indexView reloadData];
+		[addFieldButton setEnabled:NO];
+		[copyFieldButton setEnabled:NO];
+		[removeFieldButton setEnabled:NO];
+		[addIndexButton setEnabled:NO];
+		[removeIndexButton setEnabled:NO];
+		[editTableButton setEnabled:NO];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+				   errorMessage]);
+
+		return;
+	}
 	[indexResult setReturnDataAsStrings:YES];
 	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
 	[indexes setArray:[self fetchResultAsArray:indexResult]];
@@ -282,16 +325,20 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 - (IBAction)copyField:(id)sender
 {
 	NSMutableDictionary *tempRow;
+	NSUInteger rowToCopy;
 
-	if ( ![tableSourceView numberOfSelectedRows] ) {
-		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableSourceView numberOfRows]-1] byExtendingSelection:NO];
+	// Store the row to duplicate, as saveRowOnDeselect and subsequent reloads may trigger a deselection
+	if ([tableSourceView numberOfSelectedRows]) {
+		rowToCopy = [tableSourceView selectedRow];
+	} else {
+		rowToCopy = [tableSourceView numberOfRows]-1;
 	}
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 	
 	//add copy of selected row and go in edit mode
-	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:[tableSourceView selectedRow]]];
+	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:rowToCopy]];
 	[tempRow setObject:[[tempRow objectForKey:@"Field"] stringByAppendingString:@"Copy"] forKey:@"Field"];
 	[tempRow setObject:@"" forKey:@"Key"];
 	[tempRow setObject:@"None" forKey:@"Extra"];
@@ -414,6 +461,30 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
 }
 
+- (IBAction)resetAutoIncrement:(id)sender
+{
+
+	if([sender tag] == 1) {
+		
+		[resetAutoIncrementLine setHidden:YES];
+		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 0)
+			[resetAutoIncrementLine setHidden:NO];
+
+		// Begin the sheet
+		[NSApp beginSheet:resetAutoIncrementSheet
+		   modalForWindow:tableWindow 
+			modalDelegate:self
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:@"resetAutoIncrement"];
+
+		[resetAutoIncrementValue setStringValue:@"1"];
+	}
+	else if([sender tag] == 2) {
+		[self setAutoIncrementTo:@"1"];
+	}
+
+}
+
 #pragma mark -
 #pragma mark Index sheet methods
 
@@ -507,6 +578,40 @@ closes the keySheet
 
 	// Set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
+}
+
+- (void)setAutoIncrementTo:(NSString*)valueAsString
+{
+
+	if(valueAsString == nil || ![valueAsString length]) return;
+
+	NSString *selTable = nil;
+
+	// if selectedTable is nil try to get the name from tablesList
+	if(selectedTable == nil || ![selectedTable length])
+		selTable = [tablesListInstance tableName];
+	else
+		selTable = [NSString stringWithString:selectedTable];
+
+	if(selTable == nil || ![selTable length])
+		return;
+
+	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], valueAsString]];
+
+	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"), 
+								selTable, [mySQLConnection getLastErrorMessage]]);
+	} else {
+		[tableDataInstance resetStatusData];
+		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
+			[tableDataInstance resetAllData];
+			[extendedTableInfoInstance loadTable:selTable];
+		}
+		[tableInfoInstance tableChanged:nil];
+	}
 }
 
 /*
@@ -778,7 +883,29 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else {
 		alertSheetOpened = YES;
-		
+		if([mySQLConnection getLastErrorID] == 1146) { // If the current table doesn't exist anymore
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
+							  NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"), 
+							  selectedTable, [mySQLConnection getLastErrorMessage]]);
+
+			isEditingRow = NO;
+			isEditingNewRow = NO;
+			currentlyEditingRow = -1;
+			[tableFields removeAllObjects];
+			[indexes removeAllObjects];
+			[tableSourceView reloadData];
+			[indexView reloadData];
+			[addFieldButton setEnabled:NO];
+			[copyFieldButton setEnabled:NO];
+			[removeFieldButton setEnabled:NO];
+			[addIndexButton setEnabled:NO];
+			[removeIndexButton setEnabled:NO];
+			[editTableButton setEnabled:NO];
+			[tablesListInstance updateTables:self];
+			return NO;
+		}
 		// Problem: alert sheet doesn't respond to first click
 		if (isEditingNewRow) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
@@ -861,6 +988,13 @@ fetches the result as an array with a dictionary for each row in it
 		return ([indexView numberOfSelectedRows] == 1);
 	}
 	
+	// Reset AUTO_INCREMENT
+	if ([menuItem action] == @selector(resetAutoIncrement:)) {
+		return ([indexView numberOfSelectedRows] == 1 
+			&& [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] 
+			&& [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]);
+	}
+	
 	return YES;
 }
 
@@ -898,14 +1032,14 @@ fetches the result as an array with a dictionary for each row in it
 									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 				isEditingRow = NO;
 			} else {
-				[tableFields removeObjectAtIndex:[tableSourceView selectedRow]];
+				[tableFields removeObjectAtIndex:currentlyEditingRow];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
 			currentlyEditingRow = -1;
 		}
 		[tableSourceView reloadData];
-	} 
+	}
 	else if ([contextInfo isEqualToString:@"removeField"] || [contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeFieldAndForeignKey:[contextInfo hasSuffix:@"AndForeignKey"]];
@@ -924,6 +1058,13 @@ fetches the result as an array with a dictionary for each row in it
 	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
 		;
 	}
+	else if ([contextInfo isEqualToString:@"resetAutoIncrement"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+			[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		}
+	}
+	else
+		alertSheetOpened = NO;
 }
 
 #pragma mark -

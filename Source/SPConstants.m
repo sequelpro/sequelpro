@@ -52,6 +52,7 @@ NSString *SPDefaultEncoding                      = @"DefaultEncoding";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
 NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
+NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
 // Tables Prefpane
 NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";
@@ -64,6 +65,7 @@ NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
+NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";
@@ -100,6 +102,10 @@ NSString *SPCustomQueryAutoUppercaseKeywords     = @"CustomQueryAutoUppercaseKey
 NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
 NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
 NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
+NSString *SPCustomQueryEditorTabStopWidth        = @"CustomQueryEditorTabStopWidth";
+NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
+NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
+NSString *SPCustomQueryFunctionCompletionInsertsArguments = @"CustomQueryFunctionCompletionInsertsArguments";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";
@@ -119,6 +125,7 @@ NSString *SPCSVImportFieldEscapeCharacter        = @"CSVImportFieldEscapeCharact
 NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
+NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
@@ -156,6 +163,7 @@ NSString *SPMainToolbarTableContent              = @"SwitchToTableContentToolbar
 NSString *SPMainToolbarCustomQuery               = @"SwitchToRunQueryToolbarItemIdentifier";
 NSString *SPMainToolbarTableInfo                 = @"SwitchToTableInfoToolbarItemIdentifier";
 NSString *SPMainToolbarTableRelations            = @"SwitchToTableRelationsToolbarItemIdentifier";
+NSString *SPMainToolbarTableTriggers             = @"SwitchToTableTriggersToolbarItemIdentifier";
 NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarItemIdentifier";
 
 // Preferences toolbar

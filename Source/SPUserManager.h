@@ -24,7 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class MCPConnection;
+@class MCPConnection, BWAnchoredButtonBar;
 
 @interface SPUserManager : NSWindowController 
 {	
@@ -41,6 +41,27 @@
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
 	IBOutlet NSMutableDictionary *privsSupportedByServer;
+	
+	IBOutlet NSArrayController *schemaController;
+	IBOutlet NSArrayController *grantedController;
+	IBOutlet NSArrayController *availableController;
+	
+	IBOutlet NSTableView *schemasTableView;
+	IBOutlet NSTableView *grantedTableView;
+	IBOutlet NSTableView *availableTableView;
+	IBOutlet NSButton *addSchemaPrivButton;
+	IBOutlet NSButton *removeSchemaPrivButton;
+	
+    IBOutlet NSTextField *userNameTextField;
+
+	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
+
+	NSMutableArray *schemas;
+	NSMutableArray *grantedSchemaPrivs;
+	NSMutableArray *availablePrivs;
+	
+	NSArray *treeSortDescriptors;
+	NSSortDescriptor *treeSortDescriptor;
 }
 
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
@@ -48,6 +69,11 @@
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain) NSMutableDictionary *privsSupportedByServer;
+
+@property (nonatomic, retain) NSArray *treeSortDescriptors;
+@property (nonatomic, retain) NSMutableArray *schemas;
+@property (nonatomic, retain) NSMutableArray *grantedSchemaPrivs;
+@property (nonatomic, retain) NSMutableArray *availablePrivs;
 
 // Add/Remove users
 - (IBAction)addUser:(id)sender;
@@ -62,12 +88,19 @@
 - (IBAction)checkAllPrivileges:(id)sender;
 - (IBAction)uncheckAllPrivileges:(id)sender;
 
+// Schema Privieges
+- (IBAction)addSchemaPriv:(id)sender;
+- (IBAction)removeSchemaPriv:(id)sender;
+
+// Refresh
+- (IBAction)refresh:(id)sender;
+
 // Core Data notifications
 - (void)contextDidSave:(NSNotification *)notification;
 - (BOOL)insertUsers:(NSArray *)insertedUsers;
 - (BOOL)deleteUsers:(NSArray *)deletedUsers;
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
+- (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
 
-- (NSArray *)treeSortDescriptors;
 @end

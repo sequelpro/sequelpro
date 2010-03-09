@@ -67,7 +67,8 @@
 
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-	queries = [queryParser splitSqlStringByCharacter:';'];
+	[queryParser setDelimiterSupport:YES];
+	queries = [queryParser splitStringByCharacter:';'];
 	[queryParser release];
 
 	oldThreadedQueryRange = [textView selectedRange];
@@ -76,7 +77,8 @@
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
-	tableReloadAfterEditing = NO;
+	reloadingExistingResult = NO;
+	[self clearResultViewDetailsToRestore];
 
 	// Remember query start position for error highlighting
 	queryTextViewStartPosition = 0;
@@ -135,7 +137,8 @@
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
-		queries = [queryParser splitSqlStringByCharacter:';'];
+		[queryParser setDelimiterSupport:YES];
+		queries = [queryParser splitStringByCharacter:';'];
 		[queryParser release];
 
 		// Remember query start position for error highlighting
@@ -148,7 +151,8 @@
 	[textView insertText:@""];
 	[textView setSelectedRange:selectedRange];
 
-	tableReloadAfterEditing = NO;
+	reloadingExistingResult = NO;
+	[self clearResultViewDetailsToRestore];
 
 	[self performQueries:queries withCallback:NULL];
 }
@@ -211,11 +215,14 @@
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
-		if(replaceContent)
+		if(replaceContent) {
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
+			[textView breakUndoCoalescing];
+			[textView insertText:@""];
+		}
 
 		// The actual query strings have been already stored as tooltip
-		[textView insertFavoriteAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:[textView selectedRange]];
+		[textView insertAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
 	}
 }
 
@@ -231,13 +238,13 @@
 	if ([queryHistoryButton indexOfSelectedItem] > 6) {
 
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
-
+		[textView breakUndoCoalescing];
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
 		if(replaceContent)
 			[textView setSelectedRange:NSMakeRange(0,[[textView string] length])];
 
-		[textView insertText:[queryHistoryButton titleOfSelectedItem]];
+		[textView insertText:[[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:[queryHistoryButton indexOfSelectedItem]-7]];
 	}
 }
 
@@ -256,6 +263,40 @@
  */
 - (IBAction)gearMenuItemSelected:(id)sender
 {
+
+	if ( sender == previousHistoryMenuItem ) {
+		NSInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
+		currentHistoryOffsetIndex++;
+		if ( numberOfHistoryItems > 0 && currentHistoryOffsetIndex < numberOfHistoryItems && currentHistoryOffsetIndex >= 0) {
+			historyItemWasJustInserted = YES;
+			[textView breakUndoCoalescing];
+			NSString *historyString = [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:currentHistoryOffsetIndex];
+			NSRange rangeOfInsertedString = NSMakeRange([textView selectedRange].location, [historyString length]);
+			[textView insertText:historyString];
+			[textView setSelectedRange:rangeOfInsertedString];
+		} else {
+			currentHistoryOffsetIndex--;
+			NSBeep();
+		}
+		historyItemWasJustInserted = NO;
+	}
+
+	if ( sender == nextHistoryMenuItem ) {
+		NSInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
+		currentHistoryOffsetIndex--;
+		if ( numberOfHistoryItems > 0 && currentHistoryOffsetIndex < numberOfHistoryItems && currentHistoryOffsetIndex >= 0) {
+			historyItemWasJustInserted = YES;
+			[textView breakUndoCoalescing];
+			NSString *historyString = [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:currentHistoryOffsetIndex];
+			NSRange rangeOfInsertedString = NSMakeRange([textView selectedRange].location, [historyString length]);
+			[textView insertText:historyString];
+			[textView setSelectedRange:rangeOfInsertedString];
+		} else {
+			currentHistoryOffsetIndex++;
+			NSBeep();
+		}
+		historyItemWasJustInserted = NO;
+	}
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
 	if (sender == shiftRightMenuItem) {
@@ -284,9 +325,9 @@
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
 		if([[NSApp currentEvent] modifierFlags] & (NSControlKeyMask))
-			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
-			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
 	}
 
 	// "Editor font..." menu item to bring up the font panel
@@ -399,7 +440,7 @@
  */
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-	return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
+	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }
 
 #pragma mark -
@@ -469,8 +510,8 @@
 		[customQueryView scrollColumnToVisible:0];
 	}
 
-	// Remove all the columns
-	if(!tableReloadAfterEditing) {
+	// Remove all the columns if not reloading the table
+	if(!reloadingExistingResult) {
 		theColumns = [customQueryView tableColumns];
 		while ([theColumns count]) {
 			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
@@ -482,6 +523,8 @@
 
 	NSUInteger queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
+	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
 	// Enable task cancellation
 	if (queryCount > 1)
@@ -524,7 +567,7 @@
 			// Add columns corresponding to the query result
 			theColumns = [streamingResult fetchFieldNames];
 
-			if(!tableReloadAfterEditing) {
+			if(!reloadingExistingResult) {
 				for ( j = 0 ; j < [streamingResult numOfFields] ; j++) {
 					NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,j);
 					theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
@@ -533,7 +576,8 @@
 					SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 					[dataCell setEditable:YES];
 					[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-					[dataCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+					[dataCell setFont:tableFont];
+
 					[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 					[theCol setDataCell:dataCell];
 					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, j)];
@@ -668,24 +712,8 @@
 	}
 	
 	// add query to history
-	// if(!queriesSeparatedByDelimiter) { // TODO only add to history if no “delimiter” command was used
-	if(!tableReloadAfterEditing && [usedQuery length]) {
-
-		// Register new history item
-		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
-
-		// Add it to the document's current popup list
-		if([queryHistoryButton numberOfItems] > 7)
-			[queryHistoryButton insertItemWithTitle:usedQuery atIndex:7];
-		else
-			[queryHistoryButton addItemWithTitle:usedQuery];
-
-		// Check for max history
-		NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
-		while ( [queryHistoryButton numberOfItems] > maxHistoryItems + 7 )
-			[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-
-	}
+	if(!reloadingExistingResult && [usedQuery length])
+		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
 
 	// Error checking
 	if ( [mySQLConnection queryCancelled] || ([errors length] && !queryIsTableSorter)) {
@@ -841,21 +869,25 @@
 
 	[customQueryView reloadData];
 
-	if(tableReloadAfterEditing) {
-		// scroll to last edited row/view port after refreshing data
-		if(editedRow > -1) {
-			[customQueryView selectRowIndexes:[NSIndexSet indexSetWithIndex:editedRow] byExtendingSelection:NO];
-			[[customQueryScrollView contentView] scrollToPoint:NSMakePoint(editedScrollViewRect.origin.x, editedScrollViewRect.origin.y)];
-			[customQueryScrollView reflectScrolledClipView:[customQueryScrollView contentView]];
-			editedRow = -1;
-		} else {
-			[customQueryView scrollRowToVisible:[customQueryView selectedRow]];
-		}
+	// Restore the result view origin if appropriate
+	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+
+		// Scroll the viewport to the saved location
+		selectionViewportToRestore.size = [customQueryView visibleRect].size;
+		[customQueryView scrollRectToVisible:selectionViewportToRestore];
+	}
+
+	// Restore selection indexes if appropriate
+	if (selectionIndexToRestore) {
+		BOOL previousTableRowsSelectable = tableRowsSelectable;
+		tableRowsSelectable = YES;
+		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+		tableRowsSelectable = previousTableRowsSelectable;
 	}
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
-	
+	[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
@@ -959,7 +991,8 @@
 	// only if the textView was really changed, otherwise use the cache
 	if([[textView textStorage] editedMask] != 0) {
 		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
-		queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
+		[customQueryParser setDelimiterSupport:YES];
+		queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesByCharacter:';']];
 		numberOfQueries = [queries count];
 		if(currentQueryRanges)
 			[currentQueryRanges release];
@@ -1072,7 +1105,8 @@
 
 	// Split the current text into ranges of queries
 	customQueryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:NSMakeRange(position, [[textView string] length]-position)]];
-	queries = [[NSArray alloc] initWithArray:[customQueryParser splitSqlStringIntoRangesByCharacter:';']];
+	[customQueryParser setDelimiterSupport:YES];
+	queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesByCharacter:';']];
 	[customQueryParser release];
 
 	// Check for a valid index
@@ -1275,41 +1309,15 @@
 
 	// Set up the interface
 
-	[textView setAllowsDocumentBackgroundColorChange:YES];
-	[textView setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
-	[textView setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
-
-	[textView setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
-	[textView setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
-
-	[textView setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
-	[textView setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
-	[textView setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
-	[textView setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]]];
-	[textView setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
-	[textView setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
-	[textView setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
-	[textView setTextColor:[textView otherTextColor]];
-
-	[textView setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
-
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
-	[textView setContinuousSpellCheckingEnabled:NO];
 	[autoindentMenuItem setState:([prefs boolForKey:SPCustomQueryAutoIndent]?NSOnState:NSOffState)];
-	[textView setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
-	[textView setAutoindentIgnoresEnter:YES];
 	[autopairMenuItem setState:([prefs boolForKey:SPCustomQueryAutoPairCharacters]?NSOnState:NSOffState)];
-	[textView setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
 	[autohelpMenuItem setState:([prefs boolForKey:SPCustomQueryUpdateAutoHelp]?NSOnState:NSOffState)];
-	[textView setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
-	[textView setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-	{
-		[queryHistoryButton addItemsWithTitles:[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]]];
-	}
-	
+		[self performSelector:@selector(historyItemsHaveBeenUpdated:) withObject:self afterDelay:0.0];
+
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
 	
@@ -1339,6 +1347,61 @@
 - (NSString *)usedQuery
 {
 	return usedQuery;
+}
+
+#pragma mark -
+#pragma mark Retrieving and setting table state
+
+/**
+ * Provide a getter for the custom query result table's selected rows index set
+ */
+- (NSIndexSet *) resultSelectedRowIndexes
+{
+	return [customQueryView selectedRowIndexes];
+}
+
+/**
+ * Provide a getter for the custom query result table's current viewport
+ */
+- (NSRect) resultViewport
+{
+	return [customQueryView visibleRect];
+}
+
+/**
+ * Set the selected row indexes to restore on next custom query result table load
+ */
+- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
+{
+	if (selectionIndexToRestore) [selectionIndexToRestore release], selectionIndexToRestore = nil;
+
+	if (theIndexSet) selectionIndexToRestore = [[NSIndexSet alloc] initWithIndexSet:theIndexSet];
+}
+
+/**
+ * Set the viewport to restore on next table load
+ */
+- (void) setResultViewportToRestore:(NSRect)theViewport
+{
+	selectionViewportToRestore = theViewport;
+}
+
+/**
+ * Convenience method for storing all current settings for restoration
+ */
+- (void) storeCurrentResultViewForRestoration
+{
+	[self setResultSelectedRowIndexesToRestore:[self resultSelectedRowIndexes]];
+	[self setResultViewportToRestore:[self resultViewport]];
+}
+
+/**
+ * Convenience method for clearing any settings to restore
+ */
+- (void) clearResultViewDetailsToRestore
+{
+	[self setResultSelectedRowIndexesToRestore:nil];
+	[self setResultViewportToRestore:NSZeroRect];
 }
 
 #pragma mark -
@@ -1592,7 +1655,8 @@
 			}
 
 			// On success reload table data by executing the last query
-			tableReloadAfterEditing = YES;
+			reloadingExistingResult = YES;
+			[self storeCurrentResultViewForRestoration];
 
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
 			
@@ -1614,6 +1678,7 @@
 
 	// Prevent sorting while a query is running
 	if ([tableDocumentInstance isWorking]) return;
+	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
@@ -1695,7 +1760,8 @@
 	else
 		[queryString appendFormat:@" %@", newOrder];
 
-	tableReloadAfterEditing = YES;
+	reloadingExistingResult = YES;
+	[self storeCurrentResultViewForRestoration];
 	queryIsTableSorter = YES;
 	sortColumn = tableColumn;
 	[self performQueries:[NSArray arrayWithObject:queryString] withCallback:@selector(tableSortCallback)];
@@ -1833,7 +1899,14 @@
 	}
 
 	// Show the cell string value as tooltip (including line breaks and tabs)
-	[SPTooltip showWithObject:[aCell stringValue] atLocation:pos];
+	// by using the cell's font
+	[SPTooltip showWithObject:[aCell stringValue] 
+			atLocation:pos 
+				ofType:@"text" 
+		displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
+					[[aCell font] familyName], @"fontname", 
+					[NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize", 
+					nil]];
 
 	return nil;
 }
@@ -1946,7 +2019,7 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return ![tableDocumentInstance isWorking];
+	return tableRowsSelectable;
 }
 
 #pragma mark -
@@ -2111,18 +2184,9 @@
 			[runSelectionMenuItem setEnabled:YES];
 		}
 	}
-}
 
-/*
- * Save the custom query editor font if it is changed.
- */
-- (void)textViewDidChangeTypingAttributes:(NSNotification *)aNotification
-{
-	// Only save the font if prefs have been loaded, ensuring the saved font has been applied once.
-	// And check for [textView font] != nil which occurs while awaking from nib.
-	if (prefs && [textView font] != nil)
-		[prefs setObject:[NSArchiver archivedDataWithRootObject:[textView font]] forKey:SPCustomQueryEditorFont];
-
+	if(!historyItemWasJustInserted)
+		currentHistoryOffsetIndex = -1;
 }
 
 #pragma mark -
@@ -2390,6 +2454,21 @@
 	[self helpTargetValidation];
 }
 
+- (IBAction)showCompletionList:(id)sender
+{
+	NSRange insertRange = NSMakeRange([textView selectedRange].location, 0);
+	switch([sender tag]) {
+		case 8000:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_DATABASES" atRange:insertRange fuzzySearch:NO];
+		break;
+		case 8001:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_TABLES" atRange:insertRange fuzzySearch:NO];
+		break;
+		case 8002:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE" atRange:insertRange fuzzySearch:NO];
+		break;
+	}
+}
 /*
  * Show the data for "HELP 'currentWord' invoked by autohelp"
  */
@@ -2687,10 +2766,25 @@
 #pragma mark Query favorites manager delegate methods
 
 /**
+ * Rebuild history popup menu.
+ */
+- (void)historyItemsHaveBeenUpdated:(id)manager
+{
+	// Refresh history popup menu
+	NSMenu* historyMenu = [queryHistoryButton menu];
+	while([queryHistoryButton numberOfItems] > 7)
+		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
+	
+	NSUInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
+	if(numberOfHistoryItems>0)
+		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
+			[historyMenu addItem:historyMenuItem];
+}
+/**
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
 - (void)queryFavoritesHaveBeenUpdated:(id)manager
-{	
+{
 	NSMenuItem *headerMenuItem;
 	NSMenu *menu = [queryFavoritesButton menu];
 
@@ -2764,6 +2858,7 @@
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery])
 		return;
 
+	tableRowsSelectable = NO;
 	[runSelectionButton setEnabled:NO];
 	[runSelectionMenuItem setEnabled:NO];
 	[runAllButton setEnabled:NO];
@@ -2785,6 +2880,7 @@
 		[runSelectionButton setEnabled:YES];
 		[runSelectionMenuItem setEnabled:YES];
 	}
+	tableRowsSelectable = YES;
 	[runAllButton setEnabled:YES];
 	[runAllMenuItem setEnabled:YES];
 }
@@ -2802,17 +2898,18 @@
 
 - (NSString *)buildHistoryString
 {
-	NSMutableString *history = [NSMutableString string];
-	NSMenu *menu = [queryHistoryButton menu];
-	NSInteger i;
-	
-	for (i = 7; i < [menu numberOfItems]; i++) {
-		[history appendString:[[menu itemAtIndex:i] title]];
-		[history appendString:@";\n"];
-	}
-
-	return history;
+	return [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] componentsJoinedByString:@";\n"];
 }
+
+/**
+ * Add a query string to the file/global history, via the query controller.
+ * Single argument allows calls on the main thread.
+ */
+- (void)addHistoryEntry:(NSString *)entryString
+{
+	[[SPQueryController sharedQueryController] addHistory:entryString forFileURL:[tableDocumentInstance fileURL]];
+}
+
 /*
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
@@ -2822,16 +2919,11 @@
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [customQueryView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
-	// Use monospaced fonts preference changed
-	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
-				
-		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-				
-		for (NSTableColumn *column in [customQueryView tableColumns])
-		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
-		
+	// Result Table Font preference changed
+	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
+		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[customQueryView setFont:tableFont];
 		[customQueryView reloadData];
 	}
 }
@@ -2844,18 +2936,8 @@
 
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
 		if (returnCode == NSOKButton) {
-
-			// Remove all history buttons up to the search field and separator beginning from the end
-			while([queryHistoryButton numberOfItems] > 7)
-				[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-
-			// Clear the global history list if doc is Untitled
-			if ([tableDocumentInstance isUntitled])
-				[prefs setObject:[NSArray array] forKey:SPQueryHistory];
-			// otherwise remove all document-based history items from the queryController
-			else
-				[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
-
+			// Remove items in the query controller
+			[[SPQueryController sharedQueryController] replaceHistoryByArray:[NSMutableArray array] forFileURL:[tableDocumentInstance fileURL]];
 		}
 		return;
 	}
@@ -2930,6 +3012,7 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+
 	// Control "Save ... to Favorites"
 	if ( [menuItem tag] == SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG ) {
 		if ([[textView string] length] < 1) return NO;
@@ -2947,12 +3030,12 @@
 	}
 
 	// Avoid selecting button list headers
-	if ( [menuItem tag] == SP_FAVORITE_HEADER_MENUITEM_TAG ) {
+	else if ( [menuItem tag] == SP_FAVORITE_HEADER_MENUITEM_TAG ) {
 		return NO;
 	}
 
 	// Control Clear History menu item title according to isUntitled
-	if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
+	else if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
 		if ( [tableDocumentInstance isUntitled] ) {
 			[menuItem setTitle:NSLocalizedString(@"Clear Global History", @"clear global history menu item title")];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the global history list", @"clear the global history list tooltip message")];
@@ -2963,7 +3046,7 @@
 	}
 
 	// Check for History items
-	if ( [menuItem tag] >= SP_HISTORY_COPY_MENUITEM_TAG && [menuItem tag] <= SP_HISTORY_CLEAR_MENUITEM_TAG ) {
+	else if ( [menuItem tag] >= SP_HISTORY_COPY_MENUITEM_TAG && [menuItem tag] <= SP_HISTORY_CLEAR_MENUITEM_TAG ) {
 		return ([queryHistoryButton numberOfItems]-7);
 	}
 
@@ -2983,6 +3066,10 @@
 		sortColumn = nil;
 		selectionButtonCanBeEnabled = NO;
 		cqColumnDefinition = nil;
+
+		tableRowsSelectable = YES;
+		selectionIndexToRestore = nil;
+		selectionViewportToRestore = NSZeroRect;
 
 		// init helpHTMLTemplate
 		NSError *error;
@@ -3006,6 +3093,9 @@
 		resultDataCount = 0;
 		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
+
+		currentHistoryOffsetIndex = -1;
+		historyItemWasJustInserted = NO;
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -3035,13 +3125,14 @@
  */
 - (IBAction)filterQueryHistory:(id)sender
 {
-	NSUInteger i;
 	NSMenu *menu = [queryHistoryButton menu];
+	NSUInteger numberOfItems = [menu numberOfItems];
+	NSUInteger i;
 	NSString *searchPattern = [queryHistorySearchField stringValue];
-	
-	for (i = 7; i < [menu numberOfItems]; i++)
+	NSArray *history = [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]];
+	for (i = 7; i < numberOfItems; i++)
 	{
-		[[menu itemAtIndex:i] setHidden:(![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+		[[menu itemAtIndex:i] setHidden:(![[history objectAtIndex:i-7] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
 	}
 }
 
@@ -3101,6 +3192,10 @@
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+
+	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
+
+
 }
 
 /**
@@ -3118,6 +3213,7 @@
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
 	if (cqColumnDefinition) [cqColumnDefinition release];
+	if (selectionIndexToRestore) [selectionIndexToRestore release];
 	
 	[super dealloc];
 }

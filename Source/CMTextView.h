@@ -38,6 +38,13 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	SPMutableAttributedStringAddAttributeValueRange(self, @selector(addAttribute:value:range:), aStr, aValue, aRange);
 	return;
 }
+static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedString* self, NSString* aStr, NSUInteger index, NSRangePointer range) {
+	typedef id (*SPMutableAttributedStringAttributeAtIndexMethodPtr)(NSMutableAttributedString*, SEL, NSString*, NSUInteger, NSRangePointer);
+	static SPMutableAttributedStringAttributeAtIndexMethodPtr SPMutableAttributedStringAttributeAtIndex;
+	if (!SPMutableAttributedStringAttributeAtIndex) SPMutableAttributedStringAttributeAtIndex = (SPMutableAttributedStringAttributeAtIndexMethodPtr)[self methodForSelector:@selector(attribute:atIndex:effectiveRange:)];
+	id r = SPMutableAttributedStringAttributeAtIndex(self, @selector(attribute:atIndex:effectiveRange:), aStr, index, range);
+	return r;
+}
 
 @interface CMTextView : NSTextView {
 	BOOL autoindentEnabled;
@@ -49,6 +56,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	NoodleLineNumberView *lineNumberView;
 	
 	BOOL startListeningToBoundChanges;
+	BOOL textBufferSizeIncreased;
 	
 	NSString *showMySQLHelpFor;
 	
@@ -65,6 +73,8 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	NSInteger currentSnippetIndex;
 	BOOL snippetWasJustInserted;
 
+	BOOL completionIsOpen;
+	BOOL completionWasReinvokedAutomatically;
 
 	NSColor *queryHiliteColor;
 	NSColor *queryEditorBackgroundColor;
@@ -91,6 +101,8 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 @property(retain) NSColor* otherTextColor;
 @property(assign) NSRange queryRange;
 @property(assign) BOOL shouldHiliteQuery;
+@property(assign) BOOL completionIsOpen;
+@property(assign) BOOL completionWasReinvokedAutomatically;
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
@@ -100,9 +112,6 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
-// - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
-- (NSArray *) keywords;
-- (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
 - (BOOL) autoindent;
 - (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
@@ -113,22 +122,28 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 - (BOOL) autouppercaseKeywords;
 - (void) setAutohelp:(BOOL)enableAutohelp;
 - (BOOL) autohelp;
+- (void) setTabStops;
 - (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode;
+- (void) doAutoCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
 
 - (BOOL)checkForCaretInsideSnippet;
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
+- (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
+
+- (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode;
 
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 
 - (BOOL)isSnippetMode;
+
+- (NSString *)runBashCommand:(NSString *)command;
 
 @end

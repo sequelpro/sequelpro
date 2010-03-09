@@ -61,24 +61,32 @@ keywords	(X(OR|509|A)|S(MALLINT|SL|H(OW({s}(E(NGINE(S)?|RRORS)|M(ASTER|UTEX)|BIN
 
 
 %x comment
+%x snippet
 %x equation
 %x varequation
 %%
+
+
+\$\{1?[0-9]:						{ BEGIN(snippet); return SPT_OTHER; }
+<snippet>\\\}						{ return SPT_OTHER; }
+<snippet>\}							{ BEGIN(INITIAL); return SPT_OTHER; }
+
+
 \"([^"\\]|\\(.|[\n\r]))*\"?			{ return SPT_DOUBLE_QUOTED_TEXT;   }      /* double quoted strings          */
 '([^'\\]|\\(.|[\n\r]))*'?			{ return SPT_SINGLE_QUOTED_TEXT;   }      /* single quoted strings          */
-`[^`]*`?						{ return SPT_BACKTICK_QUOTED_TEXT; }      /* backtick quoted string         */
+`[^`]*`?							{ return SPT_BACKTICK_QUOTED_TEXT; }      /* backtick quoted string         */
 
-"/*"							{ BEGIN(comment); return SPT_COMMENT; }   /* beginning of a c style comment */
-<comment>[^*]* 				    { return SPT_COMMENT; }                   /* anything except * in a c cmnt  */
-<comment>"*"+                   { return SPT_COMMENT; }                   /* a range of *                   */
-<comment>"*"+"/" 				{ BEGIN(INITIAL); return SPT_COMMENT; }   /* a range of * with trailing /   
+"/*"								{ BEGIN(comment); return SPT_COMMENT; }   /* beginning of a c style comment */
+<comment>[^*]* 						{ return SPT_COMMENT; }                   /* anything except * in a c cmnt  */
+<comment>"*"+						{ return SPT_COMMENT; }                   /* a range of *                   */
+<comment>"*"+"/" 					{ BEGIN(INITIAL); return SPT_COMMENT; }   /* a range of * with trailing /   
                                                                              Thanks to John Dickinson for publishing 
                                                                              this method of parsing C comments on
                                                                              http://www.stillhq.com/pdfdb/000561/data.pdf
                                                                                                             */
                                                                                                             
 #[^\n\r]*(\n|\r)?			        |											/* # Comments                     */
---[ \t][^\n\r]*(\n|\r)?			{ return SPT_COMMENT; }						/* -- Comments                    */
+--[ \t][^\n\r]*(\n|\r)?			{ return SPT_COMMENT; }							/* -- Comments                    */
 
 {variable}/{ops}			{ BEGIN(varequation); return SPT_VARIABLE; }/* SQL variables before operator*/
 <varequation>{ops}			{ BEGIN(INITIAL); return SPT_OTHER; }

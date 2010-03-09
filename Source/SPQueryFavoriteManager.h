@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#import "CMTextView.h"
 
 @class BWAnchoredButtonBar;
 
@@ -42,7 +43,7 @@
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSTextField *favoriteNameTextField;
 	IBOutlet NSTextField *favoriteTabTriggerTextField;
-	IBOutlet NSTextView  *favoriteQueryTextView;
+	IBOutlet CMTextView  *favoriteQueryTextView;
 	IBOutlet NSButton *removeButton;
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
@@ -69,5 +70,6 @@
 - (IBAction)importFavoritesByAdding:(id)sender;
 - (IBAction)importFavoritesByReplacing:(id)sender;
 - (IBAction)closeQueryManagerSheet:(id)sender;
+- (IBAction)insertPlaceholder:(id)sender;
 
 @end

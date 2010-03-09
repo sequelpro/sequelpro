@@ -10,6 +10,8 @@
 	<integer>1</integer>
 	<key>UseMonospacedFonts</key>
 	<false/>
+	<key>GlobalResultTableFont</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaSSEBVszNmNdBgAAABoAAAD//kwAdQBjAGkAZABhAEcAcgBhAG4AZABlAAAAhAFmC4QBYwCYAZgAmACG</data>
 	<key>CustomQueryMaxHistoryItems</key>
 	<integer>20</integer>
 	<key>ReloadAfterAddingRow</key>
@@ -82,6 +84,14 @@
 	<false/>
 	<key>CustomQueryUpdateAutoHelp</key>
 	<false/>
+	<key>CustomQueryEditorTabStopWidth</key>
+	<integer>4</integer>
+	<key>CustomQueryFunctionCompletionInsertsArguments</key>
+	<true/>
+	<key>CustomQueryAutoComplete</key>
+	<true/>
+	<key>CustomQueryAutoCompleteDelay</key>
+	<real>1.5</real>
 	<key>CustomQueryAutoHelpDelay</key>
 	<real>1</real>
 	<key>lastSqlFileEncoding</key>
@@ -137,5 +147,9 @@
 	<true/>
 	<key>BlobTextEditorSpellCheckingEnabled</key>
 	<false/>
+	<key>CSVFieldImportMappingAlignment</key>
+	<integer>2</integer>
+	<key>DisplayServerVersionInWindowTitle</key>
+	<true/>
 </dict>
 </plist>

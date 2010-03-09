@@ -390,6 +390,7 @@
  */
 - (IBAction)insertNULLvalue:(id)sender
 {
+
 	id prefs = [NSUserDefaults standardUserDefaults];
 	if([self respondsToSelector:@selector(insertText:)])
 		if([prefs objectForKey:SPNullValue] && [[prefs objectForKey:SPNullValue] length])

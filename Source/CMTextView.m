@@ -31,6 +31,8 @@
 #import "SPNarrowDownCompletion.h"
 #import "SPConstants.h"
 #import "SPQueryController.h"
+#import "SPTooltip.h"
+#import "TablesList.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -39,8 +41,8 @@
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
 #import "SPEditorTokens.h"
-extern NSInteger yylex();
-extern NSInteger yyuoffset, yyuleng;
+extern NSUInteger yylex();
+extern NSUInteger yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
@@ -52,10 +54,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kAPval         @"linked"
 #define kLEXToken      @"Quoted" // set via lex to indicate a quoted string
 #define kLEXTokenValue @"isMarked"
-#define kSQLkeyword    @"SQLkw"  // attribute for found SQL keywords
+#define kSQLkeyword    @"s"      // attribute for found SQL keywords
 #define kQuote         @"Quote"
 #define kQuoteValue    @"isQuoted"
-#define kValue         @"dummy"
+#define kValue         @"x"
 #define kBTQuote       @"BTQuote"
 #define kBTQuoteValue  @"isBTQuoted"
 
@@ -67,6 +69,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG 1002
 
 #define SP_SYNTAX_HILITE_BIAS 2000
+#define SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING 20000000
 
 #define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
 
@@ -95,6 +98,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize otherTextColor;
 @synthesize queryRange;
 @synthesize shouldHiliteQuery;
+@synthesize completionIsOpen;
+@synthesize completionWasReinvokedAutomatically;
 
 /*
  * Sort function (mainly used to sort the words in the textView)
@@ -106,59 +111,43 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) awakeFromNib
 {
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+	[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+
 	// Set self as delegate for the textView's textStorage to enable syntax highlighting,
 	[[self textStorage] setDelegate:self];
 
 	// Set defaults for general usage
-	autoindentEnabled = YES;
+	autoindentEnabled = NO;
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
-	autouppercaseKeywordsEnabled = YES;
+	autouppercaseKeywordsEnabled = NO;
 	autohelpEnabled = NO;
 	delBackwardsWasPressed = NO;
 	startListeningToBoundChanges = NO;
+	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
+	completionIsOpen = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
 	[scrollView setHasHorizontalRuler:NO];
 	[scrollView setHasVerticalRuler:YES];
 	[scrollView setRulersVisible:YES];
-
-	// Re-define 64 tab stops for a better editing
-	NSFont *tvFont = [self font];
-	float firstColumnInch = 0.5, otherColumnInch = 0.5, pntPerInch = 72.0;
-	NSInteger i;
-	NSTextTab *aTab;
-	NSMutableArray *myArrayOfTabs;
-	NSMutableParagraphStyle *paragraphStyle;
-	myArrayOfTabs = [NSMutableArray arrayWithCapacity:64];
-	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:firstColumnInch*pntPerInch];
-	[myArrayOfTabs addObject:aTab];
-	[aTab release];
-	for(i=1; i<64; i++) {
-		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:(firstColumnInch*pntPerInch) + ((float)i * otherColumnInch * pntPerInch)];
-		[myArrayOfTabs addObject:aTab];
-		[aTab release];
-	}
-	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-	[paragraphStyle setTabStops:myArrayOfTabs];
-	// Soft wrapped lines are indented slightly
-	[paragraphStyle setHeadIndent:4.0];
-
-	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
-	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
-
-	NSRange range = NSMakeRange(0, [[self textStorage] length]);
-	if ([self shouldChangeTextInRange:range replacementString:nil]) {
-		[[self textStorage] setAttributes:textAttributes range: range];
-		[self didChangeText];
-	}
-	[self setTypingAttributes:textAttributes];
-	[self setDefaultParagraphStyle:paragraphStyle];
-	[paragraphStyle release];
-	[self setFont:tvFont];
+	[self setAllowsDocumentBackgroundColorChange:YES];
+	[self setContinuousSpellCheckingEnabled:NO];
+	[self setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
+	[self setAutoindentIgnoresEnter:YES];
+	[self setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
+	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
+	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
+	[self setCompletionWasReinvokedAutomatically:NO];
 	
+
+	// Re-define tab stops for a better editing
+	[self setTabStops];
+
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
@@ -167,9 +156,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
 	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
 
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
+	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
+	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
+	[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
+	[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
+	[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]]];
+	[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
+	[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
+	[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+	[self setTextColor:[self otherTextColor]];
+	[self setInsertionPointColor:[self otherTextColor]];
+	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
 
 	// Register observers for the when editor background colors preference changes
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorFont options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryHighlightCurrentQuery options:NSKeyValueObservingOptionNew context:NULL];
@@ -180,6 +181,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorNumericColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorVariableColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTextColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords options:NSKeyValueObservingOptionNew context:NULL];
 
 }
 
@@ -197,6 +200,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
 		[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
+		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorHighlightQueryColor]) {
 		[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setNeedsDisplay:YES];
@@ -205,33 +211,37 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorCommentColor]) {
 		[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorQuoteColor]) {
 		[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorSQLKeywordColor]) {
 		[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorBacktickColor]) {
 		[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorNumericColor]) {
 		[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorVariableColor]) {
 		[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorTextColor]) {
 		[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setTextColor:[self otherTextColor]];
-		if([[self string] length]<100000)
+		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorTabStopWidth]) {
+		[self setTabStops];
+	} else if ([keyPath isEqualToString:SPCustomQueryAutoUppercaseKeywords]) {
+		[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 	}
 }
 
@@ -271,12 +281,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(!isDictMode) {
 			// Add predefined keywords
-			for(id s in [self keywords])
+			NSArray *keywordList = [[NSArray arrayWithArray:[[SPQueryController sharedQueryController] keywordList]] retain];
+			for(id s in keywordList)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
 
 			// Add predefined functions
-			for(id s in [self functions])
+			NSArray *functionList = [[NSArray arrayWithArray:[[SPQueryController sharedQueryController] functionList]] retain];
+			for(id s in functionList)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"func-small", @"image", nil]];
+
+			[functionList release];
+			[keywordList release];
 		}
 
 	}
@@ -286,7 +301,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
 		if(dbs != nil && [dbs count]) {
-			NSMutableArray *allDbs = [[NSMutableArray array] autorelease];
+			NSMutableArray *allDbs = [NSMutableArray array];
 			[allDbs addObjectsFromArray:[dbs allKeys]];
 
 			// Add database names having no tables since they don't appear in the information_schema
@@ -328,7 +343,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(!aDbName) {
 				// Try to suggest only items which are uniquely valid for the parsed string
 
-				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIndentifierFor:[aTableName lowercaseString]];
+				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIdentifierFor:[aTableName lowercaseString]];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
 			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:aTableName] && uniqueSchemaKind == 2) {
@@ -465,17 +480,35 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch
+- (void) doAutoCompletion
 {
+	NSRange r = [self selectedRange];
+
+	if(![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
+
+	if(r.location) {
+		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
+			return;
+	 	if(![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[[self string] characterAtIndex:r.location-1]])
+			// Suppress auto-completion if window isn't active anymore
+			if([[NSApp keyWindow] firstResponder] == self)
+				[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+	}
+}
+
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
+{
+
+	if(![self isEditable]) return;
 
 	[self breakUndoCoalescing];
 
-	NSInteger caretPos = NSMaxRange([self selectedRange]);
-	// [self setSelectedRange:NSMakeRange(caretPos, 0)];
+	NSUInteger caretPos = NSMaxRange([self selectedRange]);
+
 	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
-	if([[self string] length] && [[self string] characterAtIndex:caretPos-1] == '`') {
+	if([[self string] length] && caretPos > 0 && [[self string] characterAtIndex:caretPos-1] == '`') {
 		if([[self string] length] > caretPos && [[self string] characterAtIndex:caretPos] == '`') {
 			;
 		} else {
@@ -494,12 +527,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* prefix        = @"";
 	NSString *currentDb     = nil;
 
-	NSString* allow; // additional chars which not close the popup
+	// Break for long stuff
+	if(completionRange.length>100000) return;
+
+	NSString* allow; // additional chars which won't close the suggestion list window
 	if(isDictMode)
 		allow= @"_";
 	else
 		allow= @"_. ";
-
 
 	BOOL dbBrowseMode = NO;
 	NSInteger backtickMode = 0; // 0 none, 1 rigth only, 2 left only, 3 both
@@ -527,11 +562,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// This approach counts the number of ` up to the beginning of the current line from caret position
 		NSRange lineHeadRange = [[self string] lineRangeForRange:NSMakeRange(caretPos, 0)];
 		NSString *lineHead = [[self string] substringWithRange:NSMakeRange(lineHeadRange.location, caretPos - lineHeadRange.location)];
-		for(NSInteger i=0; i<[lineHead length]; i++)
+		for(NSUInteger i=0; i<[lineHead length]; i++)
 			if([lineHead characterAtIndex:i]=='`') caretIsInsideBackticks = !caretIsInsideBackticks;
 			
 		NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-		NSInteger start = caretPos;
+		NSUInteger start = caretPos;
 		NSInteger backticksCounter = (caretIsInsideBackticks) ? 1 : 0;
 		NSInteger pointCounter     = 0;
 		NSInteger firstPoint       = 0;
@@ -576,9 +611,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		dbBrowseMode = (pointCounter || backticksCounter);
-		
+
 		if(dbBrowseMode) {
 			parseRange = NSMakeRange(start, caretPos-start);
+
+			// Break for long stuff
+			if(parseRange.length>100000) return;
+
 			NSString *parsedString = [[self string] substringWithRange:parseRange];
 
 			// Check if parsed string is wrapped by ``
@@ -657,7 +696,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					withDbName:dbName
 					withTableName:tableName
 					selectedDb:currentDb
-					caretMovedLeft:caretMovedLeft];
+					caretMovedLeft:caretMovedLeft
+					autoComplete:autoCompleteMode
+					oneColumn:isDictMode];
 	
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
@@ -673,8 +714,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	pos.y -= [[self font] pointSize]*1.25;
 	
 	[completionPopUp setCaretPos:pos];
+	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
-	[completionPopUp insertCommonPrefix];
+	if(!autoCompleteMode)
+		[completionPopUp insertCommonPrefix];
 
 }
 
@@ -765,11 +808,48 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark user actions
 
+- (IBAction)printDocument:(id)sender
+{
+
+	// This will scale the view to fit the page without centering it.
+	[[NSPrintInfo sharedPrintInfo] setHorizontalPagination:NSFitPagination];
+	[[NSPrintInfo sharedPrintInfo] setHorizontallyCentered:NO];
+	[[NSPrintInfo sharedPrintInfo] setVerticallyCentered:NO];
+
+	NSRange r = NSMakeRange(0, [[self string] length]);
+
+	// Remove all colors before printing for large text buffer
+	if(r.length > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING) {
+		// Cancel all doSyntaxHighlighting requests
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doSyntaxHighlighting) 
+									object:nil];
+		[[self textStorage] removeAttribute:NSForegroundColorAttributeName range:r];
+		[[self textStorage] removeAttribute:kLEXToken range:r];
+		[[self textStorage] ensureAttributesAreFixedInRange:r];
+
+	}
+	[[self textStorage] ensureAttributesAreFixedInRange:r];
+
+	// Setup the print operation with the print info and view
+	NSPrintOperation *printOperation = [NSPrintOperation printOperationWithView:self printInfo:[NSPrintInfo sharedPrintInfo]];
+
+	// Order out print sheet
+	[printOperation runOperationModalForWindow:[self window] delegate:nil didRunSelector:NULL contextInfo:NULL];
+
+}
+
+- (void)printOperationDidRun:(NSPrintOperation *)printOperation  success:(BOOL)success  contextInfo:(void *)contextInfo
+{
+	// Refresh syntax highlighting
+	[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.01];
+}
+
 /*
  * Search for the current selection or current word in the MySQL Help 
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
-{	
+{
 	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
 }
 
@@ -780,18 +860,25 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix
 {
 
+	NSRange currentRange = [self selectedRange];
+
 	// Only proceed if a selection is active
-	if ([self selectedRange].length == 0)
+	if (currentRange.length == 0 || ![self isEditable])
 		return NO;
 
+	NSString *selString = [[self string] substringWithRange:currentRange];
+
 	// Replace the current selection with the selected string wrapped in prefix and suffix
-	[self insertText:
-		[NSString stringWithFormat:@"%@%@%@", 
-			prefix,
-			[[self string] substringWithRange:[self selectedRange]],
-			suffix
-		]
-	];
+	[self insertText:[NSString stringWithFormat:@"%@%@%@", prefix, selString, suffix]];
+	
+	// Re-select original selection
+	NSRange innerSelectionRange = NSMakeRange(currentRange.location+1, [selString length]);
+	[self setSelectedRange:innerSelectionRange];
+
+	// If autopair is enabled mark last autopair character as autopair-linked
+	if([prefs boolForKey:SPCustomQueryAutoPairCharacters])
+		[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange(NSMaxRange(innerSelectionRange), 1)];
+
 	return YES;
 }
 
@@ -815,7 +902,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) selectCurrentQuery
 {
-	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] selectCurrentQuery];
+	if([self isEditable])
+		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] selectCurrentQuery];
 }
 
 /*
@@ -832,8 +920,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if(ignLeadingNewLines) // ignore leading empty lines
 	{
-		NSInteger arrayCount = [lineRanges count];
-		NSInteger i;
+		NSUInteger arrayCount = [lineRanges count];
+		NSUInteger i;
 		for (i = 0; i < arrayCount; i++) {
 			if(NSRangeFromString([lineRanges objectAtIndex:i]).length > 0)
 				break;
@@ -867,9 +955,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSRange currentLineRange;
 	NSArray *lineRanges;
 	NSString *tabString = @"\t";
-	NSInteger i, indentedLinesLength = 0;
+	NSUInteger i, indentedLinesLength = 0;
 
-	if ([self selectedRange].location == NSNotFound) return NO;
+	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
 
 	// Indent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
@@ -920,7 +1008,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
 	NSArray *lineRanges;
-	NSInteger i, unindentedLines = 0, unindentedLinesLength = 0;
+	NSUInteger i, unindentedLines = 0, unindentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound) return NO;
 
@@ -993,6 +1081,159 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Shows pre-defined completion list
+ */
+- (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode
+{
+
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+	NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:0] autorelease];
+	NSArray *arr = nil;
+	if([kind isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
+		NSString *currentDb = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+
+		if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
+			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			for(id table in sortedTables) {
+				NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
+				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+				switch(structtype) {
+					case 0:
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", [NSString stringWithFormat:@"%@.%@",currentDb,table], @"isRef", nil]];
+					break;
+					case 1:
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", [NSString stringWithFormat:@"%@.%@",currentDb,table], @"isRef", nil]];
+					break;
+				}
+			}
+		} else {
+			arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
+			if(arr == nil) {
+				arr = [NSArray array];
+			}
+			for(id w in arr)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
+		}
+	}
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
+		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
+		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+	}
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE"]) {
+
+		NSString *currentDb = nil;
+		NSString *currentTable = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
+			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+		if(currentDb != nil && currentTable != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:currentTable]) {
+			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
+			NSArray *allFields = [theTable allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			for(id field in sortedFields) {
+				if(![field hasPrefix:@"  "]) {
+					NSString *typ = [theTable objectForKey:field];
+					// Check if type definition contains a , if so replace the bracket content by … and add 
+					// the bracket content as "list" key to prevend the token field to split them by ,
+					if(typ && [typ rangeOfString:@","].length) {
+						NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
+						NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							field, @"display", 
+							@"field-small-square", @"image", 
+							[NSString stringWithFormat:@"%@⇠%@",currentTable,currentDb], @"path", 
+							t, @"type", 
+							lst, @"list", 
+							[NSString stringWithFormat:@"%@.%@.%@",currentDb,currentTable,field], @"isRef", 
+							nil]];
+					} else {
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							field, @"display", 
+							@"field-small-square", @"image", 
+							[NSString stringWithFormat:@"%@⇠%@",currentTable,currentDb], @"path", 
+							typ, @"type", 
+							[NSString stringWithFormat:@"%@.%@.%@",currentDb,currentTable,field], @"isRef", 
+							nil]];
+					}
+				}
+			}
+			[desc release];
+		} else {
+			arr = [NSArray arrayWithArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
+			if(arr == nil) {
+				arr = [NSArray array];
+			}
+			for(id w in arr)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];
+		}
+	}
+	else {
+		NSLog(@"“%@” is not a valid completion list", kind);
+		NSBeep();
+		return;
+	}
+
+	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+					alreadyTyped:@"" 
+					staticPrefix:@"" 
+					additionalWordCharacters:@"_." 
+					caseSensitive:NO
+					charRange:aRange
+					parseRange:aRange
+					inView:self
+					dictMode:NO
+					dbMode:YES
+					tabTriggerMode:[self isSnippetMode]
+					fuzzySearch:fuzzySearchMode
+					backtickMode:NO
+					withDbName:@""
+					withTableName:@""
+					selectedDb:@""
+					caretMovedLeft:NO
+					autoComplete:NO
+					oneColumn:NO];
+
+	//Get the NSPoint of the first character of the current word
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
+	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+	boundingRect = [self convertRect: boundingRect toView: NULL];
+	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+	// Adjust list location to be under the current word or insertion point
+	pos.y -= [[self font] pointSize]*1.25;
+	[completionPopUp setCaretPos:pos];
+	completionIsOpen = YES;
+	[completionPopUp orderFront:self];
+
+}
+
+/*
  * Selects the current snippet defined by “currentSnippetIndex”
  */
 - (void)selectCurrentSnippet
@@ -1017,10 +1258,59 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(snippetControlArray[currentSnippetIndex][2] == 0) {
 				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
 				NSRange r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
-				if(r1.location == r2.location && r1.length == r2.length)
+				if(r1.location == r2.location && r1.length == r2.length) {
 					[self setSelectedRange:r2];
-				else
+					NSString *snip = [[self string] substringWithRange:r2];
+					
+ 					if([snip length] > 2 && [snip hasPrefix:@"¦"] && [snip hasSuffix:@"¦"]) {
+						BOOL fuzzySearchMode = ([snip hasPrefix:@"¦¦"] && [snip hasSuffix:@"¦¦"]) ? YES : NO;
+						NSInteger offset = (fuzzySearchMode) ? 2 : 1;
+						NSRange insertRange = NSMakeRange(r2.location,0);
+						SPNarrowDownCompletion* completionPopUp;
+						NSString *newSnip = [snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))];
+						if([newSnip hasPrefix:@"$SP_ASLIST_"]) {
+							[self showCompletionListFor:newSnip atRange:NSMakeRange(r2.location, 0) fuzzySearch:fuzzySearchMode];
+							return;
+						} else {
+							NSArray *list = [[snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))] componentsSeparatedByString:@"¦"];
+							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
+							for(id w in list)
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
+						
+							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+											alreadyTyped:@"" 
+											staticPrefix:@"" 
+											additionalWordCharacters:@"_." 
+											caseSensitive:NO
+											charRange:insertRange
+											parseRange:insertRange
+											inView:self
+											dictMode:NO
+											dbMode:NO
+											tabTriggerMode:[self isSnippetMode]
+											fuzzySearch:fuzzySearchMode
+											backtickMode:NO
+											withDbName:@""
+											withTableName:@""
+											selectedDb:@""
+											caretMovedLeft:NO
+											autoComplete:NO
+											oneColumn:YES];
+							//Get the NSPoint of the first character of the current word
+							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
+							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+							boundingRect = [self convertRect: boundingRect toView: NULL];
+							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+							// Adjust list location to be under the current word or insertion point
+							pos.y -= [[self font] pointSize]*1.25;
+							[completionPopUp setCaretPos:pos];
+							completionIsOpen = YES;
+							[completionPopUp orderFront:self];
+						}
+					}
+				} else {
 					[self endSnippetSession];
+				}
 			}
 		} else { // for safety reasons
 			[self endSnippetSession];
@@ -1033,8 +1323,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Inserts a chosen query favorite and initialze a snippet session if user defined any
  */
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
+- (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
+
+	// Do not allow the insertion of a query favorite if snippets are active
+	if(snippetControlCounter > -1) {
+		NSBeep();
+		return;
+	}
 
 	NSInteger i;
 
@@ -1049,24 +1345,29 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
 	@try{
-		NSString *re = @"(?<!\\\\)\\$\\{(1?\\d):([^\\{\\}]*)\\}";
+		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
 
-		targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
+		if(targetRange.length)
+			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
 		[snip setString:theSnippet];
 
 		if(snip == nil || ![snip length]) return;
 
 		// Replace `${x:…}` by ${x:`…`} for convience 
-		[snip replaceOccurrencesOfRegex:@"`\\$\\{(1?\\d):([^\\{\\}]*)\\}`" withString:@"${$1:`$2`}"];
+		[snip replaceOccurrencesOfRegex:@"`(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}`" withString:@"${$1:`$2`}"];
 		[snip flushCachedRegexData];
 
 		snippetControlCounter = -1;
 		snippetControlMax     = -1;
 		currentSnippetIndex   = -1;
 
+		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
+		snippetWasJustInserted = YES;
+
 		while([snip isMatchedByRegex:re]) {
 			[snip flushCachedRegexData];
 			snippetControlCounter++;
+
 			NSRange snipRange = [snip rangeOfRegex:re capture:0L];
 			NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:re capture:1L]] intValue];
 			NSRange hintRange = [snip rangeOfRegex:re capture:2L];
@@ -1094,6 +1395,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
 					currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
 
+				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) {
+					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"];
+					if(r.length) {
+						NSArray *selTables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] selectedTableNames];
+						if([selTables count])
+							[theHintString replaceCharactersInRange:r withString:[selTables componentsJoinedAndBacktickQuoted]];
+						else
+							[theHintString replaceCharactersInRange:r withString:@"$SP_SELECTED_TABLE"];
+					}
+					[theHintString flushCachedRegexData];
+				}
+
 				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLE"]) {
 					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLE"];
 					if(r.length) {
@@ -1117,6 +1430,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
+			// Handle escaped characters
+			[theHintString replaceOccurrencesOfRegex:@"\\\\(\\$\\(|\\}|\\$SP_)" withString:@"$1"];
+			[theHintString flushCachedRegexData];
+
+			// If inside the snippet hint $(…) is defined run … as BASH command
+			// and replace $(…) by the return string of that command. Please note
+			// only one $(…) statement is allowed within one ${…} snippet environment.
+			NSRange tagRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\((.*)\\)"];
+			if(tagRange.length) {
+				[theHintString flushCachedRegexData];
+				NSRange cmdRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\(\\s*(.*)\\s*\\)" capture:1L];
+				if(cmdRange.length)
+					[theHintString replaceCharactersInRange:tagRange withString:[self runBashCommand:[theHintString substringWithRange:cmdRange]]];
+				else
+					[theHintString replaceCharactersInRange:tagRange withString:@""];
+			}
+			[theHintString flushCachedRegexData];
+
 			[snip replaceCharactersInRange:snipRange withString:theHintString];
 			[snip flushCachedRegexData];
 
@@ -1130,10 +1461,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Adjust successive snippets
 			for(i=0; i<20; i++)
 				if(snippetControlArray[i][0] > -1 && i != snipCnt && snippetControlArray[i][0] > snippetControlArray[snipCnt][0])
-					snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1); // 3 := length(${:)
+					snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1);
 
 		}
-	
+
 		if(snippetControlCounter > -1) {
 			// Store the end for tab out
 			snippetControlMax++;
@@ -1142,15 +1473,28 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			snippetControlArray[snippetControlMax][2] = 0;
 		}
 
-		// Registering for undo
-		[self breakUndoCoalescing];
+		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} → ${1:a}
+		NSString *ure = @"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
+		while([snip isMatchedByRegex:ure]) {
+			NSRange escapeRange = [snip rangeOfRegex:ure capture:0L];
+			[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
+			NSUInteger loc = escapeRange.location + targetRange.location;
+			[snip flushCachedRegexData];
+			for(i=0; i<=snippetControlMax; i++)
+				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
+					snippetControlArray[i][0]--;
+		}
 
-		// Insert favorite query as snippet if any
+		// Insert favorite query by selecting the tab trigger if any
 		[self setSelectedRange:targetRange];
 
-		// Suppress snippet range calculation in [self textStorageDidProcessEditing] while initial insertion
-		snippetWasJustInserted = YES;
+		// Registering for undo
+		[self breakUndoCoalescing];
 		[self insertText:snip];
+
+		// If autopair is enabled check whether snip begins with ( and ends with ), if so mark ) as pair-linked
+		if([prefs boolForKey:SPCustomQueryAutoPairCharacters] && ([snip hasPrefix:@"("] && [snip hasSuffix:@")"] || ([snip hasPrefix:@"`"] && [snip hasSuffix:@"`"]) || ([snip hasPrefix:@"'"] && [snip hasSuffix:@"'"]) || ([snip hasPrefix:@"\""] && [snip hasSuffix:@"\""])))
+			[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange([self selectedRange].location - 1, 1)];
 
 		// Any snippets defined?
 		if(snippetControlCounter > -1) {
@@ -1175,6 +1519,94 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Run 'command' as BASH command(s) and return the result.
+ * This task can be interrupted by pressing ⌘.
+ */
+- (NSString *)runBashCommand:(NSString *)command
+{
+	BOOL userTerminated = NO;
+
+	NSTask *bashTask = [[NSTask alloc] init];
+	[bashTask setLaunchPath: @"/bin/bash"];
+	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", command, nil]];
+
+	NSPipe *stdout_pipe = [NSPipe pipe];
+	[bashTask setStandardOutput:stdout_pipe];
+	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
+
+	NSPipe *stderr_pipe = [NSPipe pipe];
+	[bashTask setStandardError:stderr_pipe];
+	NSFileHandle *stderr_file = [stderr_pipe fileHandleForReading];
+	[bashTask launch];
+
+	// Listen to ⌘. to terminate
+	while(1) {
+		if(![bashTask isRunning] || [bashTask processIdentifier] == 0) break;
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                   untilDate:[NSDate distantPast]
+                                      inMode:NSDefaultRunLoopMode
+                                     dequeue:YES];
+		usleep(10000);
+		if(!event) continue;
+		if ([event type] == NSKeyDown) {
+			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+				[bashTask terminate];
+				userTerminated = YES;
+				break;
+			}
+		} else {
+			[NSApp sendEvent:event];
+		}
+	}
+
+	[bashTask waitUntilExit];
+
+	if(userTerminated) {
+		if(bashTask) [bashTask release];
+		NSBeep();
+		NSLog(@"“%@” was terminated by user.", command);
+		return @"";
+	}
+
+	// If return from bash re-activate Sequel Pro
+	[NSApp activateIgnoringOtherApps:YES];
+
+	NSInteger status = [bashTask terminationStatus];
+	NSData *outdata  = [stdout_file readDataToEndOfFile];
+	NSData *errdata  = [stderr_file readDataToEndOfFile];
+
+	if(outdata != nil) {
+		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] description];
+		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+		if(bashTask) [bashTask release];
+		if(stdout != nil) {
+			if (status == 0) {
+				return [stdout autorelease];
+			} else {
+				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
+				[stdout release];
+				[error release];
+				NSBeep();
+				return @"";
+			}
+		} else {
+			if(stdout) [stdout release];
+			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
+			NSBeep();
+		}
+	} else {
+		if(bashTask) [bashTask release];
+		NSLog(@"Couldn't read data from command “%@”.", command);
+		NSBeep();
+		return @"";
+	}
+
+}
+
+/*
  * Checks whether the current caret position in inside of a defined snippet range
  */
 - (BOOL)checkForCaretInsideSnippet
@@ -1188,8 +1620,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self endSnippetSession];
 		return NO;
 	}
-
-	NSInteger caretPos = [self selectedRange].location;
+	
+	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
+	NSUInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
 	NSInteger foundSnippetIndices[20]; // array to hold nested snippets
 
@@ -1238,8 +1671,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			currentSnippetIndex = index;
 			isCaretInsideASnippet = YES;
 		}
-		// if that fails start to finish the snippet session
-		if(!isCaretInsideASnippet) snippetControlCounter = -1;
 	}
 	return isCaretInsideASnippet;
 
@@ -1269,6 +1700,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 									selector:@selector(autoHelp) 
 									object:nil];
 
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 	[super mouseDown:theEvent];
 
 	// Start autoHelp timer
@@ -1291,6 +1728,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
@@ -1309,14 +1753,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
+
+		[self setCompletionWasReinvokedAutomatically:NO];
+
+		// Cancel autocompletion trigger
+		if([prefs boolForKey:SPCustomQueryAutoComplete])
+			[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doAutoCompletion) 
+									object:nil];
+
 		if(curFlags==(NSControlKeyMask))
-			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
-			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
 		return;
 	}
-	if (insertedCharacter == NSF5FunctionKey){ // F5 for completion based on spell checker
-		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
+	if (insertedCharacter == NSF5FunctionKey && [self isEditable]){ // F5 for completion based on spell checker
+		[self setCompletionWasReinvokedAutomatically:NO];
+		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO autoCompleteMode:NO];
 		return;
 	}
 
@@ -1370,7 +1824,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(snippetControlCounter < 0 && [[[self window] delegate] fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[[[self window] delegate] fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
-				[self insertFavoriteAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
+				[self insertAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
 				return;
 			}
 		}
@@ -1396,7 +1850,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
+		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
 		{
 			[self makeTextSizeLarger];
 			return;
@@ -1404,6 +1858,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
+			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 			return;
 		}
 	}
@@ -1577,7 +2035,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *currentLine, *indentString = nil;
 		NSScanner *whitespaceScanner;
 		NSRange currentLineRange;
-		NSInteger lineCursorLocation;
+		NSUInteger lineCursorLocation;
 
 		// Extract the current line based on the text caret or selection start position
 		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
@@ -1608,1082 +2066,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	[super doCommandBySelector:aSelector];
 }
-
-/*
- * Handle autocompletion, returning a list of suggested completions for the supplied character range.
- */
-// - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index
-// {
-// 
-// 	if (!charRange.length) return nil;
-// 	
-// 	// Refresh quote attributes
-// 	[[self textStorage] removeAttribute:kQuote range:NSMakeRange(0,[[self string] length])];
-// 	[self insertText:@""];
-// 	
-// 	
-// 	// Check if the caret is inside quotes "" or ''; if so 
-// 	// return the normal word suggestion due to the spelling's settings
-// 	if([[[self textStorage] attribute:kQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kQuoteValue] )
-// 		return [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,charRange.length) inString:[[self string] substringWithRange:charRange] language:nil inSpellDocumentWithTag:0];
-// 
-// 
-// 	NSMutableArray *compl = [[NSMutableArray alloc] initWithCapacity:32];
-// 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
-// 
-// 	NSString *partialString    = [[self string] substringWithRange:charRange];
-// 	NSUInteger partialLength = [partialString length];
-// 
-// 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF beginswith[cd] %@ AND length > %lu", partialString, (unsigned long)partialLength];
-// 	NSArray *matchingCompletions;
-// 
-// 	NSUInteger i, insindex;
-// 	insindex = 0;
-// 
-// 
-// 	if([mySQLConnection isConnected])
-// 	{
-// 
-// 		// Add all database names to completions list
-// 		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"]];
-// 
-// 		// Add table names to completions list
-// 		[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableAndViewNames"]];
-// 
-// 		// Add field names to completions list for currently selected table
-// 		if ([[[self window] delegate] table] != nil)
-// 			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
-// 
-// 		// Add proc/func only for MySQL version 5 or higher
-// 		if(mySQLmajorVersion > 4) {
-// 			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"]];
-// 			[possibleCompletions addObjectsFromArray:[[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"]];
-// 		}
-// 
-// 	}
-// 	// If caret is not inside backticks add keywords and all words coming from the view.
-// 	if(![[[self textStorage] attribute:kBTQuote atIndex:charRange.location effectiveRange:nil] isEqualToString:kBTQuoteValue] )
-// 	{
-// 		// Only parse for words if text size is less than 6MB
-// 		if([[self string] length]<6000000)
-// 		{
-// 			NSCharacterSet *separators = [NSCharacterSet characterSetWithCharactersInString:@" \t\r\n,()[]{}\"'`-!;=+|?:~@"];
-// 			NSMutableArray *uniqueArray = [NSMutableArray array];
-// 			[uniqueArray addObjectsFromArray:[[NSSet setWithArray:[[self string] componentsSeparatedByCharactersInSet:separators]] allObjects]];
-// 			[possibleCompletions addObjectsFromArray:uniqueArray];
-// 		}
-// 
-// 		[possibleCompletions addObjectsFromArray:[self keywords]];
-// 		[possibleCompletions addObjectsFromArray:[self functions]];
-// 	}
-// 	
-// 	// Check for possible completions
-// 	matchingCompletions = [[possibleCompletions filteredArrayUsingPredicate:predicate] sortedArrayUsingSelector:@selector(compare:)];
-// 
-// 	for (i = 0; i < [matchingCompletions count]; i++)
-// 	{
-// 		NSString* obj = NSArrayObjectAtIndex(matchingCompletions, i);
-// 		if(![compl containsObject:obj])
-// 			if ([partialString isEqualToString:[obj substringToIndex:partialLength]])
-// 				// Matches case --> Insert at beginning of completion list
-// 				[compl insertObject:obj atIndex:insindex++];
-// 			else
-// 				// Not matching case --> Insert at end of completion list
-// 				[compl addObject:obj];
-// 	}
-// 
-// 	[possibleCompletions release];
-// 
-// 	return [compl autorelease];
-// }
-
-
-/*
- * List of keywords for autocompletion. If you add a keyword here,
- * it should also be added to the flex file SPEditorTokens.l
- */
--(NSArray *)keywords
-{
-	return [NSArray arrayWithObjects:
-	@"ACCESSIBLE",
-	@"ACTION",
-	@"ADD",
-	@"AFTER",
-	@"AGAINST",
-	@"AGGREGATE",
-	@"ALGORITHM",
-	@"ALL",
-	@"ALTER",
-	@"ALTER COLUMN",
-	@"ALTER DATABASE",
-	@"ALTER EVENT",
-	@"ALTER FUNCTION",
-	@"ALTER LOGFILE GROUP",
-	@"ALTER PROCEDURE",
-	@"ALTER SCHEMA",
-	@"ALTER SERVER",
-	@"ALTER TABLE",
-	@"ALTER TABLESPACE",
-	@"ALTER VIEW",
-	@"ANALYZE",
-	@"ANALYZE TABLE",
-	@"AND",
-	@"ANY",
-	@"AS",
-	@"ASC",
-	@"ASCII",
-	@"ASENSITIVE",
-	@"AT",
-	@"AUTHORS",
-	@"AUTOEXTEND_SIZE",
-	@"AUTO_INCREMENT",
-	@"AVG",
-	@"AVG_ROW_LENGTH",
-	@"BACKUP",
-	@"BACKUP TABLE",
-	@"BEFORE",
-	@"BEGIN",
-	@"BETWEEN",
-	@"BIGINT",
-	@"BINARY",
-	@"BINLOG",
-	@"BIT",
-	@"BLOB",
-	@"BOOL",
-	@"BOOLEAN",
-	@"BOTH",
-	@"BTREE",
-	@"BY",
-	@"BYTE",
-	@"CACHE",
-	@"CACHE INDEX",
-	@"CALL",
-	@"CASCADE",
-	@"CASCADED",
-	@"CASE",
-	@"CHAIN",
-	@"CHANGE",
-	@"CHANGED",
-	@"CHAR",
-	@"CHARACTER",
-	@"CHARACTER SET",
-	@"CHARSET",
-	@"CHECK",
-	@"CHECK TABLE",
-	@"CHECKSUM",
-	@"CHECKSUM TABLE",
-	@"CIPHER",
-	@"CLIENT",
-	@"CLOSE",
-	@"COALESCE",
-	@"CODE",
-	@"COLLATE",
-	@"COLLATION",
-	@"COLUMN",
-	@"COLUMNS",
-	@"COLUMN_FORMAT"
-	@"COMMENT",
-	@"COMMIT",
-	@"COMMITTED",
-	@"COMPACT",
-	@"COMPLETION",
-	@"COMPRESSED",
-	@"CONCURRENT",
-	@"CONDITION",
-	@"CONNECTION",
-	@"CONSISTENT",
-	@"CONSTRAINT",
-	@"CONTAINS",
-	@"CONTINUE",
-	@"CONTRIBUTORS",
-	@"CONVERT",
-	@"CREATE",
-	@"CREATE DATABASE",
-	@"CREATE EVENT",
-	@"CREATE FUNCTION",
-	@"CREATE INDEX",
-	@"CREATE LOGFILE GROUP",
-	@"CREATE PROCEDURE",
-	@"CREATE SCHEMA",
-	@"CREATE TABLE",
-	@"CREATE TABLESPACE",
-	@"CREATE TRIGGER",
-	@"CREATE USER",
-	@"CREATE VIEW",
-	@"CROSS",
-	@"CUBE",
-	@"CURRENT_DATE",
-	@"CURRENT_TIME",
-	@"CURRENT_TIMESTAMP",
-	@"CURRENT_USER",
-	@"CURSOR",
-	@"DATA",
-	@"DATABASE",
-	@"DATABASES",
-	@"DATAFILE",
-	@"DATE",
-	@"DATETIME",
-	@"DAY",
-	@"DAY_HOUR",
-	@"DAY_MICROSECOND",
-	@"DAY_MINUTE",
-	@"DAY_SECOND",
-	@"DEALLOCATE",
-	@"DEALLOCATE PREPARE",
-	@"DEC",
-	@"DECIMAL",
-	@"DECLARE",
-	@"DEFAULT",
-	@"DEFINER",
-	@"DELAYED",
-	@"DELAY_KEY_WRITE",
-	@"DELETE",
-	@"DELIMITER ",
-	@"DELIMITER ;\n",
-	@"DELIMITER ;;\n",
-	@"DESC",
-	@"DESCRIBE",
-	@"DES_KEY_FILE",
-	@"DETERMINISTIC",
-	@"DIRECTORY",
-	@"DISABLE",
-	@"DISCARD",
-	@"DISK",
-	@"DISTINCT",
-	@"DISTINCTROW",
-	@"DIV",
-	@"DO",
-	@"DOUBLE",
-	@"DROP",
-	@"DROP DATABASE",
-	@"DROP EVENT",
-	@"DROP FOREIGN KEY",
-	@"DROP FUNCTION",
-	@"DROP INDEX",
-	@"DROP LOGFILE GROUP",
-	@"DROP PREPARE",
-	@"DROP PRIMARY KEY",
-	@"DROP PREPARE",
-	@"DROP PROCEDURE",
-	@"DROP SCHEMA",
-	@"DROP SERVER",
-	@"DROP TABLE",
-	@"DROP TABLESPACE",
-	@"DROP TRIGGER",
-	@"DROP USER",
-	@"DROP VIEW",
-	@"DUAL",
-	@"DUMPFILE",
-	@"DUPLICATE",
-	@"DYNAMIC",
-	@"EACH",
-	@"ELSE",
-	@"ELSEIF",
-	@"ENABLE",
-	@"ENCLOSED",
-	@"END",
-	@"ENDS",
-	@"ENGINE",
-	@"ENGINES",
-	@"ENUM",
-	@"ERRORS",
-	@"ESCAPE",
-	@"ESCAPED",
-	@"EVENT",
-	@"EVENTS",
-	@"EVERY",
-	@"EXECUTE",
-	@"EXISTS",
-	@"EXIT",
-	@"EXPANSION",
-	@"EXPLAIN",
-	@"EXTENDED",
-	@"EXTENT_SIZE",
-	@"FALSE",
-	@"FAST",
-	@"FETCH",
-	@"FIELDS",
-	@"FIELDS TERMINATED BY",
-	@"FILE",
-	@"FIRST",
-	@"FIXED",
-	@"FLOAT",
-	@"FLOAT4",
-	@"FLOAT8",
-	@"FLUSH",
-	@"FOR",
-	@"FOR UPDATE",
-	@"FORCE",
-	@"FOREIGN",
-	@"FOREIGN KEY",
-	@"FOUND",
-	@"FRAC_SECOND",
-	@"FROM",
-	@"FULL",
-	@"FULLTEXT",
-	@"FUNCTION",
-	@"GEOMETRY",
-	@"GEOMETRYCOLLECTION",
-	@"GET_FORMAT",
-	@"GLOBAL",
-	@"GRANT",
-	@"GRANTS",
-	@"GROUP",
-	@"GROUP BY",
-	@"HANDLER",
-	@"HASH",
-	@"HAVING",
-	@"HELP",
-	@"HIGH_PRIORITY",
-	@"HOSTS",
-	@"HOUR",
-	@"HOUR_MICROSECOND",
-	@"HOUR_MINUTE",
-	@"HOUR_SECOND",
-	@"IDENTIFIED",
-	@"IF",
-	@"IGNORE",
-	@"IMPORT",
-	@"IN",
-	@"INDEX",
-	@"INDEXES",
-	@"INFILE",
-	@"INITIAL_SIZE",
-	@"INNER",
-	@"INNOBASE",
-	@"INNODB",
-	@"INOUT",
-	@"INSENSITIVE",
-	@"INSERT",
-	@"INSERT_METHOD",
-	@"INSTALL",
-	@"INSTALL PLUGIN",
-	@"INT",
-	@"INT1",
-	@"INT2",
-	@"INT3",
-	@"INT4",
-	@"INT8",
-	@"INTEGER",
-	@"INTERVAL",
-	@"INTO",
-	@"INTO DUMPFILE",
-	@"INTO OUTFILE",
-	@"INTO TABLE",
-	@"INVOKER",
-	@"IO_THREAD",
-	@"IS",
-	@"ISOLATION",
-	@"ISSUER",
-	@"ITERATE",
-	@"JOIN",
-	@"KEY",
-	@"KEYS",
-	@"KEY_BLOCK_SIZE",
-	@"KILL",
-	@"LANGUAGE",
-	@"LAST",
-	@"LEADING",
-	@"LEAVE",
-	@"LEAVES",
-	@"LEFT",
-	@"LESS",
-	@"LEVEL",
-	@"LIKE",
-	@"LIMIT",
-	@"LINEAR",
-	@"LINES",
-	@"LINES TERMINATED BY",
-	@"LINESTRING",
-	@"LIST",
-	@"LOAD DATA",
-	@"LOAD INDEX INTO CACHE",
-	@"LOAD XML",
-	@"LOCAL",
-	@"LOCALTIME",
-	@"LOCALTIMESTAMP",
-	@"LOCK",
-	@"LOCK IN SHARE MODE",
-	@"LOCK TABLES",
-	@"LOCKS",
-	@"LOGFILE",
-	@"LOGS",
-	@"LONG",
-	@"LONGBLOB",
-	@"LONGTEXT",
-	@"LOOP",
-	@"LOW_PRIORITY",
-	@"MASTER",
-	@"MASTER_CONNECT_RETRY",
-	@"MASTER_HOST",
-	@"MASTER_LOG_FILE",
-	@"MASTER_LOG_POS",
-	@"MASTER_PASSWORD",
-	@"MASTER_PORT",
-	@"MASTER_SERVER_ID",
-	@"MASTER_SSL",
-	@"MASTER_SSL_CA",
-	@"MASTER_SSL_CAPATH",
-	@"MASTER_SSL_CERT",
-	@"MASTER_SSL_CIPHER",
-	@"MASTER_SSL_KEY",
-	@"MASTER_USER",
-	@"MATCH",
-	@"MAXVALUE",
-	@"MAX_CONNECTIONS_PER_HOUR",
-	@"MAX_QUERIES_PER_HOUR",
-	@"MAX_ROWS",
-	@"MAX_SIZE",
-	@"MAX_UPDATES_PER_HOUR",
-	@"MAX_USER_CONNECTIONS",
-	@"MEDIUM",
-	@"MEDIUMBLOB",
-	@"MEDIUMINT",
-	@"MEDIUMTEXT",
-	@"MEMORY",
-	@"MERGE",
-	@"MICROSECOND",
-	@"MIDDLEINT",
-	@"MIGRATE",
-	@"MINUTE",
-	@"MINUTE_MICROSECOND",
-	@"MINUTE_SECOND",
-	@"MIN_ROWS",
-	@"MOD",
-	@"MODE",
-	@"MODIFIES",
-	@"MODIFY",
-	@"MONTH",
-	@"MULTILINESTRING",
-	@"MULTIPOINT",
-	@"MULTIPOLYGON",
-	@"MUTEX",
-	@"NAME",
-	@"NAMES",
-	@"NATIONAL",
-	@"NATURAL",
-	@"NCHAR",
-	@"NDB",
-	@"NDBCLUSTER",
-	@"NEW",
-	@"NEXT",
-	@"NO",
-	@"NODEGROUP",
-	@"NONE",
-	@"NOT",
-	@"NO_WAIT",
-	@"NO_WRITE_TO_BINLOG",
-	@"NULL",
-	@"NUMERIC",
-	@"NVARCHAR",
-	@"OFFSET",
-	@"OLD_PASSWORD",
-	@"ON",
-	@"ONE",
-	@"ONE_SHOT",
-	@"OPEN",
-	@"OPTIMIZE",
-	@"OPTIMIZE TABLE",
-	@"OPTION",
-	@"OPTIONALLY",
-	@"OPTIONALLY ENCLOSED BY",
-	@"OPTIONS",
-	@"OR",
-	@"ORDER",
-	@"ORDER BY",
-	@"OUT",
-	@"OUTER",
-	@"OUTFILE",
-	@"PACK_KEYS",
-	@"PARSER",
-	@"PARTIAL",
-	@"PARTITION",
-	@"PARTITIONING",
-	@"PARTITIONS",
-	@"PASSWORD",
-	@"PHASE",
-	@"PLUGIN",
-	@"PLUGINS",
-	@"POINT",
-	@"POLYGON",
-	@"PRECISION",
-	@"PREPARE",
-	@"PRESERVE",
-	@"PREV",
-	@"PRIMARY",
-	@"PRIMARY KEY",
-	@"PRIVILEGES",
-	@"PROCEDURE",
-	@"PROCEDURE ANALYSE",
-	@"PROCESS",
-	@"PROCESSLIST",
-	@"PURGE",
-	@"QUARTER",
-	@"QUERY",
-	@"QUICK",
-	@"RANGE",
-	@"READ",
-	@"READS",
-	@"READ_ONLY",
-	@"READ_WRITE",
-	@"REAL",
-	@"REBUILD",
-	@"RECOVER",
-	@"REDOFILE",
-	@"REDO_BUFFER_SIZE",
-	@"REDUNDANT",
-	@"REFERENCES",
-	@"REGEXP",
-	@"RELAY_LOG_FILE",
-	@"RELAY_LOG_POS",
-	@"RELAY_THREAD",
-	@"RELEASE",
-	@"RELOAD",
-	@"REMOVE",
-	@"RENAME",
-	@"RENAME DATABASE",
-	@"RENAME TABLE",
-	@"REORGANIZE",
-	@"REPAIR",
-	@"REPAIR TABLE",
-	@"REPEAT",
-	@"REPEATABLE",
-	@"REPLACE",
-	@"REPLICATION",
-	@"REQUIRE",
-	@"RESET",
-	@"RESET MASTER",
-	@"RESTORE",
-	@"RESTORE TABLE",
-	@"RESTRICT",
-	@"RESUME",
-	@"RETURN",
-	@"RETURNS",
-	@"REVOKE",
-	@"RIGHT",
-	@"RLIKE",
-	@"ROLLBACK",
-	@"ROLLUP",
-	@"ROUTINE",
-	@"ROW",
-	@"ROWS",
-	@"ROWS IDENTIFIED BY"
-	@"ROW_FORMAT",
-	@"RTREE",
-	@"SAVEPOINT",
-	@"SCHEDULE",
-	@"SCHEDULER",
-	@"SCHEMA",
-	@"SCHEMAS",
-	@"SECOND",
-	@"SECOND_MICROSECOND",
-	@"SECURITY",
-	@"SELECT",
-	@"SELECT DISTINCT",
-	@"SENSITIVE",
-	@"SEPARATOR",
-	@"SERIAL",
-	@"SERIALIZABLE",
-	@"SESSION",
-	@"SET",
-	@"SET GLOBAL",
-	@"SET NAMES",
-	@"SET PASSWORD",
-	@"SHARE",
-	@"SHOW",
-	@"SHOW BINARY LOGS",
-	@"SHOW BINLOG EVENTS",
-	@"SHOW CHARACTER SET",
-	@"SHOW COLLATION",
-	@"SHOW COLUMNS",
-	@"SHOW CONTRIBUTORS",
-	@"SHOW CREATE DATABASE",
-	@"SHOW CREATE EVENT",
-	@"SHOW CREATE FUNCTION",
-	@"SHOW CREATE PROCEDURE",
-	@"SHOW CREATE SCHEMA",
-	@"SHOW CREATE TABLE",
-	@"SHOW CREATE TRIGGERS",
-	@"SHOW CREATE VIEW",
-	@"SHOW DATABASES",
-	@"SHOW ENGINE",
-	@"SHOW ENGINES",
-	@"SHOW ERRORS",
-	@"SHOW EVENTS",
-	@"SHOW FIELDS",
-	@"SHOW FULL PROCESSLIST",
-	@"SHOW FUNCTION CODE",
-	@"SHOW FUNCTION STATUS",
-	@"SHOW GRANTS",
-	@"SHOW INDEX",
-	@"SHOW INNODB STATUS",
-	@"SHOW KEYS",
-	@"SHOW MASTER LOGS",
-	@"SHOW MASTER STATUS",
-	@"SHOW OPEN TABLES",
-	@"SHOW PLUGINS",
-	@"SHOW PRIVILEGES",
-	@"SHOW PROCEDURE CODE",
-	@"SHOW PROCEDURE STATUS",
-	@"SHOW PROFILE",
-	@"SHOW PROFILES",
-	@"SHOW PROCESSLIST",
-	@"SHOW SCHEDULER STATUS",
-	@"SHOW SCHEMAS",
-	@"SHOW SLAVE HOSTS",
-	@"SHOW SLAVE STATUS",
-	@"SHOW STATUS",
-	@"SHOW STORAGE ENGINES",
-	@"SHOW TABLE STATUS",
-	@"SHOW TABLE TYPES",
-	@"SHOW TABLES",
-	@"SHOW TRIGGERS",
-	@"SHOW VARIABLES",
-	@"SHOW WARNINGS",
-	@"SHUTDOWN",
-	@"SIGNED",
-	@"SIMPLE",
-	@"SLAVE",
-	@"SMALLINT",
-	@"SNAPSHOT",
-	@"SOME",
-	@"SONAME",
-	@"SOUNDS",
-	@"SPATIAL",
-	@"SPECIFIC",
-	@"SQL_AUTO_IS_NULL",
-	@"SQL_BIG_RESULT",
-	@"SQL_BIG_SELECTS",
-	@"SQL_BIG_TABLES",
-	@"SQL_BUFFER_RESULT",
-	@"SQL_CACHE",
-	@"SQL_CALC_FOUND_ROWS",
-	@"SQL_LOG_BIN",
-	@"SQL_LOG_OFF",
-	@"SQL_LOG_UPDATE",
-	@"SQL_LOW_PRIORITY_UPDATES",
-	@"SQL_MAX_JOIN_SIZE",
-	@"SQL_NO_CACHE",
-	@"SQL_QUOTE_SHOW_CREATE",
-	@"SQL_SAFE_UPDATES",
-	@"SQL_SELECT_LIMIT",
-	@"SQL_SLAVE_SKIP_COUNTER",
-	@"SQL_SMALL_RESULT",
-	@"SQL_THREAD",
-	@"SQL_TSI_DAY",
-	@"SQL_TSI_FRAC_SECOND",
-	@"SQL_TSI_HOUR",
-	@"SQL_TSI_MINUTE",
-	@"SQL_TSI_MONTH",
-	@"SQL_TSI_QUARTER",
-	@"SQL_TSI_SECOND",
-	@"SQL_TSI_WEEK",
-	@"SQL_TSI_YEAR",
-	@"SQL_WARNINGS",
-	@"SSL",
-	@"START",
-	@"START TRANSACTION",
-	@"STARTING",
-	@"STARTS",
-	@"STATUS",
-	@"STOP",
-	@"STORAGE",
-	@"STRAIGHT_JOIN",
-	@"STRING",
-	@"SUBJECT",
-	@"SUBPARTITION",
-	@"SUBPARTITIONS",
-	@"SUPER",
-	@"SUSPEND",
-	@"TABLE",
-	@"TABLES",
-	@"TABLESPACE",
-	@"TEMPORARY",
-	@"TEMPTABLE",
-	@"TERMINATED",
-	@"TEXT",
-	@"THAN",
-	@"THEN",
-	@"TIME",
-	@"TIMESTAMP",
-	@"TIMESTAMPADD",
-	@"TIMESTAMPDIFF",
-	@"TINYBLOB",
-	@"TINYINT",
-	@"TINYTEXT",
-	@"TO",
-	@"TRAILING",
-	@"TRANSACTION",
-	@"TRIGGER",
-	@"TRIGGERS",
-	@"TRUE",
-	@"TRUNCATE",
-	@"TYPE",
-	@"TYPES",
-	@"UNCOMMITTED",
-	@"UNDEFINED",
-	@"UNDO",
-	@"UNDOFILE",
-	@"UNDO_BUFFER_SIZE",
-	@"UNICODE",
-	@"UNINSTALL",
-	@"UNINSTALL PLUGIN",
-	@"UNION",
-	@"UNIQUE",
-	@"UNKNOWN",
-	@"UNLOCK",
-	@"UNLOCK TABLES",
-	@"UNSIGNED",
-	@"UNTIL",
-	@"UPDATE",
-	@"UPGRADE",
-	@"USAGE",
-	@"USE",
-	@"USER",
-	@"USER_RESOURCES",
-	@"USE_FRM",
-	@"USING",
-	@"UTC_DATE",
-	@"UTC_TIME",
-	@"UTC_TIMESTAMP",
-	@"VALUE",
-	@"VALUES",
-	@"VARBINARY",
-	@"VARCHAR",
-	@"VARCHARACTER",
-	@"VARIABLES",
-	@"VARYING",
-	@"VIEW",
-	@"WAIT",
-	@"WARNINGS",
-	@"WEEK",
-	@"WHEN",
-	@"WHERE",
-	@"WHILE",
-	@"WITH",
-	@"WITH CONSISTENT SNAPSHOT",
-	@"WORK",
-	@"WRITE",
-	@"X509",
-	@"XA",
-	@"XOR",
-	@"YEAR",
-	@"YEAR_MONTH",
-	@"ZEROFILL",
-
-	nil];
-}
-
-/*
- * List of fucntions for autocompletion. If you add a keyword here,
- * it should also be added to the flex file SPEditorTokens.l
- */
--(NSArray *)functions
-{
-	return [NSArray arrayWithObjects:
-	@"ABS",
-	@"ACOS",
-	@"ADDDATE",
-	@"ADDTIME",
-	@"AES_DECRYPT",
-	@"AES_ENCRYPT",
-	@"AREA",
-	@"ASBINARY",
-	@"ASCII",
-	@"ASIN",
-	@"ASTEXT",
-	@"ATAN",
-	@"ATAN2",
-	@"AVG",
-	@"BDMPOLYFROMTEXT",
-	@"BDMPOLYFROMWKB",
-	@"BDPOLYFROMTEXT",
-	@"BDPOLYFROMWKB",
-	@"BENCHMARK",
-	@"BIN",
-	@"BIT_AND",
-	@"BIT_COUNT",
-	@"BIT_LENGTH",
-	@"BIT_OR",
-	@"BIT_XOR",
-	@"BOUNDARY",
-	@"BUFFER",
-	@"CAST",
-	@"CEIL",
-	@"CEILING",
-	@"CENTROID",
-	@"CHAR",
-	@"CHARACTER_LENGTH",
-	@"CHARSET",
-	@"CHAR_LENGTH",
-	@"COALESCE",
-	@"COERCIBILITY",
-	@"COLLATION",
-	@"COMPRESS",
-	@"CONCAT",
-	@"CONCAT_WS",
-	@"CONNECTION_ID",
-	@"CONTAINS",
-	@"CONV",
-	@"CONVERT",
-	@"CONVERT_TZ",
-	@"CONVEXHULL",
-	@"COS",
-	@"COT",
-	@"COUNT",
-	@"COUNT(*)",
-	@"CRC32",
-	@"CROSSES",
-	@"CURDATE",
-	@"CURRENT_DATE",
-	@"CURRENT_TIME",
-	@"CURRENT_TIMESTAMP",
-	@"CURRENT_USER",
-	@"CURTIME",
-	@"DATABASE",
-	@"DATE",
-	@"DATEDIFF",
-	@"DATE_ADD",
-	@"DATE_DIFF",
-	@"DATE_FORMAT",
-	@"DATE_SUB",
-	@"DAY",
-	@"DAYNAME",
-	@"DAYOFMONTH",
-	@"DAYOFWEEK",
-	@"DAYOFYEAR",
-	@"DECODE",
-	@"DEFAULT",
-	@"DEGREES",
-	@"DES_DECRYPT",
-	@"DES_ENCRYPT",
-	@"DIFFERENCE",
-	@"DIMENSION",
-	@"DISJOINT",
-	@"DISTANCE",
-	@"ELT",
-	@"ENCODE",
-	@"ENCRYPT",
-	@"ENDPOINT",
-	@"ENVELOPE",
-	@"EQUALS",
-	@"EXP",
-	@"EXPORT_SET",
-	@"EXTERIORRING",
-	@"EXTRACT",
-	@"EXTRACTVALUE",
-	@"FIELD",
-	@"FIND_IN_SET",
-	@"FLOOR",
-	@"FORMAT",
-	@"FOUND_ROWS",
-	@"FROM_DAYS",
-	@"FROM_UNIXTIME",
-	@"GEOMCOLLFROMTEXT",
-	@"GEOMCOLLFROMWKB",
-	@"GEOMETRYCOLLECTION",
-	@"GEOMETRYCOLLECTIONFROMTEXT",
-	@"GEOMETRYCOLLECTIONFROMWKB",
-	@"GEOMETRYFROMTEXT",
-	@"GEOMETRYFROMWKB",
-	@"GEOMETRYN",
-	@"GEOMETRYTYPE",
-	@"GEOMFROMTEXT",
-	@"GEOMFROMWKB",
-	@"GET_FORMAT",
-	@"GET_LOCK",
-	@"GLENGTH",
-	@"GREATEST",
-	@"GROUP_CONCAT",
-	@"GROUP_UNIQUE_USERS",
-	@"HEX",
-	@"HOUR",
-	@"IF",
-	@"IFNULL",
-	@"INET_ATON",
-	@"INET_NTOA",
-	@"INSERT",
-	@"INSERT_ID",
-	@"INSTR",
-	@"INTERIORRINGN",
-	@"INTERSECTION",
-	@"INTERSECTS",
-	@"INTERVAL",
-	@"ISCLOSED",
-	@"ISEMPTY",
-	@"ISNULL",
-	@"ISRING",
-	@"ISSIMPLE",
-	@"IS_FREE_LOCK",
-	@"IS_USED_LOCK",
-	@"LAST_DAY",
-	@"LAST_INSERT_ID",
-	@"LCASE",
-	@"LEAST",
-	@"LEFT",
-	@"LENGTH",
-	@"LINEFROMTEXT",
-	@"LINEFROMWKB",
-	@"LINESTRING",
-	@"LINESTRINGFROMTEXT",
-	@"LINESTRINGFROMWKB",
-	@"LN",
-	@"LOAD_FILE",
-	@"LOCALTIME",
-	@"LOCALTIMESTAMP",
-	@"LOCATE",
-	@"LOG",
-	@"LOG10",
-	@"LOG2",
-	@"LOWER",
-	@"LPAD",
-	@"LTRIM",
-	@"MAKEDATE",
-	@"MAKETIME",
-	@"MAKE_SET",
-	@"MASTER_POS_WAIT",
-	@"MAX",
-	@"MBRCONTAINS",
-	@"MBRDISJOINT",
-	@"MBREQUAL",
-	@"MBRINTERSECTS",
-	@"MBROVERLAPS",
-	@"MBRTOUCHES",
-	@"MBRWITHIN",
-	@"MD5",
-	@"MICROSECOND",
-	@"MID",
-	@"MIN",
-	@"MINUTE",
-	@"MLINEFROMTEXT",
-	@"MLINEFROMWKB",
-	@"MOD",
-	@"MONTH",
-	@"MONTHNAME",
-	@"NOW",
-	@"MPOINTFROMTEXT",
-	@"MPOINTFROMWKB",
-	@"MPOLYFROMTEXT",
-	@"MPOLYFROMWKB",
-	@"MULTILINESTRING",
-	@"MULTILINESTRINGFROMTEXT",
-	@"MULTILINESTRINGFROMWKB",
-	@"MULTIPOINT",
-	@"MULTIPOINTFROMTEXT",
-	@"MULTIPOINTFROMWKB",
-	@"MULTIPOLYGON",
-	@"MULTIPOLYGONFROMTEXT",
-	@"MULTIPOLYGONFROMWKB",
-	@"NAME_CONST",
-	@"NOW",
-	@"NULLIF",
-	@"NUMGEOMETRIES",
-	@"NUMINTERIORRINGS",
-	@"NUMPOINTS",
-	@"OCT",
-	@"OCTET_LENGTH",
-	@"OLD_PASSWORD",
-	@"ORD",
-	@"OVERLAPS",
-	@"PASSWORD",
-	@"PERIOD_ADD",
-	@"PERIOD_DIFF",
-	@"PI",
-	@"POINT",
-	@"POINTFROMTEXT",
-	@"POINTFROMWKB",
-	@"POINTN",
-	@"POINTONSURFACE",
-	@"POLYFROMTEXT",
-	@"POLYFROMWKB",
-	@"POLYGON",
-	@"POLYGONFROMTEXT",
-	@"POLYGONFROMWKB",
-	@"POSITION",
-	@"POW",
-	@"POWER",
-	@"QUARTER",
-	@"QUOTE",
-	@"RADIANS",
-	@"RAND",
-	@"RELATED",
-	@"RELEASE_LOCK",
-	@"REPEAT",
-	@"REPLACE",
-	@"REVERSE",
-	@"RIGHT",
-	@"ROUND",
-	@"ROW_COUNT",
-	@"RPAD",
-	@"RTRIM",
-	@"SCHEMA",
-	@"SECOND",
-	@"SEC_TO_TIME",
-	@"SESSION_USER",
-	@"SHA",
-	@"SHA1",
-	@"SIGN",
-	@"SIN",
-	@"SLEEP",
-	@"SOUNDEX",
-	@"SPACE",
-	@"SQRT",
-	@"SRID",
-	@"STARTPOINT",
-	@"STD",
-	@"STDDEV",
-	@"STDDEV_POP",
-	@"STDDEV_SAMP",
-	@"STRCMP",
-	@"STR_TO_DATE",
-	@"SUBDATE",
-	@"SUBSTR",
-	@"SUBSTRING",
-	@"SUBSTRING_INDEX",
-	@"SUBTIME",
-	@"SUM",
-	@"SYMDIFFERENCE",
-	@"SYSDATE",
-	@"SYSTEM_USER",
-	@"TAN",
-	@"TIME",
-	@"TIMEDIFF",
-	@"TIMESTAMP",
-	@"TIMESTAMPADD",
-	@"TIMESTAMPDIFF",
-	@"TIME_FORMAT",
-	@"TIME_TO_SEC",
-	@"TOUCHES",
-	@"TO_DAYS",
-	@"TRIM",
-	@"TRUNCATE",
-	@"UCASE",
-	@"UNCOMPRESS",
-	@"UNCOMPRESSED_LENGTH",
-	@"UNHEX",
-	@"UNIQUE_USERS",
-	@"UNIX_TIMESTAMP",
-	@"UPDATEXML",
-	@"UPPER",
-	@"USER",
-	@"UTC_DATE",
-	@"UTC_TIME",
-	@"UTC_TIMESTAMP",
-	@"UUID",
-	@"VARIANCE",
-	@"VAR_POP",
-	@"VAR_SAMP",
-	@"VERSION",
-	@"WEEK",
-	@"WEEKDAY",
-	@"WEEKOFYEAR",
-	@"WITHIN",
-	@"YEAR",
-	@"YEARWEEK",
-
-	nil];
-}
-
 
 /*
  * Set whether this text view should apply the indentation on the current line to new lines.
@@ -2803,8 +2185,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *selfstr        = [self string];
 	NSUInteger strlength     = [selfstr length];
 
+	if(strlength > SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) return;
+
 	NSRange textRange;
-		
+
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 	// do highlighting partly (max SP_SYNTAX_HILITE_BIAS*2).
 	// The approach is to take the middle position of the current view port
@@ -2813,47 +2197,60 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(strlength > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 	{
 
-		// Cancel all doSyntaxHighlighting requests
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-									selector:@selector(doSyntaxHighlighting) 
-									object:nil];
-
 		// Get the text range currently displayed in the view port
 		NSRect visibleRect = [[[self enclosingScrollView] contentView] documentVisibleRect];
 		NSRange visibleRange = [[self layoutManager] glyphRangeForBoundingRectWithoutAdditionalLayout:visibleRect inTextContainer:[self textContainer]];
+
 		if(!visibleRange.length) return;
 
 		// Take roughly the middle position in the current view port
-		NSInteger curPos = visibleRange.location+(NSInteger)(visibleRange.length/2);
+		NSUInteger curPos = visibleRange.location+(NSUInteger)(visibleRange.length/2);
 
 		// get the last line to parse due to SP_SYNTAX_HILITE_BIAS
-		NSInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
+		// but look for only SP_SYNTAX_HILITE_BIAS chars forwards
+		NSUInteger end = curPos + SP_SYNTAX_HILITE_BIAS;
+		NSInteger lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (end > strlength ) {
 			end = strlength;
 		} else {
-			while(end < strlength) {
+			while(end < strlength && lengthChecker > 0) {
 				if([selfstr characterAtIndex:end]=='\n')
 					break;
 				end++;
+				lengthChecker--;
 			}
 		}
+		if(lengthChecker <= 0)
+			end = curPos + SP_SYNTAX_HILITE_BIAS;
 
-		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS	
-		NSInteger start = end - (SP_SYNTAX_HILITE_BIAS*2);
+		// get the first line to parse due to SP_SYNTAX_HILITE_BIAS
+		// but look for only SP_SYNTAX_HILITE_BIAS chars backwards
+		NSUInteger start, start_temp;
+		if(end <= (SP_SYNTAX_HILITE_BIAS*2))
+		 	start = 0;
+		else
+		 	start = end - (SP_SYNTAX_HILITE_BIAS*2);
+
+		start_temp = start;
+		lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (start > 0)
-			while(start>-1) {
+			while(start>0 && lengthChecker > 0) {
 				if([selfstr characterAtIndex:start]=='\n')
 					break;
 				start--;
+				lengthChecker--;
 			}
-		else
-			start = 0;
+		if(lengthChecker <= 0)
+			start = start_temp;
 
 		textRange = NSMakeRange(start, end-start);
+
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
+
 		if (!textRange.length)
 			return;
+
 	} else {
 		// If text size is less SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 		// process syntax highlighting for the entire text view buffer
@@ -2862,9 +2259,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSColor *tokenColor;
 
-	BOOL autouppercaseKeywords = [prefs boolForKey:SPCustomQueryAutoUppercaseKeywords];
-
-	NSUInteger tokenEnd, token;
+	size_t tokenEnd, token;
 	NSRange tokenRange;
 
 	// first remove the old colors and kQuote
@@ -2924,94 +2319,157 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (allowToCheckForUpperCase && autouppercaseKeywords && !delBackwardsWasPressed
-			&& [[textStore attribute:kSQLkeyword atIndex:tokenEnd effectiveRange:nil] isEqualToString:kValue])
+		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywordsEnabled && !delBackwardsWasPressed
+			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
 			{
-
+		
 				NSString* curTokenString = [selfstr substringWithRange:tokenRange];
-				NSString* upperCaseCurTokenString = [curTokenString uppercaseString];
 				BOOL doIt = NO;
 				@try
 				{
-					doIt = ![[textStore attribute:kSQLkeyword atIndex:tokenEnd+1 effectiveRange:nil] isEqualToString:kValue];
+					doIt = ![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length];
 				} @catch(id ae) { doIt = NO; }
-
-				if(doIt && ![upperCaseCurTokenString isEqualToString:curTokenString])
+		
+				if(doIt)
 				{
 					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
 					[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
-					[self replaceCharactersInRange:tokenRange withString:upperCaseCurTokenString];
+					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
 				}
 			}
-
+		
 		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
-
+		
 		if(!allowToCheckForUpperCase) continue;
-
+		
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
 		if(token < 6)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kLEXToken, kLEXTokenValue, tokenRange);
-
+		
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
 		// Performing it one token later allows words which start as reserved keywords to be entered.
 		if(token == SPT_RESERVED_WORD)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kSQLkeyword, kValue, tokenRange);
-
+		
 		// Add an attribute to be used to distinguish quotes from keywords etc.
 		// used e.g. in completion suggestions
 		else if(token < 4)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kQuote, kQuoteValue, tokenRange);
-
+		
 		//distinguish backtick quoted word for completion
 		else if(token == SPT_BACKTICK_QUOTED_TEXT)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
-	
+
+}
+
+- (void) setTabStops
+{
+	NSFont *tvFont = [self font];
+	NSInteger i;
+	NSTextTab *aTab;
+	NSMutableArray *myArrayOfTabs;
+	NSMutableParagraphStyle *paragraphStyle;
+
+	BOOL oldEditableStatus = [self isEditable];
+	[self setEditable:YES];
+
+	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
+	if(tabStopWidth < 1) tabStopWidth = 1;
+
+	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	tabWidth = (float)tabStopWidth * tabWidth;
+
+	NSInteger numberOfTabs = 256/tabStopWidth;
+	myArrayOfTabs = [NSMutableArray arrayWithCapacity:numberOfTabs];
+	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth];
+	[myArrayOfTabs addObject:aTab];
+	[aTab release];
+	for(i=1; i<numberOfTabs; i++) {
+		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth + ((float)i * tabWidth)];
+		[myArrayOfTabs addObject:aTab];
+		[aTab release];
+	}
+	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+	[paragraphStyle setTabStops:myArrayOfTabs];
+	// Soft wrapped lines are indented slightly
+	[paragraphStyle setHeadIndent:4.0];
+
+	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
+	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+
+	NSRange range = NSMakeRange(0, [[self textStorage] length]);
+	if ([self shouldChangeTextInRange:range replacementString:nil]) {
+		[[self textStorage] setAttributes:textAttributes range: range];
+		[self didChangeText];
+	}
+	[self setTypingAttributes:textAttributes];
+	[self setDefaultParagraphStyle:paragraphStyle];
+	[paragraphStyle release];
+	[self setFont:tvFont];
+
+	[self setEditable:oldEditableStatus];
+
 }
 
 - (void)drawRect:(NSRect)rect {
 
-	// Draw textview's background since due to the snippet highlighting we're responsible for it.
-	[[self queryEditorBackgroundColor] setFill];
-	NSRectFill(rect);
 
-	// Highlightes the current query if set in the Pref and no snippet session
-	// and if nothing is selected in the text view
-	if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length) {
-		NSUInteger rectCount;
-		[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
-		NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
-													 withinSelectedCharacterRange: [self queryRange]
-																  inTextContainer: [self textContainer]
-																		rectCount: &rectCount ];
-		[[self queryHiliteColor] setFill];
-		NSRectFillList(queryRects, rectCount);
-	}
+	// Draw background only for screen display but not while printing
+	if([NSGraphicsContext currentContextDrawingToScreen]) {
 
-	// Highlight snippets coming from the Query Favorite text macro
-	if(snippetControlCounter > -1) {
-		for(NSUInteger i=0; i<snippetControlMax; i++) {
-			if(snippetControlArray[i][0] > -1) {
-				// choose the colors for the snippet parts
-				if(i == currentSnippetIndex) {
-					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
-					[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
-				} else {
-					[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
-					[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
-				}
-				NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
-				[snippetPath fill];
-				[snippetPath stroke];
+		// Draw textview's background since due to the snippet highlighting we're responsible for it.
+		[[self queryEditorBackgroundColor] setFill];
+		NSRectFill(rect);
+
+		if([[self delegate] isKindOfClass:[CustomQuery class]]) {
+
+			// Highlightes the current query if set in the Pref and no snippet session
+			// and if nothing is selected in the text view
+			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length && [[self string] length] < SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) {
+				NSUInteger rectCount;
+				[[self textStorage] ensureAttributesAreFixedInRange:[self queryRange]];
+				NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: [self queryRange]
+															 withinSelectedCharacterRange: [self queryRange]
+																		  inTextContainer: [self textContainer]
+																				rectCount: &rectCount ];
+				[[self queryHiliteColor] setFill];
+				NSRectFillList(queryRects, rectCount);
 			}
+
+			// Highlight snippets coming from the Query Favorite text macro
+			if(snippetControlCounter > -1) {
+				// Is the caret still inside a snippet
+				if([self checkForCaretInsideSnippet]) {
+					for(NSUInteger i=0; i<snippetControlMax; i++) {
+						if(snippetControlArray[i][0] > -1) {
+							// choose the colors for the snippet parts
+							if(i == currentSnippetIndex) {
+								[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
+								[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
+							} else {
+								[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
+								[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+							}
+							NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
+							[snippetPath fill];
+							[snippetPath stroke];
+						}
+					}
+				} else {
+					[self endSnippetSession];
+				}
+			}
+
 		}
 	}
+
 	[super drawRect:rect];
 }
 
@@ -3168,7 +2626,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		|| [menuItem tag] == MENU_EDIT_COPY_AS_SQL ) {
 		return NO;
 	}
-	
+
 	return YES;
 }
 
@@ -3206,12 +2664,22 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 	NSInteger editedMask = [textStore editedMask];
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
 	}
+
+	// Start autocompletion if enabled
+	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore editedRange].length)
+		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] retain] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
@@ -3224,10 +2692,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
-			if([self checkForCaretInsideSnippet]) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
-			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
 			NSInteger i;
 			for(i=0; i<snippetControlMax; i++) {
 				if(snippetControlArray[i][0] > -1
@@ -3243,8 +2710,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
-			NSInteger editStartPosition = [textStore editedRange].location;
-			NSInteger changeInLength = [textStore changeInLength];
+			NSUInteger editStartPosition = [textStore editedRange].location;
+			NSUInteger changeInLength = [textStore changeInLength];
 
 			// Adjust length change to current snippet
 			snippetControlArray[currentSnippetIndex][1] += changeInLength;
@@ -3263,11 +2730,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					}
 				}
 			}
-			}
 		}
+		if([[self textStorage] changeInLength] > 0)
+			textBufferSizeIncreased = YES;
+		else
+			textBufferSizeIncreased = NO;
 
-		[self doSyntaxHighlighting];
+		if([[self textStorage] changeInLength] < SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+			[self doSyntaxHighlighting];
 
+	} else {
+		textBufferSizeIncreased = NO;
 	}
 
 	startListeningToBoundChanges = YES;
@@ -3275,11 +2748,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
- * Show only setable modes in the font panel
+ * Set font panel's valid modes
  */
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-   return (NSFontPanelFaceModeMask | NSFontPanelSizeModeMask);
+	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }
 
 #pragma mark -
@@ -3472,6 +2945,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[result release];
 
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
+}
+
+- (void)changeFont:(id)sender
+{
+	if (prefs && [self font] != nil) {
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:SPCustomQueryEditorFont];
+		NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+		BOOL oldEditable = [self isEditable];
+		[self setEditable:YES];
+		[self setFont:nf];
+		[self setEditable:oldEditable];
+		[self setNeedsDisplay:YES];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
+	}
 }
 
 - (void) dealloc

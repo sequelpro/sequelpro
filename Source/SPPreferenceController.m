@@ -57,6 +57,7 @@
 		keychain = nil;
 		favoriteNameFieldWasTouched = YES;
 		favoriteType = 0;
+		fontChangeTarget = 0;
 	}
 
 	return self;
@@ -457,6 +458,8 @@
 	[[self window] setShowsResizeIndicator:NO];
 	
 	[toolbar setSelectedItemIdentifier:SPPreferenceToolbarTables];
+	NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
+	[globalResultTableFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 	[self _resizeWindowForContentView:tablesView];
 }
 
@@ -1051,12 +1054,23 @@
 }
 
 // -------------------------------------------------------------------------------
+// global table font selection
+// -------------------------------------------------------------------------------
+// show the font panel
+- (IBAction)showGlobalResultTableFontPanel:(id)sender
+{
+	fontChangeTarget = 1;
+	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]] isMultiple:NO];
+	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
+}
+
+// -------------------------------------------------------------------------------
 // query editor font selection
-//
 // -------------------------------------------------------------------------------
 // show the font panel
 - (IBAction)showCustomQueryFontPanel:(id)sender
 {
+	fontChangeTarget = 2;
 	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
 }
@@ -1076,17 +1090,29 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
 
 }
-// set font panel's valid modes
+
+// Set font panel's valid modes
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
-   return (NSFontPanelAllModesMask ^ NSFontPanelAllEffectsModeMask);
+	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }
+
 // Action receiver for a font change in the font panel
 - (void)changeFont:(id)sender
 {
-	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];	
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
-	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+	NSFont *nf;
+	switch(fontChangeTarget) {
+		case 1:
+		nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]]];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPGlobalResultTableFont];
+		[globalResultTableFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+		break;
+		case 2:
+		nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
+		[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+		break;
+	}
 }
 
 // -------------------------------------------------------------------------------

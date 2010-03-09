@@ -1,0 +1,1139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>core_keywords</key>
+		<array>
+			<string>ACCESSIBLE</string>
+			<string>ACTION</string>
+			<string>ADD</string>
+			<string>AFTER</string>
+			<string>AGAINST</string>
+			<string>AGGREGATE</string>
+			<string>ALGORITHM</string>
+			<string>ALL</string>
+			<string>ALTER</string>
+			<string>ALTER COLUMN</string>
+			<string>ALTER DATABASE</string>
+			<string>ALTER EVENT</string>
+			<string>ALTER FUNCTION</string>
+			<string>ALTER LOGFILE GROUP</string>
+			<string>ALTER PROCEDURE</string>
+			<string>ALTER SCHEMA</string>
+			<string>ALTER SERVER</string>
+			<string>ALTER TABLE</string>
+			<string>ALTER TABLESPACE</string>
+			<string>ALTER VIEW</string>
+			<string>ANALYZE</string>
+			<string>ANALYZE TABLE</string>
+			<string>AND</string>
+			<string>ANY</string>
+			<string>AS</string>
+			<string>ASC</string>
+			<string>ASCII</string>
+			<string>ASENSITIVE</string>
+			<string>AT</string>
+			<string>AUTHORS</string>
+			<string>AUTOEXTEND_SIZE</string>
+			<string>AUTO_INCREMENT</string>
+			<string>AVG</string>
+			<string>AVG_ROW_LENGTH</string>
+			<string>BACKUP</string>
+			<string>BACKUP TABLE</string>
+			<string>BEFORE</string>
+			<string>BEGIN</string>
+			<string>BETWEEN</string>
+			<string>BIGINT</string>
+			<string>BINARY</string>
+			<string>BINLOG</string>
+			<string>BIT</string>
+			<string>BLOB</string>
+			<string>BOOL</string>
+			<string>BOOLEAN</string>
+			<string>BOTH</string>
+			<string>BTREE</string>
+			<string>BY</string>
+			<string>BYTE</string>
+			<string>CACHE</string>
+			<string>CACHE INDEX</string>
+			<string>CALL</string>
+			<string>CASCADE</string>
+			<string>CASCADED</string>
+			<string>CASE</string>
+			<string>CHAIN</string>
+			<string>CHANGE</string>
+			<string>CHANGED</string>
+			<string>CHAR</string>
+			<string>CHARACTER</string>
+			<string>CHARACTER SET</string>
+			<string>CHARSET</string>
+			<string>CHECK</string>
+			<string>CHECK TABLE</string>
+			<string>CHECKSUM</string>
+			<string>CHECKSUM TABLE</string>
+			<string>CIPHER</string>
+			<string>CLIENT</string>
+			<string>CLOSE</string>
+			<string>COALESCE</string>
+			<string>CODE</string>
+			<string>COLLATE</string>
+			<string>COLLATION</string>
+			<string>COLUMN</string>
+			<string>COLUMNS</string>
+			<string>COLUMN_FORMAT</string>
+			<string>COMMENT</string>
+			<string>COMMIT</string>
+			<string>COMMITTED</string>
+			<string>COMPACT</string>
+			<string>COMPLETION</string>
+			<string>COMPRESSED</string>
+			<string>CONCURRENT</string>
+			<string>CONDITION</string>
+			<string>CONNECTION</string>
+			<string>CONSISTENT</string>
+			<string>CONSTRAINT</string>
+			<string>CONTAINS</string>
+			<string>CONTINUE</string>
+			<string>CONTRIBUTORS</string>
+			<string>CONVERT</string>
+			<string>CREATE</string>
+			<string>CREATE DATABASE</string>
+			<string>CREATE EVENT</string>
+			<string>CREATE FUNCTION</string>
+			<string>CREATE INDEX</string>
+			<string>CREATE LOGFILE GROUP</string>
+			<string>CREATE PROCEDURE</string>
+			<string>CREATE SCHEMA</string>
+			<string>CREATE TABLE</string>
+			<string>CREATE TABLESPACE</string>
+			<string>CREATE TRIGGER</string>
+			<string>CREATE USER</string>
+			<string>CREATE VIEW</string>
+			<string>CROSS</string>
+			<string>CUBE</string>
+			<string>CURRENT_DATE</string>
+			<string>CURRENT_TIME</string>
+			<string>CURRENT_TIMESTAMP</string>
+			<string>CURRENT_USER</string>
+			<string>CURSOR</string>
+			<string>DATA</string>
+			<string>DATABASE</string>
+			<string>DATABASES</string>
+			<string>DATAFILE</string>
+			<string>DATE</string>
+			<string>DATETIME</string>
+			<string>DAY</string>
+			<string>DAY_HOUR</string>
+			<string>DAY_MICROSECOND</string>
+			<string>DAY_MINUTE</string>
+			<string>DAY_SECOND</string>
+			<string>DEALLOCATE</string>
+			<string>DEALLOCATE PREPARE</string>
+			<string>DEC</string>
+			<string>DECIMAL</string>
+			<string>DECLARE</string>
+			<string>DEFAULT</string>
+			<string>DEFINER</string>
+			<string>DELAYED</string>
+			<string>DELAY_KEY_WRITE</string>
+			<string>DELETE</string>
+			<string>DELIMITER </string>
+			<string>DELIMITER ;\n</string>
+			<string>DELIMITER ;;\n</string>
+			<string>DESC</string>
+			<string>DESCRIBE</string>
+			<string>DES_KEY_FILE</string>
+			<string>DETERMINISTIC</string>
+			<string>DIRECTORY</string>
+			<string>DISABLE</string>
+			<string>DISCARD</string>
+			<string>DISK</string>
+			<string>DISTINCT</string>
+			<string>DISTINCTROW</string>
+			<string>DIV</string>
+			<string>DO</string>
+			<string>DOUBLE</string>
+			<string>DROP</string>
+			<string>DROP DATABASE</string>
+			<string>DROP EVENT</string>
+			<string>DROP FOREIGN KEY</string>
+			<string>DROP FUNCTION</string>
+			<string>DROP INDEX</string>
+			<string>DROP LOGFILE GROUP</string>
+			<string>DROP PREPARE</string>
+			<string>DROP PRIMARY KEY</string>
+			<string>DROP PREPARE</string>
+			<string>DROP PROCEDURE</string>
+			<string>DROP SCHEMA</string>
+			<string>DROP SERVER</string>
+			<string>DROP TABLE</string>
+			<string>DROP TABLESPACE</string>
+			<string>DROP TRIGGER</string>
+			<string>DROP USER</string>
+			<string>DROP VIEW</string>
+			<string>DUAL</string>
+			<string>DUMPFILE</string>
+			<string>DUPLICATE</string>
+			<string>DYNAMIC</string>
+			<string>EACH</string>
+			<string>ELSE</string>
+			<string>ELSEIF</string>
+			<string>ENABLE</string>
+			<string>ENCLOSED</string>
+			<string>END</string>
+			<string>ENDS</string>
+			<string>ENGINE</string>
+			<string>ENGINES</string>
+			<string>ENUM</string>
+			<string>ERRORS</string>
+			<string>ESCAPE</string>
+			<string>ESCAPED</string>
+			<string>EVENT</string>
+			<string>EVENTS</string>
+			<string>EVERY</string>
+			<string>EXECUTE</string>
+			<string>EXISTS</string>
+			<string>EXIT</string>
+			<string>EXPANSION</string>
+			<string>EXPLAIN</string>
+			<string>EXTENDED</string>
+			<string>EXTENT_SIZE</string>
+			<string>FALSE</string>
+			<string>FAST</string>
+			<string>FETCH</string>
+			<string>FIELDS</string>
+			<string>FIELDS TERMINATED BY</string>
+			<string>FILE</string>
+			<string>FIRST</string>
+			<string>FIXED</string>
+			<string>FLOAT</string>
+			<string>FLOAT4</string>
+			<string>FLOAT8</string>
+			<string>FLUSH</string>
+			<string>FOR</string>
+			<string>FOR UPDATE</string>
+			<string>FORCE</string>
+			<string>FOREIGN</string>
+			<string>FOREIGN KEY</string>
+			<string>FOUND</string>
+			<string>FRAC_SECOND</string>
+			<string>FROM</string>
+			<string>FULL</string>
+			<string>FULLTEXT</string>
+			<string>FUNCTION</string>
+			<string>GEOMETRY</string>
+			<string>GEOMETRYCOLLECTION</string>
+			<string>GLOBAL</string>
+			<string>GRANT</string>
+			<string>GRANTS</string>
+			<string>GROUP</string>
+			<string>GROUP BY</string>
+			<string>HANDLER</string>
+			<string>HASH</string>
+			<string>HAVING</string>
+			<string>HELP</string>
+			<string>HIGH_PRIORITY</string>
+			<string>HOSTS</string>
+			<string>HOUR</string>
+			<string>HOUR_MICROSECOND</string>
+			<string>HOUR_MINUTE</string>
+			<string>HOUR_SECOND</string>
+			<string>IDENTIFIED</string>
+			<string>IF</string>
+			<string>IGNORE</string>
+			<string>IMPORT</string>
+			<string>IN</string>
+			<string>INDEX</string>
+			<string>INDEXES</string>
+			<string>INFILE</string>
+			<string>INITIAL_SIZE</string>
+			<string>INNER</string>
+			<string>INNOBASE</string>
+			<string>INNODB</string>
+			<string>INOUT</string>
+			<string>INSENSITIVE</string>
+			<string>INSERT</string>
+			<string>INSERT_METHOD</string>
+			<string>INSTALL</string>
+			<string>INSTALL PLUGIN</string>
+			<string>INT</string>
+			<string>INT1</string>
+			<string>INT2</string>
+			<string>INT3</string>
+			<string>INT4</string>
+			<string>INT8</string>
+			<string>INTEGER</string>
+			<string>INTERVAL</string>
+			<string>INTO</string>
+			<string>INTO DUMPFILE</string>
+			<string>INTO OUTFILE</string>
+			<string>INTO TABLE</string>
+			<string>INVOKER</string>
+			<string>IO_THREAD</string>
+			<string>IS</string>
+			<string>ISOLATION</string>
+			<string>ISSUER</string>
+			<string>ITERATE</string>
+			<string>JOIN</string>
+			<string>KEY</string>
+			<string>KEYS</string>
+			<string>KEY_BLOCK_SIZE</string>
+			<string>KILL</string>
+			<string>LANGUAGE</string>
+			<string>LAST</string>
+			<string>LEADING</string>
+			<string>LEAVE</string>
+			<string>LEAVES</string>
+			<string>LEFT</string>
+			<string>LESS</string>
+			<string>LEVEL</string>
+			<string>LIKE</string>
+			<string>LIMIT</string>
+			<string>LINEAR</string>
+			<string>LINES</string>
+			<string>LINES TERMINATED BY</string>
+			<string>LINESTRING</string>
+			<string>LIST</string>
+			<string>LOAD DATA</string>
+			<string>LOAD INDEX INTO CACHE</string>
+			<string>LOAD XML</string>
+			<string>LOCAL</string>
+			<string>LOCALTIME</string>
+			<string>LOCALTIMESTAMP</string>
+			<string>LOCK</string>
+			<string>LOCK IN SHARE MODE</string>
+			<string>LOCK TABLES</string>
+			<string>LOCKS</string>
+			<string>LOGFILE</string>
+			<string>LOGS</string>
+			<string>LONG</string>
+			<string>LONGBLOB</string>
+			<string>LONGTEXT</string>
+			<string>LOOP</string>
+			<string>LOW_PRIORITY</string>
+			<string>MASTER</string>
+			<string>MASTER_CONNECT_RETRY</string>
+			<string>MASTER_HOST</string>
+			<string>MASTER_LOG_FILE</string>
+			<string>MASTER_LOG_POS</string>
+			<string>MASTER_PASSWORD</string>
+			<string>MASTER_PORT</string>
+			<string>MASTER_SERVER_ID</string>
+			<string>MASTER_SSL</string>
+			<string>MASTER_SSL_CA</string>
+			<string>MASTER_SSL_CAPATH</string>
+			<string>MASTER_SSL_CERT</string>
+			<string>MASTER_SSL_CIPHER</string>
+			<string>MASTER_SSL_KEY</string>
+			<string>MASTER_USER</string>
+			<string>MATCH</string>
+			<string>MAXVALUE</string>
+			<string>MAX_CONNECTIONS_PER_HOUR</string>
+			<string>MAX_QUERIES_PER_HOUR</string>
+			<string>MAX_ROWS</string>
+			<string>MAX_SIZE</string>
+			<string>MAX_UPDATES_PER_HOUR</string>
+			<string>MAX_USER_CONNECTIONS</string>
+			<string>MEDIUM</string>
+			<string>MEDIUMBLOB</string>
+			<string>MEDIUMINT</string>
+			<string>MEDIUMTEXT</string>
+			<string>MEMORY</string>
+			<string>MERGE</string>
+			<string>MICROSECOND</string>
+			<string>MIDDLEINT</string>
+			<string>MIGRATE</string>
+			<string>MINUTE</string>
+			<string>MINUTE_MICROSECOND</string>
+			<string>MINUTE_SECOND</string>
+			<string>MIN_ROWS</string>
+			<string>MOD</string>
+			<string>MODE</string>
+			<string>MODIFIES</string>
+			<string>MODIFY</string>
+			<string>MONTH</string>
+			<string>MULTILINESTRING</string>
+			<string>MULTIPOINT</string>
+			<string>MULTIPOLYGON</string>
+			<string>MUTEX</string>
+			<string>NAME</string>
+			<string>NAMES</string>
+			<string>NATIONAL</string>
+			<string>NATURAL</string>
+			<string>NCHAR</string>
+			<string>NDB</string>
+			<string>NDBCLUSTER</string>
+			<string>NEW</string>
+			<string>NEXT</string>
+			<string>NO</string>
+			<string>NODEGROUP</string>
+			<string>NONE</string>
+			<string>NOT</string>
+			<string>NO_WAIT</string>
+			<string>NO_WRITE_TO_BINLOG</string>
+			<string>NULL</string>
+			<string>NUMERIC</string>
+			<string>NVARCHAR</string>
+			<string>OFFSET</string>
+			<string>OLD_PASSWORD</string>
+			<string>ON</string>
+			<string>ONE</string>
+			<string>ONE_SHOT</string>
+			<string>OPEN</string>
+			<string>OPTIMIZE</string>
+			<string>OPTIMIZE TABLE</string>
+			<string>OPTION</string>
+			<string>OPTIONALLY</string>
+			<string>OPTIONALLY ENCLOSED BY</string>
+			<string>OPTIONS</string>
+			<string>OR</string>
+			<string>ORDER</string>
+			<string>ORDER BY</string>
+			<string>OUT</string>
+			<string>OUTER</string>
+			<string>OUTFILE</string>
+			<string>PACK_KEYS</string>
+			<string>PARSER</string>
+			<string>PARTIAL</string>
+			<string>PARTITION</string>
+			<string>PARTITIONING</string>
+			<string>PARTITIONS</string>
+			<string>PASSWORD</string>
+			<string>PHASE</string>
+			<string>PLUGIN</string>
+			<string>PLUGINS</string>
+			<string>POINT</string>
+			<string>POLYGON</string>
+			<string>PRECISION</string>
+			<string>PREPARE</string>
+			<string>PRESERVE</string>
+			<string>PREV</string>
+			<string>PRIMARY</string>
+			<string>PRIMARY KEY</string>
+			<string>PRIVILEGES</string>
+			<string>PROCEDURE</string>
+			<string>PROCEDURE ANALYSE</string>
+			<string>PROCESS</string>
+			<string>PROCESSLIST</string>
+			<string>PURGE</string>
+			<string>QUARTER</string>
+			<string>QUERY</string>
+			<string>QUICK</string>
+			<string>RANGE</string>
+			<string>READ</string>
+			<string>READS</string>
+			<string>READ_ONLY</string>
+			<string>READ_WRITE</string>
+			<string>REAL</string>
+			<string>REBUILD</string>
+			<string>RECOVER</string>
+			<string>REDOFILE</string>
+			<string>REDO_BUFFER_SIZE</string>
+			<string>REDUNDANT</string>
+			<string>REFERENCES</string>
+			<string>REGEXP</string>
+			<string>RELAY_LOG_FILE</string>
+			<string>RELAY_LOG_POS</string>
+			<string>RELAY_THREAD</string>
+			<string>RELEASE</string>
+			<string>RELOAD</string>
+			<string>REMOVE</string>
+			<string>RENAME</string>
+			<string>RENAME DATABASE</string>
+			<string>RENAME TABLE</string>
+			<string>REORGANIZE</string>
+			<string>REPAIR</string>
+			<string>REPAIR TABLE</string>
+			<string>REPEAT</string>
+			<string>REPEATABLE</string>
+			<string>REPLACE</string>
+			<string>REPLICATION</string>
+			<string>REQUIRE</string>
+			<string>RESET</string>
+			<string>RESET MASTER</string>
+			<string>RESTORE</string>
+			<string>RESTORE TABLE</string>
+			<string>RESTRICT</string>
+			<string>RESUME</string>
+			<string>RETURN</string>
+			<string>RETURNS</string>
+			<string>REVOKE</string>
+			<string>RIGHT</string>
+			<string>RLIKE</string>
+			<string>ROLLBACK</string>
+			<string>ROLLUP</string>
+			<string>ROUTINE</string>
+			<string>ROW</string>
+			<string>ROWS</string>
+			<string>ROWS IDENTIFIED BY</string>
+			<string>ROW_FORMAT</string>
+			<string>RTREE</string>
+			<string>SAVEPOINT</string>
+			<string>SCHEDULE</string>
+			<string>SCHEDULER</string>
+			<string>SCHEMA</string>
+			<string>SCHEMAS</string>
+			<string>SECOND</string>
+			<string>SECOND_MICROSECOND</string>
+			<string>SECURITY</string>
+			<string>SELECT</string>
+			<string>SELECT DISTINCT</string>
+			<string>SENSITIVE</string>
+			<string>SEPARATOR</string>
+			<string>SERIAL</string>
+			<string>SERIALIZABLE</string>
+			<string>SESSION</string>
+			<string>SET</string>
+			<string>SET GLOBAL</string>
+			<string>SET NAMES</string>
+			<string>SET PASSWORD</string>
+			<string>SHARE</string>
+			<string>SHOW</string>
+			<string>SHOW BINARY LOGS</string>
+			<string>SHOW BINLOG EVENTS</string>
+			<string>SHOW CHARACTER SET</string>
+			<string>SHOW COLLATION</string>
+			<string>SHOW COLUMNS</string>
+			<string>SHOW CONTRIBUTORS</string>
+			<string>SHOW CREATE DATABASE</string>
+			<string>SHOW CREATE EVENT</string>
+			<string>SHOW CREATE FUNCTION</string>
+			<string>SHOW CREATE PROCEDURE</string>
+			<string>SHOW CREATE SCHEMA</string>
+			<string>SHOW CREATE TABLE</string>
+			<string>SHOW CREATE TRIGGERS</string>
+			<string>SHOW CREATE VIEW</string>
+			<string>SHOW DATABASES</string>
+			<string>SHOW ENGINE</string>
+			<string>SHOW ENGINES</string>
+			<string>SHOW ERRORS</string>
+			<string>SHOW EVENTS</string>
+			<string>SHOW FIELDS</string>
+			<string>SHOW FULL PROCESSLIST</string>
+			<string>SHOW FUNCTION CODE</string>
+			<string>SHOW FUNCTION STATUS</string>
+			<string>SHOW GRANTS</string>
+			<string>SHOW INDEX</string>
+			<string>SHOW INNODB STATUS</string>
+			<string>SHOW KEYS</string>
+			<string>SHOW MASTER LOGS</string>
+			<string>SHOW MASTER STATUS</string>
+			<string>SHOW OPEN TABLES</string>
+			<string>SHOW PLUGINS</string>
+			<string>SHOW PRIVILEGES</string>
+			<string>SHOW PROCEDURE CODE</string>
+			<string>SHOW PROCEDURE STATUS</string>
+			<string>SHOW PROFILE</string>
+			<string>SHOW PROFILES</string>
+			<string>SHOW PROCESSLIST</string>
+			<string>SHOW SCHEDULER STATUS</string>
+			<string>SHOW SCHEMAS</string>
+			<string>SHOW SLAVE HOSTS</string>
+			<string>SHOW SLAVE STATUS</string>
+			<string>SHOW STATUS</string>
+			<string>SHOW STORAGE ENGINES</string>
+			<string>SHOW TABLE STATUS</string>
+			<string>SHOW TABLE TYPES</string>
+			<string>SHOW TABLES</string>
+			<string>SHOW TRIGGERS</string>
+			<string>SHOW VARIABLES</string>
+			<string>SHOW WARNINGS</string>
+			<string>SHUTDOWN</string>
+			<string>SIGNED</string>
+			<string>SIMPLE</string>
+			<string>SLAVE</string>
+			<string>SMALLINT</string>
+			<string>SNAPSHOT</string>
+			<string>SOME</string>
+			<string>SONAME</string>
+			<string>SOUNDS</string>
+			<string>SPATIAL</string>
+			<string>SPECIFIC</string>
+			<string>SQL_AUTO_IS_NULL</string>
+			<string>SQL_BIG_RESULT</string>
+			<string>SQL_BIG_SELECTS</string>
+			<string>SQL_BIG_TABLES</string>
+			<string>SQL_BUFFER_RESULT</string>
+			<string>SQL_CACHE</string>
+			<string>SQL_CALC_FOUND_ROWS</string>
+			<string>SQL_LOG_BIN</string>
+			<string>SQL_LOG_OFF</string>
+			<string>SQL_LOG_UPDATE</string>
+			<string>SQL_LOW_PRIORITY_UPDATES</string>
+			<string>SQL_MAX_JOIN_SIZE</string>
+			<string>SQL_NO_CACHE</string>
+			<string>SQL_QUOTE_SHOW_CREATE</string>
+			<string>SQL_SAFE_UPDATES</string>
+			<string>SQL_SELECT_LIMIT</string>
+			<string>SQL_SLAVE_SKIP_COUNTER</string>
+			<string>SQL_SMALL_RESULT</string>
+			<string>SQL_THREAD</string>
+			<string>SQL_TSI_DAY</string>
+			<string>SQL_TSI_FRAC_SECOND</string>
+			<string>SQL_TSI_HOUR</string>
+			<string>SQL_TSI_MINUTE</string>
+			<string>SQL_TSI_MONTH</string>
+			<string>SQL_TSI_QUARTER</string>
+			<string>SQL_TSI_SECOND</string>
+			<string>SQL_TSI_WEEK</string>
+			<string>SQL_TSI_YEAR</string>
+			<string>SQL_WARNINGS</string>
+			<string>SSL</string>
+			<string>START</string>
+			<string>START TRANSACTION</string>
+			<string>STARTING</string>
+			<string>STARTS</string>
+			<string>STATUS</string>
+			<string>STOP</string>
+			<string>STORAGE</string>
+			<string>STRAIGHT_JOIN</string>
+			<string>STRING</string>
+			<string>SUBJECT</string>
+			<string>SUBPARTITION</string>
+			<string>SUBPARTITIONS</string>
+			<string>SUPER</string>
+			<string>SUSPEND</string>
+			<string>TABLE</string>
+			<string>TABLES</string>
+			<string>TABLESPACE</string>
+			<string>TEMPORARY</string>
+			<string>TEMPTABLE</string>
+			<string>TERMINATED</string>
+			<string>TEXT</string>
+			<string>THAN</string>
+			<string>THEN</string>
+			<string>TIME</string>
+			<string>TIMESTAMP</string>
+			<string>TIMESTAMPADD</string>
+			<string>TIMESTAMPDIFF</string>
+			<string>TINYBLOB</string>
+			<string>TINYINT</string>
+			<string>TINYTEXT</string>
+			<string>TO</string>
+			<string>TRAILING</string>
+			<string>TRANSACTION</string>
+			<string>TRIGGER</string>
+			<string>TRIGGERS</string>
+			<string>TRUE</string>
+			<string>TRUNCATE</string>
+			<string>TYPE</string>
+			<string>TYPES</string>
+			<string>UNCOMMITTED</string>
+			<string>UNDEFINED</string>
+			<string>UNDO</string>
+			<string>UNDOFILE</string>
+			<string>UNDO_BUFFER_SIZE</string>
+			<string>UNICODE</string>
+			<string>UNINSTALL</string>
+			<string>UNINSTALL PLUGIN</string>
+			<string>UNION</string>
+			<string>UNIQUE</string>
+			<string>UNKNOWN</string>
+			<string>UNLOCK</string>
+			<string>UNLOCK TABLES</string>
+			<string>UNSIGNED</string>
+			<string>UNTIL</string>
+			<string>UPDATE</string>
+			<string>UPGRADE</string>
+			<string>USAGE</string>
+			<string>USE</string>
+			<string>USER</string>
+			<string>USER_RESOURCES</string>
+			<string>USE_FRM</string>
+			<string>USING</string>
+			<string>UTC_DATE</string>
+			<string>UTC_TIME</string>
+			<string>UTC_TIMESTAMP</string>
+			<string>VALUE</string>
+			<string>VALUES</string>
+			<string>VARBINARY</string>
+			<string>VARCHAR</string>
+			<string>VARCHARACTER</string>
+			<string>VARIABLES</string>
+			<string>VARYING</string>
+			<string>VIEW</string>
+			<string>WAIT</string>
+			<string>WARNINGS</string>
+			<string>WEEK</string>
+			<string>WHEN</string>
+			<string>WHERE</string>
+			<string>WHILE</string>
+			<string>WITH</string>
+			<string>WITH CONSISTENT SNAPSHOT</string>
+			<string>WORK</string>
+			<string>WRITE</string>
+			<string>X509</string>
+			<string>XA</string>
+			<string>XOR</string>
+			<string>YEAR</string>
+			<string>YEAR_MONTH</string>
+			<string>ZEROFILL</string>
+		</array>
+		<key>core_builtin_functions</key>
+		<array>
+			<string>ABS</string>
+			<string>ACOS</string>
+			<string>ADDDATE</string>
+			<string>ADDTIME</string>
+			<string>AES_DECRYPT</string>
+			<string>AES_ENCRYPT</string>
+			<string>AREA</string>
+			<string>ASBINARY</string>
+			<string>ASCII</string>
+			<string>ASIN</string>
+			<string>ASTEXT</string>
+			<string>ATAN</string>
+			<string>ATAN2</string>
+			<string>AVG</string>
+			<string>BDMPOLYFROMTEXT</string>
+			<string>BDMPOLYFROMWKB</string>
+			<string>BDPOLYFROMTEXT</string>
+			<string>BDPOLYFROMWKB</string>
+			<string>BENCHMARK</string>
+			<string>BIN</string>
+			<string>BIT_AND</string>
+			<string>BIT_COUNT</string>
+			<string>BIT_LENGTH</string>
+			<string>BIT_OR</string>
+			<string>BIT_XOR</string>
+			<string>BOUNDARY</string>
+			<string>BUFFER</string>
+			<string>CAST</string>
+			<string>CEIL</string>
+			<string>CEILING</string>
+			<string>CENTROID</string>
+			<string>CHAR</string>
+			<string>CHARACTER_LENGTH</string>
+			<string>CHARSET</string>
+			<string>CHAR_LENGTH</string>
+			<string>COALESCE</string>
+			<string>COERCIBILITY</string>
+			<string>COLLATION</string>
+			<string>COMPRESS</string>
+			<string>CONCAT</string>
+			<string>CONCAT_WS</string>
+			<string>CONNECTION_ID</string>
+			<string>CONTAINS</string>
+			<string>CONV</string>
+			<string>CONVERT</string>
+			<string>CONVERT_TZ</string>
+			<string>CONVEXHULL</string>
+			<string>COS</string>
+			<string>COT</string>
+			<string>COUNT</string>
+			<string>COUNT(*)</string>
+			<string>CRC32</string>
+			<string>CROSSES</string>
+			<string>CURDATE</string>
+			<string>CURRENT_DATE</string>
+			<string>CURRENT_TIME</string>
+			<string>CURRENT_TIMESTAMP</string>
+			<string>CURRENT_USER</string>
+			<string>CURTIME</string>
+			<string>DATABASE</string>
+			<string>DATE</string>
+			<string>DATEDIFF</string>
+			<string>DATE_ADD</string>
+			<string>DATE_DIFF</string>
+			<string>DATE_FORMAT</string>
+			<string>DATE_SUB</string>
+			<string>DAY</string>
+			<string>DAYNAME</string>
+			<string>DAYOFMONTH</string>
+			<string>DAYOFWEEK</string>
+			<string>DAYOFYEAR</string>
+			<string>DECODE</string>
+			<string>DEFAULT</string>
+			<string>DEGREES</string>
+			<string>DES_DECRYPT</string>
+			<string>DES_ENCRYPT</string>
+			<string>DIFFERENCE</string>
+			<string>DIMENSION</string>
+			<string>DISJOINT</string>
+			<string>DISTANCE</string>
+			<string>ELT</string>
+			<string>ENCODE</string>
+			<string>ENCRYPT</string>
+			<string>ENDPOINT</string>
+			<string>ENVELOPE</string>
+			<string>EQUALS</string>
+			<string>EXP</string>
+			<string>EXPORT_SET</string>
+			<string>EXTERIORRING</string>
+			<string>EXTRACT</string>
+			<string>EXTRACTVALUE</string>
+			<string>FIELD</string>
+			<string>FIND_IN_SET</string>
+			<string>FLOOR</string>
+			<string>FORMAT</string>
+			<string>FOUND_ROWS</string>
+			<string>FROM_DAYS</string>
+			<string>FROM_UNIXTIME</string>
+			<string>GEOMCOLLFROMTEXT</string>
+			<string>GEOMCOLLFROMWKB</string>
+			<string>GEOMETRYCOLLECTION</string>
+			<string>GEOMETRYCOLLECTIONFROMTEXT</string>
+			<string>GEOMETRYCOLLECTIONFROMWKB</string>
+			<string>GEOMETRYFROMTEXT</string>
+			<string>GEOMETRYFROMWKB</string>
+			<string>GEOMETRYN</string>
+			<string>GEOMETRYTYPE</string>
+			<string>GEOMFROMTEXT</string>
+			<string>GEOMFROMWKB</string>
+			<string>GET_FORMAT</string>
+			<string>GET_LOCK</string>
+			<string>GLENGTH</string>
+			<string>GREATEST</string>
+			<string>GROUP_CONCAT</string>
+			<string>GROUP_UNIQUE_USERS</string>
+			<string>HEX</string>
+			<string>HOUR</string>
+			<string>IF</string>
+			<string>IFNULL</string>
+			<string>INET_ATON</string>
+			<string>INET_NTOA</string>
+			<string>INSERT</string>
+			<string>INSERT_ID</string>
+			<string>INSTR</string>
+			<string>INTERIORRINGN</string>
+			<string>INTERSECTION</string>
+			<string>INTERSECTS</string>
+			<string>INTERVAL</string>
+			<string>ISCLOSED</string>
+			<string>ISEMPTY</string>
+			<string>ISNULL</string>
+			<string>ISRING</string>
+			<string>ISSIMPLE</string>
+			<string>IS_FREE_LOCK</string>
+			<string>IS_USED_LOCK</string>
+			<string>LAST_DAY</string>
+			<string>LAST_INSERT_ID</string>
+			<string>LCASE</string>
+			<string>LEAST</string>
+			<string>LEFT</string>
+			<string>LENGTH</string>
+			<string>LINEFROMTEXT</string>
+			<string>LINEFROMWKB</string>
+			<string>LINESTRING</string>
+			<string>LINESTRINGFROMTEXT</string>
+			<string>LINESTRINGFROMWKB</string>
+			<string>LN</string>
+			<string>LOAD_FILE</string>
+			<string>LOCALTIME</string>
+			<string>LOCALTIMESTAMP</string>
+			<string>LOCATE</string>
+			<string>LOG</string>
+			<string>LOG10</string>
+			<string>LOG2</string>
+			<string>LOWER</string>
+			<string>LPAD</string>
+			<string>LTRIM</string>
+			<string>MAKEDATE</string>
+			<string>MAKETIME</string>
+			<string>MAKE_SET</string>
+			<string>MASTER_POS_WAIT</string>
+			<string>MATCH</string>
+			<string>MAX</string>
+			<string>MBRCONTAINS</string>
+			<string>MBRDISJOINT</string>
+			<string>MBREQUAL</string>
+			<string>MBRINTERSECTS</string>
+			<string>MBROVERLAPS</string>
+			<string>MBRTOUCHES</string>
+			<string>MBRWITHIN</string>
+			<string>MD5</string>
+			<string>MICROSECOND</string>
+			<string>MID</string>
+			<string>MIN</string>
+			<string>MINUTE</string>
+			<string>MLINEFROMTEXT</string>
+			<string>MLINEFROMWKB</string>
+			<string>MOD</string>
+			<string>MONTH</string>
+			<string>MONTHNAME</string>
+			<string>NOW</string>
+			<string>MPOINTFROMTEXT</string>
+			<string>MPOINTFROMWKB</string>
+			<string>MPOLYFROMTEXT</string>
+			<string>MPOLYFROMWKB</string>
+			<string>MULTILINESTRING</string>
+			<string>MULTILINESTRINGFROMTEXT</string>
+			<string>MULTILINESTRINGFROMWKB</string>
+			<string>MULTIPOINT</string>
+			<string>MULTIPOINTFROMTEXT</string>
+			<string>MULTIPOINTFROMWKB</string>
+			<string>MULTIPOLYGON</string>
+			<string>MULTIPOLYGONFROMTEXT</string>
+			<string>MULTIPOLYGONFROMWKB</string>
+			<string>NAME_CONST</string>
+			<string>NOW</string>
+			<string>NULLIF</string>
+			<string>NUMGEOMETRIES</string>
+			<string>NUMINTERIORRINGS</string>
+			<string>NUMPOINTS</string>
+			<string>OCT</string>
+			<string>OCTET_LENGTH</string>
+			<string>OLD_PASSWORD</string>
+			<string>ORD</string>
+			<string>OVERLAPS</string>
+			<string>PASSWORD</string>
+			<string>PERIOD_ADD</string>
+			<string>PERIOD_DIFF</string>
+			<string>PI</string>
+			<string>POINT</string>
+			<string>POINTFROMTEXT</string>
+			<string>POINTFROMWKB</string>
+			<string>POINTN</string>
+			<string>POINTONSURFACE</string>
+			<string>POLYFROMTEXT</string>
+			<string>POLYFROMWKB</string>
+			<string>POLYGON</string>
+			<string>POLYGONFROMTEXT</string>
+			<string>POLYGONFROMWKB</string>
+			<string>POSITION</string>
+			<string>POW</string>
+			<string>POWER</string>
+			<string>QUARTER</string>
+			<string>QUOTE</string>
+			<string>RADIANS</string>
+			<string>RAND</string>
+			<string>RELATED</string>
+			<string>RELEASE_LOCK</string>
+			<string>REPEAT</string>
+			<string>REPLACE</string>
+			<string>REVERSE</string>
+			<string>RIGHT</string>
+			<string>ROUND</string>
+			<string>ROW_COUNT</string>
+			<string>RPAD</string>
+			<string>RTRIM</string>
+			<string>SCHEMA</string>
+			<string>SECOND</string>
+			<string>SEC_TO_TIME</string>
+			<string>SESSION_USER</string>
+			<string>SHA</string>
+			<string>SHA1</string>
+			<string>SIGN</string>
+			<string>SIN</string>
+			<string>SLEEP</string>
+			<string>SOUNDEX</string>
+			<string>SPACE</string>
+			<string>SQRT</string>
+			<string>SRID</string>
+			<string>STARTPOINT</string>
+			<string>STD</string>
+			<string>STDDEV</string>
+			<string>STDDEV_POP</string>
+			<string>STDDEV_SAMP</string>
+			<string>STRCMP</string>
+			<string>STR_TO_DATE</string>
+			<string>SUBDATE</string>
+			<string>SUBSTR</string>
+			<string>SUBSTRING</string>
+			<string>SUBSTRING_INDEX</string>
+			<string>SUBTIME</string>
+			<string>SUM</string>
+			<string>SYMDIFFERENCE</string>
+			<string>SYSDATE</string>
+			<string>SYSTEM_USER</string>
+			<string>TAN</string>
+			<string>TIME</string>
+			<string>TIMEDIFF</string>
+			<string>TIMESTAMP</string>
+			<string>TIMESTAMPADD</string>
+			<string>TIMESTAMPDIFF</string>
+			<string>TIME_FORMAT</string>
+			<string>TIME_TO_SEC</string>
+			<string>TOUCHES</string>
+			<string>TO_DAYS</string>
+			<string>TRIM</string>
+			<string>TRUNCATE</string>
+			<string>UCASE</string>
+			<string>UNCOMPRESS</string>
+			<string>UNCOMPRESSED_LENGTH</string>
+			<string>UNHEX</string>
+			<string>UNIQUE_USERS</string>
+			<string>UNIX_TIMESTAMP</string>
+			<string>UPDATEXML</string>
+			<string>UPPER</string>
+			<string>USER</string>
+			<string>UTC_DATE</string>
+			<string>UTC_TIME</string>
+			<string>UTC_TIMESTAMP</string>
+			<string>UUID</string>
+			<string>VARIANCE</string>
+			<string>VAR_POP</string>
+			<string>VAR_SAMP</string>
+			<string>VERSION</string>
+			<string>WEEK</string>
+			<string>WEEKDAY</string>
+			<string>WEEKOFYEAR</string>
+			<string>WITHIN</string>
+			<string>YEAR</string>
+			<string>YEARWEEK</string>
+		</array>
+		<key>function_argument_snippets</key>
+		<dict>
+			<key>CONCAT</key>
+			<string>${1:str1}, ${2:str2}</string>
+			<key>CHAR</key>
+			<string>${1:N}, ${2:USING ${3:charset_name}}</string>
+			<key>MASTER_POS_WAIT</key>
+			<string>${1:log_name}, ${2:log_pos}${3:, ${4:timeout}}</string>
+			<key>WEEK</key>
+			<string>${1:date}${2:, ${3:mode}}</string>
+			<key>UpdateXML</key>
+			<string>${1:xml_target}, ${2:xpath_expr}, ${3:new_xml}</string>
+			<key>MID</key>
+			<string>${1:str}, ${2:pos}, ${3:len}</string>
+			<key>ROUND</key>
+			<string>${1:X}${2:, ${3:D}}</string>
+			<key>NULLIF</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>TIMEDIFF</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>REPLACE</key>
+			<string>${1:str}, ${2:from_str}, ${3:to_str}</string>
+			<key>ADDTIME</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>TIMESTAMPDIFF</key>
+			<string>${1:unit}, ${2:datetime_expr1}, ${3:datetime_expr2}</string>
+			<key>FROM_UNIXTIME</key>
+			<string>${1:unix_timestamp}${2:, ${3:format}}</string>
+			<key>IFNULL</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>LEAST</key>
+			<string>${1:value1}, ${2:value2}</string>
+			<key>MATCH</key>
+			<string>${1:col_list}) AGAINST (${2:expr}${3: ${4:¦IN BOOLEAN MODE¦IN NATURAL LANGUAGE MODE¦IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION¦WITH QUERY EXPANSION¦}}</string>
+			<key>DES_DECRYPT</key>
+			<string>${1:crypt_str}${2:, ${3:key_str}}</string>
+			<key>DECODE</key>
+			<string>${1:crypt_str}, ${2:pass_str}</string>
+			<key>GET_LOCK</key>
+			<string>${1:st}, ${2:timeout}</string>
+			<key>CONV</key>
+			<string>${1:N}, ${2:from_base}, ${3:to_base}</string>
+			<key>ENCRYPT</key>
+			<string>${1:str}${2:, ${3:salt}}</string>
+			<key>ExtractValue</key>
+			<string>${1:xml_frag}, ${2:xpath_expr}</string>
+			<key>FORMAT</key>
+			<string>${1:X}, ${2:D}</string>
+			<key>TIME_FORMAT</key>
+			<string>${1:time}, ${2:format}</string>
+			<key>LEFT</key>
+			<string>${1:str}, ${2:len</string>
+			<key>RAND</key>
+			<string>${1:N}</string>
+			<key>RPAD</key>
+			<string>${1:str}, ${2:len}, ${3:padstr}</string>
+			<key>ELT</key>
+			<string>${1:N}, ${2:str1}</string>
+			<key>CONCAT_WS</key>
+			<string>${1:separator}, ${2:str1}</string>
+			<key>LOCATE</key>
+			<string>${1:substr}, ${2:str}${3:, ${4:pos}}</string>
+			<key>SUBDATE</key>
+			<string>${1:date/expr}, ${2:INTERVAL ${3:expr} ${4:unit}}</string>
+			<key>LPAD</key>
+			<string>${1:str}, ${2:len}, ${3:padstr}</string>
+			<key>ANALYSE</key>
+			<string>${1:${2:max_elements}${3:, ${4:max_memory}}}</string>
+			<key>TIMESTAMP</key>
+			<string>${1:expr1}${2:, ${3:expr2}}</string>
+			<key>INSERT</key>
+			<string>${1:str}, ${2:pos}, ${3:len}, ${4:newstr}</string>
+			<key>YEARWEEK</key>
+			<string>${1:date}${2:, ${3:mode}}</string>
+			<key>UNIX_TIMESTAMP</key>
+			<string>${1:date}</string>
+			<key>CONVERT</key>
+			<string>${1:expr}${2:, USING ${3:transcoding_name}}</string>
+			<key>ADDDATE</key>
+			<string>${1:date/expr}${2:, INTERVAL ${3:expr} ${4:unit}}</string>
+			<key>LAST_INSERT_ID</key>
+			<string>${1:expr}</string>
+			<key>SUBTIME</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>POW</key>
+			<string>${1:X}, ${2:Y}</string>
+			<key>INSTR</key>
+			<string>${1:str}, ${2:substr}</string>
+			<key>REPEAT</key>
+			<string>${1:str}, ${2:count}</string>
+			<key>MAKEDATE</key>
+			<string>${1:year}, ${2:dayofyear}</string>
+			<key>SUBSTRING_INDEX</key>
+			<string>${1:str}, ${2:delim}, ${3:count}</string>
+			<key>ENCODE</key>
+			<string>${1:str}, ${2:pass_str}</string>
+			<key>TRUNCATE</key>
+			<string>${1:X}, ${2:D}</string>
+			<key>TIMESTAMPADD</key>
+			<string>${1:unit}, ${2:interval}, ${3:datetime_expr}</string>
+			<key>GREATEST</key>
+			<string>${1:value1}, ${2:value2}</string>
+			<key>ATAN</key>
+			<string>${1:Y}, ${2:X}</string>
+			<key>ATAN2</key>
+			<string>${1:Y}, ${2:X}</string>
+			<key>DATE_FORMAT</key>
+			<string>${1:date}, ${2:format}</string>
+			<key>BENCHMARK</key>
+			<string>${1:count}, ${2:expr}</string>
+			<key>NAME_CONST</key>
+			<string>${1:name}, ${2:value}</string>
+			<key>CONVERT_TZ</key>
+			<string>${1:dt}, ${2:from_tz}, ${3:to_tz}</string>
+			<key>EXPORT_SET</key>
+			<string>${1:bits}, ${2:on}, ${3:off}${4:, ${5:separator}${6:, ${7:number_of_bits}}}</string>
+			<key>DATE_ADD</key>
+			<string>${1:date}, INTERVAL ${2:expr} ${3:unit}</string>
+			<key>DATE_SUB</key>
+			<string>${1:date}, INTERVAL ${2:expr} ${3:unit}</string>
+			<key>PERIOD_DIFF</key>
+			<string>${1:P1}, ${2:P2}</string>
+			<key>DES_ENCRYPT</key>
+			<string>${1:str}${2:, ${3:¦key_num¦key_str¦}}</string>
+			<key>STR_TO_DATE</key>
+			<string>${1:str}, ${2:format}</string>
+			<key>DATE_SUB</key>
+			<string>${1:date}, INTERVAL ${2:expr} ${3:unit}</string>
+			<key>PERIOD_ADD</key>
+			<string>${1:P}, ${2:N}</string>
+			<key>RIGHT</key>
+			<string>${1:str}, ${2:len}</string>
+			<key>DATEDIFF</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>COUNT</key>
+			<string>${1:${2:DISTINCT }${3:*}}</string>
+			<key>INTERVAL</key>
+			<string>${1:N}, ${2:N1}</string>
+			<key>AES_ENCRYPT</key>
+			<string>${1:str}, ${2:key_str}</string>
+			<key>GET_FORMAT</key>
+			<string>${1:¦DATE¦TIME¦DATETIME¦}, ${2:¦'EUR'¦'USA'¦'JIS'¦'ISO'¦'INTERNAL'¦}</string>
+			<key>FIELD</key>
+			<string>${1:str}, ${2:str1}</string>
+			<key>MAKETIME</key>
+			<string>${1:hour}, ${2:minute}, ${3:second}</string>
+			<key>IF</key>
+			<string>${1:test}, ${2:true_expr}, ${3:false_expr}</string>
+			<key>POWER</key>
+			<string>${1:X}, ${2:Y}</string>
+			<key>STRCMP</key>
+			<string>${1:expr1}, ${2:expr2}</string>
+			<key>LOG</key>
+			<string>${1:B}, ${2:X}</string>
+			<key>AES_DECRYPT</key>
+			<string>${1:crypt_str}, ${2:key_str}</string>
+			<key>COALESCE</key>
+			<string>${1:values}</string>
+			<key>MAKE_SET</key>
+			<string>${1:bits}, ${2:str1}</string>
+			<key>FIND_IN_SET</key>
+			<string>${1:str}, ${2:strlist}</string>
+		</dict>
+	</dict>
+</plist>

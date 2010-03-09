@@ -533,6 +533,11 @@
 
 }
 
+- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
+{
+	[contentFilterTextView insertText:@""];
+}
+
 /*
  * Parse clause and update labels accordingly
  */
@@ -568,7 +573,7 @@
 			[c flushCachedRegexData];
 			[c replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:@"<field>"];
 			[c flushCachedRegexData];
-			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"<field> %@", c]];
+			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"%@%@", ([suppressLeadingFiledPlaceholderCheckbox state] == NSOnState) ? @"" : @"<field> ", c]];
 			[c release];
 		}
 
@@ -792,6 +797,7 @@
 				// }
 				[contentFilterArrayController rearrangeObjects];
 				[contentFilterTableView reloadData];
+				[spf release];
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -801,6 +807,7 @@
 
 				[alert setAlertStyle:NSInformationalAlertStyle];
 				[alert runModal];
+				[spf release];
 				return;
 			}
 		}

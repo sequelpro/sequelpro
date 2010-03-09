@@ -33,6 +33,7 @@
 #import "SPConstants.h"
 
 #import <Sparkle/Sparkle.h>
+#import <FeedbackReporter/FRFeedbackReporter.h>
 
 @implementation SPAppController
 
@@ -74,6 +75,18 @@
 	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
 	
 	isNewFavorite = NO;
+}
+
+/**
+ * Initialisation stuff after launch is complete
+ */
+- (void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+	// Set ourselves as the crash reporter delegate
+	[[FRFeedbackReporter sharedReporter] setDelegate:self];
+
+	// Report any crashes
+	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 }
 
 /**
@@ -399,6 +412,28 @@
 - (IBAction)provideFeedback:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPContactURL]];
+}
+
+#pragma mark -
+#pragma mark Feedback reporter delegate methods
+
+/**
+ * Anonymises the preferences dictionary before feedback submission
+ */
+- (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
+{
+	[preferences removeObjectsForKeys:[NSArray arrayWithObjects:@"ContentFilters",
+																@"favorites",
+																@"lastSqlFileName",
+																@"NSNavLastRootDirectory",
+																@"openPath",
+																@"queryFavorites",
+																@"queryHistory",
+																@"tableColumnWidths",
+																@"savePath",
+																nil]];
+
+	return preferences;
 }
 
 #pragma mark -

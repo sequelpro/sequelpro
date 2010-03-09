@@ -28,6 +28,7 @@
 #import "TableSource.h"
 #import "TableContent.h"
 #import "SPTableData.h"
+#import "SPTableInfo.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
 #import "SPStringAdditions.h"
@@ -221,7 +222,10 @@
 	[tablesListView reloadData];
 	
 	// if the previous selected table still exists, select it
-	if( previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
+	// but not if the update was called from SPTableData since it calls that method
+	// if a selected table doesn't exist - this happens if a table was deleted/renamed by an other user
+	// or if the table name contains characters which are not supported by the current set encoding
+	if( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
 		tableListIsSelectable = YES;
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
@@ -676,6 +680,9 @@
 	// Notify listeners of the table change now that the state is fully set up.
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
 
+	// Restore view states as appropriate
+	[spHistoryControllerInstance restoreViewStates];
+
 	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:selectedTableName];
@@ -815,6 +822,23 @@
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
 
+		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
+		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Analyze Selected Items", @"analyze selected items menu item")];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Optimize Selected Items", @"optimize selected items menu item")];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Selected Items", @"flush selected items menu item")];
+		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Checksum Selected Items", @"checksum selected items menu item")];
+		[[tableSubMenu itemAtIndex:2] setHidden:NO];
+		[[tableSubMenu itemAtIndex:3] setHidden:NO];
+		[[tableSubMenu itemAtIndex:4] setHidden:NO];
+		[[tableSubMenu itemAtIndex:5] setHidden:NO];
+		[[tableSubMenu itemAtIndex:6] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setHidden:NO];
+		[[tableSubMenu itemAtIndex:9] setHidden:NO];
+		
+
 		// set window title
 		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
 
@@ -853,18 +877,18 @@
 	if(selectedTableType == SP_TABLETYPE_VIEW)
 	{
 		// Change mainMenu > Table > ... according to table type
-		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
-		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
-		[[tableSubMenu itemAtIndex:2] setHidden:NO]; // divider
-		[[tableSubMenu itemAtIndex:3] setHidden:NO];
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
-		[[tableSubMenu itemAtIndex:4] setHidden:YES]; // repair
-		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // analyse
-		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // optimize
-		[[tableSubMenu itemAtIndex:8] setHidden:NO];
-		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
-		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // checksum
+		[[tableSubMenu itemAtIndex:2] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:4] setHidden:NO]; // divider
+		[[tableSubMenu itemAtIndex:5] setHidden:NO];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
+		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // repair
+		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:8] setHidden:YES]; // analyse
+		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // optimize
+		[[tableSubMenu itemAtIndex:10] setHidden:NO];
+		[[tableSubMenu itemAtIndex:10] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
+		[[tableSubMenu itemAtIndex:11] setHidden:YES]; // checksum
 
 		[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
@@ -881,18 +905,22 @@
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 	} 
 	else if(selectedTableType == SP_TABLETYPE_TABLE) {
-		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
-		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
-		[[tableSubMenu itemAtIndex:2] setHidden:NO]; // divider
-		[[tableSubMenu itemAtIndex:3] setHidden:NO];
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
-		[[tableSubMenu itemAtIndex:4] setHidden:NO];
-		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
+		[[tableSubMenu itemAtIndex:2] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:4] setHidden:NO]; // divider
+		[[tableSubMenu itemAtIndex:5] setHidden:NO];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
 		[[tableSubMenu itemAtIndex:6] setHidden:NO];
-		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Repair Table", @"repair table menu item")];
+		[[tableSubMenu itemAtIndex:7] setHidden:NO]; // divider
 		[[tableSubMenu itemAtIndex:8] setHidden:NO];
-		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Analyze Table", @"analyze table menu item")];
 		[[tableSubMenu itemAtIndex:9] setHidden:NO];
+		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Optimize Table", @"optimize table menu item")];
+		[[tableSubMenu itemAtIndex:10] setHidden:NO];
+		[[tableSubMenu itemAtIndex:10] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+		[[tableSubMenu itemAtIndex:11] setHidden:NO];
+		[[tableSubMenu itemAtIndex:11] setTitle:NSLocalizedString(@"Checksum Table", @"checksum table menu item")];
 
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
@@ -912,16 +940,16 @@
 
 	} 
 	else if(selectedTableType == SP_TABLETYPE_PROC) {
-		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
-		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
-		[[tableSubMenu itemAtIndex:2] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:3] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:2] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
 		[[tableSubMenu itemAtIndex:4] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:5] setHidden:YES];
-		[[tableSubMenu itemAtIndex:6] setHidden:YES];
-		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:7] setHidden:YES];
 		[[tableSubMenu itemAtIndex:8] setHidden:YES];
-		[[tableSubMenu itemAtIndex:9] setHidden:YES];
+		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:10] setHidden:YES];
+		[[tableSubMenu itemAtIndex:11] setHidden:YES];
 		
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
@@ -939,16 +967,16 @@
 
 	}
 	else if(selectedTableType == SP_TABLETYPE_FUNC) {
-		[[tableSubMenu itemAtIndex:0] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
-		[[tableSubMenu itemAtIndex:1] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
-		[[tableSubMenu itemAtIndex:2] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:3] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:2] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
 		[[tableSubMenu itemAtIndex:4] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:5] setHidden:YES];
-		[[tableSubMenu itemAtIndex:6] setHidden:YES];
-		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:7] setHidden:YES];
 		[[tableSubMenu itemAtIndex:8] setHidden:YES];
-		[[tableSubMenu itemAtIndex:9] setHidden:YES];	
+		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:10] setHidden:YES];
+		[[tableSubMenu itemAtIndex:11] setHidden:YES];	
 		
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
@@ -972,6 +1000,36 @@
 
 #pragma mark -
 #pragma mark Getter methods
+
+
+- (NSArray *)selectedTableNames
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE)
+			[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
+
+- (NSArray *)selectedTableItems
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
 
 /**
  * Returns the currently selected table or nil if no table or mulitple tables are selected
@@ -1526,6 +1584,14 @@
 }
 
 /**
+ * Set focus to table list filter search field
+ */
+- (void) makeTableListFilterHaveFocus
+{
+	[tableWindow makeFirstResponder:listFilterField];
+}
+
+/**
  * Update the filter search.
  */
 - (IBAction) updateFilter:(id)sender
@@ -1750,6 +1816,7 @@
 - (void)removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	[tablesListView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 	
 	// get last index
 	NSUInteger currentIndex = [indexes lastIndex];
@@ -1874,6 +1941,8 @@
 	
 	// Reload the table's content view to show that it has been truncated 
 	[tableContentInstance reloadTable:self];
+	[tableDataInstance resetStatusData];
+
 }
 
 /**
@@ -1998,19 +2067,21 @@
 		
     } else {
 		//insert new table name in create syntax and create new table
-		NSScanner *scanner = [NSScanner alloc];
+		NSScanner *scanner;
 		NSString *scanString;
 		
 		if(tblType == SP_TABLETYPE_VIEW){
-			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			[scanner release];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		} 
 		else if(tblType == SP_TABLETYPE_TABLE){
-			[scanner initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
+			[scanner release];
 			
 			// If there are any InnoDB referencial constraints we need to strip out the names as they must be unique. 
 			// MySQL will generate the new names based on the new table name.
@@ -2055,7 +2126,6 @@
 			}
 			
 		}
-		[scanner release];
 		
         if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 			//error while creating new table

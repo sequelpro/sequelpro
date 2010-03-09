@@ -35,6 +35,8 @@
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
+	IBOutlet id tableSourceInstance;
+
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 	
@@ -137,6 +139,7 @@
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
+- (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)addRowToDB;
@@ -166,5 +169,6 @@
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
+- (void)makeContentFilterHaveFocus;
 
 @end
