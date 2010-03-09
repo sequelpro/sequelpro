@@ -139,7 +139,7 @@
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
-	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
 {
 	if(self = [self init])
 	{
@@ -149,6 +149,7 @@
 			[mutablePrefix appendString:aUserString];
 
 		autoCompletionMode = autoComplete;
+		oneColumnMode = oneColumn;
 
 		fuzzyMode = fuzzySearch;
 		if(fuzzyMode)
@@ -177,8 +178,25 @@
 
 		suggestions = [someSuggestions retain];
 
-		[[theTableView tableColumnWithIdentifier:@"image"] setWidth:((dictMode) ? 0 : 20)];
-		[[theTableView tableColumnWithIdentifier:@"name"] setWidth:((dictMode) ? 440 : 180)];
+		if(dictMode || oneColumnMode) {
+			[[theTableView tableColumnWithIdentifier:@"image"] setWidth:0];
+			if(!dictMode) {
+				NSUInteger maxLength = 0;
+				for(id w in someSuggestions) {
+					NSUInteger len = [[w objectForKey:@"display"] length];
+					if(len>maxLength) maxLength = len;
+				}
+				NSMutableString *dummy = [NSMutableString string];
+				for(NSUInteger i=0; i<maxLength; i++)
+					[dummy appendString:@" "];
+
+				CGFloat w = NSSizeToCGSize([dummy sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).width + 26.0f;
+				maxWindowWidth = (w>maxWindowWidth) ? maxWindowWidth : w;
+			} else {
+				maxWindowWidth = 220;
+			}
+			[[theTableView tableColumnWithIdentifier:@"name"] setWidth:maxWindowWidth];
+		}
 
 		currentDb = selectedDb;
 
@@ -344,8 +362,6 @@
 		if(dictMode) {
 			return @"";
 		} else {
-			// [[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-			// return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"path"] : @"";
 			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
 				NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
 				[b setPullsDown:NO];
@@ -542,7 +558,7 @@
 		else if(t == NSKeyDown)
 		{
 			NSUInteger flags = [event modifierFlags];
-			unichar key        = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			unichar key      = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
 
 			// Check if user pressed ⌥ to allow composing of accented characters.
 			// e.g. for US keyboard "⌥u a" to insert ä

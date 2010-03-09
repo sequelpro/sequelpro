@@ -697,7 +697,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					withTableName:tableName
 					selectedDb:currentDb
 					caretMovedLeft:caretMovedLeft
-					autoComplete:autoCompleteMode];
+					autoComplete:autoCompleteMode
+					oneColumn:isDictMode];
 	
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
@@ -1130,7 +1131,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 										withTableName:@""
 										selectedDb:@""
 										caretMovedLeft:NO
-										autoComplete:NO];
+										autoComplete:NO
+										oneColumn:YES];
 
 						//Get the NSPoint of the first character of the current word
 						NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
