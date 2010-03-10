@@ -525,6 +525,7 @@
 
 	if(![newFiltered count]) {
 		if(autoCompletionMode) {
+			[newFiltered release];
 			closeMe = YES;
 			return;
 		} else {
@@ -532,12 +533,18 @@
 			if([[self filterString] hasSuffix:@"."]) {
 				[theView setCompletionWasReinvokedAutomatically:YES];
 				[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+				[newFiltered release];
 				closeMe = YES;
 				return;
 			} else {
 				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No item found", @"no item found message"), @"display", @"", @"noCompletion", nil]];
 			}
 		}
+	}
+	if(autoCompletionMode && [newFiltered count] == 1 && [[[self filterString] lowercaseString] isEqualToString:[[[newFiltered objectAtIndex:0] objectForKey:@"display"] lowercaseString]]) {
+		[newFiltered release];
+		closeMe = YES;
+		return;
 	}
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
