@@ -1175,6 +1175,7 @@
 
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
+	if (!importFormatPopup) [NSBundle loadNibNamed:@"ImportAccessory" owner:self];
 	[importFormatPopup selectItemWithTitle:@"SQL"];
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:filename];
 }
