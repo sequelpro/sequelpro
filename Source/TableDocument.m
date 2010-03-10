@@ -1398,6 +1398,12 @@
 - (void) endTask
 {
 
+	// Ensure a call on the main thread
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
+		return;
+	}
+
 	// Decrement the working level
 	_isWorkingLevel--;
 
