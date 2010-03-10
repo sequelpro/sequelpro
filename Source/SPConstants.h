@@ -182,6 +182,7 @@ extern NSString *SPDonationsURL;
 extern NSString *SPFAQURL;
 extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
+extern NSString *SPKeyboardShortcutsURL;
 
 // Toolbar constants
 

@@ -150,6 +150,7 @@ NSString *SPDonationsURL                         = @"http://www.sequelpro.com/do
 NSString *SPFAQURL                               = @"http://www.sequelpro.com/docs/Frequently_Asked_Questions";
 NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
+NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
 
 // Toolbar constants
 

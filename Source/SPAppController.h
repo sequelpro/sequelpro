@@ -52,6 +52,7 @@
 - (IBAction)visitHelpWebsite:(id)sender;
 - (IBAction)visitFAQWebsite:(id)sender;
 - (IBAction)provideFeedback:(id)sender;
+- (IBAction)viewKeyboardShortcuts:(id)sender;
 
 // Getters
 - (SPPreferenceController *)preferenceController;

@@ -414,6 +414,14 @@
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPContactURL]];
 }
 
+/**
+ * Opens the 'Keyboard Shortcuts' page in the default browser.
+ */
+- (IBAction)viewKeyboardShortcuts:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPKeyboardShortcutsURL]];
+}
+
 #pragma mark -
 #pragma mark Feedback reporter delegate methods
 
