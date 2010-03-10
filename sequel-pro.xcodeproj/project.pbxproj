@@ -60,6 +60,7 @@
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
+		17E08F251146AD96007FC1B4 /* BDAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E08F241146AD96007FC1B4 /* BDAlias.m */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* CustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* SPAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* SPAppController.m */; };
@@ -410,6 +411,8 @@
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
+		17E08F231146AD96007FC1B4 /* BDAlias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BDAlias.h; sourceTree = "<group>"; };
+		17E08F241146AD96007FC1B4 /* BDAlias.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BDAlias.m; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
@@ -801,6 +804,8 @@
 		173284E51088FEC20062E892 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				17E08F231146AD96007FC1B4 /* BDAlias.h */,
+				17E08F241146AD96007FC1B4 /* BDAlias.m */,
 				173284E81088FEDE0062E892 /* SPConstants.h */,
 				173284E91088FEDE0062E892 /* SPConstants.m */,
 			);
@@ -1822,6 +1827,7 @@
 				584095191107CB6600260CFD /* SPAlertSheets.m in Sources */,
 				29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */,
 				BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */,
+				17E08F251146AD96007FC1B4 /* BDAlias.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
