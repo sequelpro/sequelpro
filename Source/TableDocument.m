@@ -779,7 +779,7 @@
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame 
 {
-	//because I need the webFrame loaded (for preview), I've moved the actuall printing here.
+	// Because I need the webFrame loaded (for preview), I've moved the actuall printing here.
 	NSPrintInfo *printInfo = [self printInfo];
 	[printInfo setHorizontalPagination:NSFitPagination];
 	[printInfo setVerticalPagination:NSAutoPagination];
@@ -817,21 +817,20 @@
 
 - (IBAction)printDocument:(id)sender
 {
-	//here load the printing document. The actual printing is done in the doneLoading delegate.
+	// Here load the printing document. The actual printing is done in the doneLoading delegate.
 	[[printWebView mainFrame] loadHTMLString:[self getHTMLforPrint] baseURL:nil];
 }
 
-- (void)printOperationDidRun:(NSPrintOperation *)printOperation
-					 success:(BOOL)success
-				 contextInfo:(void *)info
+- (void)printOperationDidRun:(NSPrintOperation *)printOperation success:(BOOL)success contextInfo:(void *)info
 {
-	//selector for print... maybe we can get rid of this?
+	// Selector for print... maybe we can get rid of this?
 }
 
 - (NSString *)getHTMLforPrint
 {
 	// Set up template engine with your chosen matcher.
 	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
+	
 	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
 
 	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (build %@)",
@@ -841,58 +840,66 @@
 	];
 
 	NSMutableDictionary *connection = [[NSMutableDictionary alloc] init];
-	if([[self user] length])
+	
+	if ([[self user] length]) {
 		[connection setValue:[self user] forKey:@"username"];
+	}	
+	
+	if ([[self table] length]) {
+		[connection setValue:[self table] forKey:@"table"];
+	}
+	
 	[connection setValue:[self host] forKey:@"hostname"];
-	if([connectionController port] &&[[connectionController port] length])
+	
+	if ([connectionController port] && [[connectionController port] length]) {
 		[connection setValue:[connectionController port] forKey:@"port"];
+	}
+
 	[connection setValue:selectedDatabase forKey:@"database"];
 	[connection setValue:versionForPrint forKey:@"version"];
 
-	NSArray *columns, *rows;
-	rows = nil;
-	columns = [self columnNames];
+	NSArray *rows = nil;
+	NSArray *columns = [self columnNames];
 
-	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 ){
-		if([[tableSourceInstance tableStructureForPrint] count] > 1)
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0) {
+		if ([[tableSourceInstance tableStructureForPrint] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
 					[[tableSourceInstance tableStructureForPrint] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSourceInstance tableStructureForPrint] count]-1)]
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSourceInstance tableStructureForPrint] count] - 1)]
 					 ]
 					];
 	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1 ){
-		if([[tableContentInstance currentResult] count] > 1)
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
+		if ([[tableContentInstance currentResult] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
 					[[tableContentInstance currentDataResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count]-1)]
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count] - 1)]
 					 ]
 					];
+		
 		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
 	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2 ){
-		if([[customQueryInstance currentResult] count] > 1)
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
+		if ([[customQueryInstance currentResult] count] > 1)
 			rows = [[NSArray alloc] initWithArray:
 					[[customQueryInstance currentResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count]-1)]
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count] - 1)]
 					 ]
 					];
+		
 		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
 	}
 
 	[engine setObject:connection forKey:@"c"];
-	// Get path to template.
-	NSString *templatePath = [[NSBundle mainBundle] pathForResource:@"sequel-pro-print-template" ofType:@"html"];
-	NSDictionary *print_data = [NSDictionary dictionaryWithObjectsAndKeys: 
-			columns, @"columns",
-			rows, @"rows",
-			nil];
+	
+	NSDictionary *printData = [NSDictionary dictionaryWithObjectsAndKeys:columns, @"columns", rows, @"rows", nil];
 
     [connection release];
+	
     if (rows) [rows release];
 
 	// Process the template and display the results.
-	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
+	NSString *result = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:@"sequel-pro-print-template" ofType:@"html"] withVariables:printData];
 
 	return result;
 }
