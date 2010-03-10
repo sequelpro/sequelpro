@@ -172,6 +172,7 @@
 			return;
 		}
 
+		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
 		[NSApp beginSheet:queryFavoritesSheet 
 		   modalForWindow:tableWindow 
 			modalDelegate:self 
@@ -189,6 +190,7 @@
 			return;
 		}
 
+		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
 		[NSApp beginSheet:queryFavoritesSheet 
 		   modalForWindow:tableWindow 
 			modalDelegate:self 
