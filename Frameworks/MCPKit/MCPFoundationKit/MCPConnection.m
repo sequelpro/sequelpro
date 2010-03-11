@@ -402,6 +402,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  */
 - (void)disconnect
 {
+	[self stopKeepAliveTimer];
+
 	if (mConnected) {
 		mysql_close(mConnection);
 		mConnection = NULL;
@@ -415,9 +417,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
-	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
-	
-	[self stopKeepAliveTimer];
+	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;	
 	if (pingThread != NULL) pthread_cancel(pingThread), pingThread = NULL;
 }
 
@@ -448,6 +448,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	// Close the connection if it exists.
+	[self stopKeepAliveTimer];
 	if (mConnected) {
 		mysql_close(mConnection);
 		mConnection = NULL;
@@ -693,6 +694,10 @@ void pingConnectionTask(void *ptr)
 {
 	if (!mConnected || keepAliveThread != NULL) return;
 
+	// Use a ping timeout between zero and thirty seconds
+	NSInteger pingTimeout = 30;
+	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
+
 	// Attempt to get a query lock, but release it to ensure the connection isn't locked
 	// by a background ping.
 	if (![queryLock tryLock]) return;
@@ -701,9 +706,9 @@ void pingConnectionTask(void *ptr)
 	// Create a pthread for the actual keepalive
 	pthread_create(&keepAliveThread, NULL, (void *)&performThreadedKeepAlive, (void *)mConnection);
 
-	// Give the connection time to respond, but force a timeout after the connection timeout
+	// Give the connection time to respond, but force a timeout after the ping timeout
 	// if the thread hasn't already closed itself.
-	sleep(connectionTimeout);
+	sleep(pingTimeout);
 	pthread_cancel(keepAliveThread);
 	keepAliveThread = NULL;
 }
@@ -725,6 +730,9 @@ void performThreadedKeepAlive(void *ptr)
 	connectionThreadId = mConnection->thread_id;
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
+	
+	[self stopKeepAliveTimer];
+	[self startKeepAliveTimer];
 	
 	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
