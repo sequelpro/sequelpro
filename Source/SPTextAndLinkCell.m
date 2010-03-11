@@ -203,6 +203,9 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	if (!NSMouseInRect(p, linkRect, [controlView isFlipped]))
 		return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:untilMouseUp];
 
+	// Ignore events other than mouse down.
+	if ([theEvent type] != NSLeftMouseDown) return YES;
+
 	// Continue tracking the mouse while it's down, updating the state as it enters and leaves the cell,
 	// until it is released; if still within the cell, follow the link.
 	BOOL mouseInButton = YES;
