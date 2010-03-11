@@ -769,8 +769,8 @@
 	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
-	// If it's a function insert () and if given arguments as snippets
-	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] && ![aString hasSuffix:@")"]) {
+	// If it's a function or procedure append () and if a argument list can be retieved insert them as snippets
+	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && ([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] || [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"proc"]) && ![aString hasSuffix:@")"]) {
 		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
 		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];
 		if([functionArgumentSnippet length] == 2)
