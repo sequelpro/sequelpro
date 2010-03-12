@@ -138,8 +138,10 @@
 			<string>DELAY_KEY_WRITE</string>
 			<string>DELETE</string>
 			<string>DELIMITER </string>
-			<string>DELIMITER ;\n</string>
-			<string>DELIMITER ;;\n</string>
+			<string>DELIMITER ;
+</string>
+			<string>DELIMITER ;;
+</string>
 			<string>DESC</string>
 			<string>DESCRIBE</string>
 			<string>DES_KEY_FILE</string>
