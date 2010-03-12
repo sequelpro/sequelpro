@@ -3077,13 +3077,13 @@
 		NSError *error;
 		
 		helpHTMLTemplate = [[NSString alloc]
-							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"]
+							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SPHTMLHelpTemplate ofType:@"html"]
 							encoding:NSUTF8StringEncoding
 							error:&error];
 		
 		// an error occurred while reading
 		if (helpHTMLTemplate == nil) {
-			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]]);
+			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “%@.html”!<br>%@", SPHTMLHelpTemplate, [error localizedFailureReason]]);
 			NSBeep();
 		}
 		

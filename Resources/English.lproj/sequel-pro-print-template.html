@@ -24,14 +24,22 @@
 			color: #000000;
 		}
 		
+		h1 {
+			font-size: 14px;
+		}
+		
+		h2 {
+			font-size: 11px;
+		}
+		
 		table, th, td {
 			border: 0.1em solid #000000;
 		}
 
 		table {
+			width: 100%;
 			border-collapse: collapse;
 			border-spacing: 0;
-			width: 100%;
 		}
 
 		th, td {
@@ -39,8 +47,13 @@
 		}
 
 		th {
-			background-color: #E5E5E5;
+			text-align: left;
 			font-weight: bold;
+			background-color: #E5E5E5;
+		}
+		
+		td {
+			font-family: {{font}};
 		}
 
 		tr > td {
@@ -54,19 +67,26 @@
 		tr.odd > td {
 			background-color: #FFFFFF;
 		}
+		
+		code {
+			font-family: Monaco;
+		}
 	</style>
 </head>
 
 <body>
+	<h1>{{c.table}}</h1>
+
 	<p>
-		{% if c.table %}<b>Table:</b> {{c.table}}<br>{% /if %}
-		<b>Connection:</b> {{c.username}}{% if c.username %}@{% /if %}{{c.hostname}}{% if c.port %}:{% /if %}{{c.port}}/{{c.database}}<br>
-		<b>Generated on:</b> {% now | date_format: "dd MMM yyyy 'at' HH:mm:ss" %} by {{c.version}}<br>
-		{% if c.query %}<b>SQL query:</b> {{c.query}}{% /if %}
-		<br>
+		<strong>Connection:</strong> {{c.username}}{% if c.username %}@{% /if %}{{c.hostname}}{% if c.port %}:{% /if %}{{c.port}}/{{c.database}}<br />
+		<strong>Generated on:</strong> {% now | date_format: "dd MMM yyyy 'at' HH:mm:ss" %} by {{c.version}}<br />
+		{% if c.query %}<br /><strong>SQL query:</strong> <code>{{c.query}}</code>{% /if %}
+		<br />
 	</p>
 	
-	<table id="table_results" class="data">
+	<h2>{{title}}</h2>
+	
+	<table class="data">
 		<thead>
 			<tr>
 				{% for column in columns %}<th>{{ column }}</th>{% /for %}
@@ -80,7 +100,26 @@
 			</tr>
 			{% /for %}
 		</tbody>
-</table>
+	</table><br />
+	
+	{% if indexes %}
+	<h2>Table Indexes</h2><br />
+	
+	<table class="data">
+		 <thead>
+			<tr>
+				{% for indexColumn in indexColumns %}<th>{{ indexColumn }}</th>{% /for %}
+			</tr>
+		</thead>
 
+		<tbody>
+			{% for index in indexes %}
+			<tr {% cycle 'class="odd" ' 'class="even" ' %}>
+				{% for cell in index %}<td>{{ cell }}</td>{% /for %}
+			</tr>
+			{% /for %}
+		</tbody>
+	</table>
+	{% /if %}
 </body>
 </html>

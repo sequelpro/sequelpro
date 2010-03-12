@@ -71,6 +71,10 @@ extern NSString *SPQueryFavortiesPasteboardDragType;
 extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
 
+// Filenames
+extern NSString *SPHTMLPrintTemplate;
+extern NSString *SPHTMLHelpTemplate;
+
 
 // Preference key constants
 // General Prefpane

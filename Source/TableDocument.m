@@ -46,7 +46,6 @@
 #import "SPConnectionController.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
-#import "SPPrintAccessory.h"
 #import "SPUserManager.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
@@ -54,10 +53,6 @@
 #import "SPProcessListController.h"
 #import "SPServerVariablesController.h"
 #import "SPAlertSheets.h"
-
-// Printing
-#import "MGTemplateEngine.h"
-#import "ICUTemplateMatcher.h"
 
 @interface TableDocument (PrivateAPI)
 
@@ -772,136 +767,6 @@
 - (void)setKeychainID:(NSString *)theID
 {
 	keyChainID = [[NSString stringWithString:theID] retain];
-}
-
-#pragma mark -
-#pragma mark Printing
-
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame 
-{
-	// Because I need the webFrame loaded (for preview), I've moved the actuall printing here.
-	NSPrintInfo *printInfo = [self printInfo];
-	[printInfo setHorizontalPagination:NSFitPagination];
-	[printInfo setVerticalPagination:NSAutoPagination];
-	[printInfo setVerticallyCentered:NO];
-	[printInfo setTopMargin:30];
-	[printInfo setBottomMargin:30];
-	[printInfo setLeftMargin:10];
-	[printInfo setRightMargin:10];
-
-	NSPrintOperation *op = [NSPrintOperation
-							printOperationWithView:[[[printWebView mainFrame] frameView] documentView]
-							printInfo:printInfo];
-
-	//add ability to select orientation to print panel
-	NSPrintPanel *printPanel = [op printPanel];
-	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
-
-	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] initWithNibName:@"PrintAccessory" bundle:nil];
-	[printAccessory setPrintView:printWebView];
-	[printPanel addAccessoryController:printAccessory];
-
-	NSPageLayout *pageLayout = [NSPageLayout pageLayout];
-	[pageLayout addAccessoryController:printAccessory];
-    [printAccessory release];
-
-	[op setPrintPanel:printPanel];
-
-    [op runOperationModalForWindow:tableWindow
-						  delegate:self
-					didRunSelector:
-	 @selector(printOperationDidRun:success:contextInfo:)
-					   contextInfo:NULL];
-
-}
-
-- (IBAction)printDocument:(id)sender
-{
-	// Here load the printing document. The actual printing is done in the doneLoading delegate.
-	[[printWebView mainFrame] loadHTMLString:[self getHTMLforPrint] baseURL:nil];
-}
-
-- (void)printOperationDidRun:(NSPrintOperation *)printOperation success:(BOOL)success contextInfo:(void *)info
-{
-	// Selector for print... maybe we can get rid of this?
-}
-
-- (NSString *)getHTMLforPrint
-{
-	// Set up template engine with your chosen matcher.
-	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
-	
-	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
-
-	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (build %@)",
-		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"],
-		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
-		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
-	];
-
-	NSMutableDictionary *connection = [[NSMutableDictionary alloc] init];
-	
-	if ([[self user] length]) {
-		[connection setValue:[self user] forKey:@"username"];
-	}	
-	
-	if ([[self table] length]) {
-		[connection setValue:[self table] forKey:@"table"];
-	}
-	
-	[connection setValue:[self host] forKey:@"hostname"];
-	
-	if ([connectionController port] && [[connectionController port] length]) {
-		[connection setValue:[connectionController port] forKey:@"port"];
-	}
-
-	[connection setValue:selectedDatabase forKey:@"database"];
-	[connection setValue:versionForPrint forKey:@"version"];
-
-	NSArray *rows = nil;
-	NSArray *columns = [self columnNames];
-
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0) {
-		if ([[tableSourceInstance tableStructureForPrint] count] > 1)
-			rows = [[NSArray alloc] initWithArray:
-					[[tableSourceInstance tableStructureForPrint] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSourceInstance tableStructureForPrint] count] - 1)]
-					 ]
-					];
-	}
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
-		if ([[tableContentInstance currentResult] count] > 1)
-			rows = [[NSArray alloc] initWithArray:
-					[[tableContentInstance currentDataResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count] - 1)]
-					 ]
-					];
-		
-		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
-	}
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
-		if ([[customQueryInstance currentResult] count] > 1)
-			rows = [[NSArray alloc] initWithArray:
-					[[customQueryInstance currentResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count] - 1)]
-					 ]
-					];
-		
-		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
-	}
-
-	[engine setObject:connection forKey:@"c"];
-	
-	NSDictionary *printData = [NSDictionary dictionaryWithObjectsAndKeys:columns, @"columns", rows, @"rows", nil];
-
-    [connection release];
-	
-    if (rows) [rows release];
-
-	// Process the template and display the results.
-	NSString *result = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:@"sequel-pro-print-template" ofType:@"html"] withVariables:printData];
-
-	return result;
 }
 
 #pragma mark -
@@ -1843,28 +1708,6 @@
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
 														window:tableWindow
 											  notificationName:@"Syntax Copied"];
-}
-
-- (NSArray *)columnNames
-{
-	NSArray *columns = nil;
-	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& [[tableSourceInstance tableStructureForPrint] count] > 0 ){
-		columns = [[NSArray alloc] initWithArray:[[tableSourceInstance tableStructureForPrint] objectAtIndex:0] copyItems:YES];
-	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& [[tableContentInstance currentResult] count] > 0 ){
-		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
-	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
-		&& [[customQueryInstance currentResult] count] > 0 ){
-		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
-	}
-
-	if(columns) {
-		[columns autorelease];
-	}
-	return columns;
 }
 
 /**
@@ -3149,13 +2992,10 @@
 		return ([self database] != nil && [self table] != nil);
 	}
 
-	if ([menuItem action] == @selector(printDocument:)) {
-		return (
-			(
-				[self database] != nil 
-					&& [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1
-			)
-			|| [tableWindow firstResponder] == customQueryInstance);
+	if ([menuItem action] == @selector(printDocument:)) {		
+		return (((([self database] != nil) && 
+				  ([[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1)) || 
+				 ([tableWindow firstResponder] == customQueryInstance)));
 	}
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {

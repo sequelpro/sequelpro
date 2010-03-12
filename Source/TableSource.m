@@ -1115,22 +1115,50 @@ returns a dictionary containing enum/set field names as key and possible values 
 	return [NSDictionary dictionaryWithDictionary:enumFields];
 }
 
-- (NSArray *)tableStructureForPrint
-{
-	MCPResult *queryResult;
-	NSMutableArray *tempResult = [NSMutableArray array];
+/**
+ * Returns a dictionary describing the source of the table to be used for printing purposes. The object accessible
+ * via the key 'structure' is an array of the tables fields, where the first element is always the field names 
+ * and each subsequent element is the field data. This is also true for the table's indexes, which are accessible
+ * via the key 'indexes'.
+ */
+- (NSDictionary *)tableSourceForPrinting
+{	
 	NSInteger i;
+	NSMutableArray *tempResult  = [NSMutableArray array];
+	NSMutableArray *tempResult2 = [NSMutableArray array];
 	
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
-	[queryResult setReturnDataAsStrings:YES];
+	MCPResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	MCPResult *indexesQueryResult   = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEXES FROM %@", [selectedTable backtickQuotedString]]];
 	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	[tempResult addObject:[queryResult fetchFieldNames]];
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[tempResult addObject:[queryResult fetchRowAsArray]];
+	[structureQueryResult setReturnDataAsStrings:YES];
+	[indexesQueryResult setReturnDataAsStrings:YES];
+	
+	if ([structureQueryResult numOfRows]) [structureQueryResult dataSeek:0];
+	if ([indexesQueryResult numOfRows]) [indexesQueryResult dataSeek:0];
+	
+	[tempResult addObject:[structureQueryResult fetchFieldNames]];
+	
+	NSMutableArray *temp = [[[indexesQueryResult fetchFieldNames] mutableCopy] autorelease];
+	
+	// Remove the 'table' column
+	[temp removeObjectAtIndex:0];
+	
+	[tempResult2 addObject:temp];
+	
+	for (i = 0 ; i < [structureQueryResult numOfRows]; i++) {
+		[tempResult addObject:[structureQueryResult fetchRowAsArray]];
 	}
 	
-	return tempResult;
+	for (i = 0 ; i < [indexesQueryResult numOfRows]; i++) {
+		NSMutableArray *index = [[[indexesQueryResult fetchRowAsArray] mutableCopy] autorelease];
+		
+		// Remove the 'table' column values
+		[index removeObjectAtIndex:0];
+		
+		[tempResult2 addObject:index];
+	}
+	
+	return [NSDictionary dictionaryWithObjectsAndKeys:tempResult, @"structure", tempResult2, @"indexes", nil];
 }
 
 #pragma mark -
@@ -1143,8 +1171,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
 	[tableSourceView setEnabled:NO];
 	[addFieldButton setEnabled:NO];
@@ -1166,8 +1193,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only re-enable elements if the current tab is the structure view
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
 	[tableSourceView setEnabled:YES];

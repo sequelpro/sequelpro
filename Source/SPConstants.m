@@ -40,6 +40,10 @@ NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPFileExtensionDefault                 = @"spf";
 NSString *SPFileExtensionSQL                     = @"sql";
 
+// Filenames
+NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
+NSString *SPHTMLHelpTemplate                     = @"sequel-pro-mysql-help-template";
+
 // Preference key constants
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
