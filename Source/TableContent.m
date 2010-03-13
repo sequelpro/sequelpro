@@ -1556,6 +1556,7 @@
 {
 	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
 	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
+	BOOL tableFilterRequired = NO;
 
 	// Ensure the clicked cell has foreign key details available
 	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
@@ -1579,8 +1580,7 @@
 		} else {
 			[argumentField setStringValue:targetFilterValue];
 		}
-		[self filterTable:self];
-
+		tableFilterRequired = YES;
 	} else {
 
 		// Store the filter details to use when loading the target table
@@ -1602,8 +1602,14 @@
 	[spHistoryControllerInstance setModifyingState:NO];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Empty the loading pool and exit the thread
+	// End the task
 	[tableDocumentInstance endTask];
+
+	// If the same table is the target, trigger a filter task on the main thread
+	if (tableFilterRequired)
+		[self performSelectorOnMainThread:@selector(filterTable:) withObject:self waitUntilDone:NO];
+	
+	// Empty the loading pool and exit the thread
 	[linkPool drain];
 }
 
@@ -2525,7 +2531,7 @@
 			if ([filterSettings objectForKey:@"secondBetweenField"])
 				secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
 		} else {
-			if ([filterSettings objectForKey:@"filterValue"])
+			if ([filterSettings objectForKey:@"filterValue"] && ![[filterSettings objectForKey:@"filterValue"] isNSNull])
 				filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
 		}
 	}
