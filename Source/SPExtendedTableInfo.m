@@ -372,6 +372,10 @@
  */
 - (NSDictionary *)tableInformationForPrinting
 {
+
+	// Update possible pending comment changes by set the focus to create table syntax view
+	[[NSApp keyWindow] makeFirstResponder:tableCreateSyntaxTextView];
+
 	NSMutableDictionary *tableInfo = [NSMutableDictionary dictionary];
 	NSDictionary *statusFields = [tableDataInstance statusValues];
 	
@@ -396,7 +400,19 @@
 	NSArray *HTMLExcludes = [NSArray arrayWithObjects:@"doctype", @"html", @"head", @"body", @"xml", nil];
 	
 	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:NSHTMLTextDocumentType, NSDocumentTypeDocumentAttribute, HTMLExcludes, NSExcludedElementsDocumentAttribute, nil];
+
+	// Set tableCreateSyntaxTextView's font size temporarily to 10pt for printing
+	NSFont *oldFont = [tableCreateSyntaxTextView font];
+	BOOL editableStatus = [tableCreateSyntaxTextView isEditable];
+	[tableCreateSyntaxTextView setEditable:YES];
+	[tableCreateSyntaxTextView setFont:[NSFont fontWithName:[oldFont fontName] size:10.0]];
+
+	// Convert tableCreateSyntaxTextView to HTML
 	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) documentAttributes:attributes error:&error];
+
+	// Restore original font settings
+	[tableCreateSyntaxTextView setFont:oldFont];
+	[tableCreateSyntaxTextView setEditable:editableStatus];
 	
 	if (error != nil) {
 		NSLog(@"Error generating table's create syntax HTML for printing. Excluding from print out. Error was: %@", [error localizedDescription]);
