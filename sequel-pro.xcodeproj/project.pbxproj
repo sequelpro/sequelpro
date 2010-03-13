@@ -175,6 +175,7 @@
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		B508B5DA0F9837A200E03A69 /* button_edit.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B508B5D90F9837A200E03A69 /* button_edit.tiff */; };
+		B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */ = {isa = PBXBuildFile; fileRef = B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */; };
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
 		B52460D80F8EF92300171639 /* SPTextViewAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D60F8EF92300171639 /* SPTextViewAdditions.m */; };
 		B52460DB0F8EF93B00171639 /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52460D90F8EF93B00171639 /* Console.xib */; };
@@ -576,6 +577,7 @@
 		58FEF57D0F3B4E9700518E8E /* SPTableData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableData.m; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B508B5D90F9837A200E03A69 /* button_edit.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_edit.tiff; sourceTree = "<group>"; };
+		B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-triggers.png"; sourceTree = "<group>"; };
 		B52460D30F8EF92300171639 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
 		B52460D40F8EF92300171639 /* SPArrayAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPArrayAdditions.m; sourceTree = "<group>"; };
 		B52460D50F8EF92300171639 /* SPTextViewAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextViewAdditions.h; sourceTree = "<group>"; };
@@ -1265,6 +1267,7 @@
 				17E641BE0EF02036001BC333 /* toolbar-switch-to-structure.png */,
 				17E641BF0EF02036001BC333 /* toolbar-switch-to-table-info.png */,
 				B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */,
+				B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */,
 				B5E92F350F75B32100012500 /* toolbar-export-csv.tiff */,
 				B5E92F360F75B32100012500 /* toolbar-export-html.tiff */,
 				B5E92F370F75B32100012500 /* toolbar-export-pdf.tiff */,
@@ -1680,6 +1683,7 @@
 				BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */,
 				BC962D661144EACA006170BD /* CompletionTokens.plist in Resources */,
 				17E0937E114AE154007FC1B4 /* sequel-pro-table-info-print-template.html in Resources */,
+				B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

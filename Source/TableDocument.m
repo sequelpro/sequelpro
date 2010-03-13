@@ -3390,6 +3390,16 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewRelations:)];
 
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarTableTriggers]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Triggers", @"toolbar item label for switching to the Table Triggers tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Triggers tab", @"tooltip for toolbar item for switching to the Table Triggers tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-table-triggers"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewTriggers:)];
+		
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarUserManager]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
@@ -3399,6 +3409,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(showUserManager:)];
+		
 	} else {
 		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
 		toolbarItem = nil;
@@ -3422,6 +3433,7 @@
 			SPMainToolbarCustomQuery,
 			SPMainToolbarTableInfo,
 			SPMainToolbarTableRelations,
+			SPMainToolbarTableTriggers,
 			SPMainToolbarUserManager,
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
@@ -3460,6 +3472,7 @@
 			SPMainToolbarCustomQuery,
 			SPMainToolbarTableInfo,
 			SPMainToolbarTableRelations,
+			SPMainToolbarTableTriggers,
 			nil];
 
 }
