@@ -350,8 +350,7 @@
  */
 - (NSArray *)relationDataForPrinting
 {
-	NSMutableArray *headings = [NSMutableArray array];
-	NSMutableArray *tempData = [NSMutableArray array];
+	NSMutableArray *headings = [[NSMutableArray alloc] init];
 	NSMutableArray *data     = [NSMutableArray array];
 	
 	// Get the relations table view's columns
@@ -361,11 +360,13 @@
 	}
 	
 	[data addObject:headings];
+	
+	[headings release];
 		
 	// Get the relation data
 	for (NSDictionary *relation in relationData)
 	{
-		NSMutableArray *temp = [NSMutableArray array];
+		NSMutableArray *temp = [[NSMutableArray alloc] init];
 		
 		[temp addObject:[relation objectForKey:@"name"]];
 		[temp addObject:[relation objectForKey:@"columns"]];
@@ -375,6 +376,8 @@
 		[temp addObject:([relation objectForKey:@"on_delete"]) ? [relation objectForKey:@"on_delete"] : @""];
 		
 		[data addObject:temp];
+		
+		[temp release];
 	}
 	
 	return data; 

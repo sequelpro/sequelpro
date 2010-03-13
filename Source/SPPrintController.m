@@ -34,6 +34,7 @@
 #import "ICUTemplateMatcher.h"
 #import "SPConnectionController.h"
 #import "SPExtendedTableInfo.h"
+#import "SPTableTriggers.h"
 
 @implementation TableDocument (SPPrintController)
 
@@ -100,7 +101,6 @@
 	[[printWebView mainFrame] loadHTMLString:([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 3) ? [self generateTableInfoHTMLForPrinting] :[self generateHTMLForPrinting] baseURL:nil];
 }
 
-
 /**
  * Generates the HTML for the current view that is being printed.
  */
@@ -146,13 +146,16 @@
 	}
 	// Table content view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
-		if ([[tableContentInstance currentResult] count] > 1) {
+		
+		NSArray *data = [tableContentInstance currentDataResult];
+		
+		if ([data count] > 1) {
 			
 			heading = NSLocalizedString(@"Table Content", @"table content print heading");
 			
 			rows = [[NSArray alloc] initWithArray:
-					[[tableContentInstance currentDataResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count] - 1)]]
+					[data objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
 					];
 		
 			[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
@@ -160,13 +163,16 @@
 	}
 	// Custom query view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
-		if ([[customQueryInstance currentResult] count] > 1) {
+		
+		NSArray *data = [customQueryInstance currentResult];
+		
+		if ([data count] > 1) {
 			
 			heading = NSLocalizedString(@"Query Result", @"query result print heading");
 			
 			rows = [[NSArray alloc] initWithArray:
-					[[customQueryInstance currentResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count] - 1)]]
+					[data objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
 					];
 		
 			[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
@@ -174,12 +180,28 @@
 	}
 	// Table relations view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4) {
-		if ([[tableRelationsInstance relationDataForPrinting] count] > 1) {
+		
+		NSArray *data = [tableRelationsInstance relationDataForPrinting];
+		
+		if ([data count] > 1) {
 			
 			heading = NSLocalizedString(@"Table Relations", @"table relations print heading");
 			
-			NSArray *data = [tableRelationsInstance relationDataForPrinting];
+			rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+					];
+		}
+	}
+	// Table triggers view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 5) {
+		
+		NSArray *data = [tableTriggersInstance triggerDataForPrinting];
+		
+		if ([data count] > 1) {
 			
+			heading = NSLocalizedString(@"Table Triggers", @"table triggers print heading");
+						
 			rows = [[NSArray alloc] initWithArray:
 					[data objectsAtIndexes:
 					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
@@ -257,6 +279,12 @@
 				
 		columns = [[NSArray alloc] initWithArray:[[tableRelationsInstance relationDataForPrinting] objectAtIndex:0] copyItems:YES];
 	}
+	// Table triggers view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 5
+			 && [[tableTriggersInstance triggerDataForPrinting] count] > 0) {
+		
+		columns = [[NSArray alloc] initWithArray:[[tableTriggersInstance triggerDataForPrinting] objectAtIndex:0] copyItems:YES];
+	}
 	
 	if (columns) [columns autorelease];
 	
@@ -284,7 +312,6 @@
 	if ([[self table] length]) {
 		[connection setValue:[self table] forKey:@"table"];
 	}
-	
 	
 	if ([connectionController port] && [[connectionController port] length]) {
 		[connection setValue:[connectionController port] forKey:@"port"];

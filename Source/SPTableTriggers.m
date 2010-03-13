@@ -393,6 +393,49 @@
 	[self _toggleConfirmAddTriggerButtonEnabled];
 }
 
+/**
+ * Returns an array of trigger data to be used for printing purposes. The first element in the array is always
+ * an array of the columns and each subsequent element is an array of trigger data.
+ */
+- (NSArray *)triggerDataForPrinting
+{
+	NSMutableArray *headings = [[NSMutableArray alloc] init];
+	NSMutableArray *data     = [NSMutableArray array];
+	
+	// Get the relations table view's columns
+	for (NSTableColumn *column in [triggersTableView tableColumns])
+	{
+		[headings addObject:[[column headerCell] stringValue]];
+	}
+	
+	// Get rid of the 'Table' column
+	[headings removeObjectAtIndex:0];
+	
+	[data addObject:headings];
+	
+	[headings release];
+	
+	// Get the relation data
+	for (NSDictionary *trigger in triggerData)
+	{
+		NSMutableArray *temp = [[NSMutableArray alloc] init];
+				
+		[temp addObject:[trigger objectForKey:@"trigger"]];
+		[temp addObject:[trigger objectForKey:@"event"]];
+		[temp addObject:[trigger objectForKey:@"timing"]];
+		[temp addObject:[trigger objectForKey:@"statement"]];
+		[temp addObject:[trigger objectForKey:@"definer"]];
+		[temp addObject:([trigger objectForKey:@"created"]) ? [trigger objectForKey:@"created"] : @""];
+		[temp addObject:[trigger objectForKey:@"sql_mode"]];
+		
+		[data addObject:temp];
+		
+		[temp release];
+	}
+	
+	return data; 
+}
+
 #pragma mark -
 
 /*
