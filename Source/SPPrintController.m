@@ -164,92 +164,77 @@
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0) {
 		
 		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
+					
+		heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
 		
-		if ([[tableSource objectForKey:@"structure"] count] > 1) {
-			
-			heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
-			
-			rows = [[NSArray alloc] initWithArray:
-					[[tableSource objectForKey:@"structure"] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
-					];
-		
-			indexes = [[NSArray alloc] initWithArray:
+		rows = [[NSArray alloc] initWithArray:
+				[[tableSource objectForKey:@"structure"] objectsAtIndexes:
+				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
+				];
+	
+		indexes = [[NSArray alloc] initWithArray:
 				   [[tableSource objectForKey:@"indexes"] objectsAtIndexes:
 					[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]]
 				   ];
+	
+		indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
 		
-			indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
-			
-			[printData setObject:indexes forKey:@"indexes"];
-			[printData setObject:indexColumns forKey:@"indexColumns"];
-			
-			if (indexes) [indexes release];
-		}
+		[printData setObject:indexes forKey:@"indexes"];
+		[printData setObject:indexColumns forKey:@"indexColumns"];
+		
+		if (indexes) [indexes release];
 	}
 	// Table content view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
 		
 		NSArray *data = [tableContentInstance currentDataResult];
-		
-		if ([data count] > 1) {
 			
-			heading = NSLocalizedString(@"Table Content", @"table content print heading");
+		heading = NSLocalizedString(@"Table Content", @"table content print heading");
 			
-			rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
-					];
+		rows = [[NSArray alloc] initWithArray:
+				[data objectsAtIndexes:
+				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
+				];
 		
-			[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
-		}
+		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
 	}
 	// Custom query view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
 		
 		NSArray *data = [customQueryInstance currentResult];
-		
-		if ([data count] > 1) {
+					
+		heading = NSLocalizedString(@"Query Result", @"query result print heading");
 			
-			heading = NSLocalizedString(@"Query Result", @"query result print heading");
-			
-			rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
-					];
+		rows = [[NSArray alloc] initWithArray:
+				[data objectsAtIndexes:
+				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
+				];
 		
-			[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
-		}
+		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
 	}
 	// Table relations view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4) {
 		
 		NSArray *data = [tableRelationsInstance relationDataForPrinting];
-		
-		if ([data count] > 1) {
+					
+		heading = NSLocalizedString(@"Table Relations", @"table relations print heading");
 			
-			heading = NSLocalizedString(@"Table Relations", @"table relations print heading");
-			
-			rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-					];
-		}
+		rows = [[NSArray alloc] initWithArray:
+				[data objectsAtIndexes:
+				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+				];
 	}
 	// Table triggers view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 5) {
 		
 		NSArray *data = [tableTriggersInstance triggerDataForPrinting];
-		
-		if ([data count] > 1) {
-			
-			heading = NSLocalizedString(@"Table Triggers", @"table triggers print heading");
+					
+		heading = NSLocalizedString(@"Table Triggers", @"table triggers print heading");
 						
-			rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-					];
-		}
+		rows = [[NSArray alloc] initWithArray:
+				[data objectsAtIndexes:
+				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+				];
 	}
 		
 	[engine setObject:connection forKey:@"c"];
