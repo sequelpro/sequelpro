@@ -2983,11 +2983,11 @@
 	}
 
 	if ([menuItem action] == @selector(printDocument:)) {
-		return (
-			[self database] != nil
-			&& [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1
-			// if Custom Query Tab is active the textView will handle printDocument if it's first responder
-			&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] != 2
+		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1)
+			// if Custom Query Tab is active the textView will handle printDocument by itself
+			// if it is first responder; otherwise allow to print the Query Result table even 
+			//if no db/table is selected
+			|| [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
 			);
 	}
 
