@@ -171,11 +171,11 @@
 
 - (IBAction)resetAutoIncrement:(id)sender
 {
-
-	if([sender tag] == 1) {
+	if ([sender tag] == 1) {
 		[tableRowAutoIncrement setEditable:YES];
 		[tableRowAutoIncrement selectText:nil];
-	} else {
+	} 
+	else {
 		[tableRowAutoIncrement setEditable:NO];
 		[tableSourceInstance resetAutoIncrement:sender];
 	}
@@ -189,12 +189,12 @@
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command 
 {
-
 	// Listen to ESC to abort editing of auto increment input field
 	if (command == @selector(cancelOperation:) && control == tableRowAutoIncrement) {
 		[tableRowAutoIncrement abortEditing];
 		return YES;
 	}
+	
 	return NO;
 }
 
@@ -368,7 +368,7 @@
 }
 
 /**
- *
+ * Returns a dictionary describing the information of the table to be used for printing purposes.
  */
 - (NSDictionary *)tableInformationForPrinting
 {
@@ -391,7 +391,22 @@
 	[tableInfo setObject:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields] forKey:@"sizeFree"];
 	
 	[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
-	[tableInfo setObject:[tableCreateSyntaxTextView string] forKey:@"createSyntax"];
+		
+	NSError *error = nil;
+	NSArray *HTMLExcludes = [NSArray arrayWithObjects:@"doctype", @"html", @"head", @"body", @"xml", nil];
+	
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:NSHTMLTextDocumentType, NSDocumentTypeDocumentAttribute, HTMLExcludes, NSExcludedElementsDocumentAttribute, nil];
+	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) documentAttributes:attributes error:&error];
+	
+	if (error != nil) {
+		NSLog(@"Error generating table's create syntax HTML for printing. Excluding from print out. Error was: %@", [error localizedDescription]);
+		
+		return tableInfo;
+	}
+	
+	NSString *HTMLString = [[[NSString alloc] initWithData:HTMLData encoding:NSUTF8StringEncoding] autorelease];
+	
+	[tableInfo setObject:HTMLString forKey:@"createSyntax"];
 	
 	return tableInfo;
 }

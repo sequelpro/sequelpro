@@ -142,8 +142,10 @@
 	<p><em>{{i.comments}}</em></p>
 	{% /if %}
 	
+	{% if i.createSyntax > 0 %}
 	<h2>Create Syntax</h2>
 	
-	<pre>{{i.createSyntax}}</pre>
+	{{i.createSyntax}}
+	{% /if %}
 </body>
 </html>
