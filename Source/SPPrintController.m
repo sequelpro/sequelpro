@@ -98,9 +98,7 @@
  * Loads the print document interface. The actual printing is done in the doneLoading delegate.
  */
 - (IBAction)printDocument:(id)sender
-{
-	NSString *HTMLString = @"";
-	
+{	
 	if (printThread) [printThread release];
 	
 	[self startTaskWithDescription:NSLocalizedString(@"Generating print document...", @"generating print document status message")];
@@ -234,7 +232,7 @@
 		rows = [[NSArray alloc] initWithArray:
 				[data objectsAtIndexes:
 				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-				];
+				];		
 	}
 		
 	[engine setObject:connection forKey:@"c"];
@@ -250,7 +248,7 @@
 	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
 	
 	// Check if the operation has been cancelled
-	if ([printThread isCancelled]) {		
+	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {		
 		[pool drain];
 		[self endTask];
 		
@@ -288,7 +286,7 @@
 	[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
 	
 	// Check if the operation has been cancelled
-	if ([printThread isCancelled]) {		
+	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {	
 		[pool drain];
 		[self endTask];
 		
