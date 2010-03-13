@@ -742,7 +742,7 @@
 	[tableDocumentInstance setDatabases:self];
 
 	// Update current selected database
-	[tableDocumentInstance refreshCurrentDatabase];
+	[tableDocumentInstance performSelector:@selector(refreshCurrentDatabase) withObject:nil afterDelay:0.1];
 
 	// Update current database tables 
 	[tablesListInstance updateTables:self];

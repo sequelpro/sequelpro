@@ -811,6 +811,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (IBAction)printDocument:(id)sender
 {
 
+	// If Extended Table Info tab is active delegate the print call to the SPPrintController
+	// if the user doesn't select anything in self
+	if([[[[self delegate] class] description] isEqualToString:@"SPExtendedTableInfo"] && ![self selectedRange].length) {
+		[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] printDocument:sender];
+		return;
+	}
+
 	// This will scale the view to fit the page without centering it.
 	[[NSPrintInfo sharedPrintInfo] setHorizontalPagination:NSFitPagination];
 	[[NSPrintInfo sharedPrintInfo] setHorizontallyCentered:NO];
@@ -1861,7 +1868,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
+			BOOL editableStatus = [self isEditable];
+			[self setEditable:YES];
 			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+			[self setEditable:editableStatus];
 			return;
 		}
 	}
