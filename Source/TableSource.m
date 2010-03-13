@@ -1128,6 +1128,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	NSMutableArray *tempResult2 = [NSMutableArray array];
 	
 	NSString *nullValue = [prefs stringForKey:SPNullValue];
+	CFStringRef escapedNullValue = CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL);
 	
 	MCPResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 	MCPResult *indexesQueryResult   = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEXES FROM %@", [selectedTable backtickQuotedString]]];
@@ -1156,9 +1157,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 		for (j = 0; j < [row count]; j++)
 		{
 			if ([[row objectAtIndex:j] isNSNull]) {
-				
-				// Replace the NULL instance with an escaped version of the user's placeholder
-				[row replaceObjectAtIndex:j withObject:(NSString *)CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL)];
+				[row replaceObjectAtIndex:j withObject:(NSString *)escapedNullValue];
 			}
 		}
 				
@@ -1166,7 +1165,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 				 
 		[row release];
 	}
-	
+
 	for (i = 0; i < [indexesQueryResult numOfRows]; i++) {
 		NSMutableArray *index = [[indexesQueryResult fetchRowAsArray] mutableCopy];
 		
@@ -1177,9 +1176,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 		for (j = 0; j < [index count]; j++)
 		{
 			if ([[index objectAtIndex:j] isNSNull]) {
-				
-				// Replace the NULL instance with an escaped version of the user's placeholder
-				[index replaceObjectAtIndex:j withObject:(NSString *)CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL)];
+				[index replaceObjectAtIndex:j withObject:(NSString *)escapedNullValue];
 			}
 		}
 		
@@ -1187,7 +1184,8 @@ returns a dictionary containing enum/set field names as key and possible values 
 		
 		[index release];
 	}
-	
+
+	CFRelease(escapedNullValue);
 	return [NSDictionary dictionaryWithObjectsAndKeys:tempResult, @"structure", tempResult2, @"indexes", nil];
 }
 

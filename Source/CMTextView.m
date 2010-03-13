@@ -311,7 +311,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						[allDbs addObject:db];
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSMutableArray *sortedDbs = [[NSMutableArray array] autorelease];
+			NSMutableArray *sortedDbs = [NSMutableArray array];
 			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
 
 			NSString *currentDb = nil;
@@ -1113,6 +1113,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			[desc release];
 			for(id table in sortedTables) {
 				NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
 				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
@@ -1164,6 +1165,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSArray *allFields = [theTable allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			[desc release];
 			for(id field in sortedFields) {
 				if(![field hasPrefix:@"  "]) {
 					NSString *typ = [theTable objectForKey:field];
@@ -1191,7 +1193,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					}
 				}
 			}
-			[desc release];
 		} else {
 			arr = [NSArray arrayWithArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 			if(arr == nil) {
@@ -1584,23 +1585,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSData *errdata  = [stderr_file readDataToEndOfFile];
 
 	if(outdata != nil) {
-		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] description];
-		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+		NSString *stdout = [[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding];
+		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 		if(bashTask) [bashTask release];
 		if(stdout != nil) {
 			if (status == 0) {
 				return [stdout autorelease];
 			} else {
-				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
 				[stdout release];
-				[error release];
 				NSBeep();
 				return @"";
 			}
 		} else {
-			if(stdout) [stdout release];
 			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
 			NSBeep();
 		}

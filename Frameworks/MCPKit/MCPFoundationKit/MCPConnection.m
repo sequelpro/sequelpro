@@ -229,6 +229,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		[delegateDecisionLock lock];
 		lastDelegateDecisionForLostConnection = [delegate connectionLost:self];
 		[delegateDecisionLock unlock];
+		[delegateDecisionLock release];
 
 	// Otherwise call ourself on the main thread, waiting until the reply is received.
 	} else {
@@ -1470,9 +1471,11 @@ void performThreadedKeepAlive(void *ptr)
 			}
 			
 			if (queryCancelled) {
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 				queryErrorMessage = [[NSString alloc] initWithString:NSLocalizedString(@"Query cancelled.", @"Query cancelled error")];
 				queryErrorId = 1317;
 			} else {			
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 				queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 				queryErrorId = mysql_errno(mConnection);
 

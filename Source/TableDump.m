@@ -2535,7 +2535,7 @@
 	NSMutableString *errors = [NSMutableString string];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	NSMutableString *csvLineEnd;
-	NSDictionary *tableDetails;
+	NSDictionary *tableDetails = nil;
 	NSMutableArray *tableColumnNumericStatus;
 	
 	// Reset the interface

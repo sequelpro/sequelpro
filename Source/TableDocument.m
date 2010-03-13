@@ -1755,8 +1755,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Check table successfully passed.",@"check table successfully passed message") : NSLocalizedString(@"Check table failed.", @"check table failed message");
@@ -1832,8 +1830,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully analyzed table.",@"analyze table successfully passed message") : NSLocalizedString(@"Analyze table failed.", @"analyze table failed message");
@@ -1909,8 +1905,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully optimized table.",@"optimize table successfully passed message") : NSLocalizedString(@"Optimize table failed.", @"optimize table failed message");
@@ -1985,8 +1979,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully repaired table.",@"repair table successfully passed message") : NSLocalizedString(@"Repair table failed.", @"repair table failed message");
@@ -2061,8 +2053,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully flushed table.",@"flush table successfully passed message") : NSLocalizedString(@"Flush table failed.", @"flush table failed message");
