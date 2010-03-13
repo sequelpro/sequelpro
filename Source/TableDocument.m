@@ -103,8 +103,8 @@
 		taskCancellationCallbackSelector = NULL;
 
 		keyChainID = nil;
-		
 		statusValues = nil;
+		printThread = nil;
 	}
 
 	return self;
@@ -1190,7 +1190,7 @@
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		[mainToolbar validateVisibleItems];
-		
+				
 		// Schedule appearance of the task window in the near future
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
 	}

@@ -27,8 +27,8 @@
 
 @interface TableDocument (SPPrintController)
 
-- (NSString *)generateHTMLForPrinting;
-- (NSString *)generateTableInfoHTMLForPrinting;
+- (void)generateHTMLForPrinting;
+- (void)generateTableInfoHTMLForPrinting;
 
 - (NSArray *)columnNames;
 - (NSMutableDictionary *)connectionInformation;

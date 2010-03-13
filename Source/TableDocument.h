@@ -162,6 +162,8 @@
 	
 	NSString *keyChainID;
 	
+	NSThread *printThread;
+	
 	id statusValues;
 }
 

@@ -91,6 +91,7 @@
 					didRunSelector:nil
 					   contextInfo:nil];
 	
+	[self endTask];
 }
 
 /**
@@ -98,14 +99,54 @@
  */
 - (IBAction)printDocument:(id)sender
 {
-	[[printWebView mainFrame] loadHTMLString:([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 3) ? [self generateTableInfoHTMLForPrinting] :[self generateHTMLForPrinting] baseURL:nil];
+	NSString *HTMLString = @"";
+	
+	if (printThread) [printThread release];
+	
+	[self startTaskWithDescription:NSLocalizedString(@"Generating print document...", @"generating print document status message")];
+	
+	BOOL isTableInformation = ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 3);
+
+	if ([NSThread isMainThread]) {
+		printThread = [[NSThread alloc] initWithTarget:self selector:(isTableInformation) ? @selector(generateTableInfoHTMLForPrinting) : @selector(generateHTMLForPrinting) object:nil];
+		
+		[self enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:@selector(generateHTMLForPrintingCallback)];
+		
+		[printThread start];
+	} 
+	else {
+		(isTableInformation) ? [self generateTableInfoHTMLForPrinting] : [self generateHTMLForPrinting];
+	}
+}
+
+/**
+ * HTML generation thread callback method.
+ */
+- (void)generateHTMLForPrintingCallback
+{
+	[self setTaskDescription:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
+	
+	// Cancel the print thread
+	[printThread cancel];
+}
+
+/**
+ * Loads the supplied HTML string in the print WebView.
+ */
+- (void)loadPrintWebViewWithHTMLString:(NSString *)HTMLString
+{
+	[[printWebView mainFrame] loadHTMLString:HTMLString baseURL:nil];
+	
+	if (printThread) [printThread release];
 }
 
 /**
  * Generates the HTML for the current view that is being printed.
  */
-- (NSString *)generateHTMLForPrinting
+- (void)generateHTMLForPrinting
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	// Set up template engine with your chosen matcher
 	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 	
@@ -142,6 +183,8 @@
 			
 			[printData setObject:indexes forKey:@"indexes"];
 			[printData setObject:indexColumns forKey:@"indexColumns"];
+			
+			if (indexes) [indexes release];
 		}
 	}
 	// Table content view
@@ -219,15 +262,30 @@
 		
     if (rows) [rows release];
 	
-	// Process the template and display the results.
-	return [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
+	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
+	
+	// Check if the operation has been cancelled
+	if ([printThread isCancelled]) {		
+		[pool drain];
+		[self endTask];
+		
+		[NSThread exit];
+		
+		return;
+	}
+	
+	[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
+	
+	[pool drain];
 }
 	 
 /**
  * Generates the HTML for the table information view that is to be printed.
  */
-- (NSString *)generateTableInfoHTMLForPrinting
+- (void)generateTableInfoHTMLForPrinting
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	// Set up template engine with your chosen matcher
 	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 	
@@ -243,9 +301,22 @@
 	
 	[printData setObject:heading forKey:@"heading"];
 	[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
+	
+	// Check if the operation has been cancelled
+	if ([printThread isCancelled]) {		
+		[pool drain];
+		[self endTask];
 		
-	// Process the template and display the results.
-	return [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
+		[NSThread exit];
+		
+		return;
+	}
+	
+	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
+	
+	[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
+							   
+	[pool drain];
 }
 
 /**
