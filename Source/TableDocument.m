@@ -2992,8 +2992,13 @@
 		return ([self database] != nil && [self table] != nil);
 	}
 
-	if ([menuItem action] == @selector(printDocument:)) {		
-		return (([self database] != nil) && ([[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1));
+	if ([menuItem action] == @selector(printDocument:)) {
+		return (
+			[self database] != nil
+			&& [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1
+			// if Custom Query Tab is active the textView will handle printDocument if it's first responder
+			&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] != 2
+			);
 	}
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {
