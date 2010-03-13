@@ -71,6 +71,9 @@
 	
 	NSPrintOperation *op = [NSPrintOperation printOperationWithView:[[[printWebView mainFrame] frameView] documentView] printInfo:printInfo];
 	
+	// Perform the print operation on a background thread
+	[op setCanSpawnSeparateThread:YES];
+	
 	// Add the ability to select the orientation to print panel
 	NSPrintPanel *printPanel = [op printPanel];
 	
@@ -91,16 +94,14 @@
 					didRunSelector:nil
 					   contextInfo:nil];
 	
-	[self endTask];
+	if ([self isWorking]) [self endTask];
 }
 
 /**
  * Loads the print document interface. The actual printing is done in the doneLoading delegate.
  */
 - (IBAction)printDocument:(id)sender
-{	
-	if (printThread) [printThread release];
-	
+{		
 	[self startTaskWithDescription:NSLocalizedString(@"Generating print document...", @"generating print document status message")];
 	
 	BOOL isTableInformation = ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 3);
