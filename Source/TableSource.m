@@ -1123,9 +1123,11 @@ returns a dictionary containing enum/set field names as key and possible values 
  */
 - (NSDictionary *)tableSourceForPrinting
 {	
-	NSInteger i;
+	NSInteger i, j;
 	NSMutableArray *tempResult  = [NSMutableArray array];
 	NSMutableArray *tempResult2 = [NSMutableArray array];
+	
+	NSString *nullValue = [prefs stringForKey:SPNullValue];
 	
 	MCPResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 	MCPResult *indexesQueryResult   = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEXES FROM %@", [selectedTable backtickQuotedString]]];
@@ -1138,24 +1140,52 @@ returns a dictionary containing enum/set field names as key and possible values 
 	
 	[tempResult addObject:[structureQueryResult fetchFieldNames]];
 	
-	NSMutableArray *temp = [[[indexesQueryResult fetchFieldNames] mutableCopy] autorelease];
+	NSMutableArray *temp = [[indexesQueryResult fetchFieldNames] mutableCopy];
 	
 	// Remove the 'table' column
 	[temp removeObjectAtIndex:0];
 	
 	[tempResult2 addObject:temp];
 	
-	for (i = 0 ; i < [structureQueryResult numOfRows]; i++) {
-		[tempResult addObject:[structureQueryResult fetchRowAsArray]];
+	[temp release];
+	
+	for (i = 0; i < [structureQueryResult numOfRows]; i++) {
+		NSMutableArray *row = [[structureQueryResult fetchRowAsArray] mutableCopy];
+				
+		// For every NULL value replace it with the user's NULL value placeholder so we can actually print it
+		for (j = 0; j < [row count]; j++)
+		{
+			if ([[row objectAtIndex:j] isNSNull]) {
+				
+				// Replace the NULL instance with an escaped version of the user's placeholder
+				[row replaceObjectAtIndex:j withObject:(NSString *)CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL)];
+			}
+		}
+				
+		[tempResult addObject:row];
+				 
+		[row release];
 	}
 	
-	for (i = 0 ; i < [indexesQueryResult numOfRows]; i++) {
-		NSMutableArray *index = [[[indexesQueryResult fetchRowAsArray] mutableCopy] autorelease];
+	for (i = 0; i < [indexesQueryResult numOfRows]; i++) {
+		NSMutableArray *index = [[indexesQueryResult fetchRowAsArray] mutableCopy];
 		
 		// Remove the 'table' column values
 		[index removeObjectAtIndex:0];
 		
+		// For every NULL value replace it with the user's NULL value placeholder so we can actually print it
+		for (j = 0; j < [index count]; j++)
+		{
+			if ([[index objectAtIndex:j] isNSNull]) {
+				
+				// Replace the NULL instance with an escaped version of the user's placeholder
+				[index replaceObjectAtIndex:j withObject:(NSString *)CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL)];
+			}
+		}
+		
 		[tempResult2 addObject:index];
+		
+		[index release];
 	}
 	
 	return [NSDictionary dictionaryWithObjectsAndKeys:tempResult, @"structure", tempResult2, @"indexes", nil];
@@ -1271,8 +1301,7 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 */
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
-
-	//make sure that the drag operation is started from the right table view
+	// Make sure that the drag operation is started from the right table view
 	if (aTableView != tableSourceView) return NO;
 
 	// Check whether a save of the current field row is required.
@@ -1285,7 +1314,6 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 	} else {
 		return NO;
 	}
-
 }
 
 /*

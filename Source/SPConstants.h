@@ -73,6 +73,7 @@ extern NSString *SPFileExtensionSQL;
 
 // Filenames
 extern NSString *SPHTMLPrintTemplate;
+extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
 
 

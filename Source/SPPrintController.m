@@ -33,6 +33,7 @@
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
 #import "SPConnectionController.h"
+#import "SPExtendedTableInfo.h"
 
 @implementation TableDocument (SPPrintController)
 
@@ -44,13 +45,28 @@
 	// Because we need the webFrame loaded (for preview), we've moved the actual printing here
 	NSPrintInfo *printInfo = [self printInfo];
 	
+	NSSize paperSize = [printInfo paperSize];
+    NSRect printableRect = [printInfo imageablePageBounds];
+	
+    // Calculate page margins
+    CGFloat marginL = printableRect.origin.x;
+    CGFloat marginR = paperSize.width - (printableRect.origin.x + printableRect.size.width);
+    CGFloat marginB = printableRect.origin.y;
+    CGFloat marginT = paperSize.height - (printableRect.origin.y + printableRect.size.height);
+	
+    // Make sure margins are symetric and positive
+    CGFloat marginLR = MAX(0, MAX(marginL, marginR));
+    CGFloat marginTB = MAX(0, MAX(marginT, marginB));
+    
+    // Set the margins
+    [printInfo setLeftMargin:marginLR];
+    [printInfo setRightMargin:marginLR];
+    [printInfo setTopMargin:marginTB];
+    [printInfo setBottomMargin:marginTB];
+	
 	[printInfo setHorizontalPagination:NSFitPagination];
 	[printInfo setVerticalPagination:NSAutoPagination];
 	[printInfo setVerticallyCentered:NO];
-	[printInfo setTopMargin:30];
-	[printInfo setBottomMargin:30];
-	[printInfo setLeftMargin:10];
-	[printInfo setRightMargin:10];
 	
 	NSPrintOperation *op = [NSPrintOperation printOperationWithView:[[[printWebView mainFrame] frameView] documentView] printInfo:printInfo];
 	
@@ -81,27 +97,185 @@
  */
 - (IBAction)printDocument:(id)sender
 {
-	[[printWebView mainFrame] loadHTMLString:[self generateHTMLforPrinting] baseURL:nil];
+	[[printWebView mainFrame] loadHTMLString:([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 3) ? [self generateTableInfoHTMLForPrinting] :[self generateHTMLForPrinting] baseURL:nil];
 }
 
 
 /**
  * Generates the HTML for the current view that is being printed.
  */
-- (NSString *)generateHTMLforPrinting
+- (NSString *)generateHTMLForPrinting
 {
 	// Set up template engine with your chosen matcher
 	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 	
 	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
 	
-	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (build %@)",
+	NSMutableDictionary *connection = [self connectionInformation];
+	
+	NSString *heading = @"";
+	NSArray *rows, *indexes, *indexColumns = nil;
+	NSArray *columns = [self columnNames];
+	
+	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
+	
+	// Table source view
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0) {
+		
+		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
+		
+		if ([[tableSource objectForKey:@"structure"] count] > 1) {
+			
+			heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
+			
+			rows = [[NSArray alloc] initWithArray:
+					[[tableSource objectForKey:@"structure"] objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
+					];
+		
+			indexes = [[NSArray alloc] initWithArray:
+				   [[tableSource objectForKey:@"indexes"] objectsAtIndexes:
+					[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]]
+				   ];
+		
+			indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
+			
+			[printData setObject:indexes forKey:@"indexes"];
+			[printData setObject:indexColumns forKey:@"indexColumns"];
+		}
+	}
+	// Table content view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
+		if ([[tableContentInstance currentResult] count] > 1) {
+			
+			heading = NSLocalizedString(@"Table Content", @"table content print heading");
+			
+			rows = [[NSArray alloc] initWithArray:
+					[[tableContentInstance currentDataResult] objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count] - 1)]]
+					];
+		
+			[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
+		}
+	}
+	// Custom query view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
+		if ([[customQueryInstance currentResult] count] > 1) {
+			
+			heading = NSLocalizedString(@"Query Result", @"query result print heading");
+			
+			rows = [[NSArray alloc] initWithArray:
+					[[customQueryInstance currentResult] objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count] - 1)]]
+					];
+		
+			[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
+		}
+	}
+	// Table relations view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4) {
+		if ([[tableRelationsInstance relationDataForPrinting] count] > 1) {
+			
+			heading = NSLocalizedString(@"Table Relations", @"table relations print heading");
+			
+			NSArray *data = [tableRelationsInstance relationDataForPrinting];
+			
+			rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+					];
+		}
+	}
+		
+	[engine setObject:connection forKey:@"c"];
+	
+	[printData setObject:heading forKey:@"heading"];
+	[printData setObject:columns forKey:@"columns"];
+	[printData setObject:rows forKey:@"rows"]; 
+	[printData setObject:([prefs boolForKey:SPUseMonospacedFonts]) ? SPDefaultMonospacedFontName : @"Lucida Grande" forKey:@"font"];
+	[printData setObject:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? @"1px solid #CCCCCC" : @"none" forKey:@"gridlines"];
+		
+    if (rows) [rows release];
+	
+	// Process the template and display the results.
+	return [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
+}
+	 
+/**
+ * Generates the HTML for the table information view that is to be printed.
+ */
+- (NSString *)generateTableInfoHTMLForPrinting
+{
+	// Set up template engine with your chosen matcher
+	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
+	
+	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
+	
+	NSMutableDictionary *connection = [self connectionInformation];
+	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
+	
+	NSString *heading = NSLocalizedString(@"Table Information", @"table information print heading");
+
+	[engine setObject:connection forKey:@"c"];
+	[engine setObject:[extendedTableInfoInstance tableInformationForPrinting] forKey:@"i"];
+	
+	[printData setObject:heading forKey:@"heading"];
+	[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
+		
+	// Process the template and display the results.
+	return [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
+}
+
+/**
+ * Returns an array of columns for whichever view is being printed.
+ */
+- (NSArray *)columnNames
+{
+	NSArray *columns = nil;
+	
+	// Table source view
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
+		&& [[tableSourceInstance tableSourceForPrinting] count] > 0) {
+		
+		columns = [[NSArray alloc] initWithArray:[[[tableSourceInstance tableSourceForPrinting] objectForKey:@"structure"] objectAtIndex:0] copyItems:YES];
+	}
+	// Table content view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
+			 && [[tableContentInstance currentResult] count] > 0) {
+		
+		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
+	}
+	// Custom query view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
+			 && [[customQueryInstance currentResult] count] > 0) {
+		
+		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
+	}
+	// Table relations view
+	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4
+			 && [[tableRelationsInstance relationDataForPrinting] count] > 0) {
+				
+		columns = [[NSArray alloc] initWithArray:[[tableRelationsInstance relationDataForPrinting] objectAtIndex:0] copyItems:YES];
+	}
+	
+	if (columns) [columns autorelease];
+	
+	return columns;
+}
+
+/**
+ * Generates a dictionary of connection information that is used for printing.
+ */
+- (NSMutableDictionary *)connectionInformation
+{
+	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (%@ %@)",
 								 [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"],
 								 [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
+								 NSLocalizedString(@"build", @"build label"),
 								 [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
 								 ];
 	
-	NSMutableDictionary *connection = [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *connection = [NSMutableDictionary dictionary];
 	
 	if ([[self user] length]) {
 		[connection setValue:[self user] forKey:@"username"];
@@ -120,137 +294,7 @@
 	[connection setValue:selectedDatabase forKey:@"database"];
 	[connection setValue:versionForPrint forKey:@"version"];
 	
-	NSString *title = @"";
-	NSArray *rows, *indexes, *indexColumns = nil;
-	NSArray *columns = [self columnNames];
-	
-	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
-	
-	// Table source view
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0) {
-		
-		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
-		
-		if ([[tableSource objectForKey:@"structure"] count] > 1) {
-			
-			title = @"Table Structure";
-			
-			rows = [[NSArray alloc] initWithArray:
-					[[tableSource objectForKey:@"structure"] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]
-					 ]
-					];
-		
-			indexes = [[NSArray alloc] initWithArray:
-				   [[tableSource objectForKey:@"indexes"] objectsAtIndexes:
-					[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]
-					]
-				   ];
-		
-			indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
-			
-			[printData setObject:indexes forKey:@"indexes"];
-			[printData setObject:indexColumns forKey:@"indexColumns"];
-		}
-	}
-	// Table content view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
-		if ([[tableContentInstance currentResult] count] > 1) {
-			
-			title = @"Table Content";
-			
-			rows = [[NSArray alloc] initWithArray:
-					[[tableContentInstance currentDataResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count] - 1)]
-					 ]
-					];
-		
-			[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
-		}
-	}
-	// Custom query view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
-		if ([[customQueryInstance currentResult] count] > 1) {
-			
-			title = @"Query Result";
-			
-			rows = [[NSArray alloc] initWithArray:
-					[[customQueryInstance currentResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count] - 1)]
-					 ]
-					];
-		
-			[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
-		}
-	}
-	// Table relations view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4) {
-		if ([[tableRelationsInstance relationDataForPrinting] count] > 1) {
-			
-			title = @"Table Relations";
-			
-			NSArray *data = [tableRelationsInstance relationDataForPrinting];
-			
-			rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]
-					 ]
-					];
-		}
-	}
-		
-	[engine setObject:connection forKey:@"c"];
-	
-	[printData setObject:title forKey:@"title"];
-	[printData setObject:columns forKey:@"columns"];
-	[printData setObject:rows forKey:@"rows"]; 
-	[printData setObject:([prefs boolForKey:SPUseMonospacedFonts]) ? SPDefaultMonospacedFontName : @"Lucida Grande" forKey:@"font"];
-	
-    [connection release];
-	
-    if (rows) [rows release];
-	
-	// Process the template and display the results.
-	NSString *result = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
-	
-	return result;
-}
-
-/**
- * Returns an array of columns for whichever view is being printed.
- */
-- (NSArray *)columnNames
-{
-	NSArray *columns = nil;
-	
-	// Table source view
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& [[tableSourceInstance tableSourceForPrinting] count] > 0 ) {
-		
-		columns = [[NSArray alloc] initWithArray:[[[tableSourceInstance tableSourceForPrinting] objectForKey:@"structure"] objectAtIndex:0] copyItems:YES];
-	}
-	// Table content view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-			 && [[tableContentInstance currentResult] count] > 0 ) {
-		
-		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
-	}
-	// Custom query view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
-			 && [[customQueryInstance currentResult] count] > 0 ) {
-		
-		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
-	}
-	// Table relations view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4
-			 && [[tableRelationsInstance relationDataForPrinting] count] > 0 ) {
-				
-		columns = [[NSArray alloc] initWithArray:[[tableRelationsInstance relationDataForPrinting] objectAtIndex:0] copyItems:YES];
-	}
-	
-	if (columns) [columns autorelease];
-	
-	return columns;
+	return connection;
 }
 
 @end

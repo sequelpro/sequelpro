@@ -42,6 +42,7 @@ NSString *SPFileExtensionSQL                     = @"sql";
 
 // Filenames
 NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
+NSString *SPHTMLTableInfoPrintTemplate           = @"sequel-pro-table-info-print-template";
 NSString *SPHTMLHelpTemplate                     = @"sequel-pro-mysql-help-template";
 
 // Preference key constants

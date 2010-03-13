@@ -73,6 +73,7 @@
 
 // Others
 - (void)loadTable:(NSString *)table; 
+- (NSDictionary *)tableInformationForPrinting;
 
 // Task interaction
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification;

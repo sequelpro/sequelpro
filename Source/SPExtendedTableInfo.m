@@ -36,7 +36,7 @@
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
-- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)statusDict withLabel:(NSString *)label;
+- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)statusDict;
 
 @end
 
@@ -236,7 +236,9 @@
 			[tableCreateSyntaxTextView setEditable:YES];
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
 			[tableCreateSyntaxTextView setString:@""];
+			
 			NSString *createViewSyntax = [[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier];
+			
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
 			[tableCreateSyntaxTextView insertText:createViewSyntax];
 			[tableCreateSyntaxTextView didChangeText];
@@ -327,20 +329,20 @@
 		[tableCollationPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
-	[tableCreatedAt setStringValue:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields withLabel:@"Created at"]];
-	[tableUpdatedAt setStringValue:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields withLabel:@"Updated at"]];
+	[tableCreatedAt setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Created at: ", @"table info created at label"), [self _formatValueWithKey:@"Create_time" inDictionary:statusFields]]];
+	[tableUpdatedAt setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Updated at: ", @"table info updated at label"), [self _formatValueWithKey:@"Update_time" inDictionary:statusFields]]];
 	
 	// Set row values
-	[tableRowNumber setStringValue:[self _formatValueWithKey:@"Rows" inDictionary:statusFields withLabel:@"Number of rows"]];
-	[tableRowFormat setStringValue:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields withLabel:@"Row format"]];	
-	[tableRowAvgLength setStringValue:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields withLabel:@"Avg. row length"]];
-	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields withLabel:@"Auto increment"]];
+	[tableRowNumber setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Number of rows: ", @"table info number of rows label"), [self _formatValueWithKey:@"Rows" inDictionary:statusFields]]];
+	[tableRowFormat setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Row format: ", @"table info row format label"), [self _formatValueWithKey:@"Row_format" inDictionary:statusFields]]];	
+	[tableRowAvgLength setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Avg. row length: ", @"table info average row length label"), [self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]]];
+	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]];
 	
 	// Set size values
-	[tableDataSize setStringValue:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields withLabel:@"Data size"]]; 
-	[tableMaxDataSize setStringValue:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields withLabel:@"Max data size"]];	
-	[tableIndexSize setStringValue:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields withLabel:@"Index size"]]; 
-	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields withLabel:@"Free data size"]];	 
+	[tableDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Data size: ", @"table info data size label"), [self _formatValueWithKey:@"Data_length" inDictionary:statusFields]]]; 
+	[tableMaxDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Max data size: ", @"table info max data size label"), [self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]]];	
+	[tableIndexSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Index size: ", @"table info index size label"), [self _formatValueWithKey:@"Index_length" inDictionary:statusFields]]]; 
+	[tableSizeFree setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Free data size: ", @"table info free data size label"), [self _formatValueWithKey:@"Data_free" inDictionary:statusFields]]];	 
 	
 	// Set comments
 	[tableCommentsTextView setEditable:YES];
@@ -363,6 +365,35 @@
 	if ([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 		[resetAutoIncrementResetButton setHidden:NO];
 	}
+}
+
+/**
+ *
+ */
+- (NSDictionary *)tableInformationForPrinting
+{
+	NSMutableDictionary *tableInfo = [NSMutableDictionary dictionary];
+	NSDictionary *statusFields = [tableDataInstance statusValues];
+	
+	[tableInfo setObject:[tableTypePopUpButton titleOfSelectedItem] forKey:@"type"];
+	[tableInfo setObject:[tableEncodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
+	[tableInfo setObject:[tableCollationPopUpButton titleOfSelectedItem] forKey:@"collation"];
+	
+	[tableInfo setObject:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields] forKey:@"createdAt"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields] forKey:@"updatedAt"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Rows" inDictionary:statusFields] forKey:@"rowNumber"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields] forKey:@"rowFormat"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields] forKey:@"rowAvgLength"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields] forKey:@"rowAutoIncrement"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields] forKey:@"dataSize"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields] forKey:@"maxDataSize"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields] forKey:@"indexSize"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields] forKey:@"sizeFree"];
+	
+	[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
+	[tableInfo setObject:[tableCreateSyntaxTextView string] forKey:@"createSyntax"];
+	
+	return tableInfo;
 }
 
 /**
@@ -404,8 +435,7 @@
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo]) return;
 
 	[tableTypePopUpButton setEnabled:NO];
 	[tableEncodingPopUpButton setEnabled:NO];
@@ -419,13 +449,11 @@
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo]) return;
 
 	NSDictionary *statusFields = [tableDataInstance statusValues];
 	
-	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"])
-		return;
+	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) return;
 
 	// If we are viewing tables in the information_schema database, then disable all controls that cause table
 	// changes as these tables are not modifiable by anyone.
@@ -469,7 +497,7 @@
 /**
  * Format and returns the value within the info dictionary with the associated key. 
  */
-- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)infoDict withLabel:(NSString *)label
+- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)infoDict
 {
 	NSString *value = [infoDict objectForKey:key];
 	
@@ -521,7 +549,7 @@
 		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
 	}
 	else {
-		return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label")];
+		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
 	}
 }
 

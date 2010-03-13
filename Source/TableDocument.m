@@ -2993,9 +2993,7 @@
 	}
 
 	if ([menuItem action] == @selector(printDocument:)) {		
-		return (((([self database] != nil) && 
-				  ([[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1)) || 
-				 ([tableWindow firstResponder] == customQueryInstance)));
+		return (([self database] != nil) && ([[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1));
 	}
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {
