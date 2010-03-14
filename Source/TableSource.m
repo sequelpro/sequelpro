@@ -37,7 +37,7 @@
 @interface TableSource (PrivateAPI)
 
 - (void)_addIndex;
-- (void)_removeFieldAndForeignKey:(BOOL)removeForeignKey;
+- (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
 - (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey;
 
 @end
@@ -1021,28 +1021,44 @@ fetches the result as an array with a dictionary for each row in it
 	if ([contextInfo isEqualToString:@"addrow"]) {
 		
 		alertSheetOpened = NO;
-		if ( returnCode == NSAlertDefaultReturn ) {
+		
+		if (returnCode == NSAlertDefaultReturn) {
 			
 			// Problem: reentering edit mode for first cell doesn't function
 			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
 			[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
-		} else {
-			if ( !isEditingNewRow ) {
+		} 
+		else {
+			if (!isEditingNewRow) {
 				[tableFields replaceObjectAtIndex:currentlyEditingRow
 									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 				isEditingRow = NO;
-			} else {
+			} 
+			else {
 				[tableFields removeObjectAtIndex:currentlyEditingRow];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
+			
 			currentlyEditingRow = -1;
 		}
+		
 		[tableSourceView reloadData];
 	}
 	else if ([contextInfo isEqualToString:@"removeField"] || [contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self _removeFieldAndForeignKey:[contextInfo hasSuffix:@"AndForeignKey"]];
+			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
+			
+			NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+			
+			if ([NSThread isMainThread]) {
+				[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
+				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+			} 
+			else {
+				[self _removeFieldAndForeignKey:removeKey];
+			}
 		}
 	} 
 	else if ([contextInfo isEqualToString:@"addIndex"]) {
@@ -1728,10 +1744,12 @@ would result in a position change.
 /**
  * Removes a field from the current table and the dependent foreign key if specified. 
  */
-- (void)_removeFieldAndForeignKey:(BOOL)removeForeignKey
+- (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey
 {	
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	// Remove the foreign key before the field if required
-	if (removeForeignKey) {
+	if ([removeForeignKey boolValue]) {
 		
 		NSString *relationName = @"";
 		NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"];
@@ -1750,7 +1768,8 @@ would result in a position change.
 		
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
 		
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		// Check for errors, but only if the query wasn't cancelled
+		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -1763,15 +1782,9 @@ would result in a position change.
 	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
 								  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 	
-	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
+	// Check for errors, but only if the query wasn't cancelled
+	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 		
-		// Mark the content table cache for refresh
-		[tablesListInstance setContentRequiresReload:YES];
-	} 
-	else {
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
 							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
@@ -1779,7 +1792,19 @@ would result in a position change.
 								[mySQLConnection getLastErrorMessage]],
 							   nil] 
 				   afterDelay:0.3];
+	} 
+	else {
+		[tableDataInstance resetAllData];
+		[tablesListInstance setStatusRequiresReload:YES];
+		[self loadTable:selectedTable];
+		
+		// Mark the content table cache for refresh
+		[tablesListInstance setContentRequiresReload:YES];
 	}
+	
+	[tableDocumentInstance endTask];
+	
+	[pool drain];
 }
 
 /**
@@ -1831,6 +1856,7 @@ would result in a position change.
 	
 	// Check for errors, but only if the query wasn't cancelled
 	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+		
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Unable to remove index", @"error removing index message"),
 							   [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]], nil] 
