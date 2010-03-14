@@ -90,6 +90,8 @@
 	[tableTargetPopup removeAllItems];
 	if([[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
 		[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
+		[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
+		[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
 
 		// Select either the currently selected table, or the first item in the list
 		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil && ![[[theDelegate valueForKeyPath:@"tablesListInstance"] tableName] isEqualToString:@""]) {
@@ -274,6 +276,19 @@
 
 - (IBAction)changeTableTarget:(id)sender
 {
+
+	// Is Refresh List chosen?
+	if([tableTargetPopup selectedItem] == [tableTargetPopup lastItem]) {
+		[tableTargetPopup removeAllItems];
+		// Update tables list
+		[[theDelegate valueForKeyPath:@"tablesListInstance"] updateTables:nil];
+		if([[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
+			[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
+			[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
+			[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
+		}
+		return;
+	}
 
 	NSInteger i;
 
