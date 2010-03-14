@@ -38,7 +38,7 @@
 
 - (void)_addIndex;
 - (void)_removeFieldAndForeignKey:(BOOL)removeForeignKey;
-- (void)_removeIndexAndForeignKey:(BOOL)removeForeignKey;
+- (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey;
 
 @end
 
@@ -1047,12 +1047,32 @@ fetches the result as an array with a dictionary for each row in it
 	} 
 	else if ([contextInfo isEqualToString:@"addIndex"]) {
 		if (returnCode == NSOKButton) {
-			[self _addIndex];
+			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
+			
+			if ([NSThread isMainThread]) {
+				[NSThread detachNewThreadSelector:@selector(_addIndex) toTarget:self withObject:nil];
+				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+			} 
+			else {
+				[self _addIndex];
+			}
 		}
 	}
 	else if ([contextInfo isEqualToString:@"removeIndex"] || [contextInfo isEqualToString:@"removeIndexAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self _removeIndexAndForeignKey:[contextInfo hasSuffix:@"AndForeignKey"]];
+			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing index...", @"removing index task status message")];
+			
+			NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+			
+			if ([NSThread isMainThread]) {
+				[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
+				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+			} 
+			else {
+				[self _removeIndexAndForeignKey:removeKey];
+			}
 		}
 	} 
 	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
@@ -1648,8 +1668,10 @@ would result in a position change.
 /**
  * Adds an index to the current table.
  */
-- (IBAction)_addIndex;
+- (void)_addIndex;
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	NSString *indexName;
 	NSArray *indexedColumns;
 	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
@@ -1686,24 +1708,28 @@ would result in a position change.
 									  [selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
 									  [tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 		
-		// Check for errors
-		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		// Check for errors, but only if the query wasn't cancelled
+		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
+		}
+		else {
 			[tableDataInstance resetAllData];
 			[tablesListInstance setStatusRequiresReload:YES];
 			[self loadTable:selectedTable];
 		}
-		else {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
-		}
 	}
+	
+	[tableDocumentInstance endTask];
+	
+	[pool drain];
 }
 
 /**
  * Removes a field from the current table and the dependent foreign key if specified. 
  */
 - (void)_removeFieldAndForeignKey:(BOOL)removeForeignKey
-{
+{	
 	// Remove the foreign key before the field if required
 	if (removeForeignKey) {
 		
@@ -1759,10 +1785,12 @@ would result in a position change.
 /**
  * Removes an index from the current table and the dependent foreign key if specified.
  */
-- (void)_removeIndexAndForeignKey:(BOOL)removeForeignKey
+- (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	// Remove the foreign key dependency before the index if required
-	if (removeForeignKey) {
+	if ([removeForeignKey boolValue]) {
 		
 		NSString *columnName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Column_name"];
 		
@@ -1783,7 +1811,8 @@ would result in a position change.
 		
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [constraintName backtickQuotedString]]];
 		
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		// Check for errors, but only if the query wasn't cancelled
+		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -1800,18 +1829,22 @@ would result in a position change.
 									  [selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
 	}
 	
-	// Check for errors
-	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-	} 
-	else {
+	// Check for errors, but only if the query wasn't cancelled
+	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Unable to remove index", @"error removing index message"),
 							   [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]], nil] 
 				   afterDelay:0.3];
+	} 
+	else {
+		[tableDataInstance resetAllData];
+		[tablesListInstance setStatusRequiresReload:YES];
+		[self loadTable:selectedTable];
 	}
+	
+	[tableDocumentInstance endTask];
+	
+	[pool drain];
 }
 
 @end

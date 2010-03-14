@@ -243,7 +243,6 @@
  */
 - (void)initWithConnectionFile:(NSString *)path
 {
-
 	NSError *readError = nil;
 	NSString *convError = nil;
 	NSPropertyListFormat format;
