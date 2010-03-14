@@ -18,7 +18,8 @@
 - copyWithZone:(NSZone *)zone
 {
 	ImageAndTextCell *cell = (ImageAndTextCell *)[super copyWithZone:zone];
-	cell->image = [image retain];
+	cell->image = nil;
+	if (image) cell->image = [image copyWithZone:zone];
 	return cell;
 }
 

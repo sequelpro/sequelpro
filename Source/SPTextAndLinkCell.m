@@ -78,8 +78,11 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
  * Returns a new instance which is a copy of the receiver
  */
 - (id) copyWithZone:(NSZone *)zone {
-	SPTextAndLinkCell *copy = [super copyWithZone:zone];
+	SPTextAndLinkCell *copy = (SPTextAndLinkCell *)[super copyWithZone:zone];
+	copy->linkButton = nil;
 	if (linkButton) copy->linkButton = [linkButton copyWithZone:zone];
+	copy->linkTarget = linkTarget;
+	copy->linkAction = linkAction;
 	return copy;
 }
 
