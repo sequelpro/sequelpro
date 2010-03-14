@@ -216,7 +216,7 @@
 		
 		NSArray *data = [tableRelationsInstance relationDataForPrinting];
 					
-		heading = NSLocalizedString(@"Table Relations", @"table relations print heading");
+		heading = NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab");
 			
 		rows = [[NSArray alloc] initWithArray:
 				[data objectsAtIndexes:
@@ -228,7 +228,7 @@
 		
 		NSArray *data = [tableTriggersInstance triggerDataForPrinting];
 					
-		heading = NSLocalizedString(@"Table Triggers", @"table triggers print heading");
+		heading = NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab");
 						
 		rows = [[NSArray alloc] initWithArray:
 				[data objectsAtIndexes:
