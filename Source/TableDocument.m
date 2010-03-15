@@ -254,7 +254,7 @@
 	NSDictionary *connection = nil;
 	NSDictionary *spf = nil;
 
-	NSInteger connectionType;
+	NSInteger connectionType = -1;
 
 	// Inform about the data source in the window title bar
 	[tableWindow setTitle:[self displaySPName]];

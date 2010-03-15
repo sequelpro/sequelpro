@@ -2534,7 +2534,7 @@
 	NSMutableString *infoString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	NSMutableString *csvLineEnd;
+	NSMutableString *csvLineEnd = [NSMutableString string];
 	NSDictionary *tableDetails = nil;
 	NSMutableArray *tableColumnNumericStatus;
 	

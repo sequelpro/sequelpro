@@ -316,7 +316,7 @@
 	
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
-	NSString *tblTypes;
+	NSString *tblTypes = @"";
 	NSUInteger currentIndex = [indexes lastIndex];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
@@ -377,7 +377,7 @@
  */
 - (IBAction)copyTable:(id)sender
 {
-	NSString *tableType;
+	NSString *tableType = @"";
 
 	if ([tablesListView numberOfSelectedRows] != 1) return;
 	if (![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect]) return;
@@ -2248,7 +2248,8 @@
         // procedures and functions can only be renamed if one creates a new one and deletes the old one
         
         // first get the create syntax
-        NSString *stringTableType;
+        NSString *stringTableType = @"";
+		
         switch (tableType){
             case SP_TABLETYPE_PROC: stringTableType = @"PROCEDURE"; break;
             case SP_TABLETYPE_FUNC: stringTableType = @"FUNCTION"; break;
