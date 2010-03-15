@@ -1067,7 +1067,7 @@
  */
 - (void)refreshCurrentDatabase
 {
-	NSString *dbName;
+	NSString *dbName = nil;
 
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];

@@ -797,7 +797,7 @@
 	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
 
-	MCPResult *tableStatusResult;
+	MCPResult *tableStatusResult = nil;
 
 	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
 		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];

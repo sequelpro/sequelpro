@@ -352,7 +352,7 @@
 	
 	NSMutableString *errors = [NSMutableString string];
 	
-	NSDictionary *tableDetails;
+	NSDictionary *tableDetails = nil;
 	//NSStringEncoding encoding = [[self connection] encoding];
 	
 	// Reset the interface

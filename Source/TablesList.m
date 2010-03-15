@@ -2025,7 +2025,7 @@
  */
 - (void)copyTable
 {
-	NSString *tableType;
+	NSString *tableType = @"";
 	
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));

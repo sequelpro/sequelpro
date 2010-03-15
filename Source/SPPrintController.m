@@ -155,6 +155,7 @@
 	
 	NSString *heading = @"";
 	NSArray *rows, *indexes, *indexColumns = nil;
+	
 	NSArray *columns = [self columnNames];
 	
 	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
@@ -178,10 +179,12 @@
 	
 		indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
 		
+		[printData setObject:rows forKey:@"rows"];
 		[printData setObject:indexes forKey:@"indexes"];
 		[printData setObject:indexColumns forKey:@"indexColumns"];
 		
-		if (indexes) [indexes release];
+		[rows release];
+		[indexes release];
 	}
 	// Table content view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
@@ -195,7 +198,10 @@
 				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
 				];
 		
+		[printData setObject:rows forKey:@"rows"];
 		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
+		
+		[rows release];
 	}
 	// Custom query view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
@@ -209,7 +215,10 @@
 				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
 				];
 		
+		[printData setObject:rows forKey:@"rows"];
 		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
+		
+		[rows release];
 	}
 	// Table relations view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4) {
@@ -222,6 +231,10 @@
 				[data objectsAtIndexes:
 				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
 				];
+		
+		[printData setObject:rows forKey:@"rows"];
+		
+		[rows release];
 	}
 	// Table triggers view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 5) {
@@ -233,18 +246,19 @@
 		rows = [[NSArray alloc] initWithArray:
 				[data objectsAtIndexes:
 				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-				];		
-	}
+				];
 		
+		[printData setObject:rows forKey:@"rows"];
+		
+		[rows release];
+	}
+	
 	[engine setObject:connection forKey:@"c"];
 	
 	[printData setObject:heading forKey:@"heading"];
 	[printData setObject:columns forKey:@"columns"];
-	[printData setObject:rows forKey:@"rows"]; 
 	[printData setObject:([prefs boolForKey:SPUseMonospacedFonts]) ? SPDefaultMonospacedFontName : @"Lucida Grande" forKey:@"font"];
 	[printData setObject:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? @"1px solid #CCCCCC" : @"none" forKey:@"gridlines"];
-		
-    if (rows) [rows release];
 	
 	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
 	
