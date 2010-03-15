@@ -83,7 +83,7 @@
 
 		if (mNames) {
 			[mNames release];
-			mNames = NULL;
+			mNames = nil;
 		}
 
 		mResult = mysql_use_result(mySQLPtr);

@@ -80,6 +80,8 @@
 		selectedDatabase = nil;
 		mySQLConnection = nil;
 		mySQLVersion = nil;
+		allDatabases = nil;
+		allSystemDatabases = nil;
 
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
@@ -1043,7 +1045,7 @@
 	}
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
-		if(statusValues) [statusValues release]; statusValues = nil;
+		if (statusValues) [statusValues release], statusValues = nil;
 	}
 
 }
@@ -1200,7 +1202,7 @@
  */
 - (void) showTaskProgressWindow:(NSTimer *)theTimer
 {
-	[taskDrawTimer release], taskDrawTimer = nil;
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
 
 	// Center the task window and fade it in
 	[self centerTaskWindow];
@@ -1775,6 +1777,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -1850,6 +1853,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -1925,6 +1929,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -1999,6 +2004,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2073,6 +2079,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2128,6 +2135,7 @@
 						   contextInfo:NULL];
 	} else {
 		NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Checksums of %@",@"Checksums of %@ message"), what]];

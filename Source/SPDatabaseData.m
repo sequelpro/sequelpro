@@ -217,7 +217,7 @@ const CHAR_SETS charsets[] =
 - (void)resetAllData
 {
 	if (characterSetEncoding != nil) {
-		[characterSetEncoding release]; 
+		[characterSetEncoding release], characterSetEncoding = nil; 
 	}
 	
 	[collations removeAllObjects];

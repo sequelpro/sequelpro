@@ -118,6 +118,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 				   errorMessage]);
+		if (tableSourceResult) [tableSourceResult release];
 		return;
 	}
 
@@ -148,7 +149,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 				   errorMessage]);
-
+		if (indexResult) [indexResult release];
 		return;
 	}
 	[indexResult setReturnDataAsStrings:YES];

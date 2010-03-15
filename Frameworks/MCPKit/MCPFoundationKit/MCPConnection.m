@@ -105,6 +105,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		queryCancelled = NO;
 		queryCancelUsedReconnect = NO;
 		serverVersionString = nil;
+		mTimeZone = nil;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;

@@ -67,6 +67,7 @@
 	[[SUUpdater sharedUpdater] setDelegate:self];
 	
 	prefsController = [[SPPreferenceController alloc] init];
+	aboutController = nil;
 	
 	// Register SPAppController as services provider
 	[NSApp setServicesProvider:self];

@@ -3101,6 +3101,7 @@
 		sortColumn = nil;
 		selectionButtonCanBeEnabled = NO;
 		cqColumnDefinition = nil;
+		favoritesManager = nil;
 
 		tableRowsSelectable = YES;
 		selectionIndexToRestore = nil;
@@ -3249,6 +3250,7 @@
 	if (sortField) [sortField release];
 	if (cqColumnDefinition) [cqColumnDefinition release];
 	if (selectionIndexToRestore) [selectionIndexToRestore release];
+	if (currentQueryRanges) [currentQueryRanges release];
 	
 	[super dealloc];
 }

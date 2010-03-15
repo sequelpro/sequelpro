@@ -513,6 +513,7 @@
 				if(newFiltered) [newFiltered release];
 				NSLog(@"%@", @"Couldn't filter suggestion due to internal regexp error");
 				closeMe = YES;
+				return;
 			}
 			
 		}

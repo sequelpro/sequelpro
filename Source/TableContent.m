@@ -89,6 +89,7 @@
 		firstBetweenValueToRestore = nil;
 		secondBetweenValueToRestore = nil;
 		tableRowsSelectable = YES;
+		contentFilterManager = nil;
 
 		isFiltered = NO;
 		isLimited = NO;

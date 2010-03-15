@@ -9,6 +9,14 @@
 
 @implementation ImageAndTextCell
 
+- (id)init
+{
+	self = [super init];
+	image = nil;
+
+	return self;
+}
+
 - (void)dealloc {
 	[image release];
 	image = nil;
