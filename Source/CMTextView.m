@@ -1609,10 +1609,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Preset mirrored snippets with according snippet content
 		if(mirroredCounter > -1) {
 			for(i=0; i<=mirroredCounter; i++) {
-				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1]) {
-					[snip replaceCharactersInRange:NSMakeRange(snippetMirroredControlArray[i][1], snippetMirroredControlArray[i][2]) 
-										withString:[snip substringWithRange:NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0], snippetControlArray[snippetMirroredControlArray[i][0]][1])]];
-									snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1] > 0) {
+					[snip replaceCharactersInRange:NSMakeRange(snippetMirroredControlArray[i][1]-targetRange.location, snippetMirroredControlArray[i][2]) 
+										withString:[snip substringWithRange:NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0]-targetRange.location, snippetControlArray[snippetMirroredControlArray[i][0]][1])]];
+					snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
 				}
 				// Adjust successive snippets
 				for(j=0; j<20; j++)
@@ -1620,7 +1620,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						snippetControlArray[j][0] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
 				// Adjust successive mirrored snippets
 				for(j=0; j<=mirroredCounter; j++)
-					if(i != j && snippetMirroredControlArray[j][1] > snippetMirroredControlArray[i][1])
+					if(snippetMirroredControlArray[j][1] > snippetMirroredControlArray[i][1])
 						snippetMirroredControlArray[j][1] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
 			}
 		}
