@@ -390,6 +390,11 @@
 
 }
 
+- (IBAction)showHelp:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/docs/Query_Favorites"]];
+}
+
 #pragma mark -
 #pragma mark SplitView delegate methods
 

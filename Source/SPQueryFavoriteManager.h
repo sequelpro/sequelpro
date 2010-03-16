@@ -71,5 +71,6 @@
 - (IBAction)importFavoritesByReplacing:(id)sender;
 - (IBAction)closeQueryManagerSheet:(id)sender;
 - (IBAction)insertPlaceholder:(id)sender;
+- (IBAction)showHelp:(id)sender;
 
 @end
