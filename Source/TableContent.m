@@ -609,7 +609,7 @@
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
-	streamingResult = [mySQLConnection streamingQueryString:queryString];
+	streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 
 	// Ensure the number of columns are unchanged; if the column count has changed, abort the load
 	// and queue a full table reload.
@@ -624,15 +624,15 @@
 	// Process the result into the data store
 	if (!fullTableReloadRequired && streamingResult) {
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
-		[streamingResult release];
 	}
+	if (streamingResult) [streamingResult release];
 
 	// If the result is empty, and a late page is selected, reset the page
 	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		contentPage = 1;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
-		streamingResult = [mySQLConnection streamingQueryString:queryString];
+		streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 		if (streamingResult) {
 			[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 			[streamingResult release];

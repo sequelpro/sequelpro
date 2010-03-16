@@ -968,7 +968,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Indent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
 
 		// Extract the current line range based on the text caret
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
@@ -1021,7 +1020,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Undent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
 
 		// Extract the current line range based on the text caret
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];

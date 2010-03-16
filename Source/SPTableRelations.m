@@ -535,10 +535,10 @@
 	NSMutableArray *validColumns = [NSMutableArray array];
 	
 	// Only add columns of the same data type
-	for (NSDictionary *column in columns) 
+	for (NSDictionary *aColumn in columns) 
 	{		
-		if ([[columnInfo objectForKey:@"type"] isEqualToString:[column objectForKey:@"type"]]) {
-			[validColumns addObject:[column objectForKey:@"name"]];			
+		if ([[columnInfo objectForKey:@"type"] isEqualToString:[aColumn objectForKey:@"type"]]) {
+			[validColumns addObject:[aColumn objectForKey:@"name"]];			
 		}
 	}
 	

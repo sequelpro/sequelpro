@@ -106,6 +106,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		queryCancelUsedReconnect = NO;
 		serverVersionString = nil;
 		mTimeZone = nil;
+		isDisconnecting = NO;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -298,7 +299,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
 		currentProxyState = newState;
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
-		[self reconnect];
+		if (!isDisconnecting) [self reconnect];
 		
 		return;
 	}
@@ -404,14 +405,22 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  */
 - (void)disconnect
 {
+	if (isDisconnecting) return;
+	isDisconnecting = YES;
+
 	[self stopKeepAliveTimer];
 
 	if (mConnected) {
+		[self cancelCurrentQuery];
+		mConnected = NO;
+		
+		// Small pause for cleanup.
+		usleep(100000);
 		mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
-	mConnected = NO;
+	isDisconnecting = NO;
 
 	if (connectionProxy) {
 		[connectionProxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
@@ -457,6 +466,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	mConnected = NO;
+	isDisconnecting = NO;
 	
 	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionProxy) {
@@ -1290,7 +1300,6 @@ void performThreadedKeepAlive(void *ptr)
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
- * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
  * Uses safe/fast mode, which may use more memory as results are downloaded.
  */
@@ -1301,7 +1310,6 @@ void performThreadedKeepAlive(void *ptr)
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
- * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
  * Can be used in either fast/safe mode, where data is downloaded as fast as possible to avoid
  * blocking the server, or in full streaming mode for lowest memory usage but potentially blocking
@@ -1316,7 +1324,6 @@ void performThreadedKeepAlive(void *ptr)
  * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
- * If using streamingResult, the caller is responsible for releasing the result set.
  */
 - (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResultType
 {
@@ -1516,7 +1523,6 @@ void performThreadedKeepAlive(void *ptr)
 	(void)(*startKeepAliveTimerPtr)(self, startKeepAliveTimerSEL, YES);
 	
 	if (!theResult) return nil;
-	if (streamResultType != MCP_NO_STREAMING) return theResult;
 	return [theResult autorelease];
 }
 
@@ -1618,7 +1624,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Reset the connection
 	[self unlockConnection];
-	[self reconnect];
+	if (!isDisconnecting) [self reconnect];
 
 	// Set queryCancelled again to handle requery cleanups, and return.
 	queryCancelled = YES;

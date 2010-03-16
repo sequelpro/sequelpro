@@ -2162,13 +2162,13 @@
 			// Insert the new item into the tables list and select it.
 			NSInteger addItemAtIndex = NSNotFound;
 			for (NSInteger i = 0; i < [tables count]; i++) {
-				NSInteger tableType = [[tableTypes objectAtIndex:i] integerValue];
-				if (tableType == SP_TABLETYPE_NONE) continue;
-				if ((tableType == SP_TABLETYPE_VIEW || tableType == SP_TABLETYPE_TABLE)
+				NSInteger theTableType = [[tableTypes objectAtIndex:i] integerValue];
+				if (theTableType == SP_TABLETYPE_NONE) continue;
+				if ((theTableType == SP_TABLETYPE_VIEW || theTableType == SP_TABLETYPE_TABLE)
 					&& (tblType == SP_TABLETYPE_PROC || tblType == SP_TABLETYPE_FUNC)) {
 					continue;
 				}
-				if ((tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC)
+				if ((theTableType == SP_TABLETYPE_PROC || theTableType == SP_TABLETYPE_FUNC)
 					&& (tblType == SP_TABLETYPE_VIEW || tblType == SP_TABLETYPE_TABLE)) {
 					addItemAtIndex = i - 1;
 					break;

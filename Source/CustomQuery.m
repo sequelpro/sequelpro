@@ -486,7 +486,7 @@
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
 	
-	NSInteger i, j, totalQueriesRun = 0, totalAffectedRows = 0;
+	NSInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
 	NSInteger firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
@@ -548,7 +548,7 @@
 		[tempQueries addObject:query];
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		streamingResult = [mySQLConnection streamingQueryString:query];
+		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
 
@@ -574,6 +574,8 @@
 			totalAffectedRows += [mySQLConnection affectedRows];
 		else if ( [streamingResult numOfRows] )
 			totalAffectedRows += [streamingResult numOfRows];
+
+		[streamingResult release];
 
 		// Store any error messages
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || [mySQLConnection queryCancelled]) {
@@ -731,7 +733,6 @@
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !resultDataCount ) {
 		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
-		if (streamingResult) [streamingResult release];
 
 		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];

@@ -614,7 +614,7 @@
 	
 	[triggers removeAllObjects];
 	if( [theResult numOfRows] ) {
-		for(int i=0; i<[theResult numOfRows]; i++){
+		for(i=0; i<[theResult numOfRows]; i++){
 			[triggers addObject:[theResult fetchRowAsDictionary]];
 		}
 	}

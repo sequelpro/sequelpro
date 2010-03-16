@@ -635,8 +635,8 @@ fetches the result as an array with a dictionary for each row in it
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
 		keys = [tempRow allKeys];
-		for (NSInteger i = 0; i < [keys count] ; i++) {
-			key = NSArrayObjectAtIndex(keys, i);
+		for (NSInteger j = 0; j < [keys count] ; j++) {
+			key = NSArrayObjectAtIndex(keys, j);
 			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] )
 				[tempRow setObject:prefsNullValue forKey:key];
 		}

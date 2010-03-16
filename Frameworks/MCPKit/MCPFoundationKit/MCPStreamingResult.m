@@ -95,6 +95,10 @@
 			mNumOfFields = 0;
 		}
 
+		// Obtain SEL references and pointer
+		isConnectedSEL = @selector(isConnected);
+		isConnectedPtr = [parentConnection methodForSelector:isConnectedSEL];
+
 		// If the result is opened in download-data-fast safe mode, set up the additional variables
 		// and threads required.
 		if (!fullyStreaming) {
@@ -127,6 +131,7 @@
  */
 - (void) dealloc
 {
+	[self cancelResultLoad];
 	if (!connectionUnlocked) [parentConnection unlockConnection];
 
 	if (!fullyStreaming) {
@@ -406,7 +411,7 @@
 	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * mNumOfFields);
 
 	// Loop through the rows until the end of the data is reached - indicated via a NULL
-	while (theRow = mysql_fetch_row(mResult)) {
+	while (	(BOOL)(*isConnectedPtr)(parentConnection, isConnectedSEL) && (theRow = mysql_fetch_row(mResult))) {
 
 		// Retrieve the lengths of the returned data
 		fieldLengths = mysql_fetch_lengths(mResult);
