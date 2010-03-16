@@ -449,8 +449,8 @@
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
 		}
 		
-		SPExporter *exporter;
-		SPCSVExporter *csvExporter;
+		SPExporter *exporter = nil;
+		SPCSVExporter *csvExporter = nil;
 		
 		// Based on the type of export create a new instance of the corresponding exporter and set it's specific options
 		switch (type)
@@ -507,6 +507,8 @@
 		// as soon as it's placed on the queue. There may be a delay if the queue is already executing it's
 		// maximum number of concurrent operations. See the docs for more details.
 		[operationQueue addOperation:exporter];
+		
+		if (csvExporter) [csvExporter release];
 		
 		// Add a spacer to the file
 		//[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];

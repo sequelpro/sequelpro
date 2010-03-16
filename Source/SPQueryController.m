@@ -62,7 +62,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	@synchronized(self) {
 		if (sharedQueryController == nil) {
-			[[self alloc] init];
+			sharedQueryController = [[super allocWithZone:NULL] init];
 		}
 	}
 
@@ -72,14 +72,8 @@ static SPQueryController *sharedQueryController = nil;
 + (id)allocWithZone:(NSZone *)zone
 {    
 	@synchronized(self) {
-		if (sharedQueryController == nil) {
-			sharedQueryController = [super allocWithZone:zone];
-
-			return sharedQueryController;
-		}
+		return [[self sharedQueryController] retain];
 	}
-
-	return nil; // On subsequent allocation attempts return nil
 }
 
 - (id)init

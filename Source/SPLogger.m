@@ -47,7 +47,7 @@ static SPLogger *logger = nil;
 {
 	@synchronized(self) {
 		if (logger == nil) {
-			[[self alloc] init];
+			logger = [[super allocWithZone:NULL] init];
 		}
 	}
 	
@@ -60,15 +60,19 @@ static SPLogger *logger = nil;
 + (id)allocWithZone:(NSZone *)zone
 {    
     @synchronized(self) {
-        if (logger == nil) {
-            logger = [super allocWithZone:zone];
-            
-            return logger;
-        }
+		return [[self logger] retain];
     }
-    
-    return nil;
 }
+
+- (id)copyWithZone:(NSZone *)zone { return self; }
+
+- (id)retain { return self; }
+
+- (NSUInteger)retainCount { return NSUIntegerMax; }
+
+- (void)release {}
+
+- (id)autorelease { return self; }
 
 - (id)init
 {
