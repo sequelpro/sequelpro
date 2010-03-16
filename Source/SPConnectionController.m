@@ -703,6 +703,23 @@
 	}
 	
 	[prefs setInteger:([favoritesTable selectedRow] - 1) forKey:SPLastFavoriteIndex];
+
+
+	// Set first responder to password field if it is empty
+	switch([self type]) {
+		case SPTCPIPConnection:
+		if(![[standardPasswordField stringValue] length])
+			[documentWindow makeFirstResponder:standardPasswordField];
+		break;
+		case SPSocketConnection:
+		if(![[socketPasswordField stringValue] length])
+			[documentWindow makeFirstResponder:socketPasswordField];
+		break;
+		case SPSSHTunnelConnection:
+		if(![[sshPasswordField stringValue] length])
+			[documentWindow makeFirstResponder:sshPasswordField];
+		break;
+	}
 }
 
 /**
