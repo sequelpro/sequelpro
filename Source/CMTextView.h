@@ -68,13 +68,17 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 	NSInteger mySQLmajorVersion;
 
 	NSInteger snippetControlArray[20][3];
+	NSInteger snippetMirroredControlArray[20][3];
 	NSInteger snippetControlCounter;
 	NSInteger snippetControlMax;
 	NSInteger currentSnippetIndex;
+	NSInteger mirroredCounter;
 	BOOL snippetWasJustInserted;
+	BOOL isProcessingMirroredSnippets;
 
 	BOOL completionIsOpen;
 	BOOL completionWasReinvokedAutomatically;
+	NSUInteger completionParseRangeLocation;
 
 	NSColor *queryHiliteColor;
 	NSColor *queryEditorBackgroundColor;
@@ -133,6 +137,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (void) doAutoCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
+- (void) processMirroredSnippets;
 
 - (BOOL)checkForCaretInsideSnippet;
 - (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;

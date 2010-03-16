@@ -830,4 +830,10 @@
 	}
 }
 
+- (void)adjustWorkingRangeByDelta:(NSInteger)delta
+{
+	theCharRange.location += delta;
+	theParseRange.location += delta;
+}
+
 @end

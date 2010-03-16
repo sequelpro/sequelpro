@@ -128,7 +128,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	startListeningToBoundChanges = NO;
 	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
+	mirroredCounter = -1;
 	completionIsOpen = NO;
+	isProcessingMirroredSnippets = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -699,7 +701,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caretMovedLeft:caretMovedLeft
 					autoComplete:autoCompleteMode
 					oneColumn:isDictMode];
-	
+
+	completionParseRangeLocation = parseRange.location;
+
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
@@ -758,15 +762,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL leftIsAlphanum = NO;
 	BOOL rightIsAlphanum = NO;
 	BOOL charIsOpenBracket = (aChar == '(');
+	NSUInteger bufferLength = [[self string] length];
+
+	if(!bufferLength) return NO;
 	
 	// Check previous/next character for being alphanum
 	// @try block for bounds checking
 	@try
 	{
-		leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
+		if(caretPosition==0)
+			leftIsAlphanum = NO;
+		else
+			leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
 	} @catch(id ae) { }
 	@try {
-		rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
+		if(caretPosition >= bufferLength)
+			rightIsAlphanum = NO;
+		else
+			rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
 		
 	} @catch(id ae) { }
 
@@ -793,6 +806,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		matchingChar = ')';
 	else if (leftChar == '"' || leftChar == '`' || leftChar == '\'')
 		matchingChar = leftChar;
+	else if (leftChar == '{')
+		matchingChar = '}';
 	else
 		return NO;
 
@@ -1082,6 +1097,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	snippetControlCounter = -1;
 	currentSnippetIndex   = -1;
 	snippetControlMax     = -1;
+	mirroredCounter       = -1;
 	snippetWasJustInserted = NO;
 }
 
@@ -1240,6 +1256,84 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Update all mirrored snippets and adjust any involved instances
+ */
+- (void)processMirroredSnippets
+{
+	if(mirroredCounter > -1) {
+
+		isProcessingMirroredSnippets = YES;
+
+		NSInteger i, j, k, deltaLength;
+		NSRange mirroredRange;
+		id aCompletionList;
+
+		// Get the completion list pointer if open
+		if(completionIsOpen)
+			for(id w in [NSApp windows])
+				if([w isKindOfClass:[SPNarrowDownCompletion class]]) {
+					aCompletionList = w;
+					break;
+				}
+
+		// Go through each defined mirrored snippet and update it
+		for(i=0; i<=mirroredCounter; i++) {
+			if(snippetMirroredControlArray[i][0] == currentSnippetIndex) {
+
+				deltaLength = snippetControlArray[currentSnippetIndex][1]-snippetMirroredControlArray[i][2];
+
+				mirroredRange = NSMakeRange(snippetMirroredControlArray[i][1], snippetMirroredControlArray[i][2]);
+				NSString *mirroredString = nil;
+
+				// For safety reasons
+				@try{
+					mirroredString = [[self string] substringWithRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+				}
+				@catch(id ae) {
+					NSLog(@"Error while parsing for mirrored snippets. %@", [ae description]);
+					NSBeep();
+					[self endSnippetSession];
+					return;
+				}
+
+				// Register for undo
+				[self shouldChangeTextInRange:mirroredRange replacementString:mirroredString];
+
+				[self replaceCharactersInRange:mirroredRange withString:mirroredString];
+				snippetMirroredControlArray[i][2] = snippetControlArray[currentSnippetIndex][1];
+
+				// If a completion list is open adjust the theCharRange and theParseRange if a mirrored snippet
+				// was updated which is located before the initial position 
+				if(completionIsOpen && snippetMirroredControlArray[i][1] < completionParseRangeLocation)
+					[aCompletionList adjustWorkingRangeByDelta:deltaLength];
+
+				// Adjust all other snippets accordingly
+				for(j=0; j<=snippetControlMax; j++) {
+					if(snippetControlArray[j][0] > -1) {
+						if(snippetControlArray[j][0]+snippetControlArray[j][1]>=snippetMirroredControlArray[i][1]) {
+							snippetControlArray[j][0] += deltaLength;
+						}
+					}
+				}
+				// Adjust all mirrored snippets accordingly
+				for(k=0; k<=mirroredCounter; k++) {
+					if(i != k) {
+						if(snippetMirroredControlArray[k][1] > snippetMirroredControlArray[i][1]) {
+							snippetMirroredControlArray[k][1] += deltaLength;
+						}
+					}
+				}
+			}
+		}
+
+		isProcessingMirroredSnippets = NO;
+		[self didChangeText];
+		
+	}
+}
+
+
+/*
  * Selects the current snippet defined by “currentSnippetIndex”
  */
 - (void)selectCurrentSnippet
@@ -1338,20 +1432,26 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
-	NSInteger i;
+	NSInteger i, j;
+	mirroredCounter = -1;
 
 	// reset snippet array
 	for(i=0; i<20; i++) {
 		snippetControlArray[i][0] = -1; // snippet location
 		snippetControlArray[i][1] = -1; // snippet length
 		snippetControlArray[i][2] = -1; // snippet task : -1 not valid, 0 select snippet
+		snippetMirroredControlArray[i][0] = -1; // mirrored snippet index
+		snippetMirroredControlArray[i][1] = -1; // mirrored snippet location
+		snippetMirroredControlArray[i][2] = -1; // mirrored snippet length
 	}
 
 	if(theSnippet == nil || ![theSnippet length]) return;
 
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
+
 	@try{
 		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
+		NSString *mirror_re = @"(?<!\\\\)\\$(1?\\d)(?=\\D)";
 
 		if(targetRange.length)
 			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
@@ -1471,6 +1571,60 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		}
 
+		// Parse for mirrored snippets
+		while([snip isMatchedByRegex:mirror_re]) {
+			mirroredCounter++;
+			if(mirroredCounter > 19) {
+				NSLog(@"Only 20 mirrored snippet placeholders allowed.");
+				NSBeep();
+				break;
+			} else {
+
+				NSRange snipRange = [snip rangeOfRegex:mirror_re capture:0L];
+				NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:mirror_re capture:1L]] intValue];
+
+				// Check for snippet number 19 (to simplify regexp)
+				if(snipCnt>18 || snipCnt<0) {
+					NSLog(@"Only snippets in the range of 0…18 allowed.");
+					[self endSnippetSession];
+					break;
+				}
+
+				[snip replaceCharactersInRange:snipRange withString:@""];
+				[snip flushCachedRegexData];
+
+				// Store found mirrored snippet range
+				snippetMirroredControlArray[mirroredCounter][0] = snipCnt;
+				snippetMirroredControlArray[mirroredCounter][1] = snipRange.location + targetRange.location;
+				snippetMirroredControlArray[mirroredCounter][2] = 0;
+
+				// Adjust successive snippets
+				for(i=0; i<20; i++)
+					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > snippetMirroredControlArray[mirroredCounter][1])
+						snippetControlArray[i][0] -= 1+((snipCnt>9)?2:1);
+
+				[snip flushCachedRegexData];
+			}
+		}
+		// Preset mirrored snippets with according snippet content
+		if(mirroredCounter > -1) {
+			for(i=0; i<=mirroredCounter; i++) {
+				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1]) {
+					[snip replaceCharactersInRange:NSMakeRange(snippetMirroredControlArray[i][1], snippetMirroredControlArray[i][2]) 
+										withString:[snip substringWithRange:NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0], snippetControlArray[snippetMirroredControlArray[i][0]][1])]];
+									snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				}
+				// Adjust successive snippets
+				for(j=0; j<20; j++)
+					if(snippetControlArray[j][0] > -1 && snippetControlArray[j][0] > snippetMirroredControlArray[i][1])
+						snippetControlArray[j][0] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				// Adjust successive mirrored snippets
+				for(j=0; j<=mirroredCounter; j++)
+					if(i != j && snippetMirroredControlArray[j][1] > snippetMirroredControlArray[i][1])
+						snippetMirroredControlArray[j][1] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+			}
+		}
+
 		if(snippetControlCounter > -1) {
 			// Store the end for tab out
 			snippetControlMax++;
@@ -1489,6 +1643,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for(i=0; i<=snippetControlMax; i++)
 				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
 					snippetControlArray[i][0]--;
+			// Adjust mirrored snippets
+			if(mirroredCounter > -1)
+				for(i=0; i<=mirroredCounter; i++)
+					if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
+						snippetMirroredControlArray[i][1]--;
 		}
 
 		// Insert favorite query by selecting the tab trigger if any
@@ -1697,7 +1856,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (void) mouseDown:(NSEvent *)theEvent
 {
-	
+
 	// Cancel autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -1947,6 +2106,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			case ')':
 				skipTypedLinkedCharacter = YES;
 				break;
+			case '{':
+				matchingCharacter = @"}";
+				processAutopair = YES;
+				break;
+			case '}':
+				skipTypedLinkedCharacter = YES;
+				break;
 		}
 
 		// Check to see whether the next character should be compared to the typed character;
@@ -1995,6 +2161,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				// Restore the original selection.
 				currentRange.length=0;
 				[self setSelectedRange:currentRange];
+				
+				[self didChangeText];
 			}
 			return;
 		}
@@ -2004,7 +2172,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self breakUndoCoalescing];
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-
+	
 }
 
 
@@ -2698,7 +2866,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(editedMask != 1) {
 
 		// Re-calculate snippet ranges if snippet session is active
-		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
+		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
 			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
 			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
@@ -2736,7 +2904,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						}
 					}
 				}
+				// Adjust start position of mirrored snippets after caret position
+				if(mirroredCounter > -1)
+					for(i=0; i<=mirroredCounter; i++) {
+						if(editStartPosition < snippetMirroredControlArray[i][1]) {
+							snippetMirroredControlArray[i][1] += changeInLength;
+						}
+					}
 			}
+
+			if(mirroredCounter > -1 && snippetControlCounter > -1) {
+				[self performSelector:@selector(processMirroredSnippets) withObject:nil afterDelay:0.0];
+			}
+
+			
 		}
 		if([[self textStorage] changeInLength] > 0)
 			textBufferSizeIncreased = YES;
