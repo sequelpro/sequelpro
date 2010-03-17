@@ -1909,14 +1909,15 @@ void performThreadedKeepAlive(void *ptr)
 
 				// Query the desired data
 				NSString *queryDbString = @""
-				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype` FROM `information_schema`.`COLUMNS`"
+				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` "
 				@"UNION "
-				@"SELECT c.TABLE_SCHEMA AS `databases`, c.TABLE_NAME AS `tables`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `type`, c.CHARACTER_SET_NAME AS `charset`, '1' AS `structtype` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
+				@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
 				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '2' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
+				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '2' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
 				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '3' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
-				@"ORDER BY `databases`,`tables`,`fields`";
+				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
+				@"ORDER BY `DATABASES`,`TABLES`,`fields`";
+
 				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
 				const char *queryCString = [encodedQueryData bytes];
 				unsigned long queryCStringLength = [encodedQueryData length];
@@ -1935,6 +1936,9 @@ void performThreadedKeepAlive(void *ptr)
 						NSString *type = [self stringWithUTF8CString:row[3]];
 						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
 						NSString *structtype = [self stringWithUTF8CString:row[5]];
+						NSString *key = [self stringWithUTF8CString:row[6]];
+						NSString *extra = [self stringWithUTF8CString:row[7]];
+						NSString *priv = [self stringWithUTF8CString:row[8]];
 
 						[namesSet addObject:[db lowercaseString]];
 						[namesSet addObject:[table lowercaseString]];
@@ -1949,7 +1953,7 @@ void performThreadedKeepAlive(void *ptr)
 							[[structure valueForKey:db] setObject:[NSMutableDictionary dictionary] forKey:table];
 						}
 
-						[[[structure valueForKey:db] valueForKey:table] setObject:[NSString stringWithFormat:@"%@ %@", type, charset] forKey:field];
+						[[[structure valueForKey:db] valueForKey:table] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, nil] forKey:field];
 						[[[structure valueForKey:db] valueForKey:table] setObject:structtype forKey:@"  struct_type  "];
 
 					}
