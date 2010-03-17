@@ -35,6 +35,7 @@
 #import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPQueryController.h"
+#import "SPNavigatorController.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
@@ -1130,6 +1131,7 @@
 	} else {
 		[[[SPQueryController sharedQueryController] window] makeKeyAndOrderFront:self];
 	}
+	// [self showNavigator:self];
 }
 
 /**
@@ -1146,6 +1148,37 @@
 - (void) setQueryMode:(NSInteger)theQueryMode
 {
 	_queryMode = theQueryMode;
+}
+
+#pragma mark -
+#pragma mark Navigator methods
+
+/**
+ * Shows or hides the navigator
+ */
+- (void)toggleNavigator:(id)sender
+{
+	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
+
+	// If the Console window is not visible data are not reloaded (for speed).
+	// Due to that update list if user opens the Console window.
+	if(!isNavigatorVisible) {
+		[[SPNavigatorController sharedNavigatorController] updateEntries];
+	}
+
+	// Show or hide the navigator
+	[[[SPNavigatorController sharedNavigatorController] window] setIsVisible:(!isNavigatorVisible)];
+}
+
+- (void)showNavigator:(id)sender
+{
+	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
+	
+	if (!isNavigatorVisible) {
+		[self toggleNavigator:sender];
+	} else {
+		[[[SPNavigatorController sharedNavigatorController] window] makeKeyAndOrderFront:self];
+	}
 }
 
 #pragma mark -
@@ -3559,6 +3592,7 @@
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
+	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self toggleNavigator:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }

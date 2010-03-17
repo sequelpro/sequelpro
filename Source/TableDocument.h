@@ -249,6 +249,7 @@
 - (IBAction)copyChecksumFromSheet:(id)sender;
 
 - (void)showConsole:(id)sender;
+- (void)showNavigator:(id)sender;
 
 // Accessor methods
 - (NSString *)host;
