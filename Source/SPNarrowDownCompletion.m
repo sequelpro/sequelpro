@@ -759,6 +759,10 @@
 - (void)insert_text:(NSString* )aString
 {
 
+	// Ensure that theCharRange is valid
+	if(NSMaxRange(theCharRange) > [[theView string] length])
+		theCharRange = NSIntersectionRange(NSMakeRange(0,[[theView string] length]), theCharRange);
+
 	NSRange r = [theView selectedRange];
 	if(r.length)
 		[theView setSelectedRange:r];

@@ -1356,8 +1356,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20) {
 			if(snippetControlArray[currentSnippetIndex][2] == 0) {
+
 				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
-				NSRange r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
+
+				NSRange r2;
+				// Ensure the selection for nested snippets if it is at very end of the text buffer
+				// because NSIntersectionRange returns {0, 0} in such a case
+				if(r1.location == [[self string] length])
+					r2 = NSMakeRange([[self string] length], 0);
+				else
+					r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
+
 				if(r1.location == r2.location && r1.length == r2.length) {
 					[self setSelectedRange:r2];
 					NSString *snip = [[self string] substringWithRange:r2];
