@@ -193,9 +193,6 @@
 			// Update the connection's error statuses in case of error during content download
 			[parentConnection updateErrorStatuses];
 
-			// Unlock the connection and return
-			[parentConnection unlockConnection];
-			connectionUnlocked = YES;
 			return nil;
 		}
 
@@ -460,6 +457,10 @@
 		pthread_mutex_unlock(&dataCreationLock);
 		pthread_mutex_unlock(&dataFreeLock);
 	}
+
+	// Unlock the parent connection now data has been retrieved
+	connectionUnlocked = YES;
+	[parentConnection unlockConnection];
 
 	dataDownloaded = YES;
 	[downloadPool drain];
