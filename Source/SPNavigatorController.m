@@ -87,7 +87,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 	prefs = [NSUserDefaults standardUserDefaults];
 
-	[self updateEntries];
+	// [self updateEntries:self];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
 	
@@ -99,10 +99,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 }
 
 
-- (void)updateEntries
+- (IBAction)updateEntries:(id)sender;
 {
-
-	[schemaData removeAllObjects];
+	if(schemaData) [schemaData release]; schemaData = nil;
+	schemaData = [[NSMutableDictionary alloc] init];
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 			NSString *connectionName;
@@ -111,9 +111,15 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			else
 				connectionName = [doc host];
 			if(![schemaData objectForKey:connectionName]) {
-				[schemaData setObject:[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] forKey:connectionName];
+				id data = [[doc valueForKeyPath:@"mySQLConnection"] getDbStructure];
+				if(data)
+					[schemaData setObject:data forKey:connectionName];
+				else
+					[schemaData setObject:@"No data available" forKey:connectionName];
 			}
 		}
+		[outlineSchema1 reloadData];
+		[outlineSchema2 reloadData];
 	}
 }
 
@@ -130,12 +136,12 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 	if (item == nil) item = schemaData;
 
- 	if ([item isKindOfClass:[NSDictionary class]] && [item allKeys] && [[item allKeys] count]) {
+	if ([item isKindOfClass:[NSDictionary class]] && [item allKeys] && [[item allKeys] count]) {
 		NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-		NSArray *sortedTables = [[item allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+		NSArray *sortedItems = [[item allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 		[desc release];
-		if(index < [sortedTables count])
-			return [item objectForKey:[sortedTables objectAtIndex:index]];
+		if(index < [sortedItems count])
+			return [item objectForKey:[sortedItems objectAtIndex:index]];
 	}
 
 	return nil;
@@ -143,8 +149,12 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item
 {
-	if([item isKindOfClass:[NSDictionary class]] && [item count] && [[item objectForKey:@"  struct_type  "] intValue] < 2)
+	if([item isKindOfClass:[NSDictionary class]] && [item count]) {
+		if([item objectForKey:@"  struct_type  "] && [[item objectForKey:@"  struct_type  "] intValue] > 1) {
+			return NO;
+		}
 		return YES;
+	}
 	
 	return NO;
 }
@@ -195,14 +205,21 @@ static SPNavigatorController *sharedNavigatorController = nil;
 						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
 					}
 				} else {
+					// It's a field
 					if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
+					else
+						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
 				}
 			} else {
 				[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 			}
-			// if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
-			return [[parentObject allKeysForObject:item] objectAtIndex:0];
+			if([[parentObject allKeysForObject:item] count])
+				// if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+					// return [[parentObject allKeysForObject:item] objectAtIndex:0];
+					// return [[parentObject allKeysForObject:item] componentsJoinedByString:@"|"];
+
+				return [NSString stringWithFormat:@"%@ %ld", [[parentObject allKeysForObject:item] description], [outlineView levelForItem:item]];
 
 			return nil;
 		}
@@ -227,15 +244,21 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:outlineView isGroupItem:(id)item
 {
-	// if([item isKindOfClass:[NSDictionary class]])
-	// 	return YES;
-
-	return YES;
+	if ([item isKindOfClass:[NSDictionary class]])
+		return YES;
+		
+	return NO;
 }
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
-	return 18.0;
+	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	
+	// Use "  struct_type  " as placeholder to increase distance between table and first field name otherwise it looks ugly 
+	if([[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+		return 5.0;
+
+	return 148.0;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldExpandItem:(id)item
@@ -261,6 +284,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
+	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	if([[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+		return NO;
 	return YES;
 }
 

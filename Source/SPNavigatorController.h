@@ -41,7 +41,6 @@
 + (SPNavigatorController *)sharedNavigatorController;
 
 - (IBAction)outlineViewAction:(id)sender;
-
-- (void)updateEntries;
+- (IBAction)updateEntries:(id)sender;
 
 @end

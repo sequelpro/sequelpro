@@ -1163,7 +1163,7 @@
 	// If the Console window is not visible data are not reloaded (for speed).
 	// Due to that update list if user opens the Console window.
 	if(!isNavigatorVisible) {
-		[[SPNavigatorController sharedNavigatorController] updateEntries];
+		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
 	}
 
 	// Show or hide the navigator
