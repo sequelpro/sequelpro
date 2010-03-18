@@ -647,6 +647,10 @@ static SPQueryController *sharedQueryController = nil;
 		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];
 
+
+	// User did choose to clear the global history list
+	if(![fileURL isFileURL] && ![historyArray count])
+		[prefs setObject:historyArray forKey:SPQueryHistory];
 }
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
