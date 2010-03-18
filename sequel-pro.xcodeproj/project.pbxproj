@@ -253,6 +253,7 @@
 		BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 		BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */ = {isa = PBXBuildFile; fileRef = BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */; };
+		BCEF78C6115215CA0023F8C2 /* network-small.tif in Resources */ = {isa = PBXBuildFile; fileRef = BCEF78C5115215CA0023F8C2 /* network-small.tif */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -671,6 +672,7 @@
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
 		BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldMapperController.h; sourceTree = "<group>"; };
 		BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldMapperController.m; sourceTree = "<group>"; };
+		BCEF78C5115215CA0023F8C2 /* network-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "network-small.tif"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1208,6 +1210,7 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				BCEF78C5115215CA0023F8C2 /* network-small.tif */,
 				17BFC80D10D3FF5200A3B112 /* Icons */,
 				BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */,
 				177E792B0FCB54EC00E9E122 /* database-small.png */,
@@ -1692,6 +1695,7 @@
 				17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */,
 				17DD52C6115074CB007D8950 /* Localizable.strings in Resources */,
 				BC93FBBD11514ADE005F1D9F /* Navigator.xib in Resources */,
+				BCEF78C6115215CA0023F8C2 /* network-small.tif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

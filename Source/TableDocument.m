@@ -1131,7 +1131,7 @@
 	} else {
 		[[[SPQueryController sharedQueryController] window] makeKeyAndOrderFront:self];
 	}
-	// [self showNavigator:self];
+
 }
 
 /**
@@ -1156,7 +1156,7 @@
 /**
  * Shows or hides the navigator
  */
-- (void)toggleNavigator:(id)sender
+- (IBAction)toggleNavigator:(id)sender
 {
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
@@ -1170,7 +1170,7 @@
 	[[[SPNavigatorController sharedNavigatorController] window] setIsVisible:(!isNavigatorVisible)];
 }
 
-- (void)showNavigator:(id)sender
+- (IBAction)showNavigator:(id)sender
 {
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 	
@@ -2426,6 +2426,16 @@
 	return theUser;
 }
 
+/**
+ * Returns the current host's port
+ */
+- (NSString *)port
+{
+	NSString *thePort = [connectionController port];
+	if (!thePort) return @"";
+	return thePort;
+}
+
 - (NSString *)keyChainID
 {
 	return keyChainID;
@@ -3074,6 +3084,11 @@
 	// Clear console
 	if ([menuItem action] == @selector(clearConsole:)) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
+	}
+	
+	// Show/hide console
+	if ([menuItem action] == @selector(toggleNavigator:)) {
+		[menuItem setTitle:([[[SPNavigatorController sharedNavigatorController] window] isVisible]) ? NSLocalizedString(@"Hide Navigator", @"hide navigator") : NSLocalizedString(@"Show Navigator", @"show navigator")];
 	}
 	
 	// Focus on table content filter

@@ -249,13 +249,15 @@
 - (IBAction)copyChecksumFromSheet:(id)sender;
 
 - (void)showConsole:(id)sender;
-- (void)showNavigator:(id)sender;
+- (IBAction)showNavigator:(id)sender;
+- (IBAction)toggleNavigator:(id)sender;
 
 // Accessor methods
 - (NSString *)host;
 - (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
+- (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
 - (NSString *)displaySPName;

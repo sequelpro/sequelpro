@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="3"/>
+			<integer value="4"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -66,7 +66,7 @@
 						<object class="NSSearchField" id="701533802">
 							<reference key="NSNextResponder" ref="881437593"/>
 							<int key="NSvFlags">270</int>
-							<string key="NSFrame">{{20, 334}, {165, 19}}</string>
+							<string key="NSFrame">{{20, 337}, {165, 19}}</string>
 							<reference key="NSSuperview" ref="881437593"/>
 							<int key="NSViewLayerContentsRedrawPolicy">2</int>
 							<bool key="NSEnabled">YES</bool>
@@ -201,7 +201,7 @@
 																				<bool key="EncodedWithXMLCoder">YES</bool>
 																				<object class="NSTableColumn" id="729371637">
 																					<string key="NSIdentifier">field</string>
-																					<double key="NSWidth">178</double>
+																					<double key="NSWidth">177</double>
 																					<double key="NSMinWidth">16</double>
 																					<double key="NSMaxWidth">1000</double>
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -243,7 +243,7 @@
 																				</object>
 																				<object class="NSTableColumn" id="583473822">
 																					<string key="NSIdentifier">type</string>
-																					<double key="NSWidth">198</double>
+																					<double key="NSWidth">199</double>
 																					<double key="NSMinWidth">40</double>
 																					<double key="NSMaxWidth">1000</double>
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -385,7 +385,7 @@
 																		<object class="NSOutlineView" id="771350217">
 																			<reference key="NSNextResponder" ref="817352949"/>
 																			<int key="NSvFlags">4352</int>
-																			<string key="NSFrameSize">{393, 255}</string>
+																			<string key="NSFrameSize">{393, 301}</string>
 																			<reference key="NSSuperview" ref="817352949"/>
 																			<int key="NSViewLayerContentsRedrawPolicy">2</int>
 																			<bool key="NSEnabled">YES</bool>
@@ -488,7 +488,7 @@
 																			<float key="NSOutlineViewIndentationPerLevelKey">12</float>
 																		</object>
 																	</object>
-																	<string key="NSFrame">{{1, 17}, {393, 255}}</string>
+																	<string key="NSFrame">{{1, 17}, {393, 301}}</string>
 																	<reference key="NSSuperview" ref="1023753551"/>
 																	<reference key="NSNextKeyView" ref="771350217"/>
 																	<int key="NSViewLayerContentsRedrawPolicy">2</int>
@@ -536,7 +536,7 @@
 																</object>
 																<reference ref="637334507"/>
 															</object>
-															<string key="NSFrameSize">{395, 273}</string>
+															<string key="NSFrameSize">{395, 319}</string>
 															<reference key="NSSuperview" ref="556163261"/>
 															<reference key="NSNextKeyView" ref="817352949"/>
 															<int key="NSViewLayerContentsRedrawPolicy">2</int>
@@ -549,13 +549,13 @@
 															<bytes key="NSScrollAmts">QSAAAEEgAABBYAAAQWAAAA</bytes>
 														</object>
 													</object>
-													<string key="NSFrame">{{0, 1}, {395, 273}}</string>
+													<string key="NSFrame">{{0, 1}, {395, 319}}</string>
 													<reference key="NSSuperview" ref="800413276"/>
 													<int key="NSViewLayerContentsRedrawPolicy">2</int>
 													<string key="NSClassName">NSView</string>
 												</object>
 											</object>
-											<string key="NSFrameSize">{395, 274}</string>
+											<string key="NSFrameSize">{395, 320}</string>
 											<reference key="NSSuperview" ref="464250149"/>
 											<int key="NSViewLayerContentsRedrawPolicy">2</int>
 											<int key="NSDividerStyle">2</int>
@@ -605,7 +605,7 @@
 											<bool key="BWSVDividerCanCollapse">NO</bool>
 										</object>
 									</object>
-									<string key="NSFrameSize">{395, 274}</string>
+									<string key="NSFrameSize">{395, 320}</string>
 									<reference key="NSSuperview" ref="112878735"/>
 									<int key="NSViewLayerContentsRedrawPolicy">2</int>
 									<string key="NSClassName">NSView</string>
@@ -613,13 +613,13 @@
 								<object class="BWCustomView" id="65471749">
 									<reference key="NSNextResponder" ref="112878735"/>
 									<int key="NSvFlags">274</int>
-									<string key="NSFrame">{{0, 275}, {395, 54}}</string>
+									<string key="NSFrame">{{0, 321}, {395, 13}}</string>
 									<reference key="NSSuperview" ref="112878735"/>
 									<int key="NSViewLayerContentsRedrawPolicy">2</int>
 									<string key="NSClassName">NSView</string>
 								</object>
 							</object>
-							<string key="NSFrameSize">{395, 329}</string>
+							<string key="NSFrameSize">{395, 334}</string>
 							<reference key="NSSuperview" ref="881437593"/>
 							<int key="NSViewLayerContentsRedrawPolicy">2</int>
 							<int key="NSDividerStyle">2</int>
@@ -664,6 +664,34 @@
 							</object>
 							<int key="BWSVCollapsiblePopupSelection">0</int>
 							<bool key="BWSVDividerCanCollapse">NO</bool>
+						</object>
+						<object class="NSButton" id="576014685">
+							<reference key="NSNextResponder" ref="881437593"/>
+							<int key="NSvFlags">265</int>
+							<string key="NSFrame">{{355, 337}, {20, 20}}</string>
+							<reference key="NSSuperview" ref="881437593"/>
+							<bool key="NSEnabled">YES</bool>
+							<object class="NSButtonCell" key="NSCell" id="1031400862">
+								<int key="NSCellFlags">-2080244224</int>
+								<int key="NSCellFlags2">134217728</int>
+								<string key="NSContents"/>
+								<object class="NSFont" key="NSSupport">
+									<string key="NSName">LucidaGrande</string>
+									<double key="NSSize">13</double>
+									<int key="NSfFlags">1044</int>
+								</object>
+								<reference key="NSControlView" ref="576014685"/>
+								<int key="NSButtonFlags">-2041822977</int>
+								<int key="NSButtonFlags2">162</int>
+								<object class="NSCustomResource" key="NSNormalImage">
+									<string key="NSClassName">NSImage</string>
+									<string key="NSResourceName">NSRefreshFreestandingTemplate</string>
+								</object>
+								<string key="NSAlternateContents"/>
+								<string key="NSKeyEquivalent"/>
+								<int key="NSPeriodicDelay">400</int>
+								<int key="NSPeriodicInterval">75</int>
+							</object>
 						</object>
 					</object>
 					<string key="NSFrameSize">{395, 359}</string>
@@ -796,6 +824,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="701533802"/>
 							<reference ref="112878735"/>
+							<reference ref="576014685"/>
 						</object>
 						<reference key="parent" ref="856804369"/>
 					</object>
@@ -1002,6 +1031,20 @@
 						<reference key="object" ref="713670797"/>
 						<reference key="parent" ref="998799870"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">66</int>
+						<reference key="object" ref="576014685"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1031400862"/>
+						</object>
+						<reference key="parent" ref="881437593"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">67</int>
+						<reference key="object" ref="1031400862"/>
+						<reference key="parent" ref="576014685"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1025,6 +1068,7 @@
 					<string>26.IBPluginDependency</string>
 					<string>27.IBPluginDependency</string>
 					<string>28.IBPluginDependency</string>
+					<string>29.CustomClassName</string>
 					<string>29.IBPluginDependency</string>
 					<string>3.IBEditorWindowLastContentRect</string>
 					<string>3.IBPluginDependency</string>
@@ -1043,9 +1087,12 @@
 					<string>44.IBPluginDependency</string>
 					<string>45.IBPluginDependency</string>
 					<string>46.IBPluginDependency</string>
+					<string>47.CustomClassName</string>
 					<string>47.IBPluginDependency</string>
 					<string>48.CustomClassName</string>
 					<string>48.IBPluginDependency</string>
+					<string>66.IBPluginDependency</string>
+					<string>67.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
 					<string>9.IBPluginDependency</string>
 				</object>
@@ -1068,10 +1115,11 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{66, 295}, {395, 359}}</string>
+					<string>{{245, 305}, {395, 359}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{66, 295}, {395, 359}}</string>
+					<string>{{245, 305}, {395, 359}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{150, 200}</string>
@@ -1086,8 +1134,11 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ImageAndTextCell</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1109,7 +1160,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">63</int>
+			<int key="maxID">67</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
