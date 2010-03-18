@@ -90,8 +90,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 			NSString *connectionName = [NSString stringWithFormat:@"%@@%@", [doc user], [doc host]];
-			if(![schemaData objectForKey:connectionName])
-				[schemaData setObject:[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] forKey:connectionName];
+			if(![schemaData objectForKey:connectionName]) {
+				NSDictionary *dbStructure = [[doc valueForKeyPath:@"mySQLConnection"] getDbStructure];
+				if (dbStructure) [schemaData setObject:dbStructure forKey:connectionName];
+			}
 		}
 	}
 

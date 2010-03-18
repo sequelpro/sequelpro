@@ -2806,6 +2806,10 @@
  */
 - (void)historyItemsHaveBeenUpdated:(id)manager
 {
+
+	// Abort if the connection has been closed already - sign of a closed window
+	if (![mySQLConnection isConnected]) return;
+
 	// Refresh history popup menu
 	NSMenu* historyMenu = [queryHistoryButton menu];
 	while([queryHistoryButton numberOfItems] > 7)

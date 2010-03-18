@@ -3591,6 +3591,7 @@
 {
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];
+	else [connectionController cancelConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
 	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self toggleNavigator:self];
 	[createTableSyntaxWindow orderOut:nil];
