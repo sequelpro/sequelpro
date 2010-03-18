@@ -102,10 +102,61 @@
  */
 - (IBAction)printDocument:(id)sender
 {		
+	// Only display warning for the 'Table Content' view
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
+				
+		NSInteger rowLimit = [prefs integerForKey:SPPrintWarningRowLimit];
+		
+		// Result count minus one because the first element is the column names
+		NSUInteger resultRows = ([[tableContentInstance currentResult] count] - 1);
+		
+		if (resultRows > rowLimit) {
+			
+			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
+			
+			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
+									
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Continue to print?", @"continue to print message")
+											 defaultButton:NSLocalizedString(@"Print", @"print button")
+										   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+											   otherButton:nil 
+								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to print the current content view of the table '%@'?\n\nIt currently contains %@ rows, which may take a significant amount of time to print.", @"continue to print informative message"), [self table], [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:resultRows]]]];
+			
+			NSArray *buttons = [alert buttons];
+			
+			// Change the alert's cancel button to have the key equivalent of return
+			[[buttons objectAtIndex:0] setKeyEquivalent:@"p"];
+			[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+			
+			[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(printWarningDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+		
+			return;
+		}
+	}
+	
+	[self startPrintDocumentOperation];
+}
+
+/**
+ * Called when the print warning dialog is dismissed.
+ */
+- (void)printWarningDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
+	if (returnCode == NSAlertDefaultReturn) {
+		[self startPrintDocumentOperation];
+	}
+}
+
+/**
+ * Starts tge print document operation by spawning a new thread if required.
+ */
+- (void)startPrintDocumentOperation
+{
 	[self startTaskWithDescription:NSLocalizedString(@"Generating print document...", @"generating print document status message")];
 	
 	BOOL isTableInformation = ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 3);
-
+	
 	if ([NSThread isMainThread]) {
 		printThread = [[NSThread alloc] initWithTarget:self selector:(isTableInformation) ? @selector(generateTableInfoHTMLForPrinting) : @selector(generateHTMLForPrinting) object:nil];
 		
@@ -263,7 +314,7 @@
 	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
 	
 	// Check if the operation has been cancelled
-	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {		
+	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {				
 		[pool drain];
 		[self endTask];
 		
@@ -300,6 +351,8 @@
 	[printData setObject:heading forKey:@"heading"];
 	[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
 	
+	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
+	
 	// Check if the operation has been cancelled
 	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {	
 		[pool drain];
@@ -309,8 +362,6 @@
 		
 		return;
 	}
-	
-	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
 	
 	[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
 							   

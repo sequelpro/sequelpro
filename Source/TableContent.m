@@ -1421,11 +1421,13 @@
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
-//getter methods
-- (NSArray *)currentDataResult
-/*
- returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+// Accessors
+
+/**
+ * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * names as array, the following objects containing the rows as array.
  */
+- (NSArray *)currentDataResult
 {
 	NSArray *tableColumns;
 	NSEnumerator *enumerator;
@@ -1480,11 +1482,11 @@
 	return currentResult;
 }
 
-//getter methods
-- (NSArray *)currentResult
-/*
- returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+/**
+ * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * names as array, the following objects containing the rows as array.
  */
+- (NSArray *)currentResult
 {
 	NSArray *tableColumns;
 	NSEnumerator *enumerator;

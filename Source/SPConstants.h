@@ -89,7 +89,6 @@ extern NSString *SPDefaultEncoding;
 extern NSString *SPUseMonospacedFonts;
 extern NSString *SPDisplayTableViewVerticalGridlines;
 extern NSString *SPCustomQueryMaxHistoryItems;
-extern NSString *SPDisplayServerVersionInWindowTitle;
 
 // Tables Prefpane
 extern NSString *SPReloadAfterAddingRow;
@@ -155,6 +154,10 @@ extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
+
+// Hidden Prefs
+extern NSString *SPPrintWarningRowLimit;
+extern NSString *SPDisplayServerVersionInWindowTitle;
 
 // Import
 extern NSString *SPCSVImportFieldTerminator;

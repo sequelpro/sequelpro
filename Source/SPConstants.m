@@ -57,7 +57,6 @@ NSString *SPDefaultEncoding                      = @"DefaultEncoding";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
 NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
-NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
 // Tables Prefpane
 NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";
@@ -123,6 +122,10 @@ NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
+
+// Hidden Prefs
+NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
+NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
 // Import
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";

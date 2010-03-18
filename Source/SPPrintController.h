@@ -27,6 +27,7 @@
 
 @interface TableDocument (SPPrintController)
 
+- (void)startPrintDocumentOperation;
 - (void)generateHTMLForPrinting;
 - (void)generateTableInfoHTMLForPrinting;
 
