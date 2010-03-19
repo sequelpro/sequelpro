@@ -85,7 +85,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	}
 	if ( [anItem tag] == MENU_EDIT_COPY_AS_SQL )
 	{
-		return (columnDefinitions != NULL && [self selectedRow] > -1);
+		return (columnDefinitions != nil && [self selectedRow] > -1);
 	}
 	return YES;
 }

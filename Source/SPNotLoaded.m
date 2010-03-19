@@ -34,7 +34,7 @@ static SPNotLoaded *notLoaded = nil;
 {
 	@synchronized(self) {
 		if (notLoaded == nil) {
-			[[self alloc] init];
+			notLoaded = [[super allocWithZone:NULL] init];
 		}
 	}
 	return notLoaded;
@@ -43,11 +43,8 @@ static SPNotLoaded *notLoaded = nil;
 + (id) allocWithZone:(NSZone *)zone
 {
 	@synchronized(self) {
-		if (notLoaded == nil) {
-			return [super allocWithZone:zone];
-		}
+		return [[self notLoaded] retain];
 	}
-	return notLoaded;
 }
 
 - (id) init

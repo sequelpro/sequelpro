@@ -35,6 +35,7 @@
 #import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPQueryController.h"
+#import "SPNavigatorController.h"
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
@@ -46,7 +47,6 @@
 #import "SPConnectionController.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
-#import "SPPrintAccessory.h"
 #import "SPUserManager.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
@@ -54,10 +54,6 @@
 #import "SPProcessListController.h"
 #import "SPServerVariablesController.h"
 #import "BDAlias.h"
-
-// Printing
-#import "MGTemplateEngine.h"
-#import "ICUTemplateMatcher.h"
 
 @interface TableDocument (PrivateAPI)
 
@@ -84,6 +80,8 @@
 		selectedDatabase = nil;
 		mySQLConnection = nil;
 		mySQLVersion = nil;
+		allDatabases = nil;
+		allSystemDatabases = nil;
 
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
@@ -108,8 +106,8 @@
 		taskCancellationCallbackSelector = NULL;
 
 		keyChainID = nil;
-		
 		statusValues = nil;
+		printThread = nil;
 	}
 
 	return self;
@@ -257,7 +255,7 @@
 	NSDictionary *connection = nil;
 	NSDictionary *spf = nil;
 
-	NSInteger connectionType;
+	NSInteger connectionType = -1;
 
 	// Inform about the data source in the window title bar
 	[tableWindow setTitle:[self displaySPName]];
@@ -774,129 +772,6 @@
 }
 
 #pragma mark -
-#pragma mark Printing
-
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame 
-{
-	//because I need the webFrame loaded (for preview), I've moved the actuall printing here.
-	NSPrintInfo *printInfo = [self printInfo];
-	[printInfo setHorizontalPagination:NSFitPagination];
-	[printInfo setVerticalPagination:NSAutoPagination];
-	[printInfo setVerticallyCentered:NO];
-	[printInfo setTopMargin:30];
-	[printInfo setBottomMargin:30];
-	[printInfo setLeftMargin:10];
-	[printInfo setRightMargin:10];
-
-	NSPrintOperation *op = [NSPrintOperation
-							printOperationWithView:[[[printWebView mainFrame] frameView] documentView]
-							printInfo:printInfo];
-
-	//add ability to select orientation to print panel
-	NSPrintPanel *printPanel = [op printPanel];
-	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
-
-	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] initWithNibName:@"PrintAccessory" bundle:nil];
-	[printAccessory setPrintView:printWebView];
-	[printPanel addAccessoryController:printAccessory];
-
-	NSPageLayout *pageLayout = [NSPageLayout pageLayout];
-	[pageLayout addAccessoryController:printAccessory];
-    [printAccessory release];
-
-	[op setPrintPanel:printPanel];
-
-    [op runOperationModalForWindow:tableWindow
-						  delegate:self
-					didRunSelector:
-	 @selector(printOperationDidRun:success:contextInfo:)
-					   contextInfo:NULL];
-
-}
-
-- (IBAction)printDocument:(id)sender
-{
-	//here load the printing document. The actual printing is done in the doneLoading delegate.
-	[[printWebView mainFrame] loadHTMLString:[self getHTMLforPrint] baseURL:nil];
-}
-
-- (void)printOperationDidRun:(NSPrintOperation *)printOperation
-					 success:(BOOL)success
-				 contextInfo:(void *)info
-{
-	//selector for print... maybe we can get rid of this?
-}
-
-- (NSString *)getHTMLforPrint
-{
-	// Set up template engine with your chosen matcher.
-	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
-	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
-
-	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (build %@)",
-		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"],
-		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
-		[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
-	];
-
-	NSMutableDictionary *connection = [[NSMutableDictionary alloc] init];
-	if([[self user] length])
-		[connection setValue:[self user] forKey:@"username"];
-	[connection setValue:[self host] forKey:@"hostname"];
-	if([connectionController port] &&[[connectionController port] length])
-		[connection setValue:[connectionController port] forKey:@"port"];
-	[connection setValue:selectedDatabase forKey:@"database"];
-	[connection setValue:versionForPrint forKey:@"version"];
-
-	NSArray *columns, *rows;
-	rows = nil;
-	columns = [self columnNames];
-
-	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 ){
-		if([[tableSourceInstance tableStructureForPrint] count] > 1)
-			rows = [[NSArray alloc] initWithArray:
-					[[tableSourceInstance tableStructureForPrint] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSourceInstance tableStructureForPrint] count]-1)]
-					 ]
-					];
-	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1 ){
-		if([[tableContentInstance currentResult] count] > 1)
-			rows = [[NSArray alloc] initWithArray:
-					[[tableContentInstance currentDataResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableContentInstance currentResult] count]-1)]
-					 ]
-					];
-		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
-	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2 ){
-		if([[customQueryInstance currentResult] count] > 1)
-			rows = [[NSArray alloc] initWithArray:
-					[[customQueryInstance currentResult] objectsAtIndexes:
-					 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[customQueryInstance currentResult] count]-1)]
-					 ]
-					];
-		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
-	}
-
-	[engine setObject:connection forKey:@"c"];
-	// Get path to template.
-	NSString *templatePath = [[NSBundle mainBundle] pathForResource:@"sequel-pro-print-template" ofType:@"html"];
-	NSDictionary *print_data = [NSDictionary dictionaryWithObjectsAndKeys: 
-			columns, @"columns",
-			rows, @"rows",
-			nil];
-
-    [connection release];
-    if (rows) [rows release];
-
-	// Process the template and display the results.
-	NSString *result = [engine processTemplateInFileAtPath:templatePath withVariables:print_data];
-
-	return result;
-}
-
-#pragma mark -
 #pragma mark Database methods
 
 /**
@@ -1171,7 +1046,7 @@
 	}
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
-		if(statusValues) [statusValues release]; statusValues = nil;
+		if (statusValues) [statusValues release], statusValues = nil;
 	}
 
 }
@@ -1256,6 +1131,7 @@
 	} else {
 		[[[SPQueryController sharedQueryController] window] makeKeyAndOrderFront:self];
 	}
+
 }
 
 /**
@@ -1272,6 +1148,37 @@
 - (void) setQueryMode:(NSInteger)theQueryMode
 {
 	_queryMode = theQueryMode;
+}
+
+#pragma mark -
+#pragma mark Navigator methods
+
+/**
+ * Shows or hides the navigator
+ */
+- (IBAction)toggleNavigator:(id)sender
+{
+	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
+
+	// If the Console window is not visible data are not reloaded (for speed).
+	// Due to that update list if user opens the Console window.
+	if(!isNavigatorVisible) {
+		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
+	}
+
+	// Show or hide the navigator
+	[[[SPNavigatorController sharedNavigatorController] window] setIsVisible:(!isNavigatorVisible)];
+}
+
+- (IBAction)showNavigator:(id)sender
+{
+	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
+	
+	if (!isNavigatorVisible) {
+		[self toggleNavigator:sender];
+	} else {
+		[[[SPNavigatorController sharedNavigatorController] window] makeKeyAndOrderFront:self];
+	}
 }
 
 #pragma mark -
@@ -1317,7 +1224,7 @@
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		[mainToolbar validateVisibleItems];
-		
+				
 		// Schedule appearance of the task window in the near future
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
 	}
@@ -1328,7 +1235,7 @@
  */
 - (void) showTaskProgressWindow:(NSTimer *)theTimer
 {
-	[taskDrawTimer release], taskDrawTimer = nil;
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
 
 	// Center the task window and fade it in
 	[self centerTaskWindow];
@@ -1396,6 +1303,12 @@
  */
 - (void) endTask
 {
+
+	// Ensure a call on the main thread
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
+		return;
+	}
 
 	// Decrement the working level
 	_isWorkingLevel--;
@@ -1831,28 +1744,6 @@
 											  notificationName:@"Syntax Copied"];
 }
 
-- (NSArray *)columnNames
-{
-	NSArray *columns = nil;
-	if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& [[tableSourceInstance tableStructureForPrint] count] > 0 ){
-		columns = [[NSArray alloc] initWithArray:[[tableSourceInstance tableStructureForPrint] objectAtIndex:0] copyItems:YES];
-	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& [[tableContentInstance currentResult] count] > 0 ){
-		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
-	}
-	else if ( [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
-		&& [[customQueryInstance currentResult] count] > 0 ){
-		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
-	}
-
-	if(columns) {
-		[columns autorelease];
-	}
-	return columns;
-}
-
 /**
  * Performs a MySQL check table on the selected table and presents the result to the user via an alert sheet.
  */
@@ -1898,8 +1789,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Check table successfully passed.",@"check table successfully passed message") : NSLocalizedString(@"Check table failed.", @"check table failed message");
@@ -1921,6 +1810,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -1975,8 +1865,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully analyzed table.",@"analyze table successfully passed message") : NSLocalizedString(@"Analyze table failed.", @"analyze table failed message");
@@ -1998,6 +1886,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2052,8 +1941,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully optimized table.",@"optimize table successfully passed message") : NSLocalizedString(@"Optimize table failed.", @"optimize table failed message");
@@ -2075,6 +1962,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2128,8 +2016,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully repaired table.",@"repair table successfully passed message") : NSLocalizedString(@"Repair table failed.", @"repair table failed message");
@@ -2151,6 +2037,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2204,8 +2091,6 @@
 
 	// Process result
 	if([selectedItems count] == 1) {
-		message = @"";
-
 		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully flushed table.",@"flush table successfully passed message") : NSLocalizedString(@"Flush table failed.", @"flush table failed message");
@@ -2227,6 +2112,7 @@
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2282,6 +2168,7 @@
 						   contextInfo:NULL];
 	} else {
 		NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+		if (statusValues) [statusValues release], statusValues = nil;
 		statusValues = [result retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Checksums of %@",@"Checksums of %@ message"), what]];
@@ -2539,6 +2426,16 @@
 	return theUser;
 }
 
+/**
+ * Returns the current host's port
+ */
+- (NSString *)port
+{
+	NSString *thePort = [connectionController port];
+	if (!thePort) return @"";
+	return thePort;
+}
+
 - (NSString *)keyChainID
 {
 	return keyChainID;
@@ -2756,7 +2653,7 @@
 		return NO;
 
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
-
+	
 	if(fileName == nil)
 		fileName = [[self fileURL] path]; //[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 	
@@ -3136,12 +3033,12 @@
 	}
 
 	if ([menuItem action] == @selector(printDocument:)) {
-		return (
-			(
-				[self database] != nil 
-					&& [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1
-			)
-			|| [tableWindow firstResponder] == customQueryInstance);
+		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1)
+			// if Custom Query Tab is active the textView will handle printDocument by itself
+			// if it is first responder; otherwise allow to print the Query Result table even 
+			//if no db/table is selected
+			|| [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
+			);
 	}
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {
@@ -3187,6 +3084,11 @@
 	// Clear console
 	if ([menuItem action] == @selector(clearConsole:)) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
+	}
+	
+	// Show/hide console
+	if ([menuItem action] == @selector(toggleNavigator:)) {
+		[menuItem setTitle:([[[SPNavigatorController sharedNavigatorController] window] isVisible]) ? NSLocalizedString(@"Hide Navigator", @"hide navigator") : NSLocalizedString(@"Show Navigator", @"show navigator")];
 	}
 	
 	// Focus on table content filter
@@ -3543,6 +3445,16 @@
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(viewRelations:)];
 
+	} else if ([itemIdentifier isEqualToString:SPMainToolbarTableTriggers]) {
+		[toolbarItem setLabel:NSLocalizedString(@"Triggers", @"toolbar item label for switching to the Table Triggers tab")];
+		[toolbarItem setPaletteLabel:NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab")];
+		//set up tooltip and image
+		[toolbarItem setToolTip:NSLocalizedString(@"Switch to the Table Triggers tab", @"tooltip for toolbar item for switching to the Table Triggers tab")];
+		[toolbarItem setImage:[NSImage imageNamed:@"toolbar-switch-to-table-triggers"]];
+		//set up the target action
+		[toolbarItem setTarget:self];
+		[toolbarItem setAction:@selector(viewTriggers:)];
+		
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarUserManager]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
 		[toolbarItem setPaletteLabel:NSLocalizedString(@"Users", @"toolbar item label for switching to the User Manager tab")];
@@ -3552,6 +3464,7 @@
 		//set up the target action
 		[toolbarItem setTarget:self];
 		[toolbarItem setAction:@selector(showUserManager:)];
+		
 	} else {
 		//itemIdentifier refered to a toolbar item that is not provided or supported by us or cocoa 
 		toolbarItem = nil;
@@ -3575,6 +3488,7 @@
 			SPMainToolbarCustomQuery,
 			SPMainToolbarTableInfo,
 			SPMainToolbarTableRelations,
+			SPMainToolbarTableTriggers,
 			SPMainToolbarUserManager,
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
@@ -3613,6 +3527,7 @@
 			SPMainToolbarCustomQuery,
 			SPMainToolbarTableInfo,
 			SPMainToolbarTableRelations,
+			SPMainToolbarTableTriggers,
 			nil];
 
 }
@@ -3691,7 +3606,9 @@
 {
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];
+	else [connectionController cancelConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
+	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self toggleNavigator:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -3804,13 +3721,11 @@
 {			
 	[super setFileURL:url];
 
-	// Only attempt to create an alias from the supplied URL if it is absolute file path.
-	if ([[url absoluteString] hasPrefix:@"/"]) {
-							
-		if (spfAlias) [spfAlias release], spfAlias = nil;
+	//NSLog(@"setting = %@", url);
+	
+	if (spfAlias) [spfAlias release], spfAlias = nil;
 				
-		spfAlias = [[BDAlias alloc] initWithPath:[url path]];
-	}
+	spfAlias = [[BDAlias alloc] initWithPath:[url path]];
 }
 
 /**
@@ -3819,7 +3734,11 @@
  */
 - (NSURL *)fileURL
 {			
-	return (spfAlias && [spfAlias fullPath]) ? [NSURL URLWithString:[[spfAlias fullPath] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]] : [super fileURL];
+	NSURL *url = (spfAlias && [spfAlias fullPath]) ? [NSURL URLWithString:[spfAlias fullPath]] : [super fileURL];
+	
+	//NSLog(@"returning = %@", url);
+	
+	return url;
 }
 
 #pragma mark -

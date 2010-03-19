@@ -163,10 +163,10 @@
 	
 	NSString *keyChainID;
 	
+	NSThread *printThread;
+	
 	id statusValues;
 }
-
-- (NSString *)getHTMLforPrint;
 
 - (BOOL)isUntitled;
 
@@ -192,18 +192,18 @@
 - (NSArray *)allSystemDatabaseNames;
 
 // Task progress and notification methods
-- (void) startTaskWithDescription:(NSString *)description;
-- (void) showTaskProgressWindow:(NSTimer *)theTimer;
-- (void) setTaskDescription:(NSString *)description;
-- (void) setTaskPercentage:(CGFloat)taskPercentage;
-- (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay;
-- (void) endTask;
-- (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction;
-- (void) disableTaskCancellation;
-- (IBAction) cancelTask:(id)sender;
-- (BOOL) isWorking;
-- (void) setDatabaseListIsSelectable:(BOOL)isSelectable;
-- (void) centerTaskWindow;
+- (void)startTaskWithDescription:(NSString *)description;
+- (void)showTaskProgressWindow:(NSTimer *)theTimer;
+- (void)setTaskDescription:(NSString *)description;
+- (void)setTaskPercentage:(CGFloat)taskPercentage;
+- (void)setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay;
+- (void)endTask;
+- (void)enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction;
+- (void)disableTaskCancellation;
+- (IBAction)cancelTask:(id)sender;
+- (BOOL)isWorking;
+- (void)setDatabaseListIsSelectable:(BOOL)isSelectable;
+- (void)centerTaskWindow;
 
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
@@ -250,17 +250,19 @@
 - (IBAction)copyChecksumFromSheet:(id)sender;
 
 - (void)showConsole:(id)sender;
+- (IBAction)showNavigator:(id)sender;
+- (IBAction)toggleNavigator:(id)sender;
 
 // Accessor methods
 - (NSString *)host;
 - (NSString *)name;
 - (NSString *)database;
 - (NSString *)table;
+- (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
 - (NSString *)displaySPName;
 - (NSString *)keyChainID;
-- (NSArray *)columnNames;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;

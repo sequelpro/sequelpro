@@ -105,6 +105,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		queryCancelled = NO;
 		queryCancelUsedReconnect = NO;
 		serverVersionString = nil;
+		mTimeZone = nil;
+		isDisconnecting = NO;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -229,6 +231,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		[delegateDecisionLock lock];
 		lastDelegateDecisionForLostConnection = [delegate connectionLost:self];
 		[delegateDecisionLock unlock];
+		[delegateDecisionLock release];
 
 	// Otherwise call ourself on the main thread, waiting until the reply is received.
 	} else {
@@ -296,7 +299,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
 		currentProxyState = newState;
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
-		[self reconnect];
+		if (!isDisconnecting) [self reconnect];
 		
 		return;
 	}
@@ -402,12 +405,22 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  */
 - (void)disconnect
 {
+	if (isDisconnecting) return;
+	isDisconnecting = YES;
+
+	[self stopKeepAliveTimer];
+
 	if (mConnected) {
+		[self cancelCurrentQuery];
+		mConnected = NO;
+		
+		// Small pause for cleanup.
+		usleep(100000);
 		mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
-	mConnected = NO;
+	isDisconnecting = NO;
 
 	if (connectionProxy) {
 		[connectionProxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
@@ -415,9 +428,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
-	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
-	
-	[self stopKeepAliveTimer];
+	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;	
 	if (pingThread != NULL) pthread_cancel(pingThread), pingThread = NULL;
 }
 
@@ -448,12 +459,14 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	// Close the connection if it exists.
+	[self stopKeepAliveTimer];
 	if (mConnected) {
 		mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
 	mConnected = NO;
+	isDisconnecting = NO;
 	
 	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionProxy) {
@@ -693,6 +706,10 @@ void pingConnectionTask(void *ptr)
 {
 	if (!mConnected || keepAliveThread != NULL) return;
 
+	// Use a ping timeout between zero and thirty seconds
+	NSInteger pingTimeout = 30;
+	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
+
 	// Attempt to get a query lock, but release it to ensure the connection isn't locked
 	// by a background ping.
 	if (![queryLock tryLock]) return;
@@ -701,9 +718,9 @@ void pingConnectionTask(void *ptr)
 	// Create a pthread for the actual keepalive
 	pthread_create(&keepAliveThread, NULL, (void *)&performThreadedKeepAlive, (void *)mConnection);
 
-	// Give the connection time to respond, but force a timeout after the connection timeout
+	// Give the connection time to respond, but force a timeout after the ping timeout
 	// if the thread hasn't already closed itself.
-	sleep(connectionTimeout);
+	sleep(pingTimeout);
 	pthread_cancel(keepAliveThread);
 	keepAliveThread = NULL;
 }
@@ -725,6 +742,9 @@ void performThreadedKeepAlive(void *ptr)
 	connectionThreadId = mConnection->thread_id;
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
+	
+	[self stopKeepAliveTimer];
+	[self startKeepAliveTimer];
 	
 	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
@@ -1280,7 +1300,6 @@ void performThreadedKeepAlive(void *ptr)
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
- * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
  * Uses safe/fast mode, which may use more memory as results are downloaded.
  */
@@ -1291,7 +1310,6 @@ void performThreadedKeepAlive(void *ptr)
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
- * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
  * Can be used in either fast/safe mode, where data is downloaded as fast as possible to avoid
  * blocking the server, or in full streaming mode for lowest memory usage but potentially blocking
@@ -1306,7 +1324,6 @@ void performThreadedKeepAlive(void *ptr)
  * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
- * If using streamingResult, the caller is responsible for releasing the result set.
  */
 - (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResultType
 {
@@ -1462,9 +1479,11 @@ void performThreadedKeepAlive(void *ptr)
 			}
 			
 			if (queryCancelled) {
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 				queryErrorMessage = [[NSString alloc] initWithString:NSLocalizedString(@"Query cancelled.", @"Query cancelled error")];
 				queryErrorId = 1317;
 			} else {			
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 				queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 				queryErrorId = mysql_errno(mConnection);
 
@@ -1504,7 +1523,6 @@ void performThreadedKeepAlive(void *ptr)
 	(void)(*startKeepAliveTimerPtr)(self, startKeepAliveTimerSEL, YES);
 	
 	if (!theResult) return nil;
-	if (streamResultType != MCP_NO_STREAMING) return theResult;
 	return [theResult autorelease];
 }
 
@@ -1606,7 +1624,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Reset the connection
 	[self unlockConnection];
-	[self reconnect];
+	if (!isDisconnecting) [self reconnect];
 
 	// Set queryCancelled again to handle requery cleanups, and return.
 	queryCancelled = YES;
@@ -1651,14 +1669,16 @@ void performThreadedKeepAlive(void *ptr)
 - (void)unlockConnection
 {
 
-	// Make sure the unlock is performed safely - eg for reconnected queries
-	if ([queryLock tryLock]) {
-		[queryLock unlock];
+	// Ensure the unlock occurs on the main thread
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:NO];
 		return;
 	}
 
-	if ([NSThread isMainThread]) [queryLock unlock];
-	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
+	// Unlock the connection, first ensuring it is locked to avoid
+	// multiple unlock call issues (eg reconnected queries, threading)
+	[queryLock tryLock];
+	[queryLock unlock];
 }
 
 #pragma mark -
@@ -1891,14 +1911,15 @@ void performThreadedKeepAlive(void *ptr)
 
 				// Query the desired data
 				NSString *queryDbString = @""
-				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype` FROM `information_schema`.`COLUMNS`"
+				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` "
 				@"UNION "
-				@"SELECT c.TABLE_SCHEMA AS `databases`, c.TABLE_NAME AS `tables`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `type`, c.CHARACTER_SET_NAME AS `charset`, '1' AS `structtype` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
+				@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
 				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '2' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
+				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '2' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
 				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '3' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
-				@"ORDER BY `databases`,`tables`,`fields`";
+				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
+				@"ORDER BY `DATABASES`,`TABLES`,`fields`";
+
 				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
 				const char *queryCString = [encodedQueryData bytes];
 				unsigned long queryCStringLength = [encodedQueryData length];
@@ -1917,6 +1938,9 @@ void performThreadedKeepAlive(void *ptr)
 						NSString *type = [self stringWithUTF8CString:row[3]];
 						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
 						NSString *structtype = [self stringWithUTF8CString:row[5]];
+						NSString *key = [self stringWithUTF8CString:row[6]];
+						NSString *extra = [self stringWithUTF8CString:row[7]];
+						NSString *priv = [self stringWithUTF8CString:row[8]];
 
 						[namesSet addObject:[db lowercaseString]];
 						[namesSet addObject:[table lowercaseString]];
@@ -1931,7 +1955,7 @@ void performThreadedKeepAlive(void *ptr)
 							[[structure valueForKey:db] setObject:[NSMutableDictionary dictionary] forKey:table];
 						}
 
-						[[[structure valueForKey:db] valueForKey:table] setObject:[NSString stringWithFormat:@"%@ %@", type, charset] forKey:field];
+						[[[structure valueForKey:db] valueForKey:table] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, nil] forKey:field];
 						[[[structure valueForKey:db] valueForKey:table] setObject:structtype forKey:@"  struct_type  "];
 
 					}

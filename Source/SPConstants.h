@@ -71,6 +71,11 @@ extern NSString *SPQueryFavortiesPasteboardDragType;
 extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
 
+// Filenames
+extern NSString *SPHTMLPrintTemplate;
+extern NSString *SPHTMLTableInfoPrintTemplate;
+extern NSString *SPHTMLHelpTemplate;
+
 
 // Preference key constants
 // General Prefpane
@@ -84,7 +89,6 @@ extern NSString *SPDefaultEncoding;
 extern NSString *SPUseMonospacedFonts;
 extern NSString *SPDisplayTableViewVerticalGridlines;
 extern NSString *SPCustomQueryMaxHistoryItems;
-extern NSString *SPDisplayServerVersionInWindowTitle;
 
 // Tables Prefpane
 extern NSString *SPReloadAfterAddingRow;
@@ -151,6 +155,10 @@ extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
 
+// Hidden Prefs
+extern NSString *SPPrintWarningRowLimit;
+extern NSString *SPDisplayServerVersionInWindowTitle;
+
 // Import
 extern NSString *SPCSVImportFieldTerminator;
 extern NSString *SPCSVImportLineTerminator;
@@ -182,6 +190,7 @@ extern NSString *SPDonationsURL;
 extern NSString *SPFAQURL;
 extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
+extern NSString *SPKeyboardShortcutsURL;
 
 // Toolbar constants
 

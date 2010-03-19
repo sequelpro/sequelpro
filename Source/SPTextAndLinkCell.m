@@ -78,8 +78,11 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
  * Returns a new instance which is a copy of the receiver
  */
 - (id) copyWithZone:(NSZone *)zone {
-	SPTextAndLinkCell *copy = [super copyWithZone:zone];
+	SPTextAndLinkCell *copy = (SPTextAndLinkCell *)[super copyWithZone:zone];
+	copy->linkButton = nil;
 	if (linkButton) copy->linkButton = [linkButton copyWithZone:zone];
+	copy->linkTarget = linkTarget;
+	copy->linkAction = linkAction;
 	return copy;
 }
 
@@ -202,6 +205,9 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	// Fast path for if not in button rect - just pass to super
 	if (!NSMouseInRect(p, linkRect, [controlView isFlipped]))
 		return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:untilMouseUp];
+
+	// Ignore events other than mouse down.
+	if ([theEvent type] != NSLeftMouseDown) return YES;
 
 	// Continue tracking the mouse while it's down, updating the state as it enters and leaves the cell,
 	// until it is released; if still within the cell, follow the link.

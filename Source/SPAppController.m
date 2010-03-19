@@ -67,6 +67,7 @@
 	[[SUUpdater sharedUpdater] setDelegate:self];
 	
 	prefsController = [[SPPreferenceController alloc] init];
+	aboutController = nil;
 	
 	// Register SPAppController as services provider
 	[NSApp setServicesProvider:self];
@@ -412,6 +413,14 @@
 - (IBAction)provideFeedback:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPContactURL]];
+}
+
+/**
+ * Opens the 'Keyboard Shortcuts' page in the default browser.
+ */
+- (IBAction)viewKeyboardShortcuts:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPKeyboardShortcutsURL]];
 }
 
 #pragma mark -

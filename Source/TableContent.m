@@ -89,6 +89,7 @@
 		firstBetweenValueToRestore = nil;
 		secondBetweenValueToRestore = nil;
 		tableRowsSelectable = YES;
+		contentFilterManager = nil;
 
 		isFiltered = NO;
 		isLimited = NO;
@@ -608,7 +609,7 @@
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
-	streamingResult = [mySQLConnection streamingQueryString:queryString];
+	streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 
 	// Ensure the number of columns are unchanged; if the column count has changed, abort the load
 	// and queue a full table reload.
@@ -623,15 +624,15 @@
 	// Process the result into the data store
 	if (!fullTableReloadRequired && streamingResult) {
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
-		[streamingResult release];
 	}
+	if (streamingResult) [streamingResult release];
 
 	// If the result is empty, and a late page is selected, reset the page
 	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		contentPage = 1;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
-		streamingResult = [mySQLConnection streamingQueryString:queryString];
+		streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 		if (streamingResult) {
 			[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 			[streamingResult release];
@@ -1420,11 +1421,13 @@
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
-//getter methods
-- (NSArray *)currentDataResult
-/*
- returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+// Accessors
+
+/**
+ * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * names as array, the following objects containing the rows as array.
  */
+- (NSArray *)currentDataResult
 {
 	NSArray *tableColumns;
 	NSEnumerator *enumerator;
@@ -1479,11 +1482,11 @@
 	return currentResult;
 }
 
-//getter methods
-- (NSArray *)currentResult
-/*
- returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+/**
+ * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * names as array, the following objects containing the rows as array.
  */
+- (NSArray *)currentResult
 {
 	NSArray *tableColumns;
 	NSEnumerator *enumerator;
@@ -1556,6 +1559,7 @@
 {
 	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
 	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
+	BOOL tableFilterRequired = NO;
 
 	// Ensure the clicked cell has foreign key details available
 	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
@@ -1579,8 +1583,7 @@
 		} else {
 			[argumentField setStringValue:targetFilterValue];
 		}
-		[self filterTable:self];
-
+		tableFilterRequired = YES;
 	} else {
 
 		// Store the filter details to use when loading the target table
@@ -1602,8 +1605,14 @@
 	[spHistoryControllerInstance setModifyingState:NO];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Empty the loading pool and exit the thread
+	// End the task
 	[tableDocumentInstance endTask];
+
+	// If the same table is the target, trigger a filter task on the main thread
+	if (tableFilterRequired)
+		[self performSelectorOnMainThread:@selector(filterTable:) withObject:self waitUntilDone:NO];
+	
+	// Empty the loading pool and exit the thread
 	[linkPool drain];
 }
 
@@ -2525,7 +2534,7 @@
 			if ([filterSettings objectForKey:@"secondBetweenField"])
 				secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
 		} else {
-			if ([filterSettings objectForKey:@"filterValue"])
+			if ([filterSettings objectForKey:@"filterValue"] && ![[filterSettings objectForKey:@"filterValue"] isNSNull])
 				filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
 		}
 	}

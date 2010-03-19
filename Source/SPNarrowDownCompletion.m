@@ -513,6 +513,7 @@
 				if(newFiltered) [newFiltered release];
 				NSLog(@"%@", @"Couldn't filter suggestion due to internal regexp error");
 				closeMe = YES;
+				return;
 			}
 			
 		}
@@ -525,6 +526,7 @@
 
 	if(![newFiltered count]) {
 		if(autoCompletionMode) {
+			[newFiltered release];
 			closeMe = YES;
 			return;
 		} else {
@@ -532,12 +534,18 @@
 			if([[self filterString] hasSuffix:@"."]) {
 				[theView setCompletionWasReinvokedAutomatically:YES];
 				[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+				[newFiltered release];
 				closeMe = YES;
 				return;
 			} else {
 				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No item found", @"no item found message"), @"display", @"", @"noCompletion", nil]];
 			}
 		}
+	}
+	if(autoCompletionMode && [newFiltered count] == 1 && [[[self filterString] lowercaseString] isEqualToString:[[[newFiltered objectAtIndex:0] objectForKey:@"display"] lowercaseString]]) {
+		[newFiltered release];
+		closeMe = YES;
+		return;
 	}
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
@@ -751,6 +759,10 @@
 - (void)insert_text:(NSString* )aString
 {
 
+	// Ensure that theCharRange is valid
+	if(NSMaxRange(theCharRange) > [[theView string] length])
+		theCharRange = NSIntersectionRange(NSMakeRange(0,[[theView string] length]), theCharRange);
+
 	NSRange r = [theView selectedRange];
 	if(r.length)
 		[theView setSelectedRange:r];
@@ -762,8 +774,8 @@
 	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
-	// If it's a function insert () and if given arguments as snippets
-	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] && ![aString hasSuffix:@")"]) {
+	// If it's a function or procedure append () and if a argument list can be retieved insert them as snippets
+	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && ([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] || [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"proc"]) && ![aString hasSuffix:@")"]) {
 		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
 		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];
 		if([functionArgumentSnippet length] == 2)
@@ -820,6 +832,12 @@
 	} else {
 		closeMe = YES;
 	}
+}
+
+- (void)adjustWorkingRangeByDelta:(NSInteger)delta
+{
+	theCharRange.location += delta;
+	theParseRange.location += delta;
 }
 
 @end

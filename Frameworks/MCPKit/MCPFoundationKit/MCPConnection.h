@@ -82,6 +82,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSLock			 *queryLock;	   /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
 
 	BOOL useKeepAlive;
+	BOOL isDisconnecting;
 	NSInteger connectionTimeout;
 	CGFloat keepAliveInterval;
 	

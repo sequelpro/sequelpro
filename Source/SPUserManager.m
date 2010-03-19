@@ -1267,8 +1267,8 @@
 							
 							// Remove items from available so they can't be added twice.
 							NSPredicate *predicate = [NSPredicate predicateWithFormat:@"displayName like[cd] %@", displayName];
-							NSArray *results = [[availableController arrangedObjects] filteredArrayUsingPredicate:predicate];
-							for (NSDictionary *dict in results)
+							NSArray *previousObjects = [[availableController arrangedObjects] filteredArrayUsingPredicate:predicate];
+							for (NSDictionary *dict in previousObjects)
 							{
 								[availableController removeObject:dict];
 							}

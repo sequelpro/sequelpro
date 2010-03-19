@@ -39,7 +39,7 @@ static SPGrowlController *sharedGrowlController = nil;
 {
     @synchronized(self) {
         if (sharedGrowlController == nil) {
-            [[self alloc] init];
+            sharedGrowlController = [[super allocWithZone:NULL] init];
         }
     }
     
@@ -49,14 +49,8 @@ static SPGrowlController *sharedGrowlController = nil;
 + (id)allocWithZone:(NSZone *)zone
 {    
     @synchronized(self) {
-        if (sharedGrowlController == nil) {
-            sharedGrowlController = [super allocWithZone:zone];
-            
-            return sharedGrowlController;
-        }
-    }
-    
-    return nil; // On subsequent allocation attempts return nil
+		return [[self sharedGrowlController] retain]; 
+    }    
 }
 
 - (id)init

@@ -40,6 +40,11 @@ NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPFileExtensionDefault                 = @"spf";
 NSString *SPFileExtensionSQL                     = @"sql";
 
+// Filenames
+NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
+NSString *SPHTMLTableInfoPrintTemplate           = @"sequel-pro-table-info-print-template";
+NSString *SPHTMLHelpTemplate                     = @"sequel-pro-mysql-help-template";
+
 // Preference key constants
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
@@ -52,7 +57,6 @@ NSString *SPDefaultEncoding                      = @"DefaultEncoding";
 NSString *SPUseMonospacedFonts                   = @"UseMonospacedFonts";
 NSString *SPDisplayTableViewVerticalGridlines    = @"DisplayTableViewVerticalGridlines";
 NSString *SPCustomQueryMaxHistoryItems           = @"CustomQueryMaxHistoryItems";
-NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
 // Tables Prefpane
 NSString *SPReloadAfterAddingRow                 = @"ReloadAfterAddingRow";
@@ -119,6 +123,10 @@ NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 
+// Hidden Prefs
+NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
+NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
+
 // Import
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";
 NSString *SPCSVImportFieldEscapeCharacter        = @"CSVImportFieldEscapeCharacter";
@@ -150,6 +158,7 @@ NSString *SPDonationsURL                         = @"http://www.sequelpro.com/do
 NSString *SPFAQURL                               = @"http://www.sequelpro.com/docs/Frequently_Asked_Questions";
 NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
+NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
 
 // Toolbar constants
 

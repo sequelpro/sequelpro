@@ -151,5 +151,7 @@
 	<integer>2</integer>
 	<key>DisplayServerVersionInWindowTitle</key>
 	<true/>
+	<key>PrintWarningRowLimit</key>
+	<integer>1000</integer>
 </dict>
 </plist>

@@ -128,7 +128,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	startListeningToBoundChanges = NO;
 	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
+	mirroredCounter = -1;
 	completionIsOpen = NO;
+	isProcessingMirroredSnippets = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -311,7 +313,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						[allDbs addObject:db];
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSMutableArray *sortedDbs = [[NSMutableArray array] autorelease];
+			NSMutableArray *sortedDbs = [NSMutableArray array];
 			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
 
 			NSString *currentDb = nil;
@@ -408,7 +410,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
-								NSString *typ = [theTable objectForKey:field];
+								NSArray *def = [theTable objectForKey:field];
+								NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:1], [def objectAtIndex:2]];
 								// Check if type definition contains a , if so replace the bracket content by … and add 
 								// the bracket content as "list" key to prevend the token field to split them by ,
 								if(typ && [typ rangeOfString:@","].length) {
@@ -508,7 +511,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
-	if([[self string] length] && caretPos > 0 && [[self string] characterAtIndex:caretPos-1] == '`') {
+	if(!autoCompleteMode && [[self string] length] && caretPos > 0 && [[self string] characterAtIndex:caretPos-1] == '`') {
 		if([[self string] length] > caretPos && [[self string] characterAtIndex:caretPos] == '`') {
 			;
 		} else {
@@ -699,7 +702,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caretMovedLeft:caretMovedLeft
 					autoComplete:autoCompleteMode
 					oneColumn:isDictMode];
-	
+
+	completionParseRangeLocation = parseRange.location;
+
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
@@ -758,15 +763,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL leftIsAlphanum = NO;
 	BOOL rightIsAlphanum = NO;
 	BOOL charIsOpenBracket = (aChar == '(');
+	NSUInteger bufferLength = [[self string] length];
+
+	if(!bufferLength) return NO;
 	
 	// Check previous/next character for being alphanum
 	// @try block for bounds checking
 	@try
 	{
-		leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
+		if(caretPosition==0)
+			leftIsAlphanum = NO;
+		else
+			leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
 	} @catch(id ae) { }
 	@try {
-		rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
+		if(caretPosition >= bufferLength)
+			rightIsAlphanum = NO;
+		else
+			rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
 		
 	} @catch(id ae) { }
 
@@ -793,6 +807,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		matchingChar = ')';
 	else if (leftChar == '"' || leftChar == '`' || leftChar == '\'')
 		matchingChar = leftChar;
+	else if (leftChar == '{')
+		matchingChar = '}';
 	else
 		return NO;
 
@@ -810,6 +826,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (IBAction)printDocument:(id)sender
 {
+
+	// If Extended Table Info tab is active delegate the print call to the SPPrintController
+	// if the user doesn't select anything in self
+	if([[[[self delegate] class] description] isEqualToString:@"SPExtendedTableInfo"] && ![self selectedRange].length) {
+		[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] printDocument:sender];
+		return;
+	}
 
 	// This will scale the view to fit the page without centering it.
 	[[NSPrintInfo sharedPrintInfo] setHorizontalPagination:NSFitPagination];
@@ -961,7 +984,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Indent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
 
 		// Extract the current line range based on the text caret
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
@@ -1014,7 +1036,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Undent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
 
 		// Extract the current line range based on the text caret
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
@@ -1077,6 +1098,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	snippetControlCounter = -1;
 	currentSnippetIndex   = -1;
 	snippetControlMax     = -1;
+	mirroredCounter       = -1;
 	snippetWasJustInserted = NO;
 }
 
@@ -1106,6 +1128,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			[desc release];
 			for(id table in sortedTables) {
 				NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
 				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
@@ -1141,7 +1164,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 	}
-	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS_FROM_SELECTED_TABLE"]) {
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS"]) {
 
 		NSString *currentDb = nil;
 		NSString *currentTable = nil;
@@ -1157,9 +1180,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSArray *allFields = [theTable allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			[desc release];
 			for(id field in sortedFields) {
 				if(![field hasPrefix:@"  "]) {
-					NSString *typ = [theTable objectForKey:field];
+					NSArray *def = [theTable objectForKey:field];
+					NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:1], [def objectAtIndex:2]];
 					// Check if type definition contains a , if so replace the bracket content by … and add 
 					// the bracket content as "list" key to prevend the token field to split them by ,
 					if(typ && [typ rangeOfString:@","].length) {
@@ -1184,7 +1209,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					}
 				}
 			}
-			[desc release];
 		} else {
 			arr = [NSArray arrayWithArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 			if(arr == nil) {
@@ -1234,6 +1258,84 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /*
+ * Update all mirrored snippets and adjust any involved instances
+ */
+- (void)processMirroredSnippets
+{
+	if(mirroredCounter > -1) {
+
+		isProcessingMirroredSnippets = YES;
+
+		NSInteger i, j, k, deltaLength;
+		NSRange mirroredRange;
+		id aCompletionList;
+
+		// Get the completion list pointer if open
+		if(completionIsOpen)
+			for(id w in [NSApp windows])
+				if([w isKindOfClass:[SPNarrowDownCompletion class]]) {
+					aCompletionList = w;
+					break;
+				}
+
+		// Go through each defined mirrored snippet and update it
+		for(i=0; i<=mirroredCounter; i++) {
+			if(snippetMirroredControlArray[i][0] == currentSnippetIndex) {
+
+				deltaLength = snippetControlArray[currentSnippetIndex][1]-snippetMirroredControlArray[i][2];
+
+				mirroredRange = NSMakeRange(snippetMirroredControlArray[i][1], snippetMirroredControlArray[i][2]);
+				NSString *mirroredString = nil;
+
+				// For safety reasons
+				@try{
+					mirroredString = [[self string] substringWithRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+				}
+				@catch(id ae) {
+					NSLog(@"Error while parsing for mirrored snippets. %@", [ae description]);
+					NSBeep();
+					[self endSnippetSession];
+					return;
+				}
+
+				// Register for undo
+				[self shouldChangeTextInRange:mirroredRange replacementString:mirroredString];
+
+				[self replaceCharactersInRange:mirroredRange withString:mirroredString];
+				snippetMirroredControlArray[i][2] = snippetControlArray[currentSnippetIndex][1];
+
+				// If a completion list is open adjust the theCharRange and theParseRange if a mirrored snippet
+				// was updated which is located before the initial position 
+				if(completionIsOpen && snippetMirroredControlArray[i][1] < completionParseRangeLocation)
+					[aCompletionList adjustWorkingRangeByDelta:deltaLength];
+
+				// Adjust all other snippets accordingly
+				for(j=0; j<=snippetControlMax; j++) {
+					if(snippetControlArray[j][0] > -1) {
+						if(snippetControlArray[j][0]+snippetControlArray[j][1]>=snippetMirroredControlArray[i][1]) {
+							snippetControlArray[j][0] += deltaLength;
+						}
+					}
+				}
+				// Adjust all mirrored snippets accordingly
+				for(k=0; k<=mirroredCounter; k++) {
+					if(i != k) {
+						if(snippetMirroredControlArray[k][1] > snippetMirroredControlArray[i][1]) {
+							snippetMirroredControlArray[k][1] += deltaLength;
+						}
+					}
+				}
+			}
+		}
+
+		isProcessingMirroredSnippets = NO;
+		[self didChangeText];
+		
+	}
+}
+
+
+/*
  * Selects the current snippet defined by “currentSnippetIndex”
  */
 - (void)selectCurrentSnippet
@@ -1256,8 +1358,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20) {
 			if(snippetControlArray[currentSnippetIndex][2] == 0) {
+
 				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
-				NSRange r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
+
+				NSRange r2;
+				// Ensure the selection for nested snippets if it is at very end of the text buffer
+				// because NSIntersectionRange returns {0, 0} in such a case
+				if(r1.location == [[self string] length])
+					r2 = NSMakeRange([[self string] length], 0);
+				else
+					r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
+
 				if(r1.location == r2.location && r1.length == r2.length) {
 					[self setSelectedRange:r2];
 					NSString *snip = [[self string] substringWithRange:r2];
@@ -1332,20 +1443,26 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
-	NSInteger i;
+	NSInteger i, j;
+	mirroredCounter = -1;
 
 	// reset snippet array
 	for(i=0; i<20; i++) {
 		snippetControlArray[i][0] = -1; // snippet location
 		snippetControlArray[i][1] = -1; // snippet length
 		snippetControlArray[i][2] = -1; // snippet task : -1 not valid, 0 select snippet
+		snippetMirroredControlArray[i][0] = -1; // mirrored snippet index
+		snippetMirroredControlArray[i][1] = -1; // mirrored snippet location
+		snippetMirroredControlArray[i][2] = -1; // mirrored snippet length
 	}
 
 	if(theSnippet == nil || ![theSnippet length]) return;
 
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
+
 	@try{
 		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
+		NSString *mirror_re = @"(?<!\\\\)\\$(1?\\d)(?=\\D)";
 
 		if(targetRange.length)
 			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
@@ -1465,6 +1582,60 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		}
 
+		// Parse for mirrored snippets
+		while([snip isMatchedByRegex:mirror_re]) {
+			mirroredCounter++;
+			if(mirroredCounter > 19) {
+				NSLog(@"Only 20 mirrored snippet placeholders allowed.");
+				NSBeep();
+				break;
+			} else {
+
+				NSRange snipRange = [snip rangeOfRegex:mirror_re capture:0L];
+				NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:mirror_re capture:1L]] intValue];
+
+				// Check for snippet number 19 (to simplify regexp)
+				if(snipCnt>18 || snipCnt<0) {
+					NSLog(@"Only snippets in the range of 0…18 allowed.");
+					[self endSnippetSession];
+					break;
+				}
+
+				[snip replaceCharactersInRange:snipRange withString:@""];
+				[snip flushCachedRegexData];
+
+				// Store found mirrored snippet range
+				snippetMirroredControlArray[mirroredCounter][0] = snipCnt;
+				snippetMirroredControlArray[mirroredCounter][1] = snipRange.location + targetRange.location;
+				snippetMirroredControlArray[mirroredCounter][2] = 0;
+
+				// Adjust successive snippets
+				for(i=0; i<20; i++)
+					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > snippetMirroredControlArray[mirroredCounter][1])
+						snippetControlArray[i][0] -= 1+((snipCnt>9)?2:1);
+
+				[snip flushCachedRegexData];
+			}
+		}
+		// Preset mirrored snippets with according snippet content
+		if(mirroredCounter > -1) {
+			for(i=0; i<=mirroredCounter; i++) {
+				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1] > 0) {
+					[snip replaceCharactersInRange:NSMakeRange(snippetMirroredControlArray[i][1]-targetRange.location, snippetMirroredControlArray[i][2]) 
+										withString:[snip substringWithRange:NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0]-targetRange.location, snippetControlArray[snippetMirroredControlArray[i][0]][1])]];
+					snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				}
+				// Adjust successive snippets
+				for(j=0; j<20; j++)
+					if(snippetControlArray[j][0] > -1 && snippetControlArray[j][0] > snippetMirroredControlArray[i][1])
+						snippetControlArray[j][0] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				// Adjust successive mirrored snippets
+				for(j=0; j<=mirroredCounter; j++)
+					if(snippetMirroredControlArray[j][1] > snippetMirroredControlArray[i][1])
+						snippetMirroredControlArray[j][1] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+			}
+		}
+
 		if(snippetControlCounter > -1) {
 			// Store the end for tab out
 			snippetControlMax++;
@@ -1483,6 +1654,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for(i=0; i<=snippetControlMax; i++)
 				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
 					snippetControlArray[i][0]--;
+			// Adjust mirrored snippets
+			if(mirroredCounter > -1)
+				for(i=0; i<=mirroredCounter; i++)
+					if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
+						snippetMirroredControlArray[i][1]--;
 		}
 
 		// Insert favorite query by selecting the tab trigger if any
@@ -1577,23 +1753,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSData *errdata  = [stderr_file readDataToEndOfFile];
 
 	if(outdata != nil) {
-		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] description];
-		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+		NSString *stdout = [[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding];
+		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 		if(bashTask) [bashTask release];
 		if(stdout != nil) {
 			if (status == 0) {
 				return [stdout autorelease];
 			} else {
-				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
 				[stdout release];
-				[error release];
 				NSBeep();
 				return @"";
 			}
 		} else {
-			if(stdout) [stdout release];
 			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
 			NSBeep();
 		}
@@ -1693,7 +1867,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (void) mouseDown:(NSEvent *)theEvent
 {
-	
+
 	// Cancel autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -1861,7 +2035,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
+			BOOL editableStatus = [self isEditable];
+			[self setEditable:YES];
 			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+			[self setEditable:editableStatus];
 			return;
 		}
 	}
@@ -1940,6 +2117,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			case ')':
 				skipTypedLinkedCharacter = YES;
 				break;
+			case '{':
+				matchingCharacter = @"}";
+				processAutopair = YES;
+				break;
+			case '}':
+				skipTypedLinkedCharacter = YES;
+				break;
 		}
 
 		// Check to see whether the next character should be compared to the typed character;
@@ -1988,6 +2172,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				// Restore the original selection.
 				currentRange.length=0;
 				[self setSelectedRange:currentRange];
+				
+				[self didChangeText];
 			}
 			return;
 		}
@@ -1997,7 +2183,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self breakUndoCoalescing];
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-
+	
 }
 
 
@@ -2691,7 +2877,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(editedMask != 1) {
 
 		// Re-calculate snippet ranges if snippet session is active
-		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
+		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
 			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
 			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
@@ -2729,7 +2915,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						}
 					}
 				}
+				// Adjust start position of mirrored snippets after caret position
+				if(mirroredCounter > -1)
+					for(i=0; i<=mirroredCounter; i++) {
+						if(editStartPosition < snippetMirroredControlArray[i][1]) {
+							snippetMirroredControlArray[i][1] += changeInLength;
+						}
+					}
 			}
+
+			if(mirroredCounter > -1 && snippetControlCounter > -1) {
+				[self performSelector:@selector(processMirroredSnippets) withObject:nil afterDelay:0.0];
+			}
+
+			
 		}
 		if([[self textStorage] changeInLength] > 0)
 			textBufferSizeIncreased = YES;

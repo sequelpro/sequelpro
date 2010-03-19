@@ -68,6 +68,7 @@
 		connectionSSHKeychainItemAccount = nil;
 		mySQLConnection = nil;
 		sshTunnel = nil;
+		cancellingConnection = NO;
 
 		// Load the connection nib
 		[NSBundle loadNibNamed:@"ConnectionView" owner:self];
@@ -165,6 +166,7 @@
 	if (![self checkHost]) return;
 	
 	// Basic details have validated - start the connection process animating
+	cancellingConnection = NO;
 	[addToFavoritesButton setHidden:YES];
 	[addToFavoritesButton display];
 	[helpButton setHidden:YES];
@@ -251,12 +253,26 @@
 }
 
 /*
+ * Cancel connection.
+ * Currently only cleans up the SSH connection (MySQL connection isn't threaded)
+ */
+- (void)cancelConnection
+{
+	if (!sshTunnel) return;
+	cancellingConnection = YES;
+	[sshTunnel disconnect];
+	[sshTunnel release];
+	sshTunnel = nil;
+}
+
+/*
  * A callback function for the SSH Tunnel setup process - will be called on a connection
  * state change, allowing connection to fail or proceed as appropriate.  If successful,
  * will call initiateMySQLConnection.
  */
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel
 {
+	if (cancellingConnection) return;
 	NSInteger newState = [theTunnel state];
 
 	if (newState == PROXY_STATE_IDLE) {
@@ -703,6 +719,23 @@
 	}
 	
 	[prefs setInteger:([favoritesTable selectedRow] - 1) forKey:SPLastFavoriteIndex];
+
+
+	// Set first responder to password field if it is empty
+	switch([self type]) {
+		case SPTCPIPConnection:
+		if(![[standardPasswordField stringValue] length])
+			[documentWindow makeFirstResponder:standardPasswordField];
+		break;
+		case SPSocketConnection:
+		if(![[socketPasswordField stringValue] length])
+			[documentWindow makeFirstResponder:socketPasswordField];
+		break;
+		case SPSSHTunnelConnection:
+		if(![[sshPasswordField stringValue] length])
+			[documentWindow makeFirstResponder:sshPasswordField];
+		break;
+	}
 }
 
 /**

@@ -77,5 +77,6 @@
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertCommonPrefix;
+- (void)adjustWorkingRangeByDelta:(NSInteger)delta;
 
 @end

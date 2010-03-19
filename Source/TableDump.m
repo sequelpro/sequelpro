@@ -742,7 +742,7 @@
 	[tableDocumentInstance setDatabases:self];
 
 	// Update current selected database
-	[tableDocumentInstance refreshCurrentDatabase];
+	[tableDocumentInstance performSelector:@selector(refreshCurrentDatabase) withObject:nil afterDelay:0.1];
 
 	// Update current database tables 
 	[tablesListInstance updateTables:self];
@@ -1175,6 +1175,7 @@
 
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
+	if (!importFormatPopup) [NSBundle loadNibNamed:@"ImportAccessory" owner:self];
 	[importFormatPopup selectItemWithTitle:@"SQL"];
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:filename];
 }
@@ -1310,7 +1311,7 @@
 	NSMutableString *setString = [NSMutableString stringWithString:@""];
 	NSMutableString *whereString = [NSMutableString stringWithString:@"WHERE "];
 
-	NSInteger i, j;
+	NSInteger i;
 	NSInteger mapColumn;
 	id cellData;
 	NSInteger mappingArrayCount = [fieldMappingArray count];
@@ -1594,7 +1595,7 @@
 			rowCount = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
 			
 			// Set up a result set in streaming mode
-			streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([sqlFullStreamingSwitch state] == NSOnState)];
+			streamingResult = [[mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([sqlFullStreamingSwitch state] == NSOnState)] retain];
 			fieldNames = [streamingResult fetchFieldNames];
 			
 			// Update the progress text and set the progress bar back to determinate
@@ -1731,7 +1732,7 @@
 				[metaString setString:@"\n"];
 				[metaString appendString:@"DELIMITER ;;\n"];
 				
-				for (int t=0; t<[queryResult numOfRows]; t++) {
+				for (int s=0; s<[queryResult numOfRows]; s++) {
 					NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 					
 					//Definer is user@host but we need to escape it to `user`@`host`
@@ -1808,7 +1809,7 @@
 			[metaString appendString:@"DELIMITER ;;\n"];
 
 			// Loop through the definitions, exporting if enabled
-			for (int t=0; t<[queryResult numOfRows]; t++) {
+			for (int s=0; s<[queryResult numOfRows]; s++) {
 				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
 
@@ -2533,8 +2534,8 @@
 	NSMutableString *infoString = [NSMutableString string];
 	NSMutableString *errors = [NSMutableString string];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	NSMutableString *csvLineEnd;
-	NSDictionary *tableDetails;
+	NSMutableString *csvLineEnd = [NSMutableString string];
+	NSDictionary *tableDetails = nil;
 	NSMutableArray *tableColumnNumericStatus;
 	
 	// Reset the interface
@@ -2640,7 +2641,7 @@
 
 		// Perform a COUNT for progress purposes and make a streaming request for the data
 		streamingResultCount = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
-		streamingResult = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:useLowMemoryBlockingStreaming];
+		streamingResult = [[mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:useLowMemoryBlockingStreaming] retain];
 
 		// Note any errors during initial query
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {

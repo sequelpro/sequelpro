@@ -55,6 +55,7 @@
 	NSMutableArray *relationData;
 }
 
+@property (readonly) NSMutableArray *relationData;
 @property (readwrite, assign) MCPConnection *connection;
 
 // IB action methods
@@ -69,5 +70,8 @@
 // Task interaction
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification;
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+
+// Other
+- (NSArray *)relationDataForPrinting;
 
 @end

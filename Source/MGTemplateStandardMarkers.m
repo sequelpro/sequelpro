@@ -613,6 +613,7 @@
 	ifStack = [[NSMutableArray alloc] init];
 	[commentStack release];
 	commentStack = [[NSMutableArray alloc] init];
+	[cycles release];
 	cycles = [[NSMutableDictionary alloc] init];
 }
 

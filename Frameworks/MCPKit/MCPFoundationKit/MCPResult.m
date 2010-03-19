@@ -253,7 +253,7 @@ const OUR_CHARSET our_charsets60[] =
 		
 		if (mNames) {
 			[mNames release];
-			mNames = NULL;
+			mNames = nil;
 		}
 
 		mNumOfFields = 0;
@@ -280,7 +280,7 @@ const OUR_CHARSET our_charsets60[] =
 		
 		if (mNames) {
 			[mNames release];
-			mNames = NULL;
+			mNames = nil;
 		}
 		
 		mResult = mysql_store_result(mySQLPtr);
@@ -315,7 +315,7 @@ const OUR_CHARSET our_charsets60[] =
 		
 		if (mNames) {
 			[mNames release];
-			mNames = NULL;
+			mNames = nil;
 		}
 		
 		mResult = mySQLResPtr;
@@ -874,7 +874,7 @@ const OUR_CHARSET our_charsets60[] =
       return (0);
    }
 	
-   if (mNames == NULL) {
+   if (mNames == nil) {
       [self fetchFieldNames];
    }
 	
@@ -959,7 +959,7 @@ const OUR_CHARSET our_charsets60[] =
 		return (NO);
 	}
 	
-	if (mNames == NULL) {
+	if (mNames == nil) {
 		[self fetchFieldNames];
 	}
 	
@@ -1342,7 +1342,7 @@ const OUR_CHARSET our_charsets60[] =
 - (void) dealloc
 {
 	if (mResult) mysql_free_result(mResult);
-	if (mNames) [mNames autorelease];
+	if (mNames) [mNames release];
 	if (mTimeZone) [mTimeZone release];
 
 	[super dealloc];

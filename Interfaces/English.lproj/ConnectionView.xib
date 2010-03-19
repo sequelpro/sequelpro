@@ -21,12 +21,12 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4826"/>
+			<integer value="5345"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string>com.brandonwalkin.BWToolkit</string>
+			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -278,7 +278,7 @@
 												<string key="NSColorName">controlColor</string>
 												<object class="NSColor" key="NSColor" id="355746054">
 													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
+													<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
 												</object>
 											</object>
 											<reference key="NSTextColor" ref="434026568"/>
@@ -551,7 +551,7 @@
 																	<object class="NSTabViewItem" id="517771995">
 																		<string key="NSIdentifier">2</string>
 																		<object class="NSView" key="NSView" id="962671066">
-																			<reference key="NSNextResponder" ref="134031646"/>
+																			<nil key="NSNextResponder"/>
 																			<int key="NSvFlags">256</int>
 																			<object class="NSMutableArray" key="NSSubviews">
 																				<bool key="EncodedWithXMLCoder">YES</bool>
@@ -735,7 +735,6 @@
 																				</object>
 																			</object>
 																			<string key="NSFrame">{{10, 33}, {360, 371}}</string>
-																			<reference key="NSSuperview" ref="134031646"/>
 																		</object>
 																		<string key="NSLabel">Socket</string>
 																		<reference key="NSColor" ref="644242225"/>
@@ -744,7 +743,7 @@
 																	<object class="NSTabViewItem" id="591192172">
 																		<string key="NSIdentifier">Item 2</string>
 																		<object class="NSView" key="NSView" id="159800861">
-																			<nil key="NSNextResponder"/>
+																			<reference key="NSNextResponder" ref="134031646"/>
 																			<int key="NSvFlags">256</int>
 																			<object class="NSMutableArray" key="NSSubviews">
 																				<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1095,20 +1094,21 @@
 																				</object>
 																			</object>
 																			<string key="NSFrame">{{10, 33}, {360, 371}}</string>
+																			<reference key="NSSuperview" ref="134031646"/>
 																		</object>
 																		<string key="NSLabel">SSH</string>
 																		<reference key="NSColor" ref="644242225"/>
 																		<reference key="NSTabView" ref="134031646"/>
 																	</object>
 																</object>
-																<reference key="NSSelectedTabViewItem" ref="517771995"/>
+																<reference key="NSSelectedTabViewItem" ref="591192172"/>
 																<reference key="NSFont" ref="807120225"/>
 																<int key="NSTvFlags">0</int>
 																<bool key="NSAllowTruncatedLabels">YES</bool>
 																<bool key="NSDrawsBackground">YES</bool>
 																<object class="NSMutableArray" key="NSSubviews">
 																	<bool key="EncodedWithXMLCoder">YES</bool>
-																	<reference ref="962671066"/>
+																	<reference ref="159800861"/>
 																</object>
 															</object>
 															<object class="NSButton" id="460592307">
@@ -1235,7 +1235,7 @@
 				<string key="NSWindowTitle">Error Detail</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{100, 100}</string>
 				<object class="NSView" key="NSWindowView" id="536120400">
 					<nil key="NSNextResponder"/>
@@ -1275,9 +1275,9 @@
 																</object>
 																<object class="NSMutableArray" key="dict.values">
 																	<bool key="EncodedWithXMLCoder">YES</bool>
-																	<object class="NSColor" id="989138551">
+																	<object class="NSColor" id="385789818">
 																		<int key="NSColorSpace">1</int>
-																		<bytes key="NSRGB">MC45MDE5NjA3OSAwLjkwMTk2MDc5IDAuOTAxOTYwNzkAA</bytes>
+																		<bytes key="NSRGB">MC45MDE5NjA3OTAyIDAuOTAxOTYwNzkwMiAwLjkwMTk2MDc5MDIAA</bytes>
 																	</object>
 																	<object class="NSFont">
 																		<string key="NSName">LucidaGrande</string>
@@ -1398,7 +1398,7 @@
 																</object>
 																<object class="NSMutableArray" key="dict.values">
 																	<bool key="EncodedWithXMLCoder">YES</bool>
-																	<reference ref="989138551"/>
+																	<reference ref="385789818"/>
 																	<object class="NSFont">
 																		<string key="NSName">LucidaGrande-Bold</string>
 																		<double key="NSSize">10</double>
@@ -1561,7 +1561,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{100, 119}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName"/>
 			</object>
 			<object class="NSUserDefaultsController" id="642702582">
@@ -2530,6 +2530,46 @@
 						<reference key="destination" ref="545410097"/>
 					</object>
 					<int key="connectionID">5462</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="68541783"/>
+						<reference key="destination" ref="512253301"/>
+					</object>
+					<int key="connectionID">5463</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="978463433"/>
+						<reference key="destination" ref="211629203"/>
+					</object>
+					<int key="connectionID">5464</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="358903996"/>
+						<reference key="destination" ref="187191991"/>
+					</object>
+					<int key="connectionID">5465</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="1012579052"/>
+						<reference key="destination" ref="134031646"/>
+					</object>
+					<int key="connectionID">5466</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="642219827"/>
+						<reference key="destination" ref="1012579052"/>
+					</object>
+					<int key="connectionID">5467</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3723,7 +3763,7 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{331, 173}, {882, 563}}</string>
+					<string>{{73, 173}, {882, 563}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4083,7 +4123,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5462</int>
+			<int key="maxID">5467</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
