@@ -1676,7 +1676,7 @@ void performThreadedKeepAlive(void *ptr)
 	}
 
 	if ([NSThread isMainThread]) [queryLock unlock];
-	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
+	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:NO];
 }
 
 #pragma mark -
