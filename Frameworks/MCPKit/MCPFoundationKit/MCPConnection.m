@@ -1669,14 +1669,16 @@ void performThreadedKeepAlive(void *ptr)
 - (void)unlockConnection
 {
 
-	// Make sure the unlock is performed safely - eg for reconnected queries
-	if ([queryLock tryLock]) {
-		[queryLock unlock];
+	// Ensure the unlock occurs on the main thread
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:NO];
 		return;
 	}
 
-	if ([NSThread isMainThread]) [queryLock unlock];
-	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:NO];
+	// Unlock the connection, first ensuring it is locked to avoid
+	// multiple unlock call issues (eg reconnected queries, threading)
+	[queryLock tryLock];
+	[queryLock unlock];
 }
 
 #pragma mark -
