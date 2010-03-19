@@ -87,8 +87,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 	prefs = [NSUserDefaults standardUserDefaults];
 
-	// [self updateEntries:self];
-
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
 	
 }
@@ -112,10 +110,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				connectionName = [doc host];
 			if(![schemaData objectForKey:connectionName]) {
 				id data = [[doc valueForKeyPath:@"mySQLConnection"] getDbStructure];
-				if(data)
+				if(data) {
 					[schemaData setObject:data forKey:connectionName];
-				else
-					[schemaData setObject:@"No data available" forKey:connectionName];
+				} else {
+					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4)
+						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@ – no data loaded yet", connectionName]];
+					else
+						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@ – no data for this server version", connectionName]];
+				}
 			}
 		}
 		[outlineSchema1 reloadData];
@@ -165,13 +167,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(item == nil)
 		return [schemaData count];
 
-	if([item isKindOfClass:[NSDictionary class]]) {
-		// if([item objectForKey:@"  struct_type  "])
-		// 	return [item count] - 1;
-		// else
-			return [item count];
-	}
-		
+	if([item isKindOfClass:[NSDictionary class]])
+		return [item count];
 
 	return 0;
 }
@@ -215,11 +212,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 			}
 			if([[parentObject allKeysForObject:item] count])
-				// if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
-					// return [[parentObject allKeysForObject:item] objectAtIndex:0];
-					// return [[parentObject allKeysForObject:item] componentsJoinedByString:@"|"];
-
-				return [NSString stringWithFormat:@"%@ %ld", [[parentObject allKeysForObject:item] description], [outlineView levelForItem:item]];
+				if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+					return [[parentObject allKeysForObject:item] objectAtIndex:0];
 
 			return nil;
 		}
@@ -258,7 +252,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if([[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 		return 5.0;
 
-	return 148.0;
+	return 17.0;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldExpandItem:(id)item
