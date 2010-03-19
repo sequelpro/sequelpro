@@ -23,6 +23,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPNavigatorController.h"
+#import "RegexKitLite.h"
+#import "SPConstants.h"
+
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
@@ -88,7 +91,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
-	
+
 }
 
 - (NSString *)windowFrameAutosaveName
@@ -96,30 +99,41 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	return @"SPNavigator";
 }
 
+#pragma mark -
+#pragma mark IBActions
 
 - (IBAction)updateEntries:(id)sender;
 {
+
 	if(schemaData) [schemaData release]; schemaData = nil;
 	schemaData = [[NSMutableDictionary alloc] init];
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
-			NSString *connectionName;
-			if([(NSString*)[doc port] length])
-				connectionName = [NSString stringWithFormat:@"%@:%@", [doc host], [doc port]];
-			else
-				connectionName = [doc host];
+
+			if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
+
+			NSString *connectionName = [doc connectionID];
+
+			if(!connectionName || [connectionName isEqualToString:@"_"]) continue;
+
 			if(![schemaData objectForKey:connectionName]) {
+				
 				id data = [[doc valueForKeyPath:@"mySQLConnection"] getDbStructure];
-				if(data) {
-					[schemaData setObject:data forKey:connectionName];
+				
+				if(data && [data objectForKey:connectionName]) {
+					[schemaData setObject:[data objectForKey:connectionName] forKey:connectionName];
 				} else {
-					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4)
+
+					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4) {
 						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@ – no data loaded yet", connectionName]];
-					else
+					} else {
 						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@ – no data for this server version", connectionName]];
+					}
+
 				}
 			}
 		}
+
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
 	}
@@ -130,9 +144,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	
 }
 
-// ================================================================
-//  NSOutlineView data source methods
-// ================================================================
+#pragma mark -
+#pragma mark outline delegates
 
 - (id)outlineView:(id)outlineView child:(NSInteger)index ofItem:(id)item
 {
@@ -152,6 +165,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item
 {
 	if([item isKindOfClass:[NSDictionary class]] && [item count]) {
+		// Suppress expanding for PROCEDUREs and FUNCTIONs
 		if([item objectForKey:@"  struct_type  "] && [[item objectForKey:@"  struct_type  "] intValue] > 1) {
 			return NO;
 		}
@@ -179,6 +193,13 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
 
 	if ([[tableColumn identifier] isEqualToString:@"field"]) {
+
+		// top level is connection
+		if([outlineView levelForItem:item] == 0) {
+			[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
+			return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:@"&SSH&"] objectAtIndex:0];
+		}
+
 		if ([parentObject isKindOfClass:[NSDictionary class]]) {
 			if([outlineView parentForItem:item]) {
 				if([item isKindOfClass:[NSDictionary class]]) {
@@ -202,27 +223,30 @@ static SPNavigatorController *sharedNavigatorController = nil;
 						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
 					}
 				} else {
-					// It's a field
-					if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+					// It's a field and use the key "  struct_type  " to increase the distance between node and first child
+					if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
 						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
-					else
+					} else {
 						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
+					}
 				}
-			} else {
-				[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 			}
-			if([[parentObject allKeysForObject:item] count])
-				if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
-					return [[parentObject allKeysForObject:item] objectAtIndex:0];
-
-			return nil;
+			if([[parentObject allKeysForObject:item] count] && ![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
+				return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
+			}
 		}
 		return nil;
 	}
 	else if ([[tableColumn identifier] isEqualToString:@"type"]) {
+
+		if([outlineView levelForItem:item] == 0 && [[[parentObject allKeysForObject:item] objectAtIndex:0] rangeOfString:@"&SSH&"].length) {
+			return [NSString stringWithFormat:@"ssh: %@", [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:@"&SSH&"] lastObject]];
+		}
+
 		if ([item isKindOfClass:[NSArray class]] && ![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) 
 		{
-			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[item componentsJoinedByString:@", "]] autorelease];
+			NSString *typ = [NSString stringWithFormat:@"%@,%@,%@", [[item objectAtIndex:0] stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"], [item objectAtIndex:1], [item objectAtIndex:2]]; 
+			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:typ] autorelease];
 			[b setEditable:NO];
 			[b setAlignment:NSRightTextAlignment];
 			[b setFont:[NSFont systemFontOfSize:11]];
@@ -252,7 +276,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if([[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 		return 5.0;
 
-	return 17.0;
+	return 18.0;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldExpandItem:(id)item

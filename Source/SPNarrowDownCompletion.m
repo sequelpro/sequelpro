@@ -346,8 +346,11 @@
 			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
 				NSMutableString *tt = [NSMutableString string];
 				[tt setString:NSLocalizedString(@"Schema path:", @"schema path header for completion tooltip")];
-				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects])
-					[tt appendFormat:@"\n• %@",p];
+				BOOL flag = NO;
+				for(id p in [[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter]) {
+					if(flag) [tt appendFormat:@"\n• %@",p];
+					flag=YES;
+				}
 				return tt;
 			}
 			return @"";
@@ -426,8 +429,9 @@
 				[b setAltersStateOfSelectedItem:NO];
 				[b setControlSize:NSMiniControlSize];
 				NSMenu *m = [[NSMenu alloc] init];
-				for(id p in [[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:@"⇠"])
+				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects])
 					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
+				[m removeItemAtIndex:[m numberOfItems]-1];
 				[b setMenu:m];
 				[m release];
 				[b setPreferredEdge:NSMinXEdge];
@@ -486,7 +490,9 @@
 					for(i=0; i<[[self filterString] length]; i++) {
 						c = [[self filterString] characterAtIndex:i];
 						if(c != '`') {
-							if(c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
+							if(c == '.')
+								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?",SPUniqueSchemaDelimiter]];
+							else if (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
 								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?\\%c",c]];
 							else
 								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%c",c]];
@@ -494,7 +500,7 @@
 					}
 
 					for(id s in suggestions)
-						if([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"isRef"] isMatchedByRegex:fuzzyRegexp])
+						if([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"path"] isMatchedByRegex:fuzzyRegexp])
 							[newFiltered addObject:s];
 
 
@@ -799,7 +805,7 @@
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
 				&& [[selectedItem objectForKey:@"path"] length]) {
 			NSString *path = [NSString stringWithFormat:@"%@.%@", 
-				[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
+				[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst],
 				[candidateMatch backtickQuotedString]];
 
 			// Check if path's db name is the current selected db name

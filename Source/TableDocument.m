@@ -1181,6 +1181,16 @@
 	}
 }
 
+/*
+ * Called from MCPConnection or self to inform the navigator that an instance invoked queryDbStructure
+ * or a window was closed
+ */
+- (void)updateNavigator:(id)sender
+{
+	if([[[SPNavigatorController sharedNavigatorController] window] isVisible])
+		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
+}
+
 #pragma mark -
 #pragma mark Task progress and notification methods
 
@@ -2390,6 +2400,44 @@
 		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
 	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
+}
+
+/**
+ * Returns a string to identify the connection uniquely (mainly used to set up db structure with unique keys)
+ */
+- (NSString *)connectionID
+{
+
+	if(!_isConnected) return @"_";
+
+	NSString *port;
+	if([[self port] length])
+		port = [NSString stringWithFormat:@":%@", [self port]];
+	else
+		port = @"";
+
+	switch([connectionController type]) {
+		case SPSocketConnection:
+		return [NSString stringWithFormat:@"%@@localhost%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", port];
+		break;
+		case SPTCPIPConnection:
+		return [NSString stringWithFormat:@"%@@%@%@", 
+			([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", 
+			[connectionController host]?[connectionController host]:@"", 
+			port];
+		break;
+		case SPSSHTunnelConnection:
+		return [NSString stringWithFormat:@"%@@%@%@&SSH&%@@%@:%@", 
+			([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", 
+			[connectionController host]?[connectionController host]:@"", 
+			port,
+			([connectionController sshUser] && [[connectionController sshUser] length])?[connectionController sshUser]:@"anonymous",
+			[connectionController sshHost]?[connectionController sshHost]:@"", 
+			([[connectionController sshPort] length])?[connectionController sshPort]:@"22"];
+	}
+
+	return @"_";
+
 }
 
 /**
@@ -3608,7 +3656,7 @@
 	if (_isConnected) [self closeConnection];
 	else [connectionController cancelConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
-	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self toggleNavigator:self];
+	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self updateNavigator:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }

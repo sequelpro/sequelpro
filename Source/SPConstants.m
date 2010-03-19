@@ -151,6 +151,7 @@ NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
+NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
 
 // URLs
 NSString *SPHomePageURL                          = @"http://www.sequelpro.com/";

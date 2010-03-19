@@ -1849,7 +1849,7 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
- * Updates the dict containing the structure of all available databases (mainly for completion)
+ * Updates the dict containing the structure of all available databases (mainly for completion/navigator)
  * executed on a new connection.
  */
 - (void)queryDbStructure
@@ -1888,7 +1888,7 @@ void performThreadedKeepAlive(void *ptr)
 			} else {
 				thePass = [self cStringFromString:connectionPassword];
 			}
-			
+
 			// Connect
 			connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 			thePass = NULL;
@@ -1931,10 +1931,23 @@ void performThreadedKeepAlive(void *ptr)
 					NSMutableArray *allDbNames = [NSMutableArray array];
 					NSMutableArray *allTableNames = [NSMutableArray array];
 
+					NSString *connectionID;
+					if([delegate respondsToSelector:@selector(connectionID)])
+						connectionID = [NSString stringWithString:[[self delegate] connectionID]];
+					else
+						connectionID = @"_";
+
+					NSString *SPUniqueSchemaDelimiter = @"￸";
+
+					[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
+
 					while(row = mysql_fetch_row(theResult)) {
 						NSString *db = [self stringWithUTF8CString:row[0]];
+						NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
 						NSString *table = [self stringWithUTF8CString:row[1]];
+						NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
 						NSString *field = [self stringWithUTF8CString:row[2]];
+						NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
 						NSString *type = [self stringWithUTF8CString:row[3]];
 						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
 						NSString *structtype = [self stringWithUTF8CString:row[5]];
@@ -1947,18 +1960,19 @@ void performThreadedKeepAlive(void *ptr)
 						[allDbNames addObject:[db lowercaseString]];
 						[allTableNames addObject:[table lowercaseString]];
 
-						if(![structure valueForKey:db]) {
-							[structure setObject:[NSMutableDictionary dictionary] forKey:db];
+						if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
+							[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
 						}
 
-						if(![[structure valueForKey:db] valueForKey:table]) {
-							[[structure valueForKey:db] setObject:[NSMutableDictionary dictionary] forKey:table];
+						if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id]) {
+							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 						}
 
-						[[[structure valueForKey:db] valueForKey:table] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, nil] forKey:field];
-						[[[structure valueForKey:db] valueForKey:table] setObject:structtype forKey:@"  struct_type  "];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, nil] forKey:field_id];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:structtype forKey:@"  struct_type  "];
 
 					}
+
 
 					mysql_free_result(theResult);
 					mysql_close(structConnection);
@@ -1986,6 +2000,10 @@ void performThreadedKeepAlive(void *ptr)
 						uniqueDbIdentifier = nil;
 					}
 					uniqueDbIdentifier = [[NSDictionary dictionaryWithDictionary:uniqueIdentifier] retain];
+
+
+					if(delegate && [delegate respondsToSelector:@selector(updateNavigator:)])
+						[[self delegate] updateNavigator:self];
 
 					isQueryingDbStructure = NO;
 					[queryPool release];

@@ -301,7 +301,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(!isDictMode && [mySQLConnection isConnected])
 	{
 		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+
+		NSString* connectionID;
+		if([[[self window] delegate] respondsToSelector:@selector(connectionID)])
+			connectionID = [[[self window] delegate] connectionID];
+		else
+			connectionID = @"_";
+NSLog(@"cid %@", connectionID);
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+
 		if(dbs != nil && [dbs count]) {
 			NSMutableArray *allDbs = [NSMutableArray array];
 			[allDbs addObjectsFromArray:[dbs allKeys]];
@@ -309,8 +317,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Add database names having no tables since they don't appear in the information_schema
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"] != nil)
 				for(id db in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
-					if(![allDbs containsObject:db])
-						[allDbs addObject:db];
+					if(![allDbs containsObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]])
+						[allDbs addObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [NSMutableArray array];
@@ -320,25 +328,35 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSString *currentTable = nil;
 
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]];
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
 				currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
 
 			// Put current selected db at the top
 			if(aTableName == nil && aDbName == nil && [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]) {
-				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]];
 				[sortedDbs removeObject:currentDb];
 				[sortedDbs insertObject:currentDb atIndex:0];
 			}
 
+			NSString* aTableName_id;
+			NSString* aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, aDbName];
+			if(aDbName && aTableName)
+				aTableName_id = [NSString stringWithFormat:@"%@%@%@", aDbName_id, SPUniqueSchemaDelimiter, aTableName];
+			else
+				aTableName_id = [NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName];
+
+
 			// Put information_schema and/or mysql db at the end if not selected
-			if(currentDb && ![currentDb isEqualToString:@"mysql"] && [sortedDbs containsObject:@"mysql"]) {
-				[sortedDbs removeObject:@"mysql"];
-				[sortedDbs addObject:@"mysql"];
+			NSString* mysql_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"mysql"];
+			NSString* inf_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"information_schema"];
+			if(currentDb && ![currentDb isEqualToString:mysql_id] && [sortedDbs containsObject:mysql_id]) {
+				[sortedDbs removeObject:mysql_id];
+				[sortedDbs addObject:mysql_id];
 			}
-			if(currentDb && ![currentDb isEqualToString:@"information_schema"] && [sortedDbs containsObject:@"information_schema"]) {
-				[sortedDbs removeObject:@"information_schema"];
-				[sortedDbs addObject:@"information_schema"];
+			if(currentDb && ![currentDb isEqualToString:inf_id] && [sortedDbs containsObject:inf_id]) {
+				[sortedDbs removeObject:inf_id];
+				[sortedDbs addObject:inf_id];
 			}
 
 			BOOL aTableNameExists = NO;
@@ -348,40 +366,40 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIdentifierFor:[aTableName lowercaseString]];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
-			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:aTableName] && uniqueSchemaKind == 2) {
+			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName]] && uniqueSchemaKind == 2) {
 					aTableNameExists = YES;
-					aDbName = [NSString stringWithString:currentDb];
+					aDbName_id = [NSString stringWithString:currentDb];
 				}
 
 				// If no db name but table name check if table name is a valid db name
 				if(!aTableNameExists && aTableName && [aTableName length] && uniqueSchemaKind == 1) {
-					aDbName = [NSString stringWithString:aTableName];
+					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, aTableName];
 					aTableNameExists = NO;
 				}
 
 			} else if (aDbName && [aDbName length]) {
-				if(aTableName && [aTableName length] && [dbs objectForKey:aDbName] && [[dbs objectForKey:aDbName] objectForKey:aTableName]) {
+				if(aTableName && [aTableName length] && [dbs objectForKey:aDbName_id] && [[dbs objectForKey:aDbName_id] objectForKey:[NSString stringWithFormat:@"%@%@%@", aDbName_id, SPUniqueSchemaDelimiter, aTableName]]) {
 					aTableNameExists = YES;
 				}
 			}
 
 			// If aDbName exist show only those table
-			if(aDbName && [aDbName length] && [allDbs containsObject:aDbName]) {
+			if([allDbs containsObject:aDbName_id]) {
 				[sortedDbs removeAllObjects];
-				[sortedDbs addObject:aDbName];
+				[sortedDbs addObject:aDbName_id];
 			}
 
 			for(id db in sortedDbs) {
 				NSArray *allTables = [[dbs objectForKey:db] allKeys];
 				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
-					[sortedTables addObject:aTableName];
+					[sortedTables addObject:aTableName_id];
 				} else {
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", db, @"isRef", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"database-small", @"image", @"", @"isRef", nil]];
 					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
-					if([sortedTables count] > 1 && [sortedTables containsObject:currentTable]) {
-						[sortedTables removeObject:currentTable];
-						[sortedTables insertObject:currentTable atIndex:0];
+					if([sortedTables count] > 1 && [sortedTables containsObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]]) {
+						[sortedTables removeObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]];
+						[sortedTables insertObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable] atIndex:0];
 					}
 				}
 				for(id table in sortedTables) {
@@ -392,17 +410,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					if(!aTableNameExists)
 						switch(structtype) {
 							case 0:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-small-square", @"image", db, @"path", @"", @"isRef", nil]];
 							break;
 							case 1:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-view-small-square", @"image", db, @"path", @"", @"isRef", nil]];
 							break;
 							case 2:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"proc-small", @"image", db, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 							case 3:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", db, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 						}
@@ -418,20 +436,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 									NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
 									NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										field, @"display", 
+										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
 										@"field-small-square", @"image", 
-										[NSString stringWithFormat:@"%@⇠%@",table,db], @"path", 
+										table, @"path", 
 										t, @"type", 
 										lst, @"list", 
-										[NSString stringWithFormat:@"%@.%@.%@",db,table,field], @"isRef", 
+										@"", @"isRef", 
 										nil]];
 								} else {
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										field, @"display", 
+										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
 										@"field-small-square", @"image", 
-										[NSString stringWithFormat:@"%@⇠%@",table,db], @"path", 
+										table, @"path",
 										typ, @"type", 
-										[NSString stringWithFormat:@"%@.%@.%@",db,table,field], @"isRef", 
+										@"", @"isRef", 
 										nil]];
 								}
 							}
@@ -706,7 +724,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	completionParseRangeLocation = parseRange.location;
 
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,0) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
@@ -1115,6 +1133,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 								object:nil];
 
 	NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:0] autorelease];
+
+	NSString *connectionID;
+	if([[[self window] delegate] respondsToSelector:@selector(connectionID)])
+		connectionID = [[[self window] delegate] connectionID];
+	else
+		connectionID = @"_";
+
 	NSArray *arr = nil;
 	if([kind isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
 		NSString *currentDb = nil;
@@ -1122,7 +1147,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
 			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
 
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
 
 		if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
 			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
@@ -1134,10 +1159,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
 				switch(structtype) {
 					case 0:
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", [NSString stringWithFormat:@"%@.%@",currentDb,table], @"isRef", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
 					break;
 					case 1:
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", [NSString stringWithFormat:@"%@.%@",currentDb,table], @"isRef", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
 					break;
 				}
 			}
@@ -1174,7 +1199,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
 			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
 
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
 		if(currentDb != nil && currentTable != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:currentTable]) {
 			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
 			NSArray *allFields = [theTable allKeys];
@@ -1193,18 +1218,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
 							@"field-small-square", @"image", 
-							[NSString stringWithFormat:@"%@⇠%@",currentTable,currentDb], @"path", 
+							[NSString stringWithFormat:@"%@@%%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
 							t, @"type", 
 							lst, @"list", 
-							[NSString stringWithFormat:@"%@.%@.%@",currentDb,currentTable,field], @"isRef", 
+							@"", @"isRef", 
 							nil]];
 					} else {
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
 							@"field-small-square", @"image", 
-							[NSString stringWithFormat:@"%@⇠%@",currentTable,currentDb], @"path", 
+							[NSString stringWithFormat:@"%@%@%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
 							typ, @"type", 
-							[NSString stringWithFormat:@"%@.%@.%@",currentDb,currentTable,field], @"isRef", 
+							@"", @"isRef", 
 							nil]];
 					}
 				}
@@ -1245,7 +1270,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					oneColumn:NO];
 
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,0) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
@@ -1408,7 +1433,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											autoComplete:NO
 											oneColumn:YES];
 							//Get the NSPoint of the first character of the current word
-							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
+							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
 							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 							boundingRect = [self convertRect: boundingRect toView: NULL];
 							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];

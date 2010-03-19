@@ -251,6 +251,7 @@
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
 - (IBAction)toggleNavigator:(id)sender;
+- (void)updateNavigator:(id)sender;
 
 // Accessor methods
 - (NSString *)host;
@@ -262,6 +263,7 @@
 - (NSString *)user;
 - (NSString *)displaySPName;
 - (NSString *)keyChainID;
+- (NSString *)connectionID;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
