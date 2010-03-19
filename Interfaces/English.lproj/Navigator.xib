@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="15"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -181,6 +181,7 @@
 																			<string key="NSFrameSize">{383, 14}</string>
 																			<reference key="NSSuperview" ref="415327048"/>
 																			<int key="NSViewLayerContentsRedrawPolicy">2</int>
+																			<bool key="NSViewCanDrawConcurrently">YES</bool>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="NSTableHeaderView" key="NSHeaderView" id="945013976">
 																				<reference key="NSNextResponder" ref="752652559"/>
@@ -201,7 +202,7 @@
 																				<bool key="EncodedWithXMLCoder">YES</bool>
 																				<object class="NSTableColumn" id="729371637">
 																					<string key="NSIdentifier">field</string>
-																					<double key="NSWidth">175</double>
+																					<double key="NSWidth">182</double>
 																					<double key="NSMinWidth">16</double>
 																					<double key="NSMaxWidth">1000</double>
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -243,7 +244,7 @@
 																				</object>
 																				<object class="NSTableColumn" id="583473822">
 																					<string key="NSIdentifier">type</string>
-																					<double key="NSWidth">202</double>
+																					<double key="NSWidth">195</double>
 																					<double key="NSMinWidth">40</double>
 																					<double key="NSMaxWidth">1000</double>
 																					<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -324,13 +325,14 @@
 																<object class="NSScroller" id="239465385">
 																	<reference key="NSNextResponder" ref="667909124"/>
 																	<int key="NSvFlags">-2147483392</int>
-																	<string key="NSFrame">{{1, 119}, {223, 11}}</string>
+																	<string key="NSFrame">{{1, 19}, {383, 11}}</string>
 																	<reference key="NSSuperview" ref="667909124"/>
 																	<int key="NSViewLayerContentsRedrawPolicy">2</int>
 																	<int key="NSsFlags">257</int>
 																	<reference key="NSTarget" ref="667909124"/>
 																	<string key="NSAction">_doScroller:</string>
-																	<double key="NSPercent">0.97208124399185181</double>
+																	<double key="NSCurValue">1</double>
+																	<double key="NSPercent">0.98966407775878906</double>
 																</object>
 																<object class="NSClipView" id="752652559">
 																	<reference key="NSNextResponder" ref="667909124"/>
@@ -353,6 +355,7 @@
 															<reference key="NSSuperview" ref="978368259"/>
 															<reference key="NSNextKeyView" ref="415327048"/>
 															<int key="NSViewLayerContentsRedrawPolicy">2</int>
+															<bool key="NSViewCanDrawConcurrently">YES</bool>
 															<int key="NSsFlags">626</int>
 															<reference key="NSVScroller" ref="619640533"/>
 															<reference key="NSHScroller" ref="239465385"/>
@@ -388,6 +391,7 @@
 																			<string key="NSFrameSize">{394, 214}</string>
 																			<reference key="NSSuperview" ref="817352949"/>
 																			<int key="NSViewLayerContentsRedrawPolicy">2</int>
+																			<bool key="NSViewCanDrawConcurrently">YES</bool>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="NSTableHeaderView" key="NSHeaderView" id="144900244">
 																				<reference key="NSNextResponder" ref="584171442"/>
@@ -540,6 +544,7 @@
 															<reference key="NSSuperview" ref="556163261"/>
 															<reference key="NSNextKeyView" ref="817352949"/>
 															<int key="NSViewLayerContentsRedrawPolicy">2</int>
+															<bool key="NSViewCanDrawConcurrently">YES</bool>
 															<int key="NSsFlags">562</int>
 															<reference key="NSVScroller" ref="103116274"/>
 															<reference key="NSHScroller" ref="1026336837"/>

@@ -104,8 +104,13 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (IBAction)updateEntries:(id)sender;
 {
-
-	if(schemaData) [schemaData release]; schemaData = nil;
+	id selectedItem1 = nil;
+	id selectedItem2 = nil;
+	if(schemaData) {
+		selectedItem1 = [outlineSchema1 itemAtRow:[outlineSchema1 selectedRow]];
+		selectedItem2 = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
+		[schemaData release]; schemaData = nil;
+	}
 	schemaData = [[NSMutableDictionary alloc] init];
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
@@ -117,11 +122,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			if(!connectionName || [connectionName isEqualToString:@"_"]) continue;
 
 			if(![schemaData objectForKey:connectionName]) {
-				
-				id data = [[doc valueForKeyPath:@"mySQLConnection"] getDbStructure];
-				
-				if(data && [data objectForKey:connectionName]) {
-					[schemaData setObject:[data objectForKey:connectionName] forKey:connectionName];
+
+				if([[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] && [[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] objectForKey:connectionName]) {
+					[schemaData setObject:[[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] objectForKey:connectionName] forKey:connectionName];
 				} else {
 
 					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4) {
@@ -136,6 +139,26 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
+		if(selectedItem1) {
+			NSInteger itemIndex = [outlineSchema1 rowForItem:selectedItem1];
+			if (itemIndex < 0) {
+					// You need to decide what happens if the item doesn't exist
+					NSLog(@"1");
+				return;
+			}
+
+			[outlineSchema1 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
+		}
+		if(selectedItem2) {
+			NSInteger itemIndex = [outlineSchema2 rowForItem:selectedItem2];
+			if (itemIndex < 0) {
+					// You need to decide what happens if the item doesn't exist
+				NSLog(@"2");
+				return;
+			}
+
+			[outlineSchema2 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
+		}
 	}
 }
 
@@ -155,10 +178,13 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 		NSArray *sortedItems = [[item allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 		[desc release];
-		if(index < [sortedItems count])
+		// if(index < [sortedItems count])
 			return [item objectForKey:[sortedItems objectAtIndex:index]];
 	}
-
+	else if ([item isKindOfClass:[NSArray class]]) 
+	{
+		return [item objectAtIndex:index];
+	}
 	return nil;
 }
 
@@ -181,7 +207,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(item == nil)
 		return [schemaData count];
 
-	if([item isKindOfClass:[NSDictionary class]])
+	if([item isKindOfClass:[NSDictionary class]] || [item isKindOfClass:[NSArray class]])
 		return [item count];
 
 	return 0;
@@ -201,41 +227,41 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 
 		if ([parentObject isKindOfClass:[NSDictionary class]]) {
-			if([outlineView parentForItem:item]) {
-				if([item isKindOfClass:[NSDictionary class]]) {
-					if([item objectForKey:@"  struct_type  "]) {
-						NSInteger type = [[item objectForKey:@"  struct_type  "] intValue];
-						switch(type) {
-							case 0:
-							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"table-small-square"]];
-							break;
-							case 1:
-							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"table-view-small-square"]];
-							break;
-							case 2:
-							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"proc-small"]];
-							break;
-							case 3:
-							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"func-small"]];
-							break;
-						}
-					} else {
-						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
+			if([item isKindOfClass:[NSDictionary class]]) {
+				if([item objectForKey:@"  struct_type  "]) {
+
+					NSInteger type = [[item objectForKey:@"  struct_type  "] intValue];
+					switch(type) {
+						case 0:
+						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"table-small-square"]];
+						break;
+						case 1:
+						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"table-view-small-square"]];
+						break;
+						case 2:
+						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"proc-small"]];
+						break;
+						case 3:
+						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"func-small"]];
+						break;
 					}
 				} else {
-					// It's a field and use the key "  struct_type  " to increase the distance between node and first child
-					if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
-						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
-					} else {
-						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
-					}
+					[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
+				}
+				return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
+
+			} else {
+				// It's a field and use the key "  struct_type  " to increase the distance between node and first child
+				if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
+					[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
+					return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
+				} else {
+					[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
+					return nil;
 				}
 			}
-			if([[parentObject allKeysForObject:item] count] && ![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
-				return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
-			}
 		}
-		return nil;
+		return [item description];
 	}
 	else if ([[tableColumn identifier] isEqualToString:@"type"]) {
 

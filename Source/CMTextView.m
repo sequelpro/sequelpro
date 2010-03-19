@@ -307,7 +307,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			connectionID = [[[self window] delegate] connectionID];
 		else
 			connectionID = @"_";
-NSLog(@"cid %@", connectionID);
+
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
 
 		if(dbs != nil && [dbs count]) {
