@@ -24,7 +24,9 @@
 
 #import "SPNavigatorController.h"
 #import "RegexKitLite.h"
+#import "SPOutlineView.h"
 #import "SPConstants.h"
+#import "ImageAndTextCell.h"
 
 
 static SPNavigatorController *sharedNavigatorController = nil;
@@ -57,7 +59,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 	if((self = [super initWithWindowNibName:@"Navigator"])) {
 
-		schemaData = [[NSMutableDictionary alloc] init];
+		schemaData    = [[NSMutableDictionary alloc] init];
+		expandStatus1 = [[NSMutableDictionary alloc] init];
+		expandStatus2 = [[NSMutableDictionary alloc] init];
+		infoArray     = [[NSMutableArray alloc] init];
 
 	}
 
@@ -68,6 +73,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (void)dealloc
 {
 	if(schemaData) [schemaData release];
+	if(infoArray)  [infoArray release];
+	if(expandStatus1) [expandStatus1 release];
+	if(expandStatus2) [expandStatus2 release];
 }
 /*
  * The following base protocol methods are implemented to ensure the singleton status of this class.
@@ -99,6 +107,27 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	return @"SPNavigator";
 }
 
+- (void)restoreExpandStatus
+{
+	NSInteger i;
+	for( i = 0; i < [outlineSchema1 numberOfRows]; i++ ) {
+		id item = [outlineSchema1 itemAtRow:i];
+		id parentObject = [outlineSchema1 parentForItem:item] ? [outlineSchema1 parentForItem:item] : schemaData;
+		id parentKeys = [parentObject allKeysForObject:item];
+		if(parentKeys && [parentKeys count] == 1)
+			if( [expandStatus1 objectForKey:[parentKeys objectAtIndex:0]] )
+				[outlineSchema1 expandItem:item];
+	}
+	for( i = 0; i < [outlineSchema2 numberOfRows]; i++ ) {
+		id item = [outlineSchema2 itemAtRow:i];
+		id parentObject = [outlineSchema1 parentForItem:item] ? [outlineSchema2 parentForItem:item] : schemaData;
+		id parentKeys = [parentObject allKeysForObject:item];
+		if(parentKeys && [parentKeys count] == 1)
+			if( [expandStatus2 objectForKey:[parentKeys objectAtIndex:0]] )
+				[outlineSchema2 expandItem:item];
+	}
+}
+
 #pragma mark -
 #pragma mark IBActions
 
@@ -109,7 +138,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(schemaData) {
 		selectedItem1 = [outlineSchema1 itemAtRow:[outlineSchema1 selectedRow]];
 		selectedItem2 = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
-		[schemaData release]; schemaData = nil;
+		[schemaData release]; 
+		schemaData = nil;
 	}
 	schemaData = [[NSMutableDictionary alloc] init];
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
@@ -139,6 +169,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
+		// [self performSelector:@selector(restoreExpandStatus) withObject:nil afterDelay:0.2];
+		[self restoreExpandStatus];
 		if(selectedItem1) {
 			NSInteger itemIndex = [outlineSchema1 rowForItem:selectedItem1];
 			if (itemIndex < 0) {
@@ -158,13 +190,70 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 }
 
+- (IBAction)reloadAllStructures:(id)sender
+{
+	if(schemaData) {
+		[schemaData release];
+		schemaData = nil;
+	}
+
+	schemaData = [[NSMutableDictionary alloc] init];
+	[infoArray removeAllObjects];
+
+	[outlineSchema1 reloadData];
+	[outlineSchema2 reloadData];
+
+	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
+		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
+			if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
+			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:[doc valueForKeyPath:@"mySQLConnection"] withObject:nil];
+		}
+	}
+
+}
+
 - (IBAction)outlineViewAction:(id)sender
 {
 	
 }
 
+- (IBAction)filterTree:(id)sender
+{
+	NSString *pattern = [searchField stringValue];
+}
+
 #pragma mark -
 #pragma mark outline delegates
+
+- (void)outlineViewItemDidExpand:(NSNotification *)notification
+{
+	SPOutlineView *ov = [notification object];
+	id item = [[notification userInfo] objectForKey:@"NSObject"];
+	
+	id parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaData;
+
+	if(ov == outlineSchema1)
+	{
+		[expandStatus1 setObject:@"" forKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
+	}
+	else if(ov == outlineSchema2)
+	{
+		[expandStatus2 setObject:@"" forKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
+	}
+}
+
+- (void)outlineViewItemDidCollapse:(NSNotification *)notification
+{
+	SPOutlineView *ov = [notification object];
+	id item = [[notification userInfo] objectForKey:@"NSObject"];
+	
+	id parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaData;
+	
+	if(ov == outlineSchema1)
+		[expandStatus1 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
+	else if(ov == outlineSchema2)
+		[expandStatus2 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
+}
 
 - (id)outlineView:(id)outlineView child:(NSInteger)index ofItem:(id)item
 {
@@ -305,22 +394,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	return YES;
 }
 
-- (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
-{
-
-}
-// - (NSCell *)outlineView:(NSOutlineView *)outlineView dataCellForTableColumn:(NSTableColumn *)tableColumn item:(id)item
-// {
-//     return [tableColumn dataCell];
-// 
-//     // If we return a cell for the 'nil' tableColumn, it will be used as a "full width" cell and span all the columns
-//     if ([item isKindOfClass:[NSDictionary class]] && (tableColumn == nil)) {
-//             // We want to use the cell for the name column, but we could construct a new cell if we wanted to, or return a different cell for each row.
-//             return [[outlineView tableColumnWithIdentifier:@"field"] dataCell];
-//     }
-//     return [tableColumn dataCell];
-// }
-
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
@@ -329,4 +402,95 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	return YES;
 }
 
+- (void)outlineViewSelectionDidChange:(NSNotification *)aNotification
+{
+	id ov = [aNotification object];
+	id selectedItem;
+	if(ov == outlineSchema1) {
+		selectedItem = [outlineSchema1 itemAtRow:[outlineSchema1 selectedRow]];
+	} else if (ov == outlineSchema2) {
+		selectedItem = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
+	}
+	if(selectedItem) {
+		[infoArray removeAllObjects];
+		[infoArray addObject:@""];
+		if([selectedItem isKindOfClass:[NSArray class]]) {
+			[infoTable setRowHeight:18.0];
+			NSInteger i = 0;
+			for(id item in selectedItem) {
+				if([item isKindOfClass:[NSString class]] && [item length]) {
+					[infoArray addObject:[NSString stringWithFormat:@"%@: %@", [self tableInfoLabelForIndex:i], [item stringByReplacingOccurrencesOfString:@"," withString:@", "]]];
+				}
+				i++;
+			}
+		}
+	}
+	[infoTable reloadData];
+}
+
+#pragma mark -
+#pragma mark table delegates
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+{
+	if(aTableView == infoTable)
+		return [infoArray count];
+
+	return 0;
+
+}
+
+- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
+{
+	return (row == 0) ? 5.0 : [tableView rowHeight];
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	if(aTableView == infoTable)
+		return NO;
+		
+	return YES;
+}
+
+
+- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if(aTableView == infoTable) {
+		if(rowIndex == 0) {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"dummy-small"]];
+			[(ImageAndTextCell*)aCell setDrawsBackground:NO];
+		} else {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
+			[(ImageAndTextCell*)aCell setIndentationLevel:1];
+			[(ImageAndTextCell*)aCell setDrawsBackground:NO];
+		}
+	}
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if(aTableView == infoTable) {
+		return [infoArray objectAtIndex:rowIndex];
+	}
+
+	return nil;
+}
+
+- (NSString*)tableInfoLabelForIndex:(NSInteger)index
+{
+	switch(index) {
+		case 0:
+		return NSLocalizedString(@"Type", @"type label");
+		case 1:
+		return NSLocalizedString(@"Encoding", @"encoding label");
+		case 2:
+		return NSLocalizedString(@"Key", @"key label");
+		case 3:
+		return NSLocalizedString(@"Extra", @"extra label");
+		case 4:
+		return NSLocalizedString(@"Privileges", @"Privileges label");
+	}
+	return @"";
+}
 @end

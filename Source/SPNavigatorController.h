@@ -31,10 +31,16 @@
 	IBOutlet id outlineSchema1;
 	IBOutlet id outlineSchema2;
 	IBOutlet id navigatorWindow;
+	IBOutlet id infoTable;
+	IBOutlet id quickAccessTable;
+	IBOutlet id searchField;
 
 	NSUserDefaults *prefs;
 
 	NSMutableDictionary *schemaData;
+	NSMutableArray *infoArray;
+	NSMutableDictionary *expandStatus1;
+	NSMutableDictionary *expandStatus2;
 
 }
 
@@ -42,5 +48,8 @@
 
 - (IBAction)outlineViewAction:(id)sender;
 - (IBAction)updateEntries:(id)sender;
+- (IBAction)reloadAllStructures:(id)sender;
+- (IBAction)filterTree:(id)sender;
 
+- (NSString*)tableInfoLabelForIndex:(NSInteger)index;
 @end
