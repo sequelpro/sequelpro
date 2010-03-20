@@ -22,6 +22,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPMainThreadTrampoline.h"
+
 /**
  * Provide a very simple alias of NSBeginAlertSheet with one difference:
  * printf-type format strings are no longer supported within the "msg"
@@ -52,5 +54,5 @@ void SPBeginAlertSheet(
 		contextInfo,
 		[msg stringByReplacingOccurrencesOfString:@"%" withString:@"%%"]
 	);
-	[docWindow makeKeyWindow];
+	[[docWindow onMainThread] makeKeyWindow];
 }

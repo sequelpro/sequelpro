@@ -151,6 +151,7 @@
 		588B2CC90FE5641E00EC5FC0 /* ssh-connecting.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */; };
 		588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */; };
 		589235321020C1230011DE00 /* SPHistoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 589235301020C1230011DE00 /* SPHistoryController.m */; };
+		589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */; };
 		58BC5E56103898140058C2E6 /* MCPStreamingResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 583B779710386B0200B21F7E /* MCPStreamingResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58BC5E571038983E0058C2E6 /* MCPResultPlus.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5D1101603B200F057DE /* MCPResultPlus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58C34F5310B86CAE00D37E14 /* NSNotificationAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */; };
@@ -553,6 +554,8 @@
 		588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ssh-disconnected.png"; sourceTree = "<group>"; };
 		589235301020C1230011DE00 /* SPHistoryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHistoryController.m; sourceTree = "<group>"; };
 		589235311020C1230011DE00 /* SPHistoryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHistoryController.h; sourceTree = "<group>"; };
+		589582131154F8F400EDCC28 /* SPMainThreadTrampoline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMainThreadTrampoline.h; sourceTree = "<group>"; };
+		589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMainThreadTrampoline.m; sourceTree = "<group>"; };
 		58C34F5110B86CAE00D37E14 /* NSNotificationAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNotificationAdditions.h; sourceTree = "<group>"; };
 		58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotificationAdditions.m; sourceTree = "<group>"; };
 		58C3506410B9A56C00D37E14 /* button_left.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_left.png; sourceTree = "<group>"; };
@@ -1449,6 +1452,8 @@
 				582A01E8107C0C170027D42B /* SPNotLoaded.m */,
 				5870868210FA3E9C00D58E1C /* SPDataStorage.h */,
 				5870868310FA3E9C00D58E1C /* SPDataStorage.m */,
+				589582131154F8F400EDCC28 /* SPMainThreadTrampoline.h */,
+				589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -1849,6 +1854,7 @@
 				BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */,
 				17E090E811498FC9007FC1B4 /* SPPrintController.m in Sources */,
 				BC2777A011514B940034DF6A /* SPNavigatorController.m in Sources */,
+				589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

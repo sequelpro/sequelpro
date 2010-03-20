@@ -39,6 +39,7 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "SPFieldMapperController.h"
+#import "SPMainThreadTrampoline.h"
 
 @implementation TableDump
 
@@ -122,10 +123,15 @@
  */
 - (void) closeAndStopProgressSheet
 {
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(closeAndStopProgressSheet) withObject:nil waitUntilDone:YES];
+		return;
+	}
+
 	[NSApp endSheet:singleProgressSheet];
 	[singleProgressSheet orderOut:nil];
-	[singleProgressBar stopAnimation:self];
-	[singleProgressBar setMaxValue:100];
+	[[singleProgressBar onMainThread] stopAnimation:self];
+	[[singleProgressBar onMainThread] setMaxValue:100];
 }
 
 #pragma mark -
@@ -346,14 +352,14 @@
 	{
 
 		// Start an indeterminate progress sheet, as getting the current result set can take a significant period of time
-		[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting content view to CSV", @"title showing that application is saving content view as CSV")]];
-		[singleProgressText setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar setIndeterminate:YES];
-		[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		[singleProgressSheet makeKeyWindow];
+		[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting content view to CSV", @"title showing that application is saving content view as CSV")]];
+		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
+		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+		[[singleProgressBar onMainThread] setIndeterminate:YES];
+		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[[singleProgressSheet onMainThread] makeKeyWindow];
 
-		[singleProgressBar startAnimation:self];		
+		[[singleProgressBar onMainThread] startAnimation:self];		
 		NSArray *contentViewArray = [tableContentInstance currentResult];
 
 		if ( [exportActionName isEqualToString:@"exportBrowseViewAsCSV"] ) {
@@ -386,17 +392,17 @@
 
 		// Start an indeterminate progress sheet, as getting the current result set can take a significant period of time
 		if ([exportActionName isEqualToString:@"exportCustomResultAsCSV"]) {
-			[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to CSV", @"title showing that application is saving custom query view as CSV")]];
+			[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to CSV", @"title showing that application is saving custom query view as CSV")]];
 		} else {
-			[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to XML", @"title showing that application is saving custom query view as XML")]];
+			[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to XML", @"title showing that application is saving custom query view as XML")]];
 		}
-		[singleProgressText setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar setIndeterminate:YES];
-		[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-		[singleProgressSheet makeKeyWindow];
+		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
+		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+		[[singleProgressBar onMainThread] setIndeterminate:YES];
+		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[[singleProgressSheet onMainThread] makeKeyWindow];
 
-		[singleProgressBar startAnimation:self];
+		[[singleProgressBar onMainThread] startAnimation:self];
 		NSArray *customQueryViewArray = [customQueryInstance currentResult];
 
 		if ( [exportActionName isEqualToString:@"exportCustomResultAsCSV"] ) {
@@ -565,16 +571,16 @@
 
 	// Reset progress interface
 	[errorsView setString:@""];
-	[singleProgressTitle setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
-	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[singleProgressBar setIndeterminate:NO];
-	[singleProgressBar setMaxValue:fileTotalLength];
-	[singleProgressBar setUsesThreadedAnimation:YES];
-	[singleProgressBar startAnimation:self];
+	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
+	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
+	[[singleProgressBar onMainThread] setIndeterminate:NO];
+	[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
+	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+	[[singleProgressBar onMainThread] startAnimation:self];
 				
 	// Open the progress sheet
-	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	[singleProgressSheet makeKeyWindow];
+	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[[singleProgressSheet onMainThread] makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -804,15 +810,15 @@
 
 	// Reset progress interface
 	[errorsView setString:@""];
-	[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
-	[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[singleProgressBar setIndeterminate:YES];
-	[singleProgressBar setUsesThreadedAnimation:YES];
-	[singleProgressBar startAnimation:self];
+	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
+	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
+	[[singleProgressBar onMainThread] setIndeterminate:YES];
+	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+	[[singleProgressBar onMainThread] startAnimation:self];
 				
 	// Open the progress sheet
-	[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	[singleProgressSheet makeKeyWindow];
+	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[[singleProgressSheet onMainThread] makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -947,11 +953,11 @@
 				}
 
 				// Reset progress interface and open the progress sheet
-				[singleProgressBar setIndeterminate:NO];
-				[singleProgressBar setMaxValue:fileTotalLength];
-				[singleProgressBar startAnimation:self];
-				[NSApp beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-				[singleProgressSheet makeKeyWindow];
+				[[singleProgressBar onMainThread] setIndeterminate:NO];
+				[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
+				[[singleProgressBar onMainThread] startAnimation:self];
+				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+				[[singleProgressSheet onMainThread] makeKeyWindow];
 
 				// Set up the field names import string for INSERT or REPLACE INTO
 				[insertBaseString appendString:csvImportHeaderString];
@@ -1243,13 +1249,13 @@
 	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
 
 	// Show field mapper sheet and set the focus to it
-	[NSApp beginSheet:[fieldMapperController window]
+	[[NSApp onMainThread] beginSheet:[fieldMapperController window]
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
 		  contextInfo:nil];
 
-	[[fieldMapperController window] makeKeyWindow];
+	[[[fieldMapperController window] onMainThread] makeKeyWindow];
 
 	// Wait for field mapper sheet
 	while (fieldMapperSheetStatus == 1)
@@ -1443,21 +1449,17 @@
 	
 	// Reset the interface
 	[errorsView setString:@""];
-	[errorsView displayIfNeeded];
-	[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
-	[singleProgressTitle displayIfNeeded];
-	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
-	[singleProgressText displayIfNeeded];
-	[singleProgressBar setDoubleValue:0];
-	[singleProgressBar displayIfNeeded];
+	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
+	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
+	[[singleProgressBar onMainThread] setDoubleValue:0];
 	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-	[singleProgressBar setMaxValue:progressBarWidth];
+	[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
 	
 	// Open the progress sheet
-	[NSApp beginSheet:singleProgressSheet
+	[[NSApp onMainThread] beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	[singleProgressSheet makeKeyWindow];
+	[[singleProgressSheet onMainThread] makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -1525,11 +1527,11 @@
 		
 		// Update the progress text and reset the progress bar to indeterminate status while fetching data
 		tableName = NSArrayObjectAtIndex(selectedTables, i);
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-		[singleProgressText displayIfNeeded];
-		[singleProgressBar setIndeterminate:YES];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar startAnimation:self];
+		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
+		[[singleProgressText onMainThread] displayIfNeeded];
+		[[singleProgressBar onMainThread] setIndeterminate:YES];
+		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+		[[singleProgressBar onMainThread] startAnimation:self];
 		
 		// Add the name of table
 		[fileHandle writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName]
@@ -1599,12 +1601,10 @@
 			fieldNames = [streamingResult fetchFieldNames];
 			
 			// Update the progress text and set the progress bar back to determinate
-			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Dumping...", @"text showing that app is writing data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-			[singleProgressText displayIfNeeded];
-			[singleProgressBar stopAnimation:self];
-			[singleProgressBar setIndeterminate:NO];
-			[singleProgressBar setDoubleValue:0];
-			[singleProgressBar displayIfNeeded];
+			[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Dumping...", @"text showing that app is writing data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
+			[[singleProgressBar onMainThread] stopAnimation:self];
+			[[singleProgressBar onMainThread] setIndeterminate:NO];
+			[[singleProgressBar onMainThread] setDoubleValue:0];
 			
 			if (rowCount) {
 				queryLength = 0;
@@ -1632,12 +1632,12 @@
 					[sqlString setString:@""];
 					
 					// Update the progress bar
-					[singleProgressBar setDoubleValue:(j*progressBarWidth/rowCount)];
-					if ((NSInteger)[singleProgressBar doubleValue] > lastProgressValue) {
-						lastProgressValue = (NSInteger)[singleProgressBar doubleValue];
-						[singleProgressBar displayIfNeeded];
+					if ((j*progressBarWidth/rowCount) > lastProgressValue) {
+						[singleProgressBar setDoubleValue:(j*progressBarWidth/rowCount)];
+						lastProgressValue = (j*progressBarWidth/rowCount);
 					}
-					
+
+
 					for ( t = 0 ; t < colCount ; t++ ) {
 						
 						// Add NULL values directly to the output row
@@ -1710,7 +1710,7 @@
 				[metaString appendString:@"UNLOCK TABLES;\n"];
 				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 			
-								// Drain the autorelease pool
+				// Drain the autorelease pool
 				[exportAutoReleasePool drain];
 			}
 						
@@ -1930,19 +1930,16 @@
 	NSString *previousConnectionEncoding;
 	BOOL previousConnectionEncodingViaLatin1;
 	
-	[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting Dot file", @"text showing that the application is exporting a Dot file")];
-	[singleProgressTitle displayIfNeeded];
-	[singleProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
-	[singleProgressText displayIfNeeded];
+	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting Dot file", @"text showing that the application is exporting a Dot file")];
+	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-	[singleProgressBar setDoubleValue:0];
-	[singleProgressBar displayIfNeeded];
+	[[singleProgressBar onMainThread] setDoubleValue:0];
 	
 	// Open the progress sheet
-	[NSApp beginSheet:singleProgressSheet
+	[[NSApp onMainThread] beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	[singleProgressSheet makeKeyWindow];
+	[[singleProgressSheet onMainThread] makeKeyWindow];
 		
 	[metaString setString:@"// Generated by: Sequel Pro\n"];
 	[metaString appendString:[NSString stringWithFormat:@"// Version %@\n",
@@ -1980,11 +1977,10 @@
 		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
 		NSDictionary *tinfo = [tableDataInstance informationForTable:tableName];
 
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[tables count], tableName]];
-		[singleProgressText displayIfNeeded];
-		[singleProgressBar setIndeterminate:YES];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar startAnimation:self];
+		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[tables count], tableName]];
+		[[singleProgressBar onMainThread] setIndeterminate:YES];
+		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+		[[singleProgressBar onMainThread] startAnimation:self];
 		
 		NSString *hdrColor = @"#DDDDDD";
 		if( [[tinfo objectForKey:@"type"] isEqualToString:@"View"] ) {
@@ -2035,11 +2031,10 @@
 		
 	}
 
-	[singleProgressText setStringValue:NSLocalizedString(@"Fetching relations...", @"text showing that app is fetching data")];
-	[singleProgressText displayIfNeeded];
-	[singleProgressBar setIndeterminate:YES];
-	[singleProgressBar setUsesThreadedAnimation:YES];
-	[singleProgressBar startAnimation:self];
+	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Fetching relations...", @"text showing that app is fetching data")];
+	[[singleProgressBar onMainThread] setIndeterminate:YES];
+	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+	[[singleProgressBar onMainThread] startAnimation:self];
 	
 	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
 	
@@ -2090,7 +2085,7 @@
 		lineEnds:(NSString *)lineEndString
 		withNumericColumns:(NSArray *)tableColumnNumericStatus
 		totalRows:(NSInteger)totalRows
-		silently:(BOOL)silently;
+		silently:(BOOL)silently
 {
 	NSAutoreleasePool *csvExportPool;
 	NSStringEncoding tableEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
@@ -2135,23 +2130,22 @@
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
 	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
-	[singleProgressBar setMaxValue:progressBarWidth];
-	[singleProgressBar setDoubleValue:0];
-	[singleProgressBar setIndeterminate:NO];
-	[singleProgressBar setUsesThreadedAnimation:YES];
-	[singleProgressBar displayIfNeeded];
+	[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
+	[[singleProgressBar onMainThread] setDoubleValue:0];
+	[[singleProgressBar onMainThread] setIndeterminate:NO];
+	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
 	
 	if ( !silently ) {
 		
 		// Set the progress text
-		[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting CSV", @"text showing that the application is exporting a CSV")];
-		[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+		[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting CSV", @"text showing that the application is exporting a CSV")];
+		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 		
 		// Open progress sheet
-		[NSApp beginSheet:singleProgressSheet
+		[[NSApp onMainThread] beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
-		[singleProgressSheet makeKeyWindow];
+		[[singleProgressSheet onMainThread] makeKeyWindow];
 	}
 	
 	// Set up escaped versions of strings for substitution within the loop
@@ -2297,11 +2291,9 @@
 
 		// Update the progress counter and progress bar
 		currentRowIndex++;
-		if (totalRows)
+		if (totalRows && (currentRowIndex*progressBarWidth/totalRows) > lastProgressValue) {
 			[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-		if ((NSInteger)[singleProgressBar doubleValue] > lastProgressValue) {
-			lastProgressValue = (NSInteger)[singleProgressBar doubleValue];
-			[singleProgressBar displayIfNeeded];
+			lastProgressValue = (currentRowIndex*progressBarWidth/totalRows);
 		}
 		
 		// If an array was supplied and we've processed all rows, break
@@ -2322,7 +2314,7 @@
 	} else {
 
 		// Restore the progress bar to a normal maximum
-		[singleProgressBar setMaxValue:100];
+		[[singleProgressBar onMainThread] setMaxValue:100];
 	}
 
 	return TRUE;
@@ -2352,10 +2344,9 @@
 	// Updating the progress bar can take >20% of processing time - store details to only update when required
 	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 	lastProgressValue = 0;
-	[singleProgressBar setIndeterminate:NO];
-	[singleProgressBar setMaxValue:progressBarWidth];
-	[singleProgressBar setDoubleValue:0];
-	[singleProgressBar displayIfNeeded];
+	[[singleProgressBar onMainThread] setIndeterminate:NO];
+	[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
+	[[singleProgressBar onMainThread] setDoubleValue:0];
 	
 	// Set up an array of encoded field names as opening and closing tags
 	if (array) {
@@ -2374,14 +2365,14 @@
 	if ( !silently ) {
 		
 		// Set the progress text
-		[singleProgressTitle setStringValue:NSLocalizedString(@"Exporting XML", @"text showing that the application is exporting XML")];
-		[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+		[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting XML", @"text showing that the application is exporting XML")];
+		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 		
 		// Open progress sheet
-		[NSApp beginSheet:singleProgressSheet
+		[[NSApp onMainThread] beginSheet:singleProgressSheet
 		   modalForWindow:tableWindow modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
-		[singleProgressSheet makeKeyWindow];
+		[[singleProgressSheet onMainThread] makeKeyWindow];
 	}
 	
 	// Output the XML header if required
@@ -2465,11 +2456,9 @@
 
 		// Update the progress counter and progress bar
 		currentRowIndex++;
-		if (totalRows)
+		if (totalRows && (currentRowIndex*progressBarWidth/totalRows) > lastProgressValue) {
 			[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-		if ((NSInteger)[singleProgressBar doubleValue] > lastProgressValue) {
-			lastProgressValue = (NSInteger)[singleProgressBar doubleValue];
-			[singleProgressBar displayIfNeeded];
+			lastProgressValue = (currentRowIndex*progressBarWidth/totalRows);
 		}
 		
 		// If an array was supplied and we've processed all rows, break
@@ -2495,7 +2484,7 @@
 	} else {
 
 		// Restore the progress bar to a normal maximum
-		[singleProgressBar setMaxValue:100];
+		[[singleProgressBar onMainThread] setMaxValue:100];
 	}
 
 	return TRUE;
@@ -2540,20 +2529,17 @@
 	
 	// Reset the interface
 	[errorsView setString:@""];
-	[errorsView displayIfNeeded];
-	[singleProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), [type uppercaseString]]];
-	[singleProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-	[singleProgressText displayIfNeeded];
-	[singleProgressBar setDoubleValue:0];
-	[singleProgressBar displayIfNeeded];
+	[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), [type uppercaseString]]];
+	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+	[[singleProgressBar onMainThread] setDoubleValue:0];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 	
 	// Open the progress sheet
-	[NSApp beginSheet:singleProgressSheet
+	[[NSApp onMainThread] beginSheet:singleProgressSheet
 	   modalForWindow:tableWindow modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
-	[singleProgressSheet makeKeyWindow];	
+	[[singleProgressSheet onMainThread] makeKeyWindow];	
 
 	// Add a dump header to the dump file, dependant on export type.
 	if ( [type isEqualToString:@"csv"] ) {
@@ -2594,11 +2580,10 @@
 		
 		// Update the progress text and reset the progress bar to indeterminate status
 		tableName = [selectedTables objectAtIndex:i];
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-		[singleProgressText displayIfNeeded];
-		[singleProgressBar setIndeterminate:YES];
-		[singleProgressBar setUsesThreadedAnimation:YES];
-		[singleProgressBar startAnimation:self];
+		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
+		[[singleProgressBar onMainThread] setIndeterminate:YES];
+		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
+		[[singleProgressBar onMainThread] startAnimation:self];
 		
 		// For CSV exports of more than one table, output the name of the table
 		if ( [type isEqualToString:@"csv"] && [selectedTables count] > 1) {
@@ -2649,13 +2634,11 @@
 		}
 
 		// Update the progress text and set the progress bar back to determinate
-		[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Writing data...", @"text showing that app is writing data for table export"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-		[singleProgressText displayIfNeeded];
-		[singleProgressBar stopAnimation:self];
-		[singleProgressBar setUsesThreadedAnimation:NO];
-		[singleProgressBar setIndeterminate:NO];
-		[singleProgressBar setDoubleValue:0];
-		[singleProgressBar displayIfNeeded];
+		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Writing data...", @"text showing that app is writing data for table export"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
+		[[singleProgressBar onMainThread] stopAnimation:self];
+		[[singleProgressBar onMainThread] setUsesThreadedAnimation:NO];
+		[[singleProgressBar onMainThread] setIndeterminate:NO];
+		[[singleProgressBar onMainThread] setDoubleValue:0];
 		
 		// Use the appropriate export method to write the data to file
 		if ( [type isEqualToString:@"csv"] ) {
@@ -2865,7 +2848,7 @@
 #pragma mark -
 #pragma mark Table view datasource methods
 
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [tables count];
 }
@@ -2951,7 +2934,7 @@
 	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
 }
 
-- (id)init;
+- (id)init
 {
 	self = [super init];
 	
@@ -3004,6 +2987,11 @@
 
 - (void)showErrorSheetWithMessage:(NSString*)message
 {
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(showErrorSheetWithMessage:) withObject:message waitUntilDone:YES];
+		return;
+	}
+
 	[errorsView setString:message];
 	[NSApp beginSheet:errorsSheet 
 	   modalForWindow:tableWindow 

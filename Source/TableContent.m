@@ -51,6 +51,7 @@
 #import "SPConstants.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
+#import "SPMainThreadTrampoline.h"
 
 @implementation TableContent
 
@@ -783,7 +784,7 @@
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
 	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 	// replaced by @"".
-	BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] 
+	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags] 
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
 
 	NSString *filterString;
@@ -1001,7 +1002,7 @@
 		[countString appendFormat:NSLocalizedString(@"%@ %@ selected", @"text showing how many rows are selected"), [numberFormatter stringFromNumber:[NSNumber numberWithInteger:[tableContentView numberOfSelectedRows]]], rowString];
 	}
 
-	[countText setStringValue:countString];
+	[[countText onMainThread] setStringValue:countString];
 }
 
 #pragma mark -
@@ -1028,7 +1029,7 @@
 	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) return;
+	if (![[self onMainThread] saveRowOnDeselect]) return;
 
 	// Save view details to restore safely if possible (except viewport, which will be
 	// preserved automatically, and can then be scrolled as the table loads)
@@ -1086,7 +1087,7 @@
 	NSAutoreleasePool *filterPool = [[NSAutoreleasePool alloc] init];
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) return;
+	if (![[self onMainThread] saveRowOnDeselect]) return;
 
 	// Update history
 	[spHistoryControllerInstance updateHistoryEntries];
@@ -1095,7 +1096,7 @@
 	previousTableRowsCount = 0;
 	[self clearTableValues];
 	[self loadTableValues];
-	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
+	[[tableContentView onMainThread] scrollPoint:NSMakePoint(0.0, 0.0)];
 
 	[tableDocumentInstance endTask];
 	[filterPool drain];
@@ -2840,7 +2841,7 @@
 	NSAutoreleasePool *sortPool = [[NSAutoreleasePool alloc] init];
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) {
+	if (![[self onMainThread] saveRowOnDeselect]) {
 		[sortPool drain];
 		return;
 	}
@@ -2850,10 +2851,18 @@
 		isDesc = !isDesc;
 	} else {
 		isDesc = NO;
-		[tableContentView setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
+		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
 	}
 	if (sortCol) [sortCol release];
 	sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
+
+	// Set the highlight and indicatorImage
+	[[tableContentView onMainThread] setHighlightedTableColumn:tableColumn];
+	if (isDesc) {
+		[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+	} else {
+		[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+	}
 
 	// Update data using the new sort order
 	previousTableRowsCount = tableRowsCount;
@@ -2865,14 +2874,6 @@
 		[tableDocumentInstance endTask];
 		[sortPool drain];
 		return;
-	}
-
-	// Set the highlight and indicatorImage
-	[tableContentView setHighlightedTableColumn:tableColumn];
-	if (isDesc) {
-		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
-	} else {
-		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
 	}
 
 	[tableDocumentInstance endTask];
