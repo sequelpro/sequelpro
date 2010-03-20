@@ -1294,7 +1294,7 @@
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-		[self performSelector:@selector(historyItemsHaveBeenUpdated:) withObject:self afterDelay:0.0];
+		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
