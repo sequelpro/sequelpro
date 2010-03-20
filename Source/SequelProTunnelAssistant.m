@@ -165,7 +165,36 @@ int main(int argc, const char *argv[])
 		[pool release];
 		return 0;
 	}
+    
+    // SSH has some other question. Show that directly to the user. This is an attempt to support RSA SecurID
+	if (argument) {
+		NSString *passphrase;
+		
+		if (!verificationHash) {
+			NSLog(@"SSH Tunnel: key passphrase authentication required but insufficient details supplied to connect to GUI");
+			[pool release];
+			return 1;
+		}
 
+		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+		if (!sequelProTunnel) {
+			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
+			[pool release];
+			return 1;
+		}
+        
+		passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
+		if (!passphrase) {
+			[pool release];
+			return 1;
+		}
+
+		printf("%s\n", [passphrase UTF8String]);
+		[pool release];
+		return 0;
+	}
+
+    
 	[pool release];
 	return 1;
 }
