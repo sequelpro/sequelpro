@@ -3967,6 +3967,7 @@
 	if (taskDrawTimer) [taskDrawTimer release];
 	if (taskFadeAnimator) [taskFadeAnimator release];
 	if (queryEditorInitString) [queryEditorInitString release];
+	if (spfPreferences) [spfPreferences release];
 	if (spfSession) [spfSession release];
 	if (spfDocData) [spfDocData release];
 	if (keyChainID) [keyChainID release];
