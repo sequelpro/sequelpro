@@ -1931,6 +1931,7 @@ void performThreadedKeepAlive(void *ptr)
 					NSMutableArray *allDbNames = [NSMutableArray array];
 					NSMutableArray *allTableNames = [NSMutableArray array];
 
+					// id to make any key unique
 					NSString *connectionID;
 					if([delegate respondsToSelector:@selector(connectionID)])
 						connectionID = [NSString stringWithString:[[self delegate] connectionID]];
@@ -1938,10 +1939,12 @@ void performThreadedKeepAlive(void *ptr)
 						connectionID = @"_";
 
 					NSString *SPUniqueSchemaDelimiter = @"￸";
+					NSUInteger cnt = 0; // used to make field data unique
 
 					[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
 
 					while(row = mysql_fetch_row(theResult)) {
+						cnt++;
 						NSString *db = [self stringWithUTF8CString:row[0]];
 						NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
 						NSString *table = [self stringWithUTF8CString:row[1]];
@@ -1968,7 +1971,7 @@ void performThreadedKeepAlive(void *ptr)
 							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 						}
 
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, nil] forKey:field_id];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, [NSNumber numberWithUnsignedLongLong:cnt], nil] forKey:field_id];
 						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:structtype forKey:@"  struct_type  "];
 
 					}

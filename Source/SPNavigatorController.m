@@ -142,8 +142,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		if(selectedItem1) {
 			NSInteger itemIndex = [outlineSchema1 rowForItem:selectedItem1];
 			if (itemIndex < 0) {
-					// You need to decide what happens if the item doesn't exist
-					NSLog(@"1");
 				return;
 			}
 
@@ -152,8 +150,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		if(selectedItem2) {
 			NSInteger itemIndex = [outlineSchema2 rowForItem:selectedItem2];
 			if (itemIndex < 0) {
-					// You need to decide what happens if the item doesn't exist
-				NSLog(@"2");
 				return;
 			}
 
@@ -178,8 +174,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 		NSArray *sortedItems = [[item allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 		[desc release];
-		// if(index < [sortedItems count])
-			return [item objectForKey:[sortedItems objectAtIndex:index]];
+		return [item objectForKey:[sortedItems objectAtIndex:index]];
 	}
 	else if ([item isKindOfClass:[NSArray class]]) 
 	{
