@@ -63,7 +63,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		expandStatus1 = [[NSMutableDictionary alloc] init];
 		expandStatus2 = [[NSMutableDictionary alloc] init];
 		infoArray     = [[NSMutableArray alloc] init];
-
+		selectedKey1  = @"";
+		selectedKey2  = @"";
+		ignoreUpdate  = NO;
 	}
 
 	return self;
@@ -109,6 +111,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)restoreExpandStatus
 {
+
+	if(!schemaData) return;
+
 	NSInteger i;
 	for( i = 0; i < [outlineSchema1 numberOfRows]; i++ ) {
 		id item = [outlineSchema1 itemAtRow:i];
@@ -120,7 +125,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 	for( i = 0; i < [outlineSchema2 numberOfRows]; i++ ) {
 		id item = [outlineSchema2 itemAtRow:i];
-		id parentObject = [outlineSchema1 parentForItem:item] ? [outlineSchema2 parentForItem:item] : schemaData;
+		id parentObject = [outlineSchema2 parentForItem:item] ? [outlineSchema2 parentForItem:item] : schemaData;
 		id parentKeys = [parentObject allKeysForObject:item];
 		if(parentKeys && [parentKeys count] == 1)
 			if( [expandStatus2 objectForKey:[parentKeys objectAtIndex:0]] )
@@ -128,20 +133,107 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 }
 
+- (void)saveSelectedItems
+{
+	selectedKey1 = @"";
+	selectedKey2 = @"";
+	selectionViewPort1 = [outlineSchema1 visibleRect];
+	selectionViewPort2 = [outlineSchema2 visibleRect];
+	if(schemaData) {
+		id selection = nil;
+		selection = [outlineSchema1 itemAtRow:[outlineSchema1 selectedRow]];
+		if(selection) {
+			id parentObject = [outlineSchema1 parentForItem:selection] ? [outlineSchema1 parentForItem:selection] : schemaData;
+			id parentKeys = [parentObject allKeysForObject:selection];
+			if(parentKeys && [parentKeys count] == 1)
+				selectedKey1 = [[parentKeys objectAtIndex:0] description];
+		}
+		selection = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
+		if(selection) {
+			id parentObject = [outlineSchema2 parentForItem:selection] ? [outlineSchema2 parentForItem:selection] : schemaData;
+			id parentKeys = [parentObject allKeysForObject:selection];
+			if(parentKeys && [parentKeys count] == 1)
+				selectedKey2 = [[parentKeys objectAtIndex:0] description];
+		}
+	}
+
+}
+
+- (void)restoreSelectedItems
+{
+
+	if(!schemaData) return;
+
+	BOOL viewportWasValid1 = NO;
+	BOOL viewportWasValid2 = NO;
+	selectionViewPort1.size = [outlineSchema1 visibleRect].size;
+	selectionViewPort2.size = [outlineSchema2 visibleRect].size;
+	viewportWasValid1 = [outlineSchema1 scrollRectToVisible:selectionViewPort1];
+	viewportWasValid2 = [outlineSchema2 scrollRectToVisible:selectionViewPort2];
+	if(selectedKey1 && [selectedKey1 length]) {
+		id item = schemaData;
+		NSArray *pathArray = [selectedKey1 componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		NSMutableString *aKey = [NSMutableString string];
+		for(NSInteger i=0; i < [pathArray count]; i++) {
+			[aKey appendString:[pathArray objectAtIndex:i]];
+			if(![item objectForKey:aKey]) break;
+			item = [item objectForKey:aKey];
+			[aKey appendString:SPUniqueSchemaDelimiter];
+		}
+		if(item != nil) {
+			NSInteger itemIndex = [outlineSchema1 rowForItem:item];
+			if (itemIndex >= 0) {
+				[outlineSchema1 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
+				if(!viewportWasValid1)
+					[outlineSchema1 scrollRowToVisible:[outlineSchema1 selectedRow]];
+			}
+		}
+	}
+	if(selectedKey2 && [selectedKey2 length]) {
+		id item = schemaData;
+		NSArray *pathArray = [selectedKey2 componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		NSMutableString *aKey = [NSMutableString string];
+		for(NSInteger i=0; i < [pathArray count]; i++) {
+			[aKey appendString:[pathArray objectAtIndex:i]];
+			if(![item objectForKey:aKey]) break;
+			item = [item objectForKey:aKey];
+			[aKey appendString:SPUniqueSchemaDelimiter];
+		}
+		if(item != nil) {
+			NSInteger itemIndex = [outlineSchema2 rowForItem:item];
+			if (itemIndex >= 0) {
+				[outlineSchema2 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
+				if(!viewportWasValid2)
+					[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
+			}
+		}
+	}
+}
+
+- (void)setIgnoreUpdate:(BOOL)flag
+{
+	ignoreUpdate = flag;
+}
+
 #pragma mark -
 #pragma mark IBActions
 
 - (IBAction)updateEntries:(id)sender;
 {
-	id selectedItem1 = nil;
-	id selectedItem2 = nil;
-	if(schemaData) {
-		selectedItem1 = [outlineSchema1 itemAtRow:[outlineSchema1 selectedRow]];
-		selectedItem2 = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
-		[schemaData release]; 
-		schemaData = nil;
+
+	if(ignoreUpdate) {
+		ignoreUpdate = NO;
+		return;
 	}
-	schemaData = [[NSMutableDictionary alloc] init];
+
+	[self saveSelectedItems];
+
+	[infoArray removeAllObjects];
+	[schemaData removeAllObjects];
+
+	[outlineSchema1 reloadData];
+	[outlineSchema2 reloadData];
+	
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 
@@ -158,9 +250,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				} else {
 
 					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4) {
-						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@ – no data loaded yet", connectionName]];
+						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
 					} else {
-						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@ – no data for this server version", connectionName]];
+						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data for this server version", connectionName]];
 					}
 
 				}
@@ -169,39 +261,27 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
-		// [self performSelector:@selector(restoreExpandStatus) withObject:nil afterDelay:0.2];
+
 		[self restoreExpandStatus];
-		if(selectedItem1) {
-			NSInteger itemIndex = [outlineSchema1 rowForItem:selectedItem1];
-			if (itemIndex < 0) {
-				return;
-			}
+		[self restoreSelectedItems];
 
-			[outlineSchema1 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
-		}
-		if(selectedItem2) {
-			NSInteger itemIndex = [outlineSchema2 rowForItem:selectedItem2];
-			if (itemIndex < 0) {
-				return;
-			}
-
-			[outlineSchema2 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
-		}
 	}
 }
 
 - (IBAction)reloadAllStructures:(id)sender
 {
-	if(schemaData) {
-		[schemaData release];
-		schemaData = nil;
-	}
 
-	schemaData = [[NSMutableDictionary alloc] init];
+	// Reset everything
+	[schemaData removeAllObjects];
 	[infoArray removeAllObjects];
-
+	[expandStatus1 removeAllObjects];
+	[expandStatus2 removeAllObjects];
 	[outlineSchema1 reloadData];
 	[outlineSchema2 reloadData];
+	selectedKey1 = @"";
+	selectedKey2 = @"";
+	selectionViewPort1 = NSZeroRect;
+	selectionViewPort2 = NSZeroRect;
 
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
@@ -288,6 +368,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (NSInteger)outlineView:(id)outlineView numberOfChildrenOfItem:(id)item
 {
 
+	if(!schemaData) return 0;
+
 	if(item == nil)
 		return [schemaData count];
 
@@ -300,6 +382,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (id)outlineView:(id)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
 
+	if(!schemaData) return @"";
+
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
 
 	if ([[tableColumn identifier] isEqualToString:@"field"]) {
@@ -307,7 +391,17 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		// top level is connection
 		if([outlineView levelForItem:item] == 0) {
 			[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
-			return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:@"&SSH&"] objectAtIndex:0];
+			if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count]) {
+				NSString *key = [[parentObject allKeysForObject:item] objectAtIndex:0];
+				if([key rangeOfString:@"&SSH&"].length)
+					return [[key componentsSeparatedByString:@"&SSH&"] objectAtIndex:0];
+				else if([key rangeOfString:@"&DEL&"].length)
+					return [[key componentsSeparatedByString:@"&DEL&"] objectAtIndex:0];
+				else
+					return key;
+			} else {
+				return @"";
+			}
 		}
 
 		if ([parentObject isKindOfClass:[NSDictionary class]]) {
@@ -349,8 +443,19 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 	else if ([[tableColumn identifier] isEqualToString:@"type"]) {
 
-		if([outlineView levelForItem:item] == 0 && [[[parentObject allKeysForObject:item] objectAtIndex:0] rangeOfString:@"&SSH&"].length) {
-			return [NSString stringWithFormat:@"ssh: %@", [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:@"&SSH&"] lastObject]];
+		// top level is connection
+		if([outlineView levelForItem:item] == 0) {
+			if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count]) {
+				NSString *key = [[parentObject allKeysForObject:item] objectAtIndex:0];
+				if([key rangeOfString:@"&SSH&"].length)
+					return [NSString stringWithFormat:@"ssh: %@", [[key componentsSeparatedByString:@"&SSH&"] lastObject]];
+				else if([key rangeOfString:@"&DEL&"].length)
+					return [[key componentsSeparatedByString:@"&DEL&"] lastObject];
+				else
+					return @"";
+			} else {
+				return @"";
+			}
 		}
 
 		if ([item isKindOfClass:[NSArray class]] && ![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) 
@@ -383,7 +488,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
 	
 	// Use "  struct_type  " as placeholder to increase distance between table and first field name otherwise it looks ugly 
-	if([[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+	if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count] && [[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 		return 5.0;
 
 	return 18.0;
@@ -397,7 +502,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
-	if([[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+	if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count] && [[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 		return NO;
 	return YES;
 }
@@ -411,6 +516,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	} else if (ov == outlineSchema2) {
 		selectedItem = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
 	}
+
 	if(selectedItem) {
 		[infoArray removeAllObjects];
 		[infoArray addObject:@""];
@@ -442,7 +548,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
-	return (row == 0) ? 5.0 : [tableView rowHeight];
+	// Use first row as dummy to increase the distance between content and header
+	return (row == 0) ? 5.0 : 15; //[tableView rowHeight];
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
@@ -459,6 +566,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(aTableView == infoTable) {
 		if(rowIndex == 0) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"dummy-small"]];
+			[(ImageAndTextCell*)aCell setIndentationLevel:0];
 			[(ImageAndTextCell*)aCell setDrawsBackground:NO];
 		} else {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];

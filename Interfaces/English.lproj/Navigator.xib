@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="15"/>
+			<integer value="97"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -66,7 +66,7 @@
 						<object class="NSSearchField" id="701533802">
 							<reference key="NSNextResponder" ref="881437593"/>
 							<int key="NSvFlags">270</int>
-							<string key="NSFrame">{{20, 337}, {241, 19}}</string>
+							<string key="NSFrame">{{20, 336}, {241, 19}}</string>
 							<reference key="NSSuperview" ref="881437593"/>
 							<int key="NSViewLayerContentsRedrawPolicy">2</int>
 							<bool key="NSEnabled">YES</bool>
@@ -167,7 +167,7 @@
 														<bool key="EncodedWithXMLCoder">YES</bool>
 														<object class="NSScrollView" id="667909124">
 															<reference key="NSNextResponder" ref="978368259"/>
-															<int key="NSvFlags">274</int>
+															<int key="NSvFlags">4370</int>
 															<object class="NSMutableArray" key="NSSubviews">
 																<bool key="EncodedWithXMLCoder">YES</bool>
 																<object class="NSClipView" id="415327048">
@@ -375,7 +375,7 @@
 														<bool key="EncodedWithXMLCoder">YES</bool>
 														<object class="NSScrollView" id="1023753551">
 															<reference key="NSNextResponder" ref="556163261"/>
-															<int key="NSvFlags">274</int>
+															<int key="NSvFlags">4370</int>
 															<object class="NSMutableArray" key="NSSubviews">
 																<bool key="EncodedWithXMLCoder">YES</bool>
 																<object class="NSClipView" id="817352949">
@@ -385,7 +385,7 @@
 																		<bool key="EncodedWithXMLCoder">YES</bool>
 																		<object class="NSOutlineView" id="771350217">
 																			<reference key="NSNextResponder" ref="817352949"/>
-																			<int key="NSvFlags">4352</int>
+																			<int key="NSvFlags">256</int>
 																			<string key="NSFrameSize">{394, 177}</string>
 																			<reference key="NSSuperview" ref="817352949"/>
 																			<int key="NSViewLayerContentsRedrawPolicy">2</int>
@@ -674,7 +674,7 @@
 																					</object>
 																					<object class="NSTextFieldCell" key="NSDataCell" id="1070719064">
 																						<int key="NSCellFlags">67239488</int>
-																						<int key="NSCellFlags2">133120</int>
+																						<int key="NSCellFlags2">268568576</int>
 																						<string key="NSContents">Text Cell</string>
 																						<reference key="NSSupport" ref="26"/>
 																						<reference key="NSControlView" ref="501833340"/>

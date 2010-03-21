@@ -42,6 +42,12 @@
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
 
+	NSString *selectedKey1;
+	NSString *selectedKey2;
+	NSRect selectionViewPort1;
+	NSRect selectionViewPort2;
+	BOOL ignoreUpdate;
+
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
@@ -52,4 +58,8 @@
 - (IBAction)filterTree:(id)sender;
 
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index;
+
+- (void)restoreSelectedItems;
+- (void)setIgnoreUpdate:(BOOL)flag;
+
 @end

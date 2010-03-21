@@ -854,6 +854,9 @@
 	// Lock editability again if performing a task
 	if (_isWorkingLevel) databaseListIsSelectable = NO;
 
+	// Do not update the navigator since nothing is changed
+	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:YES];
+
 	// Start a task
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
 	if ([NSThread isMainThread]) {
