@@ -33,6 +33,7 @@
 #import "SPStringAdditions.h"
 #import "ImageAndTextCell.h"
 #import "SPConstants.h"
+#import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "CMTextView.h"
 #include <tgmath.h>
@@ -112,6 +113,8 @@
 		filtered = nil;
 		spaceCounter = 0;
 
+		prefs = [NSUserDefaults standardUserDefaults];
+
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
 	}
@@ -136,7 +139,7 @@
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
-	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
 {
 	if(self = [self init])
 	{
@@ -144,6 +147,9 @@
 		// Set filter string 
 		if(aUserString)
 			[mutablePrefix appendString:aUserString];
+
+		autoCompletionMode = autoComplete;
+		oneColumnMode = oneColumn;
 
 		fuzzyMode = fuzzySearch;
 		if(fuzzyMode)
@@ -172,8 +178,25 @@
 
 		suggestions = [someSuggestions retain];
 
-		[[theTableView tableColumnWithIdentifier:@"image"] setWidth:((dictMode) ? 0 : 20)];
-		[[theTableView tableColumnWithIdentifier:@"name"] setWidth:((dictMode) ? 440 : 180)];
+		if(dictMode || oneColumnMode) {
+			[[theTableView tableColumnWithIdentifier:@"image"] setWidth:0];
+			if(!dictMode) {
+				NSUInteger maxLength = 0;
+				for(id w in someSuggestions) {
+					NSUInteger len = [[w objectForKey:@"display"] length];
+					if(len>maxLength) maxLength = len;
+				}
+				NSMutableString *dummy = [NSMutableString string];
+				for(NSUInteger i=0; i<maxLength; i++)
+					[dummy appendString:@" "];
+
+				CGFloat w = NSSizeToCGSize([dummy sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).width + 26.0f;
+				maxWindowWidth = (w>maxWindowWidth) ? maxWindowWidth : w;
+			} else {
+				maxWindowWidth = 220;
+			}
+			[[theTableView tableColumnWithIdentifier:@"name"] setWidth:maxWindowWidth];
+		}
 
 		currentDb = selectedDb;
 
@@ -275,6 +298,67 @@
 	return [filtered count];
 }
 
+- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
+{
+	if([[aTableColumn identifier] isEqualToString:@"image"]) {
+		if(!dictMode) {
+			NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+			if([imageName hasPrefix:@"dummy"])
+				return @"";
+			if([imageName hasPrefix:@"table-view"])
+				return @"view";
+			if([imageName hasPrefix:@"table"])
+				return @"table";
+			if([imageName hasPrefix:@"database"])
+				return @"database";
+			if([imageName hasPrefix:@"func"])
+				return @"function";
+			if([imageName hasPrefix:@"proc"])
+				return @"procedure";
+			if([imageName hasPrefix:@"field"])
+				return @"field";
+		}
+		return @"";
+	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+	} else if ([[aTableColumn identifier] isEqualToString:@"list"] || [[aTableColumn identifier] isEqualToString:@"type"]) {
+		if(dictMode) {
+			return @"";
+		} else {
+			if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
+				NSMutableString *tt = [NSMutableString string];
+				[tt appendString:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""];
+				[tt appendString:@"\n"];
+				[tt appendString:NSLocalizedString(@"Type Declaration:", @"type declaration header")];
+				[tt appendString:@"\n"];
+				[tt appendString:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"]];
+				return tt;
+			} else {
+				return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
+			}
+			return @"";
+		}
+
+	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+		if(dictMode) {
+			return @"";
+		} else {
+			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
+				NSMutableString *tt = [NSMutableString string];
+				[tt setString:NSLocalizedString(@"Schema path:", @"schema path header for completion tooltip")];
+				BOOL flag = NO;
+				for(id p in [[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter]) {
+					if(flag) [tt appendFormat:@"\n• %@",p];
+					flag=YES;
+				}
+				return tt;
+			}
+			return @"";
+		}
+	}
+	return @"";
+}
+
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;
@@ -339,16 +423,15 @@
 		if(dictMode) {
 			return @"";
 		} else {
-			// [[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-			// return ([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"path"] : @"";
 			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
 				NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
 				[b setPullsDown:NO];
 				[b setAltersStateOfSelectedItem:NO];
 				[b setControlSize:NSMiniControlSize];
 				NSMenu *m = [[NSMenu alloc] init];
-				for(id p in [[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:@"⇠"])
+				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects])
 					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
+				[m removeItemAtIndex:[m numberOfItems]-1];
 				[b setMenu:m];
 				[m release];
 				[b setPreferredEdge:NSMinXEdge];
@@ -371,6 +454,7 @@
 - (void)checkSpaceForAllowedCharacter
 {
 	[textualInputCharacters removeCharactersInString:@" "];
+	if(autoCompletionMode) return;
 	if(spaceCounter < 1)
 		for(id w in filtered){
 			if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length) {
@@ -406,7 +490,9 @@
 					for(i=0; i<[[self filterString] length]; i++) {
 						c = [[self filterString] characterAtIndex:i];
 						if(c != '`') {
-							if(c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
+							if(c == '.')
+								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?",SPUniqueSchemaDelimiter]];
+							else if (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
 								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?\\%c",c]];
 							else
 								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%c",c]];
@@ -414,7 +500,7 @@
 					}
 
 					for(id s in suggestions)
-						if([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"isRef"] isMatchedByRegex:fuzzyRegexp])
+						if([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"path"] isMatchedByRegex:fuzzyRegexp])
 							[newFiltered addObject:s];
 
 
@@ -433,6 +519,7 @@
 				if(newFiltered) [newFiltered release];
 				NSLog(@"%@", @"Couldn't filter suggestion due to internal regexp error");
 				closeMe = YES;
+				return;
 			}
 			
 		}
@@ -444,11 +531,27 @@
 	}
 
 	if(![newFiltered count]) {
-		if([[self filterString] hasSuffix:@"."]) {
-			[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode];
+		if(autoCompletionMode) {
+			[newFiltered release];
 			closeMe = YES;
+			return;
+		} else {
+			if([theView completionWasReinvokedAutomatically]) return;
+			if([[self filterString] hasSuffix:@"."]) {
+				[theView setCompletionWasReinvokedAutomatically:YES];
+				[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+				[newFiltered release];
+				closeMe = YES;
+				return;
+			} else {
+				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No item found", @"no item found message"), @"display", @"", @"noCompletion", nil]];
+			}
 		}
-		[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No completions found", @"no completions found message"), @"display", @"", @"noCompletion", nil]];
+	}
+	if(autoCompletionMode && [newFiltered count] == 1 && [[[self filterString] lowercaseString] isEqualToString:[[[newFiltered objectAtIndex:0] objectForKey:@"display"] lowercaseString]]) {
+		[newFiltered release];
+		closeMe = YES;
+		return;
 	}
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
@@ -527,7 +630,7 @@
 		else if(t == NSKeyDown)
 		{
 			NSUInteger flags = [event modifierFlags];
-			unichar key        = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			unichar key      = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
 
 			// Check if user pressed ⌥ to allow composing of accented characters.
 			// e.g. for US keyboard "⌥u a" to insert ä
@@ -559,7 +662,7 @@
 					break;
 				}
 			}
-			else if(key == NSCarriageReturnCharacter || key == NSTabCharacter)
+			else if(key == NSCarriageReturnCharacter || (key == NSTabCharacter && !triggerMode))
 			{
 				[self completeAndInsertSnippet];
 			}
@@ -615,6 +718,7 @@
 			[NSApp sendEvent:event];
 		}
 	}
+	[theView setCompletionIsOpen:NO];
 	[self close];
 	usleep(70); // tiny delay to suppress while continously pressing of ESC overlapping
 }
@@ -647,24 +751,42 @@
 			[commonPrefix setString:tempPrefix];
 	}
 
-	// if(![commonPrefix length]) return;
-
-	NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
-	[mutablePrefix appendString:toInsert];
-	theCharRange.length += [toInsert length];
-	theParseRange.length += [toInsert length];
-	[theView insertText:[toInsert lowercaseString]];
-	[self checkSpaceForAllowedCharacter];
-
+	// Insert common prefix automatically
+	if([[self filterString] length] < [commonPrefix length]) {
+		NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
+		[mutablePrefix appendString:toInsert];
+		theCharRange.length += [toInsert length];
+		theParseRange.length += [toInsert length];
+		[theView insertText:[toInsert lowercaseString]];
+		[self checkSpaceForAllowedCharacter];
+	}
 }
 
 - (void)insert_text:(NSString* )aString
 {
-	[theView setSelectedRange:theCharRange];
+
+	// Ensure that theCharRange is valid
+	if(NSMaxRange(theCharRange) > [[theView string] length])
+		theCharRange = NSIntersectionRange(NSMakeRange(0,[[theView string] length]), theCharRange);
+
+	NSRange r = [theView selectedRange];
+	if(r.length)
+		[theView setSelectedRange:r];
+	else
+		[theView setSelectedRange:theCharRange];
+
 	[theView insertText:aString];
+	
 	// If completion string contains backticks move caret out of the backticks
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
+	// If it's a function or procedure append () and if a argument list can be retieved insert them as snippets
+	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && ([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] || [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"proc"]) && ![aString hasSuffix:@")"]) {
+		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
+		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];
+		if([functionArgumentSnippet length] == 2)
+			[theView performSelector:@selector(moveLeft:)];
+	}
 }
 
 - (void)completeAndInsertSnippet
@@ -683,7 +805,7 @@
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
 				&& [[selectedItem objectForKey:@"path"] length]) {
 			NSString *path = [NSString stringWithFormat:@"%@.%@", 
-				[[[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:@"⇠"] reverseObjectEnumerator] allObjects] componentsJoinedByPeriodAndBacktickQuoted],
+				[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst],
 				[candidateMatch backtickQuotedString]];
 
 			// Check if path's db name is the current selected db name
@@ -716,6 +838,12 @@
 	} else {
 		closeMe = YES;
 	}
+}
+
+- (void)adjustWorkingRangeByDelta:(NSInteger)delta
+{
+	theCharRange.location += delta;
+	theParseRange.location += delta;
 }
 
 @end

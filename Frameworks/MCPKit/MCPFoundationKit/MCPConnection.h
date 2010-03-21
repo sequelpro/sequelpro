@@ -67,6 +67,8 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (NSString *)onReconnectShouldUseEncoding:(id)connection;
 - (void)noConnectionAvailable:(id)connection;
 - (MCPConnectionCheck)connectionLost:(id)connection;
+- (void)updateNavigator:(id)sender;
+- (NSString *)connectionID;
 
 @end
 
@@ -82,10 +84,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSLock			 *queryLock;	   /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
 
 	BOOL useKeepAlive;
+	BOOL isDisconnecting;
 	NSInteger connectionTimeout;
 	CGFloat keepAliveInterval;
 	
-	id <MCPConnectionProxy> connectionProxy;
+	NSObject <MCPConnectionProxy> *connectionProxy;
 	NSString *connectionLogin;
 	NSString *connectionPassword;
 	NSString *connectionHost;
@@ -101,6 +104,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSString *lastQueryErrorMessage;
 	NSUInteger lastQueryErrorId;
 	my_ulonglong lastQueryAffectedRows;
+	MCPConnectionCheck lastDelegateDecisionForLostConnection;
 	
 	BOOL isMaxAllowedPacketEditable;
 	
@@ -110,6 +114,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	
 	NSTimer *keepAliveTimer;
 	pthread_t keepAliveThread;
+	pthread_t pingThread;
 	uint64_t connectionStartTime;
 	
 	BOOL retryAllowed;
@@ -117,6 +122,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	BOOL queryCancelUsedReconnect;
 	BOOL delegateQueryLogging;
 	BOOL delegateResponseToWillQueryString;
+	BOOL delegateSupportsConnectionLostDecisions;
 	BOOL isQueryingDbStructure;
 	
 	// Pointers
@@ -150,6 +156,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 // Delegate
 - (id)delegate;
 - (void)setDelegate:(id)connectionDelegate;
+- (MCPConnectionCheck)delegateDecisionForLostConnection;
 
 // Connection details
 - (BOOL)setPort:(NSInteger)thePort;
@@ -166,6 +173,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (BOOL)isConnected;
 - (BOOL)checkConnection;
 - (BOOL)pingConnection;
+void pingConnectionTask(void *ptr);
 - (void)startKeepAliveTimer;
 - (void)stopKeepAliveTimer;
 - (void)keepAlive:(NSTimer *)theTimer;

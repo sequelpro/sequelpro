@@ -180,6 +180,7 @@
 - (IBAction)saveQueryHistory:(id)sender;
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
+- (IBAction)showCompletionList:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
@@ -187,12 +188,14 @@
 - (NSString *)queryAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
+- (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
 
 // Accessors
 - (NSArray *)currentResult;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
 
 // Retrieving and setting table state
+- (void) updateTableView;
 - (NSIndexSet *) resultSelectedRowIndexes;
 - (NSRect) resultViewport;
 - (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
@@ -225,6 +228,7 @@
 - (NSUInteger)numberOfQueries;
 
 - (NSString *)buildHistoryString;
+- (void)addHistoryEntry:(NSString *)entryString;
 
 - (void)historyItemsHaveBeenUpdated:(id)manager;
 

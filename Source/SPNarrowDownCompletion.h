@@ -49,6 +49,8 @@
 	BOOL noFilterString;
 	BOOL cursorMovedLeft;
 	BOOL commaInsertionMode;
+	BOOL autoCompletionMode;
+	BOOL oneColumnMode;
 	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
@@ -61,6 +63,9 @@
 	NSInteger spaceCounter;
 	
 	NSMutableCharacterSet* textualInputCharacters;
+
+	NSUserDefaults *prefs;
+
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
@@ -68,9 +73,10 @@
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch 
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
-	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft;
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertCommonPrefix;
+- (void)adjustWorkingRangeByDelta:(NSInteger)delta;
 
 @end

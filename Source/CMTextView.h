@@ -68,11 +68,17 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 	NSInteger mySQLmajorVersion;
 
 	NSInteger snippetControlArray[20][3];
+	NSInteger snippetMirroredControlArray[20][3];
 	NSInteger snippetControlCounter;
 	NSInteger snippetControlMax;
 	NSInteger currentSnippetIndex;
+	NSInteger mirroredCounter;
 	BOOL snippetWasJustInserted;
+	BOOL isProcessingMirroredSnippets;
 
+	BOOL completionIsOpen;
+	BOOL completionWasReinvokedAutomatically;
+	NSUInteger completionParseRangeLocation;
 
 	NSColor *queryHiliteColor;
 	NSColor *queryEditorBackgroundColor;
@@ -99,6 +105,8 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 @property(retain) NSColor* otherTextColor;
 @property(assign) NSRange queryRange;
 @property(assign) BOOL shouldHiliteQuery;
+@property(assign) BOOL completionIsOpen;
+@property(assign) BOOL completionWasReinvokedAutomatically;
 
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 
@@ -108,9 +116,6 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix;
 - (BOOL) shiftSelectionRight;
 - (BOOL) shiftSelectionLeft;
-// - (NSArray *) completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index;
-- (NSArray *) keywords;
-- (NSArray *) functions;
 - (void) setAutoindent:(BOOL)enableAutoindent;
 - (BOOL) autoindent;
 - (void) setAutoindentIgnoresEnter:(BOOL)enableAutoindentIgnoresEnter;
@@ -121,18 +126,23 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (BOOL) autouppercaseKeywords;
 - (void) setAutohelp:(BOOL)enableAutohelp;
 - (BOOL) autohelp;
+- (void) setTabStops;
 - (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
 - (void) autoHelp;
 - (void) doSyntaxHighlighting;
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange;
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch;
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode;
+- (void) doAutoCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
+- (void) processMirroredSnippets;
 
 - (BOOL)checkForCaretInsideSnippet;
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
+- (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange;
+
+- (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode;
 
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;

@@ -36,7 +36,7 @@
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
-- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)statusDict withLabel:(NSString *)label;
+- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)statusDict;
 
 @end
 
@@ -124,9 +124,7 @@
 	NSString *newEncoding = [[sender titleOfSelectedItem] stringByMatching:@"^.+\\((.+)\\)$" capture:1L];
 	
 	// Check if the user selected the same encoding
-	if ([currentEncoding isEqualToString:newEncoding]) {
-		return;
-	}
+	if ([currentEncoding isEqualToString:newEncoding]) return;
 	
 	// Alter table's character set encoding
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ CHARACTER SET = %@", [selectedTable backtickQuotedString], newEncoding]];
@@ -153,9 +151,7 @@
 	NSString *currentCollation = [tableDataInstance statusValueForKey:@"Collation"];
 	
 	// Check if the user selected the same collation
-	if ([currentCollation isEqualToString:newCollation]) {
-		return;
-	}
+	if ([currentCollation isEqualToString:newCollation]) return;
 	
 	// Alter table's character set collation
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COLLATE = %@", [selectedTable backtickQuotedString], newCollation]];
@@ -175,11 +171,11 @@
 
 - (IBAction)resetAutoIncrement:(id)sender
 {
-
-	if([sender tag] == 1) {
+	if ([sender tag] == 1) {
 		[tableRowAutoIncrement setEditable:YES];
 		[tableRowAutoIncrement selectText:nil];
-	} else {
+	} 
+	else {
 		[tableRowAutoIncrement setEditable:NO];
 		[tableSourceInstance resetAutoIncrement:sender];
 	}
@@ -193,12 +189,12 @@
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command 
 {
-
 	// Listen to ESC to abort editing of auto increment input field
 	if (command == @selector(cancelOperation:) && control == tableRowAutoIncrement) {
 		[tableRowAutoIncrement abortEditing];
 		return YES;
 	}
+	
 	return NO;
 }
 
@@ -240,7 +236,9 @@
 			[tableCreateSyntaxTextView setEditable:YES];
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
 			[tableCreateSyntaxTextView setString:@""];
+			
 			NSString *createViewSyntax = [[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier];
+			
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
 			[tableCreateSyntaxTextView insertText:createViewSyntax];
 			[tableCreateSyntaxTextView didChangeText];
@@ -253,20 +251,20 @@
 			[tableCreateSyntaxTextView setEditable:NO];
 		}
 		
-		[tableCreatedAt setStringValue:@"Created at: "];
-		[tableUpdatedAt setStringValue:@"Updated at: "];
+		[tableCreatedAt setStringValue:NSLocalizedString(@"Created at: ", @"table info created at label")];
+		[tableUpdatedAt setStringValue:NSLocalizedString(@"Updated at: ", @"table info updated at label")];
 		
 		// Set row values
-		[tableRowNumber setStringValue:@"Number of rows: "];
-		[tableRowFormat setStringValue:@"Row format: "];	
-		[tableRowAvgLength setStringValue:@"Avg. row length: "];
+		[tableRowNumber setStringValue:NSLocalizedString(@"Number of rows: ", @"table info number of rows label")];
+		[tableRowFormat setStringValue:NSLocalizedString(@"Row format: ", @"table info row format label")];	
+		[tableRowAvgLength setStringValue:NSLocalizedString(@"Avg. row length: ", @"table info average row length label")];
 		[tableRowAutoIncrement setStringValue:@""];
 		
 		// Set size values
-		[tableDataSize setStringValue:@"Data size: "]; 
-		[tableMaxDataSize setStringValue:@"Max data size: "];	
-		[tableIndexSize setStringValue:@"Index size: "]; 
-		[tableSizeFree setStringValue:@"Free data size: "];
+		[tableDataSize setStringValue:NSLocalizedString(@"Data size: ", @"table info data size label")];
+		[tableMaxDataSize setStringValue:NSLocalizedString(@"Max data size: ", @"table info max data size label")];	
+		[tableIndexSize setStringValue:NSLocalizedString(@"Index size: ", @"table info index size label")]; 
+		[tableSizeFree setStringValue:NSLocalizedString(@"Free data size: ", @"table info free data size label")];
 		
 		// Set comments 
 		[tableCommentsTextView setEditable:NO];
@@ -292,7 +290,7 @@
 		[tableTypePopUpButton setEnabled:enableInteraction];
 	}
 	else {
-		[tableTypePopUpButton addItemWithTitle:@"Not available"];
+		[tableTypePopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
 	if (([encodings count] > 0) && ([tableDataInstance tableEncoding])) {
@@ -314,7 +312,7 @@
 		[tableEncodingPopUpButton setEnabled:enableInteraction];
 	}
 	else {
-		[tableEncodingPopUpButton addItemWithTitle:@"Not available"];
+		[tableEncodingPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
 	if (([collations count] > 0) && ([statusFields objectForKey:@"Collation"])) {
@@ -328,23 +326,23 @@
 		[tableCollationPopUpButton setEnabled:enableInteraction];
 	}
 	else {
-		[tableCollationPopUpButton addItemWithTitle:@"Not available"];
+		[tableCollationPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
-	[tableCreatedAt setStringValue:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields withLabel:@"Created at"]];
-	[tableUpdatedAt setStringValue:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields withLabel:@"Updated at"]];
+	[tableCreatedAt setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Created at: ", @"table info created at label"), [self _formatValueWithKey:@"Create_time" inDictionary:statusFields]]];
+	[tableUpdatedAt setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Updated at: ", @"table info updated at label"), [self _formatValueWithKey:@"Update_time" inDictionary:statusFields]]];
 	
 	// Set row values
-	[tableRowNumber setStringValue:[self _formatValueWithKey:@"Rows" inDictionary:statusFields withLabel:@"Number of rows"]];
-	[tableRowFormat setStringValue:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields withLabel:@"Row format"]];	
-	[tableRowAvgLength setStringValue:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields withLabel:@"Avg. row length"]];
-	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields withLabel:@"Auto increment"]];
+	[tableRowNumber setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Number of rows: ", @"table info number of rows label"), [self _formatValueWithKey:@"Rows" inDictionary:statusFields]]];
+	[tableRowFormat setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Row format: ", @"table info row format label"), [self _formatValueWithKey:@"Row_format" inDictionary:statusFields]]];	
+	[tableRowAvgLength setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Avg. row length: ", @"table info average row length label"), [self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]]];
+	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]];
 	
 	// Set size values
-	[tableDataSize setStringValue:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields withLabel:@"Data size"]]; 
-	[tableMaxDataSize setStringValue:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields withLabel:@"Max data size"]];	
-	[tableIndexSize setStringValue:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields withLabel:@"Index size"]]; 
-	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields withLabel:@"Free data size"]];	 
+	[tableDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Data size: ", @"table info data size label"), [self _formatValueWithKey:@"Data_length" inDictionary:statusFields]]]; 
+	[tableMaxDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Max data size: ", @"table info max data size label"), [self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]]];	
+	[tableIndexSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Index size: ", @"table info index size label"), [self _formatValueWithKey:@"Index_length" inDictionary:statusFields]]]; 
+	[tableSizeFree setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Free data size: ", @"table info free data size label"), [self _formatValueWithKey:@"Data_free" inDictionary:statusFields]]];	 
 	
 	// Set comments
 	[tableCommentsTextView setEditable:YES];
@@ -364,9 +362,69 @@
 	[tableCreateSyntaxTextView setEditable:NO];
 	
 	// Validate Reset AUTO_INCREMENT button
-	if([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]])
+	if ([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 		[resetAutoIncrementResetButton setHidden:NO];
+	}
+}
+
+/**
+ * Returns a dictionary describing the information of the table to be used for printing purposes.
+ */
+- (NSDictionary *)tableInformationForPrinting
+{
+
+	// Update possible pending comment changes by set the focus to create table syntax view
+	[[NSApp keyWindow] makeFirstResponder:tableCreateSyntaxTextView];
+
+	NSMutableDictionary *tableInfo = [NSMutableDictionary dictionary];
+	NSDictionary *statusFields = [tableDataInstance statusValues];
 	
+	[tableInfo setObject:[tableTypePopUpButton titleOfSelectedItem] forKey:@"type"];
+	[tableInfo setObject:[tableEncodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
+	[tableInfo setObject:[tableCollationPopUpButton titleOfSelectedItem] forKey:@"collation"];
+	
+	[tableInfo setObject:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields] forKey:@"createdAt"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields] forKey:@"updatedAt"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Rows" inDictionary:statusFields] forKey:@"rowNumber"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields] forKey:@"rowFormat"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields] forKey:@"rowAvgLength"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields] forKey:@"rowAutoIncrement"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields] forKey:@"dataSize"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields] forKey:@"maxDataSize"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields] forKey:@"indexSize"];
+	[tableInfo setObject:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields] forKey:@"sizeFree"];
+	
+	[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
+		
+	NSError *error = nil;
+	NSArray *HTMLExcludes = [NSArray arrayWithObjects:@"doctype", @"html", @"head", @"body", @"xml", nil];
+	
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:NSHTMLTextDocumentType, NSDocumentTypeDocumentAttribute, HTMLExcludes, NSExcludedElementsDocumentAttribute, nil];
+
+	// Set tableCreateSyntaxTextView's font size temporarily to 10pt for printing
+	NSFont *oldFont = [tableCreateSyntaxTextView font];
+	BOOL editableStatus = [tableCreateSyntaxTextView isEditable];
+	[tableCreateSyntaxTextView setEditable:YES];
+	[tableCreateSyntaxTextView setFont:[NSFont fontWithName:[oldFont fontName] size:10.0]];
+
+	// Convert tableCreateSyntaxTextView to HTML
+	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) documentAttributes:attributes error:&error];
+
+	// Restore original font settings
+	[tableCreateSyntaxTextView setFont:oldFont];
+	[tableCreateSyntaxTextView setEditable:editableStatus];
+	
+	if (error != nil) {
+		NSLog(@"Error generating table's create syntax HTML for printing. Excluding from print out. Error was: %@", [error localizedDescription]);
+		
+		return tableInfo;
+	}
+	
+	NSString *HTMLString = [[[NSString alloc] initWithData:HTMLData encoding:NSUTF8StringEncoding] autorelease];
+	
+	[tableInfo setObject:HTMLString forKey:@"createSyntax"];
+	
+	return tableInfo;
 }
 
 /**
@@ -408,8 +466,7 @@
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo]) return;
 
 	[tableTypePopUpButton setEnabled:NO];
 	[tableEncodingPopUpButton setEnabled:NO];
@@ -423,13 +480,11 @@
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableInfo]) return;
 
 	NSDictionary *statusFields = [tableDataInstance statusValues];
 	
-	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"])
-		return;
+	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) return;
 
 	// If we are viewing tables in the information_schema database, then disable all controls that cause table
 	// changes as these tables are not modifiable by anyone.
@@ -473,7 +528,7 @@
 /**
  * Format and returns the value within the info dictionary with the associated key. 
  */
-- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)infoDict withLabel:(NSString *)label
+- (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)infoDict
 {
 	NSString *value = [infoDict objectForKey:key];
 	
@@ -507,7 +562,9 @@
 		else if ([key isEqualToString:@"Rows"] ||
 				 [key isEqualToString:@"Avg_row_length"] || 
 				 [key isEqualToString:@"Auto_increment"]) {
+			
 			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
+			
 			[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 			value = [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[value longLongValue]]];
@@ -518,10 +575,13 @@
 			}
 		}
 	}
-	if([key isEqualToString:@"Auto_increment"])
-		return ([value length] > 0) ? value : @"Not available";
-	else
-		return [NSString stringWithFormat:@"%@: %@", label, ([value length] > 0) ? value : @"Not available"];
+	
+	if ([key isEqualToString:@"Auto_increment"]) {
+		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
+	}
+	else {
+		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
+	}
 }
 
 @end

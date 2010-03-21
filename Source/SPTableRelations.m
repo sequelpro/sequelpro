@@ -41,6 +41,7 @@
 @implementation SPTableRelations
 
 @synthesize connection;
+@synthesize relationData;
 
 /**
  * init
@@ -316,8 +317,7 @@
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations]) return;
 
 	[addRelationButton setEnabled:NO];
 	[refreshRelationsButton setEnabled:NO];
@@ -331,18 +331,57 @@
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations]) return;
 
 	if ([relationsTableView isEnabled]) {
 		[addRelationButton setEnabled:YES];
 		[refreshRelationsButton setEnabled:YES];
 	}
+	
 	[removeRelationButton setEnabled:([relationsTableView numberOfSelectedRows] > 0)];
 }
 
 #pragma mark -
 #pragma mark Other
+
+/**
+ * Returns an array of relation data to be used for printing purposes. The first element in the array is always
+ * an array of the columns and each subsequent element is an array of relation data.
+ */
+- (NSArray *)relationDataForPrinting
+{
+	NSMutableArray *headings = [[NSMutableArray alloc] init];
+	NSMutableArray *data     = [NSMutableArray array];
+	
+	// Get the relations table view's columns
+	for (NSTableColumn *column in [relationsTableView tableColumns])
+	{
+		[headings addObject:[[column headerCell] stringValue]];
+	}
+	
+	[data addObject:headings];
+	
+	[headings release];
+		
+	// Get the relation data
+	for (NSDictionary *relation in relationData)
+	{
+		NSMutableArray *temp = [[NSMutableArray alloc] init];
+		
+		[temp addObject:[relation objectForKey:@"name"]];
+		[temp addObject:[relation objectForKey:@"columns"]];
+		[temp addObject:[relation objectForKey:@"fk_table"]];
+		[temp addObject:[relation objectForKey:@"fk_columns"]];
+		[temp addObject:([relation objectForKey:@"on_update"]) ? [relation objectForKey:@"on_update"] : @""];
+		[temp addObject:([relation objectForKey:@"on_delete"]) ? [relation objectForKey:@"on_delete"] : @""];
+		
+		[data addObject:temp];
+		
+		[temp release];
+	}
+	
+	return data; 
+}
 
 /**
  * NSAlert didEnd method.
@@ -496,10 +535,10 @@
 	NSMutableArray *validColumns = [NSMutableArray array];
 	
 	// Only add columns of the same data type
-	for (NSDictionary *column in columns) 
+	for (NSDictionary *aColumn in columns) 
 	{		
-		if ([[columnInfo objectForKey:@"type"] isEqualToString:[column objectForKey:@"type"]]) {
-			[validColumns addObject:[column objectForKey:@"name"]];			
+		if ([[columnInfo objectForKey:@"type"] isEqualToString:[aColumn objectForKey:@"type"]]) {
+			[validColumns addObject:[aColumn objectForKey:@"name"]];			
 		}
 	}
 	

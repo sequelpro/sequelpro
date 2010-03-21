@@ -172,6 +172,7 @@
 			return;
 		}
 
+		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
 		[NSApp beginSheet:queryFavoritesSheet 
 		   modalForWindow:tableWindow 
 			modalDelegate:self 
@@ -189,6 +190,7 @@
 			return;
 		}
 
+		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
 		[NSApp beginSheet:queryFavoritesSheet 
 		   modalForWindow:tableWindow 
 			modalDelegate:self 
@@ -222,7 +224,7 @@
 		}
 
 		// The actual query strings have been already stored as tooltip
-		[textView insertFavoriteAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
+		[textView insertAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
 	}
 }
 
@@ -325,9 +327,9 @@
 	// on normal autocomplete usage.
 	if (sender == completionListMenuItem) {
 		if([[NSApp currentEvent] modifierFlags] & (NSControlKeyMask))
-			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
-			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+			[textView doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
 	}
 
 	// "Editor font..." menu item to bring up the font panel
@@ -479,14 +481,12 @@
 {
 	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
 	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	NSArray				*theColumns;
-	NSTableColumn		*theCol;
 	MCPStreamingResult	*streamingResult  = nil;
 	NSMutableString		*errors     = [NSMutableString string];
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
 	
-	NSInteger i, j, totalQueriesRun = 0, totalAffectedRows = 0;
+	NSInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
 	NSInteger firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
@@ -512,10 +512,8 @@
 
 	// Remove all the columns if not reloading the table
 	if(!reloadingExistingResult) {
-		theColumns = [customQueryView tableColumns];
-		while ([theColumns count]) {
-			[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
-		}
+		if (cqColumnDefinition) [cqColumnDefinition release], cqColumnDefinition = nil;
+		[self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:YES];
 	}
 
 	// Disable automatic query retries on failure for the custom queries
@@ -523,8 +521,6 @@
 
 	NSUInteger queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
-	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
-	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
 	// Enable task cancellation
 	if (queryCount > 1)
@@ -552,7 +548,7 @@
 		[tempQueries addObject:query];
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		streamingResult = [mySQLConnection streamingQueryString:query];
+		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
 
@@ -560,48 +556,12 @@
 		// discard the result without fully loading.
 		if (totalQueriesRun == queryCount || [mySQLConnection queryCancelled]) {
 
-			// get column definitions for the result array
+			// Retrieve and cache the column definitions for the result array
 			if (cqColumnDefinition) [cqColumnDefinition release];
 			cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
 
-			// Add columns corresponding to the query result
-			theColumns = [streamingResult fetchFieldNames];
-
 			if(!reloadingExistingResult) {
-				for ( j = 0 ; j < [streamingResult numOfFields] ; j++) {
-					NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition,j);
-					theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
-					[theCol setResizingMask:NSTableColumnUserResizingMask];
-					[theCol setEditable:YES];
-					SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
-					[dataCell setEditable:YES];
-					[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-					[dataCell setFont:tableFont];
-
-					[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
-					[theCol setDataCell:dataCell];
-					[[theCol headerCell] setStringValue:NSArrayObjectAtIndex(theColumns, j)];
-
-					// Set the width of this column to saved value if exists and maps to a real column
-					if ([columnDefinition objectForKey:@"org_name"] && [(NSString *)[columnDefinition objectForKey:@"org_name"] length]) {
-						NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
-						if ( colWidth ) {
-							[theCol setWidth:[colWidth doubleValue]];
-						}
-					}
-
-					[customQueryView addTableColumn:theCol];
-					[theCol release];
-				}
-
-				[customQueryView sizeLastColumnToFit];
-
-				//tries to fix problem with last row (otherwise to small)
-				//sets last column to width of the first if smaller than 30
-				//problem not fixed for resizing window
-				if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]] width] < 30 )
-					[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]]
-							setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:0]] width]];
+				[self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:YES];
 			}
 
 			[self processResultIntoDataStorage:streamingResult];
@@ -614,6 +574,8 @@
 			totalAffectedRows += [mySQLConnection affectedRows];
 		else if ( [streamingResult numOfRows] )
 			totalAffectedRows += [streamingResult numOfRows];
+
+		[streamingResult release];
 
 		// Store any error messages
 		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || [mySQLConnection queryCancelled]) {
@@ -713,76 +675,14 @@
 	
 	// add query to history
 	if(!reloadingExistingResult && [usedQuery length])
-		[[SPQueryController sharedQueryController] addHistory:usedQuery forFileURL:[tableDocumentInstance fileURL]];
+		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
 
-
-	// Error checking
-	if ( [mySQLConnection queryCancelled] || ([errors length] && !queryIsTableSorter)) {
-		// set the error text
-		[errorText setStringValue:errors];
-
-		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
-		// by capturing the last number of the error string
-		NSRange errorLineNumberRange = [errors rangeOfRegex:@"([0-9]+)[^0-9]*$" options:RKLNoOptions inRange:NSMakeRange(0, [errors length]) capture:1L error:nil];
-
-		// if error ID 1064 and a line number was found
-		if([mySQLConnection getLastErrorID] == 1064 && errorLineNumberRange.length)
-		{
-			// Get the line number
-			NSUInteger errorAtLine = [[errors substringWithRange:errorLineNumberRange] integerValue];
-			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:[self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition].location] - 1;
-
-			// Check for near message
-			NSRange errorNearMessageRange = [errors rangeOfRegex:@"[( ]'(.+)'[ -]" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errors length]) capture:1L error:nil];
-			if(errorNearMessageRange.length) // if a "near message" was found
-			{
-				NSUInteger bufferLength = [[textView string] length];
-
-				NSRange bufferRange = NSMakeRange(0, bufferLength);
-
-				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
-				NSRange theRange = NSMakeRange(queryStartPosition, bufferLength-queryStartPosition);
-				theRange = NSIntersectionRange(bufferRange, theRange);
-
-				// Get the range in textView of the near message
-				NSRange textNearMessageRange = [[[textView string] substringWithRange:theRange] rangeOfString:[errors substringWithRange:errorNearMessageRange] options:NSLiteralSearch];
-
-				// Correct the near message range relative to queryStartPosition
-				textNearMessageRange = NSMakeRange(textNearMessageRange.location+queryStartPosition, textNearMessageRange.length);
-				textNearMessageRange = NSIntersectionRange(bufferRange, textNearMessageRange);
-
-				// Select the near message and scroll to it
-				if(textNearMessageRange.length > 0) {
-					[textView setSelectedRange:textNearMessageRange];
-					[textView scrollRangeToVisible:textNearMessageRange];
-				}
-			} else {
-				[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
-			}
-		} else { // Select first erroneous query entirely
-			
-			NSRange queryRange;
-			if(firstErrorOccuredInQuery == -1) // for current or previous query
-			{
-				BOOL isLookBehind = YES;
-				queryRange = [self queryRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
-				if(queryRange.length)
-					[textView setSelectedRange:queryRange];
-			} else {
-				// select the query for which the first error was detected
-				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
-				queryRange = NSIntersectionRange(NSMakeRange(0, [[textView string] length]), queryRange);
-				[textView setSelectedRange:queryRange];
-				[textView scrollRangeToVisible:queryRange];
-			}
-		}
-
-	} else if ( [errors length] && queryIsTableSorter ) {
-		[errorText setStringValue:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
-		NSBeep();
-	} else {
-		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
-	}
+	// Update status/errors text
+	NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+									errors, @"errorString",
+									[NSNumber numberWithInteger:firstErrorOccuredInQuery], @"firstErrorQueryNumber",
+									nil];
+	[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
 	
 	// Set up the status string
 	if ( [mySQLConnection queryCancelled] ) {
@@ -832,8 +732,7 @@
 	
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !resultDataCount ) {
-		[customQueryView reloadData];
-		if (streamingResult) [streamingResult release];
+		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
 
 		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -1262,6 +1161,84 @@
 
 }
 
+/*
+ * Update the interface to reflect the query error state.
+ * Should be performed on the main thread.
+ */
+- (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails
+{
+	NSString *errorsString = [errorDetails objectForKey:@"errorString"];
+	NSInteger firstErrorOccuredInQuery = [[errorDetails objectForKey:@"firstErrorQueryNumber"] integerValue];
+
+	// If errors occur, display them
+	if ( [mySQLConnection queryCancelled] || ([errorsString length] && !queryIsTableSorter)) {
+		// set the error text
+		[errorText setStringValue:errorsString];
+
+		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
+		// by capturing the last number of the error string
+		NSRange errorLineNumberRange = [errorsString rangeOfRegex:@"([0-9]+)[^0-9]*$" options:RKLNoOptions inRange:NSMakeRange(0, [errorsString length]) capture:1L error:nil];
+
+		// if error ID 1064 and a line number was found
+		if([mySQLConnection getLastErrorID] == 1064 && errorLineNumberRange.length)
+		{
+			// Get the line number
+			NSUInteger errorAtLine = [[errorsString substringWithRange:errorLineNumberRange] integerValue];
+			NSUInteger lineOffset = [textView getLineNumberForCharacterIndex:[self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition].location] - 1;
+
+			// Check for near message
+			NSRange errorNearMessageRange = [errorsString rangeOfRegex:@"[( ]'(.+)'[ -]" options:(RKLMultiline|RKLDotAll) inRange:NSMakeRange(0, [errorsString length]) capture:1L error:nil];
+			if(errorNearMessageRange.length) // if a "near message" was found
+			{
+				NSUInteger bufferLength = [[textView string] length];
+
+				NSRange bufferRange = NSMakeRange(0, bufferLength);
+
+				// Build the range to search for nearMessage (beginning from queryStartPosition to try to avoid mismatching)
+				NSRange theRange = NSMakeRange(queryStartPosition, bufferLength-queryStartPosition);
+				theRange = NSIntersectionRange(bufferRange, theRange);
+
+				// Get the range in textView of the near message
+				NSRange textNearMessageRange = [[[textView string] substringWithRange:theRange] rangeOfString:[errorsString substringWithRange:errorNearMessageRange] options:NSLiteralSearch];
+
+				// Correct the near message range relative to queryStartPosition
+				textNearMessageRange = NSMakeRange(textNearMessageRange.location+queryStartPosition, textNearMessageRange.length);
+				textNearMessageRange = NSIntersectionRange(bufferRange, textNearMessageRange);
+
+				// Select the near message and scroll to it
+				if(textNearMessageRange.length > 0) {
+					[textView setSelectedRange:textNearMessageRange];
+					[textView scrollRangeToVisible:textNearMessageRange];
+				}
+			} else {
+				[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
+			}
+		} else { // Select first erroneous query entirely
+			
+			NSRange queryRange;
+			if(firstErrorOccuredInQuery == -1) // for current or previous query
+			{
+				BOOL isLookBehind = YES;
+				queryRange = [self queryRangeAtPosition:[textView selectedRange].location lookBehind:&isLookBehind];
+				if(queryRange.length)
+					[textView setSelectedRange:queryRange];
+			} else {
+				// select the query for which the first error was detected
+				queryRange = [self queryTextRangeForQuery:firstErrorOccuredInQuery startPosition:queryStartPosition];
+				queryRange = NSIntersectionRange(NSMakeRange(0, [[textView string] length]), queryRange);
+				[textView setSelectedRange:queryRange];
+				[textView scrollRangeToVisible:queryRange];
+			}
+		}
+
+	} else if ( [errorsString length] && queryIsTableSorter ) {
+		[errorText setStringValue:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
+		NSBeep();
+	} else {
+		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
+	}
+}
+
 #pragma mark -
 #pragma mark Accessors
 
@@ -1317,7 +1294,7 @@
 	[autouppercaseKeywordsMenuItem setState:([prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]?NSOnState:NSOffState)];
 
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-		[self performSelector:@selector(historyItemsHaveBeenUpdated:) withObject:self afterDelay:0.0];
+		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
@@ -1352,6 +1329,64 @@
 
 #pragma mark -
 #pragma mark Retrieving and setting table state
+
+/**
+ * Update the results table view state to match the current column definitions.
+ * Should be called on the main thread.
+ */
+- (void) updateTableView
+{
+	NSArray *theColumns;
+	NSTableColumn *theCol;
+
+	// Remove all existing columns from the table
+	theColumns = [customQueryView tableColumns];
+	while ([theColumns count]) {
+		[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
+	}
+
+	// Update font size on the table
+	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+
+	// If there are no table columns to add, return
+	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
+
+	// Add the new table columns
+	for (NSDictionary *columnDefinition in cqColumnDefinition) {
+		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
+		[theCol setResizingMask:NSTableColumnUserResizingMask];
+		[theCol setEditable:YES];
+		SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
+		[dataCell setEditable:YES];
+		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+		[dataCell setFont:tableFont];
+
+		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+		[theCol setDataCell:dataCell];
+		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
+
+		// Set the width of this column to saved value if exists and maps to a real column
+		if ([columnDefinition objectForKey:@"org_name"] && [(NSString *)[columnDefinition objectForKey:@"org_name"] length]) {
+			NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
+			if ( colWidth ) {
+				[theCol setWidth:[colWidth doubleValue]];
+			}
+		}
+
+		[customQueryView addTableColumn:theCol];
+		[theCol release];
+	}
+
+	[customQueryView sizeLastColumnToFit];
+
+	//tries to fix problem with last row (otherwise to small)
+	//sets last column to width of the first if smaller than 30
+	//problem not fixed for resizing window
+	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]] width] < 30 )
+		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]]
+				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:0]] width]];
+}
 
 /**
  * Provide a getter for the custom query result table's selected rows index set
@@ -1679,6 +1714,7 @@
 
 	// Prevent sorting while a query is running
 	if ([tableDocumentInstance isWorking]) return;
+	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
@@ -2454,6 +2490,21 @@
 	[self helpTargetValidation];
 }
 
+- (IBAction)showCompletionList:(id)sender
+{
+	NSRange insertRange = NSMakeRange([textView selectedRange].location, 0);
+	switch([sender tag]) {
+		case 8000:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_DATABASES" atRange:insertRange fuzzySearch:NO];
+		break;
+		case 8001:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_TABLES" atRange:insertRange fuzzySearch:NO];
+		break;
+		case 8002:
+		[textView showCompletionListFor:@"$SP_ASLIST_ALL_FIELDS" atRange:insertRange fuzzySearch:NO];
+		break;
+	}
+}
 /*
  * Show the data for "HELP 'currentWord' invoked by autohelp"
  */
@@ -2755,6 +2806,10 @@
  */
 - (void)historyItemsHaveBeenUpdated:(id)manager
 {
+
+	// Abort if the connection has been closed already - sign of a closed window
+	if (![mySQLConnection isConnected]) return;
+
 	// Refresh history popup menu
 	NSMenu* historyMenu = [queryHistoryButton menu];
 	while([queryHistoryButton numberOfItems] > 7)
@@ -2885,6 +2940,16 @@
 {
 	return [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] componentsJoinedByString:@";\n"];
 }
+
+/**
+ * Add a query string to the file/global history, via the query controller.
+ * Single argument allows calls on the main thread.
+ */
+- (void)addHistoryEntry:(NSString *)entryString
+{
+	[[SPQueryController sharedQueryController] addHistory:entryString forFileURL:[tableDocumentInstance fileURL]];
+}
+
 /*
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
@@ -3041,6 +3106,7 @@
 		sortColumn = nil;
 		selectionButtonCanBeEnabled = NO;
 		cqColumnDefinition = nil;
+		favoritesManager = nil;
 
 		tableRowsSelectable = YES;
 		selectionIndexToRestore = nil;
@@ -3050,13 +3116,13 @@
 		NSError *error;
 		
 		helpHTMLTemplate = [[NSString alloc]
-							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sequel-pro-mysql-help-template" ofType:@"html"]
+							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SPHTMLHelpTemplate ofType:@"html"]
 							encoding:NSUTF8StringEncoding
 							error:&error];
 		
 		// an error occurred while reading
 		if (helpHTMLTemplate == nil) {
-			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “sequel-pro-mysql-help-template.html”!<br>%@", [error localizedFailureReason]]);
+			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “%@.html”!<br>%@", SPHTMLHelpTemplate, [error localizedFailureReason]]);
 			NSBeep();
 		}
 		
@@ -3189,6 +3255,7 @@
 	if (sortField) [sortField release];
 	if (cqColumnDefinition) [cqColumnDefinition release];
 	if (selectionIndexToRestore) [selectionIndexToRestore release];
+	if (currentQueryRanges) [currentQueryRanges release];
 	
 	[super dealloc];
 }

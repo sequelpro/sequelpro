@@ -83,7 +83,7 @@
 
 		if (mNames) {
 			[mNames release];
-			mNames = NULL;
+			mNames = nil;
 		}
 
 		mResult = mysql_use_result(mySQLPtr);
@@ -94,6 +94,10 @@
 		} else {
 			mNumOfFields = 0;
 		}
+
+		// Obtain SEL references and pointer
+		isConnectedSEL = @selector(isConnected);
+		isConnectedPtr = [parentConnection methodForSelector:isConnectedSEL];
 
 		// If the result is opened in download-data-fast safe mode, set up the additional variables
 		// and threads required.
@@ -127,6 +131,7 @@
  */
 - (void) dealloc
 {
+	[self cancelResultLoad];
 	if (!connectionUnlocked) [parentConnection unlockConnection];
 
 	if (!fullyStreaming) {
@@ -188,9 +193,6 @@
 			// Update the connection's error statuses in case of error during content download
 			[parentConnection updateErrorStatuses];
 
-			// Unlock the connection and return
-			[parentConnection unlockConnection];
-			connectionUnlocked = YES;
 			return nil;
 		}
 
@@ -406,7 +408,7 @@
 	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * mNumOfFields);
 
 	// Loop through the rows until the end of the data is reached - indicated via a NULL
-	while (theRow = mysql_fetch_row(mResult)) {
+	while (	(BOOL)(*isConnectedPtr)(parentConnection, isConnectedSEL) && (theRow = mysql_fetch_row(mResult))) {
 
 		// Retrieve the lengths of the returned data
 		fieldLengths = mysql_fetch_lengths(mResult);
@@ -455,6 +457,10 @@
 		pthread_mutex_unlock(&dataCreationLock);
 		pthread_mutex_unlock(&dataFreeLock);
 	}
+
+	// Unlock the parent connection now data has been retrieved
+	connectionUnlocked = YES;
+	[parentConnection unlockConnection];
 
 	dataDownloaded = YES;
 	[downloadPool drain];

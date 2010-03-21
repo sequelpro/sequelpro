@@ -46,6 +46,8 @@
 	if ((self = [super init])) {
 		mainStringColor = [NSColor blackColor];
 		subStringColor = [NSColor grayColor];
+		favoriteName = nil;
+		favoriteHost = nil;
 	}
 	
 	return self;
@@ -59,10 +61,10 @@
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
 	
 	cell->favoriteName = nil;
-    cell->favoriteName = [favoriteName retain];
+    if (favoriteName) cell->favoriteName = [favoriteName copyWithZone:zone];
 
     cell->favoriteHost = nil;
-    cell->favoriteHost = [favoriteHost retain];
+    if (favoriteHost) cell->favoriteHost = [favoriteHost copyWithZone:zone];
     
 	return cell;
 }

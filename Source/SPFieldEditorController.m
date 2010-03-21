@@ -43,6 +43,7 @@
 		(void) [self window];
 		counter = 0;
 		maxTextLength = 0;
+		stringValue = nil;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -262,7 +263,7 @@
 		else
 			[editSheet makeFirstResponder:editImage];
 		
-		[stringValue release];
+		[stringValue release], stringValue = nil;
 	}
 	
 	editSheetWillBeInitialized = NO;

@@ -100,7 +100,7 @@
 - (NSString *)defaultValueForField:(NSString *)field;
 - (NSArray *)fieldNames;
 - (NSDictionary *)enumFields;
-- (NSArray *)tableStructureForPrint;
+- (NSDictionary *)tableSourceForPrinting;
 
 // Task interaction
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification;

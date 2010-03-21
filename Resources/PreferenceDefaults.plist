@@ -84,6 +84,14 @@
 	<false/>
 	<key>CustomQueryUpdateAutoHelp</key>
 	<false/>
+	<key>CustomQueryEditorTabStopWidth</key>
+	<integer>4</integer>
+	<key>CustomQueryFunctionCompletionInsertsArguments</key>
+	<true/>
+	<key>CustomQueryAutoComplete</key>
+	<true/>
+	<key>CustomQueryAutoCompleteDelay</key>
+	<real>1.5</real>
 	<key>CustomQueryAutoHelpDelay</key>
 	<real>1</real>
 	<key>lastSqlFileEncoding</key>
@@ -141,5 +149,9 @@
 	<false/>
 	<key>CSVFieldImportMappingAlignment</key>
 	<integer>2</integer>
+	<key>DisplayServerVersionInWindowTitle</key>
+	<true/>
+	<key>PrintWarningRowLimit</key>
+	<integer>1000</integer>
 </dict>
 </plist>

@@ -93,6 +93,11 @@ extern NSString *SPQueryFavortiesPasteboardDragType;
 extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
 
+// Filenames
+extern NSString *SPHTMLPrintTemplate;
+extern NSString *SPHTMLTableInfoPrintTemplate;
+extern NSString *SPHTMLHelpTemplate;
+
 
 // Preference key constants
 // General Prefpane
@@ -155,6 +160,10 @@ extern NSString *SPCustomQueryAutoUppercaseKeywords;
 extern NSString *SPCustomQueryUpdateAutoHelp;
 extern NSString *SPCustomQueryAutoHelpDelay;
 extern NSString *SPCustomQueryHighlightCurrentQuery;
+extern NSString *SPCustomQueryEditorTabStopWidth;
+extern NSString *SPCustomQueryAutoComplete;
+extern NSString *SPCustomQueryAutoCompleteDelay;
+extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;
@@ -167,6 +176,10 @@ extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
+
+// Hidden Prefs
+extern NSString *SPPrintWarningRowLimit;
+extern NSString *SPDisplayServerVersionInWindowTitle;
 
 // Import
 extern NSString *SPCSVImportFieldTerminator;
@@ -192,6 +205,7 @@ extern NSString *SPQueryHistoryReplacesContent;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
 extern NSString *SPBlobTextEditorSpellCheckingEnabled;
+extern NSString *SPUniqueSchemaDelimiter;
 
 // URLs
 extern NSString *SPHomePageURL;
@@ -199,6 +213,7 @@ extern NSString *SPDonationsURL;
 extern NSString *SPFAQURL;
 extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
+extern NSString *SPKeyboardShortcutsURL;
 
 // Toolbar constants
 

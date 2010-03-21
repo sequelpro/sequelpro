@@ -115,6 +115,8 @@ typedef enum _SPExportModes {
 	NSInteger fieldMapperSheetStatus;
 	BOOL fieldMappingArrayHasGlobalVariables;
 	BOOL csvImportMethodHasTail;
+	BOOL insertRemainingRowsAfterUpdate;
+	BOOL importMethodIsUpdate;
 
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;
@@ -143,6 +145,7 @@ typedef enum _SPExportModes {
 - (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
 - (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray;
+- (NSString *) mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;
 
 // Export methods
 - (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;

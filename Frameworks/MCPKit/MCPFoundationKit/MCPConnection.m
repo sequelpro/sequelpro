@@ -34,11 +34,10 @@
 #import "MCPConnectionProxy.h"
 
 #include <unistd.h>
-#include <setjmp.h>
 #include <mach/mach_time.h>
 
-static jmp_buf pingTimeoutJumpLocation;
-static void forcePingTimeout(int signalNumber);
+BOOL lastPingSuccess;
+BOOL pingActive;
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
@@ -98,12 +97,16 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		connectionPassword = nil;
 		keepAliveTimer = nil;
 		keepAliveThread = NULL;
+		pingThread = NULL;
 		connectionProxy = nil;
 		connectionStartTime = -1;
 		lastQueryExecutedAtTime = CGFLOAT_MAX;
+		lastDelegateDecisionForLostConnection = NSNotFound;
 		queryCancelled = NO;
 		queryCancelUsedReconnect = NO;
 		serverVersionString = nil;
+		mTimeZone = nil;
+		isDisconnecting = NO;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -120,6 +123,9 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
+		lastPingSuccess		   = NO;
+		delegateSupportsConnectionLostDecisions = NO;
+		delegateResponseToWillQueryString = NO;
 		
 		// Enable delegate query logging by default
 		delegateQueryLogging = YES;
@@ -202,6 +208,37 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	
 	// Check that the delegate implements willQueryString:connection: and cache the result as its used very frequently.
 	delegateResponseToWillQueryString = [delegate respondsToSelector:@selector(willQueryString:connection:)];
+
+	// Check whether the delegate supports returning a connection lost action decision
+	delegateSupportsConnectionLostDecisions = [delegate respondsToSelector:@selector(connectionLost:)];
+}
+
+/**
+ * Ask the delegate for the connection lost decision, on the main thread.
+ */
+- (MCPConnectionCheck)delegateDecisionForLostConnection
+{
+
+	// Return the "Disconnect" decision if the delegate doesn't support connectionLost: checks
+	if (!delegateSupportsConnectionLostDecisions) return MCPConnectionCheckDisconnect;
+
+	lastDelegateDecisionForLostConnection = NSNotFound;
+
+	// If on the main thread, ask the delegate directly.  Perform this in an NSLock to confirm thread safety,
+	// as this method may be called within itself.
+	if ([NSThread isMainThread]) {
+		NSLock *delegateDecisionLock = [[NSLock alloc] init];
+		[delegateDecisionLock lock];
+		lastDelegateDecisionForLostConnection = [delegate connectionLost:self];
+		[delegateDecisionLock unlock];
+		[delegateDecisionLock release];
+
+	// Otherwise call ourself on the main thread, waiting until the reply is received.
+	} else {
+		[self performSelectorOnMainThread:@selector(delegateDecisionForLostConnection) withObject:nil waitUntilDone:YES];
+	}
+
+	return lastDelegateDecisionForLostConnection;
 }
 
 #pragma mark -
@@ -262,7 +299,7 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
 		currentProxyState = newState;
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
-		[self reconnect];
+		if (!isDisconnecting) [self reconnect];
 		
 		return;
 	}
@@ -368,22 +405,31 @@ static BOOL	sTruncateLongFieldInLogs = YES;
  */
 - (void)disconnect
 {
+	if (isDisconnecting) return;
+	isDisconnecting = YES;
+
+	[self stopKeepAliveTimer];
+
 	if (mConnected) {
+		[self cancelCurrentQuery];
+		mConnected = NO;
+		
+		// Small pause for cleanup.
+		usleep(100000);
 		mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
-	mConnected = NO;
+	isDisconnecting = NO;
 
 	if (connectionProxy) {
-		[connectionProxy disconnect];
+		[connectionProxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
 	}
 	
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
-	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
-	
-	[self stopKeepAliveTimer];
+	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;	
+	if (pingThread != NULL) pthread_cancel(pingThread), pingThread = NULL;
 }
 
 /**
@@ -413,12 +459,14 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	}
 	
 	// Close the connection if it exists.
+	[self stopKeepAliveTimer];
 	if (mConnected) {
 		mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
 	mConnected = NO;
+	isDisconnecting = NO;
 	
 	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionProxy) {
@@ -483,8 +531,8 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 		MCPConnectionCheck failureDecision = MCPConnectionCheckReconnect;
 		
 		// Ask delegate what to do
-		if (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) {
-			failureDecision = [delegate connectionLost:self];
+		if (delegateSupportsConnectionLostDecisions) {
+			failureDecision = [self delegateDecisionForLostConnection];
 		}
 		
 		switch (failureDecision) {				
@@ -523,8 +571,11 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 	// If the connection doesn't appear to be responding, show a dialog asking how to proceed
 	if (!connectionVerified) {
 		
-		// Ask delegate what to do
-		MCPConnectionCheck failureDecision = (delegate && [delegate respondsToSelector:@selector(connectionLost:)]) ? [delegate connectionLost:self] : MCPConnectionCheckDisconnect;
+		// Ask delegate what to do, defaulting to "disconnect".
+		MCPConnectionCheck failureDecision = MCPConnectionCheckDisconnect;
+		if (delegateSupportsConnectionLostDecisions) {
+			failureDecision = [self delegateDecisionForLostConnection];
+		}
 		
 		switch (failureDecision) {
 			// 'Reconnect' has been selected. Request a reconnect, and retry.
@@ -554,71 +605,54 @@ static BOOL	sTruncateLongFieldInLogs = YES;
 }
 
 /**
- * This function provides a method of pinging the remote server while running a SIGALRM
- * to enforce the specified connection time.  This is low-level but effective, and required
- * because low-level net reads can block indefintely if the remote server disappears or on
- * network issues - setting the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix"
- * ping, but cause long queries to be terminated.
+ * This function provides a method of pinging the remote server while also enforcing
+ * the specified connection time.  This is required because low-level net reads can
+ * block indefinitely if the remote server disappears or on network issues - setting
+ * the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix" ping, but cause
+ * long queries to be terminated.
  * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
  */
 - (BOOL)pingConnection
 {
-	struct sigaction timeoutAction;
-	NSDate *startDate = [[NSDate alloc] initWithTimeIntervalSinceNow:0];
-	BOOL pingSuccess = FALSE;
-	
-	// Construct the SIGALRM to fire after the connection timeout if it isn't cleared, calling the forcePingTimeout function.
-	timeoutAction.sa_handler = forcePingTimeout;
-	sigemptyset(&timeoutAction.sa_mask);
-	timeoutAction.sa_flags = 0;
-	sigaction(SIGALRM, &timeoutAction, NULL);
-	alarm(connectionTimeout+1);
-
+	// Set up a query lock
 	[queryLock lock];
-	
-	// Set up a "restore point", returning 0; if longjmp is used later with this reference, execution
-	// jumps back to this point and returns a nonzero value, so this function evaluates to false when initially
-	// set and true if it's called again.
-	if (setjmp(pingTimeoutJumpLocation)) {
-		
-		// The connection timed out - we want to return false.
-		pingSuccess = FALSE;
-		
-		// On direct execution:
-	} else {
-		
-		// Run mysql_ping, which returns 0 on success, and otherwise an error.
-		pingSuccess = (BOOL)(! mysql_ping(mConnection));
 
-		// If the ping failed within a second, try another one; this is because a terminated-but-then
-		// restored connection is at times restored or functional after a ping, but the ping still returns
-		// an error.  This additional check ensures the returned status is correct with minimal other effect.
-		if (!pingSuccess && ([startDate timeIntervalSinceNow] > -1)) {
-			pingSuccess = (BOOL)(! mysql_ping(mConnection));
-		}
+	uint64_t currentTime_t;
+	Nanoseconds elapsedTime;
+	uint64_t pingStartTime_t = mach_absolute_time();
+	lastPingSuccess = FALSE;
+	pingActive = YES;
+
+	// Create a pthread for the ping, so we can force it to end after the connection timeout
+	pthread_create(&pingThread, NULL, (void *)&pingConnectionTask, (void *)mConnection);
+
+	// Loop tightly until the ping responds, or the elapsed time exceeds the connection timeout
+	while (pingActive) {
+		currentTime_t = mach_absolute_time() - pingStartTime_t;
+		elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+		if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > connectionTimeout) break;
+		usleep(400);
 	}
-	
+
+	// If the connection timed out, kill the thread and set status to failed
+	if (pingActive) {
+		pthread_cancel(pingThread);
+		lastPingSuccess = FALSE;
+	}
+
 	[queryLock unlock];
 
-	// Reset and clear the SIGALRM used to check connection timeouts.
-	alarm(0);
-	timeoutAction.sa_handler = SIG_IGN;
-	sigemptyset(&timeoutAction.sa_mask);
-	timeoutAction.sa_flags = 0;
-	sigaction(SIGALRM, &timeoutAction, NULL);
-	
-	[startDate release];
-	
-	return pingSuccess;
+	return lastPingSuccess;
 }
 
 /**
- * This function is paired with pingConnection, and provides a method of enforcing the connection
- * timeout when mysql_ping does not respect the specified limits.
+ * This function is paired with pingConnection, and performs the keepalive ping in a pthread,
+ * allowing the thread to be cancelled if it does not respond.
  */
-static void forcePingTimeout(int signalNumber)
+void pingConnectionTask(void *ptr)
 {
-	longjmp(pingTimeoutJumpLocation, 1);
+	lastPingSuccess = (BOOL)(!mysql_ping((MYSQL *)ptr));
+	pingActive = NO;
 }
 
 /**
@@ -672,6 +706,10 @@ static void forcePingTimeout(int signalNumber)
 {
 	if (!mConnected || keepAliveThread != NULL) return;
 
+	// Use a ping timeout between zero and thirty seconds
+	NSInteger pingTimeout = 30;
+	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
+
 	// Attempt to get a query lock, but release it to ensure the connection isn't locked
 	// by a background ping.
 	if (![queryLock tryLock]) return;
@@ -680,9 +718,9 @@ static void forcePingTimeout(int signalNumber)
 	// Create a pthread for the actual keepalive
 	pthread_create(&keepAliveThread, NULL, (void *)&performThreadedKeepAlive, (void *)mConnection);
 
-	// Give the connection time to respond, but force a timeout after the connection timeout
+	// Give the connection time to respond, but force a timeout after the ping timeout
 	// if the thread hasn't already closed itself.
-	sleep(connectionTimeout);
+	sleep(pingTimeout);
 	pthread_cancel(keepAliveThread);
 	keepAliveThread = NULL;
 }
@@ -704,6 +742,9 @@ void performThreadedKeepAlive(void *ptr)
 	connectionThreadId = mConnection->thread_id;
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
+	
+	[self stopKeepAliveTimer];
+	[self startKeepAliveTimer];
 	
 	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
@@ -1259,7 +1300,6 @@ void performThreadedKeepAlive(void *ptr)
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
- * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
  * Uses safe/fast mode, which may use more memory as results are downloaded.
  */
@@ -1270,7 +1310,6 @@ void performThreadedKeepAlive(void *ptr)
 
 /**
  * Takes a query string and returns an MCPStreamingResult representing the result of the query.
- * The returned MCPStreamingResult is retained and the client is responsible for releasing it.
  * If no fields are present in the result, nil will be returned.
  * Can be used in either fast/safe mode, where data is downloaded as fast as possible to avoid
  * blocking the server, or in full streaming mode for lowest memory usage but potentially blocking
@@ -1285,7 +1324,6 @@ void performThreadedKeepAlive(void *ptr)
  * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
- * If using streamingResult, the caller is responsible for releasing the result set.
  */
 - (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResultType
 {
@@ -1441,9 +1479,11 @@ void performThreadedKeepAlive(void *ptr)
 			}
 			
 			if (queryCancelled) {
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 				queryErrorMessage = [[NSString alloc] initWithString:NSLocalizedString(@"Query cancelled.", @"Query cancelled error")];
 				queryErrorId = 1317;
 			} else {			
+				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 				queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
 				queryErrorId = mysql_errno(mConnection);
 
@@ -1483,7 +1523,6 @@ void performThreadedKeepAlive(void *ptr)
 	(void)(*startKeepAliveTimerPtr)(self, startKeepAliveTimerSEL, YES);
 	
 	if (!theResult) return nil;
-	if (streamResultType != MCP_NO_STREAMING) return theResult;
 	return [theResult autorelease];
 }
 
@@ -1585,7 +1624,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Reset the connection
 	[self unlockConnection];
-	[self reconnect];
+	if (!isDisconnecting) [self reconnect];
 
 	// Set queryCancelled again to handle requery cleanups, and return.
 	queryCancelled = YES;
@@ -1630,14 +1669,16 @@ void performThreadedKeepAlive(void *ptr)
 - (void)unlockConnection
 {
 
-	// Make sure the unlock is performed safely - eg for reconnected queries
-	if ([queryLock tryLock]) {
-		[queryLock unlock];
+	// Ensure the unlock occurs on the main thread
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:NO];
 		return;
 	}
 
-	if ([NSThread isMainThread]) [queryLock unlock];
-	else [queryLock performSelectorOnMainThread:@selector(unlock) withObject:nil waitUntilDone:YES];
+	// Unlock the connection, first ensuring it is locked to avoid
+	// multiple unlock call issues (eg reconnected queries, threading)
+	[queryLock tryLock];
+	[queryLock unlock];
 }
 
 #pragma mark -
@@ -1808,7 +1849,7 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
- * Updates the dict containing the structure of all available databases (mainly for completion)
+ * Updates the dict containing the structure of all available databases (mainly for completion/navigator)
  * executed on a new connection.
  */
 - (void)queryDbStructure
@@ -1847,7 +1888,7 @@ void performThreadedKeepAlive(void *ptr)
 			} else {
 				thePass = [self cStringFromString:connectionPassword];
 			}
-			
+
 			// Connect
 			connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 			thePass = NULL;
@@ -1870,14 +1911,15 @@ void performThreadedKeepAlive(void *ptr)
 
 				// Query the desired data
 				NSString *queryDbString = @""
-				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype` FROM `information_schema`.`COLUMNS`"
+				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` "
 				@"UNION "
-				@"SELECT c.TABLE_SCHEMA AS `databases`, c.TABLE_NAME AS `tables`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `type`, c.CHARACTER_SET_NAME AS `charset`, '1' AS `structtype` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
+				@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
 				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '2' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
+				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '2' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
 				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `databases`, ROUTINE_NAME AS `tables`, ROUTINE_NAME AS `fields`, '' AS `type`, '' AS `charset`, '3' AS `structtype` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
-				@"ORDER BY `databases`,`tables`,`fields`";
+				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
+				@"ORDER BY `DATABASES`,`TABLES`,`fields`";
+
 				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
 				const char *queryCString = [encodedQueryData bytes];
 				unsigned long queryCStringLength = [encodedQueryData length];
@@ -1889,31 +1931,51 @@ void performThreadedKeepAlive(void *ptr)
 					NSMutableArray *allDbNames = [NSMutableArray array];
 					NSMutableArray *allTableNames = [NSMutableArray array];
 
+					// id to make any key unique
+					NSString *connectionID;
+					if([delegate respondsToSelector:@selector(connectionID)])
+						connectionID = [NSString stringWithString:[[self delegate] connectionID]];
+					else
+						connectionID = @"_";
+
+					NSString *SPUniqueSchemaDelimiter = @"￸";
+					NSUInteger cnt = 0; // used to make field data unique
+
+					[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
+
 					while(row = mysql_fetch_row(theResult)) {
+						cnt++;
 						NSString *db = [self stringWithUTF8CString:row[0]];
+						NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
 						NSString *table = [self stringWithUTF8CString:row[1]];
+						NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
 						NSString *field = [self stringWithUTF8CString:row[2]];
+						NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
 						NSString *type = [self stringWithUTF8CString:row[3]];
 						NSString *charset = (row[4]) ? [self stringWithUTF8CString:row[4]] : @"";
 						NSString *structtype = [self stringWithUTF8CString:row[5]];
+						NSString *key = [self stringWithUTF8CString:row[6]];
+						NSString *extra = [self stringWithUTF8CString:row[7]];
+						NSString *priv = [self stringWithUTF8CString:row[8]];
 
 						[namesSet addObject:[db lowercaseString]];
 						[namesSet addObject:[table lowercaseString]];
 						[allDbNames addObject:[db lowercaseString]];
 						[allTableNames addObject:[table lowercaseString]];
 
-						if(![structure valueForKey:db]) {
-							[structure setObject:[NSMutableDictionary dictionary] forKey:db];
+						if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
+							[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
 						}
 
-						if(![[structure valueForKey:db] valueForKey:table]) {
-							[[structure valueForKey:db] setObject:[NSMutableDictionary dictionary] forKey:table];
+						if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id]) {
+							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 						}
 
-						[[[structure valueForKey:db] valueForKey:table] setObject:[NSString stringWithFormat:@"%@ %@", type, charset] forKey:field];
-						[[[structure valueForKey:db] valueForKey:table] setObject:structtype forKey:@"  struct_type  "];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, [NSNumber numberWithUnsignedLongLong:cnt], nil] forKey:field_id];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:structtype forKey:@"  struct_type  "];
 
 					}
+
 
 					mysql_free_result(theResult);
 					mysql_close(structConnection);
@@ -1941,6 +2003,10 @@ void performThreadedKeepAlive(void *ptr)
 						uniqueDbIdentifier = nil;
 					}
 					uniqueDbIdentifier = [[NSDictionary dictionaryWithDictionary:uniqueIdentifier] retain];
+
+
+					if(delegate && [delegate respondsToSelector:@selector(updateNavigator:)])
+						[[self delegate] updateNavigator:self];
 
 					isQueryingDbStructure = NO;
 					[queryPool release];

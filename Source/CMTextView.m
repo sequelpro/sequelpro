@@ -98,6 +98,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize otherTextColor;
 @synthesize queryRange;
 @synthesize shouldHiliteQuery;
+@synthesize completionIsOpen;
+@synthesize completionWasReinvokedAutomatically;
 
 /*
  * Sort function (mainly used to sort the words in the textView)
@@ -126,6 +128,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	startListeningToBoundChanges = NO;
 	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
+	mirroredCounter = -1;
+	completionIsOpen = NO;
+	isProcessingMirroredSnippets = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -139,41 +144,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
 	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
-
-	// Re-define 64 tab stops for a better editing
-	NSFont *tvFont = [self font];
-	float firstColumnInch = 0.5, otherColumnInch = 0.5, pntPerInch = 72.0;
-	NSInteger i;
-	NSTextTab *aTab;
-	NSMutableArray *myArrayOfTabs;
-	NSMutableParagraphStyle *paragraphStyle;
-	myArrayOfTabs = [NSMutableArray arrayWithCapacity:64];
-	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:firstColumnInch*pntPerInch];
-	[myArrayOfTabs addObject:aTab];
-	[aTab release];
-	for(i=1; i<64; i++) {
-		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:(firstColumnInch*pntPerInch) + ((float)i * otherColumnInch * pntPerInch)];
-		[myArrayOfTabs addObject:aTab];
-		[aTab release];
-	}
-	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-	[paragraphStyle setTabStops:myArrayOfTabs];
-	// Soft wrapped lines are indented slightly
-	[paragraphStyle setHeadIndent:4.0];
-
-	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
-	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
-
-	NSRange range = NSMakeRange(0, [[self textStorage] length]);
-	if ([self shouldChangeTextInRange:range replacementString:nil]) {
-		[[self textStorage] setAttributes:textAttributes range: range];
-		[self didChangeText];
-	}
-	[self setTypingAttributes:textAttributes];
-	[self setDefaultParagraphStyle:paragraphStyle];
-	[paragraphStyle release];
-	[self setFont:tvFont];
+	[self setCompletionWasReinvokedAutomatically:NO];
 	
+
+	// Re-define tab stops for a better editing
+	[self setTabStops];
+
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
@@ -207,6 +183,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorNumericColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorVariableColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTextColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords options:NSKeyValueObservingOptionNew context:NULL];
 
 }
 
@@ -262,6 +240,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self setTextColor:[self otherTextColor]];
 		if([[self string] length]<100000 && [self isEditable])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.1];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorTabStopWidth]) {
+		[self setTabStops];
+	} else if ([keyPath isEqualToString:SPCustomQueryAutoUppercaseKeywords]) {
+		[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 	}
 }
 
@@ -301,12 +283,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(!isDictMode) {
 			// Add predefined keywords
-			for(id s in [self keywords])
+			NSArray *keywordList = [[NSArray arrayWithArray:[[SPQueryController sharedQueryController] keywordList]] retain];
+			for(id s in keywordList)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"dummy-small", @"image", nil]];
 
 			// Add predefined functions
-			for(id s in [self functions])
+			NSArray *functionList = [[NSArray arrayWithArray:[[SPQueryController sharedQueryController] functionList]] retain];
+			for(id s in functionList)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:s, @"display", @"func-small", @"image", nil]];
+
+			[functionList release];
+			[keywordList release];
 		}
 
 	}
@@ -314,7 +301,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(!isDictMode && [mySQLConnection isConnected])
 	{
 		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[mySQLConnection getDbStructure]];
+
+		NSString* connectionID;
+		if([[[self window] delegate] respondsToSelector:@selector(connectionID)])
+			connectionID = [[[self window] delegate] connectionID];
+		else
+			connectionID = @"_";
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+
 		if(dbs != nil && [dbs count]) {
 			NSMutableArray *allDbs = [NSMutableArray array];
 			[allDbs addObjectsFromArray:[dbs allKeys]];
@@ -322,36 +317,46 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Add database names having no tables since they don't appear in the information_schema
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"] != nil)
 				for(id db in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
-					if(![allDbs containsObject:db])
-						[allDbs addObject:db];
+					if(![allDbs containsObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]])
+						[allDbs addObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSMutableArray *sortedDbs = [[NSMutableArray array] autorelease];
+			NSMutableArray *sortedDbs = [NSMutableArray array];
 			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
 
 			NSString *currentDb = nil;
 			NSString *currentTable = nil;
 
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]];
 			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
 				currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
 
 			// Put current selected db at the top
 			if(aTableName == nil && aDbName == nil && [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]) {
-				currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]];
 				[sortedDbs removeObject:currentDb];
 				[sortedDbs insertObject:currentDb atIndex:0];
 			}
 
+			NSString* aTableName_id;
+			NSString* aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, aDbName];
+			if(aDbName && aTableName)
+				aTableName_id = [NSString stringWithFormat:@"%@%@%@", aDbName_id, SPUniqueSchemaDelimiter, aTableName];
+			else
+				aTableName_id = [NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName];
+
+
 			// Put information_schema and/or mysql db at the end if not selected
-			if(currentDb && ![currentDb isEqualToString:@"mysql"] && [sortedDbs containsObject:@"mysql"]) {
-				[sortedDbs removeObject:@"mysql"];
-				[sortedDbs addObject:@"mysql"];
+			NSString* mysql_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"mysql"];
+			NSString* inf_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"information_schema"];
+			if(currentDb && ![currentDb isEqualToString:mysql_id] && [sortedDbs containsObject:mysql_id]) {
+				[sortedDbs removeObject:mysql_id];
+				[sortedDbs addObject:mysql_id];
 			}
-			if(currentDb && ![currentDb isEqualToString:@"information_schema"] && [sortedDbs containsObject:@"information_schema"]) {
-				[sortedDbs removeObject:@"information_schema"];
-				[sortedDbs addObject:@"information_schema"];
+			if(currentDb && ![currentDb isEqualToString:inf_id] && [sortedDbs containsObject:inf_id]) {
+				[sortedDbs removeObject:inf_id];
+				[sortedDbs addObject:inf_id];
 			}
 
 			BOOL aTableNameExists = NO;
@@ -361,40 +366,40 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIdentifierFor:[aTableName lowercaseString]];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
-			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:aTableName] && uniqueSchemaKind == 2) {
+			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName]] && uniqueSchemaKind == 2) {
 					aTableNameExists = YES;
-					aDbName = [NSString stringWithString:currentDb];
+					aDbName_id = [NSString stringWithString:currentDb];
 				}
 
 				// If no db name but table name check if table name is a valid db name
 				if(!aTableNameExists && aTableName && [aTableName length] && uniqueSchemaKind == 1) {
-					aDbName = [NSString stringWithString:aTableName];
+					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, aTableName];
 					aTableNameExists = NO;
 				}
 
 			} else if (aDbName && [aDbName length]) {
-				if(aTableName && [aTableName length] && [dbs objectForKey:aDbName] && [[dbs objectForKey:aDbName] objectForKey:aTableName]) {
+				if(aTableName && [aTableName length] && [dbs objectForKey:aDbName_id] && [[dbs objectForKey:aDbName_id] objectForKey:[NSString stringWithFormat:@"%@%@%@", aDbName_id, SPUniqueSchemaDelimiter, aTableName]]) {
 					aTableNameExists = YES;
 				}
 			}
 
 			// If aDbName exist show only those table
-			if(aDbName && [aDbName length] && [allDbs containsObject:aDbName]) {
+			if([allDbs containsObject:aDbName_id]) {
 				[sortedDbs removeAllObjects];
-				[sortedDbs addObject:aDbName];
+				[sortedDbs addObject:aDbName_id];
 			}
 
 			for(id db in sortedDbs) {
 				NSArray *allTables = [[dbs objectForKey:db] allKeys];
 				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
-					[sortedTables addObject:aTableName];
+					[sortedTables addObject:aTableName_id];
 				} else {
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:db, @"display", @"database-small", @"image", db, @"isRef", nil]];
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"database-small", @"image", @"", @"isRef", nil]];
 					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
-					if([sortedTables count] > 1 && [sortedTables containsObject:currentTable]) {
-						[sortedTables removeObject:currentTable];
-						[sortedTables insertObject:currentTable atIndex:0];
+					if([sortedTables count] > 1 && [sortedTables containsObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]]) {
+						[sortedTables removeObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]];
+						[sortedTables insertObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable] atIndex:0];
 					}
 				}
 				for(id table in sortedTables) {
@@ -405,17 +410,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					if(!aTableNameExists)
 						switch(structtype) {
 							case 0:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-small-square", @"image", db, @"path", @"", @"isRef", nil]];
 							break;
 							case 1:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-view-small-square", @"image", db, @"path", @"", @"isRef", nil]];
 							break;
 							case 2:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"proc-small", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"proc-small", @"image", db, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 							case 3:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"func-small", @"image", db, @"path", [NSString stringWithFormat:@"%@.%@",db,table], @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", db, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 						}
@@ -423,27 +428,28 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
-								NSString *typ = [theTable objectForKey:field];
+								NSArray *def = [theTable objectForKey:field];
+								NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:1], [def objectAtIndex:2]];
 								// Check if type definition contains a , if so replace the bracket content by … and add 
 								// the bracket content as "list" key to prevend the token field to split them by ,
 								if(typ && [typ rangeOfString:@","].length) {
 									NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
 									NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										field, @"display", 
+										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
 										@"field-small-square", @"image", 
-										[NSString stringWithFormat:@"%@⇠%@",table,db], @"path", 
+										table, @"path", 
 										t, @"type", 
 										lst, @"list", 
-										[NSString stringWithFormat:@"%@.%@.%@",db,table,field], @"isRef", 
+										@"", @"isRef", 
 										nil]];
 								} else {
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										field, @"display", 
+										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
 										@"field-small-square", @"image", 
-										[NSString stringWithFormat:@"%@⇠%@",table,db], @"path", 
+										table, @"path",
 										typ, @"type", 
-										[NSString stringWithFormat:@"%@.%@.%@",db,table,field], @"isRef", 
+										@"", @"isRef", 
 										nil]];
 								}
 							}
@@ -495,7 +501,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch
+- (void) doAutoCompletion
+{
+	NSRange r = [self selectedRange];
+
+	if(![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
+
+	if(r.location) {
+		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
+			return;
+	 	if(![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[[self string] characterAtIndex:r.location-1]])
+			// Suppress auto-completion if window isn't active anymore
+			if([[NSApp keyWindow] firstResponder] == self)
+				[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+	}
+}
+
+- (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
 {
 
 	if(![self isEditable]) return;
@@ -503,11 +525,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self breakUndoCoalescing];
 
 	NSUInteger caretPos = NSMaxRange([self selectedRange]);
-	// [self setSelectedRange:NSMakeRange(caretPos, 0)];
+
 	BOOL caretMovedLeft = NO;
 
 	// Check if caret is located after a ` - if so move caret inside
-	if([[self string] length] && [[self string] characterAtIndex:caretPos-1] == '`') {
+	if(!autoCompleteMode && [[self string] length] && caretPos > 0 && [[self string] characterAtIndex:caretPos-1] == '`') {
 		if([[self string] length] > caretPos && [[self string] characterAtIndex:caretPos] == '`') {
 			;
 		} else {
@@ -529,13 +551,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Break for long stuff
 	if(completionRange.length>100000) return;
 
-
-	NSString* allow; // additional chars which not close the popup
+	NSString* allow; // additional chars which won't close the suggestion list window
 	if(isDictMode)
 		allow= @"_";
 	else
 		allow= @"_. ";
-
 
 	BOOL dbBrowseMode = NO;
 	NSInteger backtickMode = 0; // 0 none, 1 rigth only, 2 left only, 3 both
@@ -697,10 +717,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					withDbName:dbName
 					withTableName:tableName
 					selectedDb:currentDb
-					caretMovedLeft:caretMovedLeft];
-	
+					caretMovedLeft:caretMovedLeft
+					autoComplete:autoCompleteMode
+					oneColumn:isDictMode];
+
+	completionParseRangeLocation = parseRange.location;
+
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,0) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
@@ -713,8 +737,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	pos.y -= [[self font] pointSize]*1.25;
 	
 	[completionPopUp setCaretPos:pos];
+	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
-	[completionPopUp insertCommonPrefix];
+	if(!autoCompleteMode)
+		[completionPopUp insertCommonPrefix];
 
 }
 
@@ -755,15 +781,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL leftIsAlphanum = NO;
 	BOOL rightIsAlphanum = NO;
 	BOOL charIsOpenBracket = (aChar == '(');
+	NSUInteger bufferLength = [[self string] length];
+
+	if(!bufferLength) return NO;
 	
 	// Check previous/next character for being alphanum
 	// @try block for bounds checking
 	@try
 	{
-		leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
+		if(caretPosition==0)
+			leftIsAlphanum = NO;
+		else
+			leftIsAlphanum = [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition-1]] && !charIsOpenBracket;
 	} @catch(id ae) { }
 	@try {
-		rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
+		if(caretPosition >= bufferLength)
+			rightIsAlphanum = NO;
+		else
+			rightIsAlphanum= [alphanum characterIsMember:[[self string] characterAtIndex:caretPosition]];
 		
 	} @catch(id ae) { }
 
@@ -790,6 +825,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		matchingChar = ')';
 	else if (leftChar == '"' || leftChar == '`' || leftChar == '\'')
 		matchingChar = leftChar;
+	else if (leftChar == '{')
+		matchingChar = '}';
 	else
 		return NO;
 
@@ -807,6 +844,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (IBAction)printDocument:(id)sender
 {
+
+	// If Extended Table Info tab is active delegate the print call to the SPPrintController
+	// if the user doesn't select anything in self
+	if([[[[self delegate] class] description] isEqualToString:@"SPExtendedTableInfo"] && ![self selectedRange].length) {
+		[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] printDocument:sender];
+		return;
+	}
 
 	// This will scale the view to fit the page without centering it.
 	[[NSPrintInfo sharedPrintInfo] setHorizontalPagination:NSFitPagination];
@@ -857,18 +901,25 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (BOOL) wrapSelectionWithPrefix:(NSString *)prefix suffix:(NSString *)suffix
 {
 
+	NSRange currentRange = [self selectedRange];
+
 	// Only proceed if a selection is active
-	if ([self selectedRange].length == 0 || ![self isEditable])
+	if (currentRange.length == 0 || ![self isEditable])
 		return NO;
 
+	NSString *selString = [[self string] substringWithRange:currentRange];
+
 	// Replace the current selection with the selected string wrapped in prefix and suffix
-	[self insertText:
-		[NSString stringWithFormat:@"%@%@%@", 
-			prefix,
-			[[self string] substringWithRange:[self selectedRange]],
-			suffix
-		]
-	];
+	[self insertText:[NSString stringWithFormat:@"%@%@%@", prefix, selString, suffix]];
+	
+	// Re-select original selection
+	NSRange innerSelectionRange = NSMakeRange(currentRange.location+1, [selString length]);
+	[self setSelectedRange:innerSelectionRange];
+
+	// If autopair is enabled mark last autopair character as autopair-linked
+	if([prefs boolForKey:SPCustomQueryAutoPairCharacters])
+		[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange(NSMaxRange(innerSelectionRange), 1)];
+
 	return YES;
 }
 
@@ -951,7 +1002,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Indent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
 
 		// Extract the current line range based on the text caret
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
@@ -1004,7 +1054,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Undent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
-		NSRange currentLineRange;
 
 		// Extract the current line range based on the text caret
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
@@ -1067,8 +1116,249 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	snippetControlCounter = -1;
 	currentSnippetIndex   = -1;
 	snippetControlMax     = -1;
+	mirroredCounter       = -1;
 	snippetWasJustInserted = NO;
 }
+
+/*
+ * Shows pre-defined completion list
+ */
+- (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode
+{
+
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+	NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:0] autorelease];
+
+	NSString *connectionID;
+	if([[[self window] delegate] respondsToSelector:@selector(connectionID)])
+		connectionID = [[[self window] delegate] connectionID];
+	else
+		connectionID = @"_";
+
+	NSArray *arr = nil;
+	if([kind isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
+		NSString *currentDb = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+
+		if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
+			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			[desc release];
+			for(id table in sortedTables) {
+				NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
+				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+				switch(structtype) {
+					case 0:
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
+					break;
+					case 1:
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
+					break;
+				}
+			}
+		} else {
+			arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
+			if(arr == nil) {
+				arr = [NSArray array];
+			}
+			for(id w in arr)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
+		}
+	}
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
+		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
+		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
+	}
+	else if([kind isEqualToString:@"$SP_ASLIST_ALL_FIELDS"]) {
+
+		NSString *currentDb = nil;
+		NSString *currentTable = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
+			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		if(currentDb != nil && currentTable != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:currentTable]) {
+			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
+			NSArray *allFields = [theTable allKeys];
+			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			[desc release];
+			for(id field in sortedFields) {
+				if(![field hasPrefix:@"  "]) {
+					NSArray *def = [theTable objectForKey:field];
+					NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:1], [def objectAtIndex:2]];
+					// Check if type definition contains a , if so replace the bracket content by … and add 
+					// the bracket content as "list" key to prevend the token field to split them by ,
+					if(typ && [typ rangeOfString:@","].length) {
+						NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
+						NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							field, @"display", 
+							@"field-small-square", @"image", 
+							[NSString stringWithFormat:@"%@@%%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
+							t, @"type", 
+							lst, @"list", 
+							@"", @"isRef", 
+							nil]];
+					} else {
+						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+							field, @"display", 
+							@"field-small-square", @"image", 
+							[NSString stringWithFormat:@"%@%@%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
+							typ, @"type", 
+							@"", @"isRef", 
+							nil]];
+					}
+				}
+			}
+		} else {
+			arr = [NSArray arrayWithArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
+			if(arr == nil) {
+				arr = [NSArray array];
+			}
+			for(id w in arr)
+				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];
+		}
+	}
+	else {
+		NSLog(@"“%@” is not a valid completion list", kind);
+		NSBeep();
+		return;
+	}
+
+	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+					alreadyTyped:@"" 
+					staticPrefix:@"" 
+					additionalWordCharacters:@"_." 
+					caseSensitive:NO
+					charRange:aRange
+					parseRange:aRange
+					inView:self
+					dictMode:NO
+					dbMode:YES
+					tabTriggerMode:[self isSnippetMode]
+					fuzzySearch:fuzzySearchMode
+					backtickMode:NO
+					withDbName:@""
+					withTableName:@""
+					selectedDb:@""
+					caretMovedLeft:NO
+					autoComplete:NO
+					oneColumn:NO];
+
+	//Get the NSPoint of the first character of the current word
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,0) actualCharacterRange:NULL];
+	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+	boundingRect = [self convertRect: boundingRect toView: NULL];
+	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+	// Adjust list location to be under the current word or insertion point
+	pos.y -= [[self font] pointSize]*1.25;
+	[completionPopUp setCaretPos:pos];
+	completionIsOpen = YES;
+	[completionPopUp orderFront:self];
+
+}
+
+/*
+ * Update all mirrored snippets and adjust any involved instances
+ */
+- (void)processMirroredSnippets
+{
+	if(mirroredCounter > -1) {
+
+		isProcessingMirroredSnippets = YES;
+
+		NSInteger i, j, k, deltaLength;
+		NSRange mirroredRange;
+		id aCompletionList;
+
+		// Get the completion list pointer if open
+		if(completionIsOpen)
+			for(id w in [NSApp windows])
+				if([w isKindOfClass:[SPNarrowDownCompletion class]]) {
+					aCompletionList = w;
+					break;
+				}
+
+		// Go through each defined mirrored snippet and update it
+		for(i=0; i<=mirroredCounter; i++) {
+			if(snippetMirroredControlArray[i][0] == currentSnippetIndex) {
+
+				deltaLength = snippetControlArray[currentSnippetIndex][1]-snippetMirroredControlArray[i][2];
+
+				mirroredRange = NSMakeRange(snippetMirroredControlArray[i][1], snippetMirroredControlArray[i][2]);
+				NSString *mirroredString = nil;
+
+				// For safety reasons
+				@try{
+					mirroredString = [[self string] substringWithRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+				}
+				@catch(id ae) {
+					NSLog(@"Error while parsing for mirrored snippets. %@", [ae description]);
+					NSBeep();
+					[self endSnippetSession];
+					return;
+				}
+
+				// Register for undo
+				[self shouldChangeTextInRange:mirroredRange replacementString:mirroredString];
+
+				[self replaceCharactersInRange:mirroredRange withString:mirroredString];
+				snippetMirroredControlArray[i][2] = snippetControlArray[currentSnippetIndex][1];
+
+				// If a completion list is open adjust the theCharRange and theParseRange if a mirrored snippet
+				// was updated which is located before the initial position 
+				if(completionIsOpen && snippetMirroredControlArray[i][1] < completionParseRangeLocation)
+					[aCompletionList adjustWorkingRangeByDelta:deltaLength];
+
+				// Adjust all other snippets accordingly
+				for(j=0; j<=snippetControlMax; j++) {
+					if(snippetControlArray[j][0] > -1) {
+						if(snippetControlArray[j][0]+snippetControlArray[j][1]>=snippetMirroredControlArray[i][1]) {
+							snippetControlArray[j][0] += deltaLength;
+						}
+					}
+				}
+				// Adjust all mirrored snippets accordingly
+				for(k=0; k<=mirroredCounter; k++) {
+					if(i != k) {
+						if(snippetMirroredControlArray[k][1] > snippetMirroredControlArray[i][1]) {
+							snippetMirroredControlArray[k][1] += deltaLength;
+						}
+					}
+				}
+			}
+		}
+
+		isProcessingMirroredSnippets = NO;
+		[self didChangeText];
+		
+	}
+}
+
 
 /*
  * Selects the current snippet defined by “currentSnippetIndex”
@@ -1093,12 +1383,70 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20) {
 			if(snippetControlArray[currentSnippetIndex][2] == 0) {
+
 				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
-				NSRange r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
-				if(r1.location == r2.location && r1.length == r2.length)
-					[self setSelectedRange:r2];
+
+				NSRange r2;
+				// Ensure the selection for nested snippets if it is at very end of the text buffer
+				// because NSIntersectionRange returns {0, 0} in such a case
+				if(r1.location == [[self string] length])
+					r2 = NSMakeRange([[self string] length], 0);
 				else
+					r2 = NSIntersectionRange(NSMakeRange(0,[[self string] length]), r1);
+
+				if(r1.location == r2.location && r1.length == r2.length) {
+					[self setSelectedRange:r2];
+					NSString *snip = [[self string] substringWithRange:r2];
+					
+ 					if([snip length] > 2 && [snip hasPrefix:@"¦"] && [snip hasSuffix:@"¦"]) {
+						BOOL fuzzySearchMode = ([snip hasPrefix:@"¦¦"] && [snip hasSuffix:@"¦¦"]) ? YES : NO;
+						NSInteger offset = (fuzzySearchMode) ? 2 : 1;
+						NSRange insertRange = NSMakeRange(r2.location,0);
+						SPNarrowDownCompletion* completionPopUp;
+						NSString *newSnip = [snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))];
+						if([newSnip hasPrefix:@"$SP_ASLIST_"]) {
+							[self showCompletionListFor:newSnip atRange:NSMakeRange(r2.location, 0) fuzzySearch:fuzzySearchMode];
+							return;
+						} else {
+							NSArray *list = [[snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))] componentsSeparatedByString:@"¦"];
+							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
+							for(id w in list)
+								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
+						
+							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+											alreadyTyped:@"" 
+											staticPrefix:@"" 
+											additionalWordCharacters:@"_." 
+											caseSensitive:NO
+											charRange:insertRange
+											parseRange:insertRange
+											inView:self
+											dictMode:NO
+											dbMode:NO
+											tabTriggerMode:[self isSnippetMode]
+											fuzzySearch:fuzzySearchMode
+											backtickMode:NO
+											withDbName:@""
+											withTableName:@""
+											selectedDb:@""
+											caretMovedLeft:NO
+											autoComplete:NO
+											oneColumn:YES];
+							//Get the NSPoint of the first character of the current word
+							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
+							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+							boundingRect = [self convertRect: boundingRect toView: NULL];
+							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
+							// Adjust list location to be under the current word or insertion point
+							pos.y -= [[self font] pointSize]*1.25;
+							[completionPopUp setCaretPos:pos];
+							completionIsOpen = YES;
+							[completionPopUp orderFront:self];
+						}
+					}
+				} else {
 					[self endSnippetSession];
+				}
 			}
 		} else { // for safety reasons
 			[self endSnippetSession];
@@ -1111,7 +1459,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 /*
  * Inserts a chosen query favorite and initialze a snippet session if user defined any
  */
-- (void)insertFavoriteAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
+- (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
 {
 
 	// Do not allow the insertion of a query favorite if snippets are active
@@ -1120,20 +1468,26 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
-	NSInteger i;
+	NSInteger i, j;
+	mirroredCounter = -1;
 
 	// reset snippet array
 	for(i=0; i<20; i++) {
 		snippetControlArray[i][0] = -1; // snippet location
 		snippetControlArray[i][1] = -1; // snippet length
 		snippetControlArray[i][2] = -1; // snippet task : -1 not valid, 0 select snippet
+		snippetMirroredControlArray[i][0] = -1; // mirrored snippet index
+		snippetMirroredControlArray[i][1] = -1; // mirrored snippet location
+		snippetMirroredControlArray[i][2] = -1; // mirrored snippet length
 	}
 
 	if(theSnippet == nil || ![theSnippet length]) return;
 
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
+
 	@try{
 		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
+		NSString *mirror_re = @"(?<!\\\\)\\$(1?\\d)(?=\\D)";
 
 		if(targetRange.length)
 			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
@@ -1253,6 +1607,60 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		}
 
+		// Parse for mirrored snippets
+		while([snip isMatchedByRegex:mirror_re]) {
+			mirroredCounter++;
+			if(mirroredCounter > 19) {
+				NSLog(@"Only 20 mirrored snippet placeholders allowed.");
+				NSBeep();
+				break;
+			} else {
+
+				NSRange snipRange = [snip rangeOfRegex:mirror_re capture:0L];
+				NSInteger snipCnt = [[snip substringWithRange:[snip rangeOfRegex:mirror_re capture:1L]] intValue];
+
+				// Check for snippet number 19 (to simplify regexp)
+				if(snipCnt>18 || snipCnt<0) {
+					NSLog(@"Only snippets in the range of 0…18 allowed.");
+					[self endSnippetSession];
+					break;
+				}
+
+				[snip replaceCharactersInRange:snipRange withString:@""];
+				[snip flushCachedRegexData];
+
+				// Store found mirrored snippet range
+				snippetMirroredControlArray[mirroredCounter][0] = snipCnt;
+				snippetMirroredControlArray[mirroredCounter][1] = snipRange.location + targetRange.location;
+				snippetMirroredControlArray[mirroredCounter][2] = 0;
+
+				// Adjust successive snippets
+				for(i=0; i<20; i++)
+					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > snippetMirroredControlArray[mirroredCounter][1])
+						snippetControlArray[i][0] -= 1+((snipCnt>9)?2:1);
+
+				[snip flushCachedRegexData];
+			}
+		}
+		// Preset mirrored snippets with according snippet content
+		if(mirroredCounter > -1) {
+			for(i=0; i<=mirroredCounter; i++) {
+				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1] > 0) {
+					[snip replaceCharactersInRange:NSMakeRange(snippetMirroredControlArray[i][1]-targetRange.location, snippetMirroredControlArray[i][2]) 
+										withString:[snip substringWithRange:NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0]-targetRange.location, snippetControlArray[snippetMirroredControlArray[i][0]][1])]];
+					snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				}
+				// Adjust successive snippets
+				for(j=0; j<20; j++)
+					if(snippetControlArray[j][0] > -1 && snippetControlArray[j][0] > snippetMirroredControlArray[i][1])
+						snippetControlArray[j][0] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+				// Adjust successive mirrored snippets
+				for(j=0; j<=mirroredCounter; j++)
+					if(snippetMirroredControlArray[j][1] > snippetMirroredControlArray[i][1])
+						snippetMirroredControlArray[j][1] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+			}
+		}
+
 		if(snippetControlCounter > -1) {
 			// Store the end for tab out
 			snippetControlMax++;
@@ -1271,6 +1679,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			for(i=0; i<=snippetControlMax; i++)
 				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
 					snippetControlArray[i][0]--;
+			// Adjust mirrored snippets
+			if(mirroredCounter > -1)
+				for(i=0; i<=mirroredCounter; i++)
+					if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
+						snippetMirroredControlArray[i][1]--;
 		}
 
 		// Insert favorite query by selecting the tab trigger if any
@@ -1279,6 +1692,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Registering for undo
 		[self breakUndoCoalescing];
 		[self insertText:snip];
+
+		// If autopair is enabled check whether snip begins with ( and ends with ), if so mark ) as pair-linked
+		if([prefs boolForKey:SPCustomQueryAutoPairCharacters] && ([snip hasPrefix:@"("] && [snip hasSuffix:@")"] || ([snip hasPrefix:@"`"] && [snip hasSuffix:@"`"]) || ([snip hasPrefix:@"'"] && [snip hasSuffix:@"'"]) || ([snip hasPrefix:@"\""] && [snip hasSuffix:@"\""])))
+			[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange([self selectedRange].location - 1, 1)];
 
 		// Any snippets defined?
 		if(snippetControlCounter > -1) {
@@ -1361,23 +1778,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSData *errdata  = [stderr_file readDataToEndOfFile];
 
 	if(outdata != nil) {
-		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] description];
-		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+		NSString *stdout = [[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding];
+		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 		if(bashTask) [bashTask release];
 		if(stdout != nil) {
 			if (status == 0) {
 				return [stdout autorelease];
 			} else {
-				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] description];
+				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
 				[stdout release];
-				[error release];
 				NSBeep();
 				return @"";
 			}
 		} else {
-			if(stdout) [stdout release];
 			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
 			NSBeep();
 		}
@@ -1477,12 +1892,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (void) mouseDown:(NSEvent *)theEvent
 {
-	
+
 	// Cancel autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
 									object:nil];
+
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
 
 	[super mouseDown:theEvent];
 
@@ -1506,6 +1927,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 
+	// Cancel auto-completion timer
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
@@ -1524,14 +1952,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
+
+		[self setCompletionWasReinvokedAutomatically:NO];
+
+		// Cancel autocompletion trigger
+		if([prefs boolForKey:SPCustomQueryAutoComplete])
+			[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(doAutoCompletion) 
+									object:nil];
+
 		if(curFlags==(NSControlKeyMask))
-			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES];
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:YES autoCompleteMode:NO];
 		else
-			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO];
+			[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:NO];
 		return;
 	}
 	if (insertedCharacter == NSF5FunctionKey && [self isEditable]){ // F5 for completion based on spell checker
-		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO];
+		[self setCompletionWasReinvokedAutomatically:NO];
+		[self doCompletionByUsingSpellChecker:YES fuzzyMode:NO autoCompleteMode:NO];
 		return;
 	}
 
@@ -1585,7 +2023,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(snippetControlCounter < 0 && [[[self window] delegate] fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[[[self window] delegate] fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
-				[self insertFavoriteAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
+				[self insertAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
 				return;
 			}
 		}
@@ -1622,7 +2060,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
+			BOOL editableStatus = [self isEditable];
+			[self setEditable:YES];
 			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+			[self setEditable:editableStatus];
 			return;
 		}
 	}
@@ -1701,6 +2142,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			case ')':
 				skipTypedLinkedCharacter = YES;
 				break;
+			case '{':
+				matchingCharacter = @"}";
+				processAutopair = YES;
+				break;
+			case '}':
+				skipTypedLinkedCharacter = YES;
+				break;
 		}
 
 		// Check to see whether the next character should be compared to the typed character;
@@ -1749,6 +2197,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				// Restore the original selection.
 				currentRange.length=0;
 				[self setSelectedRange:currentRange];
+				
+				[self didChangeText];
 			}
 			return;
 		}
@@ -1758,7 +2208,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self breakUndoCoalescing];
 	// The default action is to perform the normal key-down action.
 	[super keyDown:theEvent];
-
+	
 }
 
 
@@ -1827,993 +2277,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	[super doCommandBySelector:aSelector];
 }
-
-/*
- * List of keywords for autocompletion. If you add a keyword here,
- * it should also be added to the flex file SPEditorTokens.l
- */
--(NSArray *)keywords
-{
-	return [NSArray arrayWithObjects:
-	@"ACCESSIBLE",
-	@"ACTION",
-	@"ADD",
-	@"AFTER",
-	@"AGAINST",
-	@"AGGREGATE",
-	@"ALGORITHM",
-	@"ALL",
-	@"ALTER",
-	@"ALTER COLUMN",
-	@"ALTER DATABASE",
-	@"ALTER EVENT",
-	@"ALTER FUNCTION",
-	@"ALTER LOGFILE GROUP",
-	@"ALTER PROCEDURE",
-	@"ALTER SCHEMA",
-	@"ALTER SERVER",
-	@"ALTER TABLE",
-	@"ALTER TABLESPACE",
-	@"ALTER VIEW",
-	@"ANALYZE",
-	@"ANALYZE TABLE",
-	@"AND",
-	@"ANY",
-	@"AS",
-	@"ASC",
-	@"ASCII",
-	@"ASENSITIVE",
-	@"AT",
-	@"AUTHORS",
-	@"AUTOEXTEND_SIZE",
-	@"AUTO_INCREMENT",
-	@"AVG",
-	@"AVG_ROW_LENGTH",
-	@"BACKUP",
-	@"BACKUP TABLE",
-	@"BEFORE",
-	@"BEGIN",
-	@"BETWEEN",
-	@"BIGINT",
-	@"BINARY",
-	@"BINLOG",
-	@"BIT",
-	@"BLOB",
-	@"BOOL",
-	@"BOOLEAN",
-	@"BOTH",
-	@"BTREE",
-	@"BY",
-	@"BYTE",
-	@"CACHE",
-	@"CACHE INDEX",
-	@"CALL",
-	@"CASCADE",
-	@"CASCADED",
-	@"CASE",
-	@"CHAIN",
-	@"CHANGE",
-	@"CHANGED",
-	@"CHAR",
-	@"CHARACTER",
-	@"CHARACTER SET",
-	@"CHARSET",
-	@"CHECK",
-	@"CHECK TABLE",
-	@"CHECKSUM",
-	@"CHECKSUM TABLE",
-	@"CIPHER",
-	@"CLIENT",
-	@"CLOSE",
-	@"COALESCE",
-	@"CODE",
-	@"COLLATE",
-	@"COLLATION",
-	@"COLUMN",
-	@"COLUMNS",
-	@"COLUMN_FORMAT"
-	@"COMMENT",
-	@"COMMIT",
-	@"COMMITTED",
-	@"COMPACT",
-	@"COMPLETION",
-	@"COMPRESSED",
-	@"CONCURRENT",
-	@"CONDITION",
-	@"CONNECTION",
-	@"CONSISTENT",
-	@"CONSTRAINT",
-	@"CONTAINS",
-	@"CONTINUE",
-	@"CONTRIBUTORS",
-	@"CONVERT",
-	@"CREATE",
-	@"CREATE DATABASE",
-	@"CREATE EVENT",
-	@"CREATE FUNCTION",
-	@"CREATE INDEX",
-	@"CREATE LOGFILE GROUP",
-	@"CREATE PROCEDURE",
-	@"CREATE SCHEMA",
-	@"CREATE TABLE",
-	@"CREATE TABLESPACE",
-	@"CREATE TRIGGER",
-	@"CREATE USER",
-	@"CREATE VIEW",
-	@"CROSS",
-	@"CUBE",
-	@"CURRENT_DATE",
-	@"CURRENT_TIME",
-	@"CURRENT_TIMESTAMP",
-	@"CURRENT_USER",
-	@"CURSOR",
-	@"DATA",
-	@"DATABASE",
-	@"DATABASES",
-	@"DATAFILE",
-	@"DATE",
-	@"DATETIME",
-	@"DAY",
-	@"DAY_HOUR",
-	@"DAY_MICROSECOND",
-	@"DAY_MINUTE",
-	@"DAY_SECOND",
-	@"DEALLOCATE",
-	@"DEALLOCATE PREPARE",
-	@"DEC",
-	@"DECIMAL",
-	@"DECLARE",
-	@"DEFAULT",
-	@"DEFINER",
-	@"DELAYED",
-	@"DELAY_KEY_WRITE",
-	@"DELETE",
-	@"DELIMITER ",
-	@"DELIMITER ;\n",
-	@"DELIMITER ;;\n",
-	@"DESC",
-	@"DESCRIBE",
-	@"DES_KEY_FILE",
-	@"DETERMINISTIC",
-	@"DIRECTORY",
-	@"DISABLE",
-	@"DISCARD",
-	@"DISK",
-	@"DISTINCT",
-	@"DISTINCTROW",
-	@"DIV",
-	@"DO",
-	@"DOUBLE",
-	@"DROP",
-	@"DROP DATABASE",
-	@"DROP EVENT",
-	@"DROP FOREIGN KEY",
-	@"DROP FUNCTION",
-	@"DROP INDEX",
-	@"DROP LOGFILE GROUP",
-	@"DROP PREPARE",
-	@"DROP PRIMARY KEY",
-	@"DROP PREPARE",
-	@"DROP PROCEDURE",
-	@"DROP SCHEMA",
-	@"DROP SERVER",
-	@"DROP TABLE",
-	@"DROP TABLESPACE",
-	@"DROP TRIGGER",
-	@"DROP USER",
-	@"DROP VIEW",
-	@"DUAL",
-	@"DUMPFILE",
-	@"DUPLICATE",
-	@"DYNAMIC",
-	@"EACH",
-	@"ELSE",
-	@"ELSEIF",
-	@"ENABLE",
-	@"ENCLOSED",
-	@"END",
-	@"ENDS",
-	@"ENGINE",
-	@"ENGINES",
-	@"ENUM",
-	@"ERRORS",
-	@"ESCAPE",
-	@"ESCAPED",
-	@"EVENT",
-	@"EVENTS",
-	@"EVERY",
-	@"EXECUTE",
-	@"EXISTS",
-	@"EXIT",
-	@"EXPANSION",
-	@"EXPLAIN",
-	@"EXTENDED",
-	@"EXTENT_SIZE",
-	@"FALSE",
-	@"FAST",
-	@"FETCH",
-	@"FIELDS",
-	@"FIELDS TERMINATED BY",
-	@"FILE",
-	@"FIRST",
-	@"FIXED",
-	@"FLOAT",
-	@"FLOAT4",
-	@"FLOAT8",
-	@"FLUSH",
-	@"FOR",
-	@"FOR UPDATE",
-	@"FORCE",
-	@"FOREIGN",
-	@"FOREIGN KEY",
-	@"FOUND",
-	@"FRAC_SECOND",
-	@"FROM",
-	@"FULL",
-	@"FULLTEXT",
-	@"FUNCTION",
-	@"GEOMETRY",
-	@"GEOMETRYCOLLECTION",
-	@"GET_FORMAT",
-	@"GLOBAL",
-	@"GRANT",
-	@"GRANTS",
-	@"GROUP",
-	@"GROUP BY",
-	@"HANDLER",
-	@"HASH",
-	@"HAVING",
-	@"HELP",
-	@"HIGH_PRIORITY",
-	@"HOSTS",
-	@"HOUR",
-	@"HOUR_MICROSECOND",
-	@"HOUR_MINUTE",
-	@"HOUR_SECOND",
-	@"IDENTIFIED",
-	@"IF",
-	@"IGNORE",
-	@"IMPORT",
-	@"IN",
-	@"INDEX",
-	@"INDEXES",
-	@"INFILE",
-	@"INITIAL_SIZE",
-	@"INNER",
-	@"INNOBASE",
-	@"INNODB",
-	@"INOUT",
-	@"INSENSITIVE",
-	@"INSERT",
-	@"INSERT_METHOD",
-	@"INSTALL",
-	@"INSTALL PLUGIN",
-	@"INT",
-	@"INT1",
-	@"INT2",
-	@"INT3",
-	@"INT4",
-	@"INT8",
-	@"INTEGER",
-	@"INTERVAL",
-	@"INTO",
-	@"INTO DUMPFILE",
-	@"INTO OUTFILE",
-	@"INTO TABLE",
-	@"INVOKER",
-	@"IO_THREAD",
-	@"IS",
-	@"ISOLATION",
-	@"ISSUER",
-	@"ITERATE",
-	@"JOIN",
-	@"KEY",
-	@"KEYS",
-	@"KEY_BLOCK_SIZE",
-	@"KILL",
-	@"LANGUAGE",
-	@"LAST",
-	@"LEADING",
-	@"LEAVE",
-	@"LEAVES",
-	@"LEFT",
-	@"LESS",
-	@"LEVEL",
-	@"LIKE",
-	@"LIMIT",
-	@"LINEAR",
-	@"LINES",
-	@"LINES TERMINATED BY",
-	@"LINESTRING",
-	@"LIST",
-	@"LOAD DATA",
-	@"LOAD INDEX INTO CACHE",
-	@"LOAD XML",
-	@"LOCAL",
-	@"LOCALTIME",
-	@"LOCALTIMESTAMP",
-	@"LOCK",
-	@"LOCK IN SHARE MODE",
-	@"LOCK TABLES",
-	@"LOCKS",
-	@"LOGFILE",
-	@"LOGS",
-	@"LONG",
-	@"LONGBLOB",
-	@"LONGTEXT",
-	@"LOOP",
-	@"LOW_PRIORITY",
-	@"MASTER",
-	@"MASTER_CONNECT_RETRY",
-	@"MASTER_HOST",
-	@"MASTER_LOG_FILE",
-	@"MASTER_LOG_POS",
-	@"MASTER_PASSWORD",
-	@"MASTER_PORT",
-	@"MASTER_SERVER_ID",
-	@"MASTER_SSL",
-	@"MASTER_SSL_CA",
-	@"MASTER_SSL_CAPATH",
-	@"MASTER_SSL_CERT",
-	@"MASTER_SSL_CIPHER",
-	@"MASTER_SSL_KEY",
-	@"MASTER_USER",
-	@"MATCH",
-	@"MAXVALUE",
-	@"MAX_CONNECTIONS_PER_HOUR",
-	@"MAX_QUERIES_PER_HOUR",
-	@"MAX_ROWS",
-	@"MAX_SIZE",
-	@"MAX_UPDATES_PER_HOUR",
-	@"MAX_USER_CONNECTIONS",
-	@"MEDIUM",
-	@"MEDIUMBLOB",
-	@"MEDIUMINT",
-	@"MEDIUMTEXT",
-	@"MEMORY",
-	@"MERGE",
-	@"MICROSECOND",
-	@"MIDDLEINT",
-	@"MIGRATE",
-	@"MINUTE",
-	@"MINUTE_MICROSECOND",
-	@"MINUTE_SECOND",
-	@"MIN_ROWS",
-	@"MOD",
-	@"MODE",
-	@"MODIFIES",
-	@"MODIFY",
-	@"MONTH",
-	@"MULTILINESTRING",
-	@"MULTIPOINT",
-	@"MULTIPOLYGON",
-	@"MUTEX",
-	@"NAME",
-	@"NAMES",
-	@"NATIONAL",
-	@"NATURAL",
-	@"NCHAR",
-	@"NDB",
-	@"NDBCLUSTER",
-	@"NEW",
-	@"NEXT",
-	@"NO",
-	@"NODEGROUP",
-	@"NONE",
-	@"NOT",
-	@"NO_WAIT",
-	@"NO_WRITE_TO_BINLOG",
-	@"NULL",
-	@"NUMERIC",
-	@"NVARCHAR",
-	@"OFFSET",
-	@"OLD_PASSWORD",
-	@"ON",
-	@"ONE",
-	@"ONE_SHOT",
-	@"OPEN",
-	@"OPTIMIZE",
-	@"OPTIMIZE TABLE",
-	@"OPTION",
-	@"OPTIONALLY",
-	@"OPTIONALLY ENCLOSED BY",
-	@"OPTIONS",
-	@"OR",
-	@"ORDER",
-	@"ORDER BY",
-	@"OUT",
-	@"OUTER",
-	@"OUTFILE",
-	@"PACK_KEYS",
-	@"PARSER",
-	@"PARTIAL",
-	@"PARTITION",
-	@"PARTITIONING",
-	@"PARTITIONS",
-	@"PASSWORD",
-	@"PHASE",
-	@"PLUGIN",
-	@"PLUGINS",
-	@"POINT",
-	@"POLYGON",
-	@"PRECISION",
-	@"PREPARE",
-	@"PRESERVE",
-	@"PREV",
-	@"PRIMARY",
-	@"PRIMARY KEY",
-	@"PRIVILEGES",
-	@"PROCEDURE",
-	@"PROCEDURE ANALYSE",
-	@"PROCESS",
-	@"PROCESSLIST",
-	@"PURGE",
-	@"QUARTER",
-	@"QUERY",
-	@"QUICK",
-	@"RANGE",
-	@"READ",
-	@"READS",
-	@"READ_ONLY",
-	@"READ_WRITE",
-	@"REAL",
-	@"REBUILD",
-	@"RECOVER",
-	@"REDOFILE",
-	@"REDO_BUFFER_SIZE",
-	@"REDUNDANT",
-	@"REFERENCES",
-	@"REGEXP",
-	@"RELAY_LOG_FILE",
-	@"RELAY_LOG_POS",
-	@"RELAY_THREAD",
-	@"RELEASE",
-	@"RELOAD",
-	@"REMOVE",
-	@"RENAME",
-	@"RENAME DATABASE",
-	@"RENAME TABLE",
-	@"REORGANIZE",
-	@"REPAIR",
-	@"REPAIR TABLE",
-	@"REPEAT",
-	@"REPEATABLE",
-	@"REPLACE",
-	@"REPLICATION",
-	@"REQUIRE",
-	@"RESET",
-	@"RESET MASTER",
-	@"RESTORE",
-	@"RESTORE TABLE",
-	@"RESTRICT",
-	@"RESUME",
-	@"RETURN",
-	@"RETURNS",
-	@"REVOKE",
-	@"RIGHT",
-	@"RLIKE",
-	@"ROLLBACK",
-	@"ROLLUP",
-	@"ROUTINE",
-	@"ROW",
-	@"ROWS",
-	@"ROWS IDENTIFIED BY"
-	@"ROW_FORMAT",
-	@"RTREE",
-	@"SAVEPOINT",
-	@"SCHEDULE",
-	@"SCHEDULER",
-	@"SCHEMA",
-	@"SCHEMAS",
-	@"SECOND",
-	@"SECOND_MICROSECOND",
-	@"SECURITY",
-	@"SELECT",
-	@"SELECT DISTINCT",
-	@"SENSITIVE",
-	@"SEPARATOR",
-	@"SERIAL",
-	@"SERIALIZABLE",
-	@"SESSION",
-	@"SET",
-	@"SET GLOBAL",
-	@"SET NAMES",
-	@"SET PASSWORD",
-	@"SHARE",
-	@"SHOW",
-	@"SHOW BINARY LOGS",
-	@"SHOW BINLOG EVENTS",
-	@"SHOW CHARACTER SET",
-	@"SHOW COLLATION",
-	@"SHOW COLUMNS",
-	@"SHOW CONTRIBUTORS",
-	@"SHOW CREATE DATABASE",
-	@"SHOW CREATE EVENT",
-	@"SHOW CREATE FUNCTION",
-	@"SHOW CREATE PROCEDURE",
-	@"SHOW CREATE SCHEMA",
-	@"SHOW CREATE TABLE",
-	@"SHOW CREATE TRIGGERS",
-	@"SHOW CREATE VIEW",
-	@"SHOW DATABASES",
-	@"SHOW ENGINE",
-	@"SHOW ENGINES",
-	@"SHOW ERRORS",
-	@"SHOW EVENTS",
-	@"SHOW FIELDS",
-	@"SHOW FULL PROCESSLIST",
-	@"SHOW FUNCTION CODE",
-	@"SHOW FUNCTION STATUS",
-	@"SHOW GRANTS",
-	@"SHOW INDEX",
-	@"SHOW INNODB STATUS",
-	@"SHOW KEYS",
-	@"SHOW MASTER LOGS",
-	@"SHOW MASTER STATUS",
-	@"SHOW OPEN TABLES",
-	@"SHOW PLUGINS",
-	@"SHOW PRIVILEGES",
-	@"SHOW PROCEDURE CODE",
-	@"SHOW PROCEDURE STATUS",
-	@"SHOW PROFILE",
-	@"SHOW PROFILES",
-	@"SHOW PROCESSLIST",
-	@"SHOW SCHEDULER STATUS",
-	@"SHOW SCHEMAS",
-	@"SHOW SLAVE HOSTS",
-	@"SHOW SLAVE STATUS",
-	@"SHOW STATUS",
-	@"SHOW STORAGE ENGINES",
-	@"SHOW TABLE STATUS",
-	@"SHOW TABLE TYPES",
-	@"SHOW TABLES",
-	@"SHOW TRIGGERS",
-	@"SHOW VARIABLES",
-	@"SHOW WARNINGS",
-	@"SHUTDOWN",
-	@"SIGNED",
-	@"SIMPLE",
-	@"SLAVE",
-	@"SMALLINT",
-	@"SNAPSHOT",
-	@"SOME",
-	@"SONAME",
-	@"SOUNDS",
-	@"SPATIAL",
-	@"SPECIFIC",
-	@"SQL_AUTO_IS_NULL",
-	@"SQL_BIG_RESULT",
-	@"SQL_BIG_SELECTS",
-	@"SQL_BIG_TABLES",
-	@"SQL_BUFFER_RESULT",
-	@"SQL_CACHE",
-	@"SQL_CALC_FOUND_ROWS",
-	@"SQL_LOG_BIN",
-	@"SQL_LOG_OFF",
-	@"SQL_LOG_UPDATE",
-	@"SQL_LOW_PRIORITY_UPDATES",
-	@"SQL_MAX_JOIN_SIZE",
-	@"SQL_NO_CACHE",
-	@"SQL_QUOTE_SHOW_CREATE",
-	@"SQL_SAFE_UPDATES",
-	@"SQL_SELECT_LIMIT",
-	@"SQL_SLAVE_SKIP_COUNTER",
-	@"SQL_SMALL_RESULT",
-	@"SQL_THREAD",
-	@"SQL_TSI_DAY",
-	@"SQL_TSI_FRAC_SECOND",
-	@"SQL_TSI_HOUR",
-	@"SQL_TSI_MINUTE",
-	@"SQL_TSI_MONTH",
-	@"SQL_TSI_QUARTER",
-	@"SQL_TSI_SECOND",
-	@"SQL_TSI_WEEK",
-	@"SQL_TSI_YEAR",
-	@"SQL_WARNINGS",
-	@"SSL",
-	@"START",
-	@"START TRANSACTION",
-	@"STARTING",
-	@"STARTS",
-	@"STATUS",
-	@"STOP",
-	@"STORAGE",
-	@"STRAIGHT_JOIN",
-	@"STRING",
-	@"SUBJECT",
-	@"SUBPARTITION",
-	@"SUBPARTITIONS",
-	@"SUPER",
-	@"SUSPEND",
-	@"TABLE",
-	@"TABLES",
-	@"TABLESPACE",
-	@"TEMPORARY",
-	@"TEMPTABLE",
-	@"TERMINATED",
-	@"TEXT",
-	@"THAN",
-	@"THEN",
-	@"TIME",
-	@"TIMESTAMP",
-	@"TIMESTAMPADD",
-	@"TIMESTAMPDIFF",
-	@"TINYBLOB",
-	@"TINYINT",
-	@"TINYTEXT",
-	@"TO",
-	@"TRAILING",
-	@"TRANSACTION",
-	@"TRIGGER",
-	@"TRIGGERS",
-	@"TRUE",
-	@"TRUNCATE",
-	@"TYPE",
-	@"TYPES",
-	@"UNCOMMITTED",
-	@"UNDEFINED",
-	@"UNDO",
-	@"UNDOFILE",
-	@"UNDO_BUFFER_SIZE",
-	@"UNICODE",
-	@"UNINSTALL",
-	@"UNINSTALL PLUGIN",
-	@"UNION",
-	@"UNIQUE",
-	@"UNKNOWN",
-	@"UNLOCK",
-	@"UNLOCK TABLES",
-	@"UNSIGNED",
-	@"UNTIL",
-	@"UPDATE",
-	@"UPGRADE",
-	@"USAGE",
-	@"USE",
-	@"USER",
-	@"USER_RESOURCES",
-	@"USE_FRM",
-	@"USING",
-	@"UTC_DATE",
-	@"UTC_TIME",
-	@"UTC_TIMESTAMP",
-	@"VALUE",
-	@"VALUES",
-	@"VARBINARY",
-	@"VARCHAR",
-	@"VARCHARACTER",
-	@"VARIABLES",
-	@"VARYING",
-	@"VIEW",
-	@"WAIT",
-	@"WARNINGS",
-	@"WEEK",
-	@"WHEN",
-	@"WHERE",
-	@"WHILE",
-	@"WITH",
-	@"WITH CONSISTENT SNAPSHOT",
-	@"WORK",
-	@"WRITE",
-	@"X509",
-	@"XA",
-	@"XOR",
-	@"YEAR",
-	@"YEAR_MONTH",
-	@"ZEROFILL",
-
-	nil];
-}
-
-/*
- * List of fucntions for autocompletion. If you add a keyword here,
- * it should also be added to the flex file SPEditorTokens.l
- */
--(NSArray *)functions
-{
-	return [NSArray arrayWithObjects:
-	@"ABS",
-	@"ACOS",
-	@"ADDDATE",
-	@"ADDTIME",
-	@"AES_DECRYPT",
-	@"AES_ENCRYPT",
-	@"AREA",
-	@"ASBINARY",
-	@"ASCII",
-	@"ASIN",
-	@"ASTEXT",
-	@"ATAN",
-	@"ATAN2",
-	@"AVG",
-	@"BDMPOLYFROMTEXT",
-	@"BDMPOLYFROMWKB",
-	@"BDPOLYFROMTEXT",
-	@"BDPOLYFROMWKB",
-	@"BENCHMARK",
-	@"BIN",
-	@"BIT_AND",
-	@"BIT_COUNT",
-	@"BIT_LENGTH",
-	@"BIT_OR",
-	@"BIT_XOR",
-	@"BOUNDARY",
-	@"BUFFER",
-	@"CAST",
-	@"CEIL",
-	@"CEILING",
-	@"CENTROID",
-	@"CHAR",
-	@"CHARACTER_LENGTH",
-	@"CHARSET",
-	@"CHAR_LENGTH",
-	@"COALESCE",
-	@"COERCIBILITY",
-	@"COLLATION",
-	@"COMPRESS",
-	@"CONCAT",
-	@"CONCAT_WS",
-	@"CONNECTION_ID",
-	@"CONTAINS",
-	@"CONV",
-	@"CONVERT",
-	@"CONVERT_TZ",
-	@"CONVEXHULL",
-	@"COS",
-	@"COT",
-	@"COUNT",
-	@"COUNT(*)",
-	@"CRC32",
-	@"CROSSES",
-	@"CURDATE",
-	@"CURRENT_DATE",
-	@"CURRENT_TIME",
-	@"CURRENT_TIMESTAMP",
-	@"CURRENT_USER",
-	@"CURTIME",
-	@"DATABASE",
-	@"DATE",
-	@"DATEDIFF",
-	@"DATE_ADD",
-	@"DATE_DIFF",
-	@"DATE_FORMAT",
-	@"DATE_SUB",
-	@"DAY",
-	@"DAYNAME",
-	@"DAYOFMONTH",
-	@"DAYOFWEEK",
-	@"DAYOFYEAR",
-	@"DECODE",
-	@"DEFAULT",
-	@"DEGREES",
-	@"DES_DECRYPT",
-	@"DES_ENCRYPT",
-	@"DIFFERENCE",
-	@"DIMENSION",
-	@"DISJOINT",
-	@"DISTANCE",
-	@"ELT",
-	@"ENCODE",
-	@"ENCRYPT",
-	@"ENDPOINT",
-	@"ENVELOPE",
-	@"EQUALS",
-	@"EXP",
-	@"EXPORT_SET",
-	@"EXTERIORRING",
-	@"EXTRACT",
-	@"EXTRACTVALUE",
-	@"FIELD",
-	@"FIND_IN_SET",
-	@"FLOOR",
-	@"FORMAT",
-	@"FOUND_ROWS",
-	@"FROM_DAYS",
-	@"FROM_UNIXTIME",
-	@"GEOMCOLLFROMTEXT",
-	@"GEOMCOLLFROMWKB",
-	@"GEOMETRYCOLLECTION",
-	@"GEOMETRYCOLLECTIONFROMTEXT",
-	@"GEOMETRYCOLLECTIONFROMWKB",
-	@"GEOMETRYFROMTEXT",
-	@"GEOMETRYFROMWKB",
-	@"GEOMETRYN",
-	@"GEOMETRYTYPE",
-	@"GEOMFROMTEXT",
-	@"GEOMFROMWKB",
-	@"GET_FORMAT",
-	@"GET_LOCK",
-	@"GLENGTH",
-	@"GREATEST",
-	@"GROUP_CONCAT",
-	@"GROUP_UNIQUE_USERS",
-	@"HEX",
-	@"HOUR",
-	@"IF",
-	@"IFNULL",
-	@"INET_ATON",
-	@"INET_NTOA",
-	@"INSERT",
-	@"INSERT_ID",
-	@"INSTR",
-	@"INTERIORRINGN",
-	@"INTERSECTION",
-	@"INTERSECTS",
-	@"INTERVAL",
-	@"ISCLOSED",
-	@"ISEMPTY",
-	@"ISNULL",
-	@"ISRING",
-	@"ISSIMPLE",
-	@"IS_FREE_LOCK",
-	@"IS_USED_LOCK",
-	@"LAST_DAY",
-	@"LAST_INSERT_ID",
-	@"LCASE",
-	@"LEAST",
-	@"LEFT",
-	@"LENGTH",
-	@"LINEFROMTEXT",
-	@"LINEFROMWKB",
-	@"LINESTRING",
-	@"LINESTRINGFROMTEXT",
-	@"LINESTRINGFROMWKB",
-	@"LN",
-	@"LOAD_FILE",
-	@"LOCALTIME",
-	@"LOCALTIMESTAMP",
-	@"LOCATE",
-	@"LOG",
-	@"LOG10",
-	@"LOG2",
-	@"LOWER",
-	@"LPAD",
-	@"LTRIM",
-	@"MAKEDATE",
-	@"MAKETIME",
-	@"MAKE_SET",
-	@"MASTER_POS_WAIT",
-	@"MAX",
-	@"MBRCONTAINS",
-	@"MBRDISJOINT",
-	@"MBREQUAL",
-	@"MBRINTERSECTS",
-	@"MBROVERLAPS",
-	@"MBRTOUCHES",
-	@"MBRWITHIN",
-	@"MD5",
-	@"MICROSECOND",
-	@"MID",
-	@"MIN",
-	@"MINUTE",
-	@"MLINEFROMTEXT",
-	@"MLINEFROMWKB",
-	@"MOD",
-	@"MONTH",
-	@"MONTHNAME",
-	@"NOW",
-	@"MPOINTFROMTEXT",
-	@"MPOINTFROMWKB",
-	@"MPOLYFROMTEXT",
-	@"MPOLYFROMWKB",
-	@"MULTILINESTRING",
-	@"MULTILINESTRINGFROMTEXT",
-	@"MULTILINESTRINGFROMWKB",
-	@"MULTIPOINT",
-	@"MULTIPOINTFROMTEXT",
-	@"MULTIPOINTFROMWKB",
-	@"MULTIPOLYGON",
-	@"MULTIPOLYGONFROMTEXT",
-	@"MULTIPOLYGONFROMWKB",
-	@"NAME_CONST",
-	@"NOW",
-	@"NULLIF",
-	@"NUMGEOMETRIES",
-	@"NUMINTERIORRINGS",
-	@"NUMPOINTS",
-	@"OCT",
-	@"OCTET_LENGTH",
-	@"OLD_PASSWORD",
-	@"ORD",
-	@"OVERLAPS",
-	@"PASSWORD",
-	@"PERIOD_ADD",
-	@"PERIOD_DIFF",
-	@"PI",
-	@"POINT",
-	@"POINTFROMTEXT",
-	@"POINTFROMWKB",
-	@"POINTN",
-	@"POINTONSURFACE",
-	@"POLYFROMTEXT",
-	@"POLYFROMWKB",
-	@"POLYGON",
-	@"POLYGONFROMTEXT",
-	@"POLYGONFROMWKB",
-	@"POSITION",
-	@"POW",
-	@"POWER",
-	@"QUARTER",
-	@"QUOTE",
-	@"RADIANS",
-	@"RAND",
-	@"RELATED",
-	@"RELEASE_LOCK",
-	@"REPEAT",
-	@"REPLACE",
-	@"REVERSE",
-	@"RIGHT",
-	@"ROUND",
-	@"ROW_COUNT",
-	@"RPAD",
-	@"RTRIM",
-	@"SCHEMA",
-	@"SECOND",
-	@"SEC_TO_TIME",
-	@"SESSION_USER",
-	@"SHA",
-	@"SHA1",
-	@"SIGN",
-	@"SIN",
-	@"SLEEP",
-	@"SOUNDEX",
-	@"SPACE",
-	@"SQRT",
-	@"SRID",
-	@"STARTPOINT",
-	@"STD",
-	@"STDDEV",
-	@"STDDEV_POP",
-	@"STDDEV_SAMP",
-	@"STRCMP",
-	@"STR_TO_DATE",
-	@"SUBDATE",
-	@"SUBSTR",
-	@"SUBSTRING",
-	@"SUBSTRING_INDEX",
-	@"SUBTIME",
-	@"SUM",
-	@"SYMDIFFERENCE",
-	@"SYSDATE",
-	@"SYSTEM_USER",
-	@"TAN",
-	@"TIME",
-	@"TIMEDIFF",
-	@"TIMESTAMP",
-	@"TIMESTAMPADD",
-	@"TIMESTAMPDIFF",
-	@"TIME_FORMAT",
-	@"TIME_TO_SEC",
-	@"TOUCHES",
-	@"TO_DAYS",
-	@"TRIM",
-	@"TRUNCATE",
-	@"UCASE",
-	@"UNCOMPRESS",
-	@"UNCOMPRESSED_LENGTH",
-	@"UNHEX",
-	@"UNIQUE_USERS",
-	@"UNIX_TIMESTAMP",
-	@"UPDATEXML",
-	@"UPPER",
-	@"USER",
-	@"UTC_DATE",
-	@"UTC_TIME",
-	@"UTC_TIMESTAMP",
-	@"UUID",
-	@"VARIANCE",
-	@"VAR_POP",
-	@"VAR_SAMP",
-	@"VERSION",
-	@"WEEK",
-	@"WEEKDAY",
-	@"WEEKOFYEAR",
-	@"WITHIN",
-	@"YEAR",
-	@"YEARWEEK",
-
-	nil];
-}
-
 
 /*
  * Set whether this text view should apply the indentation on the current line to new lines.
@@ -3117,6 +2580,55 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
+- (void) setTabStops
+{
+	NSFont *tvFont = [self font];
+	NSInteger i;
+	NSTextTab *aTab;
+	NSMutableArray *myArrayOfTabs;
+	NSMutableParagraphStyle *paragraphStyle;
+
+	BOOL oldEditableStatus = [self isEditable];
+	[self setEditable:YES];
+
+	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
+	if(tabStopWidth < 1) tabStopWidth = 1;
+
+	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	tabWidth = (float)tabStopWidth * tabWidth;
+
+	NSInteger numberOfTabs = 256/tabStopWidth;
+	myArrayOfTabs = [NSMutableArray arrayWithCapacity:numberOfTabs];
+	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth];
+	[myArrayOfTabs addObject:aTab];
+	[aTab release];
+	for(i=1; i<numberOfTabs; i++) {
+		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth + ((float)i * tabWidth)];
+		[myArrayOfTabs addObject:aTab];
+		[aTab release];
+	}
+	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+	[paragraphStyle setTabStops:myArrayOfTabs];
+	// Soft wrapped lines are indented slightly
+	[paragraphStyle setHeadIndent:4.0];
+
+	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
+	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+
+	NSRange range = NSMakeRange(0, [[self textStorage] length]);
+	if ([self shouldChangeTextInRange:range replacementString:nil]) {
+		[[self textStorage] setAttributes:textAttributes range: range];
+		[self didChangeText];
+	}
+	[self setTypingAttributes:textAttributes];
+	[self setDefaultParagraphStyle:paragraphStyle];
+	[paragraphStyle release];
+	[self setFont:tvFont];
+
+	[self setEditable:oldEditableStatus];
+
+}
+
 - (void)drawRect:(NSRect)rect {
 
 
@@ -3363,12 +2875,22 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Make sure that the notification is from the correct textStorage object
 	if (textStore!=[self textStorage]) return;
 
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 	NSInteger editedMask = [textStore editedMask];
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
 	}
+
+	// Start autocompletion if enabled
+	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore editedRange].length)
+		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] retain] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
@@ -3380,7 +2902,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(editedMask != 1) {
 
 		// Re-calculate snippet ranges if snippet session is active
-		if(snippetControlCounter > -1 && !snippetWasJustInserted) {
+		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
 			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
 			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
@@ -3418,7 +2940,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						}
 					}
 				}
+				// Adjust start position of mirrored snippets after caret position
+				if(mirroredCounter > -1)
+					for(i=0; i<=mirroredCounter; i++) {
+						if(editStartPosition < snippetMirroredControlArray[i][1]) {
+							snippetMirroredControlArray[i][1] += changeInLength;
+						}
+					}
 			}
+
+			if(mirroredCounter > -1 && snippetControlCounter > -1) {
+				[self performSelector:@selector(processMirroredSnippets) withObject:nil afterDelay:0.0];
+			}
+
+			
 		}
 		if([[self textStorage] changeInLength] > 0)
 			textBufferSizeIncreased = YES;

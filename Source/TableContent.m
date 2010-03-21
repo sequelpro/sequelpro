@@ -51,6 +51,7 @@
 #import "SPConstants.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
+#import "SPMainThreadTrampoline.h"
 
 @implementation TableContent
 
@@ -89,6 +90,7 @@
 		firstBetweenValueToRestore = nil;
 		secondBetweenValueToRestore = nil;
 		tableRowsSelectable = YES;
+		contentFilterManager = nil;
 
 		isFiltered = NO;
 		isLimited = NO;
@@ -608,7 +610,7 @@
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
 	[self setUsedQuery:queryString];
-	streamingResult = [mySQLConnection streamingQueryString:queryString];
+	streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 
 	// Ensure the number of columns are unchanged; if the column count has changed, abort the load
 	// and queue a full table reload.
@@ -623,15 +625,15 @@
 	// Process the result into the data store
 	if (!fullTableReloadRequired && streamingResult) {
 		[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
-		[streamingResult release];
 	}
+	if (streamingResult) [streamingResult release];
 
 	// If the result is empty, and a late page is selected, reset the page
 	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		contentPage = 1;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
-		streamingResult = [mySQLConnection streamingQueryString:queryString];
+		streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 		if (streamingResult) {
 			[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 			[streamingResult release];
@@ -782,7 +784,7 @@
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
 	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 	// replaced by @"".
-	BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] 
+	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags] 
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
 
 	NSString *filterString;
@@ -1000,7 +1002,7 @@
 		[countString appendFormat:NSLocalizedString(@"%@ %@ selected", @"text showing how many rows are selected"), [numberFormatter stringFromNumber:[NSNumber numberWithInteger:[tableContentView numberOfSelectedRows]]], rowString];
 	}
 
-	[countText setStringValue:countString];
+	[[countText onMainThread] setStringValue:countString];
 }
 
 #pragma mark -
@@ -1027,7 +1029,7 @@
 	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) return;
+	if (![[self onMainThread] saveRowOnDeselect]) return;
 
 	// Save view details to restore safely if possible (except viewport, which will be
 	// preserved automatically, and can then be scrolled as the table loads)
@@ -1085,7 +1087,7 @@
 	NSAutoreleasePool *filterPool = [[NSAutoreleasePool alloc] init];
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) return;
+	if (![[self onMainThread] saveRowOnDeselect]) return;
 
 	// Update history
 	[spHistoryControllerInstance updateHistoryEntries];
@@ -1094,7 +1096,7 @@
 	previousTableRowsCount = 0;
 	[self clearTableValues];
 	[self loadTableValues];
-	[tableContentView scrollPoint:NSMakePoint(0.0, 0.0)];
+	[[tableContentView onMainThread] scrollPoint:NSMakePoint(0.0, 0.0)];
 
 	[tableDocumentInstance endTask];
 	[filterPool drain];
@@ -1420,11 +1422,13 @@
 	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
-//getter methods
-- (NSArray *)currentDataResult
-/*
- returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+// Accessors
+
+/**
+ * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * names as array, the following objects containing the rows as array.
  */
+- (NSArray *)currentDataResult
 {
 	NSArray *tableColumns;
 	NSEnumerator *enumerator;
@@ -1479,11 +1483,11 @@
 	return currentResult;
 }
 
-//getter methods
-- (NSArray *)currentResult
-/*
- returns the current result (as shown in table content view) as array, the first object containing the field names as array, the following objects containing the rows as array
+/**
+ * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * names as array, the following objects containing the rows as array.
  */
+- (NSArray *)currentResult
 {
 	NSArray *tableColumns;
 	NSEnumerator *enumerator;
@@ -1556,6 +1560,7 @@
 {
 	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
 	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
+	BOOL tableFilterRequired = NO;
 
 	// Ensure the clicked cell has foreign key details available
 	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
@@ -1579,8 +1584,7 @@
 		} else {
 			[argumentField setStringValue:targetFilterValue];
 		}
-		[self filterTable:self];
-
+		tableFilterRequired = YES;
 	} else {
 
 		// Store the filter details to use when loading the target table
@@ -1602,8 +1606,14 @@
 	[spHistoryControllerInstance setModifyingState:NO];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Empty the loading pool and exit the thread
+	// End the task
 	[tableDocumentInstance endTask];
+
+	// If the same table is the target, trigger a filter task on the main thread
+	if (tableFilterRequired)
+		[self performSelectorOnMainThread:@selector(filterTable:) withObject:self waitUntilDone:NO];
+	
+	// Empty the loading pool and exit the thread
 	[linkPool drain];
 }
 
@@ -2136,11 +2146,11 @@
 			[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 		} else {
 			if ( !isEditingNewRow ) {
-				[tableValues replaceRowAtIndex:[tableContentView selectedRow] withRowContents:oldRow];
+				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
 				isEditingRow = NO;
 			} else {
 				tableRowsCount--;
-				[tableValues removeRowAtIndex:[tableContentView selectedRow]];
+				[tableValues removeRowAtIndex:currentlyEditingRow];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
@@ -2525,7 +2535,7 @@
 			if ([filterSettings objectForKey:@"secondBetweenField"])
 				secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
 		} else {
-			if ([filterSettings objectForKey:@"filterValue"])
+			if ([filterSettings objectForKey:@"filterValue"] && ![[filterSettings objectForKey:@"filterValue"] isNSNull])
 				filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
 		}
 	}
@@ -2831,7 +2841,7 @@
 	NSAutoreleasePool *sortPool = [[NSAutoreleasePool alloc] init];
 
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) {
+	if (![[self onMainThread] saveRowOnDeselect]) {
 		[sortPool drain];
 		return;
 	}
@@ -2841,10 +2851,18 @@
 		isDesc = !isDesc;
 	} else {
 		isDesc = NO;
-		[tableContentView setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
+		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
 	}
 	if (sortCol) [sortCol release];
 	sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
+
+	// Set the highlight and indicatorImage
+	[[tableContentView onMainThread] setHighlightedTableColumn:tableColumn];
+	if (isDesc) {
+		[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+	} else {
+		[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+	}
 
 	// Update data using the new sort order
 	previousTableRowsCount = tableRowsCount;
@@ -2853,16 +2871,9 @@
 	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
+		[tableDocumentInstance endTask];
 		[sortPool drain];
 		return;
-	}
-
-	// Set the highlight and indicatorImage
-	[tableContentView setHighlightedTableColumn:tableColumn];
-	if (isDesc) {
-		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
-	} else {
-		[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
 	}
 
 	[tableDocumentInstance endTask];
@@ -3218,12 +3229,37 @@
 	}
 	
 	// Duplicate row
-	if ([menuItem action] == @selector(copyRow:)) {		
+	if ([menuItem action] == @selector(copyRow:)) {
 		return ([tableContentView numberOfSelectedRows] == 1);
 	}
 	
 	return YES;
 }
+
+/**
+ * Makes the content filter field have focus by making it the first responder.
+ */
+- (void)makeContentFilterHaveFocus
+{
+
+	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
+
+	if([filter objectForKey:@"NumberOfArguments"]) {
+		NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] integerValue];
+		switch(numOfArgs) {
+			case 2:
+			[tableWindow makeFirstResponder:firstBetweenField];
+			break;
+			case 1:
+			[tableWindow makeFirstResponder:argumentField];
+			break;
+			default:
+			[tableWindow makeFirstResponder:compareField];
+		}
+	}
+}
+
+#pragma mark -
 
 // Last but not least
 - (void)dealloc

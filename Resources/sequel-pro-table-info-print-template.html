@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>Sequel Pro</title>
+	
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<style type="text/css" media="all">
+		html {
+			font-size: 12px;
+		}
+		
+		.nowrap {
+			white-space: nowrap;
+		}
+		
+		div.nowrap {
+			margin: 0;
+			padding: 0;
+		}
+		
+		body, table, th, td {
+			background-color: #FFFFFF;
+			color: #000000;
+		}
+		
+		h1 {
+			font-size: 16px;
+		}
+		
+		h2 {
+			font-size: 14px;
+		}
+
+		table, th, td {
+			width: 300px;
+			border: none;
+			border-style: hidden;
+			border-collapse: collapse;
+			border-spacing: 0;
+		}
+
+		th, td {
+			padding: 0.2em;
+		}
+
+		th {
+			text-align: left;
+			font-weight: bold;
+		}
+		
+		td {
+			width: 500px;
+		}
+		
+		pre {
+			font-family: {{font}};
+		}
+	</style>
+</head>
+
+<body>
+	<h1>{{c.table}}</h1>
+
+	<p>
+		<strong>Connection:</strong> {{c.username}}{% if c.username %}@{% /if %}{{c.hostname}}{% if c.port %}:{% /if %}{{c.port}}/{{c.database}}<br />
+		<strong>Generated on:</strong> {% now | date_format: "dd MMM yyyy 'at' HH:mm:ss" %} by {{c.version}}<br />
+	</p>
+	
+	<h2>{{heading}}</h2>
+	
+	<table>
+		<tr>
+			<th scope="row">Type: </th>
+			<td>{{i.type}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Encoding: </th>
+			<td>{{i.encoding}}</td>
+		</tr>	
+			
+		<tr>
+			<th scope="row">Collation: </th>
+			<td>{{i.collation}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Create at: </th>
+			<td>{{i.createdAt}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Updated at: </th>
+			<td>{{i.updatedAt}}</td>
+		</tr>
+		
+		<tr>	
+			<th scope="row">Number of rows: </th>
+			<td>{{i.rowNumber}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Row format: </th>
+			<td>{{i.rowFormat}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Avg. row length: </th>
+			<td>{{i.rowAvgLength}}</td>
+		</tr>
+		
+		<tr>	
+			<th scope="row">Auto increment: </th>
+			<td>{{i.rowAutoIncrement}}</td>
+		</tr>
+		
+		<tr>
+			<th scope="row">Data size: </th>
+			<td>{{i.dataSize}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Max data size: </th>
+			<td>{{i.maxDataSize}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Index size: </th>
+			<td>{{i.indexSize}}</td>
+		</tr>
+			
+		<tr>
+			<th scope="row">Free data size: </th>
+			<td>{{i.sizeFree}}</td>
+		</tr>
+	</table>
+	
+	{% if i.comments.length > 0 %}
+	<h2>Comments</h2>
+	
+	<p><em>{{i.comments}}</em></p>
+	{% /if %}
+	
+	{% if i.createSyntax > 0 %}
+	<h2>Create Syntax</h2>
+	
+	{{i.createSyntax}}
+	{% /if %}
+</body>
+</html>

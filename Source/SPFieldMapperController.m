@@ -53,7 +53,7 @@
 		}
 		theDelegate = managerDelegate;
 		fieldMappingTableColumnNames   = [[NSMutableArray alloc] init];
-		// fieldMappingTableDefaultValues = [[NSMutableArray alloc] init];
+		fieldMappingTableDefaultValues = [[NSMutableArray alloc] init];
 		fieldMappingTableTypes         = [[NSMutableArray alloc] init];
 		fieldMappingButtonOptions      = [[NSMutableArray alloc] init];
 		fieldMappingOperatorOptions    = [[NSMutableArray alloc] init];
@@ -80,12 +80,18 @@
 {
 
 	// Set source path
-	[fileSourcePath setURL:[NSURL URLWithString:sourcePath]];
+	[fileSourcePath setURL:[NSURL fileURLWithPath:sourcePath]];
+	[fileSourcePath setDoubleAction:@selector(goBackToFileChooser:)];
+	[onupdateTextView setDelegate:theDelegate];
+	windowMinWidth = [[self window] minSize].width;
+	windowMinHeigth = [[self window] minSize].height;
 
 	// Init table target popup menu
 	[tableTargetPopup removeAllItems];
 	if([[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
 		[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
+		[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
+		[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
 
 		// Select either the currently selected table, or the first item in the list
 		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil && ![[[theDelegate valueForKeyPath:@"tablesListInstance"] tableName] isEqualToString:@""]) {
@@ -97,7 +103,30 @@
 	}
 	
 	[importFieldNamesHeaderSwitch setState:importFieldNamesHeader];
-	
+
+	[addRemainingDataSwitch setState:NO];
+	[ignoreCheckBox setState:NO];
+	[ignoreUpdateCheckBox setState:NO];
+	[delayedCheckBox setState:NO];
+	[delayedReplaceCheckBox setState:NO];
+	[onupdateCheckBox setState:NO];
+	[lowPriorityCheckBox setState:NO];
+	[lowPriorityReplaceCheckBox setState:NO];
+	[lowPriorityUpdateCheckBox setState:NO];
+	[highPriorityCheckBox setState:NO];
+	[skipexistingRowsCheckBox setState:NO];
+	[skipexistingRowsCheckBox setEnabled:NO];
+	[advancedButton setState:NO];
+	[advancedBox setHidden:YES];
+
+	showAdvancedView = NO;
+	targetTableHasPrimaryKey = NO;
+	primaryKeyField = nil;
+	heightOffset = 0;
+	[advancedReplaceView setHidden:YES];
+	[advancedUpdateView setHidden:YES];
+	[advancedInsertView setHidden:YES];
+
 	[self changeHasHeaderCheckbox:self];
 	[self changeTableTarget:self];
 	[[self window] makeFirstResponder:fieldMapperTableView];
@@ -122,6 +151,7 @@
 	if (fieldMappingOperatorOptions) [fieldMappingOperatorOptions release];
 	if (fieldMappingOperatorArray) [fieldMappingOperatorArray release];
 	if (fieldMappingGlobalValues) [fieldMappingGlobalValues release];
+	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
 	[super dealloc];
 }
 
@@ -159,7 +189,7 @@
 
 - (NSString*)selectedTableTarget
 {
-	return [tableTargetPopup titleOfSelectedItem];
+	return ([tableTargetPopup titleOfSelectedItem] == nil) ? @"" : [tableTargetPopup titleOfSelectedItem];
 }
 
 - (NSArray*)fieldMapperOperator
@@ -169,7 +199,7 @@
 
 - (NSString*)selectedImportMethod
 {
-	return [importMethodPopup titleOfSelectedItem];
+	return ([importMethodPopup titleOfSelectedItem] == nil) ? @"" : [importMethodPopup titleOfSelectedItem];
 }
 
 - (NSArray*)fieldMappingArray
@@ -192,17 +222,32 @@
 	return ([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO;
 }
 
+- (BOOL)insertRemainingRowsAfterUpdate
+{
+	return ([addRemainingDataSwitch state] == NSOnState)?YES:NO;
+}
+
 - (NSString*)importHeaderString
 {
 	if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"INSERT"]) {
-		return [NSString stringWithFormat:@"INSERT %@%@INTO ", 
+		return [NSString stringWithFormat:@"INSERT %@%@%@%@INTO ", 
+			([lowPriorityCheckBox state] == NSOnState) ? @"LOW_PRIORITY " : @"",
 			([delayedCheckBox state] == NSOnState) ? @"DELAYED " : @"",
+			([highPriorityCheckBox state] == NSOnState) ? @"HIGH_PRIORITY " : @"",
 			([ignoreCheckBox state] == NSOnState) ? @"IGNORE " : @""
 			];
 	}
 	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"REPLACE"]) {
-		return [NSString stringWithFormat:@"REPLACE %@INTO ", 
-			([delayedCheckBox state] == NSOnState) ? @"DELAYED " : @""
+		return [NSString stringWithFormat:@"REPLACE %@%@INTO ", 
+			([lowPriorityReplaceCheckBox state] == NSOnState) ? @"LOW_PRIORITY " : @"",
+			([delayedReplaceCheckBox state] == NSOnState) ? @"DELAYED " : @""
+			];
+	}
+	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
+		return [NSString stringWithFormat:@"UPDATE %@%@%@ SET ", 
+			([lowPriorityUpdateCheckBox state] == NSOnState) ? @"LOW_PRIORITY " : @"",
+			([ignoreUpdateCheckBox state] == NSOnState) ? @"IGNORE " : @"",
+			[[self selectedTableTarget] backtickQuotedString]
 			];
 	}
 	return @"";
@@ -221,24 +266,44 @@
 
 - (IBAction)closeSheet:(id)sender
 {
+	[advancedReplaceView setHidden:YES];
+	[advancedUpdateView setHidden:YES];
+	[advancedInsertView setHidden:YES];
+	[advancedBox setHidden:YES];
+	[self resizeWindowByHeightDelta:0];
 	[NSApp endSheet:[self window] returnCode:[sender tag]];
 }
 
 - (IBAction)changeTableTarget:(id)sender
 {
 
+	// Is Refresh List chosen?
+	if([tableTargetPopup selectedItem] == [tableTargetPopup lastItem]) {
+		[tableTargetPopup removeAllItems];
+		// Update tables list
+		[[theDelegate valueForKeyPath:@"tablesListInstance"] updateTables:nil];
+		if([[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
+			[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
+			[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
+			[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
+		}
+		return;
+	}
+
 	NSInteger i;
 
 	// Remove all the current columns
 	[fieldMappingTableColumnNames removeAllObjects];
-	// [fieldMappingTableDefaultValues removeAllObjects];
+	[fieldMappingTableDefaultValues removeAllObjects];
 	[fieldMappingTableTypes removeAllObjects];
 
 	// Retrieve the information for the newly selected table using a SPTableData instance
 	SPTableData *selectedTableData = [[SPTableData alloc] init];
 	[selectedTableData setConnection:mySQLConnection];
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
-
+	targetTableHasPrimaryKey = NO;
+	BOOL isReplacePossible = NO;
+	// NSLog(@"d %@", tableDetails);
 	if (tableDetails) {
 		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
@@ -252,11 +317,25 @@
 
 			if([column objectForKey:@"isprimarykey"]) {
 				[type appendFormat:@",%@",@"PRIMARY"];
+				if([[[column objectForKey:@"autoincrement"] description] isEqualToString:@"1"]) {
+					[fieldMappingTableDefaultValues addObject:@"auto_increment"];
+				} else {
+					[fieldMappingTableDefaultValues addObject:@"0"];
+				}
+				targetTableHasPrimaryKey = YES;
+				primaryKeyField = [tableDetails objectForKey:@"primarykeyfield"];
 			} else {
-				if([column objectForKey:@"unique"])
+				if([column objectForKey:@"unique"]) {
 					[type appendFormat:@",%@",@"UNIQUE"];
-				if ([column objectForKey:@"default"])
-					[type appendFormat:@",%@",[column objectForKey:@"default"]];
+					isReplacePossible = YES;
+				}
+				if([[[column objectForKey:@"onupdatetimestamp"] description] isEqualToString:@"1"])
+					[fieldMappingTableDefaultValues addObject:@"time_stamp"];
+				else
+					if ([column objectForKey:@"default"])
+						[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
+					else
+						[fieldMappingTableDefaultValues addObject:@"NULL"];
 			}
 
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
@@ -264,6 +343,9 @@
 	}
 
 	[selectedTableData release];
+	[[importMethodPopup menu] setAutoenablesItems:NO];
+	[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:(targetTableHasPrimaryKey|isReplacePossible)];
+	[skipexistingRowsCheckBox setEnabled:targetTableHasPrimaryKey];
 
 	// Update the table view
 	fieldMappingCurrentRow = 0;
@@ -290,6 +372,17 @@
 
 	// Disable Import button if no fields are available
 	[importButton setEnabled:([fieldMappingTableColumnNames count] > 0)];
+	// Disable UPDATE import method if target table has less than 2 fields
+	// and fall back to INSERT if UPDATE was selected
+	if([fieldMappingTableColumnNames count] > 1) {
+		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:YES];
+	} else {
+		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
+		if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
+			[importMethodPopup selectItemWithTitle:@"INSERT"];
+			[self changeImportMethod:nil];
+		}
+	}
 
 	[self updateFieldNameAlignment];
 
@@ -300,16 +393,60 @@
 - (IBAction)changeImportMethod:(id)sender
 {
 	NSInteger i;
+
+	[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
+	[onupdateTextView setEditable:NO];
+	[ignoreCheckBox setState:NO];
+	[ignoreUpdateCheckBox setState:NO];
+	[delayedCheckBox setState:NO];
+	[delayedReplaceCheckBox setState:NO];
+	[onupdateCheckBox setState:NO];
+	[lowPriorityCheckBox setState:NO];
+	[lowPriorityReplaceCheckBox setState:NO];
+	[lowPriorityUpdateCheckBox setState:NO];
+	[highPriorityCheckBox setState:NO];
+
+	[advancedReplaceView setHidden:YES];
+	[advancedUpdateView setHidden:YES];
+	[advancedInsertView setHidden:YES];
+
+	if(showAdvancedView) {
+		[advancedBox setHidden:NO];
+		if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
+			[self resizeWindowByHeightDelta:[advancedUpdateView frame].size.height-10];
+			[advancedUpdateView setHidden:NO];
+			[advancedInsertView setHidden:YES];
+			[advancedReplaceView setHidden:YES];
+		}
+		else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"INSERT"]) {
+			[self resizeWindowByHeightDelta:[advancedInsertView frame].size.height-20];
+			[advancedInsertView setHidden:NO];
+			[advancedUpdateView setHidden:YES];
+			[advancedReplaceView setHidden:YES];
+		}
+		else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"REPLACE"]) {
+			[self resizeWindowByHeightDelta:[advancedReplaceView frame].size.height-10];
+			[advancedReplaceView setHidden:NO];
+			[advancedUpdateView setHidden:YES];
+			[advancedInsertView setHidden:YES];
+		}
+	} else {
+		[advancedBox setHidden:YES];
+	}
+
 	// If operator is set to = for UPDATE method replace it by doNotImport
 	if(![[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
 		[advancedButton setEnabled:YES];
 		for(i=0; i<[fieldMappingTableColumnNames count]; i++) {
-			if([fieldMappingOperatorArray objectAtIndex:i] == isEqual)
+			if([fieldMappingOperatorArray objectAtIndex:i] == isEqual) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doNotImport];
+			}
 		}
 	} else {
-		[advancedButton setEnabled:NO];
+		[advancedButton setEnabled:YES];
 	}
+
+	[self validateImportButton];
 
 	[self updateFieldMappingOperatorOptions];
 	[fieldMapperTableView reloadData];
@@ -360,7 +497,7 @@
 	
 	[fieldMapperTableView reloadData];
 	
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld of %@%lu records", @"%ld of %@%lu records"), (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 	
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
@@ -390,10 +527,6 @@
 	[self addGlobalValue:nil];
 }
 
-// TDOD this won't be called - WHY?  ask HansJB
-// - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
-// 	return NSMakeRect(300,300,50,10);
-// }
 - (IBAction)addGlobalValue:(id)sender
 {
 	[fieldMappingGlobalValues addObject:@""];
@@ -448,8 +581,9 @@
 
 		[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
 
-		// Set corresponding operator to doImport
-		[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
+		// Set corresponding operator to doImport if not set to isEqual
+		if([fieldMappingOperatorArray objectAtIndex:[fieldMapperTableView selectedRow]] != isEqual)
+			[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
 
 		[fieldMapperTableView reloadData];
 
@@ -466,62 +600,148 @@
 
 - (IBAction)openAdvancedSheet:(id)sender
 {
-
-	if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"REPLACE"]) {
-		[ignoreCheckBox setEnabled:NO];
-		[onupdateCheckBox setEnabled:NO];
-		[delayedCheckBox setEnabled:YES];
-		[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
-		[onupdateTextView setEditable:NO];
+	showAdvancedView = !showAdvancedView;
+	if(showAdvancedView) {
+		[advancedButton setState:NSOnState];
+		[self changeImportMethod:nil];
+	} else {
+		[advancedButton setState:NSOffState];
+		[advancedBox setHidden:YES];
+		[advancedReplaceView setHidden:YES];
+		[advancedUpdateView setHidden:YES];
+		[advancedInsertView setHidden:YES];
+		[self resizeWindowByHeightDelta:0];
 	}
-	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"INSERT"]) {
-		[ignoreCheckBox setEnabled:YES];
-		[onupdateCheckBox setEnabled:([delayedCheckBox state] == NSOnState) ? NO : YES];
-		[delayedCheckBox setEnabled:([onupdateCheckBox state] == NSOnState) ? NO : YES];
-		if([onupdateCheckBox state] == NSOffState) {
-			[onupdateTextView setEditable:NO];
-			[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
-		} else {
-			[onupdateTextView setEditable:YES];
-			[onupdateTextView setBackgroundColor:[NSColor whiteColor]];
-		}
-	}
-	
-	[advancedSheet makeFirstResponder:ignoreCheckBox];
-	
-	[NSApp beginSheet:advancedSheet 
-		modalForWindow:[self window] 
-		modalDelegate:self 
-		didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
-}
-
-- (IBAction)closeAdvancedSheet:(id)sender
-{
-	[NSApp endSheet:advancedSheet returnCode:[sender tag]];
 }
 
 - (IBAction)advancedCheckboxValidation:(id)sender
 {
 
-	if([delayedCheckBox state] == NSOnState)
-		[onupdateCheckBox setState:NO];
-	if([onupdateCheckBox state] == NSOnState) {
+	if(sender == lowPriorityReplaceCheckBox && [lowPriorityReplaceCheckBox state] == NSOnState) {
+		[delayedReplaceCheckBox setState:NO];
+		return;
+	}
+	if(sender == delayedReplaceCheckBox && [delayedReplaceCheckBox state] == NSOnState) {
+		[lowPriorityReplaceCheckBox setState:NO];
+		return;
+	}
+	if(sender == skipexistingRowsCheckBox) { 
+		if([skipexistingRowsCheckBox state] == NSOnState) {
+			[delayedCheckBox setState:NO];
+			[delayedCheckBox setEnabled:NO];
+			[onupdateCheckBox setState:YES];
+			[onupdateCheckBox setEnabled:NO];
+			[onupdateTextView setEditable:YES];
+			[onupdateTextView setSelectedRange:NSMakeRange(0,[[onupdateTextView string] length])];
+			[onupdateTextView insertText:[NSString stringWithFormat:@"%@ = %@", [primaryKeyField backtickQuotedString], [primaryKeyField backtickQuotedString]]];
+			[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
+			[onupdateTextView setEditable:NO];
+		} else {
+			[delayedCheckBox setEnabled:YES];
+			[onupdateCheckBox setState:NO];
+			[onupdateCheckBox setEnabled:YES];
+			BOOL oldEditableState = [onupdateTextView isEditable];
+			[onupdateTextView setEditable:YES];
+			[onupdateTextView setSelectedRange:NSMakeRange(0,[[onupdateTextView string] length])];
+			[onupdateTextView insertText:@""];
+			[onupdateTextView setEditable:oldEditableState];
+		}
+	}
+
+	if(sender == lowPriorityCheckBox && [lowPriorityCheckBox state] == NSOnState) {
+		[highPriorityCheckBox setState:NO];
 		[delayedCheckBox setState:NO];
+		if([skipexistingRowsCheckBox state] == NSOffState)
+			[onupdateCheckBox setEnabled:YES];
+	}
+	if(sender == highPriorityCheckBox && [highPriorityCheckBox state] == NSOnState) {
+		[lowPriorityCheckBox setState:NO];
+		[delayedCheckBox setState:NO];
+		if([skipexistingRowsCheckBox state] == NSOffState)
+			[onupdateCheckBox setEnabled:YES];
+	}
+	if(sender == delayedCheckBox) {
+		if([delayedCheckBox state] == NSOnState) {
+			[lowPriorityCheckBox setState:NO];
+			[highPriorityCheckBox setState:NO];
+			[onupdateCheckBox setState:NO];
+			[onupdateCheckBox setEnabled:NO];
+		} else {
+			[onupdateCheckBox setEnabled:YES];
+		}
+	}
+	
+	if(sender == onupdateCheckBox && [onupdateCheckBox state] == NSOnState) {
 		[onupdateTextView setBackgroundColor:[NSColor whiteColor]];
 		[onupdateTextView setEditable:YES];
-		[advancedSheet makeFirstResponder:onupdateTextView];
-	} else {
+		[[self window] makeFirstResponder:onupdateTextView];
+	}
+	if([onupdateCheckBox state] == NSOffState && [skipexistingRowsCheckBox state] == NSOffState) {
 		[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
 		[onupdateTextView setEditable:NO];
 	}
-
-	[onupdateCheckBox setEnabled:([delayedCheckBox state] == NSOnState) ? NO : YES];
-	[delayedCheckBox setEnabled:([onupdateCheckBox state] == NSOnState) ? NO : YES];
-
 }
 
 #pragma mark -
 #pragma mark Others
+
+- (void)resizeWindowByHeightDelta:(NSInteger)delta
+{
+	NSUInteger tableMask = [fieldMapperTableScrollView autoresizingMask];
+	NSUInteger headerSwitchMask = [importFieldNamesHeaderSwitch autoresizingMask];
+	NSUInteger alignPopupMask = [alignByPopup autoresizingMask];
+	NSUInteger alignPopupLabelMask = [alignByPopupLabel autoresizingMask];
+	NSUInteger importMethodLabelMask = [importMethodLabel autoresizingMask];
+	NSUInteger importMethodMask = [importMethodPopup autoresizingMask];
+	NSUInteger advancedButtonMask = [advancedButton autoresizingMask];
+	NSUInteger advancedLabelMask = [advancedLabel autoresizingMask];
+	NSUInteger insertViewMask = [advancedInsertView autoresizingMask];
+	NSUInteger updateViewMask = [advancedUpdateView autoresizingMask];
+	NSUInteger replaceViewMask = [advancedReplaceView autoresizingMask];
+
+	NSRect frame = [[self window] frame];
+	if(frame.size.height>600 && delta > heightOffset) {
+		frame.origin.y += [advancedInsertView frame].size.height;
+		frame.size.height -= [advancedInsertView frame].size.height;
+		[[self window] setFrame:frame display:YES animate:YES];
+	}
+
+	[fieldMapperTableScrollView setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[importFieldNamesHeaderSwitch setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[alignByPopup setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[alignByPopupLabel setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[importMethodLabel setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[importMethodPopup setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[advancedButton setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[advancedLabel setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[advancedInsertView setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[advancedUpdateView setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[advancedReplaceView setAutoresizingMask:NSViewNotSizable|NSViewMinYMargin];
+	[advancedBox setAutoresizingMask:NSViewNotSizable|NSViewWidthSizable|NSViewHeightSizable|NSViewMaxXMargin|NSViewMinXMargin];
+
+	NSInteger newMinHeight = (windowMinHeigth-heightOffset+delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth-heightOffset+delta;
+	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
+	frame.origin.y += heightOffset;
+	frame.size.height -= heightOffset;
+	heightOffset = delta;
+	frame.origin.y -= heightOffset;
+	frame.size.height += heightOffset;
+	[[self window] setFrame:frame display:YES animate:YES];
+
+	[fieldMapperTableScrollView setAutoresizingMask:tableMask];
+	[importFieldNamesHeaderSwitch setAutoresizingMask:headerSwitchMask];
+	[alignByPopup setAutoresizingMask:alignPopupMask];
+	[alignByPopupLabel setAutoresizingMask:alignPopupLabelMask];
+	[importMethodLabel setAutoresizingMask:importMethodLabelMask];
+	[importMethodPopup setAutoresizingMask:importMethodMask];
+	[advancedButton setAutoresizingMask:advancedButtonMask];
+	[advancedLabel setAutoresizingMask:advancedLabelMask];
+	[advancedReplaceView setAutoresizingMask:replaceViewMask];
+	[advancedUpdateView setAutoresizingMask:updateViewMask];
+	[advancedInsertView setAutoresizingMask:insertViewMask];
+	[advancedBox setAutoresizingMask:NSViewNotSizable|NSViewWidthSizable|NSViewMaxYMargin|NSViewMaxXMargin|NSViewMinXMargin];
+
+}
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
@@ -573,10 +793,9 @@
 - (void)setupFieldMappingArray
 {
 	NSInteger i, value;
-	
-    if (!fieldMappingArray) {
-        fieldMappingArray = [[NSMutableArray alloc] init];
-		
+
+	if (!fieldMappingArray) {
+		fieldMappingArray = [[NSMutableArray alloc] init];
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
 			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count] 
 					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isKindOfClass:[NSNull class]]) {
@@ -588,7 +807,7 @@
 			[fieldMappingArray addObject:[NSNumber numberWithInteger:value]];
 		}
 	}
-	
+
 	[fieldMapperTableView reloadData];
 }
 
@@ -658,6 +877,21 @@
 
 }
 
+- (void)validateImportButton
+{
+	BOOL enableImportButton = YES;
+	if([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
+		enableImportButton = NO;
+		for(id op in fieldMappingOperatorArray) {
+			if(op == isEqual) {
+				enableImportButton = YES;
+				break;
+			}
+		}
+	}
+	[importButton setEnabled:enableImportButton];
+}
+
 #pragma mark -
 #pragma mark Table view datasource methods
 
@@ -690,6 +924,7 @@
 			[fieldMappingOperatorArray removeAllObjects];
 			for(i=0; i < [fieldMappingTableColumnNames count]; i++)
 				[fieldMappingOperatorArray addObject:globalValue];
+			[self validateImportButton];
 			[fieldMapperTableView reloadData];
 		} 
 	}
@@ -701,7 +936,7 @@
 	if(aTableView == fieldMapperTableView) {
 		if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
 
-			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return @"";
+			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
 
 			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
 				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
@@ -722,7 +957,7 @@
 			if([aCell objectValue] == doImport)
 				return NSLocalizedString(@"Import field", @"import field operator tooltip");
 			else if([aCell objectValue] == doNotImport)
-				return NSLocalizedString(@"Ignore field", @"ignore field operator tooltip");
+				return NSLocalizedString(@"Ignore field", @"ignore field label");
 			else if([aCell objectValue] == isEqual)
 				return NSLocalizedString(@"Do UPDATE where field contents match", @"do update operator tooltip");
 			else
@@ -765,18 +1000,27 @@
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 				NSPopUpButtonCell *c = [aTableColumn dataCell]; 
 				NSMenu *m = [c menu];
+				[m setAutoenablesItems:NO];
 				[c removeAllItems];
 				[c addItemsWithTitles:fieldMappingButtonOptions];
 				[m addItem:[NSMenuItem separatorItem]];
-				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field label")];
 				[c addItemWithTitle:NSLocalizedString(@"Ignore all fields", @"ignore all fields menu item")];
 				[c addItemWithTitle:NSLocalizedString(@"Import all fields", @"import all fields menu item")];
+				if([[self selectedImportMethod] isEqualToString:@"UPDATE"])
+					[c addItemWithTitle:NSLocalizedString(@"Match field", @"match field menu item")];
 				[m addItem:[NSMenuItem separatorItem]];
 				[c addItemWithTitle:NSLocalizedString(@"Add global value…", @"add global value menu item")];
+				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
+				[[m itemAtIndex:[c numberOfItems]-1] setEnabled:NO];
 
-				// Hide csv file column value if user doesn't want to import it
+				// If user doesn't want to import it show its DEFAULT value if not
+				// UPDATE was chosen otherwise hide it.
 				if([fieldMappingOperatorArray objectAtIndex:rowIndex] != doNotImport)
 					return [fieldMappingArray objectAtIndex:rowIndex];
+				else if(![[self selectedImportMethod] isEqualToString:@"UPDATE"])
+					return [NSNumber numberWithInteger:[c numberOfItems]-1];
+
 			}
 		} 
 
@@ -834,11 +1078,17 @@
 						[fieldMappingOperatorArray addObject:globalValue];
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 				}
+				else if([[self selectedImportMethod] isEqualToString:@"UPDATE"] && [anObject integerValue] == [fieldMappingButtonOptions count]+4) {
+					[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:isEqual];
+					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
+				}
 				// Add global value
-				else if([anObject integerValue] == [fieldMappingButtonOptions count]+5) {
+				else if([anObject integerValue] == ([[self selectedImportMethod] isEqualToString:@"UPDATE"]) ? [fieldMappingButtonOptions count]+6 : [fieldMappingButtonOptions count]+5) {
 					[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
 					[self addGlobalSourceVariable:nil];
 				}
+				[self validateImportButton];
+
 				return;
 			}
 
@@ -848,9 +1098,12 @@
 
 			[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:anObject];
 
-			// If user _changed_ the csv file column set the operator to doImport
-			if([(NSNumber*)anObject integerValue] > -1)
+			// If user _changed_ the csv file column set the operator to doImport if not set to =
+			if([(NSNumber*)anObject integerValue] > -1 && NSArrayObjectAtIndex(fieldMappingOperatorArray, rowIndex) != isEqual)
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doImport];
+
+			[self validateImportButton];
+
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
@@ -861,6 +1114,7 @@
 				if(anObject == doNotImport) lastDisabledCSVFieldcolumn = [fieldMappingArray objectAtIndex:rowIndex];
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
 			}
+			[self validateImportButton];
 		}
 		// Refresh table
 		[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];

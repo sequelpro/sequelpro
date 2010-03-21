@@ -169,5 +169,6 @@
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
+- (void)makeContentFilterHaveFocus;
 
 @end

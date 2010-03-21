@@ -36,7 +36,7 @@
 
 /**
  * Retrieve the entire two-dimensional array represented by the current string.
- * Serves as a concenience method and also an example of how to use getRow:.
+ * Serves as a convenience method and also an example of how to use getRow:.
  */
 - (NSArray *) array
 {
@@ -54,8 +54,7 @@
 	}
 
 	// Return the array
-	[csvArray autorelease];
-	return [NSArray arrayWithArray:csvArray];
+	return [csvArray autorelease];
 }
 
 /**

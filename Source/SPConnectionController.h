@@ -58,6 +58,7 @@
 	SPSSHTunnel *sshTunnel;
 	MCPConnection *mySQLConnection;
 	BOOL automaticFavoriteSelection;
+	BOOL cancellingConnection;
 
 	NSInteger previousType;
 	NSInteger type;
@@ -131,6 +132,7 @@
 - (void)initiateSSHTunnelConnection;
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
 - (void)initiateMySQLConnection;
+- (void)cancelConnection;
 - (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
 - (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)addConnectionToDocument;

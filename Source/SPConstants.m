@@ -40,6 +40,11 @@ NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPFileExtensionDefault                 = @"spf";
 NSString *SPFileExtensionSQL                     = @"sql";
 
+// Filenames
+NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
+NSString *SPHTMLTableInfoPrintTemplate           = @"sequel-pro-table-info-print-template";
+NSString *SPHTMLHelpTemplate                     = @"sequel-pro-mysql-help-template";
+
 // Preference key constants
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
@@ -101,6 +106,10 @@ NSString *SPCustomQueryAutoUppercaseKeywords     = @"CustomQueryAutoUppercaseKey
 NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
 NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
 NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
+NSString *SPCustomQueryEditorTabStopWidth        = @"CustomQueryEditorTabStopWidth";
+NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
+NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
+NSString *SPCustomQueryFunctionCompletionInsertsArguments = @"CustomQueryFunctionCompletionInsertsArguments";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";
@@ -113,6 +122,10 @@ NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
+
+// Hidden Prefs
+NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
+NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
 // Import
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";
@@ -138,6 +151,7 @@ NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
+NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
 
 // URLs
 NSString *SPHomePageURL                          = @"http://www.sequelpro.com/";
@@ -145,6 +159,7 @@ NSString *SPDonationsURL                         = @"http://www.sequelpro.com/do
 NSString *SPFAQURL                               = @"http://www.sequelpro.com/docs/Frequently_Asked_Questions";
 NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
+NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
 
 // Toolbar constants
 

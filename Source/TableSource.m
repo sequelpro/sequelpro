@@ -37,8 +37,8 @@
 @interface TableSource (PrivateAPI)
 
 - (void)_addIndex;
-- (void)_removeFieldAndForeignKey:(BOOL)removeForeignKey;
-- (void)_removeIndexAndForeignKey:(BOOL)removeForeignKey;
+- (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
+- (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey;
 
 @end
 
@@ -118,6 +118,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 				   errorMessage]);
+		if (tableSourceResult) [tableSourceResult release];
 		return;
 	}
 
@@ -148,7 +149,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 				   errorMessage]);
-
+		if (indexResult) [indexResult release];
 		return;
 	}
 	[indexResult setReturnDataAsStrings:YES];
@@ -325,16 +326,20 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 - (IBAction)copyField:(id)sender
 {
 	NSMutableDictionary *tempRow;
+	NSUInteger rowToCopy;
 
-	if ( ![tableSourceView numberOfSelectedRows] ) {
-		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableSourceView numberOfRows]-1] byExtendingSelection:NO];
+	// Store the row to duplicate, as saveRowOnDeselect and subsequent reloads may trigger a deselection
+	if ([tableSourceView numberOfSelectedRows]) {
+		rowToCopy = [tableSourceView selectedRow];
+	} else {
+		rowToCopy = [tableSourceView numberOfRows]-1;
 	}
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 	
 	//add copy of selected row and go in edit mode
-	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:[tableSourceView selectedRow]]];
+	tempRow = [NSMutableDictionary dictionaryWithDictionary:[tableFields objectAtIndex:rowToCopy]];
 	[tempRow setObject:[[tempRow objectForKey:@"Field"] stringByAppendingString:@"Copy"] forKey:@"Field"];
 	[tempRow setObject:@"" forKey:@"Key"];
 	[tempRow setObject:@"None" forKey:@"Extra"];
@@ -630,8 +635,8 @@ fetches the result as an array with a dictionary for each row in it
 
 		//use NULL string from preferences instead of the NSNull oject returned by the framework
 		keys = [tempRow allKeys];
-		for (NSInteger i = 0; i < [keys count] ; i++) {
-			key = NSArrayObjectAtIndex(keys, i);
+		for (NSInteger j = 0; j < [keys count] ; j++) {
+			key = NSArrayObjectAtIndex(keys, j);
 			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] )
 				[tempRow setObject:prefsNullValue forKey:key];
 		}
@@ -1017,38 +1022,74 @@ fetches the result as an array with a dictionary for each row in it
 	if ([contextInfo isEqualToString:@"addrow"]) {
 		
 		alertSheetOpened = NO;
-		if ( returnCode == NSAlertDefaultReturn ) {
+		
+		if (returnCode == NSAlertDefaultReturn) {
 			
 			// Problem: reentering edit mode for first cell doesn't function
 			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
 			[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
-		} else {
-			if ( !isEditingNewRow ) {
+		} 
+		else {
+			if (!isEditingNewRow) {
 				[tableFields replaceObjectAtIndex:currentlyEditingRow
 									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 				isEditingRow = NO;
-			} else {
-				[tableFields removeObjectAtIndex:[tableSourceView selectedRow]];
+			} 
+			else {
+				[tableFields removeObjectAtIndex:currentlyEditingRow];
 				isEditingRow = NO;
 				isEditingNewRow = NO;
 			}
+			
 			currentlyEditingRow = -1;
 		}
+		
 		[tableSourceView reloadData];
 	}
 	else if ([contextInfo isEqualToString:@"removeField"] || [contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self _removeFieldAndForeignKey:[contextInfo hasSuffix:@"AndForeignKey"]];
+			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
+			
+			NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+			
+			if ([NSThread isMainThread]) {
+				[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
+				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+			} 
+			else {
+				[self _removeFieldAndForeignKey:removeKey];
+			}
 		}
 	} 
 	else if ([contextInfo isEqualToString:@"addIndex"]) {
 		if (returnCode == NSOKButton) {
-			[self _addIndex];
+			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
+			
+			if ([NSThread isMainThread]) {
+				[NSThread detachNewThreadSelector:@selector(_addIndex) toTarget:self withObject:nil];
+				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+			} 
+			else {
+				[self _addIndex];
+			}
 		}
 	}
 	else if ([contextInfo isEqualToString:@"removeIndex"] || [contextInfo isEqualToString:@"removeIndexAndForeignKey"]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self _removeIndexAndForeignKey:[contextInfo hasSuffix:@"AndForeignKey"]];
+			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing index...", @"removing index task status message")];
+			
+			NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+			
+			if ([NSThread isMainThread]) {
+				[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
+				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+			} 
+			else {
+				[self _removeIndexAndForeignKey:removeKey];
+			}
 		}
 	} 
 	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
@@ -1111,22 +1152,78 @@ returns a dictionary containing enum/set field names as key and possible values 
 	return [NSDictionary dictionaryWithDictionary:enumFields];
 }
 
-- (NSArray *)tableStructureForPrint
-{
-	MCPResult *queryResult;
-	NSMutableArray *tempResult = [NSMutableArray array];
-	NSInteger i;
+/**
+ * Returns a dictionary describing the source of the table to be used for printing purposes. The object accessible
+ * via the key 'structure' is an array of the tables fields, where the first element is always the field names 
+ * and each subsequent element is the field data. This is also true for the table's indexes, which are accessible
+ * via the key 'indexes'.
+ */
+- (NSDictionary *)tableSourceForPrinting
+{	
+	NSInteger i, j;
+	NSMutableArray *tempResult  = [NSMutableArray array];
+	NSMutableArray *tempResult2 = [NSMutableArray array];
 	
-	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
-	[queryResult setReturnDataAsStrings:YES];
+	NSString *nullValue = [prefs stringForKey:SPNullValue];
+	CFStringRef escapedNullValue = CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL);
 	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	[tempResult addObject:[queryResult fetchFieldNames]];
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
-		[tempResult addObject:[queryResult fetchRowAsArray]];
+	MCPResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	MCPResult *indexesQueryResult   = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEXES FROM %@", [selectedTable backtickQuotedString]]];
+	
+	[structureQueryResult setReturnDataAsStrings:YES];
+	[indexesQueryResult setReturnDataAsStrings:YES];
+	
+	if ([structureQueryResult numOfRows]) [structureQueryResult dataSeek:0];
+	if ([indexesQueryResult numOfRows]) [indexesQueryResult dataSeek:0];
+	
+	[tempResult addObject:[structureQueryResult fetchFieldNames]];
+	
+	NSMutableArray *temp = [[indexesQueryResult fetchFieldNames] mutableCopy];
+	
+	// Remove the 'table' column
+	[temp removeObjectAtIndex:0];
+	
+	[tempResult2 addObject:temp];
+	
+	[temp release];
+	
+	for (i = 0; i < [structureQueryResult numOfRows]; i++) {
+		NSMutableArray *row = [[structureQueryResult fetchRowAsArray] mutableCopy];
+				
+		// For every NULL value replace it with the user's NULL value placeholder so we can actually print it
+		for (j = 0; j < [row count]; j++)
+		{
+			if ([[row objectAtIndex:j] isNSNull]) {
+				[row replaceObjectAtIndex:j withObject:(NSString *)escapedNullValue];
+			}
+		}
+				
+		[tempResult addObject:row];
+				 
+		[row release];
 	}
-	
-	return tempResult;
+
+	for (i = 0; i < [indexesQueryResult numOfRows]; i++) {
+		NSMutableArray *index = [[indexesQueryResult fetchRowAsArray] mutableCopy];
+		
+		// Remove the 'table' column values
+		[index removeObjectAtIndex:0];
+		
+		// For every NULL value replace it with the user's NULL value placeholder so we can actually print it
+		for (j = 0; j < [index count]; j++)
+		{
+			if ([[index objectAtIndex:j] isNSNull]) {
+				[index replaceObjectAtIndex:j withObject:(NSString *)escapedNullValue];
+			}
+		}
+		
+		[tempResult2 addObject:index];
+		
+		[index release];
+	}
+
+	CFRelease(escapedNullValue);
+	return [NSDictionary dictionaryWithObjectsAndKeys:tempResult, @"structure", tempResult2, @"indexes", nil];
 }
 
 #pragma mark -
@@ -1139,8 +1236,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only proceed if this view is selected.
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
 	[tableSourceView setEnabled:NO];
 	[addFieldButton setEnabled:NO];
@@ -1162,8 +1258,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 {
 
 	// Only re-enable elements if the current tab is the structure view
-	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure])
-		return;
+	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
 	[tableSourceView setEnabled:YES];
@@ -1241,8 +1336,7 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 */
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
-
-	//make sure that the drag operation is started from the right table view
+	// Make sure that the drag operation is started from the right table view
 	if (aTableView != tableSourceView) return NO;
 
 	// Check whether a save of the current field row is required.
@@ -1255,7 +1349,6 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 	} else {
 		return NO;
 	}
-
 }
 
 /*
@@ -1592,8 +1685,10 @@ would result in a position change.
 /**
  * Adds an index to the current table.
  */
-- (IBAction)_addIndex;
+- (void)_addIndex;
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	NSString *indexName;
 	NSArray *indexedColumns;
 	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
@@ -1630,26 +1725,32 @@ would result in a position change.
 									  [selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
 									  [tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 		
-		// Check for errors
-		if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		// Check for errors, but only if the query wasn't cancelled
+		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
+		}
+		else {
 			[tableDataInstance resetAllData];
 			[tablesListInstance setStatusRequiresReload:YES];
 			[self loadTable:selectedTable];
 		}
-		else {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
-		}
 	}
+	
+	[tableDocumentInstance endTask];
+	
+	[pool drain];
 }
 
 /**
  * Removes a field from the current table and the dependent foreign key if specified. 
  */
-- (void)_removeFieldAndForeignKey:(BOOL)removeForeignKey
-{
+- (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey
+{	
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	// Remove the foreign key before the field if required
-	if (removeForeignKey) {
+	if ([removeForeignKey boolValue]) {
 		
 		NSString *relationName = @"";
 		NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"];
@@ -1668,7 +1769,8 @@ would result in a position change.
 		
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
 		
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+		// Check for errors, but only if the query wasn't cancelled
+		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -1681,15 +1783,9 @@ would result in a position change.
 	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
 								  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 	
-	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
+	// Check for errors, but only if the query wasn't cancelled
+	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 		
-		// Mark the content table cache for refresh
-		[tablesListInstance setContentRequiresReload:YES];
-	} 
-	else {
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
 							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
@@ -1697,16 +1793,30 @@ would result in a position change.
 								[mySQLConnection getLastErrorMessage]],
 							   nil] 
 				   afterDelay:0.3];
+	} 
+	else {
+		[tableDataInstance resetAllData];
+		[tablesListInstance setStatusRequiresReload:YES];
+		[self loadTable:selectedTable];
+		
+		// Mark the content table cache for refresh
+		[tablesListInstance setContentRequiresReload:YES];
 	}
+	
+	[tableDocumentInstance endTask];
+	
+	[pool drain];
 }
 
 /**
  * Removes an index from the current table and the dependent foreign key if specified.
  */
-- (void)_removeIndexAndForeignKey:(BOOL)removeForeignKey
+- (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	// Remove the foreign key dependency before the index if required
-	if (removeForeignKey) {
+	if ([removeForeignKey boolValue]) {
 		
 		NSString *columnName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Column_name"];
 		
@@ -1727,7 +1837,8 @@ would result in a position change.
 		
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [constraintName backtickQuotedString]]];
 		
-		if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		// Check for errors, but only if the query wasn't cancelled
+		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -1744,18 +1855,23 @@ would result in a position change.
 									  [selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
 	}
 	
-	// Check for errors
-	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-	} 
-	else {
+	// Check for errors, but only if the query wasn't cancelled
+	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+		
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Unable to remove index", @"error removing index message"),
 							   [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]], nil] 
 				   afterDelay:0.3];
+	} 
+	else {
+		[tableDataInstance resetAllData];
+		[tablesListInstance setStatusRequiresReload:YES];
+		[self loadTable:selectedTable];
 	}
+	
+	[tableDocumentInstance endTask];
+	
+	[pool drain];
 }
 
 @end

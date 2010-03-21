@@ -76,6 +76,25 @@
 	return result;
 }
 
+- (NSString *)componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst
+{
+	NSMutableString *result = [NSMutableString string];
+	[result setString:@""];
+	BOOL notFirst = NO;
+	for (NSString *component in self)
+	{
+		if ([result length])
+			[result appendString: @"."];
+
+		if (notFirst)
+			[result appendString:[component backtickQuotedString]];
+
+		notFirst = YES;
+	}
+	return result;
+}
+
+
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes
 {
 	NSMutableArray *subArray  = [NSMutableArray arrayWithCapacity:[indexes count]];

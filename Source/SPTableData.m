@@ -313,9 +313,9 @@
 - (NSDictionary *) informationForTable:(NSString *)tableName
 {	
 	SPSQLParser *createTableParser, *fieldsParser, *fieldParser;
-	NSMutableArray *tableColumns, *fieldStrings, *definitionParts;
+	NSMutableArray *tableColumns, *fieldStrings;
 	NSMutableDictionary *tableColumn, *tableData;
-	NSString *encodingString;
+	NSString *encodingString = nil;
 	NSUInteger i, stringStart;
 	unichar quoteCharacter;
 
@@ -366,7 +366,6 @@
 	// table information.  Proceed further by parsing the field strings.
 	tableColumns = [[NSMutableArray alloc] init];
 	tableColumn = [[NSMutableDictionary alloc] init];
-	definitionParts = [[NSMutableArray alloc] init];
 	fieldParser = [[SPSQLParser alloc] init];
 	
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
@@ -384,7 +383,6 @@
 			continue;
 		}
 		[tableColumn removeAllObjects];
-		[definitionParts removeAllObjects];
 
 		// If the first character is a quote character, this is a field definition.
 		if ([quoteSet characterIsMember:[fieldsParser characterAtIndex:0]]) {
@@ -535,9 +533,9 @@
 				if([parsedString length]>4) {
 					NSString *priFieldName = [[parsedString substringWithRange:NSMakeRange(2,[parsedString length]-4)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
 					[tableData setObject:priFieldName forKey:@"primarykeyfield"];
-					for(id tableColumn in tableColumns)
-						if([[tableColumn objectForKey:@"name"] isEqualToString:priFieldName]) {
-							[tableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+					for(id theTableColumn in tableColumns)
+						if([[theTableColumn objectForKey:@"name"] isEqualToString:priFieldName]) {
+							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
 							break;
 						}
 				}
@@ -550,9 +548,9 @@
 					NSArray *uniqueFieldNames = [parsedString componentsSeparatedByString:@"`,`"];
 					for(NSString* uniq in uniqueFieldNames) {
 						NSString *uniqField = [[uniq stringByReplacingOccurrencesOfRegex:@"^\\(`|`\\)" withString:@""] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
-						for(id tableColumn in tableColumns)
-							if([[tableColumn objectForKey:@"name"] isEqualToString:uniqField]) {
-								[tableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+						for(id theTableColumn in tableColumns)
+							if([[theTableColumn objectForKey:@"name"] isEqualToString:uniqField]) {
+								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
 								break;
 							}
 					}
@@ -567,7 +565,6 @@
 	}
 	[fieldStrings release];
 	[fieldsParser release];
-	[definitionParts release];
 	[tableColumn release];
 
 	// Extract the encoding from the table properties string - other details come from TABLE STATUS.
@@ -610,14 +607,14 @@
 							   tableName, [mySQLConnection getLastErrorMessage]]);
 		}
 		[tableColumns release];
-		[encodingString release];
+		if (encodingString) [encodingString release];
 
 		return nil;
 	}
 	
 	[triggers removeAllObjects];
 	if( [theResult numOfRows] ) {
-		for(int i=0; i<[theResult numOfRows]; i++){
+		for(i=0; i<[theResult numOfRows]; i++){
 			[triggers addObject:[theResult fetchRowAsDictionary]];
 		}
 	}
@@ -707,6 +704,7 @@
 	}
 
 	// Retrieve the table syntax string
+	if (tableCreateSyntax) [tableCreateSyntax release], tableCreateSyntax = nil;
 	tableCreateSyntax = [[NSString alloc] initWithString:[[theResult fetchRowAsArray] objectAtIndex:1]];
 
 	// Retrieve the SHOW COLUMNS syntax for the table
@@ -799,7 +797,7 @@
 	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
 
-	MCPResult *tableStatusResult;
+	MCPResult *tableStatusResult = nil;
 
 	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
 		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];

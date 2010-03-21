@@ -62,7 +62,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	@synchronized(self) {
 		if (sharedQueryController == nil) {
-			[[self alloc] init];
+			sharedQueryController = [[super allocWithZone:NULL] init];
 		}
 	}
 
@@ -72,14 +72,8 @@ static SPQueryController *sharedQueryController = nil;
 + (id)allocWithZone:(NSZone *)zone
 {    
 	@synchronized(self) {
-		if (sharedQueryController == nil) {
-			sharedQueryController = [super allocWithZone:zone];
-
-			return sharedQueryController;
-		}
+		return [[self sharedQueryController] retain];
 	}
-
-	return nil; // On subsequent allocation attempts return nil
 }
 
 - (id)init
@@ -103,6 +97,44 @@ static SPQueryController *sharedQueryController = nil;
 		favoritesContainer = [[NSMutableDictionary alloc] init];
 		historyContainer = [[NSMutableDictionary alloc] init];
 		contentFilterContainer = [[NSMutableDictionary alloc] init];
+		completionKeywordList = nil;
+		completionFunctionList = nil;
+		functionArgumentSnippets = nil;
+
+		NSError *readError = nil;
+		NSString *convError = nil;
+		NSPropertyListFormat format;
+		NSDictionary *completionPlist;
+		NSData *completionTokensData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"CompletionTokens.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
+			options:NSMappedRead error:&readError];
+
+		
+		completionPlist = [NSDictionary dictionaryWithDictionary:[NSPropertyListSerialization propertyListFromData:completionTokensData 
+				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
+
+		if(completionPlist == nil || readError != nil || convError != nil) {
+			NSLog(@"Error while reading “CompletionTokens.plist”:\n%@\n%@", [readError localizedDescription], convError);
+			NSBeep();
+		} else {
+			if([completionPlist objectForKey:@"core_keywords"]) {
+				completionKeywordList = [[NSArray arrayWithArray:[completionPlist objectForKey:@"core_keywords"]] retain];
+			} else {
+				NSLog(@"No “core_keywords” array found.");
+				NSBeep();
+			}
+			if([completionPlist objectForKey:@"core_builtin_functions"]) {
+				completionFunctionList = [[NSArray arrayWithArray:[completionPlist objectForKey:@"core_builtin_functions"]] retain];
+			} else {
+				NSLog(@"No “core_builtin_functions” array found.");
+				NSBeep();
+			}
+			if([completionPlist objectForKey:@"function_argument_snippets"]) {
+				functionArgumentSnippets = [[NSDictionary dictionaryWithDictionary:[completionPlist objectForKey:@"function_argument_snippets"]] retain];
+			} else {
+				NSLog(@"No “function_argument_snippets” dictionary found.");
+				NSBeep();
+			}
+		}
 
 	}
 	
@@ -463,6 +495,30 @@ static SPQueryController *sharedQueryController = nil;
 }
 
 #pragma mark -
+#pragma mark Completion List Controller
+
+- (NSArray*)functionList
+{
+	if(completionFunctionList != nil && [completionFunctionList count])
+		return completionFunctionList;
+	return [NSArray array];
+}
+
+- (NSArray*)keywordList
+{
+	if(completionKeywordList != nil && [completionKeywordList count])
+		return completionKeywordList;
+	return [NSArray array];
+}
+
+- (NSString*)argumentSnippetForFunction:(NSString*)func
+{
+	if(functionArgumentSnippets && [functionArgumentSnippets objectForKey:[func uppercaseString]])
+		return [functionArgumentSnippets objectForKey:[func uppercaseString]];
+	return @"";
+}
+
+#pragma mark -
 #pragma mark DocumentsController
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
@@ -591,6 +647,10 @@ static SPQueryController *sharedQueryController = nil;
 		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];
 
+
+	// User did choose to clear the global history list
+	if(![fileURL isFileURL] && ![historyArray count])
+		[prefs setObject:historyArray forKey:SPQueryHistory];
 }
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
@@ -620,7 +680,7 @@ static SPQueryController *sharedQueryController = nil;
 
 	// Save history items coming from each Untitled document in the global Preferences successively
 	// regardingless of the source document.
-	if(![[fileURL absoluteString] hasPrefix:@"/"]) {
+	if(![fileURL isFileURL]) {
 
 		// Remove all duplicates by using a NSPopUpButton
 		NSPopUpButton *uniquifier = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0,0,0,0) pullsDown:YES];
@@ -735,7 +795,10 @@ static SPQueryController *sharedQueryController = nil;
 	[favoritesContainer release], favoritesContainer = nil;
 	[historyContainer release], historyContainer = nil;
 	[contentFilterContainer release], contentFilterContainer = nil;
-	
+
+	if(completionKeywordList) [completionKeywordList release];
+	if(completionFunctionList) [completionFunctionList release];
+	if(functionArgumentSnippets) [functionArgumentSnippets release];
 	[super dealloc];
 }
 

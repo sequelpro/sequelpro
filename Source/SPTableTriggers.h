@@ -68,4 +68,7 @@
 - (void)startDocumentTaskForTab:(NSNotification *)notification;
 - (void)endDocumentTaskForTab:(NSNotification *)notification;
 
+// Other
+- (NSArray *)triggerDataForPrinting;
+
 @end
