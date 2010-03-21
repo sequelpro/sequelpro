@@ -39,6 +39,7 @@
 #import "NSNotificationAdditions.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "SPNavigatorController.h"
 
 @interface TablesList (PrivateAPI)
 
@@ -1420,6 +1421,20 @@
 	if ([tablesListView numberOfSelectedRows] == 1 && [(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length])
 		tableName = [filteredTables objectAtIndex:[tablesListView selectedRow]];
 	[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), tableName]];
+
+	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
+		NSMutableString *schemaPath = [NSMutableString string];
+		[schemaPath setString:[tableDocumentInstance connectionID]];
+		if([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
+			[schemaPath appendString:SPUniqueSchemaDelimiter];
+			[schemaPath appendString:[tableDocumentInstance database]];
+			if(tableName && [tableName length]) {
+				[schemaPath appendString:SPUniqueSchemaDelimiter];
+				[schemaPath appendString:tableName];
+			}
+		}
+		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
+	}
 }
 
 /**

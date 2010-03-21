@@ -27,9 +27,12 @@
 #import "SPOutlineView.h"
 #import "SPConstants.h"
 #import "ImageAndTextCell.h"
-
+#import "TableDocument.h"
+#import "SPArrayAdditions.h"
 
 static SPNavigatorController *sharedNavigatorController = nil;
+
+#define DragFromNavigatorPboardType  @"SPDragFromNavigatorPboardType"
 
 @implementation SPNavigatorController
 
@@ -66,6 +69,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		selectedKey1  = @"";
 		selectedKey2  = @"";
 		ignoreUpdate  = NO;
+		[syncButton setState:NSOffState];
 	}
 
 	return self;
@@ -101,12 +105,25 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
+	[outlineSchema1 registerForDraggedTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil]];
+	[outlineSchema1 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
+	[outlineSchema1 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
+	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil]];
+	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
+	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
 }
 
 - (NSString *)windowFrameAutosaveName
 {
 	return @"SPNavigator";
+}
+
+- (BOOL)syncMode
+{
+	if([[self window] isVisible])
+		return ([syncButton state] == NSOffState || [outlineSchema2 numberOfSelectedRows] > 1) ? NO : YES;
+	return NO;
 }
 
 - (void)restoreExpandStatus
@@ -157,6 +174,45 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 	}
 
+}
+
+- (void)selectPath:(NSString*)schemaPath
+{
+	if(schemaPath && [schemaPath length]) {
+
+		// Do not change the selection if a field of schemaPath's table is already selected
+		[self saveSelectedItems];
+		if([selectedKey2 length] && [selectedKey2 hasPrefix:[NSString stringWithFormat:@"%@%@", schemaPath, SPUniqueSchemaDelimiter]])
+			return;
+
+		id item = schemaData;
+		NSArray *pathArray = [schemaPath componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		NSMutableString *aKey = [NSMutableString string];
+		[outlineSchema2 collapseItem:[item objectForKey:[pathArray objectAtIndex:0]] collapseChildren:YES];
+		for(NSInteger i=0; i < [pathArray count]; i++) {
+			[aKey appendString:[pathArray objectAtIndex:i]];
+			if(![item objectForKey:aKey]) break;
+			item = [item objectForKey:aKey];
+			[outlineSchema2 expandItem:item];
+			[aKey appendString:SPUniqueSchemaDelimiter];
+		}
+		if(item != nil) {
+			NSInteger itemIndex = [outlineSchema2 rowForItem:item];
+			if (itemIndex >= 0) {
+				[outlineSchema2 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
+				[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
+				id item = [outlineSchema2 itemAtRow:[outlineSchema2 selectedRow]];
+				// Try to scroll the view that all children of schemaPath are visible if possible
+				NSInteger cnt = [item count]+1;
+				NSRange r = [outlineSchema2 rowsInRect:[outlineSchema2 visibleRect]];
+				NSInteger offset = (cnt > r.length) ? (r.length-2) : cnt;
+				offset += [outlineSchema2 selectedRow];
+				if(offset >= [outlineSchema2 numberOfRows])
+					offset = [outlineSchema2 numberOfRows] - 1;
+				[outlineSchema2 scrollRowToVisible:offset];
+			}
+		}
+	}
 }
 
 - (void)restoreSelectedItems
@@ -282,6 +338,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	selectedKey2 = @"";
 	selectionViewPort1 = NSZeroRect;
 	selectionViewPort2 = NSZeroRect;
+	[syncButton setState:NSOffState];
 
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
@@ -300,6 +357,26 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (IBAction)filterTree:(id)sender
 {
 	NSString *pattern = [searchField stringValue];
+}
+
+- (IBAction)syncButtonAction:(id)sender
+{
+	if([syncButton state] == NSOnState) {
+		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
+			TableDocument *doc = [[NSDocumentController sharedDocumentController] currentDocument];
+			NSMutableString *key = [NSMutableString string];
+			[key setString:[doc connectionID]];
+			if([doc database] && [(NSString*)[doc database] length]){
+				[key appendString:SPUniqueSchemaDelimiter];
+				[key appendString:[doc database]];
+			}
+			if([doc table] && [(NSString*)[doc table] length]){
+				[key appendString:SPUniqueSchemaDelimiter];
+				[key appendString:[doc table]];
+			}
+			[self selectPath:key];
+		}
+	}
 }
 
 #pragma mark -
@@ -507,6 +584,28 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	return YES;
 }
 
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	if([outlineView levelForItem:item] == 0) return NO;
+	
+	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	id parentKeys = [parentObject allKeysForObject:item];
+	if(parentKeys && [parentKeys count] == 1) {
+		NSArray *pathArray = [[[parentKeys objectAtIndex:0] description] componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		if([pathArray count] > 1) {
+			TableDocument *doc = [[NSDocumentController sharedDocumentController] currentDocument];
+			if([[doc connectionID] isEqualToString:[pathArray objectAtIndex:0]]) {
+				if(![[doc database] isEqualToString:[pathArray objectAtIndex:1]]) {
+					// todo
+				}
+			}
+		}
+	}
+	
+	
+	return NO;
+}
+
 - (void)outlineViewSelectionDidChange:(NSNotification *)aNotification
 {
 	id ov = [aNotification object];
@@ -524,7 +623,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			[infoTable setRowHeight:18.0];
 			NSInteger i = 0;
 			for(id item in selectedItem) {
-				if([item isKindOfClass:[NSString class]] && [item length]) {
+				if([item isKindOfClass:[NSString class]] && [(NSString*)item length]) {
 					[infoArray addObject:[NSString stringWithFormat:@"%@: %@", [self tableInfoLabelForIndex:i], [item stringByReplacingOccurrencesOfString:@"," withString:@", "]]];
 				}
 				i++;
@@ -532,6 +631,40 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 	}
 	[infoTable reloadData];
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
+{
+	// Provide data for our custom type, and simple NSStrings.
+	[pboard declareTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil] owner:self];
+
+	// Collect the actual schema paths without leading connection ID
+	NSMutableArray *draggedItems = [NSMutableArray array];
+	for(id item in items) {
+		id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+		id parentKeys = [parentObject allKeysForObject:item];
+		if(parentKeys && [parentKeys count] == 1)
+			[draggedItems addObject:[[[parentKeys objectAtIndex:0] description] stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"^.*?%@", SPUniqueSchemaDelimiter] withString:@""]];
+	}
+
+	// Drag the array with schema paths
+	NSMutableData *arraydata = [[[NSMutableData alloc] init] autorelease];
+	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:arraydata] autorelease];
+	[archiver encodeObject:draggedItems forKey:@"itemdata"];
+	[archiver finishEncoding];
+	[pboard setData:arraydata forType:DragFromNavigatorPboardType];
+
+	// For external destinations provide a comma separated string
+	NSMutableString *dragString = [NSMutableString string];
+	for(id item in draggedItems) {
+		if([dragString length]) [dragString appendString:@", "];
+		[dragString appendString:[[item componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst]];
+	}
+
+	if(![dragString length]) return NO;
+
+	[pboard setString:dragString forType:NSStringPboardType];
+	return YES;
 }
 
 #pragma mark -

@@ -743,6 +743,7 @@
 				break;
 		}
 	}
+
 }
 
 /**
@@ -856,6 +857,17 @@
 
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:YES];
+
+	// If Navigator runs in syncMode let it follow the selection
+	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
+		NSMutableString *schemaPath = [NSMutableString string];
+		[schemaPath setString:[self connectionID]];
+		if([chooseDatabaseButton titleOfSelectedItem] && [[chooseDatabaseButton titleOfSelectedItem] length]) {
+			[schemaPath appendString:SPUniqueSchemaDelimiter];
+			[schemaPath appendString:[chooseDatabaseButton titleOfSelectedItem]];
+		}
+		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
+	}
 
 	// Start a task
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
@@ -3690,6 +3702,24 @@
 
 	// Return YES by default
 	return YES;
+}
+
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+	// Synchronize Navigator with current active document if Navigator runs in syncMode
+	if([[SPNavigatorController sharedNavigatorController] syncMode] && [self connectionID] && ![[self connectionID] isEqualToString:@"_"]) {
+		NSMutableString *schemaPath = [NSMutableString string];
+		[schemaPath setString:[self connectionID]];
+		if([self database] && [[self database] length]) {
+			[schemaPath appendString:SPUniqueSchemaDelimiter];
+			[schemaPath appendString:[self database]];
+			if([self table] && [[self table] length]) {
+				[schemaPath appendString:SPUniqueSchemaDelimiter];
+				[schemaPath appendString:[self table]];
+			}
+		}
+		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
+	}
 }
 
 /**
