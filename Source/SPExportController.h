@@ -94,6 +94,9 @@
 	// Cancellation flag
 	BOOL exportCancelled;
 	
+	// Multi-file export flag
+	BOOL exportToMultipleFiles;
+	
 	// Current database's tables
 	NSMutableArray *tables;
 	
@@ -115,6 +118,7 @@
 }
 
 @property (readwrite, assign) BOOL exportCancelled;
+@property (readwrite, assign) BOOL exportToMultipleFiles;
 @property (readwrite, assign) MCPConnection *connection;
 
 // IB action methods

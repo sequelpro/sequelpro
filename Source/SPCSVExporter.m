@@ -54,7 +54,6 @@
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		
 		NSMutableString *csvString     = [NSMutableString string];
-		NSMutableString *csvData       = [NSMutableString string];
 		NSMutableString *csvCellString = [NSMutableString string];
 
 		NSArray *csvRow;
@@ -145,7 +144,7 @@
 		// headers as the first row, decide whether to skip the first row.
 		NSUInteger currentRowIndex = 0;
 		
-		[csvData setString:@""];
+		[csvString setString:@""];
 		
 		if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
 		
@@ -280,15 +279,19 @@
 			}
 			
 			// Append the line ending to the string for this row, and record the length processed for pool flushing
-			[csvString appendString:[self csvLineEndingString]];
-			[csvData appendString:csvString];
-						
+			[csvString appendString:[self csvLineEndingString]];						
 			currentPoolDataLength += [csvString length];
+			
+			// Write it to the fileHandle
+			[[self exportOutputFileHandle] writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
 			
 			currentRowIndex++;
 			
 			// Update the progress value
 			if (totalRows) [self setExportProgressValue:(((i + 1) * 100) / totalRows)];
+			
+			// Call the delegate's exporterProcessProgressUpdated: while passing this exporter to it
+			[[self delegate] performSelectorOnMainThread:@selector(exportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 			
 			// If an array was supplied and we've processed all rows, break
 			if ([self csvDataArray] && (totalRows == currentRowIndex)) break;
@@ -299,9 +302,6 @@
 				csvExportPool = [[NSAutoreleasePool alloc] init];
 			}
 		}
-				
-		// Assign the resulting CSV data to the expoter's export data
-		[self setExportData:csvData];
 		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];
@@ -312,7 +312,7 @@
 		[pool release];
 	}
 	@catch(NSException *e) {
-		
+		// Decide something sensible to do with exceptions
 	}
 }
 

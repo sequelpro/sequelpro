@@ -30,18 +30,19 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
-#import "SPLogger.h"
 
 @interface SPExportController (PrivateAPI)
 
 - (void)_initializeExportUsingSelectedOptions;
-- (BOOL)_exportTables:(NSArray *)exportTables;
+- (void)_exportTables:(NSArray *)exportTables;
+- (NSFileHandle *)_getFileHandleForFilePath:(NSString *)filePath;
 
 @end
 
 @implementation SPExportController
 
 @synthesize connection;
+@synthesize exportToMultipleFiles;
 @synthesize exportCancelled;
 
 /**
@@ -51,6 +52,7 @@
 {
 	if ((self = [super init])) {
 		[self setExportCancelled:NO];
+		[self setExportToMultipleFiles:YES];
 		
 		exportType = 0;
 		
@@ -98,8 +100,11 @@
 	}
 	
 	[exportTableList reloadData];
+	
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
 
-	[exportPathField setStringValue:NSHomeDirectory()];
+	// If found the set the default path to the user's desktop, otherwise use their home directory
+	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	
 	[NSApp beginSheet:exportWindow
 	   modalForWindow:tableWindow
@@ -239,15 +244,12 @@
  */
 - (void)exporterProcessWillBegin:(SPExporter *)exporter
 {
-	//[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), ((unsigned long)(i + 1)), ((unsigned long)tableCount), tableName]];
 	[exportProgressText displayIfNeeded];
 	
 	[exportProgressIndicator setIndeterminate:YES];
 	[exportProgressIndicator setUsesThreadedAnimation:YES];
 	[exportProgressIndicator startAnimation:self];
-	
-	[[SPLogger logger] log:[NSString stringWithFormat:@"Exporter started: %@", exporter]];
-	
+		
 	// Update the progress text and set the progress bar back to determinate
 	//[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing...", @"text showing that app is writing data for table export"), ((unsigned long)(i + 1)), ((unsigned long)tableCount), tableName]];
 	[exportProgressText displayIfNeeded];
@@ -265,15 +267,7 @@
  * SPExporter's exportData method.
  */
 - (void)exporterProcessComplete:(SPExporter *)exporter
-{	
-	// Do something with the data...
-	[[SPLogger logger] log:[NSString stringWithFormat:@"Exporter finished: %@", exporter]];
-	
-	// If required create a new file for each table being exported
-	if ((exportSource == SPTableExport) && ([exportFilePerTableCheck state] == NSOnState)) {
-		//NSFileHandle *tableFileHandle = [NSFileHandle fileHandleForWritingAtPath:[exportPathField stringByAppendingPathComponent:[exporter ]];
-	}
-	
+{		
 	// If required add the next exporter to the operation queue
 	if ([exporters count] > 0) {
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -287,6 +281,14 @@
 		[NSApp endSheet:exportProgressWindow returnCode:0];
 		[exportProgressWindow orderOut:self];
 	}
+}
+
+/**
+ *
+ */
+- (void)exportProcessProgressUpdated:(SPExporter *)exporter
+{	
+	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
 #pragma mark -
@@ -352,6 +354,9 @@
 	
 	NSMutableArray *exportTables = [NSMutableArray array];
 	
+	// Set whether or not we are to export to multiple files
+	[self setExportToMultipleFiles:[exportFilePerTableCheck state]];
+	
 	// Get the data depending on the source
 	switch (exportSource) 
 	{
@@ -392,9 +397,13 @@
  * Exports the contents' of the supplied array of tables. Note that this method currently only supports 
  * exporting in CSV and XML formats.
  */
-- (BOOL)_exportTables:(NSArray *)exportTables
+- (void)_exportTables:(NSArray *)exportTables
 {
+	BOOL singleFileHeaderHasBeenWritten = NO;
+	
 	NSUInteger i;
+	NSString *exportFile = @"";
+	NSFileHandle *fileHandle = nil;
 	NSDictionary *tableDetails = [NSDictionary dictionary];
 	
 	// Reset the interface
@@ -428,10 +437,12 @@
 	
 	NSUInteger tableCount = [exportTables count];
 	
-	/*if ([exportTables count] > 1) {
-		[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
-							  [tableDocumentInstance host], [tableDocumentInstance database], [NSDate date], csvLineEnd, csvLineEnd]];
-	}*/
+	// If the user has selected to only export to a single file, name it after the current database
+	if (![self exportToMultipleFiles]) {
+		exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]]];
+	
+		fileHandle = [self _getFileHandleForFilePath:exportFile];
+	}
 	
 	// Loop through the tables
 	for (i = 0 ; i < tableCount; i++) 
@@ -440,11 +451,6 @@
 		
 		// Update the progress text and reset the progress bar to indeterminate status
 		NSString *tableName = [exportTables objectAtIndex:i];
-		
-		// For CSV exports of more than one table, output the name of the table
-		/*if (tableCount > 1) {
-			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
-		}*/
 		
 		// Determine whether this table is a table or a view via the create table command, and get the table details
 		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
@@ -494,6 +500,28 @@
 				
 				[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
 				
+				// If required create separate files
+				if ([self exportToMultipleFiles] && (tableCount > 0)) {
+					exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.csv", tableName]];
+					
+					fileHandle = [self _getFileHandleForFilePath:exportFile];
+				}
+				// Else, our single file for all table exports has already been created, write the header to it if it's not already been done
+				else if (!singleFileHeaderHasBeenWritten) {
+					
+					[fileHandle writeData:[[NSMutableString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@", 
+											[tableDocumentInstance host], 
+											[tableDocumentInstance database], 
+											[NSDate date], 
+											[exportCSVLinesTerminatedField stringValue], 
+											[exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[csvExporter exportOutputEncoding]]];
+					
+					singleFileHeaderHasBeenWritten = YES;
+					
+		
+					[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, [exportCSVLinesTerminatedField stringValue], [exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[csvExporter exportOutputEncoding]]];
+				}
+				
 				exporter = csvExporter;
 				
 				break;
@@ -513,6 +541,7 @@
 		
 		// Set the exporter's generic properties
 		[exporter setConnection:connection];
+		[exporter setExportOutputFileHandle:fileHandle];
 		[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemory state] == NSOnState)];
 				
 		[exporters addObject:exporter];
@@ -526,9 +555,46 @@
 	
 	// Remove the exporter we just added to the operation queue from our list of exporters 
 	// so we know it's already been done.
-	[exporters removeObjectAtIndex:0];
+	[exporters removeObjectAtIndex:0];	
+}
+			 
+- (NSFileHandle *)_getFileHandleForFilePath:(NSString *)filePath
+{
+	NSFileHandle *fileHandle = nil;
+	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
-	return YES;
+	if ([fileManager fileExistsAtPath:filePath]) {
+		if ((![fileManager isWritableFileAtPath:filePath]) || (!(fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath]))) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
+			return nil;
+		}
+		
+		// Truncates the file to zero bytes
+		[fileHandle truncateFileAtOffset:0];
+		
+		// Otherwise attempt to create a file
+	} 
+	else {
+		if (![fileManager createFileAtPath:filePath contents:[NSData data] attributes:nil]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+			return nil;
+		}
+		
+		// Retrieve a filehandle for the file, attempting to delete it on failure.
+		fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath];
+		
+		if (!fileHandle) {
+			[[NSFileManager defaultManager] removeFileAtPath:filePath handler:nil];
+			
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
+			return nil;
+		}
+	}
+	
+	return fileHandle;
 }
 
 @end

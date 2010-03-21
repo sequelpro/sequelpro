@@ -40,4 +40,9 @@
  */
 - (void)exporterProcessComplete:(SPExporter *)exporter;
 
+/**
+ *
+ */
+- (void)exportProcessProgressUpdated:(SPExporter *)exporter;
+
 @end

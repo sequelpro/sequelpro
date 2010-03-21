@@ -62,6 +62,7 @@
 	BOOL exportUsingLowMemoryBlockingStreaming;
 	
 	NSString *exportData;
+	NSFileHandle *exportOutputFileHandle;
 	NSStringEncoding exportOutputEncoding;
 }
 
@@ -76,6 +77,7 @@
 @property (readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
 
 @property (readwrite, retain) NSString *exportData;
+@property (readwrite, retain) NSFileHandle *exportOutputFileHandle;
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
 
 - (id)initWithDelegate:(id)exportDelegate;

@@ -34,6 +34,7 @@
 @synthesize exportProcessIsRunning;
 @synthesize exportUsingLowMemoryBlockingStreaming;
 @synthesize exportData;
+@synthesize exportOutputFileHandle;
 @synthesize exportOutputEncoding;
 
 /**
@@ -72,8 +73,9 @@
  */
 - (void)dealloc
 {
-	[exportData release], exportData = nil;
-	[connection release], connection = nil;
+	if (exportData) [exportData release], exportData = nil;
+	if (connection) [connection release], connection = nil;
+	if (exportOutputFileHandle) [exportOutputFileHandle release], exportOutputFileHandle = nil;
 	
 	[super dealloc];
 }
