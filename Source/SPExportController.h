@@ -25,22 +25,18 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-#import "SPExporterDataAccess.h"
 #import "SPConstants.h"
 
-#import "SPLogger.h"
-
-@interface SPExportController : NSObject <SPExporterDataAccess>
+@interface SPExportController : NSObject
 {	
-	// Table document
-	IBOutlet id tableDocumentInstance;
+	// Controllers
+	id tableDocumentInstance;
+	id tableContentInstance;
+	id customQueryInstance;
+	id tableDataInstance;
+	
+	// Connection window
 	IBOutlet id tableWindow;
-	
-	// Tables list
-	IBOutlet id tablesListInstance;
-	
-	// Table data
-	IBOutlet id tableDataInstance;
 	
 	// Export window
 	IBOutlet id exportWindow;
@@ -97,6 +93,15 @@
 	// Multi-file export flag
 	BOOL exportToMultipleFiles;
 	
+	// Number of tables being exported
+	NSUInteger exportTableCount;
+	
+	// Index of the current table being exported
+	NSUInteger currentTableExportIndex;
+	
+	// Export type label
+	NSString *exportTypeLabel;
+	
 	// Current database's tables
 	NSMutableArray *tables;
 	
@@ -116,6 +121,11 @@
 	SPExportType exportType;
 	SPExportSource exportSource;
 }
+
+@property (assign) id tableDocumentInstance;
+@property (assign) id tableContentInstance;
+@property (assign) id customQueryInstance;
+@property (assign) id tableDataInstance;
 
 @property (readwrite, assign) BOOL exportCancelled;
 @property (readwrite, assign) BOOL exportToMultipleFiles;

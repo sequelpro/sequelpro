@@ -79,14 +79,13 @@
 		// Check that the CSV output options are not just empty strings or empty arrays
 		if (([[self csvFieldSeparatorString] isEqualToString:@""]) ||
 			([[self csvEscapeString] isEqualToString:@""]) ||
-			([[self csvLineEndingString] isEqualToString:@""]) ||
-			([[self csvTableColumnNumericStatus] count] == 0)) 
+			([[self csvLineEndingString] isEqualToString:@""])) 
 		{
 			return;
 		}
-		
-		// Call the delegate's exporterProcessWillBegin: method while passing this exporter to it
-		[[self delegate] performSelectorOnMainThread:@selector(exporterProcessWillBegin:) withObject:self waitUntilDone:NO];
+				
+		// Inform the delegate that the export process is about to begin
+		[[self delegate] performSelectorOnMainThread:@selector(csvExportProcessWillBegin:) withObject:self waitUntilDone:NO];
 				
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
@@ -146,12 +145,16 @@
 		
 		[csvString setString:@""];
 		
+		if ([self csvDataArray]) totalRows = [[self csvDataArray] count];
 		if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
 		
 		// Drop into the processing loop
 		NSAutoreleasePool *csvExportPool = [[NSAutoreleasePool alloc] init];
 		
 		NSUInteger currentPoolDataLength = 0;
+		
+		// Inform the delegate that we are about to start writing the data to disk
+		[[self delegate] performSelectorOnMainThread:@selector(csvExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 		
 		while (1) 
 		{
@@ -217,7 +220,7 @@
 				}
 				else {
 					// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
-					if ([self csvTableColumnNumericStatus] != nil) {
+					if ([[self csvTableColumnNumericStatus] count] > 0) {
 						csvCellIsNumeric = [NSArrayObjectAtIndex([self csvTableColumnNumericStatus], i) boolValue];
 					} 
 					// Otherwise, first test whether this cell contains data
@@ -290,8 +293,8 @@
 			// Update the progress value
 			if (totalRows) [self setExportProgressValue:(((i + 1) * 100) / totalRows)];
 			
-			// Call the delegate's exporterProcessProgressUpdated: while passing this exporter to it
-			[[self delegate] performSelectorOnMainThread:@selector(exportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
+			// Inform the delegate that the export's progress has been updated.
+			[[self delegate] performSelectorOnMainThread:@selector(csvExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 			
 			// If an array was supplied and we've processed all rows, break
 			if ([self csvDataArray] && (totalRows == currentRowIndex)) break;
@@ -306,8 +309,8 @@
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];
 		
-		// Call the delegate's didEndSelector while passing this exporter to it
-		[[self delegate] performSelectorOnMainThread:[self didEndSelector] withObject:self waitUntilDone:NO];
+		// Inform the delegate that the export process is complete
+		[[self delegate] performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
 		
 		[pool release];
 	}

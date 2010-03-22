@@ -671,6 +671,11 @@
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
 	userManagerInstance.mySqlConnection = mySQLConnection;
+	
+	[exportControllerInstance setTableDocumentInstance:self];
+	[exportControllerInstance setTableContentInstance:tableContentInstance];
+	[exportControllerInstance setCustomQueryInstance:customQueryInstance];
+	[exportControllerInstance setTableDataInstance:tableDataInstance];
 
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];

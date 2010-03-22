@@ -27,19 +27,29 @@
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "TableDocument.h"
+#import "TableContent.h"
+#import "CustomQuery.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
+#import "SPGrowlController.h"
+#import "SPMainThreadTrampoline.h"
 
 @interface SPExportController (PrivateAPI)
 
 - (void)_initializeExportUsingSelectedOptions;
-- (void)_exportTables:(NSArray *)exportTables;
+- (void)_exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
+- (SPExporter *)_initializeExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
 - (NSFileHandle *)_getFileHandleForFilePath:(NSString *)filePath;
 
 @end
 
 @implementation SPExportController
+
+@synthesize tableDocumentInstance;
+@synthesize tableContentInstance;
+@synthesize customQueryInstance;
+@synthesize tableDataInstance;
 
 @synthesize connection;
 @synthesize exportToMultipleFiles;
@@ -55,6 +65,10 @@
 		[self setExportToMultipleFiles:YES];
 		
 		exportType = 0;
+		exportTableCount = 0;
+		currentTableExportIndex = 0;
+		
+		exportTypeLabel = @"";
 		
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
@@ -84,14 +98,14 @@
 	if (!exportWindow) [NSBundle loadNibNamed:@"ExportDialog" owner:self];
 	
 	NSUInteger i;
-	
+		
 	[tables removeAllObjects];
 	
 	MCPResult *queryResult = (MCPResult *)[[self connection] listTables];
 	
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
 	
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) 
+	for (i = 0; i < [queryResult numOfRows]; i++) 
 	{
 		[tables addObject:[NSMutableArray arrayWithObjects:
 						   [NSNumber numberWithBool:YES],
@@ -128,19 +142,17 @@
 - (IBAction)switchTab:(id)sender
 {
 	if ([sender isKindOfClass:[NSToolbarItem class]]) {
-		[exportTabBar selectTabViewItemWithIdentifier:[[sender label] lowercaseString]];
-		
-		[exportFilePerTableCheck setHidden:[[sender label] isEqualToString:@"Excel"]];
-		[exportFilePerTableNote  setHidden:[[sender label] isEqualToString:@"Excel"]];
+		[exportTabBar selectTabViewItemWithIdentifier:[[sender label] lowercaseString]];		
 	}
 }
 
 /**
- *
+ * Enables/disables and shows/hides various interface controls depending on the selected item.
  */
 - (IBAction)switchInput:(id)sender
 {
 	if ([sender isKindOfClass:[NSMatrix class]]) {
+		
 		NSInteger tag = [[sender selectedCell] tag];
 		
 		[exportFilePerTableCheck setHidden:(tag != 3)];
@@ -237,61 +249,6 @@
 }
 
 #pragma mark -
-#pragma mark SPExporterDataAccess protocol methods
-
-/**
- *
- */
-- (void)exporterProcessWillBegin:(SPExporter *)exporter
-{
-	[exportProgressText displayIfNeeded];
-	
-	[exportProgressIndicator setIndeterminate:YES];
-	[exportProgressIndicator setUsesThreadedAnimation:YES];
-	[exportProgressIndicator startAnimation:self];
-		
-	// Update the progress text and set the progress bar back to determinate
-	//[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing...", @"text showing that app is writing data for table export"), ((unsigned long)(i + 1)), ((unsigned long)tableCount), tableName]];
-	[exportProgressText displayIfNeeded];
-	
-	[exportProgressIndicator stopAnimation:self];
-	[exportProgressIndicator setUsesThreadedAnimation:NO];
-	[exportProgressIndicator setIndeterminate:NO];
-	[exportProgressIndicator setDoubleValue:0];
-	[exportProgressIndicator displayIfNeeded];
-}
-
-/**
- * This method is part of the SPExporterDataAccess protocol. It is called when an expoter completes it's data
- * conversion process and the operation is effectively complete. The resulting data can be accessed via
- * SPExporter's exportData method.
- */
-- (void)exporterProcessComplete:(SPExporter *)exporter
-{		
-	// If required add the next exporter to the operation queue
-	if ([exporters count] > 0) {
-		[operationQueue addOperation:[exporters objectAtIndex:0]];
-	
-		// Remove the exporter we just added to the operation queue from our list of exporters 
-		// so we know it's already been done.
-		[exporters removeObjectAtIndex:0];
-	}
-	// Otherwise if the exporter list is empty, close the progress sheet
-	else {
-		[NSApp endSheet:exportProgressWindow returnCode:0];
-		[exportProgressWindow orderOut:self];
-	}
-}
-
-/**
- *
- */
-- (void)exportProcessProgressUpdated:(SPExporter *)exporter
-{	
-	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
-}
-
-#pragma mark -
 #pragma mark Other 
 
 /**
@@ -378,17 +335,32 @@
 			break;
 	}
 	
-	// Begin the export based on the type
+	// Set the type label 
+	switch (exportType)
+	{
+		case SPSQLExport:
+			exportTypeLabel = @"SQL";
+			break;
+		case SPCSVExport:
+			exportTypeLabel = @"CSV";
+			break;
+		case SPXMLExport:
+			exportTypeLabel = @"XML";
+			break;
+			
+	}
+	
+	// Begin the export based on the source
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			
+			[self _exportTables:nil orDataArray:[tableContentInstance currentResult]];
 			break;
 		case SPCustomQueryExport:
-			
+			[self _exportTables:nil orDataArray:[customQueryInstance currentResult]];
 			break;
 		case SPTableExport:
-			[self _exportTables:exportTables];
+			[self _exportTables:exportTables orDataArray:nil];
 			break;
 	}
 }
@@ -397,21 +369,22 @@
  * Exports the contents' of the supplied array of tables. Note that this method currently only supports 
  * exporting in CSV and XML formats.
  */
-- (void)_exportTables:(NSArray *)exportTables
+- (void)_exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
-	BOOL singleFileHeaderHasBeenWritten = NO;
-	
 	NSUInteger i;
-	NSString *exportFile = @"";
-	NSFileHandle *fileHandle = nil;
-	NSDictionary *tableDetails = [NSDictionary dictionary];
+	
+	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
+	
+	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
+	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
 	
 	// Reset the interface
-	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), @"CSV"]];
-	[exportProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-	[exportProgressText displayIfNeeded];
-	[exportProgressIndicator setDoubleValue:0];
-	[exportProgressIndicator displayIfNeeded];
+	[[exportProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
+	[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+	
+	[[exportProgressText onMainThread] displayIfNeeded];
+	[[exportProgressIndicator onMainThread] setDoubleValue:0];
+	[[exportProgressIndicator onMainThread] displayIfNeeded];
 	
 	// Open the progress sheet
 	[NSApp beginSheet:exportProgressWindow
@@ -420,134 +393,24 @@
 	   didEndSelector:nil 
 		  contextInfo:nil];
 	
-	// Add a dump header to the dump file
-	NSMutableString *csvLineEnd = [NSMutableString stringWithString:[exportCSVLinesTerminatedField stringValue]]; 
-			
-	[csvLineEnd replaceOccurrencesOfString:@"\\t" withString:@"\t"
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [csvLineEnd length])];
-	
-	[csvLineEnd replaceOccurrencesOfString:@"\\n" withString:@"\n"
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [csvLineEnd length])];
-	
-	[csvLineEnd replaceOccurrencesOfString:@"\\r" withString:@"\r"
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [csvLineEnd length])];
-	
-	NSUInteger tableCount = [exportTables count];
-	
-	// If the user has selected to only export to a single file, name it after the current database
-	if (![self exportToMultipleFiles]) {
-		exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]]];
-	
-		fileHandle = [self _getFileHandleForFilePath:exportFile];
+	if (exportSource == SPTableExport) {
+		// Cache the number of tables being exported
+		exportTableCount = [exportTables count];
 	}
 	
-	// Loop through the tables
-	for (i = 0 ; i < tableCount; i++) 
-	{
-		if ([self exportCancelled]) break;
+	// Start the export process depending on the data source
+	if (exportSource == SPTableExport) {
 		
-		// Update the progress text and reset the progress bar to indeterminate status
-		NSString *tableName = [exportTables objectAtIndex:i];
-		
-		// Determine whether this table is a table or a view via the create table command, and get the table details
-		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
-		
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numOfRows]) {
-			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
-			
-			tableDetails = [NSDictionary dictionaryWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [tableDataInstance informationForView:tableName] : [tableDataInstance informationForTable:tableName]];
-		}
-		
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
-		
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+		// Loop through the tables, creating an exporter for each
+		for (i = 0 ; i < exportTableCount; i++) 
 		{
-			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
-		}
-		
-		SPExporter *exporter;
-		SPCSVExporter *csvExporter;
-		
-		// Based on the type of export create a new instance of the corresponding exporter and set it's specific options
-		switch (exportType)
-		{
-			case SPSQLExport:
-				
-				break;
-			case SPCSVExport:
-				csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
-				
-				[csvExporter setCsvTableName:tableName];
-				
-				[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
-				[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
-				[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
-				[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
-				[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
-				
-				[csvExporter setExportOutputEncoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
-				[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]];
-				
-				[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
-				
-				// If required create separate files
-				if ([self exportToMultipleFiles] && (tableCount > 0)) {
-					exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.csv", tableName]];
-					
-					fileHandle = [self _getFileHandleForFilePath:exportFile];
-				}
-				// Else, our single file for all table exports has already been created, write the header to it if it's not already been done
-				else if (!singleFileHeaderHasBeenWritten) {
-					
-					[fileHandle writeData:[[NSMutableString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@", 
-											[tableDocumentInstance host], 
-											[tableDocumentInstance database], 
-											[NSDate date], 
-											[exportCSVLinesTerminatedField stringValue], 
-											[exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[csvExporter exportOutputEncoding]]];
-					
-					singleFileHeaderHasBeenWritten = YES;
-					
-		
-					[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, [exportCSVLinesTerminatedField stringValue], [exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[csvExporter exportOutputEncoding]]];
-				}
-				
-				exporter = csvExporter;
-				
-				break;
-			case SPXMLExport:
-				
-				break;
-			case SPPDFExport:
-				
-				break;
-			case SPHTMLExport:
-				
-				break;
-			case SPExcelExport:
-				
-				break;
-		}
-		
-		// Set the exporter's generic properties
-		[exporter setConnection:connection];
-		[exporter setExportOutputFileHandle:fileHandle];
-		[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemory state] == NSOnState)];
-				
-		[exporters addObject:exporter];
-		
-		// Add a spacer to the file
-		//[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:encoding]];
+			if ([self exportCancelled]) break;
+						
+			[exporters addObject:[self _initializeExporterForTable:[exportTables objectAtIndex:i] orDataArray:nil]];
+		}		
+	}
+	else {
+		[exporters addObject:[self _initializeExporterForTable:nil orDataArray:dataArray]];
 	}
 	
 	// Add the first exporter to the operation queue
@@ -557,7 +420,139 @@
 	// so we know it's already been done.
 	[exporters removeObjectAtIndex:0];	
 }
-			 
+
+/**
+ *
+ */
+- (SPExporter *)_initializeExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
+{
+	NSString *exportFile = @"";
+	NSFileHandle *fileHandle = nil;
+	BOOL singleFileHeaderHasBeenWritten = NO;
+	
+	NSDictionary *tableDetails = [NSDictionary dictionary];
+	NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
+	
+	// If the user has selected to only export to a single file or this is a filtered or custom query export create the single file now
+	if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPCustomQueryExport)) {
+		
+		NSString *filename = @"";
+		
+		// Determine what the file name should be
+		switch (exportSource) 
+		{
+			case SPFilteredExport:
+				filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
+				break;
+			case SPCustomQueryExport:
+				filename = @"query_result";
+				break;
+			case SPTableExport:
+				filename = [tableDocumentInstance database];
+				break;
+		}
+		
+		exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:filename];
+		
+		fileHandle = [self _getFileHandleForFilePath:exportFile];
+	}
+	
+	if (exportSource == SPTableExport) {
+		
+		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
+		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [table backtickQuotedString]]];
+		
+		[queryResult setReturnDataAsStrings:YES];
+		
+		if ([queryResult numOfRows]) {
+			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
+			
+			tableDetails = [NSDictionary dictionaryWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [tableDataInstance informationForView:table] : [tableDataInstance informationForTable:table]];
+		}
+		
+		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+		{
+			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
+			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
+																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
+																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
+		}
+	}
+	
+	SPExporter *exporter;
+	SPCSVExporter *csvExporter;
+	
+	// Based on the type of export create a new instance of the corresponding exporter and set it's specific options
+	switch (exportType)
+	{
+		case SPSQLExport:
+			
+			break;
+		case SPCSVExport:
+			csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
+			
+			// Depeding on the export source, set the table name or result array
+			if (exportSource == SPTableExport) {
+				[csvExporter setCsvTableName:table];
+			}
+			else {
+				[csvExporter setCsvDataArray:dataArray];
+			}
+			
+			[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
+			[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
+			[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
+			[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
+			[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
+			
+			[csvExporter setExportOutputEncoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
+			[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]];
+			
+			[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
+			
+			// If required create separate files
+			if ((exportSource == SPTableExport) && [self exportToMultipleFiles] && (exportTableCount > 0)) {
+				exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:table];
+				
+				fileHandle = [self _getFileHandleForFilePath:exportFile];
+			}
+			// Else, our single file for all table exports has already been created, write the header to it if it's not already been done
+			else if ((exportSource == SPTableExport) && (!singleFileHeaderHasBeenWritten)) {
+				
+				[fileHandle writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@   %@: %@%@%@",
+										NSLocalizedString(@"Host", @"csv export host heading"),
+										[tableDocumentInstance host], 
+										NSLocalizedString(@"Database", @"csv export database heading"),
+										[tableDocumentInstance database], 
+										NSLocalizedString(@"Generation Time", @"csv export generation time heading"),
+										[NSDate date], 
+										[csvExporter csvLineEndingString], 
+										[csvExporter csvLineEndingString]] dataUsingEncoding:[csvExporter exportOutputEncoding]]];
+				
+				singleFileHeaderHasBeenWritten = YES;
+			}
+			
+			exporter = csvExporter;
+			
+			break;
+		case SPXMLExport:
+			
+			break;
+	}
+	
+	// Set the exporter's generic properties
+	[exporter setConnection:connection];
+	[exporter setExportOutputFileHandle:fileHandle];
+	[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemory state] == NSOnState)];
+	
+	return exporter;
+}
+	
+/**
+ *
+ */
 - (NSFileHandle *)_getFileHandleForFilePath:(NSString *)filePath
 {
 	NSFileHandle *fileHandle = nil;

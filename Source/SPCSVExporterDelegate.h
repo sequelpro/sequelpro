@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPExporterDataAccess.h
+//  SPCSVExporterDelegate.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on March 21, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -25,24 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class SPExporter;
+#import "SPExportController.h"
 
-@protocol SPExporterDataAccess
-
-/**
- *
- */
-- (void)exporterProcessWillBegin:(SPExporter *)exporter;
-
-/**
- * Invoked when an expoter completes it's initial export and data conversion process and the operation is 
- * effectively complete. The resulting data can be accessed via SPExporter's exportData method.
- */
-- (void)exporterProcessComplete:(SPExporter *)exporter;
-
-/**
- *
- */
-- (void)exportProcessProgressUpdated:(SPExporter *)exporter;
+@interface SPExportController (SPCSVExporterDelegate)
 
 @end

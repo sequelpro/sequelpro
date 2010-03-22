@@ -28,6 +28,32 @@
 #import "MCPKit.h"
 #import "SPExporter.h"
 
+@class SPCSVExporter;
+
+@interface SPCSVExporterDelegate
+
+/**
+ *
+ */
+- (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter;
+
+/**
+ * 
+ */
+- (void)csvExportProcessComplete:(SPCSVExporter *)exporter;
+
+/**
+ *
+ */
+- (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter;
+
+/**
+ *
+ */
+- (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter;
+
+@end
+
 @interface SPCSVExporter : SPExporter
 {		
 	// CSV data
