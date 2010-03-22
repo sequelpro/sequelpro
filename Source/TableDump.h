@@ -106,6 +106,7 @@ typedef enum _SPExportModes {
 	NSArray *fieldMappingTableColumnNames;
 	NSArray *fieldMappingArray;
 	NSArray *fieldMappingGlobalValueArray;
+	NSArray *fieldMappingTableDefaultValues;
 	NSArray *fieldMapperOperator;
 	NSString *selectedTableTarget;
 	NSString *selectedImportMethod;
@@ -113,6 +114,7 @@ typedef enum _SPExportModes {
 	NSString *csvImportHeaderString;
 	NSString *csvImportTailString;
 	NSInteger fieldMapperSheetStatus;
+	NSInteger numberOfImportDataColumns;
 	BOOL fieldMappingArrayHasGlobalVariables;
 	BOOL csvImportMethodHasTail;
 	BOOL insertRemainingRowsAfterUpdate;

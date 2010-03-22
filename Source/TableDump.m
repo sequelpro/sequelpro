@@ -1124,6 +1124,7 @@
 	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
 	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release]; fieldMappingGlobalValueArray = nil;
 	if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release]; fieldMappingTableColumnNames = nil;
+	if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release]; fieldMappingTableDefaultValues = nil;
 	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -1238,6 +1239,7 @@
 	// Set the import array
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
+	numberOfImportDataColumns = [[importData objectAtIndex:0] count];
 
 	fieldMapperSheetStatus = 1;
 	fieldMappingArrayHasGlobalVariables = NO;
@@ -1268,8 +1270,10 @@
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
 	fieldMappingTableColumnNames = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]] retain];
 	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
+	fieldMappingTableDefaultValues = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableDefaultValues]] retain];
 	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
 	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
+	fieldMappingArrayHasGlobalVariables = [fieldMapperController globalValuesInUsage];
 	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
 	insertRemainingRowsAfterUpdate = [fieldMapperController insertRemainingRowsAfterUpdate];
 	importMethodIsUpdate = ([selectedImportMethod isEqualToString:@"UPDATE"]) ? YES : NO;
@@ -1285,9 +1289,6 @@
 		NSBeep();
 		return FALSE;
 	}
-
-	if([fieldMappingImportArray count] && [fieldMappingGlobalValueArray count] > [NSArrayObjectAtIndex(fieldMappingImportArray,0) count])
-		fieldMappingArrayHasGlobalVariables = YES;
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
@@ -1336,7 +1337,7 @@
 			[setString appendString:@"="];
 			// Append the data
 			// - check for global values
-			if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
 				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 			else
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
@@ -1356,7 +1357,7 @@
 			[whereString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
 			// Append the data
 			// - check for global values
-			if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
 				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 			else
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
@@ -1397,7 +1398,7 @@
 
 		// Append the data
 		// - check for global values
-		if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
 			cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 		else
 			cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
@@ -2942,6 +2943,7 @@
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
 	fieldMappingTableColumnNames = nil;
+	fieldMappingTableDefaultValues = nil;
 	fieldMappingImportArray = nil;
 	csvImportTailString = nil;
 	csvImportHeaderString = nil;
@@ -2950,6 +2952,7 @@
 	fieldMappingArrayHasGlobalVariables = NO;
 	importMethodIsUpdate = NO;
 	insertRemainingRowsAfterUpdate = NO;
+	numberOfImportDataColumns = 0;
 	
 	prefs = nil;
 	lastFilename = nil;

@@ -212,9 +212,25 @@
 	return fieldMappingGlobalValues;
 }
 
+- (BOOL)globalValuesInUsage
+{
+	NSInteger i = 0;
+	for(id item in fieldMappingArray) {
+		if([item intValue] >= numberOfImportColumns && [fieldMappingOperatorArray objectAtIndex:i] != doNotImport)
+			return YES;
+		i++;
+	}
+	return NO;
+}
+
 - (NSArray*)fieldMappingTableColumnNames
 {
 	return fieldMappingTableColumnNames;
+}
+
+- (NSArray*)fieldMappingTableDefaultValues
+{
+	return fieldMappingTableDefaultValues;
 }
 
 - (BOOL)importFieldNamesHeader
@@ -335,7 +351,7 @@
 					if ([column objectForKey:@"default"])
 						[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
 					else
-						[fieldMappingTableDefaultValues addObject:@"NULL"];
+						[fieldMappingTableDefaultValues addObject:[NSNull null]];
 			}
 
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
