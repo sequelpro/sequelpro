@@ -749,13 +749,8 @@
 		}
 
 		// Select the column default if available
-		if ([resultRow objectForKey:@"Default"]) {
-			if ([[resultRow objectForKey:@"Default"] isNSNull]) {
-				[tableColumn setValue:[NSString stringWithString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]] forKey:@"default"];			
-			} else {
-				[tableColumn setValue:[NSString stringWithString:[resultRow objectForKey:@"Default"]] forKey:@"default"];
-			}
-		}
+		if ([resultRow objectForKey:@"Default"])
+			[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Default"]] forKey:@"default"];
 
 		// Add the column to the list
 		[tableColumns addObject:[NSDictionary dictionaryWithDictionary:tableColumn]];
@@ -1017,7 +1012,10 @@
 		// Field defaults
 		} else if ([detailString isEqualToString:@"DEFAULT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
 			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
-			[fieldDetails setValue:[detailParser unquotedString] forKey:@"default"];
+			if([[detailParser unquotedString] isEqualToString:@"NULL"])
+				[fieldDetails setObject:[NSNull null] forKey:@"default"];
+			else
+				[fieldDetails setValue:[detailParser unquotedString] forKey:@"default"];
 			[detailParser release];
 			definitionPartsIndex++;
 

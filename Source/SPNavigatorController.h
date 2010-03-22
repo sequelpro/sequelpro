@@ -34,6 +34,7 @@
 	IBOutlet id infoTable;
 	IBOutlet id quickAccessTable;
 	IBOutlet id searchField;
+	IBOutlet id syncButton;
 
 	NSUserDefaults *prefs;
 
@@ -56,10 +57,13 @@
 - (IBAction)updateEntries:(id)sender;
 - (IBAction)reloadAllStructures:(id)sender;
 - (IBAction)filterTree:(id)sender;
+- (IBAction)syncButtonAction:(id)sender;
 
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index;
 
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
+- (void)selectPath:(NSString*)schemaPath;
+- (BOOL)syncMode;
 
 @end

@@ -98,6 +98,7 @@
 	BOOL importFieldNamesHeader;
 	BOOL showAdvancedView;
 	BOOL targetTableHasPrimaryKey;
+
 	NSString *primaryKeyField;
 	NSNumber *lastDisabledCSVFieldcolumn;
 
@@ -127,8 +128,10 @@
 - (NSArray*)fieldMappingArray;
 - (NSArray*)fieldMappingTableColumnNames;
 - (NSArray*)fieldMappingGlobalValueArray;
+- (NSArray*)fieldMappingTableDefaultValues;
 - (BOOL)importFieldNamesHeader;
 - (BOOL)insertRemainingRowsAfterUpdate;
+- (BOOL)globalValuesInUsage;
 - (NSString*)onupdateString;
 - (NSString*)importHeaderString;
 

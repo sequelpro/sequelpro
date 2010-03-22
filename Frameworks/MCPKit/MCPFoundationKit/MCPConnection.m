@@ -660,12 +660,22 @@ void pingConnectionTask(void *ptr)
  */
 - (void)startKeepAliveTimer
 {
+
+	// Ensure keepalives are started on the main thread, as otherwise thread termination kills the timer
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(startKeepAliveTimer) withObject:nil waitUntilDone:NO];
+		return;
+	}
+
 	if (keepAliveTimer) [self stopKeepAliveTimer];
 	if (!mConnected) return;
 
-	if (useKeepAlive && keepAliveInterval) {
+	double interval = keepAliveInterval;
+	if (interval <= 1) interval = 1.0;
+
+	if (useKeepAlive) {
 		keepAliveTimer = [NSTimer
-						  scheduledTimerWithTimeInterval:keepAliveInterval
+						  scheduledTimerWithTimeInterval:interval
 						  target:self
 						  selector:@selector(keepAlive:)
 						  userInfo:nil

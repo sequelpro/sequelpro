@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPCSVParser.h"
+#import "SPNotLoaded.h"
 
 /**
  * Please see the header files for a general description of the purpose of this class.
@@ -294,11 +295,12 @@
 	}
 
 	// Capture the length of the first row when processing, and ensure that all
-	// subsequent rows contain that many cells
+	// subsequent rows contain that many cells (fill them with [SPNotLoaded notLoaded]
+	// to allow to replace these by the table column's DEFAULT value)
 	if (fieldCount == NSNotFound) {
 		fieldCount = [csvRowArray count];
 	} else if ([csvRowArray count] < fieldCount) {
-		for (j = [csvRowArray count]; j < fieldCount; j++) [csvRowArray addObject:[NSNull null]];
+		for (j = [csvRowArray count]; j < fieldCount; j++) [csvRowArray addObject:[SPNotLoaded notLoaded]];
 	}
 
 	// Return the row

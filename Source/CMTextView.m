@@ -3056,6 +3056,44 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 		return YES;
 	} 
+	
+	// Insert selected items coming from the Navigator
+	if ( [[pboard types] containsObject:@"SPDragFromNavigatorPboardType"] ) {
+		NSPoint draggingLocation = [sender draggingLocation];
+		draggingLocation = [self convertPoint:draggingLocation fromView:nil];
+		NSUInteger characterIndex = [self characterIndexOfPoint:draggingLocation];
+		[self setSelectedRange:NSMakeRange(characterIndex,0)];
+
+		NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[pboard dataForType:@"SPDragFromNavigatorPboardType"]] autorelease];
+		NSArray *draggedItems = [[NSArray alloc] initWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"itemdata"]];
+		[unarchiver finishDecoding];
+
+		NSMutableString *dragString = [NSMutableString string];
+		NSMutableString *aPath = [NSMutableString string];
+
+		NSString *currentDb = nil;
+		NSString *currentTable = nil;
+
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
+			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
+			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+
+		if(!currentDb) currentDb = @"";
+		if(!currentTable) currentTable = @"";
+
+		for(NSString* item in draggedItems) {
+			if([dragString length]) [dragString appendString:@", "];
+			[aPath setString:item];
+			// Insert path relative to the current selected db and table if any
+			[aPath replaceOccurrencesOfRegex:[NSString stringWithFormat:@"^%@%@", currentDb, SPUniqueSchemaDelimiter] withString:@""];
+			[aPath replaceOccurrencesOfRegex:[NSString stringWithFormat:@"^%@%@", currentTable, SPUniqueSchemaDelimiter] withString:@""];
+			[dragString appendString:[[aPath componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuoted]];
+		}
+		[self breakUndoCoalescing];
+		[self insertText:dragString];
+		return YES;
+	}
 
 	return [super performDragOperation:sender];
 }

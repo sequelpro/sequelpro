@@ -40,6 +40,7 @@
 #import "SPAlertSheets.h"
 #import "SPFieldMapperController.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPNotLoaded.h"
 
 @implementation TableDump
 
@@ -1124,6 +1125,7 @@
 	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
 	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release]; fieldMappingGlobalValueArray = nil;
 	if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release]; fieldMappingTableColumnNames = nil;
+	if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release]; fieldMappingTableDefaultValues = nil;
 	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -1238,6 +1240,7 @@
 	// Set the import array
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
+	numberOfImportDataColumns = [[importData objectAtIndex:0] count];
 
 	fieldMapperSheetStatus = 1;
 	fieldMappingArrayHasGlobalVariables = NO;
@@ -1268,8 +1271,10 @@
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
 	fieldMappingTableColumnNames = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]] retain];
 	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
+	fieldMappingTableDefaultValues = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableDefaultValues]] retain];
 	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
 	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
+	fieldMappingArrayHasGlobalVariables = [fieldMapperController globalValuesInUsage];
 	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
 	insertRemainingRowsAfterUpdate = [fieldMapperController insertRemainingRowsAfterUpdate];
 	importMethodIsUpdate = ([selectedImportMethod isEqualToString:@"UPDATE"]) ? YES : NO;
@@ -1285,9 +1290,6 @@
 		NSBeep();
 		return FALSE;
 	}
-
-	if([fieldMappingImportArray count] && [fieldMappingGlobalValueArray count] > [NSArrayObjectAtIndex(fieldMappingImportArray,0) count])
-		fieldMappingArrayHasGlobalVariables = YES;
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
@@ -1336,10 +1338,14 @@
 			[setString appendString:@"="];
 			// Append the data
 			// - check for global values
-			if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
 				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 			else
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+			// If import column isn't specified import the table column default value
+			if ([cellData isSPNotLoaded])
+				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
 			if (cellData == [NSNull null]) {
 				[setString appendString:@"NULL"];
@@ -1356,10 +1362,14 @@
 			[whereString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
 			// Append the data
 			// - check for global values
-			if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
 				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 			else
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+			// If import column isn't specified import the table column default value
+			if ([cellData isSPNotLoaded])
+				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
 			if (cellData == [NSNull null]) {
 				[whereString appendString:@" IS NULL"];
@@ -1397,10 +1407,14 @@
 
 		// Append the data
 		// - check for global values
-		if(fieldMappingArrayHasGlobalVariables && mapColumn >= [csvRowArray count])
+		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
 			cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 		else
 			cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+		// If import column isn't specified import the table column default value
+		if ([cellData isSPNotLoaded])
+			cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
 		if (cellData == [NSNull null]) {
 			[valueString appendString:@"NULL"];
@@ -2782,12 +2796,12 @@
 		if ([column objectForKey:@"default"]) {
 
 			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those.
-			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
+			if ([column objectForKey:@"default"] == [NSNull null]) {
 				if ([[column objectForKey:@"null"] integerValue])
 					[fieldString appendString:@" DEFAULT NULL"];
 
 			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
-						&& [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+						&& [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 			} else {
 				[fieldString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[column objectForKey:@"default"]]];
@@ -2942,6 +2956,7 @@
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
 	fieldMappingTableColumnNames = nil;
+	fieldMappingTableDefaultValues = nil;
 	fieldMappingImportArray = nil;
 	csvImportTailString = nil;
 	csvImportHeaderString = nil;
@@ -2950,6 +2965,7 @@
 	fieldMappingArrayHasGlobalVariables = NO;
 	importMethodIsUpdate = NO;
 	insertRemainingRowsAfterUpdate = NO;
+	numberOfImportDataColumns = 0;
 	
 	prefs = nil;
 	lastFilename = nil;

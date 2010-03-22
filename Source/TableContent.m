@@ -1283,7 +1283,7 @@
 
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		column = NSArrayObjectAtIndex(dataColumns, i);
-		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
+		if ([column objectForKey:@"default"] == nil || [column objectForKey:@"default"] == [NSNull null]) {
 			[newRow addObject:[NSNull null]];
 		} else {
 			[newRow addObject:[column objectForKey:@"default"]];
