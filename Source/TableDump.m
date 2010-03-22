@@ -40,6 +40,7 @@
 #import "SPAlertSheets.h"
 #import "SPFieldMapperController.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPNotLoaded.h"
 
 @implementation TableDump
 
@@ -1342,6 +1343,10 @@
 			else
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
+			// If import column isn't specified import the table column default value
+			if ([cellData isSPNotLoaded])
+				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
+
 			if (cellData == [NSNull null]) {
 				[setString appendString:@"NULL"];
 			} else {
@@ -1361,6 +1366,10 @@
 				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 			else
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+			// If import column isn't specified import the table column default value
+			if ([cellData isSPNotLoaded])
+				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
 			if (cellData == [NSNull null]) {
 				[whereString appendString:@" IS NULL"];
@@ -1402,6 +1411,10 @@
 			cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
 		else
 			cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
+
+		// If import column isn't specified import the table column default value
+		if ([cellData isSPNotLoaded])
+			cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
 		if (cellData == [NSNull null]) {
 			[valueString appendString:@"NULL"];
@@ -2783,12 +2796,12 @@
 		if ([column objectForKey:@"default"]) {
 
 			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those.
-			if ([[column objectForKey:@"default"] isEqualToString:@"NULL"]) {
+			if ([column objectForKey:@"default"] == [NSNull null]) {
 				if ([[column objectForKey:@"null"] integerValue])
 					[fieldString appendString:@" DEFAULT NULL"];
 
 			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
-						&& [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+						&& [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 			} else {
 				[fieldString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[column objectForKey:@"default"]]];

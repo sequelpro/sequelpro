@@ -30,6 +30,7 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
+#import "SPNotLoaded.h"
 
 @implementation SPFieldMapperController
 
@@ -345,13 +346,14 @@
 					[type appendFormat:@",%@",@"UNIQUE"];
 					isReplacePossible = YES;
 				}
-				if([[[column objectForKey:@"onupdatetimestamp"] description] isEqualToString:@"1"])
-					[fieldMappingTableDefaultValues addObject:@"time_stamp"];
+				// if([[[column objectForKey:@"onupdatetimestamp"] description] isEqualToString:@"1"]) {
+				// 	[fieldMappingTableDefaultValues addObject:@"CURRENT_TIMESTAMP"];
+				// } else {
+				if ([column objectForKey:@"default"])
+					[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
 				else
-					if ([column objectForKey:@"default"])
-						[fieldMappingTableDefaultValues addObject:[column objectForKey:@"default"]];
-					else
-						[fieldMappingTableDefaultValues addObject:[NSNull null]];
+					[fieldMappingTableDefaultValues addObject:[NSNull null]];
+				// }
 			}
 
 			[fieldMappingTableTypes addObject:[NSString stringWithString:type]];
@@ -838,6 +840,8 @@
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+		else if ([[fieldMappingButtonOptions objectAtIndex:i] isSPNotLoaded])
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, @"DEFAULT"]];
 		else
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 	}
@@ -950,9 +954,10 @@
 {
 
 	if(aTableView == fieldMapperTableView) {
-		if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
 
-			if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
+		if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
+
+		if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
 
 			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
 				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
