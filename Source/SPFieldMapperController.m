@@ -60,6 +60,7 @@
 		fieldMappingOperatorOptions    = [[NSMutableArray alloc] init];
 		fieldMappingOperatorArray      = [[NSMutableArray alloc] init];
 		fieldMappingGlobalValues       = [[NSMutableArray alloc] init];
+		fieldMappingGlobalValuesSQLMarked = [[NSMutableArray alloc] init];
 		fieldMappingArray = nil;
 
 		lastDisabledCSVFieldcolumn = [NSNumber numberWithInteger:0];
@@ -152,6 +153,7 @@
 	if (fieldMappingOperatorOptions) [fieldMappingOperatorOptions release];
 	if (fieldMappingOperatorArray) [fieldMappingOperatorArray release];
 	if (fieldMappingGlobalValues) [fieldMappingGlobalValues release];
+	if (fieldMappingGlobalValuesSQLMarked) [fieldMappingGlobalValuesSQLMarked release];
 	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
 	[super dealloc];
 }
@@ -180,8 +182,10 @@
 		numberOfImportColumns = [NSArrayObjectAtIndex(fieldMappingImportArray, 0) count];
 
 	NSInteger i;
-	for(i=0; i<numberOfImportColumns; i++)
+	for(i=0; i<numberOfImportColumns; i++) {
 		[fieldMappingGlobalValues addObject:@"…"];
+		[fieldMappingGlobalValuesSQLMarked addObject:@"…"];
+	}
 
 }
 
@@ -210,7 +214,14 @@
 
 - (NSArray*)fieldMappingGlobalValueArray
 {
-	return fieldMappingGlobalValues;
+	NSMutableArray *globals = [NSMutableArray array];
+	for(NSInteger i=0; i < [fieldMappingGlobalValues count]; i++)
+		if([[fieldMappingGlobalValuesSQLMarked objectAtIndex:i] boolValue])
+			[globals addObject:[fieldMappingGlobalValues objectAtIndex:i]];
+		else
+			[globals addObject:[NSString stringWithFormat:@"'%@'", [fieldMappingGlobalValues objectAtIndex:i]]];
+
+	return globals;
 }
 
 - (BOOL)globalValuesInUsage
@@ -548,6 +559,7 @@
 - (IBAction)addGlobalValue:(id)sender
 {
 	[fieldMappingGlobalValues addObject:@""];
+	[fieldMappingGlobalValuesSQLMarked addObject:[NSNumber numberWithBool:NO]];
 	[globalValuesTableView reloadData];
 	[globalValuesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[fieldMappingGlobalValues count]-1-numberOfImportColumns] byExtendingSelection:NO];
 	[globalValuesTableView editColumn:1 row:[fieldMappingGlobalValues count]-1-numberOfImportColumns withEvent:nil select:YES];
@@ -562,6 +574,7 @@
 
 	while (currentIndex != NSNotFound) {
 		[fieldMappingGlobalValues removeObjectAtIndex:currentIndex+numberOfImportColumns];
+		[fieldMappingGlobalValuesSQLMarked removeObjectAtIndex:currentIndex+numberOfImportColumns];
 		// get next index (beginning from the end)
 		currentIndex = [indexes indexLessThanIndex:currentIndex];
 	}
@@ -1025,13 +1038,13 @@
 				[c removeAllItems];
 				[c addItemsWithTitles:fieldMappingButtonOptions];
 				[m addItem:[NSMenuItem separatorItem]];
-				[c addItemWithTitle:NSLocalizedString(@"Ignore field", @"ignore field label")];
-				[c addItemWithTitle:NSLocalizedString(@"Ignore all fields", @"ignore all fields menu item")];
-				[c addItemWithTitle:NSLocalizedString(@"Import all fields", @"import all fields menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Ignore Field", @"ignore field label")];
+				[c addItemWithTitle:NSLocalizedString(@"Ignore all Fields", @"ignore all fields menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Import all Fields", @"import all fields menu item")];
 				if([[self selectedImportMethod] isEqualToString:@"UPDATE"])
-					[c addItemWithTitle:NSLocalizedString(@"Match field", @"match field menu item")];
+					[c addItemWithTitle:NSLocalizedString(@"Match Field", @"match field menu item")];
 				[m addItem:[NSMenuItem separatorItem]];
-				[c addItemWithTitle:NSLocalizedString(@"Add global value…", @"add global value menu item")];
+				[c addItemWithTitle:NSLocalizedString(@"Add Value or Expression…", @"add global value or expression menu item")];
 				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
 				[[m itemAtIndex:[c numberOfItems]-1] setEnabled:NO];
 
@@ -1063,6 +1076,10 @@
 		else if ([[aTableColumn identifier] isEqualToString:@"global_value"]) {
 			return [fieldMappingGlobalValues objectAtIndex:numberOfImportColumns + rowIndex];
 		}
+
+		else if ([[aTableColumn identifier] isEqualToString:@"sql"])
+			return [fieldMappingGlobalValuesSQLMarked objectAtIndex:numberOfImportColumns + rowIndex];
+
 	}
 	
 	
@@ -1143,6 +1160,8 @@
 	else if(aTableView == globalValuesTableView) {
 		if ([[aTableColumn identifier] isEqualToString:@"global_value"])
 			[fieldMappingGlobalValues replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:anObject];
+		else if ([[aTableColumn identifier] isEqualToString:@"sql"])
+			[fieldMappingGlobalValuesSQLMarked replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:anObject];
 	}
 }
 

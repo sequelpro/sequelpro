@@ -83,6 +83,7 @@
 	NSMutableArray *fieldMappingOperatorOptions;
 	NSMutableArray *fieldMappingOperatorArray;
 	NSMutableArray *fieldMappingGlobalValues;
+	NSMutableArray *fieldMappingGlobalValuesSQLMarked;
 	NSMutableArray *fieldMappingTableDefaultValues;
 
 	NSNumber *doImport;

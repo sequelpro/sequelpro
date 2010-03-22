@@ -1338,21 +1338,23 @@
 			[setString appendString:@"="];
 			// Append the data
 			// - check for global values
-			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
-				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
-			else
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
+				// Global variables are coming wrapped in ' ' if there're not marked as SQL 
+				 [setString appendString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+			} else {
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
-			// If import column isn't specified import the table column default value
-			if ([cellData isSPNotLoaded])
-				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
+				// If import column isn't specified import the table column default value
+				if ([cellData isSPNotLoaded])
+					cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
-			if (cellData == [NSNull null]) {
-				[setString appendString:@"NULL"];
-			} else {
-				[setString appendString:@"'"];
-				[setString appendString:[mySQLConnection prepareString:cellData]];
-				[setString appendString:@"'"];
+				if (cellData == [NSNull null]) {
+					[setString appendString:@"NULL"];
+				} else {
+					[setString appendString:@"'"];
+					[setString appendString:[mySQLConnection prepareString:cellData]];
+					[setString appendString:@"'"];
+				}
 			}
 		}
 		// WHERE clause
@@ -1362,22 +1364,25 @@
 			[whereString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
 			// Append the data
 			// - check for global values
-			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
-				cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
-			else
+			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
+				// Global variables are coming wrapped in ' ' if there're not marked as SQL 
+				[whereString appendString:@"="];
+				[whereString appendString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+			} else {
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
-			// If import column isn't specified import the table column default value
-			if ([cellData isSPNotLoaded])
-				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
+				// If import column isn't specified import the table column default value
+				if ([cellData isSPNotLoaded])
+					cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
-			if (cellData == [NSNull null]) {
-				[whereString appendString:@" IS NULL"];
-			} else {
-				[whereString appendString:@"="];
-				[whereString appendString:@"'"];
-				[whereString appendString:[mySQLConnection prepareString:cellData]];
-				[whereString appendString:@"'"];
+				if (cellData == [NSNull null]) {
+					[whereString appendString:@" IS NULL"];
+				} else {
+					[whereString appendString:@"="];
+					[whereString appendString:@"'"];
+					[whereString appendString:[mySQLConnection prepareString:cellData]];
+					[whereString appendString:@"'"];
+				}
 			}
 		}
 	}
@@ -1407,21 +1412,23 @@
 
 		// Append the data
 		// - check for global values
-		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns)
-			cellData = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
-		else
+		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
+			// Global variables are coming wrapped in ' ' if there're not marked as SQL 
+			[valueString appendString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+		} else {
 			cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
-		// If import column isn't specified import the table column default value
-		if ([cellData isSPNotLoaded])
-			cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
+			// If import column isn't specified import the table column default value
+			if ([cellData isSPNotLoaded])
+				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
-		if (cellData == [NSNull null]) {
-			[valueString appendString:@"NULL"];
-		} else {
-			[valueString appendString:@"'"];
-			[valueString appendString:[mySQLConnection prepareString:cellData]];
-			[valueString appendString:@"'"];
+			if (cellData == [NSNull null]) {
+				[valueString appendString:@"NULL"];
+			} else {
+				[valueString appendString:@"'"];
+				[valueString appendString:[mySQLConnection prepareString:cellData]];
+				[valueString appendString:@"'"];
+			}
 		}
 	}
 
