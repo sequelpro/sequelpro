@@ -66,18 +66,17 @@
 	NSUInteger exportCount = [exporters count];
 	
 	// If required add the next exporter to the operation queue
-	if (exportCount > 0) {
-		if ((exportSource == SPTableExport) && (exportCount > 1)) {
-			// If we're exporter multiple tables to a single file then append some space and the next table's
-			// name, but only if there is at least 2 exportes left.
-			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@", 
-														   [exporter csvLineEndingString], 
-														   [exporter csvLineEndingString],
-														   NSLocalizedString(@"Table", @"csv export table heading"),
-														   [exporter csvTableName],
-														   [exporter csvLineEndingString],
-														   [exporter csvLineEndingString]] dataUsingEncoding:[exporter exportOutputEncoding]]];		
-		}
+	if ((exportCount > 0) && (exportSource == SPTableExport)) {
+			
+		// If we're exporting multiple tables to a single file then append some space and the next table's
+		// name, but only if there is at least 2 exportes left.
+		[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@", 
+													   [exporter csvLineEndingString], 
+													   [exporter csvLineEndingString],
+													   NSLocalizedString(@"Table", @"csv export table heading"),
+													   [(SPCSVExporter *)[exporters objectAtIndex:0] csvTableName],
+													   [exporter csvLineEndingString],
+													   [exporter csvLineEndingString]] dataUsingEncoding:[exporter exportOutputEncoding]]];		
 		
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
 		
