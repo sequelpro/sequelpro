@@ -43,6 +43,7 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
+#import "SPMainThreadTrampoline.h"
 
 @implementation CustomQuery
 
@@ -506,14 +507,14 @@
 	// Reset the current table view as necessary to avoid redraw and reload issues.
 	// Restore the view position to the top left to be within the results for all datasets.
 	if(editedRow == -1) {
-		[customQueryView scrollRowToVisible:0];
-		[customQueryView scrollColumnToVisible:0];
+		[[customQueryView onMainThread] scrollRowToVisible:0];
+		[[customQueryView onMainThread] scrollColumnToVisible:0];
 	}
 
 	// Remove all the columns if not reloading the table
 	if(!reloadingExistingResult) {
 		if (cqColumnDefinition) [cqColumnDefinition release], cqColumnDefinition = nil;
-		[self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:YES];
+		[[self onMainThread] updateTableView];
 	}
 
 	// Disable automatic query retries on failure for the custom queries
@@ -535,7 +536,7 @@
 		if (i > 0) {
 			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
 			[tableDocumentInstance setTaskDescription:taskString];
-			[errorText setStringValue:taskString];
+			[[errorText onMainThread] setStringValue:taskString];
 		}
 
 		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
@@ -561,7 +562,7 @@
 			cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
 
 			if(!reloadingExistingResult) {
-				[self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:YES];
+				[[self onMainThread] updateTableView];
 			}
 
 			[self processResultIntoDataStorage:streamingResult];
@@ -601,7 +602,7 @@
 					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
 										(long)(i+1),
 										errorString]];
-					[errorText setStringValue:errors];
+					[[errorText onMainThread] setStringValue:errors];
 
 					// ask the user to continue after detecting an error
 					if (![mySQLConnection queryCancelled]) {
@@ -612,7 +613,7 @@
 						[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
 						[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
 						[alert setAlertStyle:NSWarningAlertStyle];
-						NSInteger choice = [alert runModal];
+						NSInteger choice = [[alert onMainThread] runModal];
 						switch (choice){
 							case NSAlertFirstButtonReturn:
 								suppressErrorSheet = YES;
@@ -687,24 +688,24 @@
 	// Set up the status string
 	if ( [mySQLConnection queryCancelled] ) {
 		if (totalQueriesRun > 1) {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
+			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
                                               (long)totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 		} else {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled after %@", @"text showing a query was cancelled"),
+			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled after %@", @"text showing a query was cancelled"),
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 		}
 	} else if ( totalQueriesRun > 1 ) {
 		if (totalAffectedRows==1) {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
+			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
                                               (long)totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 
 		} else {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
                                               (long)totalAffectedRows,
                                               (long)totalQueriesRun,
                                               [NSString stringForTimeInterval:executionTime]
@@ -713,11 +714,11 @@
 		}
 	} else {
 		if (totalAffectedRows==1) {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
+			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];
 		} else {
-			[affectedRowsText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
                                               (long)totalAffectedRows,
                                               [NSString stringForTimeInterval:executionTime]
                                               ]];

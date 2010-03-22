@@ -54,6 +54,7 @@
 #import "SPProcessListController.h"
 #import "SPServerVariablesController.h"
 #import "SPAlertSheets.h"
+#import "SPMainThreadTrampoline.h"
 
 @interface TableDocument (PrivateAPI)
 
@@ -905,7 +906,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 
-	[tableWindow setTitle:[self displaySPName]];
+	[[tableWindow onMainThread] setTitle:[self displaySPName]];
 
 	// Add a history entry
 	if (!historyStateChanging) {
@@ -916,9 +917,9 @@
 	// Set focus to table list filter field if visible
 	// otherwise set focus to Table List view
 	if ( [[tablesListInstance tables] count] > 20 )
-		[tableWindow makeFirstResponder:listFilterField];
+		[[tableWindow onMainThread] makeFirstResponder:listFilterField];
 	else
-		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+		[[tableWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
 	[self endTask];
 	[taskPool drain];

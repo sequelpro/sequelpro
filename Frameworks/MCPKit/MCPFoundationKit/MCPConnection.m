@@ -689,6 +689,12 @@ void pingConnectionTask(void *ptr)
  */
 - (void)stopKeepAliveTimer
 {
+	// Stop keepalives on the main thread to avoid memory issues
+	if (![NSThread isMainThread]) {
+		[self performSelectorOnMainThread:@selector(stopKeepAliveTimer) withObject:nil waitUntilDone:NO];
+		return;
+	}
+
 	if (keepAliveThread != NULL) pthread_cancel(keepAliveThread), keepAliveThread = NULL;
 	if (!keepAliveTimer) return;
 	[keepAliveTimer invalidate];

@@ -27,6 +27,7 @@
 #import "TablesList.h"
 #import "SPHistoryController.h"
 #import "SPStringAdditions.h"
+#import "SPMainThreadTrampoline.h"
 
 @implementation SPHistoryController
 
@@ -263,7 +264,7 @@
 	if ([history count] > 50) [history removeObjectAtIndex:0];
 
 	historyPosition = [history count] - 1;
-	[self updateToolbarItem];
+	[[self onMainThread] updateToolbarItem];
 }
 
 #pragma mark -
@@ -318,7 +319,7 @@
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingState = NO;
-		[self updateToolbarItem];
+		[[self onMainThread] updateToolbarItem];
 		[theDocument endTask];
 		[loadPool drain];
 		return;
@@ -380,7 +381,7 @@
 	}
 
 	modifyingState = NO;
-	[self updateToolbarItem];
+	[[self onMainThread] updateToolbarItem];
 
 	// End the task
 	[theDocument endTask];
