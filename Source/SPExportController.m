@@ -97,23 +97,7 @@
 {
 	if (!exportWindow) [NSBundle loadNibNamed:@"ExportDialog" owner:self];
 	
-	NSUInteger i;
-		
-	[tables removeAllObjects];
-	
-	MCPResult *queryResult = (MCPResult *)[[self connection] listTables];
-	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	
-	for (i = 0; i < [queryResult numOfRows]; i++) 
-	{
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES],
-						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
-						   nil]];
-	}
-	
-	[exportTableList reloadData];
+	[self refreshTableList:self];
 	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
 
@@ -153,12 +137,15 @@
 {
 	if ([sender isKindOfClass:[NSMatrix class]]) {
 		
-		NSInteger tag = [[sender selectedCell] tag];
+		BOOL isSelectedTables = ([[sender selectedCell] tag] == 3);
 		
-		[exportFilePerTableCheck setHidden:(tag != 3)];
-		[exportFilePerTableNote  setHidden:(tag != 3)];
+		[exportFilePerTableCheck setHidden:(!isSelectedTables)];
+		[exportFilePerTableNote  setHidden:(!isSelectedTables)];
 		
-		[exportTableList setEnabled:(tag == 3)];
+		[exportTableList setEnabled:isSelectedTables];
+		[exportSelectAllTablesButton setEnabled:isSelectedTables];
+		[exportDeselectAllTablesButton setEnabled:isSelectedTables];
+		[exportRefreshTablesButton setEnabled:isSelectedTables];
 	}
 }
 
@@ -195,6 +182,47 @@
 					modalDelegate:self 
 				   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
 					  contextInfo:nil];
+}
+
+/**
+ * Refreshes the table list.
+ */
+- (IBAction)refreshTableList:(id)sender
+{
+	NSUInteger i;
+	
+	[tables removeAllObjects];
+	
+	MCPResult *queryResult = (MCPResult *)[[self connection] listTables];
+	
+	if ([queryResult numOfRows]) [queryResult dataSeek:0];
+	
+	for (i = 0; i < [queryResult numOfRows]; i++) 
+	{
+		[tables addObject:[NSMutableArray arrayWithObjects:
+						   [NSNumber numberWithBool:YES],
+						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
+						   nil]];
+	}
+	
+	[exportTableList reloadData];
+}
+
+/**
+ * Selects or de-selects all tables
+ */
+- (IBAction)selectDeselectAllTables:(id)sender
+{
+	NSUInteger i;
+	
+	[self refreshTableList:self];
+	
+	for (NSMutableArray *table in tables)
+	{
+		[table replaceObjectAtIndex:0 withObject:([sender tag]) ? [NSNumber numberWithBool:YES] : [NSNumber numberWithBool:NO]];
+	}
+	
+	[exportTableList reloadData];
 }
 
 #pragma mark -
@@ -320,7 +348,7 @@
 		case SPFilteredExport:
 			
 			break;
-		case SPCustomQueryExport:
+		case SPQueryExport:
 			
 			break;
 		case SPTableExport:
@@ -356,7 +384,7 @@
 		case SPFilteredExport:
 			[self _exportTables:nil orDataArray:[tableContentInstance currentResult]];
 			break;
-		case SPCustomQueryExport:
+		case SPQueryExport:
 			[self _exportTables:nil orDataArray:[customQueryInstance currentResult]];
 			break;
 		case SPTableExport:
@@ -397,7 +425,7 @@
 	
 	// If the user has selected to only export to a single file or this is a filtered or custom query 
 	// export create the single file now and assign it to all subsequently created exporters.
-	if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPCustomQueryExport)) {
+	if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
 		
 		NSString *filename = @"";
 		
@@ -407,7 +435,7 @@
 			case SPFilteredExport:
 				filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
 				break;
-			case SPCustomQueryExport:
+			case SPQueryExport:
 				filename = @"query_result";
 				break;
 			case SPTableExport:

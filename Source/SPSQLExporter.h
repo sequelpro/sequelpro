@@ -27,6 +27,47 @@
 
 #import "SPExporter.h"
 
+@class SPSQLExporter;
+
+@interface SPSQLExporterDelegate
+
+/**
+ *
+ */
+- (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter;
+
+/**
+ * 
+ */
+- (void)sqlExportProcessComplete:(SPSQLExporter *)exporter;
+
+/**
+ *
+ */
+- (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter;
+
+/**
+ *
+ */
+- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter;
+
+@end
+
 @interface SPSQLExporter : SPExporter
+{
+	// Table
+	NSString *sqlTableName;
+	
+	// SQL options
+	BOOL sqlOutputIncludeStructure;
+	BOOL sqlOutputIncludeCreateSyntax;
+	BOOL sqlOutputIncludeDropSyntax;
+	BOOL sqlOutputIncludeErrors;
+}
+
+@property(readwrite, assign) BOOL sqlOutputIncludeStructure;
+@property(readwrite, assign) BOOL sqlOutputIncludeCreateSyntax;
+@property(readwrite, assign) BOOL sqlOutputIncludeDropSyntax;
+@property(readwrite, assign) BOOL sqlOutputIncludeErrors;
 
 @end

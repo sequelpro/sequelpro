@@ -36,50 +36,54 @@
 	id tableDataInstance;
 	
 	// Connection window
-	IBOutlet id tableWindow;
+	IBOutlet NSWindow *tableWindow;
 	
 	// Export window
-	IBOutlet id exportWindow;
-	IBOutlet id exportToolbar;
-	IBOutlet id exportPathField;
-	IBOutlet id	exportTableList;
-	IBOutlet id exportTabBar;	
-	IBOutlet id exportInputMatrix;
-	IBOutlet id exportFilePerTableCheck;
-	IBOutlet id exportFilePerTableNote;
-	IBOutlet id exportUseUTF8BOM;
-	IBOutlet id exportProcessLowMemory;
+	IBOutlet NSWindow *exportWindow;
+	IBOutlet NSToolbar *exportToolbar;
+	IBOutlet NSTextField *exportPathField;
+	IBOutlet NSTableView *exportTableList;
+	IBOutlet NSTabView *exportTabBar;	
+	IBOutlet NSMatrix *exportInputMatrix;
+	IBOutlet NSButton *exportFilePerTableCheck;
+	IBOutlet NSTextField *exportFilePerTableNote;
+	IBOutlet NSButton *exportUseUTF8BOM;
+	IBOutlet NSButton *exportProcessLowMemory;
+	IBOutlet NSButton *exportSelectAllTablesButton;
+	IBOutlet NSButton *exportDeselectAllTablesButton;
+	IBOutlet NSButton *exportRefreshTablesButton;
 	
 	// Export progress sheet
-	IBOutlet id exportProgressWindow;
-	IBOutlet id exportProgressTitle;
-	IBOutlet id exportProgressText;
-	IBOutlet id exportProgressIndicator;
+	IBOutlet NSWindow *exportProgressWindow;
+	IBOutlet NSTextField *exportProgressTitle;
+	IBOutlet NSTextField *exportProgressText;
+	IBOutlet NSProgressIndicator *exportProgressIndicator;
 	
 	// SQL
-	IBOutlet id exportSQLIncludeStructureCheck;
-	IBOutlet id exportSQLIncludeDropSyntaxCheck;
-	IBOutlet id exportSQLIncludeErrorsCheck;
+	IBOutlet NSButton *exportSQLIncludeStructureCheck;
+	IBOutlet NSButton *exportSQLIncludeDropSyntaxCheck;
+	IBOutlet NSButton *exportSQLIncludeCreateSyntaxCheck;
+	IBOutlet NSButton *exportSQLIncludeErrorsCheck;
 	
 	// Excel
-	IBOutlet id exportExcelSheetOrFilePerTableMatrix;
+	IBOutlet NSMatrix *exportExcelSheetOrFilePerTableMatrix;
 	
 	// CSV
-	IBOutlet id exportCSVIncludeFieldNamesCheck;
-    IBOutlet id exportCSVFieldsTerminatedField;
-    IBOutlet id exportCSVFieldsWrappedField;
-    IBOutlet id exportCSVFieldsEscapedField;
-    IBOutlet id exportCSVLinesTerminatedField;
+	IBOutlet NSButton *exportCSVIncludeFieldNamesCheck;
+    IBOutlet NSComboBox *exportCSVFieldsTerminatedField;
+    IBOutlet NSComboBox *exportCSVFieldsWrappedField;
+    IBOutlet NSComboBox *exportCSVFieldsEscapedField;
+    IBOutlet NSComboBox *exportCSVLinesTerminatedField;
 	
 	// HTML
-	IBOutlet id exportHTMLIncludeStructureCheck;
-	IBOutlet id exportHTMLIncludeHeadAndBodyTagsCheck;
+	IBOutlet NSButton *exportHTMLIncludeStructureCheck;
+	IBOutlet NSButton *exportHTMLIncludeHeadAndBodyTagsCheck;
 	
 	// XML
-	IBOutlet id exportXMLIncludeStructureCheck;
+	IBOutlet NSButton *exportXMLIncludeStructureCheck;
 	
 	// PDF
-	IBOutlet id exportPDFIncludeStructureCheck;
+	IBOutlet NSButton *exportPDFIncludeStructureCheck;
 	
 	// Token name view
 	IBOutlet id tokenNameView;
@@ -138,5 +142,7 @@
 - (IBAction)switchInput:(id)sender;
 - (IBAction)cancelExport:(id)sender;
 - (IBAction)changeExportOutputPath:(id)sender;
+- (IBAction)refreshTableList:(id)sender;
+- (IBAction)selectDeselectAllTables:(id)sender;
 
 @end
