@@ -1689,15 +1689,13 @@ would result in a position change.
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-	NSString *indexName;
-	NSArray *indexedColumns;
-	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
-	NSString *string;
-	
 	// Check whether a save of the current fields row is required.
 	if (![self saveRowOnDeselect]) return;
 	
 	if (![[indexedColumnsField stringValue] isEqualToString:@""]) {
+		
+		NSString *indexName = @"";
+		NSMutableArray *tempIndexedColumns = [[NSMutableArray alloc] init];
 		
 		if ([[indexNameField stringValue] isEqualToString:@"PRIMARY"]) {
 			indexName = @"";
@@ -1706,18 +1704,12 @@ would result in a position change.
 			indexName = ([[indexNameField stringValue] isEqualToString:@""]) ? @"" : [[indexNameField stringValue] backtickQuotedString];
 		}
 		
-		indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
+		NSArray *indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
 		
-		NSEnumerator *enumerator = [indexedColumns objectEnumerator];
-		
-		while ((string = [enumerator nextObject])) 
-		{
-			if (([string characterAtIndex:0] == ' ')) {
-				[tempIndexedColumns addObject:[string substringWithRange:NSMakeRange(1, ([string length] - 1))]];
-			} 
-			else {
-				[tempIndexedColumns addObject:[NSString stringWithString:string]];
-			}
+		// For each column strip leading and trailing whitespace and add it to the temp array
+		for (NSString *column in indexedColumns)
+		{			
+			[tempIndexedColumns addObject:[column stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
 		}
 		
 		// Execute the query
@@ -1735,6 +1727,8 @@ would result in a position change.
 			[tablesListInstance setStatusRequiresReload:YES];
 			[self loadTable:selectedTable];
 		}
+		
+		[tempIndexedColumns release];
 	}
 	
 	[tableDocumentInstance endTask];
