@@ -16,7 +16,13 @@ BUILD_PRODUCT="${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}"
 echo "Running genstrings to update 'Localizable.strings'..."
 
 # Update 'Localizable.strings' by running genstrings(1)
-genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROOT}/Source/*.m"
+GENSTRINGS_ERRORS=$(genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROOT}/Source/*.m")
+
+# Check for genstrings errors
+if [ $? -ne 0 ]
+then
+	echo "Error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
+fi
 
 echo 'Updating build version...'
 
