@@ -1313,10 +1313,8 @@
  */
 - (void)dealloc
 {	
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
-													name:NSManagedObjectContextDidSaveNotification 
-												  object:nil];
-	[managedObjectContext release];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [managedObjectContext release];
     [persistentStoreCoordinator release];
     [managedObjectModel release];
 	[privColumnToGrantMap release];

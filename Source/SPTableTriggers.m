@@ -446,6 +446,7 @@
 	[triggerData release], triggerData = nil;
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
 	
 	[super dealloc];
 }

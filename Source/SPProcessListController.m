@@ -408,6 +408,8 @@
  */
 - (void)dealloc
 {
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
 	[processes release], processes = nil;
 	
 	[super dealloc];

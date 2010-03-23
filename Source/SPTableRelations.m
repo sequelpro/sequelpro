@@ -468,8 +468,10 @@
  */
 - (void)dealloc
 {	
-	[relationData release], relationData = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[relationData release], relationData = nil;
 	
 	[super dealloc];
 }

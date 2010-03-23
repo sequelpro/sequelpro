@@ -3246,6 +3246,7 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[prefs removeObserver:self forKeyPath:SPGlobalResultTableFont];
 
 	[usedQuery release];
 	[resultData release];

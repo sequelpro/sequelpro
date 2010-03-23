@@ -3225,7 +3225,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) dealloc
 {
+
+	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorFont];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryHighlightCurrentQuery];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorCommentColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorQuoteColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorSQLKeywordColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorBacktickColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorNumericColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorVariableColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTextColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
+
+	[prefs release];
 	[lineNumberView release];
 	if(queryHiliteColor) [queryHiliteColor release];
 	if(queryEditorBackgroundColor) [queryEditorBackgroundColor release];

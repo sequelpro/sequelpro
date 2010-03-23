@@ -4006,6 +4006,22 @@
  */
 - (void)dealloc
 {
+
+	// Unregister observers
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
+	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+
 	[_encoding release];
 	[allDatabases release];
 	[allSystemDatabases release];
