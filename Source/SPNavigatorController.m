@@ -682,6 +682,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 						atLocation:pos 
 						ofType:@"text"];
 			}
+			return YES;
 		}
 	}
 	
