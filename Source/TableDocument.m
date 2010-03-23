@@ -2302,6 +2302,24 @@
  */
 - (IBAction)showUserManager:(id)sender
 {	
+	// Before displaying the user manager make sure the current user has access to the mysql.user table.
+	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	
+	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && ([result numOfRows] == 0)) {
+		
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unable to get list of users", @"unable to get list of users message")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										   otherButton:nil 
+							 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to get the list of users. Please make sure you have the necessary privileges to perform user management, including access to the mysql.user table.", @"unable to get list of users informative message")];
+		
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
+	
+		return;
+	}
+	
 	[NSApp beginSheet:[userManagerInstance window]
 	   modalForWindow:tableWindow 
 		modalDelegate:userManagerInstance 
