@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="43"/>
+			<integer value="89"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -52,7 +52,7 @@
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{131, 70}, {395, 359}}</string>
-				<int key="NSWTFlags">-1535638528</int>
+				<int key="NSWTFlags">-1535630336</int>
 				<string key="NSWindowTitle">Navigator</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
@@ -702,7 +702,7 @@
 																				</object>
 																			</object>
 																			<reference key="NSGridColor" ref="1022465183"/>
-																			<double key="NSRowHeight">17</double>
+																			<double key="NSRowHeight">18</double>
 																			<int key="NSTvFlags">1379926016</int>
 																			<reference key="NSDelegate"/>
 																			<reference key="NSDataSource"/>
@@ -766,7 +766,7 @@
 															<reference key="NSContentView" ref="412284187"/>
 															<reference key="NSHeaderClipView" ref="886487259"/>
 															<reference key="NSCornerView" ref="276696960"/>
-															<bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
+															<bytes key="NSScrollAmts">QSAAAEEgAABBoAAAQaAAAA</bytes>
 														</object>
 													</object>
 													<string key="NSFrameSize">{395, 50}</string>
@@ -1783,9 +1783,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{72, 342}, {395, 359}}</string>
+					<string>{{91, 357}, {395, 359}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{72, 342}, {395, 359}}</string>
+					<string>{{91, 357}, {395, 359}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{200, 200}</string>

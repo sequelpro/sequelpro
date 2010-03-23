@@ -1176,8 +1176,6 @@
 {
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
-	// If the Console window is not visible data are not reloaded (for speed).
-	// Due to that update list if user opens the Console window.
 	if(!isNavigatorVisible) {
 		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
 	}
@@ -3668,11 +3666,14 @@
  */
 - (void)windowWillClose:(NSNotification *)aNotification
 {
+	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) {
+		[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
+	}
+
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];
 	else [connectionController cancelConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
-	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self updateNavigator:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }

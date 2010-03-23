@@ -59,11 +59,12 @@
 - (IBAction)filterTree:(id)sender;
 - (IBAction)syncButtonAction:(id)sender;
 
-- (NSString*)tableInfoLabelForIndex:(NSInteger)index;
+- (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
 
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
 - (void)selectPath:(NSString*)schemaPath;
 - (BOOL)syncMode;
+- (void)removeConnection:(NSString*)connectionID;
 
 @end

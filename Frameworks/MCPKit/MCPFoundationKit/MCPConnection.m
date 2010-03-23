@@ -696,6 +696,7 @@ void pingConnectionTask(void *ptr)
 	}
 
 	if (keepAliveThread != NULL) pthread_cancel(keepAliveThread), keepAliveThread = NULL;
+
 	if (!keepAliveTimer) return;
 	[keepAliveTimer invalidate];
 	[keepAliveTimer release];
@@ -1927,14 +1928,14 @@ void performThreadedKeepAlive(void *ptr)
 
 				// Query the desired data
 				NSString *queryDbString = @""
-				@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` "
-				@"UNION "
-				@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
-				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '2' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
-				@"UNION "
-				@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, '' AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, '' AS `KEY`, '' AS EXTRA, `DEFINER` AS `PRIVILEGES` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
-				@"ORDER BY `DATABASES`,`TABLES`,`fields`";
+					@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` "
+					@"UNION "
+					@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
+					@"UNION "
+					@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, `DTD_identifier` AS `TYPE`, '' AS `CHARSET`, '2' AS `structtype`, `IS_DETERMINISTIC` AS `KEY`, `SECURITY_TYPE` AS EXTRA, `DEFINER` AS `PRIVILEGES`, '' AS `collation`, '' AS `DEFAULT`, `SQL_DATA_ACCESS` AS `is_nullable`, '' AS `COMMENT` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' "
+					@"UNION "
+					@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, `DTD_identifier` AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, `IS_DETERMINISTIC` AS `KEY`, `SECURITY_TYPE` AS EXTRA, `DEFINER` AS `PRIVILEGES`, '' AS `collation`, '' AS `DEFAULT`, `SQL_DATA_ACCESS` AS `is_nullable`, '' AS `COMMENT` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' "
+					@"ORDER BY `DATABASES`,`TABLES`,`fields`";
 
 				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
 				const char *queryCString = [encodedQueryData bytes];
@@ -1973,6 +1974,10 @@ void performThreadedKeepAlive(void *ptr)
 						NSString *key = [self stringWithUTF8CString:row[6]];
 						NSString *extra = [self stringWithUTF8CString:row[7]];
 						NSString *priv = [self stringWithUTF8CString:row[8]];
+						NSString *coll = [self stringWithUTF8CString:row[9]];
+						NSString *def = [self stringWithUTF8CString:row[10]];
+						NSString *isnull = [self stringWithUTF8CString:row[11]];
+						NSString *comment = [self stringWithUTF8CString:row[12]];
 
 						[namesSet addObject:[db lowercaseString]];
 						[namesSet addObject:[table lowercaseString]];
@@ -1987,7 +1992,7 @@ void performThreadedKeepAlive(void *ptr)
 							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 						}
 
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, charset, key, extra, priv, [NSNumber numberWithUnsignedLongLong:cnt], nil] forKey:field_id];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, [NSNumber numberWithUnsignedLongLong:cnt], nil] forKey:field_id];
 						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:structtype forKey:@"  struct_type  "];
 
 					}
