@@ -2461,10 +2461,8 @@ void performThreadedKeepAlive(void *ptr)
 {
 	delegate = nil;
 
-	// Release the query lock, after unlocking it
-	[queryLock tryLock];
-	[queryLock unlock];
-	[queryLock release];
+	// Ensure the query lock is unlocked
+	[self unlockConnection];
 
 	// Clean up connections if necessary
 	if (mConnected) [self disconnect];
@@ -2473,6 +2471,7 @@ void performThreadedKeepAlive(void *ptr)
 		[connectionProxy disconnect];
 	}
 
+	[queryLock release];
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];
