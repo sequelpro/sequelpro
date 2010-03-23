@@ -750,7 +750,7 @@
 
 		// Select the column default if available
 		if ([resultRow objectForKey:@"Default"])
-			[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Default"]] forKey:@"default"];
+			[tableColumn setObject:[resultRow objectForKey:@"Default"] forKey:@"default"];
 
 		// Add the column to the list
 		[tableColumns addObject:[NSDictionary dictionaryWithDictionary:tableColumn]];
