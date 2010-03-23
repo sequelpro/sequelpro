@@ -28,8 +28,10 @@
 #import "SPConstants.h"
 #import "ImageAndTextCell.h"
 #import "TableDocument.h"
+#import "TablesList.h"
 #import "SPArrayAdditions.h"
 #import "SPLogger.h"
+#import "SPTooltip.h"
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
@@ -630,7 +632,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		return NO;
 	return YES;
 }
-
+/*
+ * Double-click on item selects the chosen path in active connection window
+ */
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
 	if([outlineView levelForItem:item] == 0) return NO;
@@ -638,13 +642,45 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
 	id parentKeys = [parentObject allKeysForObject:item];
 	if(parentKeys && [parentKeys count] == 1) {
+
+		NSPoint pos = [NSEvent mouseLocation];
+		pos.y -= 20;
+
+		// Do not allow to double-click at PROCs and FUNCs since it doesn't make sense
+		if([item isKindOfClass:[NSDictionary class]] && [item objectForKey:@"  struct_type  "] && [[item objectForKey:@"  struct_type  "] intValue] > 1) {
+			[SPTooltip showWithObject:NSLocalizedString(@"You only can select tables or views.", @"you only can select tables or views tooltip") 
+					atLocation:pos 
+					ofType:@"text"];
+				return NO;
+		}
+		
 		NSArray *pathArray = [[[parentKeys objectAtIndex:0] description] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([pathArray count] > 1) {
+
 			TableDocument *doc = [[NSDocumentController sharedDocumentController] currentDocument];
+			if([doc isWorking]) {
+				[SPTooltip showWithObject:NSLocalizedString(@"Active connection window is busy. Please wait and try again.", @"active connection window is busy. please wait and try again. tooltip") 
+						atLocation:pos 
+						ofType:@"text"];
+				return NO;
+			}
 			if([[doc connectionID] isEqualToString:[pathArray objectAtIndex:0]]) {
+
+				// select db
 				if(![[doc database] isEqualToString:[pathArray objectAtIndex:1]]) {
-					// todo
+					if([[doc valueForKeyPath:@"mySQLConnection"] isConnected]) {
+						[[doc valueForKeyPath:@"chooseDatabaseButton"] selectItemWithTitle:[pathArray objectAtIndex:1]];
+						[doc chooseDatabase:self];
+					}
 				}
+				// select table/view if given
+				if([pathArray count] > 2)
+					[[doc valueForKeyPath:@"tablesListInstance"] performSelector:@selector(selectTableOrViewWithName:) withObject:[pathArray objectAtIndex:2] afterDelay:0.1];
+
+			} else {
+				[SPTooltip showWithObject:NSLocalizedString(@"The connection of the active connection window is not identical.", @"the connection of the active connection window is not identical tooltip") 
+						atLocation:pos 
+						ofType:@"text"];
 			}
 		}
 	}

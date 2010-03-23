@@ -1234,6 +1234,7 @@
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), theName]];
 		}
 	}
+	[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 	return YES;
 }
 
@@ -1422,7 +1423,7 @@
 		tableName = [filteredTables objectAtIndex:[tablesListView selectedRow]];
 	[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), tableName]];
 
-	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
+	if([[SPNavigatorController sharedNavigatorController] syncMode] && [tablesListView numberOfSelectedRows] == 1) {
 		NSMutableString *schemaPath = [NSMutableString string];
 		[schemaPath setString:[tableDocumentInstance connectionID]];
 		if([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
