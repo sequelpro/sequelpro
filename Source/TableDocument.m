@@ -54,6 +54,7 @@
 #import "SPProcessListController.h"
 #import "SPServerVariablesController.h"
 #import "SPAlertSheets.h"
+#import "SPConstants.h"
 #import "SPMainThreadTrampoline.h"
 
 @interface TableDocument (PrivateAPI)
@@ -1630,20 +1631,20 @@
 	NSString *query = nil;
 	NSString *typeString = @"";
 
-	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+	if( [tablesListInstance tableType] == SPTableTypeTable ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 		typeString = @"table";
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+	else if( [tablesListInstance tableType] == SPTableTypeView ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
 		typeString = @"view";
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeProc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
 		typeString = @"procedure";
 		colOffs = 2;
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeFunc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
 		typeString = @"function";
 		colOffs = 2;
@@ -1669,7 +1670,7 @@
 
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
-	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SP_TABLETYPE_VIEW) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
+	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
 	[createTableSyntaxTextView setEditable:NO];
 
 	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
@@ -1692,17 +1693,17 @@
 	NSString *query = nil;
 	NSInteger colOffs = 1;
 
-	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+	if( [tablesListInstance tableType] == SPTableTypeTable ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+	else if( [tablesListInstance tableType] == SPTableTypeView ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeProc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
 		colOffs = 2;
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeFunc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
 		colOffs = 2;
 	}
@@ -1726,7 +1727,7 @@
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
+	if([tablesListInstance tableType] == SPTableTypeView)
 		[pb setString:[tableSyntax createViewSyntaxPrettifier] forType:NSStringPboardType];
 	else
 		[pb setString:tableSyntax forType:NSStringPboardType];
@@ -2878,19 +2879,19 @@
 			[session setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
 
 		switch([spHistoryControllerInstance currentlySelectedView]){
-			case SP_VIEW_STRUCTURE:
+			case SPHistoryViewStructure:
 			aString = @"SP_VIEW_STRUCTURE";
 			break;
-			case SP_VIEW_CONTENT:
+			case SPHistoryViewContent:
 			aString = @"SP_VIEW_CONTENT";
 			break;
-			case SP_VIEW_CUSTOMQUERY:
+			case SPHistoryViewCustomQuery:
 			aString = @"SP_VIEW_CUSTOMQUERY";
 			break;
-			case SP_VIEW_STATUS:
+			case SPHistoryViewStatus:
 			aString = @"SP_VIEW_STATUS";
 			break;
-			case SP_VIEW_RELATIONS:
+			case SPHistoryViewRelations:
 			aString = @"SP_VIEW_RELATIONS";
 			break;
 			default:
@@ -3611,8 +3612,8 @@
 	}
 
 	if (![identifier isEqualToString:SPMainToolbarCustomQuery] && ![identifier isEqualToString:SPMainToolbarUserManager]) {
-		return (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) || 
-				([tablesListInstance tableType] == SP_TABLETYPE_VIEW));
+		return (([tablesListInstance tableType] == SPTableTypeTable) || 
+				([tablesListInstance tableType] == SPTableTypeView));
 	}
 
 	return YES;

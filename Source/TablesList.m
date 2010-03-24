@@ -48,9 +48,9 @@
 - (void)truncateTable;
 - (void)addTable;
 - (void)copyTable;
-- (void)renameTableOfType: (enum sp_table_types)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
-- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType;
-- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
+- (void)renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
 @end
 
@@ -101,17 +101,17 @@
 		if ([theResult numOfFields] == 1) {
 			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 				[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
-				[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
+				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
 			}		
 		} else {
 			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 				resultRow = [theResult fetchRowAsArray];
 				[tables addObject:[resultRow objectAtIndex:0]];
 				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
-					[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_VIEW]];
+					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeView]];
 					tableListContainsViews = YES;
 				} else {
-					[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
+					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
 				}
 			}
 		}
@@ -133,16 +133,16 @@
 			if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
 				// add the header row
 				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-				[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
+				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 				[theResult dataSeek:0];
 			
 				if( [theResult numOfFields] == 1 ) {
 					for( i = 0; i < [theResult numOfRows]; i++ ) {
 						[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
 						if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
-							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_PROC]];
+							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
 						} else {
-							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_FUNC]];
+							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
 						}
 					}
 				} else {
@@ -150,9 +150,9 @@
 						resultRow = [theResult fetchRowAsArray];
 						[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
 						if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
-							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_PROC]];
+							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
 						} else {
-							[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_FUNC]];
+							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
 						}
 					}	
 				}
@@ -166,20 +166,20 @@
 		if( [theResult numOfRows] ) {
 			// add the header row
 			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-			[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+			[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeNone]];
 			addedPFHeader = TRUE;
 			[theResult dataSeek:0];
 			
 			if( [theResult numOfFields] == 1 ) {
 				for( i = 0; i < [theResult numOfRows]; i++ ) {
 					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
+					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeProc]];
 				}
 			} else {
 				for( i = 0; i < [theResult numOfRows]; i++ ) {
 					resultRow = [theResult fetchRowAsArray];
 					[tables addObject:[resultRow objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_PROC]];
+					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeProc]];
 				}	
 			}
 		}
@@ -191,20 +191,20 @@
 			if( !addedPFHeader ) {
 				// add the header row			
 				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-				[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_NONE]];
+				[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeNone]];
 			}
 			[theResult dataSeek:0];
 			
 			if( [theResult numOfFields] == 1 ) {
 				for( i = 0; i < [theResult numOfRows]; i++ ) {
 					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeFunc]];
 				}
 			} else {
 				for( i = 0; i < [theResult numOfRows]; i++ ) {
 					resultRow = [theResult fetchRowAsArray];
 					[tables addObject:[resultRow objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SP_TABLETYPE_FUNC]];
+					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeFunc]];
 				}	
 			}
 		}
@@ -219,7 +219,7 @@
 	} else {
 		[tables insertObject:NSLocalizedString(@"TABLES",@"header for table list") atIndex:0];
 	}
-	[tableTypes insertObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE] atIndex:0];
+	[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeNone] atIndex:0];
 
 	[[tablesListView onMainThread] reloadData];
 	
@@ -238,7 +238,7 @@
 	} else {
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = nil;
-		selectedTableType = SP_TABLETYPE_NONE;
+		selectedTableType = SPTableTypeNone;
 	}
 
 	// Determine whether or not to show the list filter based on the number of tables, and clear it
@@ -322,13 +322,13 @@
 	NSUInteger currentIndex = [indexes lastIndex];
 	
 	if ([tablesListView numberOfSelectedRows] == 1) {
-		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_VIEW)
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeView)
 			tblTypes = NSLocalizedString(@"view", @"view");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE)
+		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable)
 			tblTypes = NSLocalizedString(@"table", @"table");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_PROC)
+		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeProc)
 			tblTypes = NSLocalizedString(@"procedure", @"procedure");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_FUNC)
+		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeFunc)
 			tblTypes = NSLocalizedString(@"function", @"function");
 		
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete %@ '%@'?", @"delete table/view message"), tblTypes, [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
@@ -350,16 +350,16 @@
 		if(areTableTypeEqual)
 		{
 			switch(lastType) {
-				case SP_TABLETYPE_TABLE:
+				case SPTableTypeTable:
 				tblTypes = NSLocalizedString(@"tables", @"tables");
 				break;
-				case SP_TABLETYPE_VIEW:
+				case SPTableTypeView:
 				tblTypes = NSLocalizedString(@"views", @"views");
 				break;
-				case SP_TABLETYPE_PROC:
+				case SPTableTypeProc:
 				tblTypes = NSLocalizedString(@"procedures", @"procedures");
 				break;
-				case SP_TABLETYPE_FUNC:
+				case SPTableTypeFunc:
 				tblTypes = NSLocalizedString(@"functions", @"functions");
 				break;
 			}
@@ -390,19 +390,19 @@
 	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 	
 	switch (tblType){
-		case SP_TABLETYPE_TABLE:
+		case SPTableTypeTable:
 			tableType = NSLocalizedString(@"table",@"table");
 			[copyTableContentSwitch setEnabled:YES];
 			break;
-		case SP_TABLETYPE_VIEW:
+		case SPTableTypeView:
 			tableType = NSLocalizedString(@"view",@"view");
 			[copyTableContentSwitch setEnabled:NO];
 			break;
-		case SP_TABLETYPE_PROC:
+		case SPTableTypeProc:
 			tableType = NSLocalizedString(@"procedure",@"procedure");
 			[copyTableContentSwitch setEnabled:NO];
 			break;
-		case SP_TABLETYPE_FUNC:
+		case SPTableTypeFunc:
 			tableType = NSLocalizedString(@"function",@"function");
 			[copyTableContentSwitch setEnabled:NO];
 			break;
@@ -445,16 +445,16 @@
 	NSString *tableType;
 	
 	switch([self tableType]){
-		case SP_TABLETYPE_TABLE:
+		case SPTableTypeTable:
 		tableType = NSLocalizedString(@"table",@"table");
 		break;
-		case SP_TABLETYPE_VIEW:
+		case SPTableTypeView:
 		tableType = NSLocalizedString(@"view",@"view");
 		break;
-		case SP_TABLETYPE_PROC:
+		case SPTableTypeProc:
 		tableType = NSLocalizedString(@"procedure",@"procedure");
 		break;
-		case SP_TABLETYPE_FUNC:
+		case SPTableTypeFunc:
 		tableType = NSLocalizedString(@"function",@"function");
 		break;
 	}
@@ -585,7 +585,7 @@
 	id object = [notification object];
 
 	if (object == tableNameField) {
-		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue] forType: SP_TABLETYPE_TABLE]];
+		[addTableButton setEnabled:[self isTableNameValid:[tableNameField stringValue] forType: SPTableTypeTable]];
 	}
 
 	else if (object == copyTableNameField) {
@@ -660,7 +660,7 @@
 	[self performSelectorOnMainThread:@selector(setSelection:) withObject:selectionDetails waitUntilDone:YES];
 		
 	// Check the encoding if appropriate to determine if an encoding change and reset is required
-	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
+	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 
 		// tableEncoding == nil indicates that there was an error while retrieving table data
 		tableEncoding = [tableDataInstance tableEncoding];
@@ -685,7 +685,7 @@
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
 
-	if( selectedTableType == SP_TABLETYPE_VIEW || selectedTableType == SP_TABLETYPE_TABLE) {
+	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;
@@ -753,7 +753,7 @@
 		} else {
 			selectedTableName = nil;
 		}
-		selectedTableType = SP_TABLETYPE_NONE;
+		selectedTableType = SPTableTypeNone;
 
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
@@ -780,7 +780,7 @@
 			if (areTableTypeEqual)
 			{
 				switch (lastType) {
-					case SP_TABLETYPE_TABLE:
+					case SPTableTypeTable:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
 					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
@@ -788,19 +788,19 @@
 					[truncateTableButton setHidden:NO];
 					[truncateTableContextButton setHidden:NO];
 					break;
-					case SP_TABLETYPE_VIEW:
+					case SPTableTypeView:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
-					case SP_TABLETYPE_PROC:
+					case SPTableTypeProc:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
-					case SP_TABLETYPE_FUNC:
+					case SPTableTypeFunc:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
 					[truncateTableButton setHidden:YES];
@@ -861,7 +861,7 @@
 	
 	// Remove the "current selection" item for filtered lists if appropriate
 	if (isTableListFiltered && [tablesListView selectedRow] < [filteredTables count] - 2 && [filteredTables count] > 2
-		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] integerValue] == SP_TABLETYPE_NONE
+		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] integerValue] == SPTableTypeNone
 		&& [[filteredTables objectAtIndex:[filteredTables count]-2] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
 	{
 		[filteredTables removeObjectsInRange:NSMakeRange([filteredTables count]-2, 2)];
@@ -879,7 +879,7 @@
 	// according to the table types
 	NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
 	
-	if(selectedTableType == SP_TABLETYPE_VIEW)
+	if(selectedTableType == SPTableTypeView)
 	{
 		// Change mainMenu > Table > ... according to table type
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
@@ -909,7 +909,7 @@
 		[truncateTableContextButton setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 	} 
-	else if(selectedTableType == SP_TABLETYPE_TABLE) {
+	else if(selectedTableType == SPTableTypeTable) {
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
 		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
@@ -944,7 +944,7 @@
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
 
 	} 
-	else if(selectedTableType == SP_TABLETYPE_PROC) {
+	else if(selectedTableType == SPTableTypeProc) {
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
 		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
@@ -971,7 +971,7 @@
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
 
 	}
-	else if(selectedTableType == SP_TABLETYPE_FUNC) {
+	else if(selectedTableType == SPTableTypeFunc) {
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
 		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
@@ -1014,7 +1014,7 @@
 	NSMutableArray *selTables = [NSMutableArray array];
 
 	while (currentIndex != NSNotFound) {
-		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE)
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable)
 			[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
 		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
 	}
@@ -1068,7 +1068,7 @@
 	NSInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_TABLE || [NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_VIEW)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeTable || [NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeView)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1079,7 +1079,7 @@
 	NSInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_TABLE)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeTable)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1090,7 +1090,7 @@
 	NSInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_VIEW)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeView)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	[returnArray sortUsingSelector:@selector(compare:)];
@@ -1102,7 +1102,7 @@
 	NSInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_PROC)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeProc)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1113,7 +1113,7 @@
 	NSInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SP_TABLETYPE_FUNC)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeFunc)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1204,7 +1204,7 @@
 	// Loop through the unfiltered tables/views to find the desired item
 	for (i = 0; i < [tables count]; i++) {
 		tableType = [[tableTypes objectAtIndex:i] integerValue];
-		if (tableType == SP_TABLETYPE_NONE) continue;
+		if (tableType == SPTableTypeNone) continue;
 		if ([[tables objectAtIndex:i] isEqualToString:theName]) {
 			itemIndex = i;
 			break;
@@ -1317,7 +1317,7 @@
         selectedTableName = [[NSString alloc] initWithString:newTableName];
         
         // if the 'table' is a view or a table, reload the currently selected view 
-        if (selectedTableType == SP_TABLETYPE_TABLE || selectedTableType == SP_TABLETYPE_VIEW)
+        if (selectedTableType == SPTableTypeTable || selectedTableType == SPTableTypeView)
         {
             switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
                 case 0:
@@ -1453,7 +1453,7 @@
 	//return (rowIndex != 0);
 	if( [filteredTableTypes count] == 0 )
 		return (rowIndex != 0 );
-	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] != SP_TABLETYPE_NONE );
+	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] != SPTableTypeNone );
 }
 
 /**
@@ -1464,7 +1464,7 @@
 	// For empty tables - title still present - or while lists are being altered
 	if (rowIndex >= [filteredTableTypes count]) return (rowIndex == 0 );
 
-	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_NONE );
+	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeNone );
 }
 
 /**
@@ -1474,17 +1474,17 @@
 {
 	if (rowIndex > 0 && rowIndex < [filteredTableTypes count]
 		&& [[aTableColumn identifier] isEqualToString:@"tables"]) {
-		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_VIEW) {
+		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeView) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_TABLE) { 
+		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeTable) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_PROC) { 
+		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeProc) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"proc-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_FUNC) { 
+		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeFunc) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"func-small"]];
 		}
 	
-		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_NONE) {
+		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeNone) {
 			[(ImageAndTextCell*)aCell setImage:nil];
 			[(ImageAndTextCell*)aCell setIndentationLevel:0];
 		} else {
@@ -1526,7 +1526,7 @@
 	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
 
 	if ( [tablesListView numberOfSelectedRows] == 1  && 
-		([self tableType] == SP_TABLETYPE_TABLE || [self tableType] == SP_TABLETYPE_VIEW) ) {
+		([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) ) {
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
 			[tableSourceInstance loadTable:selectedTableName];
@@ -1636,24 +1636,24 @@
 		NSRange substringRange;
 		for (i = 0; i < [tables count]; i++) {
 			tableType = [[tableTypes objectAtIndex:i] integerValue];
-			if (tableType == SP_TABLETYPE_NONE) continue;
+			if (tableType == SPTableTypeNone) continue;
 			substringRange = [[tables objectAtIndex:i] rangeOfString:[listFilterField stringValue] options:NSCaseInsensitiveSearch];
 			if (substringRange.location == NSNotFound) continue;
 		
 			// Add a title if necessary
-			if ((tableType == SP_TABLETYPE_TABLE || tableType == SP_TABLETYPE_VIEW) && lastTableType == NSNotFound)
+			if ((tableType == SPTableTypeTable || tableType == SPTableTypeView) && lastTableType == NSNotFound)
 			{
 				if (tableListContainsViews) {
 					[filteredTables addObject:NSLocalizedString(@"TABLES & VIEWS",@"header for table & views list")];
 				} else {
 					[filteredTables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 				}
-				[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
-			} else if ((tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC)
-						&& (lastTableType == NSNotFound || lastTableType == SP_TABLETYPE_TABLE || lastTableType == SP_TABLETYPE_VIEW))
+				[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
+			} else if ((tableType == SPTableTypeProc || tableType == SPTableTypeFunc)
+						&& (lastTableType == NSNotFound || lastTableType == SPTableTypeTable || lastTableType == SPTableTypeView))
 			{
 				[filteredTables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-				[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
+				[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 			}
 			lastTableType = tableType;
 
@@ -1665,13 +1665,13 @@
 		// Add a "no matches" title if nothing matches the current filter settings
 		if (![filteredTables count]) {
 			[filteredTables addObject:NSLocalizedString(@"NO MATCHES",@"header for no matches in filtered list")];
-			[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];		
+			[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];		
 		}
 
 		// If the currently selected table isn't present in the filter list, add it as a special entry
 		if (selectedTableName && [filteredTables indexOfObject:selectedTableName] == NSNotFound) {
 			[filteredTables addObject:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")];
-			[filteredTableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE]];
+			[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 			[filteredTables addObject:selectedTableName];
 			[filteredTableTypes addObject:[NSNumber numberWithInteger:selectedTableType]];
 		}
@@ -1698,7 +1698,7 @@
 - (void) selectTableAtIndex:(NSNumber *)row
 {
 	NSInteger rowIndex = [row integerValue];
-	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SP_TABLETYPE_NONE)
+	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeNone)
 		return;
 
 	[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
@@ -1765,7 +1765,7 @@
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
-		selectedTableType = SP_TABLETYPE_NONE;
+		selectedTableType = SPTableTypeNone;
 		selectedTableName = nil;
 		[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
 	}
@@ -1844,19 +1844,19 @@
 	
 	while (currentIndex != NSNotFound)
 	{
-		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_VIEW) {
+		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeView) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_TABLE) {
+		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_PROC) {
+		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeProc) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP PROCEDURE %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SP_TABLETYPE_FUNC) {
+		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeFunc) {
 			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP FUNCTION %@",
 										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
 										   ]];			
@@ -1905,7 +1905,7 @@
 	
 	// Remove the isolated "current selection" item for filtered lists if appropriate
 	if (isTableListFiltered && [filteredTables count] > 1
-		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-1] integerValue] == SP_TABLETYPE_NONE
+		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-1] integerValue] == SPTableTypeNone
 		&& [[filteredTables objectAtIndex:[filteredTables count]-1] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
 	{
 		[filteredTables removeLastObject];
@@ -1993,8 +1993,8 @@
 		NSInteger addItemAtIndex = NSNotFound;
 		for (NSInteger i = 0; i < [tables count]; i++) {
 			NSInteger tableType = [[tableTypes objectAtIndex:i] integerValue];
-			if (tableType == SP_TABLETYPE_NONE) continue;
-			if (tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC) {
+			if (tableType == SPTableTypeNone) continue;
+			if (tableType == SPTableTypeProc || tableType == SPTableTypeFunc) {
 				addItemAtIndex = i - 1;
 				break;
 			}
@@ -2005,16 +2005,16 @@
 		}
 		if (addItemAtIndex == NSNotFound) {
 			[tables addObject:tableName];
-			[tableTypes addObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE]];
+			[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
 		} else {
 			[tables insertObject:tableName atIndex:addItemAtIndex];
-			[tableTypes insertObject:[NSNumber numberWithInteger:SP_TABLETYPE_TABLE] atIndex:addItemAtIndex];		
+			[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeTable] atIndex:addItemAtIndex];		
 		}
 		
 		// Set the selected table name and type, and then use updateFilter and updateSelection to update the filter list and selection.
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:tableName];
-		selectedTableType = SP_TABLETYPE_TABLE;
+		selectedTableType = SPTableTypeTable;
 		[self updateFilter:self];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
@@ -2056,19 +2056,19 @@
 	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 	
 	switch (tblType){
-		case SP_TABLETYPE_TABLE:
+		case SPTableTypeTable:
 			tableType = NSLocalizedString(@"table",@"table");
 			[copyTableContentSwitch setEnabled:YES];
 			break;
-		case SP_TABLETYPE_VIEW:
+		case SPTableTypeView:
 			tableType = NSLocalizedString(@"view",@"view");
 			[copyTableContentSwitch setEnabled:NO];
 			break;
-		case SP_TABLETYPE_PROC:
+		case SPTableTypeProc:
 			tableType = NSLocalizedString(@"procedure",@"procedure");
 			[copyTableContentSwitch setEnabled:NO];
 			break;
-		case SP_TABLETYPE_FUNC:
+		case SPTableTypeFunc:
 			tableType = NSLocalizedString(@"function",@"function");
 			[copyTableContentSwitch setEnabled:NO];
 			break;
@@ -2091,14 +2091,14 @@
 		NSScanner *scanner;
 		NSString *scanString;
 		
-		if(tblType == SP_TABLETYPE_VIEW){
+		if(tblType == SPTableTypeView){
 			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[scanner release];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		} 
-		else if(tblType == SP_TABLETYPE_TABLE){
+		else if(tblType == SPTableTypeTable){
 			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
@@ -2115,13 +2115,13 @@
 			
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		}
-		else if(tblType == SP_TABLETYPE_FUNC || tblType == SP_TABLETYPE_PROC)
+		else if(tblType == SPTableTypeFunc || tblType == SPTableTypeProc)
 		{
 			// get the create syntax
 			MCPResult *theResult;
-			if(selectedTableType == SP_TABLETYPE_PROC)
+			if(selectedTableType == SPTableTypeProc)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [selectedTableName backtickQuotedString]]];
-			else if([self tableType] == SP_TABLETYPE_FUNC)
+			else if([self tableType] == SPTableTypeFunc)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [selectedTableName backtickQuotedString]]];
 			else
 				return;
@@ -2182,13 +2182,13 @@
 			NSInteger addItemAtIndex = NSNotFound;
 			for (NSInteger i = 0; i < [tables count]; i++) {
 				NSInteger theTableType = [[tableTypes objectAtIndex:i] integerValue];
-				if (theTableType == SP_TABLETYPE_NONE) continue;
-				if ((theTableType == SP_TABLETYPE_VIEW || theTableType == SP_TABLETYPE_TABLE)
-					&& (tblType == SP_TABLETYPE_PROC || tblType == SP_TABLETYPE_FUNC)) {
+				if (theTableType == SPTableTypeNone) continue;
+				if ((theTableType == SPTableTypeView || theTableType == SPTableTypeTable)
+					&& (tblType == SPTableTypeProc || tblType == SPTableTypeFunc)) {
 					continue;
 				}
-				if ((theTableType == SP_TABLETYPE_PROC || theTableType == SP_TABLETYPE_FUNC)
-					&& (tblType == SP_TABLETYPE_VIEW || tblType == SP_TABLETYPE_TABLE)) {
+				if ((theTableType == SPTableTypeProc || theTableType == SPTableTypeFunc)
+					&& (tblType == SPTableTypeView || tblType == SPTableTypeTable)) {
 					addItemAtIndex = i - 1;
 					break;
 				}
@@ -2225,7 +2225,7 @@
  * This function ONLY changes the database. It does NOT refresh the views etc.
  * CAREFUL: This function raises an exception if renaming fails, and does not show an error message.
  */
-- (void)renameTableOfType: (enum sp_table_types)tableType from:(NSString *)oldTableName to:(NSString *)newTableName
+- (void)renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName
 {
     // check if the name really changed
     if ([oldTableName isEqualToString:newTableName]) return;
@@ -2252,7 +2252,7 @@
     }
     
     //check if we are trying to rename a TABLE or a VIEW
-    if (tableType == SP_TABLETYPE_VIEW || tableType == SP_TABLETYPE_TABLE) {
+    if (tableType == SPTableTypeView || tableType == SPTableTypeTable) {
         // we can use the rename table statement
         [mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [oldTableName backtickQuotedString], [newTableName backtickQuotedString]]];
         // check for errors
@@ -2263,15 +2263,15 @@
     }
     
     //check if we are trying to rename a PROCEDURE or a FUNCTION
-    if (tableType == SP_TABLETYPE_PROC || tableType == SP_TABLETYPE_FUNC) {
+    if (tableType == SPTableTypeProc || tableType == SPTableTypeFunc) {
         // procedures and functions can only be renamed if one creates a new one and deletes the old one
         
         // first get the create syntax
         NSString *stringTableType = @"";
 		
         switch (tableType){
-            case SP_TABLETYPE_PROC: stringTableType = @"PROCEDURE"; break;
-            case SP_TABLETYPE_FUNC: stringTableType = @"FUNCTION"; break;
+            case SPTableTypeProc: stringTableType = @"PROCEDURE"; break;
+            case SPTableTypeFunc: stringTableType = @"FUNCTION"; break;
         }
         
         MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
@@ -2309,12 +2309,12 @@
  * Check tableName for length and if the tableName doesn't match
  * against current database table/view names (case-insensitive).
  */
-- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType
 {
     return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
 }
 
-- (BOOL)isTableNameValid:(NSString *)tableName forType: (enum sp_table_types)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
 {
 	BOOL isValid = YES;
 
@@ -2331,14 +2331,14 @@
     
     NSArray *similarTables;
     switch (tableType) {
-        case SP_TABLETYPE_VIEW:
-        case SP_TABLETYPE_TABLE:
+        case SPTableTypeView:
+        case SPTableTypeTable:
             similarTables = [self allTableAndViewNames];
             break;
-        case SP_TABLETYPE_PROC:
+        case SPTableTypeProc:
             similarTables = [self allProcedureNames];
             break;
-        case SP_TABLETYPE_FUNC:
+        case SPTableTypeFunc:
             similarTables = [self allFunctionNames];
             break;
         default:

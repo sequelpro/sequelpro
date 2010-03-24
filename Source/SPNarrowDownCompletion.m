@@ -27,6 +27,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/NSObjCRuntime.h>
+#import <tgmath.h>
 
 #import "SPNarrowDownCompletion.h"
 #import "SPArrayAdditions.h"
@@ -36,7 +37,7 @@
 #import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "CMTextView.h"
-#include <tgmath.h>
+#import "SPConstants.h"
 
 @interface NSTableView (MovingSelectedRow)
 
@@ -556,7 +557,7 @@
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 
-	NSInteger displayedRows = [newFiltered count] < SP_NARROWDOWNLIST_MAX_ROWS ? [newFiltered count] : SP_NARROWDOWNLIST_MAX_ROWS;
+	NSInteger displayedRows = [newFiltered count] < SPNarrowDownCompletionMaxRows ? [newFiltered count] : SPNarrowDownCompletionMaxRows;
 	CGFloat newHeight   = ([theTableView rowHeight] + [theTableView intercellSpacing].height) * ((displayedRows) ? displayedRows : 1);
 
 	if(caretPos.y >= 0 && (isAbove || caretPos.y < newHeight))

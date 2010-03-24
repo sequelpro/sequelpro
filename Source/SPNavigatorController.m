@@ -33,13 +33,11 @@
 #import "SPLogger.h"
 #import "SPTooltip.h"
 
-
 static SPNavigatorController *sharedNavigatorController = nil;
 
 #define DragFromNavigatorPboardType  @"SPDragFromNavigatorPboardType"
 
 @implementation SPNavigatorController
-
 
 /*
  * Returns the shared query console.

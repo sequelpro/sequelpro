@@ -65,18 +65,18 @@
 	// For all modes, retrieve table and view names
 	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
 	for (id itemName in tablesAndViews) {
-		[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], itemName,  [NSNumber numberWithInt:SP_TABLETYPE_TABLE], nil]];
+		[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], itemName,  [NSNumber numberWithInt:SPTableTypeTable], nil]];
 	}
 
 	// For SQL only, add procedures and functions
 	if (exportMode == SPExportingSQL) {
 		NSArray *procedures = [tablesListInstance allProcedureNames];
 		for (id procName in procedures) {
-			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], procName, [NSNumber numberWithInt:SP_TABLETYPE_PROC], nil]];
+			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], procName, [NSNumber numberWithInt:SPTableTypeProc], nil]];
 		}
 		NSArray *functions = [tablesListInstance allFunctionNames];
 		for (id funcName in functions) {
-			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], funcName, [NSNumber numberWithInt:SP_TABLETYPE_FUNC], nil]];
+			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], funcName, [NSNumber numberWithInt:SPTableTypeFunc], nil]];
 		}	
 	}
 
@@ -1446,7 +1446,7 @@
 {
 	NSInteger i,j,t,rowCount, colCount, lastProgressValue, queryLength;
 	NSInteger progressBarWidth;
-	NSInteger tableType = SP_TABLETYPE_TABLE; //real tableType will be setup later
+	NSInteger tableType = SPTableTypeTable; //real tableType will be setup later
 	MCPResult *queryResult;
 	MCPStreamingResult *streamingResult;
 	NSAutoreleasePool *exportAutoReleasePool = nil;
@@ -1489,10 +1489,10 @@
 	for ( i = 0 ; i < [tables count] ; i++ ) {
 		if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
 			switch ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 2) intValue]) {
-				case SP_TABLETYPE_PROC:
+				case SPTableTypeProc:
 					targetArray = selectedProcs;
 					break;
-				case SP_TABLETYPE_FUNC:
+				case SPTableTypeFunc:
 					targetArray = selectedFuncs;
 					break;
 				default:
@@ -1567,10 +1567,10 @@
 			if ([tableDetails objectForKey:@"Create View"]) {
 				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
 				createTableSyntax = [self createViewPlaceholderSyntaxForView:tableName];
-				tableType = SP_TABLETYPE_VIEW;
+				tableType = SPTableTypeView;
 			} else {
 				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
-				tableType = SP_TABLETYPE_TABLE;
+				tableType = SPTableTypeTable;
 			}
 			[tableDetails release];
 		}
@@ -1584,7 +1584,7 @@
 
 		// Add a "drop table" command if specified in the export dialog
 		if ( [addDropTableSwitch state] == NSOnState )
-			[fileHandle writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SP_TABLETYPE_TABLE)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
+			[fileHandle writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
 								   dataUsingEncoding:NSUTF8StringEncoding]];
 		
 
@@ -1598,7 +1598,7 @@
 		}
 		
 		// Add the table content if required
-		if ( [addTableContentSwitch state] == NSOnState && tableType == SP_TABLETYPE_TABLE ) {
+		if ( [addTableContentSwitch state] == NSOnState && tableType == SPTableTypeTable ) {
 
 			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
 			tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];

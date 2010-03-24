@@ -37,7 +37,6 @@
 
 @implementation SPTableData
 
-
 - (id) init
 {
 	if ((self = [super init])) {
@@ -72,7 +71,7 @@
 - (NSString *) tableEncoding
 {
 	if (tableEncoding == nil) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} else {
 			[self updateInformationForCurrentTable];
@@ -87,7 +86,7 @@
 - (NSString *) tableCreateSyntax
 {
 	if (tableCreateSyntax == nil) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} 
 		else {
@@ -105,7 +104,7 @@
 - (NSArray *) columns
 {
 	if ([columns count] == 0) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} else {
 			[self updateInformationForCurrentTable];
@@ -130,7 +129,7 @@
 - (NSDictionary *) columnWithName:(NSString *)colName
 {	
 	if ([columns count] == 0) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} else {
 			[self updateInformationForCurrentTable];
@@ -148,7 +147,7 @@
 - (NSArray *) columnNames
 {	
 	if ([columnNames count] == 0) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} else {
 			[self updateInformationForCurrentTable];
@@ -164,7 +163,7 @@
 - (NSDictionary *) columnAtIndex:(NSInteger)index
 {	
 	if ([columns count] == 0) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} else {
 			[self updateInformationForCurrentTable];
@@ -181,7 +180,7 @@
 - (BOOL) columnIsBlobOrText:(NSString *)colName
 {	
 	if ([columns count] == 0) {
-		if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
 		} else {
 			[self updateInformationForCurrentTable];
@@ -275,7 +274,7 @@
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
 	
-	if( [tableListInstance tableType] == SP_TABLETYPE_TABLE || [tableListInstance tableType] == SP_TABLETYPE_VIEW ) {		
+	if( [tableListInstance tableType] == SPTableTypeTable || [tableListInstance tableType] == SPTableTypeView ) {		
 		tableData = [self informationForTable:[tableListInstance tableName]];
 	}
 	
@@ -783,7 +782,7 @@
 
 	// When views are selected, populate the table with a default dictionary - all values, including comment, return no
 	// meaningful information for views so we may as well skip the query.
-	if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+	if ([tableListInstance tableType] == SPTableTypeView) {
 		[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"View", @"Engine", @"No status information is available for views.", @"Comment", [tableListInstance tableName], @"Name", nil]];
 		return TRUE;
 	}
@@ -794,17 +793,17 @@
 
 	MCPResult *tableStatusResult = nil;
 
-	if ([tableListInstance tableType] == SP_TABLETYPE_PROC) {
+	if ([tableListInstance tableType] == SPTableTypeProc) {
 		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];
 		[escapedDatabaseName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedDatabaseName length])];
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.ROUTINES AS r WHERE r.SPECIFIC_NAME = '%@' AND r.ROUTINE_SCHEMA = '%@' AND r.ROUTINE_TYPE = 'PROCEDURE'", escapedTableName, escapedDatabaseName]];
 	}
-	else if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+	else if ([tableListInstance tableType] == SPTableTypeFunc) {
 		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];
 		[escapedDatabaseName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedDatabaseName length])];
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.ROUTINES AS r WHERE r.SPECIFIC_NAME = '%@' AND r.ROUTINE_SCHEMA = '%@' AND r.ROUTINE_TYPE = 'FUNCTION'", escapedTableName, escapedDatabaseName]];
 	}
-	else if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
+	else if ([tableListInstance tableType] == SPTableTypeTable) {
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
 		[tableStatusResult setReturnDataAsStrings:YES];
 	}
@@ -823,7 +822,7 @@
 	// Retrieve the status as a dictionary and set as the cache
 	[status setDictionary:[tableStatusResult fetchRowAsDictionary]];
 
-	if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
+	if ([tableListInstance tableType] == SPTableTypeTable) {
 
 		// Reassign any "Type" key - for MySQL < 4.1 - to "Engine" for consistency.
 		if ([status objectForKey:@"Type"]) {

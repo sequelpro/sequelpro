@@ -46,7 +46,8 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 	return r;
 }
 
-@interface CMTextView : NSTextView {
+@interface CMTextView : NSTextView 
+{
 	BOOL autoindentEnabled;
 	BOOL autopairEnabled;
 	BOOL autoindentIgnoresEnter;
@@ -91,7 +92,6 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 	NSColor *otherTextColor;
 	NSRange queryRange;
 	BOOL shouldHiliteQuery;
-
 }
 
 @property(retain) NSColor* queryHiliteColor;

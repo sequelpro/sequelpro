@@ -25,9 +25,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-
-@interface SPNavigatorController : NSWindowController {
-
+@interface SPNavigatorController : NSWindowController 
+{
 	IBOutlet id outlineSchema1;
 	IBOutlet id outlineSchema2;
 	IBOutlet id navigatorWindow;
@@ -53,7 +52,6 @@
 	NSRect selectionViewPort1;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
-
 }
 
 + (SPNavigatorController *)sharedNavigatorController;

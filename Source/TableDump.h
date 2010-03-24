@@ -25,15 +25,9 @@
 //  Or mail to <lorenz@textor.ch>
 
 #import <Cocoa/Cocoa.h>
-#import "SPFieldMapperController.h"
 #import <MCPKit/MCPKit.h>
 
-typedef enum _SPExportModes {
-	SPExportingSQL = 0,
-	SPExportingCSV = 1,
-	SPExportingXML = 2,
-	SPExportingDOT = 3
-} SPExportMode;
+@class SPFieldMapperController;
 
 @interface TableDump : NSObject 
 {
@@ -123,7 +117,6 @@ typedef enum _SPExportModes {
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
-
 }
 
 // IBAction methods

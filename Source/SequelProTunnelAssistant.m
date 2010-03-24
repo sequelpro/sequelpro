@@ -23,8 +23,10 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
+#import "SPConstants.h"
 #import "RegexKitLite.h"
 
 int main(int argc, const char *argv[])
@@ -68,7 +70,7 @@ int main(int argc, const char *argv[])
 
 		// If the password method is set to use the keychain, use the supplied keychain name to
 		// request the password
-		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSH_PASSWORD_USES_KEYCHAIN) {
+		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordUsesKeychain) {
 			SPKeychain *keychain;
 			NSString *keychainName = [environment objectForKey:@"SP_KEYCHAIN_ITEM_NAME"];
 			NSString *keychainAccount = [environment objectForKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
@@ -94,7 +96,7 @@ int main(int argc, const char *argv[])
 		}
 
 		// If the password method is set to request the password from the tunnel instance, do so.
-		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSH_PASSWORD_ASKS_UI) {
+		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordAsksUI) {
 			NSString *password;
 			
 			if (!connectionName || !verificationHash) {

@@ -130,7 +130,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	// if it does, and the time exceeds the threshold, display the notification even for
 	// frontmost windows to provide feedback for long-running tasks.
 	if (timingNotificationName && [timingNotificationName isEqualToString:name]) {
-		if ([self milliTime] > (SP_LONGRUNNING_NOTIFICATION_TIME * 1000) + timingNotificationStart) {
+		if ([self milliTime] > (SPLongRunningNotificationTime * 1000) + timingNotificationStart) {
 			postNotification = YES;
 		}
 		[timingNotificationName release], timingNotificationName = nil;
@@ -151,7 +151,7 @@ static SPGrowlController *sharedGrowlController = nil;
 /**
  * React to a click on the notification.
  */
-- (void) growlNotificationWasClicked:(NSDictionary *)clickContext
+- (void)growlNotificationWasClicked:(NSDictionary *)clickContext
 {
 	if (clickContext && [clickContext objectForKey:@"notificationWindow"]) {
 		NSWindow *targetWindow = [NSApp windowWithWindowNumber:[[clickContext objectForKey:@"notificationWindow"] integerValue]];
@@ -168,7 +168,7 @@ static SPGrowlController *sharedGrowlController = nil;
  * being posted; if the notification is posted after the header-defined boundary, the
  * notification will then be shown even if the app is frontmost.
  */
-- (void) setVisibilityForNotificationName:(NSString *)name
+- (void)setVisibilityForNotificationName:(NSString *)name
 {
 	if (timingNotificationName) [timingNotificationName release], timingNotificationName = nil;
 	timingNotificationName = [[NSString alloc] initWithString:name];
@@ -178,7 +178,7 @@ static SPGrowlController *sharedGrowlController = nil;
 /**
  * Get a monotonically increasing time, in milliseconds.
  */
-- (double) milliTime
+- (double)milliTime
 {
 	uint64_t currentTime_t = mach_absolute_time();
 	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));

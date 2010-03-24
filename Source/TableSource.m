@@ -45,9 +45,9 @@
 
 @implementation TableSource
 
-/*
-loads aTable, put it in an array, update the tableViewColumns and reload the tableView
-*/
+/**
+ * Loads aTable, put it in an array, update the tableViewColumns and reload the tableView
+ */
 - (void)loadTable:(NSString *)aTable
 {
 	NSArray *theTableFields, *theTableIndexes;
@@ -265,7 +265,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[editTableButton setEnabled:enableInteraction];
 
 	// If a view is selected, disable the buttons; otherwise enable.
-	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && enableInteraction;
+	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable) && enableInteraction;
 	[addFieldButton setEnabled:editingEnabled];
 	[addIndexButton setEnabled:editingEnabled];
 
@@ -1241,7 +1241,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	// Only re-enable elements if the current tab is the structure view
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
-	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
+	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable);
 	[tableSourceView setEnabled:YES];
 	[tableSourceView displayIfNeeded];
 	[addFieldButton setEnabled:editingEnabled];
@@ -1307,7 +1307,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Return NO for views
-	if ([tablesListInstance tableType] == SP_TABLETYPE_VIEW) return NO;
+	if ([tablesListInstance tableType] == SPTableTypeView) return NO;
 
 	return YES;
 }
@@ -1484,7 +1484,7 @@ would result in a position change.
 		[copyFieldButton setEnabled:YES];
 
 		// Check if there is currently a field selected and change button state accordingly
-		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable) {
 			[removeFieldButton setEnabled:YES];
 		} else {
 			[removeFieldButton setEnabled:NO];
@@ -1499,7 +1499,7 @@ would result in a position change.
 	}
 	else if (object == indexView) {
 		// Check if there is currently an index selected and change button state accordingly
-		[removeIndexButton setEnabled:([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
+		[removeIndexButton setEnabled:([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable)];
 	}
 }
 
@@ -1567,7 +1567,7 @@ would result in a position change.
     //make sure that the message is from the right table view
     if (tableView!=tableSourceView) return;
 
-	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
+	[aCell setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
 }
 
 #pragma mark -

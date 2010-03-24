@@ -40,8 +40,6 @@
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
 
-#define SP_MYSQL_DEV_SEARCH_URL   @"http://search.mysql.com/search?q=%@&site=refman-%@"
-
 #define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
 #define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
 #define SP_FAVORITE_HEADER_MENUITEM_TAG               200000

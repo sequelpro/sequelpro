@@ -24,13 +24,18 @@
 
 #import <Cocoa/Cocoa.h>
 
-static inline id NSArrayObjectAtIndex(NSArray* self, NSUInteger i) {
+static inline id NSArrayObjectAtIndex(NSArray *self, NSUInteger i) 
+{
 	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
 }
-static inline void NSMutableArrayAddObject(NSArray* self, id anObject) {
+
+static inline void NSMutableArrayAddObject(NSArray *self, id anObject) 
+{
 	CFArrayAppendValue((CFMutableArrayRef)self, anObject);
 }
-static inline void NSMutableArrayReplaceObject(NSArray* self, CFIndex idx, id anObject) {
+
+static inline void NSMutableArrayReplaceObject(NSArray *self, CFIndex idx, id anObject) 
+{
 	CFArraySetValueAtIndex((CFMutableArrayRef)self, idx, anObject);
 }
 

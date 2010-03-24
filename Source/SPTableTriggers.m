@@ -471,7 +471,7 @@
 {
 	[triggerData removeAllObjects];
 	
-	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+	if ([tablesListInstance tableType] == SPTableTypeTable) {
 		
 		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
 		

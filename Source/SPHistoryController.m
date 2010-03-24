@@ -25,6 +25,7 @@
 #import "TableDocument.h"
 #import "TableContent.h"
 #import "TablesList.h"
+#import "SPConstants.h"
 #import "SPHistoryController.h"
 #import "SPStringAdditions.h"
 #import "SPMainThreadTrampoline.h"
@@ -156,15 +157,15 @@
 
 	NSString *viewName = [[[theDocument valueForKey:@"tableTabView"] selectedTabViewItem] identifier];
 	if ([viewName isEqualToString:@"source"]) {
-		theView = SP_VIEW_STRUCTURE;
+		theView = SPHistoryViewStructure;
 	} else if ([viewName isEqualToString:@"content"]) {
-		theView = SP_VIEW_CONTENT;
+		theView = SPHistoryViewContent;
 	} else if ([viewName isEqualToString:@"customQuery"]) {
-		theView = SP_VIEW_CUSTOMQUERY;
+		theView = SPHistoryViewCustomQuery;
 	} else if ([viewName isEqualToString:@"status"]) {
-		theView = SP_VIEW_STATUS;
+		theView = SPHistoryViewStatus;
 	} else if ([viewName isEqualToString:@"relations"]) {
-		theView = SP_VIEW_RELATIONS;
+		theView = SPHistoryViewRelations;
 	}
 
 	return theView;
@@ -315,7 +316,7 @@
 	// If the database, table, and view are the same and content - just trigger a table reload (filters)
 	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
 		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SP_VIEW_CONTENT)
+		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SPHistoryViewContent)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingState = NO;
@@ -346,19 +347,19 @@
 	// Check and set the view
 	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
 		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
-			case SP_VIEW_STRUCTURE:
+			case SPHistoryViewStructure:
 				[theDocument viewStructure:self];
 				break;
-			case SP_VIEW_CONTENT:
+			case SPHistoryViewContent:
 				[theDocument viewContent:self];
 				break;
-			case SP_VIEW_CUSTOMQUERY:
+			case SPHistoryViewCustomQuery:
 				[theDocument viewQuery:self];
 				break;
-			case SP_VIEW_STATUS:
+			case SPHistoryViewStatus:
 				[theDocument viewStatus:self];
 				break;
-			case SP_VIEW_RELATIONS:
+			case SPHistoryViewRelations:
 				[theDocument viewRelations:self];
 				break;
 		}

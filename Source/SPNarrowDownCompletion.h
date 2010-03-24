@@ -28,8 +28,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#define SP_NARROWDOWNLIST_MAX_ROWS 15
-
 @interface SPNarrowDownCompletion : NSWindow 
 {
 	NSArray* suggestions;

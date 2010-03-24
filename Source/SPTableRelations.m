@@ -244,7 +244,7 @@
 	// Get the current table's storage engine
 	NSString *engine = [tableDataInstance statusValueForKey:@"Engine"];
 	
-	if (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
+	if (([tablesListInstance tableType] == SPTableTypeTable) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
 		
 		// Update the text label
 		[labelTextField setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
@@ -258,7 +258,7 @@
 		[refreshRelationsButton setEnabled:NO];	
 		[relationsTableView setEnabled:NO];
 		
-		[labelTextField setStringValue:([tablesListInstance tableType] == SP_TABLETYPE_TABLE) ? @"This table currently does not support relations. Only tables that use the InnoDB storage engine support them." : @""];
+		[labelTextField setStringValue:([tablesListInstance tableType] == SPTableTypeTable) ? @"This table currently does not support relations. Only tables that use the InnoDB storage engine support them." : @""];
 	}	
 	
 	[self _refreshRelationDataForcingCacheRefresh:NO];
@@ -487,7 +487,7 @@
 {
 	[relationData removeAllObjects];
 	
-	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+	if ([tablesListInstance tableType] == SPTableTypeTable) {
 		
 		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
 				

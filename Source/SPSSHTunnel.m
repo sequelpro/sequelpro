@@ -286,13 +286,13 @@
 	[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];
 	[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
 	if (passwordInKeychain) {
-		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSH_PASSWORD_USES_KEYCHAIN] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordUsesKeychain] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 		[taskEnvironment setObject:keychainName forKey:@"SP_KEYCHAIN_ITEM_NAME"];
 		[taskEnvironment setObject:keychainAccount forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
 	} else if (password) {
-		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSH_PASSWORD_ASKS_UI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordAsksUI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 	} else {
-		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSH_NO_PASSWORD] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordNone] stringValue] forKey:@"SP_PASSWORD_METHOD"];
 	}
 	[task setEnvironment:taskEnvironment];
 

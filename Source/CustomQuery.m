@@ -2541,7 +2541,7 @@
 		version = [mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""];
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
 		[[NSString stringWithFormat:
-			SP_MYSQL_DEV_SEARCH_URL,
+			SPMySQLSearchURL,
 			searchString,
 			version]
 		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];

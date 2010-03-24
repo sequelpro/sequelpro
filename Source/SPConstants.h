@@ -27,11 +27,11 @@
 
 // View modes
 typedef enum {
-	SPStructureViewMode		= 1,
-	SPContentViewMode		= 2,
-	SPRelationsViewMode		= 3,
-	SPTableInfoViewMode		= 4,
-	SPQueryEditorViewMode	= 5
+	SPStructureViewMode	  = 1,
+	SPContentViewMode	  = 2,
+	SPRelationsViewMode	  = 3,
+	SPTableInfoViewMode   = 4,
+	SPQueryEditorViewMode = 5
 } SPViewMode;
 
 // Query modes
@@ -54,6 +54,48 @@ typedef enum {
 	SPRowCountFetchIfCheap	= 1,
 	SPRowCountFetchAlways	= 2
 } SPRowCountQueryUsageLevels;
+
+// Export type
+typedef enum {
+	SPExportingSQL = 0,
+	SPExportingCSV = 1,
+	SPExportingXML = 2,
+	SPExportingDOT = 3
+} SPExportMode;
+
+// Database object (table list) types
+typedef enum
+{
+	SPTableTypeNone  = -1,
+	SPTableTypeTable = 0,
+	SPTableTypeView  = 1,
+	SPTableTypeProc  = 2,
+	SPTableTypeFunc  = 3
+} SPTableType;
+
+// History views
+typedef enum
+{
+	SPHistoryViewStructure   = 0,
+	SPHistoryViewContent     = 1,
+	SPHistoryViewCustomQuery = 2,
+	SPHistoryViewStatus      = 3,
+	SPHistoryViewRelations   = 4
+} SPHistoryViewType;
+
+// SSH tunnel password modes
+typedef enum
+{
+	SPSSHPasswordUsesKeychain = 0,
+	SPSSHPasswordAsksUI       = 1,
+	SPSSHPasswordNone         = 2
+} SPSSHTunnelPasswordMode;
+
+// Long running notification time for Growl messages
+extern const CGFloat SPLongRunningNotificationTime;
+
+// Narrow down completion max rows
+extern const NSUInteger SPNarrowDownCompletionMaxRows;
 
 // Kill mode constants
 extern NSString *SPKillProcessQueryMode;
@@ -192,6 +234,7 @@ extern NSString *SPFAQURL;
 extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
 extern NSString *SPKeyboardShortcutsURL;
+extern NSString *SPMySQLSearchURL;
 
 // Toolbar constants
 

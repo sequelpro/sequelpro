@@ -28,6 +28,7 @@
 #import <pthread.h>
 
 @implementation NSNotificationCenter (NSNotificationCenterAdditions)
+
 - (void) postNotificationOnMainThread:(NSNotification *) notification {
 	if( pthread_main_np() ) return [self postNotification:notification];
 	[self postNotificationOnMainThread:notification waitUntilDone:NO];
@@ -72,4 +73,5 @@
 
 	[[self defaultCenter] postNotificationName:name object:object userInfo:userInfo];
 }
+
 @end
