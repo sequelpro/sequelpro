@@ -31,8 +31,6 @@
 #import "SPConnectionController.h"
 #import "SPConstants.h"
 
-#pragma mark -
-
 @interface SPPreferenceController (PrivateAPI)
 
 - (void)_setupToolbar;

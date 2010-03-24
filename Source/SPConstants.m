@@ -25,6 +25,12 @@
 
 #import "SPConstants.h"
 
+// Long running notification time for Growl messages
+const CGFloat SPLongRunningNotificationTime      = 3.0;
+
+// Narrow down completion max rows
+const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
+
 // Kill mode constants
 NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
 NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
@@ -160,6 +166,7 @@ NSString *SPFAQURL                               = @"http://www.sequelpro.com/do
 NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
 NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
+NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@";
 
 // Toolbar constants
 

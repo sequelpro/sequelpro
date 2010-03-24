@@ -1,10 +1,11 @@
 //
 //  $Id$
 //
-//  SPArrayAdditions.h
+//  SPNavigatorOutlineView.m
 //  sequel-pro
 //
-//  Created by Jakob Egger on March 24, 2009
+//  Created by H.-J. Bibiko on 3/23/10.
+//  Copyright 2010. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,29 +23,38 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import "SPNavigatorOutlineView.h"
+#import "SPNavigatorController.h"
 
-static inline id NSArrayObjectAtIndex(NSArray *self, NSUInteger i) 
+
+@implementation SPNavigatorOutlineView
+
+- (BOOL)acceptsFirstResponder
 {
-	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
+	return YES;
 }
 
-static inline void NSMutableArrayAddObject(NSArray *self, id anObject) 
+- (void)keyDown:(NSEvent *)theEvent
 {
-	CFArrayAppendValue((CFMutableArrayRef)self, anObject);
+	// Enter or Return selects in active document the chosen item
+	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
+		[[self delegate] selectInActiveDocumentItem:[self itemAtRow:[self selectedRow]] fromView:self];
+		return;
+	}
+
+	[super keyDown:theEvent];
 }
 
-static inline void NSMutableArrayReplaceObject(NSArray *self, CFIndex idx, id anObject) 
+/*
+ * Return the data source item of the selected row, if no or multiple selections
+ * return nil
+ */
+- (id)selectedItem
 {
-	CFArraySetValueAtIndex((CFMutableArrayRef)self, idx, anObject);
+	if([self numberOfSelectedRows] == 1)
+		return [self itemAtRow:[self selectedRow]];
+	
+	return nil;
 }
-
-@interface NSArray (SPArrayAdditions)
-
-- (NSString *)componentsJoinedAndBacktickQuoted;
-- (NSString *)componentsJoinedByCommas;
-- (NSString *)componentsJoinedByPeriodAndBacktickQuoted;
-- (NSString *)componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst;
-- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end

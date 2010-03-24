@@ -33,6 +33,7 @@
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "SPMainThreadTrampoline.h"
 
 @interface TableSource (PrivateAPI)
 
@@ -44,76 +45,41 @@
 
 @implementation TableSource
 
-/*
-loads aTable, put it in an array, update the tableViewColumns and reload the tableView
-*/
+/**
+ * Loads aTable, put it in an array, update the tableViewColumns and reload the tableView
+ */
 - (void)loadTable:(NSString *)aTable
 {
-	NSEnumerator *enumerator;
-	id field;
+	NSArray *theTableFields, *theTableIndexes;
+	NSMutableDictionary *theTableEnumLists = [NSMutableDictionary dictionary];
 	NSArray *extrasArray;
 	NSMutableDictionary *tempDefaultValues;
-	NSEnumerator *extrasEnumerator;
-	id extra;
 	NSInteger i;
 	SPSQLParser *fieldParser;
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] || ![tableDocumentInstance isWorking];
 
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if ( ![[self onMainThread] saveRowOnDeselect] ) return;
 
-	if (selectedTable) [selectedTable release];
-	if (aTable == nil) {
-		selectedTable = nil;
-	} else {
-		selectedTable = [[NSString alloc] initWithString:aTable];
-	}
-	[tableSourceView deselectAll:self];
-	[indexView deselectAll:self];
-
-	if ( isEditingRow )
-		return;
-
-	// empty variables
-	[enumFields removeAllObjects];
-
-	if ( [aTable isEqualToString:@""] || !aTable ) {
-		[tableFields removeAllObjects];
-		[indexes removeAllObjects];
-		[tableSourceView reloadData];
-		[indexView reloadData];
-		[addFieldButton setEnabled:NO];
-		[copyFieldButton setEnabled:NO];
-		[removeFieldButton setEnabled:NO];
-		[addIndexButton setEnabled:NO];
-		[removeIndexButton setEnabled:NO];
-		[editTableButton setEnabled:NO];
-
+	// If no table is selected, reset the interface and return
+	if (!aTable || ![aTable length]) {
+		[[self onMainThread] setTableDetails:nil];
 		return;
 	}
 	
-	// Enable edit table button
-	[editTableButton setEnabled:enableInteraction];
-
-	//query started
+	// Send the query started/working notification
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
   
-	//perform queries and load results in array (each row as a dictionary)
-	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]] retain];
+	// Retrieve the column information for this table.
+	// TODO: update this and indexes to use TableData at some point - tiny bit more parsing required...
+	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [aTable backtickQuotedString]]] retain];
+
+	// If an error occurred, reset the interface and abort
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
-		[tableFields removeAllObjects];
-		[indexes removeAllObjects];
-		[tableSourceView reloadData];
-		[tablesListInstance updateTables:self];
-		[indexView reloadData];
-		[addFieldButton setEnabled:NO];
-		[copyFieldButton setEnabled:NO];
-		[removeFieldButton setEnabled:NO];
-		[addIndexButton setEnabled:NO];
-		[removeIndexButton setEnabled:NO];
-		[editTableButton setEnabled:NO];
+
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[self onMainThread] setTableDetails:nil];
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
@@ -122,29 +88,20 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		return;
 	}
 
-	[tableSourceResult setReturnDataAsStrings:YES];
-	
-	// listFieldsFromTable is broken in the current version of the framework (no back-ticks for table name)!
-	//	tableSourceResult = [[mySQLConnection listFieldsFromTable:selectedTable] retain];
-	//	[tableFields setArray:[[self fetchResultAsArray:tableSourceResult] retain]];
-	[tableFields setArray:[self fetchResultAsArray:tableSourceResult]];
+	// Process the field names into a local array of dictionaries 
+	theTableFields = [self fetchResultAsArray:tableSourceResult];
 	[tableSourceResult release];
 
-	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [selectedTable backtickQuotedString]]] retain];
+	// Retrieve the indexes for the table
+	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]] retain];
+
+	// If an error occurred, reset the interface and abort
 	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
 		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
-		[tableFields removeAllObjects];
-		[indexes removeAllObjects];
-		[tableSourceView reloadData];
-		[tablesListInstance updateTables:self];
-		[indexView reloadData];
-		[addFieldButton setEnabled:NO];
-		[copyFieldButton setEnabled:NO];
-		[removeFieldButton setEnabled:NO];
-		[addIndexButton setEnabled:NO];
-		[removeIndexButton setEnabled:NO];
-		[editTableButton setEnabled:NO];
+
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[self onMainThread] setTableDetails:nil];
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
 				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
@@ -152,33 +109,19 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		if (indexResult) [indexResult release];
 		return;
 	}
-	[indexResult setReturnDataAsStrings:YES];
-	//	[indexes setArray:[[self fetchResultAsArray:indexResult] retain]];
-	[indexes setArray:[self fetchResultAsArray:indexResult]];
-	[indexResult release];
-	
-	//get table default values
-	if ( defaultValues ) {
-		[defaultValues release];
-		defaultValues = nil;
-	}
-	
-	tempDefaultValues = [NSMutableDictionary dictionary];
-	for ( i = 0 ; i < [tableFields count] ; i++ ) {
-		[tempDefaultValues setObject:[[tableFields objectAtIndex:i] objectForKey:@"Default"] forKey:[[tableFields objectAtIndex:i] objectForKey:@"Field"]];
-	}
-	defaultValues = [[NSDictionary dictionaryWithDictionary:tempDefaultValues] retain];
-	
-	//put field length and extras in separate key
-	enumerator = [tableFields objectEnumerator];
 
-	while ( (field = [enumerator nextObject]) ) {
+	// Process the indexes into a local array of dictionaries
+	theTableIndexes = [self fetchResultAsArray:indexResult];
+	[indexResult release];
+
+	// Process all the fields to normalise keys and add additional information
+	for (id theField in theTableFields) {
 		NSString *type;
 		NSString *length;
 		NSString *extras;
 
 		// Set up the field parser with the type definition
-		fieldParser = [[SPSQLParser alloc] initWithString:[field objectForKey:@"Type"]];
+		fieldParser = [[SPSQLParser alloc] initWithString:[theField objectForKey:@"Type"]];
 
 		// Pull out the field type; if no brackets are found, this returns nil - in which case simple values can be used.
 		type = [fieldParser trimAndReturnStringToCharacter:'(' trimmingInclusively:YES returningInclusively:NO];
@@ -207,7 +150,7 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 				[valueParser setString:[possibleValues objectAtIndex:i]];
 				[possibleValues replaceObjectAtIndex:i withObject:[valueParser unquotedString]];
 			}
-			[enumFields setObject:[NSArray arrayWithArray:possibleValues] forKey:[field objectForKey:@"Field"]];
+			[theTableEnumLists setObject:[NSArray arrayWithArray:possibleValues] forKey:[theField objectForKey:@"Field"]];
 			[possibleValues release];
 			[valueParser release];
 		}
@@ -215,72 +158,40 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 		// For timestamps check to see whether "on update CURRENT_TIMESTAMP" - not returned
 		// by SHOW COLUMNS - should be set from the table data store
 		if ([type isEqualToString:@"timestamp"]
-			&& [[[tableDataInstance columnWithName:[field objectForKey:@"Field"]] objectForKey:@"onupdatetimestamp"] integerValue])
+			&& [[[tableDataInstance columnWithName:[theField objectForKey:@"Field"]] objectForKey:@"onupdatetimestamp"] integerValue])
 		{
-			[field setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
+			[theField setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
 		}
 
-		// scan extras for values like unsigned, zerofill, binary
+		// Scan extras for values like unsigned, zerofill, binary
 		extrasArray = [extras componentsSeparatedByString:@" "];
-		extrasEnumerator = [extrasArray objectEnumerator];
-		
-		while ( (extra = [extrasEnumerator nextObject]) ) {
-			if ( [extra isEqualToString:@"unsigned"] ) {
-				[field setObject:@"1" forKey:@"unsigned"];
-			} else if ( [extra isEqualToString:@"zerofill"] ) {
-				[field setObject:@"1" forKey:@"zerofill"];
-			} else if ( [extra isEqualToString:@"binary"] ) {
-				[field setObject:@"1" forKey:@"binary"];
+		for (id extra in extrasArray) {
+			if ([extra isEqualToString:@"unsigned"]) {
+				[theField setObject:@"1" forKey:@"unsigned"];
+			} else if ([extra isEqualToString:@"zerofill"]) {
+				[theField setObject:@"1" forKey:@"zerofill"];
+			} else if ([extra isEqualToString:@"binary"]) {
+				[theField setObject:@"1" forKey:@"binary"];
 			} else {
-				if ( ![extra isEqualToString:@""] )
+				if (![extra isEqualToString:@""])
 					NSLog(@"ERROR: unknown option in field definition: %@", extra);
 			}
 		}
-		
-		[field setObject:type forKey:@"Type"];
-		[field setObject:length forKey:@"Length"];
-	}
-	
-	// If a view is selected, disable the buttons; otherwise enable.
-	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) && enableInteraction;
-	[addFieldButton setEnabled:editingEnabled];
-	[addIndexButton setEnabled:editingEnabled];
-    
-    //the following three buttons will only be enabled if a row field/index is selected!
-	[copyFieldButton setEnabled:NO];
-	[removeFieldButton setEnabled:NO];
-	[removeIndexButton setEnabled:NO];
-	
-	//add columns to indexedColumnsField
-	[indexedColumnsField removeAllItems];
-	enumerator = [tableFields objectEnumerator];
-	
-	while ( (field = [enumerator nextObject]) ) {
-		[indexedColumnsField addItemWithObjectValue:[field objectForKey:@"Field"]];
-	}
-	
-	if ( [tableFields count] < 10 ) {
-		[indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
-	} else {
-		[indexedColumnsField setNumberOfVisibleItems:10];
-	}
-	
-	[indexView reloadData];
-	[tableSourceView reloadData];
-	
-	// display and *then* tile to force scroll bars to be in the correct position
-	[[tableSourceView enclosingScrollView] display];
-	[[tableSourceView enclosingScrollView] tile];
-	
-	// Enable 'Duplicate field' if at least one field is specified
-	// if no field is selected 'Duplicate field' will copy the last field
-	// Enable 'Duplicate field' only for tables!
-	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE)
-		[copyFieldButton setEnabled:enableInteraction && ([tableSourceView numberOfRows] > 0)];
-	else
-		[copyFieldButton setEnabled:NO];
 
-	//query finished
+		[theField setObject:type forKey:@"Type"];
+		[theField setObject:length forKey:@"Length"];
+	}
+
+	// Set up the table details for the new table, and request an data/interface update
+	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+									aTable, @"name",
+									theTableFields, @"tableFields",
+									theTableIndexes, @"tableIndexes",
+									theTableEnumLists, @"enumLists",
+									nil];
+	[[self onMainThread] setTableDetails:tableDetails];
+
+	// Send the query finished/work complete notification
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 }
 
@@ -292,6 +203,75 @@ loads aTable, put it in an array, update the tableViewColumns and reload the tab
 	[tableDataInstance resetAllData];
 	[tablesListInstance setStatusRequiresReload:YES];
 	[self loadTable:selectedTable];
+}
+
+/**
+ * Update stored table details and update the interface to match the supplied
+ * table details.
+ * Should be called on the main thread.
+ */
+- (void) setTableDetails:(NSDictionary *)tableDetails
+{
+	NSString *newTableName = [tableDetails objectForKey:@"name"];
+	NSMutableDictionary *newDefaultValues;
+	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] || ![tableDocumentInstance isWorking];
+
+	// Update the selected table name
+	if (selectedTable) [selectedTable release], selectedTable = nil;
+	if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
+
+	// Reset the table store and display
+	[enumFields removeAllObjects];
+	[tableSourceView deselectAll:self];
+	[indexView deselectAll:self];
+	[tableFields removeAllObjects];
+	[indexes removeAllObjects];
+	[addFieldButton setEnabled:NO];
+	[copyFieldButton setEnabled:NO];
+	[removeFieldButton setEnabled:NO];
+	[addIndexButton setEnabled:NO];
+	[removeIndexButton setEnabled:NO];
+	[editTableButton setEnabled:NO];
+
+	// If no table is selected, refresh the table display to blank and return
+	if (!selectedTable) {
+		[tableSourceView reloadData];
+		[indexView reloadData];
+		return;
+	}
+
+	// Update the fields and indexes stores
+	[tableFields setArray:[tableDetails objectForKey:@"tableFields"]];
+	[indexes setArray:[tableDetails objectForKey:@"tableIndexes"]];
+
+	// Update the default values array and the indexed column fields control
+	[indexedColumnsField removeAllItems];
+	if (defaultValues) [defaultValues release], defaultValues = nil;
+	newDefaultValues = [NSMutableDictionary dictionaryWithCapacity:[tableFields count]];
+	for (id theField in tableFields) {
+		[newDefaultValues setObject:[theField objectForKey:@"Default"] forKey:[theField objectForKey:@"Field"]];
+		[indexedColumnsField addItemWithObjectValue:[theField objectForKey:@"Field"]];
+	}
+	defaultValues = [[NSDictionary dictionaryWithDictionary:newDefaultValues] retain];
+
+	// Only show up to ten items in the indexed column fields control
+	if ([tableFields count] < 10) {
+		[indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
+	} else {
+		[indexedColumnsField setNumberOfVisibleItems:10];
+	}
+
+	// Enable the edit table button
+	[editTableButton setEnabled:enableInteraction];
+
+	// If a view is selected, disable the buttons; otherwise enable.
+	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable) && enableInteraction;
+	[addFieldButton setEnabled:editingEnabled];
+	[addIndexButton setEnabled:editingEnabled];
+
+	// Reload the views
+	[indexView reloadData];
+	[tableSourceView reloadData];
 }
 
 #pragma mark -
@@ -615,36 +595,37 @@ closes the keySheet
 	}
 }
 
-/*
-fetches the result as an array with a dictionary for each row in it
-*/
+/**
+ * Converts the supplied result to an array containing a (mutable) dictionary for each row
+ */
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
 	NSUInteger numOfRows = [theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
-	id key;
 	NSInteger i;
-	Class nullClass = [NSNull class];
 	id prefsNullValue = [prefs objectForKey:SPNullValue];
+
+	// Ensure table information is returned as strings to avoid problems with some server versions
+	[theResult setReturnDataAsStrings:YES];
 
 	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < numOfRows ; i++ ) {
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
-		//use NULL string from preferences instead of the NSNull oject returned by the framework
+		// Replace NSNull instances with the NULL string from preferences
 		keys = [tempRow allKeys];
-		for (NSInteger j = 0; j < [keys count] ; j++) {
-			key = NSArrayObjectAtIndex(keys, j);
-			if ( [[tempRow objectForKey:key] isMemberOfClass:nullClass] )
-				[tempRow setObject:prefsNullValue forKey:key];
+		for (id theKey in keys) {
+			if ([[tempRow objectForKey:theKey] isNSNull])
+				[tempRow setObject:prefsNullValue forKey:theKey];
 		}
-		// change some fields to be more human-readable or GUI compatible
-		if ( [[tempRow objectForKey:@"Extra"] isEqualToString:@""] ) {
+
+		// Update some fields to be more human-readable or GUI compatible
+		if ([[tempRow objectForKey:@"Extra"] isEqualToString:@""]) {
 			[tempRow setObject:@"None" forKey:@"Extra"];
 		}
-		if ( [[tempRow objectForKey:@"Null"] isEqualToString:@"YES"] ) {
+		if ([[tempRow objectForKey:@"Null"] isEqualToString:@"YES"]) {
 			[tempRow setObject:@"1" forKey:@"Null"];
 		} else {
 			[tempRow setObject:@"0" forKey:@"Null"];
@@ -1260,7 +1241,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	// Only re-enable elements if the current tab is the structure view
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
-	BOOL editingEnabled = ([tablesListInstance tableType] == SP_TABLETYPE_TABLE);
+	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable);
 	[tableSourceView setEnabled:YES];
 	[tableSourceView displayIfNeeded];
 	[addFieldButton setEnabled:editingEnabled];
@@ -1326,7 +1307,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Return NO for views
-	if ([tablesListInstance tableType] == SP_TABLETYPE_VIEW) return NO;
+	if ([tablesListInstance tableType] == SPTableTypeView) return NO;
 
 	return YES;
 }
@@ -1503,7 +1484,7 @@ would result in a position change.
 		[copyFieldButton setEnabled:YES];
 
 		// Check if there is currently a field selected and change button state accordingly
-		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable) {
 			[removeFieldButton setEnabled:YES];
 		} else {
 			[removeFieldButton setEnabled:NO];
@@ -1518,7 +1499,7 @@ would result in a position change.
 	}
 	else if (object == indexView) {
 		// Check if there is currently an index selected and change button state accordingly
-		[removeIndexButton setEnabled:([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
+		[removeIndexButton setEnabled:([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable)];
 	}
 }
 
@@ -1586,7 +1567,7 @@ would result in a position change.
     //make sure that the message is from the right table view
     if (tableView!=tableSourceView) return;
 
-	[aCell setEnabled:([tablesListInstance tableType] == SP_TABLETYPE_TABLE)];
+	[aCell setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
 }
 
 #pragma mark -
@@ -1689,15 +1670,13 @@ would result in a position change.
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-	NSString *indexName;
-	NSArray *indexedColumns;
-	NSMutableArray *tempIndexedColumns = [NSMutableArray array];
-	NSString *string;
-	
 	// Check whether a save of the current fields row is required.
-	if (![self saveRowOnDeselect]) return;
+	if (![[self onMainThread] saveRowOnDeselect]) return;
 	
 	if (![[indexedColumnsField stringValue] isEqualToString:@""]) {
+		
+		NSString *indexName = @"";
+		NSMutableArray *tempIndexedColumns = [[NSMutableArray alloc] init];
 		
 		if ([[indexNameField stringValue] isEqualToString:@"PRIMARY"]) {
 			indexName = @"";
@@ -1706,18 +1685,12 @@ would result in a position change.
 			indexName = ([[indexNameField stringValue] isEqualToString:@""]) ? @"" : [[indexNameField stringValue] backtickQuotedString];
 		}
 		
-		indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
+		NSArray *indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
 		
-		NSEnumerator *enumerator = [indexedColumns objectEnumerator];
-		
-		while ((string = [enumerator nextObject])) 
-		{
-			if (([string characterAtIndex:0] == ' ')) {
-				[tempIndexedColumns addObject:[string substringWithRange:NSMakeRange(1, ([string length] - 1))]];
-			} 
-			else {
-				[tempIndexedColumns addObject:[NSString stringWithString:string]];
-			}
+		// For each column strip leading and trailing whitespace and add it to the temp array
+		for (NSString *column in indexedColumns)
+		{			
+			[tempIndexedColumns addObject:[column stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
 		}
 		
 		// Execute the query
@@ -1735,6 +1708,8 @@ would result in a position change.
 			[tablesListInstance setStatusRequiresReload:YES];
 			[self loadTable:selectedTable];
 		}
+		
+		[tempIndexedColumns release];
 	}
 	
 	[tableDocumentInstance endTask];

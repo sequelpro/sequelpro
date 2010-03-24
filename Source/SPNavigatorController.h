@@ -25,9 +25,8 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-
-@interface SPNavigatorController : NSWindowController {
-
+@interface SPNavigatorController : NSWindowController 
+{
 	IBOutlet id outlineSchema1;
 	IBOutlet id outlineSchema2;
 	IBOutlet id navigatorWindow;
@@ -36,9 +35,14 @@
 	IBOutlet id searchField;
 	IBOutlet id syncButton;
 
+	IBOutlet id infoQuickAccessSplitView;
+	IBOutlet id schemaStatusSplitView;
+	IBOutlet id schema12SplitView;
+
 	NSUserDefaults *prefs;
 
 	NSMutableDictionary *schemaData;
+	NSMutableDictionary *schemaDataUnFiltered;
 	NSMutableArray *infoArray;
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
@@ -48,7 +52,6 @@
 	NSRect selectionViewPort1;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
-
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
@@ -59,11 +62,13 @@
 - (IBAction)filterTree:(id)sender;
 - (IBAction)syncButtonAction:(id)sender;
 
-- (NSString*)tableInfoLabelForIndex:(NSInteger)index;
+- (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
 
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
 - (void)selectPath:(NSString*)schemaPath;
 - (BOOL)syncMode;
+- (void)removeConnection:(NSString*)connectionID;
+- (void)selectInActiveDocumentItem:(id)item fromView:(id)outlineView;
 
 @end

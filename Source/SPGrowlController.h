@@ -26,8 +26,6 @@
 #import <Cocoa/Cocoa.h>
 #import <Growl/Growl.h>
 
-#define SP_LONGRUNNING_NOTIFICATION_TIME 3.0
-
 @interface SPGrowlController : NSObject <GrowlApplicationBridgeDelegate>
 {
 	NSString *timingNotificationName;
@@ -55,10 +53,10 @@
 		   clickContext:(id)clickContext;
 
 // Receive notification click
-- (void) growlNotificationWasClicked:(NSDictionary *)clickContext;
+- (void)growlNotificationWasClicked:(NSDictionary *)clickContext;
 
 // Timing functions
-- (void) setVisibilityForNotificationName:(NSString *)name;
-- (double) milliTime;
+- (void)setVisibilityForNotificationName:(NSString *)name;
+- (double)milliTime;
 
 @end

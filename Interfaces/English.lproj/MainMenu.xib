@@ -1001,7 +1001,8 @@
 									<reference key="NSMenu" ref="466354362"/>
 									<bool key="NSIsHidden">YES</bool>
 									<string key="NSTitle">Show Navigator</string>
-									<string key="NSKeyEquiv"/>
+									<string key="NSKeyEquiv">n</string>
+									<int key="NSKeyEquivModMask">1835008</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -4360,7 +4361,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{520, 737}, {511, 20}}</string>
+					<string>{{447, 658}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4376,7 +4377,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{712, 444}, {237, 293}}</string>
+					<string>{{639, 365}, {251, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4499,7 +4500,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{626, 424}, {235, 313}}</string>
+					<string>{{553, 345}, {235, 313}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -4827,7 +4828,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="257605371">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="571456475">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPQueryFavoriteManager.h</string>
 					</object>
@@ -5177,7 +5178,7 @@
 							<string>BWAnchoredButtonBar</string>
 						</object>
 					</object>
-					<reference key="sourceIdentifier" ref="257605371"/>
+					<reference key="sourceIdentifier" ref="571456475"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPServerVariablesController</string>
@@ -5560,6 +5561,29 @@
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/TableDocument.h</string>
 					</object>
+				</object>
+			</object>
+			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="939419192">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Frameworks/Sparkle.framework/Versions/A/Headers/SUUpdater.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SUUpdater</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">checkForUpdates:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">delegate</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<reference key="sourceIdentifier" ref="939419192"/>
 				</object>
 			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
@@ -6056,7 +6080,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="29981579">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="882108081">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Sparkle.framework/Headers/SUUpdater.h</string>
 					</object>
@@ -6334,7 +6358,7 @@
 						<string key="NS.key.0">delegate</string>
 						<string key="NS.object.0">id</string>
 					</object>
-					<reference key="sourceIdentifier" ref="29981579"/>
+					<reference key="sourceIdentifier" ref="882108081"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WebView</string>

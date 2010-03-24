@@ -26,8 +26,8 @@
 #import <MCPKit/MCPKit.h>
 #import "CMTextView.h"
 
-@interface SPFieldMapperController : NSWindowController {
-
+@interface SPFieldMapperController : NSWindowController 
+{
 	IBOutlet NSTableView *fieldMapperTableView;
 	IBOutlet id fieldMapperTableScrollView;
 	IBOutlet NSTableView *globalValuesTableView;
@@ -83,6 +83,7 @@
 	NSMutableArray *fieldMappingOperatorOptions;
 	NSMutableArray *fieldMappingOperatorArray;
 	NSMutableArray *fieldMappingGlobalValues;
+	NSMutableArray *fieldMappingGlobalValuesSQLMarked;
 	NSMutableArray *fieldMappingTableDefaultValues;
 
 	NSNumber *doImport;
@@ -111,7 +112,6 @@
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
-
 }
 
 @property(retain) NSString* sourcePath;
@@ -151,7 +151,6 @@
 - (IBAction)insertNULLValue:(id)sender;
 - (IBAction)closeGlobalValuesSheet:(id)sender;
 - (IBAction)advancedCheckboxValidation:(id)sender;
-
 
 // Others
 - (void)resizeWindowByHeightDelta:(NSInteger)delta;

@@ -32,7 +32,7 @@
 
 @end
 
-const CHAR_SETS charsets[] =
+const SPDatabaseCharSets charsets[] =
 {
 	{  1, "big5","big5_chinese_ci", "Big5 Traditional Chinese"},
 	{  3, "dec8", "dec8_swedisch_ci", "DEC West European"},
@@ -239,7 +239,7 @@ const CHAR_SETS charsets[] =
 
 		// If that failed, get the list of collations from the hard-coded list
 		if (![collations count]) {
-			const CHAR_SETS *c = charsets;
+			const SPDatabaseCharSets *c = charsets;
 			
 			do {
 				[collations addObject:[NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]];
@@ -272,7 +272,7 @@ const CHAR_SETS charsets[] =
 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
 		if (![characterSetCollations count]) {
-			const CHAR_SETS *c = charsets;
+			const SPDatabaseCharSets *c = charsets;
 			
 			do {
 				NSString *charSet = [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding];
@@ -385,7 +385,7 @@ const CHAR_SETS charsets[] =
 
 		// If that failed, get the list of character set encodings from the hard-coded list
 		if (![characterSetEncodings count]) {
-			const CHAR_SETS *c = charsets;
+			const SPDatabaseCharSets *c = charsets;
 
 			do {
 				[characterSetEncodings addObject:[NSDictionary dictionaryWithObjectsAndKeys:

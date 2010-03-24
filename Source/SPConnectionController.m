@@ -125,7 +125,8 @@
 }
 
 - (void) dealloc
-{    
+{
+    [prefs removeObserver:self forKeyPath:SPFavorites];
     [keychain release];
     [prefs release];
 	if (favorites) [favorites release];

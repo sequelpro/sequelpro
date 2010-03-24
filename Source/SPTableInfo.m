@@ -78,7 +78,7 @@
 	[info removeAllObjects];
 
 	// For views, no information can be displayed.
-	if ([tableListInstance tableType] == SP_TABLETYPE_VIEW) {
+	if ([tableListInstance tableType] == SPTableTypeView) {
 		[info addObject:NSLocalizedString(@"VIEW INFORMATION", @"header for view info pane")];
 		[info addObject:NSLocalizedString(@"no information available", @"no information available")];
 		[infoTable reloadData];
@@ -93,7 +93,7 @@
 	} 
 
 	// Get TABLE information
-	if ([tableListInstance tableType] == SP_TABLETYPE_TABLE) {
+	if ([tableListInstance tableType] == SPTableTypeTable) {
 
 		[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 
@@ -140,9 +140,9 @@
 	}
 	
 	// Get PROC/FUNC information
-	else if ([tableListInstance tableType] == SP_TABLETYPE_PROC || [tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+	else if ([tableListInstance tableType] == SPTableTypeProc || [tableListInstance tableType] == SPTableTypeFunc) {
 
-		if ([tableListInstance tableType] == SP_TABLETYPE_PROC)
+		if ([tableListInstance tableType] == SPTableTypeProc)
 			[info addObject:NSLocalizedString(@"PROCEDURE INFORMATION", @"header for procedure info pane")];
 		else
 			[info addObject:NSLocalizedString(@"FUNCTION INFORMATION", @"header for function info pane")];
@@ -178,7 +178,7 @@
 			}
 
 			// Check for 'DTD_IDENTIFIER' for FUNCTIONS only
-			if ([tableListInstance tableType] == SP_TABLETYPE_FUNC) {
+			if ([tableListInstance tableType] == SPTableTypeFunc) {
 				if (![[tableStatus objectForKey:@"DTD_IDENTIFIER"] isNSNull]) {
 					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"return type: %@", @"return type: %@"), [tableStatus objectForKey:@"DTD_IDENTIFIER"]]];
 				}

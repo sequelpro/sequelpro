@@ -33,7 +33,7 @@
 @synthesize messageConnection;
 
 /**
- *
+ * Returns a new console message instance using the suppled message, date and connection.
  */
 + (SPConsoleMessage *)consoleMessageWithMessage:(NSString *)message date:(NSDate *)date connection:(NSString *)connection
 {
@@ -41,7 +41,7 @@
 }
 
 /**
- *
+ * Initializes a new console message instance using the suppled message, date and connection.
  */
 - (id)initWithMessage:(NSString *)consoleMessage date:(NSDate *)date connection:(NSString *)connection
 {

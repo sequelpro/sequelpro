@@ -40,11 +40,10 @@
  */
 - (void)awakeFromNib
 {
-	BOOL isNightly = NO;
 	NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 	
 	// If the version string has a prefix of 'Nightly' then this is obviously a nighly build.
-	if ([version hasPrefix:@"Nightly"]) isNightly = YES;
+	BOOL isNightly = [version hasPrefix:@"Nightly"];
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
 	[appNameVersionTextField setStringValue:(isNightly) ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];

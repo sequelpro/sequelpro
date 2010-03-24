@@ -72,6 +72,7 @@
 // Table methods
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;
+- (void) setTableDetails:(NSDictionary *)tableDetails;
 
 // Edit methods
 - (IBAction)addField:(id)sender;

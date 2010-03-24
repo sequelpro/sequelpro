@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="43"/>
+			<integer value="70"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -52,7 +52,7 @@
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{131, 70}, {395, 359}}</string>
-				<int key="NSWTFlags">-1535638528</int>
+				<int key="NSWTFlags">-1535630336</int>
 				<string key="NSWindowTitle">Navigator</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
@@ -292,7 +292,7 @@
 																				</object>
 																			</object>
 																			<double key="NSRowHeight">14</double>
-																			<int key="NSTvFlags">1514143744</int>
+																			<int key="NSTvFlags">1245708288</int>
 																			<reference key="NSDelegate"/>
 																			<reference key="NSDataSource"/>
 																			<string key="NSAutosaveName">SPNavigatorSchema1</string>
@@ -481,7 +481,7 @@
 																			</object>
 																			<reference key="NSGridColor" ref="1022465183"/>
 																			<double key="NSRowHeight">14</double>
-																			<int key="NSTvFlags">1514143744</int>
+																			<int key="NSTvFlags">1245708288</int>
 																			<reference key="NSDelegate"/>
 																			<reference key="NSDataSource"/>
 																			<string key="NSAutosaveName">SPNavigatorSchema2</string>
@@ -564,13 +564,20 @@
 											<reference key="NSSuperview" ref="464250149"/>
 											<int key="NSViewLayerContentsRedrawPolicy">2</int>
 											<int key="NSDividerStyle">2</int>
+											<string key="NSAutosaveName">SPNavigatorSchema12</string>
 											<reference key="BWSVColor" ref="118334389"/>
 											<bool key="BWSVColorIsEnabled">NO</bool>
 											<object class="NSMutableDictionary" key="BWSVMinValues">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference key="dict.sortedKeys" ref="0"/>
+												<object class="NSArray" key="dict.sortedKeys">
+													<bool key="EncodedWithXMLCoder">YES</bool>
+													<integer value="0"/>
+													<integer value="1"/>
+												</object>
 												<object class="NSMutableArray" key="dict.values">
 													<bool key="EncodedWithXMLCoder">YES</bool>
+													<integer value="16"/>
+													<integer value="16"/>
 												</object>
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMaxValues">
@@ -702,7 +709,7 @@
 																				</object>
 																			</object>
 																			<reference key="NSGridColor" ref="1022465183"/>
-																			<double key="NSRowHeight">17</double>
+																			<double key="NSRowHeight">18</double>
 																			<int key="NSTvFlags">1379926016</int>
 																			<reference key="NSDelegate"/>
 																			<reference key="NSDataSource"/>
@@ -766,7 +773,7 @@
 															<reference key="NSContentView" ref="412284187"/>
 															<reference key="NSHeaderClipView" ref="886487259"/>
 															<reference key="NSCornerView" ref="276696960"/>
-															<bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
+															<bytes key="NSScrollAmts">QSAAAEEgAABBoAAAQaAAAA</bytes>
 														</object>
 													</object>
 													<string key="NSFrameSize">{395, 50}</string>
@@ -943,7 +950,7 @@
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMaxValues">
 												<integer value="0" key="NS.key.0"/>
-												<integer value="180" key="NS.object.0"/>
+												<integer value="200" key="NS.object.0"/>
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMinUnits">
 												<bool key="EncodedWithXMLCoder">YES</bool>
@@ -997,7 +1004,7 @@
 								</object>
 								<object class="NSMutableArray" key="dict.values">
 									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="36"/>
+									<integer value="32"/>
 									<integer value="32"/>
 								</object>
 							</object>
@@ -1262,6 +1269,86 @@
 						<reference key="destination" ref="357076828"/>
 					</object>
 					<int key="connectionID">111</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">initialFirstResponder</string>
+						<reference key="source" ref="856804369"/>
+						<reference key="destination" ref="771350217"/>
+					</object>
+					<int key="connectionID">123</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="701533802"/>
+						<reference key="destination" ref="357076828"/>
+					</object>
+					<int key="connectionID">124</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="357076828"/>
+						<reference key="destination" ref="576014685"/>
+					</object>
+					<int key="connectionID">125</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="576014685"/>
+						<reference key="destination" ref="771350217"/>
+					</object>
+					<int key="connectionID">127</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="1023753551"/>
+						<reference key="destination" ref="390132860"/>
+					</object>
+					<int key="connectionID">128</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="667909124"/>
+						<reference key="destination" ref="434865577"/>
+					</object>
+					<int key="connectionID">129</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="840702619"/>
+						<reference key="destination" ref="701533802"/>
+					</object>
+					<int key="connectionID">130</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">infoQuickAccessSplitView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="771483555"/>
+					</object>
+					<int key="connectionID">132</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">schemaStatusSplitView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="112878735"/>
+					</object>
+					<int key="connectionID">133</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">schema12SplitView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="800413276"/>
+					</object>
+					<int key="connectionID">134</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1776,16 +1863,16 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>SPOutlineView</string>
+					<string>SPNavigatorOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{72, 342}, {395, 359}}</string>
+					<string>{{104, 323}, {395, 359}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{72, 342}, {395, 359}}</string>
+					<string>{{104, 323}, {395, 359}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{200, 200}</string>
@@ -1795,7 +1882,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>SPOutlineView</string>
+					<string>SPNavigatorOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1853,7 +1940,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">111</int>
+			<int key="maxID">134</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
@@ -1892,16 +1979,22 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>infoQuickAccessSplitView</string>
 							<string>infoTable</string>
 							<string>navigatorWindow</string>
 							<string>outlineSchema1</string>
 							<string>outlineSchema2</string>
 							<string>quickAccessTable</string>
+							<string>schema12SplitView</string>
+							<string>schemaStatusSplitView</string>
 							<string>searchField</string>
 							<string>syncButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1917,11 +2010,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">SPOutlineView</string>
+					<string key="className">SPNavigatorOutlineView</string>
 					<string key="superclassName">NSOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPOutlineView.h</string>
+						<string key="minorKey">../../Source/SPNavigatorOutlineView.h</string>
 					</object>
 				</object>
 			</object>

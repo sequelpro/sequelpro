@@ -54,11 +54,14 @@
 #import "SPProcessListController.h"
 #import "SPServerVariablesController.h"
 #import "SPAlertSheets.h"
+#import "SPConstants.h"
+#import "SPMainThreadTrampoline.h"
 
 @interface TableDocument (PrivateAPI)
 
 - (void)_addDatabase;
 - (void)_removeDatabase;
+- (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
 @end
 
@@ -860,6 +863,16 @@
 	// Lock editability again if performing a task
 	if (_isWorkingLevel) databaseListIsSelectable = NO;
 
+	// Select the database
+	[self selectDatabase:[chooseDatabaseButton titleOfSelectedItem] item:[self table]];
+}
+
+/**
+ * Select the specified database and, optionally, table.
+ */
+- (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem
+{
+
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:YES];
 
@@ -876,57 +889,16 @@
 
 	// Start a task
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
+	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										aDatabase, @"database",
+										anItem, @"item",
+										nil];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(chooseDatabaseTask) toTarget:self withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(_selectDatabaseAndItem:) toTarget:self withObject:selectionDetails];
 	} else {
-		[self chooseDatabaseTask];
-	}
-}
-- (void)chooseDatabaseTask
-{
-	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
-
-	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
-	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
-	if (!historyStateChanging) {
-		[spHistoryControllerInstance updateHistoryEntries];
-		[spHistoryControllerInstance setModifyingState:YES];
+		[self _selectDatabaseAndItem:selectionDetails];
 	}
 
-	// show error on connection failed
-	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
-		if ( [mySQLConnection isConnected] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
-			[self setDatabases:self];
-		}
-		[self endTask];
-		[taskPool drain];
-		return;
-	}
-
-	//setConnection of TablesList and TablesDump to reload tables in db
-	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-	selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
-	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
-
-	[tableWindow setTitle:[self displaySPName]];
-
-	// Add a history entry
-	if (!historyStateChanging) {
-		[spHistoryControllerInstance setModifyingState:NO];
-		[spHistoryControllerInstance updateHistoryEntries];
-	}
-
-	// Set focus to table list filter field if visible
-	// otherwise set focus to Table List view
-	if ( [[tablesListInstance tables] count] > 20 )
-		[tableWindow makeFirstResponder:listFilterField];
-	else
-		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
-
-	[self endTask];
-	[taskPool drain];
 }
 
 /**
@@ -1180,8 +1152,6 @@
 {
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
-	// If the Console window is not visible data are not reloaded (for speed).
-	// Due to that update list if user opens the Console window.
 	if(!isNavigatorVisible) {
 		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
 	}
@@ -1666,20 +1636,20 @@
 	NSString *query = nil;
 	NSString *typeString = @"";
 
-	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+	if( [tablesListInstance tableType] == SPTableTypeTable ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 		typeString = @"table";
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+	else if( [tablesListInstance tableType] == SPTableTypeView ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
 		typeString = @"view";
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeProc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
 		typeString = @"procedure";
 		colOffs = 2;
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeFunc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
 		typeString = @"function";
 		colOffs = 2;
@@ -1705,7 +1675,7 @@
 
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
-	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SP_TABLETYPE_VIEW) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
+	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
 	[createTableSyntaxTextView setEditable:NO];
 
 	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
@@ -1728,17 +1698,17 @@
 	NSString *query = nil;
 	NSInteger colOffs = 1;
 
-	if( [tablesListInstance tableType] == SP_TABLETYPE_TABLE ) {
+	if( [tablesListInstance tableType] == SPTableTypeTable ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_VIEW ) {
+	else if( [tablesListInstance tableType] == SPTableTypeView ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_PROC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeProc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
 		colOffs = 2;
 	}
-	else if( [tablesListInstance tableType] == SP_TABLETYPE_FUNC ) {
+	else if( [tablesListInstance tableType] == SPTableTypeFunc ) {
 		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
 		colOffs = 2;
 	}
@@ -1762,7 +1732,7 @@
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-	if([tablesListInstance tableType] == SP_TABLETYPE_VIEW)
+	if([tablesListInstance tableType] == SPTableTypeView)
 		[pb setString:[tableSyntax createViewSyntaxPrettifier] forType:NSStringPboardType];
 	else
 		[pb setString:tableSyntax forType:NSStringPboardType];
@@ -2308,6 +2278,24 @@
  */
 - (IBAction)showUserManager:(id)sender
 {	
+	// Before displaying the user manager make sure the current user has access to the mysql.user table.
+	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	
+	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && ([result numOfRows] == 0)) {
+		
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unable to get list of users", @"unable to get list of users message")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										   otherButton:nil 
+							 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to get the list of users. Please make sure you have the necessary privileges to perform user management, including access to the mysql.user table.", @"unable to get list of users informative message")];
+		
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		
+		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
+	
+		return;
+	}
+	
 	[NSApp beginSheet:[userManagerInstance window]
 	   modalForWindow:tableWindow 
 		modalDelegate:userManagerInstance 
@@ -2896,19 +2884,19 @@
 			[session setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
 
 		switch([spHistoryControllerInstance currentlySelectedView]){
-			case SP_VIEW_STRUCTURE:
+			case SPHistoryViewStructure:
 			aString = @"SP_VIEW_STRUCTURE";
 			break;
-			case SP_VIEW_CONTENT:
+			case SPHistoryViewContent:
 			aString = @"SP_VIEW_CONTENT";
 			break;
-			case SP_VIEW_CUSTOMQUERY:
+			case SPHistoryViewCustomQuery:
 			aString = @"SP_VIEW_CUSTOMQUERY";
 			break;
-			case SP_VIEW_STATUS:
+			case SPHistoryViewStatus:
 			aString = @"SP_VIEW_STATUS";
 			break;
-			case SP_VIEW_RELATIONS:
+			case SPHistoryViewRelations:
 			aString = @"SP_VIEW_RELATIONS";
 			break;
 			default:
@@ -3629,8 +3617,8 @@
 	}
 
 	if (![identifier isEqualToString:SPMainToolbarCustomQuery] && ![identifier isEqualToString:SPMainToolbarUserManager]) {
-		return (([tablesListInstance tableType] == SP_TABLETYPE_TABLE) || 
-				([tablesListInstance tableType] == SP_TABLETYPE_VIEW));
+		return (([tablesListInstance tableType] == SPTableTypeTable) || 
+				([tablesListInstance tableType] == SPTableTypeView));
 	}
 
 	return YES;
@@ -3672,11 +3660,14 @@
  */
 - (void)windowWillClose:(NSNotification *)aNotification
 {
+	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) {
+		[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
+	}
+
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];
 	else [connectionController cancelConnection];
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
-	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) [self updateNavigator:self];
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -3991,6 +3982,22 @@
  */
 - (void)dealloc
 {
+
+	// Unregister observers
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
+	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+
 	[_encoding release];
 	[allDatabases release];
 	[allSystemDatabases release];
@@ -4099,4 +4106,84 @@
 	[tableWindow setTitle:[self displaySPName]];
 }
 
+/**
+ * Select the specified database and, optionally, table.
+ */
+- (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails
+{
+	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
+	NSString *targetDatabaseName = [selectionDetails objectForKey:@"database"];
+	NSString *targetItemName = [selectionDetails objectForKey:@"item"];
+
+	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance updateHistoryEntries];
+		[spHistoryControllerInstance setModifyingState:YES];
+	}
+
+	if (![targetDatabaseName isEqualToString:selectedDatabase]) {
+
+		// Attempt to select the specified database, and abort on failure
+		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
+			|| ![mySQLConnection selectDB:targetDatabaseName])
+		{
+			if ( [mySQLConnection isConnected] ) {
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+
+				// Update the database list
+				[self setDatabases:self];
+			}
+
+			[self endTask];
+			[taskPool drain];
+			return;
+		}
+
+		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
+		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+		selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
+
+		// If the item has changed, clear the item selection for cleaner loading
+		if (![targetItemName isEqualToString:[self table]]) {
+			[[tablesListInstance onMainThread] setTableListSelectability:YES];
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[tablesListInstance onMainThread] setTableListSelectability:NO];
+		}
+		
+		// Set the connection of TablesList and TablesDump to reload tables in db
+		[tablesListInstance setConnection:mySQLConnection];
+		[tableDumpInstance setConnection:mySQLConnection];
+
+		// Update the window title
+		[[tableWindow onMainThread] setTitle:[self displaySPName]];
+
+		// Add a history entry
+		if (!historyStateChanging) {
+			[spHistoryControllerInstance setModifyingState:NO];
+			[spHistoryControllerInstance updateHistoryEntries];
+		}
+
+		// Set focus to table list filter field if visible
+		// otherwise set focus to Table List view
+		if ( [[tablesListInstance tables] count] > 20 )
+			[[tableWindow onMainThread] makeFirstResponder:listFilterField];
+		else
+			[[tableWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+	}
+
+	// If a the table has changed, update the selection
+	if (![targetItemName isEqualToString:[self table]]) {
+		if (targetItemName) {
+			[tablesListInstance selectItemWithName:targetItemName];
+		} else {
+			[[tablesListInstance onMainThread] setTableListSelectability:YES];
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[tablesListInstance onMainThread] setTableListSelectability:NO];
+		}
+	}
+
+	[self endTask];
+	[taskPool drain];
+}
 @end

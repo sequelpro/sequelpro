@@ -446,6 +446,7 @@
 	[triggerData release], triggerData = nil;
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
 	
 	[super dealloc];
 }
@@ -470,7 +471,7 @@
 {
 	[triggerData removeAllObjects];
 	
-	if ([tablesListInstance tableType] == SP_TABLETYPE_TABLE) {
+	if ([tablesListInstance tableType] == SPTableTypeTable) {
 		
 		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
 		

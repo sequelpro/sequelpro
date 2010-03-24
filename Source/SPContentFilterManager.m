@@ -34,8 +34,10 @@
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
 
-@interface SPContentFilterManager (Private)
+@interface SPContentFilterManager (PrivateAPI)
+
 - (void)_initWithNoSelection;
+
 @end
 
 @implementation SPContentFilterManager
@@ -877,4 +879,5 @@
 	[contentFilterNameTextField setStringValue:@""];
 	[contentFilterTextView setString:@""];
 }
+
 @end

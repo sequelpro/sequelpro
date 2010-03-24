@@ -26,15 +26,6 @@
 
 @class TableDocument, TableContent, TablesList;
 
-enum sphistory_view_types
-{
-	SP_VIEW_STRUCTURE = 0,
-	SP_VIEW_CONTENT = 1,
-	SP_VIEW_CUSTOMQUERY = 2,
-	SP_VIEW_STATUS = 3,
-	SP_VIEW_RELATIONS = 4
-};
-
 @interface SPHistoryController : NSObject 
 {
 	IBOutlet TableDocument *theDocument;

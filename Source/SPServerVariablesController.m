@@ -271,6 +271,8 @@
  */
 - (void)dealloc
 {
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
 	[variables release], variables = nil;
 	
 	[super dealloc];

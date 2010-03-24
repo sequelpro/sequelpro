@@ -30,10 +30,6 @@
 #import "CustomQuery.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
-#define MESSAGE_TIME_STAMP_FORMAT @"%H:%M:%S"
-
-#define DEFAULT_CONSOLE_LOG_FILENAME @"untitled"
-#define CONSOLE_WINDOW_AUTO_SAVE_NAME @"QueryConsole"
 
 // Table view column identifiers
 #define TABLEVIEW_MESSAGE_COLUMN_IDENTIFIER    @"message"
@@ -162,7 +158,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	prefs = [NSUserDefaults standardUserDefaults];
 	
-	[self setWindowFrameAutosaveName:CONSOLE_WINDOW_AUTO_SAVE_NAME];
+	[self setWindowFrameAutosaveName:@"QueryConsole"];
 	
 	// Show/hide table columns
 	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPConsoleShowTimestamps]];
@@ -278,7 +274,7 @@ static SPQueryController *sharedQueryController = nil;
 	
 	[panel setAccessoryView:saveLogView];
 	
-	[panel beginSheetForDirectory:nil file:DEFAULT_CONSOLE_LOG_FILENAME modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil file:@"untitled" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
 /**
@@ -374,12 +370,8 @@ static SPQueryController *sharedQueryController = nil;
 	id object = [[messagesVisibleSet objectAtIndex:row] valueForKey:[tableColumn identifier]];
 	
 	if ([[tableColumn identifier] isEqualToString:TABLEVIEW_DATE_COLUMN_IDENTIFIER]) {
-		
-		//NSString *dateString = [(NSDate *)object descriptionWithCalendarFormat:MESSAGE_TIME_STAMP_FORMAT timeZone:nil locale:nil];
-		
-		returnValue = [dateFormatter stringFromDate:(NSDate *)object];
-		
-		//returnValue = dateString;
+				
+		returnValue = [dateFormatter stringFromDate:(NSDate *)object];		
 	} 
 	else {
 		if ([(NSString *)object length] > MESSAGE_TRUNCATE_CHARACTER_LENGTH) {

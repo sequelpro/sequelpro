@@ -23,9 +23,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "SPCSVExporter.h"
 #import "SPArrayAdditions.h"
-#import "MCPStreamingResult.h"
 #import "SPStringAdditions.h"
 
 @implementation SPCSVExporter
@@ -45,8 +46,7 @@
 @synthesize csvTableColumnNumericStatus;
 
 /**
- * Start the CSV data conversion process. This method is automatically called when an instance of this object
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
+ * 
  */
 - (void)main
 {		
@@ -314,9 +314,7 @@
 		
 		[pool release];
 	}
-	@catch(NSException *e) {
-		// Decide something sensible to do with exceptions
-	}
+	@catch(NSException *e) {}
 }
 
 /**

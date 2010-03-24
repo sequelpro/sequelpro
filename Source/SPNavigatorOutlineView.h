@@ -1,10 +1,11 @@
 //
 //  $Id$
 //
-//  SPArrayAdditions.h
+//  SPNavigatorOutlineView.h
 //  sequel-pro
 //
-//  Created by Jakob Egger on March 24, 2009
+//  Created by H.-J. Bibiko on 3/23/10.
+//  Copyright 2010. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -24,27 +25,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-static inline id NSArrayObjectAtIndex(NSArray *self, NSUInteger i) 
-{
-	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
+
+@interface SPNavigatorOutlineView : NSOutlineView {
+
 }
 
-static inline void NSMutableArrayAddObject(NSArray *self, id anObject) 
-{
-	CFArrayAppendValue((CFMutableArrayRef)self, anObject);
-}
-
-static inline void NSMutableArrayReplaceObject(NSArray *self, CFIndex idx, id anObject) 
-{
-	CFArraySetValueAtIndex((CFMutableArrayRef)self, idx, anObject);
-}
-
-@interface NSArray (SPArrayAdditions)
-
-- (NSString *)componentsJoinedAndBacktickQuoted;
-- (NSString *)componentsJoinedByCommas;
-- (NSString *)componentsJoinedByPeriodAndBacktickQuoted;
-- (NSString *)componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst;
-- (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
+- (id)selectedItem;
 
 @end
