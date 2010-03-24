@@ -36,9 +36,14 @@
 	IBOutlet id searchField;
 	IBOutlet id syncButton;
 
+	IBOutlet id infoQuickAccessSplitView;
+	IBOutlet id schemaStatusSplitView;
+	IBOutlet id schema12SplitView;
+
 	NSUserDefaults *prefs;
 
 	NSMutableDictionary *schemaData;
+	NSMutableDictionary *schemaDataUnFiltered;
 	NSMutableArray *infoArray;
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
@@ -66,5 +71,6 @@
 - (void)selectPath:(NSString*)schemaPath;
 - (BOOL)syncMode;
 - (void)removeConnection:(NSString*)connectionID;
+- (void)selectInActiveDocumentItem:(id)item fromView:(id)outlineView;
 
 @end

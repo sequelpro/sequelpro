@@ -564,13 +564,20 @@
 											<reference key="NSSuperview" ref="464250149"/>
 											<int key="NSViewLayerContentsRedrawPolicy">2</int>
 											<int key="NSDividerStyle">2</int>
+											<string key="NSAutosaveName">SPNavigatorSchema12</string>
 											<reference key="BWSVColor" ref="118334389"/>
 											<bool key="BWSVColorIsEnabled">NO</bool>
 											<object class="NSMutableDictionary" key="BWSVMinValues">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference key="dict.sortedKeys" ref="0"/>
+												<object class="NSArray" key="dict.sortedKeys">
+													<bool key="EncodedWithXMLCoder">YES</bool>
+													<integer value="0"/>
+													<integer value="1"/>
+												</object>
 												<object class="NSMutableArray" key="dict.values">
 													<bool key="EncodedWithXMLCoder">YES</bool>
+													<integer value="16"/>
+													<integer value="16"/>
 												</object>
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMaxValues">
@@ -943,7 +950,7 @@
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMaxValues">
 												<integer value="0" key="NS.key.0"/>
-												<integer value="180" key="NS.object.0"/>
+												<integer value="200" key="NS.object.0"/>
 											</object>
 											<object class="NSMutableDictionary" key="BWSVMinUnits">
 												<bool key="EncodedWithXMLCoder">YES</bool>
@@ -997,7 +1004,7 @@
 								</object>
 								<object class="NSMutableArray" key="dict.values">
 									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="36"/>
+									<integer value="32"/>
 									<integer value="32"/>
 								</object>
 							</object>
@@ -1318,6 +1325,30 @@
 						<reference key="destination" ref="701533802"/>
 					</object>
 					<int key="connectionID">130</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">infoQuickAccessSplitView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="771483555"/>
+					</object>
+					<int key="connectionID">132</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">schemaStatusSplitView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="112878735"/>
+					</object>
+					<int key="connectionID">133</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">schema12SplitView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="800413276"/>
+					</object>
+					<int key="connectionID">134</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1909,7 +1940,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">130</int>
+			<int key="maxID">134</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
@@ -1948,16 +1979,22 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>infoQuickAccessSplitView</string>
 							<string>infoTable</string>
 							<string>navigatorWindow</string>
 							<string>outlineSchema1</string>
 							<string>outlineSchema2</string>
 							<string>quickAccessTable</string>
+							<string>schema12SplitView</string>
+							<string>schemaStatusSplitView</string>
 							<string>searchField</string>
 							<string>syncButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

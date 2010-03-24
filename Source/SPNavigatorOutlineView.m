@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPNavigatorOutlineView.h"
+#import "SPNavigatorController.h"
 
 
 @implementation SPNavigatorOutlineView
@@ -35,10 +36,25 @@
 
 - (void)keyDown:(NSEvent *)theEvent
 {
+	// Enter or Return selects in active document the chosen item
 	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
-		;
+		[[self delegate] selectInActiveDocumentItem:[self itemAtRow:[self selectedRow]] fromView:self];
+		return;
 	}
+
 	[super keyDown:theEvent];
+}
+
+/*
+ * Return the data source item of the selected row, if no or multiple selections
+ * return nil
+ */
+- (id)selectedItem
+{
+	if([self numberOfSelectedRows] == 1)
+		return [self itemAtRow:[self selectedRow]];
+	
+	return nil;
 }
 
 @end

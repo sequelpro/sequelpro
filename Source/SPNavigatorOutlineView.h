@@ -30,4 +30,6 @@
 
 }
 
+- (id)selectedItem;
+
 @end
