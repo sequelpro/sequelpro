@@ -148,7 +148,7 @@ enum sp_table_types
 // Setters
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
-- (BOOL)selectTableOrViewWithName:(NSString *)theName;
+- (BOOL)selectItemWithName:(NSString *)theName;
 
 // Tabview delegate methods
 - (void)loadTabTask:(NSTabViewItem *)tabViewItem;

@@ -180,7 +180,7 @@
 // Database methods
 - (IBAction)setDatabases:(id)sender;
 - (IBAction)chooseDatabase:(id)sender;
-- (void)chooseDatabaseTask;
+- (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;

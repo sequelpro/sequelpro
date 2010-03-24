@@ -325,35 +325,22 @@
 		return;
 	}
 
-	// Check and set the database
-	if (![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]) {
-		NSPopUpButton *chooseDatabaseButton = [theDocument valueForKey:@"chooseDatabaseButton"];
-		[tablesListInstance setTableListSelectability:YES];
-		[[tablesListInstance valueForKey:@"tablesListView"] deselectAll:self];		
-		[theDocument setDatabaseListIsSelectable:YES];
-		[tablesListInstance setTableListSelectability:YES];
-		[chooseDatabaseButton selectItemWithTitle:[historyEntry objectForKey:@"database"]];
-		[theDocument chooseDatabase:self];
-		if (![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]) {
-			return [self abortEntryLoadWithPool:loadPool];
-		}
+	// If the same table was selected, mark the content as requiring a reload
+	if ([historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
+		[tablesListInstance setContentRequiresReload:YES];
 	}
 
-	// Check and set the table
-	if ([historyEntry objectForKey:@"table"] && ![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-		NSArray *tables = [tablesListInstance tables];
-		if ([tables indexOfObject:[historyEntry objectForKey:@"table"]] == NSNotFound) {
-			return [self abortEntryLoadWithPool:loadPool];
-		}
-		[[tablesListInstance valueForKey:@"tablesListView"] selectRowIndexes:[NSIndexSet indexSetWithIndex:[tables indexOfObject:[historyEntry objectForKey:@"table"]]] byExtendingSelection:NO];
-		if (![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-			return [self abortEntryLoadWithPool:loadPool];
-		}
-	} else if (![historyEntry objectForKey:@"table"] && [theDocument table]) {
-		[tablesListInstance setTableListSelectability:YES];
-		[[tablesListInstance valueForKey:@"tablesListView"] deselectAll:self];		
-	} else {
-		[tablesListInstance setContentRequiresReload:YES];	
+	// Update the database and table name if necessary
+	[theDocument selectDatabase:[historyEntry objectForKey:@"database"] item:[historyEntry objectForKey:@"table"]];
+
+	// If the database or table couldn't be selected, error.
+	if ((![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
+			&& ([theDocument database] || [historyEntry objectForKey:@"database"]))
+		|| 
+		(![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
+			&& ([theDocument table] || [historyEntry objectForKey:@"table"])))
+	{
+		return [self abortEntryLoadWithPool:loadPool];
 	}
 
 	// Check and set the view

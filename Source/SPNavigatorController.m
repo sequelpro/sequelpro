@@ -666,16 +666,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			}
 			if([[doc connectionID] isEqualToString:[pathArray objectAtIndex:0]]) {
 
-				// select db
-				if(![[doc database] isEqualToString:[pathArray objectAtIndex:1]]) {
-					if([[doc valueForKeyPath:@"mySQLConnection"] isConnected]) {
-						[[doc valueForKeyPath:@"chooseDatabaseButton"] selectItemWithTitle:[pathArray objectAtIndex:1]];
-						[doc chooseDatabase:self];
-					}
-				}
-				// select table/view if given
-				if([pathArray count] > 2)
-					[[doc valueForKeyPath:@"tablesListInstance"] performSelector:@selector(selectTableOrViewWithName:) withObject:[pathArray objectAtIndex:2] afterDelay:0.1];
+				// Select the database and table
+				[doc selectDatabase:[pathArray objectAtIndex:1] item:([pathArray count] > 2)?[pathArray objectAtIndex:2]:nil];
 
 			} else {
 				[SPTooltip showWithObject:NSLocalizedString(@"The connection of the active connection window is not identical.", @"the connection of the active connection window is not identical tooltip") 

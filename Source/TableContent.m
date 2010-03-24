@@ -1596,7 +1596,7 @@
 		[self setFiltersToRestore:filterSettings];
 
 		// Attempt to switch to the target table
-		if (![tablesListInstance selectTableOrViewWithName:[refDictionary objectForKey:@"table"]]) {
+		if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
 			NSBeep();
 			[self setFiltersToRestore:nil];
 		}

@@ -60,6 +60,7 @@
 
 - (void)_addDatabase;
 - (void)_removeDatabase;
+- (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
 @end
 
@@ -856,6 +857,16 @@
 	// Lock editability again if performing a task
 	if (_isWorkingLevel) databaseListIsSelectable = NO;
 
+	// Select the database
+	[self selectDatabase:[chooseDatabaseButton titleOfSelectedItem] item:[self table]];
+}
+
+/**
+ * Select the specified database and, optionally, table.
+ */
+- (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem
+{
+
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:YES];
 
@@ -872,57 +883,16 @@
 
 	// Start a task
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
+	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										aDatabase, @"database",
+										anItem, @"item",
+										nil];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(chooseDatabaseTask) toTarget:self withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(_selectDatabaseAndItem:) toTarget:self withObject:selectionDetails];
 	} else {
-		[self chooseDatabaseTask];
-	}
-}
-- (void)chooseDatabaseTask
-{
-	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
-
-	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
-	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
-	if (!historyStateChanging) {
-		[spHistoryControllerInstance updateHistoryEntries];
-		[spHistoryControllerInstance setModifyingState:YES];
+		[self _selectDatabaseAndItem:selectionDetails];
 	}
 
-	// show error on connection failed
-	if ( ![mySQLConnection selectDB:[chooseDatabaseButton titleOfSelectedItem]] ) {
-		if ( [mySQLConnection isConnected] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [chooseDatabaseButton titleOfSelectedItem]]);
-			[self setDatabases:self];
-		}
-		[self endTask];
-		[taskPool drain];
-		return;
-	}
-
-	//setConnection of TablesList and TablesDump to reload tables in db
-	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-	selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
-	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
-
-	[[tableWindow onMainThread] setTitle:[self displaySPName]];
-
-	// Add a history entry
-	if (!historyStateChanging) {
-		[spHistoryControllerInstance setModifyingState:NO];
-		[spHistoryControllerInstance updateHistoryEntries];
-	}
-
-	// Set focus to table list filter field if visible
-	// otherwise set focus to Table List view
-	if ( [[tablesListInstance tables] count] > 20 )
-		[[tableWindow onMainThread] makeFirstResponder:listFilterField];
-	else
-		[[tableWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
-
-	[self endTask];
-	[taskPool drain];
 }
 
 /**
@@ -4130,4 +4100,84 @@
 	[tableWindow setTitle:[self displaySPName]];
 }
 
+/**
+ * Select the specified database and, optionally, table.
+ */
+- (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails
+{
+	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
+	NSString *targetDatabaseName = [selectionDetails objectForKey:@"database"];
+	NSString *targetItemName = [selectionDetails objectForKey:@"item"];
+
+	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
+	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
+	if (!historyStateChanging) {
+		[spHistoryControllerInstance updateHistoryEntries];
+		[spHistoryControllerInstance setModifyingState:YES];
+	}
+
+	if (![targetDatabaseName isEqualToString:selectedDatabase]) {
+
+		// Attempt to select the specified database, and abort on failure
+		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
+			|| ![mySQLConnection selectDB:targetDatabaseName])
+		{
+			if ( [mySQLConnection isConnected] ) {
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+
+				// Update the database list
+				[self setDatabases:self];
+			}
+
+			[self endTask];
+			[taskPool drain];
+			return;
+		}
+
+		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
+		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+		selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
+
+		// If the item has changed, clear the item selection for cleaner loading
+		if (![targetItemName isEqualToString:[self table]]) {
+			[[tablesListInstance onMainThread] setTableListSelectability:YES];
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[tablesListInstance onMainThread] setTableListSelectability:NO];
+		}
+		
+		// Set the connection of TablesList and TablesDump to reload tables in db
+		[tablesListInstance setConnection:mySQLConnection];
+		[tableDumpInstance setConnection:mySQLConnection];
+
+		// Update the window title
+		[[tableWindow onMainThread] setTitle:[self displaySPName]];
+
+		// Add a history entry
+		if (!historyStateChanging) {
+			[spHistoryControllerInstance setModifyingState:NO];
+			[spHistoryControllerInstance updateHistoryEntries];
+		}
+
+		// Set focus to table list filter field if visible
+		// otherwise set focus to Table List view
+		if ( [[tablesListInstance tables] count] > 20 )
+			[[tableWindow onMainThread] makeFirstResponder:listFilterField];
+		else
+			[[tableWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+	}
+
+	// If a the table has changed, update the selection
+	if (![targetItemName isEqualToString:[self table]]) {
+		if (targetItemName) {
+			[tablesListInstance selectItemWithName:targetItemName];
+		} else {
+			[[tablesListInstance onMainThread] setTableListSelectability:YES];
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[tablesListInstance onMainThread] setTableListSelectability:NO];
+		}
+	}
+
+	[self endTask];
+	[taskPool drain];
+}
 @end

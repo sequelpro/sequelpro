@@ -40,6 +40,7 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "SPNavigatorController.h"
+#import "SPMainThreadTrampoline.h"
 
 @interface TablesList (PrivateAPI)
 
@@ -80,7 +81,7 @@
 	tableListContainsViews = NO;
 	
 	tableListIsSelectable = YES;
-	[tablesListView deselectAll:self];
+	[[tablesListView onMainThread] deselectAll:self];
 	tableListIsSelectable = previousTableListIsSelectable;
 	[tables removeAllObjects];
 	[tableTypes removeAllObjects];
@@ -220,7 +221,7 @@
 	}
 	[tableTypes insertObject:[NSNumber numberWithInteger:SP_TABLETYPE_NONE] atIndex:0];
 
-	[tablesListView reloadData];
+	[[tablesListView onMainThread] reloadData];
 	
 	// if the previous selected table still exists, select it
 	// but not if the update was called from SPTableData since it calls that method
@@ -229,7 +230,7 @@
 	if( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
 		tableListIsSelectable = YES;
-		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
+		[[tablesListView onMainThread] selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
 		tableListIsSelectable = previousTableListIsSelectable;
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
@@ -241,13 +242,13 @@
 	}
 
 	// Determine whether or not to show the list filter based on the number of tables, and clear it
-	[self clearFilter];
+	[[self onMainThread] clearFilter];
 	if ([tables count] > 20) [self showFilter];
 	else [self hideFilter];
 
 	// Set the filter placeholder text
 	if ([tableDocumentInstance database]) {
-		[[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter", @"Filter placeholder")];
+		[[[listFilterField cell] onMainThread] setPlaceholderString:NSLocalizedString(@"Filter", @"Filter placeholder")];
 	}
 
 	if (previousSelectedTable) [previousSelectedTable release];
@@ -1191,10 +1192,10 @@
 }
 
 /**
- * Select a table or view using the provided name; returns YES if the
+ * Select an item using the provided name; returns YES if the
  * supplied name could be selected, or NO if not.
  */
-- (BOOL)selectTableOrViewWithName:(NSString *)theName
+- (BOOL)selectItemWithName:(NSString *)theName
 {
 	NSInteger i, tableType;
 	NSInteger itemIndex = NSNotFound;
@@ -1203,7 +1204,7 @@
 	// Loop through the unfiltered tables/views to find the desired item
 	for (i = 0; i < [tables count]; i++) {
 		tableType = [[tableTypes objectAtIndex:i] integerValue];
-		if (tableType != SP_TABLETYPE_TABLE && tableType != SP_TABLETYPE_VIEW) continue;
+		if (tableType == SP_TABLETYPE_NONE) continue;
 		if ([[tables objectAtIndex:i] isEqualToString:theName]) {
 			itemIndex = i;
 			break;
@@ -1234,7 +1235,9 @@
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), theName]];
 		}
 	}
-	[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+
+	[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+
 	return YES;
 }
 
