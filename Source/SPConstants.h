@@ -198,6 +198,8 @@ extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
+extern NSString *SPProcessListShowProcessID;
+extern NSString *SPProcessListShowFullProcessList;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

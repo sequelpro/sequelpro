@@ -31,6 +31,8 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 
+#define TABLEVIEW_ID_COLUMN_IDENTIFIER @"Id"
+
 @interface SPProcessListController (PrivateAPI)
 
 - (void)_getDatabaseProcessList;
@@ -51,6 +53,11 @@
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseProcessList"])) {
 		processes = [[NSMutableArray alloc] init];
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+		
+		// Default the process list comment to SHOW FULL PROCESSLIST
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
 	}
 	
 	return self;
@@ -60,8 +67,13 @@
  * Interface initialisation
  */
 - (void)awakeFromNib
-{
-	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+{	
+	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[[NSDocumentController sharedDocumentController] currentDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
+	
+	[self setWindowFrameAutosaveName:@"ProcessList"];
+	
+	// Show/hide table columns
+	[[processListTableView tableColumnWithIdentifier:TABLEVIEW_ID_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPProcessListShowProcessID]];
 	
 	// Set the process table view's vertical gridlines if required
 	[processListTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -128,15 +140,14 @@
 /**
  * Close the process list sheet.
  */
-- (IBAction)closeSheet:(id)sender
+- (void)close
 {
-	[NSApp endSheet:[self window] returnCode:[sender tag]];
-	[[self window] orderOut:self];
-	
 	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
 	if ((processesFiltered) && (processesFiltered != processes)) {
 		[processesFiltered release], processesFiltered = nil;
-	}		
+	}
+	
+	[super close];
 }
 
 /**
@@ -150,7 +161,6 @@
 	
 	// Disable controls
 	[refreshProcessesButton setEnabled:NO];
-	[closeProcessListButton setEnabled:NO];
 	[saveProcessesButton setEnabled:NO];
 	[filterProcessesSearchField setEnabled:NO];
 	
@@ -166,7 +176,6 @@
 	// Enable controls
 	[filterProcessesSearchField setEnabled:YES];
 	[saveProcessesButton setEnabled:YES];
-	[closeProcessListButton setEnabled:YES];
 	[refreshProcessesButton setEnabled:YES];
 	
 	// Stop progress Indicator
@@ -244,13 +253,31 @@
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessConnectionMode];
 }
 
+/**
+ *
+ */
+- (IBAction)toggleShowProcessID:(id)sender
+{
+	[[processListTableView tableColumnWithIdentifier:TABLEVIEW_ID_COLUMN_IDENTIFIER] setHidden:([sender state])];
+}
+
+/**
+ *
+ */
+- (IBAction)toggeleShowFullProcessList:(id)sender
+{
+	showFullProcessList = (!showFullProcessList);
+		
+	[self refreshProcessList:self];
+}
+
 #pragma mark -
 #pragma mark Other methods
 
 /**
  * Displays the process list sheet attached to the supplied window.
  */
-- (void)displayProcessListSheetAttachedToWindow:(NSWindow *)window
+- (void)displayProcessListWindow
 {
 	// Weak reference
 	processesFiltered = processes;
@@ -266,8 +293,7 @@
 		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];
 	}
 	 
-	// Open the sheet
-	[NSApp beginSheet:[self window] modalForWindow:window modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[self showWindow:self];
 }
 
 /**
@@ -275,7 +301,6 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
@@ -343,6 +368,14 @@
 }
 
 /**
+ * NSWindow autosave name
+ */
+- (NSString *)windowFrameAutosaveName
+{
+	return @"ProcessList";
+}
+
+/**
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -383,7 +416,7 @@
 {	
 	id object = [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]];
 	
-	return (![object isNSNull]) ? object : @"NULL";
+	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
 }
 
 #pragma mark -
@@ -408,7 +441,7 @@
  */
 - (void)dealloc
 {
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
 	[processes release], processes = nil;
 	
@@ -427,7 +460,8 @@
 	NSUInteger i = 0;
 	
 	// Get processes
-	MCPResult *processList = [connection queryString:@"SHOW PROCESSLIST"];
+	MCPResult *processList = [connection queryString:(showFullProcessList) ? @"SHOW FULL PROCESSLIST" : @"SHOW PROCESSLIST"];
+	
 	[processList setReturnDataAsStrings:YES];
 	
 	if ([processList numOfRows]) [processList dataSeek:0];
@@ -524,7 +558,7 @@
 	
 	[processListTableView reloadData];
 	
-	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%lu of %lu", "filtered item count"), (unsigned long)[processesFiltered count], (unsigned long)[processes count]]];
+	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Showing %lu of %lu processes", "filtered item count"), (unsigned long)[processesFiltered count], (unsigned long)[processes count]]];
 	[processesCountTextField setHidden:NO];
 	
 	if ([processesFiltered count] == 0) return;

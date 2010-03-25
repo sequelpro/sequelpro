@@ -128,6 +128,8 @@ NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
+NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
+NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";

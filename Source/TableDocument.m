@@ -976,7 +976,7 @@
 		[prefs addObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
-	[processListController displayProcessListSheetAttachedToWindow:tableWindow];
+	[processListController displayProcessListWindow];
 }
 
 /**
