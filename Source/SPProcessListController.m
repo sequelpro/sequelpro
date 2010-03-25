@@ -532,7 +532,7 @@
 		processesFiltered = processes;
 		
 		[saveProcessesButton setEnabled:YES];
-		[saveProcessesButton setTitle:@"Save As..."];
+		[saveProcessesButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
 		[processesCountTextField setStringValue:@""];
 		
 		[processListTableView reloadData];
@@ -564,7 +564,7 @@
 	if ([processesFiltered count] == 0) return;
 	
 	[saveProcessesButton setEnabled:YES];
-	[saveProcessesButton setTitle:@"Save View As..."];
+	[saveProcessesButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
 }
 
 @end
