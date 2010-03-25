@@ -211,6 +211,8 @@
 		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
 		if (contentSelectedIndexSet) [contentState setObject:contentSelectedIndexSet forKey:@"selection"];
 		if (contentFilter) [contentState setObject:contentFilter forKey:@"filter"];
+
+		// Update the table content states with this information - used when switching tables to restore last used view.
 		[tableContentStates setObject:contentState forKey:[NSString stringWithFormat:@"%@.%@", [theDatabase backtickQuotedString], [theTable backtickQuotedString]]];
 	}
 
@@ -219,7 +221,7 @@
 		[history removeObjectsInRange:NSMakeRange(historyPosition + 1, [history count] - historyPosition - 1)];
 
 	} else if (historyPosition != NSNotFound && historyPosition == [history count] - 1) {
-		NSDictionary *currentHistoryEntry = [history objectAtIndex:historyPosition];
+		NSMutableDictionary *currentHistoryEntry = [history objectAtIndex:historyPosition];
 
 		// If the table is the same, and the filter settings haven't changed, delete the
 		// last entry so it can be replaced.  This updates navigation within a table, rather than
@@ -235,6 +237,17 @@
 					|| [[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
 		{
 			[history removeLastObject];
+
+		// If the only db/table/view are the same, but the filter settings have changed, also store the
+		// position details on the *previous* history item
+		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
+			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
+			&& ([[currentHistoryEntry objectForKey:@"view"] integerValue] == theView
+				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && contentFilter)
+					|| ![[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
+		{
+			[currentHistoryEntry setObject:[NSValue valueWithRect:contentViewport] forKey:@"contentViewport"];
+			if (contentSelectedIndexSet) [currentHistoryEntry setObject:contentSelectedIndexSet forKey:@"contentSelectedIndexSet"];
 
 		// Special case: if the last history item is currently active, and has no table,
 		// but the new selection does - delete the last entry, in order to replace it.
@@ -260,7 +273,7 @@
 	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilter"];
 
 	[history addObject:newEntry];
-	
+
 	// If there are now more than fifty history entries, remove one from the start
 	if ([history count] > 50) [history removeObjectAtIndex:0];
 
