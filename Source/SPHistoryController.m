@@ -156,6 +156,7 @@
 	NSUInteger theView = NSNotFound;
 
 	NSString *viewName = [[[theDocument valueForKey:@"tableTabView"] selectedTabViewItem] identifier];
+	
 	if ([viewName isEqualToString:@"source"]) {
 		theView = SPHistoryViewStructure;
 	} else if ([viewName isEqualToString:@"content"]) {
@@ -166,6 +167,9 @@
 		theView = SPHistoryViewStatus;
 	} else if ([viewName isEqualToString:@"relations"]) {
 		theView = SPHistoryViewRelations;
+	}
+	else if ([viewName isEqualToString:@"triggers"]) {
+		theView = SPHistoryViewTriggers;
 	}
 
 	return theView;
@@ -374,6 +378,9 @@
 				break;
 			case SPHistoryViewRelations:
 				[theDocument viewRelations:self];
+				break;
+			case SPTriggersViewMode:
+				[theDocument viewTriggers:self];
 				break;
 		}
 		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {

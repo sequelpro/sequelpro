@@ -31,7 +31,8 @@ typedef enum {
 	SPContentViewMode	  = 2,
 	SPRelationsViewMode	  = 3,
 	SPTableInfoViewMode   = 4,
-	SPQueryEditorViewMode = 5
+	SPQueryEditorViewMode = 5,
+	SPTriggersViewMode    = 6
 } SPViewMode;
 
 // Query modes
@@ -80,7 +81,8 @@ typedef enum
 	SPHistoryViewContent     = 1,
 	SPHistoryViewCustomQuery = 2,
 	SPHistoryViewStatus      = 3,
-	SPHistoryViewRelations   = 4
+	SPHistoryViewRelations   = 4,
+	SPHistoryViewTriggers    = 5
 } SPHistoryViewType;
 
 // SSH tunnel password modes
