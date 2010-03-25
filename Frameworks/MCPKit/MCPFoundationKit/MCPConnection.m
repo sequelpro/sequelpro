@@ -1926,8 +1926,8 @@ void performThreadedKeepAlive(void *ptr)
 				NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
 
 				// Set connection to UTF-8 since the information_schema is encoded in UTF-8
-				NSString *setNameString = @"SET NAMES 'utf8'";
-				NSData *encodedSetNameData = NSStringDataUsingLossyEncoding(setNameString, theConnectionEncoding, 1);
+				NSString *query = @"SET NAMES 'utf8'";
+				NSData *encodedSetNameData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
 				const char *setNameCString = [encodedSetNameData bytes];
 				unsigned long setNameCStringLength = [encodedSetNameData length];
 				if (mysql_real_query(structConnection, setNameCString, setNameCStringLength) != 0) {
@@ -1935,7 +1935,29 @@ void performThreadedKeepAlive(void *ptr)
 					[queryPool release];
 					return;
 				}
+				
+				NSUInteger numberOfItems = 20000;
+				query = @"SELECT COUNT(*) FROM `information_schema`.`COLUMNS`";
+				encodedSetNameData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
+				setNameCString = [encodedSetNameData bytes];
+				setNameCStringLength = [encodedSetNameData length];
+				if (mysql_real_query(structConnection, setNameCString, setNameCStringLength) != 0) {
+					isQueryingDbStructure = NO;
+					[queryPool release];
+					return;
+				}
+				theResult = mysql_use_result(structConnection);
+				row = mysql_fetch_row(theResult);
+				if(row)
+					numberOfItems = [[self stringWithUTF8CString:row[0]] longLongValue];
+				mysql_free_result(theResult);
 
+				if(numberOfItems > 10000) {
+					isQueryingDbStructure = NO;
+					[queryPool release];
+					return;
+				}
+				
 				// Query the desired data
 				NSString *queryDbString = @""
 					@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` "
