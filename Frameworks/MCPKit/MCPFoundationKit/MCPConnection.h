@@ -67,9 +67,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (NSString *)onReconnectShouldUseEncoding:(id)connection;
 - (void)noConnectionAvailable:(id)connection;
 - (MCPConnectionCheck)connectionLost:(id)connection;
-- (void)updateNavigator:(id)sender;
-- (NSString *)connectionID;
-
+- (NSString*)connectionID;
 @end
 
 @interface MCPConnection : NSObject 

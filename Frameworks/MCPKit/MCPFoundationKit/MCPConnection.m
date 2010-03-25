@@ -44,7 +44,7 @@ const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const NSUInteger kMCPConnection_Not_Inited = 1000;
 const NSUInteger kLengthOfTruncationForLog = 100;
 
-static BOOL	sTruncateLongFieldInLogs = YES;
+static BOOL sTruncateLongFieldInLogs = YES;
 
 /**
  * Privte API
@@ -1365,7 +1365,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Reset the query cancelled boolean
 	queryCancelled = NO;
-	
+
 	// If no connection is present, return nil.
 	if (!mConnected) {
 		// Write a log entry
@@ -2033,12 +2033,12 @@ void performThreadedKeepAlive(void *ptr)
 					}
 					uniqueDbIdentifier = [[NSDictionary dictionaryWithDictionary:uniqueIdentifier] retain];
 
-
-					if(delegate && [delegate respondsToSelector:@selector(updateNavigator:)])
-						[[self delegate] updateNavigator:self];
+					// Notify that the structure querying has been performed
+					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 
 					isQueryingDbStructure = NO;
 					[queryPool release];
+
 					return;
 				}
 				mysql_close(structConnection);

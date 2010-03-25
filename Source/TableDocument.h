@@ -251,7 +251,6 @@
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
 - (IBAction)toggleNavigator:(id)sender;
-- (void)updateNavigator:(id)sender;
 
 // Accessor methods
 - (NSString *)host;

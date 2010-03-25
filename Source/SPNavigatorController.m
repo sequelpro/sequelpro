@@ -82,6 +82,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if(schemaData) [schemaData release];
 	if(schemaDataUnFiltered) [schemaDataUnFiltered release];
 	if(infoArray)  [infoArray release];
@@ -116,6 +117,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil]];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
+												 name:@"SPDBStructureWasUpdated" object:nil];
 
 }
 
@@ -285,7 +289,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(schemaData && [schemaData objectForKey:connectionID]) {
 		
 		NSInteger docCounter = 0;
-		
+
+		// Detect if more than one connection windows with the connectionID are open.
+		// If so, don't remove it.
 		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 			for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 				if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
@@ -342,10 +348,17 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 }
 
-#pragma mark -
-#pragma mark IBActions
+- (void)updateNavigator:(NSNotification *)aNotification
+{
+	id object = [aNotification object];
+	
+	if([object isKindOfClass:[TableDocument class]])
+		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:[object connectionID] waitUntilDone:YES];
+	else
+		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:YES];
+}
 
-- (IBAction)updateEntries:(id)sender;
+- (void)updateEntriesForConnection:(NSString*)connectionID
 {
 
 	if(ignoreUpdate) {
@@ -356,7 +369,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[self saveSelectedItems];
 
 	[infoArray removeAllObjects];
-	[schemaData removeAllObjects];
+	if(connectionID)
+		[schemaData removeObjectForKey:connectionID];
+	else
+		[schemaData removeAllObjects];
 
 	[outlineSchema1 reloadData];
 	[outlineSchema2 reloadData];
@@ -364,19 +380,21 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 
-			if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
+			id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
+
+			if(!theConnection || ![theConnection isConnected]) continue;
 
 			NSString *connectionName = [doc connectionID];
 
-			if(!connectionName || [connectionName isEqualToString:@"_"]) continue;
+			if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) continue;
 
 			if(![schemaData objectForKey:connectionName]) {
 
-				if([[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] && [[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] objectForKey:connectionName]) {
-					[schemaData setObject:[[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] objectForKey:connectionName] forKey:connectionName];
+				if([theConnection getDbStructure] && [[theConnection getDbStructure] objectForKey:connectionName]) {
+					[schemaData setObject:[[theConnection getDbStructure] objectForKey:connectionName] forKey:connectionName];
 				} else {
 
-					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4) {
+					if([theConnection serverMajorVersion] > 4) {
 						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
 					} else {
 						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data for this server version", connectionName]];
@@ -391,13 +409,16 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		[self restoreExpandStatus];
 		[self restoreSelectedItems];
-
 	}
 
 	[self syncButtonAction:self];
 
 
 }
+
+#pragma mark -
+#pragma mark IBActions
+
 
 - (IBAction)reloadAllStructures:(id)sender
 {
@@ -793,7 +814,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	// Use first row as dummy to increase the distance between content and header
-	return (row == 0) ? 5.0 : 15; //[tableView rowHeight];
+	return (row == 0) ? 5.0 : 16.0;
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex

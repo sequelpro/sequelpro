@@ -1148,7 +1148,7 @@
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
 	if(!isNavigatorVisible) {
-		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
+		[[SPNavigatorController sharedNavigatorController] updateEntriesForConnection:[self connectionID]];
 	}
 
 	// Show or hide the navigator
@@ -1164,16 +1164,6 @@
 	} else {
 		[[[SPNavigatorController sharedNavigatorController] window] makeKeyAndOrderFront:self];
 	}
-}
-
-/*
- * Called from MCPConnection or self to inform the navigator that an instance invoked queryDbStructure
- * or a window was closed
- */
-- (void)updateNavigator:(id)sender
-{
-	if([[[SPNavigatorController sharedNavigatorController] window] isVisible])
-		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
 }
 
 #pragma mark -

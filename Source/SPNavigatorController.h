@@ -57,13 +57,13 @@
 + (SPNavigatorController *)sharedNavigatorController;
 
 - (IBAction)outlineViewAction:(id)sender;
-- (IBAction)updateEntries:(id)sender;
 - (IBAction)reloadAllStructures:(id)sender;
 - (IBAction)filterTree:(id)sender;
 - (IBAction)syncButtonAction:(id)sender;
 
+- (void)updateEntriesForConnection:(NSString*)connectionID;
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
-
+- (void)updateNavigator:(NSNotification *)aNotification;
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
 - (void)selectPath:(NSString*)schemaPath;
