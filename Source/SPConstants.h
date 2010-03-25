@@ -237,6 +237,7 @@ extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
 extern NSString *SPKeyboardShortcutsURL;
 extern NSString *SPMySQLSearchURL;
+extern NSString *SPGettingConnectedDocURL;
 
 // Toolbar constants
 

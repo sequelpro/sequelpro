@@ -581,6 +581,8 @@
 		[self viewStatus:self];
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
 		[self viewRelations:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
+		[self viewTriggers:self];
 
 	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
 
@@ -743,6 +745,9 @@
 				break;
 			case SPQueryEditorViewMode:
 				[self viewQuery:self];
+				break;
+			case SPTriggersViewMode:
+				[self viewTriggers:self];
 				break;
 		}
 	}
@@ -2870,22 +2875,25 @@
 
 		switch([spHistoryControllerInstance currentlySelectedView]){
 			case SPHistoryViewStructure:
-			aString = @"SP_VIEW_STRUCTURE";
-			break;
+				aString = @"SP_VIEW_STRUCTURE";
+				break;
 			case SPHistoryViewContent:
-			aString = @"SP_VIEW_CONTENT";
-			break;
+				aString = @"SP_VIEW_CONTENT";
+				break;
 			case SPHistoryViewCustomQuery:
-			aString = @"SP_VIEW_CUSTOMQUERY";
-			break;
+				aString = @"SP_VIEW_CUSTOMQUERY";
+				break;
 			case SPHistoryViewStatus:
-			aString = @"SP_VIEW_STATUS";
-			break;
+				aString = @"SP_VIEW_STATUS";
+				break;
 			case SPHistoryViewRelations:
-			aString = @"SP_VIEW_RELATIONS";
-			break;
+				aString = @"SP_VIEW_RELATIONS";
+				break;
+			case SPHistoryViewTriggers:
+				aString = @"SP_VIEW_TRIGGERS";
+				break;
 			default:
-			aString = @"SP_VIEW_STRUCTURE";
+				aString = @"SP_VIEW_STRUCTURE";
 		}
 		[session setObject:aString forKey:@"view"];
 
@@ -3284,7 +3292,7 @@
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
-	//[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
+	[prefs setInteger:SPTriggersViewMode forKey:SPLastViewMode];
 }
 
 

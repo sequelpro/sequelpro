@@ -167,6 +167,7 @@ NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/do
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
 NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
 NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@";
+NSString *SPGettingConnectedDocURL               = @"http://www.sequelpro.com/docs/Getting_Connected";
 
 // Toolbar constants
 

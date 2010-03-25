@@ -529,7 +529,7 @@
  */
 - (IBAction) showHelp:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"http://www.sequelpro.com/docs/Getting_Connected"]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPGettingConnectedDocURL]];
 }
 
 #pragma mark -
