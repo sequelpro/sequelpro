@@ -109,6 +109,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSString *serverVersionString;
 	NSDictionary *theDbStructure;
 	NSDictionary *uniqueDbIdentifier;
+	NSArray *allKeysofDbStructure;
 	
 	NSTimer *keepAliveTimer;
 	pthread_t keepAliveThread;
@@ -238,6 +239,7 @@ void performThreadedKeepAlive(void *ptr);
 - (void)queryDbStructure;
 - (NSDictionary *)getDbStructure;
 - (NSInteger)getUniqueDbIdentifierFor:(NSString*)term;
+- (NSArray *)getAllKeysOfDbStructure;
 
 // Server information
 - (NSString *)clientInfo;

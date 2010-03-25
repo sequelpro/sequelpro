@@ -114,6 +114,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		keepAliveInterval = 60;  
 		
 		theDbStructure = nil;
+		allKeysofDbStructure = nil;
 		uniqueDbIdentifier = nil;
 		isQueryingDbStructure = NO;
 
@@ -428,6 +429,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
+	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
 	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;	
 	if (pingThread != NULL) pthread_cancel(pingThread), pingThread = NULL;
 }
@@ -1952,6 +1954,7 @@ void performThreadedKeepAlive(void *ptr)
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
 					theResult = mysql_use_result(structConnection);
 					NSMutableDictionary *structure = [NSMutableDictionary dictionary];
+					NSMutableSet *allKeys = [[NSMutableSet alloc] initWithCapacity:20];
 					NSMutableSet *namesSet = [[NSMutableSet alloc] initWithCapacity:20];
 					NSMutableArray *allDbNames = [NSMutableArray array];
 					NSMutableArray *allTableNames = [NSMutableArray array];
@@ -1991,6 +1994,9 @@ void performThreadedKeepAlive(void *ptr)
 						[namesSet addObject:[table lowercaseString]];
 						[allDbNames addObject:[db lowercaseString]];
 						[allTableNames addObject:[table lowercaseString]];
+						[allKeys addObject:db_id];
+						[allKeys addObject:table_id];
+						[allKeys addObject:field_id];
 
 						if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
 							[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
@@ -2014,6 +2020,13 @@ void performThreadedKeepAlive(void *ptr)
 						theDbStructure = nil;
 					}
 					theDbStructure = [[NSDictionary dictionaryWithDictionary:structure] retain];
+
+					if(allKeysofDbStructure != nil) {
+						[allKeysofDbStructure release];
+						allKeysofDbStructure = nil;
+					}
+					allKeysofDbStructure = [[NSArray arrayWithArray:[allKeys allObjects]] retain];
+					[allKeys release];
 
 					NSMutableDictionary *uniqueIdentifier = [NSMutableDictionary dictionary];
 					for(id name in namesSet) {
@@ -2069,6 +2082,14 @@ void performThreadedKeepAlive(void *ptr)
 - (NSDictionary *)getDbStructure
 {
 	return theDbStructure;
+}
+
+/**
+ * Returns all keys of the db structure.
+ */
+- (NSArray *)getAllKeysOfDbStructure
+{
+	return allKeysofDbStructure;
 }
 
 #pragma mark -
@@ -2492,6 +2513,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (connectionPassword) [connectionPassword release];
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (theDbStructure) [theDbStructure release], theDbStructure = nil;
+	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
 	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
 	
 	[super dealloc];

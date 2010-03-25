@@ -42,7 +42,8 @@
 	NSUserDefaults *prefs;
 
 	NSMutableDictionary *schemaData;
-	NSMutableDictionary *schemaDataUnFiltered;
+	NSMutableDictionary *schemaDataFiltered;
+	NSMutableDictionary *allSchemaKeys;
 	NSMutableArray *infoArray;
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
@@ -52,6 +53,7 @@
 	NSRect selectionViewPort1;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
+	BOOL isFiltered;
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
