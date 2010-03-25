@@ -429,7 +429,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
 								NSArray *def = [theTable objectForKey:field];
-								NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:1], [def objectAtIndex:2]];
+								NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:3], [def objectAtIndex:5]];
 								// Check if type definition contains a , if so replace the bracket content by … and add 
 								// the bracket content as "list" key to prevend the token field to split them by ,
 								if(typ && [typ rangeOfString:@","].length) {
