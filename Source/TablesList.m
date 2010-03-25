@@ -130,7 +130,7 @@
 		
 			// Check for mysql errors - if information_schema is not accessible for some reasons
 			// omit adding procedures and functions
-			if([[mySQLConnection getLastErrorMessage] isEqualToString:@""] && theResult != nil && [theResult numOfRows] ) {
+			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numOfRows] ) {
 				// add the header row
 				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
 				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
@@ -1863,7 +1863,7 @@
 		} 
 
 		// If no error is recorded, the table was successfully dropped - remove it from the list
-		if ([[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
+		if (![mySQLConnection queryErrored]) {
 			//dropped table with success
 			if (isTableListFiltered) {
 				NSInteger unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:currentIndex]];
@@ -1939,7 +1939,7 @@
 		[mySQLConnection queryString:[NSString stringWithFormat: @"TRUNCATE TABLE %@", [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]]]; 
 		
 		// Couldn't truncate table
-		if (![[mySQLConnection getLastErrorMessage] isEqualTo:@""]) {
+		if ([mySQLConnection queryErrored]) {
 			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error truncating table", @"error truncating table message") 
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
@@ -1987,7 +1987,7 @@
 	// Create the table
 	[mySQLConnection queryString:createStatement];
 	
-	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if (![mySQLConnection queryErrored]) {
 		
 		// Table creation was successful - insert the new item into the tables list and select it.
 		NSInteger addItemAtIndex = NSNotFound;
@@ -2127,7 +2127,7 @@
 				return;
 			
 			// Check for errors, only displaying if the connection hasn't been terminated
-			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			if ([mySQLConnection queryErrored]) {
 				if ([mySQLConnection isConnected]) {
 					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
@@ -2141,14 +2141,14 @@
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			
-			if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+			if ([mySQLConnection queryErrored]) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 			
 		}
 		
-        if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+        if ([mySQLConnection queryErrored]) {
 			//error while creating new table
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
@@ -2162,7 +2162,7 @@
 											  [selectedTableName backtickQuotedString]
 											  ]];
 				
-                if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+                if ([mySQLConnection queryErrored]) {
                     SPBeginAlertSheet(
 									  NSLocalizedString(@"Warning", @"warning"),
 									  NSLocalizedString(@"OK", @"OK button"),
@@ -2256,7 +2256,7 @@
         // we can use the rename table statement
         [mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [oldTableName backtickQuotedString], [newTableName backtickQuotedString]]];
         // check for errors
-        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+        if ([mySQLConnection queryErrored]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming '%@'.\n\nMySQL said: %@", @"rename table error informative message"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         return;
@@ -2275,7 +2275,7 @@
         }
         
         MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
-        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+        if ([mySQLConnection queryErrored]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't retrieve the syntax for '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't retrieve syntax"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         [theResult setReturnDataAsStrings:YES];
@@ -2289,12 +2289,12 @@
         NSString *newCreateSyntax = [oldCreateSyntax stringByReplacingCharactersInRange: rangeOfProcedureName
                                                                              withString: [NSString stringWithFormat:@"%@ %@", stringTableType, [newTableName backtickQuotedString] ] ];
         [mySQLConnection queryString: newCreateSyntax];
-        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+        if ([mySQLConnection queryErrored]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't recreate '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't recreate procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         
         [mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", stringTableType, [oldTableName backtickQuotedString]]];
-        if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+        if ([mySQLConnection queryErrored]) {
             [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't remove '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't remove old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         return;

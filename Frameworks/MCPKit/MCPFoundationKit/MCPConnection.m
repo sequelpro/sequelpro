@@ -1155,6 +1155,14 @@ void performThreadedKeepAlive(void *ptr)
 #pragma mark Error information
 
 /**
+ * Returns whether the last query errored or not.
+ */
+- (BOOL)queryErrored
+{
+	return (lastQueryErrorMessage)?YES:NO;
+}
+
+/**
  * Returns a string with the last MySQL error message on the connection.
  */
 - (NSString *)getLastErrorMessage
@@ -1172,7 +1180,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (!theErrorMessage) theErrorMessage = [self stringWithCString:mysql_error(mConnection)];
 	
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release], lastQueryErrorMessage = nil;
-	lastQueryErrorMessage = [[NSString alloc] initWithString:theErrorMessage];
+	if (theErrorMessage && [theErrorMessage length]) lastQueryErrorMessage = [[NSString alloc] initWithString:theErrorMessage];
 }
 
 /**

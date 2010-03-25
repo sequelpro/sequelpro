@@ -204,6 +204,7 @@ void performThreadedKeepAlive(void *ptr);
 - (BOOL)selectDB:(NSString *)dbName;
 
 // Error information
+- (BOOL)queryErrored;
 - (NSString *)getLastErrorMessage;
 - (void)setLastErrorMessage:(NSString *)theErrorMessage;
 - (NSUInteger)getLastErrorID;

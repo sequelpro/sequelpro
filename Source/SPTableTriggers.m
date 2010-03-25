@@ -128,10 +128,7 @@
 	// Execute query
 	[connection queryString:query];
 	
-	NSInteger retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
-	
-	// Zero indicates success
-	if (retCode) {
+	if (([connection queryErrored])) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
@@ -320,7 +317,7 @@
 				
 				[connection queryString:query];
 				
-				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
+				if ([connection queryErrored]) {
 					
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove trigger", @"error removing trigger message"), 
 									  NSLocalizedString(@"OK", @"OK button"),

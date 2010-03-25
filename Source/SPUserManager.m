@@ -1176,7 +1176,7 @@
  */
 - (BOOL)checkAndDisplayMySqlError
 {
-	if (![[self.mySqlConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([self.mySqlConnection queryErrored]) {
 		NSAlert *alert = [NSAlert alertWithMessageText:@"MySQL Error" 
                                          defaultButton:NSLocalizedString(@"OK", @"OK button")
                                        alternateButton:nil 

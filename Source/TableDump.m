@@ -694,7 +694,7 @@
 			[mySQLConnection queryString:query usingEncoding:sqlEncoding streamingResult:NO];
 
 			// Check for any errors
-			if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+			if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
 			}
 
@@ -723,7 +723,7 @@
 		[mySQLConnection queryString:query usingEncoding:sqlEncoding streamingResult:NO];
 
 		// Check for any errors
-		if ([[mySQLConnection getLastErrorMessage] length] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
+		if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 			[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
 		}
 
@@ -1037,7 +1037,7 @@
 							[mySQLConnection queryString:query];
 						[query release];
 
-						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+						if ([mySQLConnection queryErrored]) {
 							[tableDocumentInstance showConsole:nil];
 							[errors appendString:[NSString stringWithFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
@@ -1055,7 +1055,7 @@
 								[mySQLConnection queryString:query];
 							[query release];
 
-							if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+							if ([mySQLConnection queryErrored]) {
 								[errors appendString:[NSString stringWithFormat:
 									NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
 									(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
@@ -1070,7 +1070,7 @@
 					}
 				}
 				// If an error occurred, run the queries individually to get exact line errors
-				if (!importMethodIsUpdate && ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				if (!importMethodIsUpdate && [mySQLConnection queryErrored]) {
 					[tableDocumentInstance showConsole:nil];
 					for (i = 0; i < csvRowsThisQuery; i++) {
 						if (progressCancelled) break;
@@ -1084,7 +1084,7 @@
 							[mySQLConnection queryString:query];
 						[query release];
 
-						if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+						if ([mySQLConnection queryErrored]) {
 							[errors appendString:[NSString stringWithFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
 								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
@@ -1574,7 +1574,7 @@
 			}
 			[tableDetails release];
 		}
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ([mySQLConnection queryErrored]) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 			if ( [addErrorsSwitch state] == NSOnState ) {
 				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -1735,7 +1735,7 @@
 				[exportAutoReleasePool drain];
 			}
 						
-			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			if ([mySQLConnection queryErrored]) {
 				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 				if ( [addErrorsSwitch state] == NSOnState ) {
 					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
@@ -1783,7 +1783,7 @@
 				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 			
-			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			if ([mySQLConnection queryErrored]) {
 				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 				if ( [addErrorsSwitch state] == NSOnState ) {
 					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
@@ -1893,7 +1893,7 @@
 			[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 		
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ([mySQLConnection queryErrored]) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 			if ( [addErrorsSwitch state] == NSOnState ) {
 				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
@@ -2650,7 +2650,7 @@
 		streamingResult = [[mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:useLowMemoryBlockingStreaming] retain];
 
 		// Note any errors during initial query
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ([mySQLConnection queryErrored]) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 		}
 
@@ -2705,7 +2705,7 @@
 		[streamingResult release];
 
 		// Note any errors during data retrieval
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ([mySQLConnection queryErrored]) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
 		}		
 	}

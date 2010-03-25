@@ -1061,7 +1061,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![mySQLConnection queryErrored]) {
 		NSInteger i;
 		NSInteger r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
@@ -1439,7 +1439,7 @@
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
 
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![mySQLConnection queryErrored]) {
 		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
 		[mySQLConnection setEncoding:[MCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
@@ -1448,7 +1448,7 @@
 	} else {
 		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
 		_encodingViaLatin1 = NO;
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ([mySQLConnection queryErrored]) {
 			NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
 			return;
 		}
@@ -1656,7 +1656,7 @@
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
@@ -1715,7 +1715,7 @@
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
@@ -1755,7 +1755,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to check selected items", @"unable to check selected items message") : NSLocalizedString(@"Unable to check table", @"unable to check table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -1831,7 +1831,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to analyze selected items", @"unable to analyze selected items message") : NSLocalizedString(@"Unable to analyze table", @"unable to analyze table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -1907,7 +1907,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to optimze selected items", @"unable to optimze selected items message") : NSLocalizedString(@"Unable to optimze table", @"unable to optimze table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -1982,7 +1982,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to repair selected items", @"unable to repair selected items message") : NSLocalizedString(@"Unable to repair table", @"unable to repair table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -2057,7 +2057,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to flush selected items", @"unable to flush selected items message") : NSLocalizedString(@"Unable to flush table", @"unable to flush table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -2132,7 +2132,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 
 			[[NSAlert alertWithMessageText:NSLocalizedString(@"Unable to perform the checksum", @"unable to perform the checksum")
@@ -2276,7 +2276,7 @@
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
 	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	
-	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && ([result numOfRows] == 0)) {
+	if ([mySQLConnection queryErrored] && ([result numOfRows] == 0)) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unable to get list of users", @"unable to get list of users message")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -2323,7 +2323,7 @@
 {
 	[mySQLConnection queryString:@"FLUSH PRIVILEGES"];
 
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![mySQLConnection queryErrored]) {
 		//flushed privileges without errors
 		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
@@ -4041,7 +4041,7 @@
 	// Create the database
 	[mySQLConnection queryString:createStatement];
 	
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		// An error occurred
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
 		
@@ -4078,7 +4078,7 @@
 	// Drop the database from the server
 	[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
 	
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		// An error occurred
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),

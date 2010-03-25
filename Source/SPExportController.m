@@ -445,7 +445,7 @@
 		MCPStreamingResult *queryResultStreaming = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:useLowMemoryBlockingStreaming];
 		
 		// Note any errors during retrieval
-		if (![[connection getLastErrorMessage] isEqualToString:@""]) {
+		if ([connection queryErrored]) {
 			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
 		}
 		
