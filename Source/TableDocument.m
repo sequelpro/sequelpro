@@ -3137,9 +3137,15 @@
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
 	}
 
-	// Focus on table list filter
+	// Focus on table list or filter resp.
 	if ([menuItem action] == @selector(focusOnTableListFilter:)) {
-		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 20); 
+		
+		if([[tablesListInstance valueForKeyPath:@"tables"] count] > 20)
+			[menuItem setTitle:NSLocalizedString(@"Filter Tables", @"filter tables menu item")];
+		else
+			[menuItem setTitle:NSLocalizedString(@"Change Focus to Table List", @"change focus to table list menu item")];
+			
+		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 1); 
 	}
 
 	return [super validateMenuItem:menuItem];

@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="498"/>
+			<integer value="758"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1629,7 +1629,7 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="759561673">
 									<reference key="NSMenu" ref="1056168652"/>
-									<string key="NSTitle">Filter Content...</string>
+									<string key="NSTitle">Filter Content</string>
 									<string key="NSKeyEquiv">f</string>
 									<int key="NSKeyEquivModMask">1310720</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -1638,7 +1638,7 @@
 								</object>
 								<object class="NSMenuItem" id="328775074">
 									<reference key="NSMenu" ref="1056168652"/>
-									<string key="NSTitle">Filter Tables…</string>
+									<string key="NSTitle">Filter Tables</string>
 									<string key="NSKeyEquiv">f</string>
 									<int key="NSKeyEquivModMask">1835008</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -4804,7 +4804,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{470, 265}, {280, 283}}</string>
+					<string>{{387, 375}, {280, 283}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -4836,7 +4836,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{447, 658}, {511, 20}}</string>
+					<string>{{194, 636}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4889,7 +4889,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{639, 365}, {251, 293}}</string>
+					<string>{{431, 365}, {251, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4984,7 +4984,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{645, 315}, {279, 233}}</string>
+					<string>{{517, 403}, {279, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

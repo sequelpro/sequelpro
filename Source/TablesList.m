@@ -1609,7 +1609,15 @@
  */
 - (void) makeTableListFilterHaveFocus
 {
-	[tableWindow makeFirstResponder:listFilterField];
+	if([tables count] > 20) {
+		[tableWindow makeFirstResponder:listFilterField];
+	}
+	else if([tables count] > 2) {
+		[tableWindow makeFirstResponder:tablesListView];
+		if([tablesListView numberOfSelectedRows] < 1)
+			[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
+		
+	}
 }
 
 /**
