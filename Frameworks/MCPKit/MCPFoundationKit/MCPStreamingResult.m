@@ -208,7 +208,7 @@
 	returnArray = [NSMutableArray arrayWithCapacity:mNumOfFields];
 	for (i = 0; i < mNumOfFields; i++) {
 		id cellData = nil;
-		char *theData;
+		char *theData = NULL;
 
 		// In fully streaming mode, copy across the data for the MYSQL_ROW
 		if (fullyStreaming) {
@@ -270,7 +270,7 @@
 					break;
 
 				case FIELD_TYPE_BIT:
-					cellData = [NSString stringWithFormat:@"%u", theData[0]];
+					cellData = (theData != NULL) ? [NSString stringWithFormat:@"%u", theData[0]] : @"";
 					break;
 
 				case FIELD_TYPE_TINY_BLOB:

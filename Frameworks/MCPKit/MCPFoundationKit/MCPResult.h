@@ -27,8 +27,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/Foundation.h>
-#import "MCPConstants.h"
 
+#import "MCPConstants.h"
 #import "mysql.h"
 
 #define MAGIC_BINARY_CHARSET_NR 63

@@ -60,6 +60,7 @@
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
+		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
 		17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */; };
 		17DD52B911507217007D8950 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B811507217007D8950 /* Credits.rtf */; };
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
@@ -403,6 +404,7 @@
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
+		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
 		17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-print-template.html"; sourceTree = "<group>"; };
 		17DD52B811507217007D8950 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		17DD52C2115074B3007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -975,7 +977,6 @@
 			children = (
 				17B7B5C4101603B200F057DE /* MCPConnection.h */,
 				17B7B5C5101603B200F057DE /* MCPConnection.m */,
-				17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */,
 				17B7B5C7101603B200F057DE /* MCPConstants.h */,
 				17B7B5C8101603B200F057DE /* MCPFastQueries.h */,
 				17B7B5C9101603B200F057DE /* MCPFastQueries.m */,
@@ -990,6 +991,8 @@
 				17B7B5D2101603B200F057DE /* MCPResultPlus.m */,
 				583B779710386B0200B21F7E /* MCPStreamingResult.h */,
 				583B779810386B0200B21F7E /* MCPStreamingResult.m */,
+				17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */,
+				17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */,
 			);
 			path = MCPFoundationKit;
 			sourceTree = "<group>";
@@ -1506,6 +1509,7 @@
 				17B7B5EF101603D200F057DE /* mysql_time.h in Headers */,
 				17B7B5F0101603D200F057DE /* mysql_version.h in Headers */,
 				17B7B5F1101603D200F057DE /* typelib.h in Headers */,
+				17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

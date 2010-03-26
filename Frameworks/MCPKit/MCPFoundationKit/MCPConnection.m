@@ -28,10 +28,11 @@
 
 #import "MCPConnection.h"
 #import "MCPResult.h"
-#import "MCPStreamingResult.h"
 #import "MCPNumber.h"
 #import "MCPNull.h"
+#import "MCPStreamingResult.h"
 #import "MCPConnectionProxy.h"
+#import "MCPStringAdditions.h"
 
 #include <unistd.h>
 #include <mach/mach_time.h>
@@ -1285,7 +1286,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPResult *)queryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:MCP_NO_STREAMING];
+	return [self queryString:query usingEncoding:mEncoding streamingResult:MCPStreamingNone];
 }
 
 /**
@@ -1295,7 +1296,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:MCP_FAST_STREAMING];
+	return [self queryString:query usingEncoding:mEncoding streamingResult:MCPStreamingFast];
 }
 
 /**
@@ -1307,7 +1308,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:(fullStream?MCP_LOWMEM_STREAMING:MCP_FAST_STREAMING)];
+	return [self queryString:query usingEncoding:mEncoding streamingResult:(fullStream?MCPStreamingLowMem:MCPStreamingFast)];
 }
 
 /**
@@ -1413,7 +1414,7 @@ void performThreadedKeepAlive(void *ptr)
 		
 		// Lock the connection - on this thread for normal result sets (avoiding blocking issues
 		// when the app is in modal mode), or ensuring a lock on the main thread for streaming queries.
-		if (streamResultType == MCP_NO_STREAMING) [queryLock lock];
+		if (streamResultType == MCPStreamingNone) [queryLock lock];
 		else [self lockConnection];
 
 		// Run (or re-run) the query, timing the execution time of the query - note
@@ -1431,14 +1432,14 @@ void performThreadedKeepAlive(void *ptr)
 			if (mysql_field_count(mConnection) != 0) {
 				
 				// For normal result sets, fetch the results and unlock the connection
-				if (streamResultType == MCP_NO_STREAMING) {
+				if (streamResultType == MCPStreamingNone) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
 					if (!queryCancelled || !queryCancelUsedReconnect) [queryLock unlock];
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
-				} else if (streamResultType == MCP_FAST_STREAMING) {
+				} else if (streamResultType == MCPStreamingFast) {
 					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:NO];
-				} else if (streamResultType == MCP_LOWMEM_STREAMING) {
+				} else if (streamResultType == MCPStreamingLowMem) {
 					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:YES];
 				}
 				
@@ -1449,20 +1450,20 @@ void performThreadedKeepAlive(void *ptr)
 					break;
 				}
 			} else {
-				if (streamResultType == MCP_NO_STREAMING) [queryLock unlock];
+				if (streamResultType == MCPStreamingNone) [queryLock unlock];
 				else [self unlockConnection];
 			}
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
-			if (streamResultType == MCP_NO_STREAMING && queryAffectedRows == -1) {
+			if (streamResultType == MCPStreamingNone && queryAffectedRows == -1) {
 				queryAffectedRows = mysql_affected_rows(mConnection);
 			}
 			
 		// On failure, set the error messages and IDs
 		} else {
 			if (!queryCancelled || !queryCancelUsedReconnect) {
-				if (streamResultType == MCP_NO_STREAMING) [queryLock unlock];
+				if (streamResultType == MCPStreamingNone) [queryLock unlock];
 				else [self unlockConnection];
 			}
 			
@@ -1486,7 +1487,7 @@ void performThreadedKeepAlive(void *ptr)
 		break;
 	}
 	
-	if (streamResultType == MCP_NO_STREAMING) {
+	if (streamResultType == MCPStreamingNone) {
 		
 		// If the mysql thread id has changed as a result of a connection error,
 		// ensure connection details are still correct
@@ -1499,8 +1500,13 @@ void performThreadedKeepAlive(void *ptr)
 	
 	// Update error strings and IDs
 	lastQueryErrorId = queryErrorId;
-	[self setLastErrorMessage:queryErrorMessage?queryErrorMessage:@""];
-	if (queryErrorMessage) [queryErrorMessage release]; 
+	
+	if (queryErrorMessage) {
+		[self setLastErrorMessage:queryErrorMessage];
+		
+		[queryErrorMessage release];
+	}
+		
 	lastQueryAffectedRows = queryAffectedRows;
 	lastQueryExecutionTime = queryExecutionTime;
 	

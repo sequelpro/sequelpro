@@ -43,12 +43,21 @@ enum {
 };
 typedef NSUInteger MCPConnectionCheck;
 
+// Streaming result set constants
+enum
+{
+	MCPStreamingNone   = 0,
+	MCPStreamingFast   = 1,
+	MCPStreamingLowMem = 2
+};
+typedef NSUInteger MCPQueryStreamingType;
+
 // Charcater set mapping constants
 typedef struct _OUR_CHARSET
 {
 	NSUInteger nr;
-	const char	 *name;
-	const char	 *collation;
+	const char *name;
+	const char *collation;
 	NSUInteger char_minlen;
 	NSUInteger char_maxlen;
 } OUR_CHARSET;
