@@ -155,6 +155,10 @@
  */
 - (IBAction)refreshProcessList:(id)sender
 {
+	// If the document is currently performing a task (most likely threaded) on the current connection, don't
+	// allow a refresh to prevent connection lock errors.
+	if ([(TableDocument *)[connection delegate] isWorking]) return;
+	
 	// Start progress Indicator
 	[refreshProgressIndicator startAnimation:self];
 	[refreshProgressIndicator setHidden:NO];
@@ -282,16 +286,7 @@
 	// Weak reference
 	processesFiltered = processes;
 	
-	// Get the current process list
-	[self _getDatabaseProcessList];
-	
-	// Reload the tableview
-	[processListTableView reloadData];
-	
-	// If the search field already has value from when the panel was previously open, apply the filter.
-	if ([[filterProcessesSearchField stringValue] length] > 0) {
-		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];
-	}
+	[self refreshProcessList:self];
 	 
 	[self showWindow:self];
 }
