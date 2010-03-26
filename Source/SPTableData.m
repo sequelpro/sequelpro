@@ -350,6 +350,10 @@
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
 	NSArray *resultFieldNames = [theResult fetchFieldNames];
 	
+	// Only continue if syntaxResult is not nil. This accommodates causes where the above query caused the 
+	// connection reconnect dialog to appear and the user chose to close the connection.
+	if (!syntaxResult) return nil;
+	
 	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 	
 	tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
