@@ -4098,7 +4098,13 @@
 		return;
 	}
 
-	[[SPNavigatorController sharedNavigatorController] removeDatabase:[self database] forConnectionID:[self connectionID]];
+	// Remove db from navigator and completion list array,
+	// do to threading we have to delete it from 'allDatabases' directly
+	// before calling navigator
+	[allDatabases removeObject:[self database]];
+	// This only deletes the db and refreshes the navigator since nothing is changed
+	// that's why we can run this on main thread
+	[mySQLConnection queryDbStructureAndForceUpdate:nil];
 
 	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;

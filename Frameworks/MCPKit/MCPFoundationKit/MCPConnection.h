@@ -98,6 +98,11 @@
  */
 - (NSArray*)allDatabaseNames;
 
+/**
+ *
+ */
+- (NSArray*)allSystemDatabaseNames;
+
 @end
 
 @interface MCPConnection : NSObject 
@@ -139,8 +144,7 @@
 	
 	NSString *serverVersionString;
 	NSMutableDictionary *structure;
-	NSDictionary *uniqueDbIdentifier;
-	NSArray *allKeysofDbStructure;
+	NSMutableSet *allKeysofDbStructure;
 	
 	NSTimer *keepAliveTimer;
 	double lastKeepAliveTime;

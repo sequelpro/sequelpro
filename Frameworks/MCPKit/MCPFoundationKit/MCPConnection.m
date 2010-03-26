@@ -116,8 +116,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		keepAliveInterval = 60;  
 		
 		structure = [[NSMutableDictionary alloc] initWithCapacity:1];
-		allKeysofDbStructure = nil;
-		uniqueDbIdentifier = nil;
+		allKeysofDbStructure = [[NSMutableSet alloc] initWithCapacity:20];
 		isQueryingDbStructure = NO;
 
 		connectionThreadId     = 0;
@@ -424,7 +423,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (structure) [structure release], structure = nil;
 	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
-	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;	
 	if (pingThread != NULL) pthread_cancel(pingThread), pingThread = NULL;
 }
 
@@ -1854,7 +1852,11 @@ void performThreadedKeepAlive(void *ptr)
 			[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
 
 		// Add all known database coming from connection
-		NSArray *dbs = [[self delegate] allDatabaseNames];
+		NSArray *dbs = [[NSString stringWithFormat:@"%@%@%@",
+			[[[self delegate] allSystemDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter], 
+			SPUniqueSchemaDelimiter, 
+			[[[self delegate] allDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter]] 
+			componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		for(id db in dbs) {
 			NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
 			if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
@@ -1862,12 +1864,17 @@ void performThreadedKeepAlive(void *ptr)
 			}
 		}
 
-		// Remove deleted databases
+		// Remove deleted databases and keys in allKeysofDbStructure
 		NSArray *keys = [[structure valueForKey:connectionID] allKeys];
+		BOOL removeFlag = NO;
 		for(id key in keys) {
 			NSString *db = [[key componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1];
 			if(![dbs containsObject:db]) {
+				removeFlag = YES;
 				[[structure valueForKey:connectionID] removeObjectForKey:key];
+				NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", key, SPUniqueSchemaDelimiter]];
+				[allKeysofDbStructure filterUsingPredicate:predicate];
+				[allKeysofDbStructure removeObject:key];
 			}
 		}
 
@@ -1877,18 +1884,24 @@ void performThreadedKeepAlive(void *ptr)
 
 		if(!currentDatabase || (currentDatabase && ![currentDatabase length])) {
 			isQueryingDbStructure = NO;
+			if(removeFlag)
+				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 			[queryPool release];
 			return;
 		}
 
 		if([currentDatabase isEqualToString:@"mysql"]) {
 			if([[self delegate] navigatorSchemaPathExistsForDatabase:currentDatabase]) {
+				if(removeFlag)
+					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 				[queryPool release];
 				return;
 			}
 		}
 		if([currentDatabase isEqualToString:@"information_schema"]) {
 			if([[self delegate] navigatorSchemaPathExistsForDatabase:currentDatabase]) {
+				if(removeFlag)
+					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 				[queryPool release];
 				return;
 			}
@@ -1896,6 +1909,8 @@ void performThreadedKeepAlive(void *ptr)
 
 		if(forceUpdate == nil) {
 			if([[self delegate] navigatorSchemaPathExistsForDatabase:currentDatabase]) {
+				if(removeFlag)
+					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 				[queryPool release];
 				return;
 			}
@@ -1975,7 +1990,7 @@ void performThreadedKeepAlive(void *ptr)
 					[queryPool release];
 					return;
 				}
-				
+				NSLog(@"QUERY INFO");
 				// Query the desired data
 				NSString *queryDbString = [NSString stringWithFormat:@""
 					@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = '%@'"
@@ -1992,10 +2007,6 @@ void performThreadedKeepAlive(void *ptr)
 
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
 					theResult = mysql_use_result(structConnection);
-					NSMutableSet *allKeys = [[NSMutableSet alloc] initWithCapacity:20];
-					NSMutableSet *namesSet = [[NSMutableSet alloc] initWithCapacity:20];
-					NSMutableArray *allDbNames = [NSMutableArray array];
-					NSMutableArray *allTableNames = [NSMutableArray array];
 
 					NSUInteger cnt = 0; // used to make field data unique
 
@@ -2017,13 +2028,9 @@ void performThreadedKeepAlive(void *ptr)
 						NSString *isnull = [self stringWithUTF8CString:row[11]];
 						NSString *comment = [self stringWithUTF8CString:row[12]];
 
-						[namesSet addObject:[db lowercaseString]];
-						[namesSet addObject:[table lowercaseString]];
-						[allDbNames addObject:[db lowercaseString]];
-						[allTableNames addObject:[table lowercaseString]];
-						[allKeys addObject:db_id];
-						[allKeys addObject:table_id];
-						[allKeys addObject:field_id];
+						[allKeysofDbStructure addObject:db_id];
+						[allKeysofDbStructure addObject:table_id];
+						[allKeysofDbStructure addObject:field_id];
 
 						if(!cnt || ![[structure valueForKey:connectionID] valueForKey:db_id]) {
 							[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
@@ -2041,31 +2048,6 @@ void performThreadedKeepAlive(void *ptr)
 
 					mysql_free_result(theResult);
 					mysql_close(structConnection);
-
-					if(allKeysofDbStructure != nil) {
-						[allKeysofDbStructure release];
-						allKeysofDbStructure = nil;
-					}
-					allKeysofDbStructure = [[NSArray arrayWithArray:[allKeys allObjects]] retain];
-					[allKeys release];
-
-					NSMutableDictionary *uniqueIdentifier = [NSMutableDictionary dictionary];
-					for(id name in namesSet) {
-						if([allDbNames containsObject:name] && [allTableNames containsObject:name]) {
-							;
-						} else {
-							if([allDbNames containsObject:name])
-								[uniqueIdentifier setObject:[NSNumber numberWithInteger:1] forKey:name];
-							else
-								[uniqueIdentifier setObject:[NSNumber numberWithInteger:2] forKey:name];
-						}
-					}
-					[namesSet release];
-					if(uniqueDbIdentifier != nil) {
-						[uniqueDbIdentifier release];
-						uniqueDbIdentifier = nil;
-					}
-					uniqueDbIdentifier = [[NSDictionary dictionaryWithDictionary:uniqueIdentifier] retain];
 
 					// Notify that the structure querying has been performed
 					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
@@ -2091,10 +2073,33 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSInteger)getUniqueDbIdentifierFor:(NSString*)term
 {
-	if(uniqueDbIdentifier && [uniqueDbIdentifier objectForKey:term])
-		return [[uniqueDbIdentifier objectForKey:term] integerValue];
-	else
+
+	NSString *SPUniqueSchemaDelimiter = @"￸";
+
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH %@", [NSString stringWithFormat:@"%@%@", SPUniqueSchemaDelimiter, term]];
+	NSArray *result = [[allKeysofDbStructure allObjects] filteredArrayUsingPredicate:predicate];
+
+	if([result count] < 1 ) return 0;
+	if([result count] == 1) {
+		NSArray *split = [[result objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		if([split count] == 2 ) return 1;
+		if([split count] == 3 ) return 2;
 		return 0;
+	}
+	// case if field is equal to a table or db name
+	NSMutableArray *arr = [NSMutableArray array];
+	for(NSString *item in result) {
+		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
+			[arr addObject:item];
+	}
+	if([arr count] < 1 ) return 0;
+	if([arr count] == 1) {
+		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		if([split count] == 2 ) return 1;
+		if([split count] == 3 ) return 2;
+		return 0;
+	}
+	return 0;
 }
 
 /**
@@ -2110,7 +2115,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSArray *)getAllKeysOfDbStructure
 {
-	return allKeysofDbStructure;
+	return [allKeysofDbStructure allObjects];
 }
 
 #pragma mark -
@@ -2537,7 +2542,6 @@ void performThreadedKeepAlive(void *ptr)
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (structure) [structure release], structure = nil;
 	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
-	if (uniqueDbIdentifier) [uniqueDbIdentifier release], uniqueDbIdentifier = nil;
 	
 	[super dealloc];
 }
