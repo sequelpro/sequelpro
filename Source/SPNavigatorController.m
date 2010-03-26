@@ -228,7 +228,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
 				id item = [outlineSchema2 selectedItem];
 				// Try to scroll the view that all children of schemaPath are visible if possible
-				NSInteger cnt = [item count]+1;
+				NSInteger cnt = 1;
+				if([item isKindOfClass:[NSDictionary class]] || [item isKindOfClass:[NSArray class]])
+					cnt = [item count]+1;
 				NSRange r = [outlineSchema2 rowsInRect:[outlineSchema2 visibleRect]];
 				NSInteger offset = (cnt > r.length) ? (r.length-2) : cnt;
 				offset += [outlineSchema2 selectedRow];
