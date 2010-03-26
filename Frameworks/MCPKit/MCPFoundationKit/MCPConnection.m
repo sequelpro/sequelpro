@@ -95,8 +95,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		connectionLogin = nil;
 		connectionSocket = nil;
 		connectionPassword = nil;
-		keepAliveTimer = nil;
+		keepAliveTimer = [[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(keepAlive:) userInfo:nil repeats:YES] retain];
 		keepAliveThread = NULL;
+		lastKeepAliveTime = 0;
 		pingThread = NULL;
 		connectionProxy = nil;
 		connectionStartTime = -1;
@@ -136,14 +137,10 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		// Obtain SEL references
 		willQueryStringSEL = @selector(willQueryString:connection:);
-		stopKeepAliveTimerSEL = @selector(stopKeepAliveTimer);
-		startKeepAliveTimerSEL = @selector(startKeepAliveTimer);
 		cStringSEL = @selector(cStringFromString:);
 		
 		// Obtain pointers
 		cStringPtr = [self methodForSelector:cStringSEL];
-		stopKeepAliveTimerPtr = [self methodForSelector:stopKeepAliveTimerSEL];
-		startKeepAliveTimerPtr = [self methodForSelector:startKeepAliveTimerSEL];
 	}
 	
 	return self;
@@ -395,8 +392,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		return mConnected = NO;
 	}
 
-	// Start the keepalive timer
-	[self startKeepAliveTimer];
 	
 	return mConnected;
 }
@@ -408,8 +403,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 {
 	if (isDisconnecting) return;
 	isDisconnecting = YES;
-
-	[self stopKeepAliveTimer];
 
 	if (mConnected) {
 		[self cancelCurrentQuery];
@@ -461,7 +454,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	}
 	
 	// Close the connection if it exists.
-	[self stopKeepAliveTimer];
 	if (mConnected) {
 		mysql_close(mConnection);
 		mConnection = NULL;
@@ -626,6 +618,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	pingActive = YES;
 
 	// Create a pthread for the ping, so we can force it to end after the connection timeout
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	pthread_create(&pingThread, NULL, (void *)&pingConnectionTask, (void *)mConnection);
 
 	// Loop tightly until the ping responds, or the elapsed time exceeds the connection timeout
@@ -641,6 +636,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		pthread_cancel(pingThread);
 		lastPingSuccess = FALSE;
 	}
+	pthread_attr_destroy(&attr);
 
 	[queryLock unlock];
 
@@ -648,7 +644,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 }
 
 /**
- * This function is paired with pingConnection, and performs the keepalive ping in a pthread,
+ * This function is paired with pingConnection, and performs the checking ping in a pthread,
  * allowing the thread to be cancelled if it does not respond.
  */
 void pingConnectionTask(void *ptr)
@@ -658,62 +654,36 @@ void pingConnectionTask(void *ptr)
 }
 
 /**
- * Restarts a keepalive to fire in the future.
- */
-- (void)startKeepAliveTimer
-{
-
-	// Ensure keepalives are started on the main thread, as otherwise thread termination kills the timer
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(startKeepAliveTimer) withObject:nil waitUntilDone:NO];
-		return;
-	}
-
-	if (keepAliveTimer) [self stopKeepAliveTimer];
-	if (!mConnected) return;
-
-	double interval = keepAliveInterval;
-	if (interval <= 1) interval = 1.0;
-
-	if (useKeepAlive) {
-		keepAliveTimer = [NSTimer
-						  scheduledTimerWithTimeInterval:interval
-						  target:self
-						  selector:@selector(keepAlive:)
-						  userInfo:nil
-						  repeats:NO];
-		[keepAliveTimer retain];
-	}
-}
-
-/**
- * Stops a keepalive if one is set for the future, and kills any existing keepalive pings.
- */
-- (void)stopKeepAliveTimer
-{
-	// Stop keepalives on the main thread to avoid memory issues
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(stopKeepAliveTimer) withObject:nil waitUntilDone:NO];
-		return;
-	}
-
-	if (keepAliveThread != NULL) pthread_cancel(keepAliveThread), keepAliveThread = NULL;
-
-	if (!keepAliveTimer) return;
-	[keepAliveTimer invalidate];
-	[keepAliveTimer release];
-	keepAliveTimer = nil;
-}
-
-/**
  * Keeps a connection alive by running a ping.
+ * This method is called every ten seconds and spawns a thread which determines
+ * whether or not it should perform a ping.
  */
 - (void)keepAlive:(NSTimer *)theTimer
 {
-	if (!mConnected) return;
+
+	// Do nothing if not connected or if keepalive is disabled
+	if (!mConnected || !useKeepAlive) return;
+
+	// Check to see whether a ping is required.  First, compare the last query
+	// and keepalive times against the keepalive interval.
+	// Compare against interval-1 to allow default keepalive intervals to repeat
+	// at the correct intervals (eg no timer interval delay).
+	double timeConnected = [self timeConnected];
+	if (timeConnected - lastQueryExecutedAtTime < keepAliveInterval - 1
+		|| timeConnected - lastKeepAliveTime < keepAliveInterval - 1)
+	{
+		return;
+	}
+
+	// Attempt to get a query lock, but release it to ensure the connection isn't locked
+	// by a background ping.
+	if (![queryLock tryLock]) return;
+	[queryLock unlock];
+
+	// Store the ping time
+	lastKeepAliveTime = timeConnected;
 
 	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
-	[self startKeepAliveTimer];
 }
 
 /**
@@ -729,19 +699,18 @@ void pingConnectionTask(void *ptr)
 	NSInteger pingTimeout = 30;
 	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
 
-	// Attempt to get a query lock, but release it to ensure the connection isn't locked
-	// by a background ping.
-	if (![queryLock tryLock]) return;
-	[queryLock unlock];
-
 	// Create a pthread for the actual keepalive
-	pthread_create(&keepAliveThread, NULL, (void *)&performThreadedKeepAlive, (void *)mConnection);
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(&keepAliveThread, &attr, (void *)&performThreadedKeepAlive, (void *)mConnection);
 
 	// Give the connection time to respond, but force a timeout after the ping timeout
 	// if the thread hasn't already closed itself.
 	sleep(pingTimeout);
 	pthread_cancel(keepAliveThread);
 	keepAliveThread = NULL;
+	pthread_attr_destroy(&attr);
 }
 
 /**
@@ -761,10 +730,7 @@ void performThreadedKeepAlive(void *ptr)
 	connectionThreadId = mConnection->thread_id;
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
-	
-	[self stopKeepAliveTimer];
-	[self startKeepAliveTimer];
-	
+
 	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
 		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
 		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
@@ -1123,8 +1089,6 @@ void performThreadedKeepAlive(void *ptr)
 {
 	if (!mConnected) return NO;
 	
-	[self stopKeepAliveTimer];
-	
 	if (![self checkConnection]) return NO;
 	
 	// Here we should throw an exception, impossible to select a databse if the string is indeed a nil pointer
@@ -1135,7 +1099,6 @@ void performThreadedKeepAlive(void *ptr)
 		[queryLock lock];
 		if (0 == mysql_select_db(mConnection, theDBName)) {
 			[queryLock unlock];
-			[self startKeepAliveTimer];
 			
 			return YES;
 		}
@@ -1384,8 +1347,6 @@ void performThreadedKeepAlive(void *ptr)
 		return nil;
 	}
 	
-	(void)(*stopKeepAliveTimerPtr)(self, stopKeepAliveTimerSEL);
-	
 	// Inform the delegate about the query if logging is enabled and delegate responds to willQueryString:connection:
 	if (delegateQueryLogging && delegateResponseToWillQueryString) {
 		[delegate willQueryString:query connection:self];
@@ -1547,8 +1508,6 @@ void performThreadedKeepAlive(void *ptr)
 	if (queryResultCode & delegateResponseToWillQueryString)
 		[delegate queryGaveError:lastQueryErrorMessage connection:self];
 	
-	(void)(*startKeepAliveTimerPtr)(self, startKeepAliveTimerSEL, YES);
-	
 	if (!theResult) return nil;
 	return [theResult autorelease];
 }
@@ -1698,7 +1657,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Ensure the unlock occurs on the main thread
 	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:NO];
+		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:YES];
 		return;
 	}
 
@@ -1732,11 +1691,7 @@ void performThreadedKeepAlive(void *ptr)
 	MCPResult *theResult = nil;
 	MYSQL_RES *theResPtr;
 	
-	[self stopKeepAliveTimer];
-	
 	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
-	
-	[self startKeepAliveTimer];
 	
 	[queryLock lock];
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
@@ -1789,11 +1744,7 @@ void performThreadedKeepAlive(void *ptr)
 	MCPResult *theResult = nil;
 	MYSQL_RES *theResPtr;
 	
-	[self stopKeepAliveTimer];
-	
 	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
-	
-	[self startKeepAliveTimer];
 
 	[queryLock lock];
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
@@ -2527,6 +2478,8 @@ void performThreadedKeepAlive(void *ptr)
 		[connectionProxy disconnect];
 	}
 
+	[keepAliveTimer invalidate];
+	[keepAliveTimer release];
 	[queryLock release];
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];

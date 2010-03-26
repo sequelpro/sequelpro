@@ -112,6 +112,7 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSArray *allKeysofDbStructure;
 	
 	NSTimer *keepAliveTimer;
+	double lastKeepAliveTime;
 	pthread_t keepAliveThread;
 	pthread_t pingThread;
 	uint64_t connectionStartTime;
@@ -127,15 +128,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	// Pointers
 	IMP cStringPtr;
 	IMP willQueryStringPtr;
-	IMP stopKeepAliveTimerPtr;
-	IMP startKeepAliveTimerPtr;
 	IMP timeConnectedPtr;
 	
 	// Selectors
 	SEL cStringSEL;
 	SEL willQueryStringSEL;
-	SEL stopKeepAliveTimerSEL;
-	SEL startKeepAliveTimerSEL;
 	SEL timeConnectedSEL;
 }
 
@@ -173,8 +170,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (BOOL)checkConnection;
 - (BOOL)pingConnection;
 void pingConnectionTask(void *ptr);
-- (void)startKeepAliveTimer;
-- (void)stopKeepAliveTimer;
 - (void)keepAlive:(NSTimer *)theTimer;
 - (void)threadedKeepAlive;
 void performThreadedKeepAlive(void *ptr);
