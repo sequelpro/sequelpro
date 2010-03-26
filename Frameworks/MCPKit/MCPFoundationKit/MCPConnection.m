@@ -1663,7 +1663,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Ensure the unlock occurs on the main thread
 	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:NO];
 		return;
 	}
 
