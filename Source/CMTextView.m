@@ -390,7 +390,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			}
 
 			for(id db in sortedDbs) {
-				NSArray *allTables = [[dbs objectForKey:db] allKeys];
+
+				NSArray *allTables;
+				if([[dbs objectForKey:db] isKindOfClass:[NSDictionary class]])
+					allTables = [[dbs objectForKey:db] allKeys];
+				else {
+					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[[[dbs objectForKey:db] description] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"database-small", @"image", @"", @"isRef", nil]];
+					continue;
+				}
+
 				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
 					[sortedTables addObject:aTableName_id];

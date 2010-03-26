@@ -688,8 +688,8 @@
 														window:tableWindow
 											  notificationName:@"Connected"];
 
-	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+	// // Query the structure of all databases in the background (mainly for completion)
+	// [NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:nil];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
@@ -840,6 +840,8 @@
 	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
+	
+	
 }
 
 /**
@@ -865,6 +867,7 @@
 
 	// Select the database
 	[self selectDatabase:[chooseDatabaseButton titleOfSelectedItem] item:[self table]];
+
 }
 
 /**
@@ -874,7 +877,7 @@
 {
 
 	// Do not update the navigator since nothing is changed
-	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:YES];
+	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:NO];
 
 	// If Navigator runs in syncMode let it follow the selection
 	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
@@ -1014,10 +1017,6 @@
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
-
-			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
-
 		}
 	}
 	// Add a new database
@@ -1026,7 +1025,7 @@
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
 
 		} else {
 			// reset chooseDatabaseButton
@@ -1089,6 +1088,11 @@
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+}
+
+- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname
+{
+	return [[SPNavigatorController sharedNavigatorController] schemaPathExistsForConnection:[self connectionID] andDatabase:dbname];
 }
 
 #pragma mark -
@@ -4093,7 +4097,9 @@
 		
 		return;
 	}
-	
+
+	[[SPNavigatorController sharedNavigatorController] removeDatabase:[self database] forConnectionID:[self connectionID]];
+
 	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 	
@@ -4103,6 +4109,7 @@
 	[tableDumpInstance setConnection:mySQLConnection];
 	
 	[tableWindow setTitle:[self displaySPName]];
+
 }
 
 /**
@@ -4177,10 +4184,13 @@
 			[tablesListInstance selectItemWithName:targetItemName];
 		} else {
 			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
 	}
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:nil];
 
 	[self endTask];
 	[taskPool drain];

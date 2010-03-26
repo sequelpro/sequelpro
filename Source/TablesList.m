@@ -92,7 +92,7 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:nil];
 
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
@@ -1348,7 +1348,7 @@
     [tableWindow setTitle:[tableDocumentInstance displaySPName]];
     
     // Query the structure of all databases in the background (mainly for completion)
-    [NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+    [NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
 }
 
 #pragma mark -
@@ -1928,7 +1928,7 @@
 	[tablesListView deselectAll:self];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
 
 }
 
@@ -2028,7 +2028,7 @@
 		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
 
 	} 
 	else {
@@ -2222,7 +2222,7 @@
 			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
 
 		}
 	}

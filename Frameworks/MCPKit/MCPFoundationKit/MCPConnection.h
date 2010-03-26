@@ -83,6 +83,21 @@
  */
 - (NSString *)connectionID;
 
+/**
+ *
+ */
+- (NSString *)database;
+
+/**
+ *
+ */
+- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
+
+/**
+ *
+ */
+- (NSArray*)allDatabaseNames;
+
 @end
 
 @interface MCPConnection : NSObject 
@@ -123,7 +138,7 @@
 	BOOL isMaxAllowedPacketEditable;
 	
 	NSString *serverVersionString;
-	NSDictionary *theDbStructure;
+	NSMutableDictionary *structure;
 	NSDictionary *uniqueDbIdentifier;
 	NSArray *allKeysofDbStructure;
 	
@@ -247,7 +262,7 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
-- (void)queryDbStructure;
+- (void)queryDbStructureAndForceUpdate:(NSNumber*)forceUpdate;
 - (NSDictionary *)getDbStructure;
 - (NSInteger)getUniqueDbIdentifierFor:(NSString*)term;
 - (NSArray *)getAllKeysOfDbStructure;

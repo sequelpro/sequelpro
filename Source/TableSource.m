@@ -193,6 +193,7 @@
 
 	// Send the query finished/work complete notification
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	
 }
 
 /**
@@ -202,6 +203,10 @@
 {
 	[tableDataInstance resetAllData];
 	[tablesListInstance setStatusRequiresReload:YES];
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
+
 	[self loadTable:selectedTable];
 }
 
@@ -859,7 +864,7 @@ closes the keySheet
 		[tablesListInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
 
 		return YES;
 	} 
@@ -1066,7 +1071,7 @@ closes the keySheet
 			if ([NSThread isMainThread]) {
 				[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
 				
-				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 			} 
 			else {
 				[self _removeIndexAndForeignKey:removeKey];

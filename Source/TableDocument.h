@@ -189,6 +189,7 @@
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
+- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
 
 // Task progress and notification methods
 - (void)startTaskWithDescription:(NSString *)description;
