@@ -266,7 +266,7 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
-- (void)queryDbStructureAndForceUpdate:(NSNumber*)forceUpdate;
+- (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo;
 - (NSDictionary *)getDbStructure;
 - (NSInteger)getUniqueDbIdentifierFor:(NSString*)term;
 - (NSArray *)getAllKeysOfDbStructure;

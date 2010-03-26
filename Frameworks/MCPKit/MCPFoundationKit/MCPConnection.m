@@ -1834,13 +1834,15 @@ void performThreadedKeepAlive(void *ptr)
  * Updates the dict containing the structure of all available databases (mainly for completion/navigator)
  * executed on a new connection.
  */
-- (void)queryDbStructureAndForceUpdate:(NSNumber*)forceUpdate
+- (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo
 {
 	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 
 	if (!isQueryingDbStructure && [self serverMajorVersion] >= 5) {
 
 		NSString *SPUniqueSchemaDelimiter = @"￸";
+
+		
 
 		NSString *connectionID;
 		if([delegate respondsToSelector:@selector(connectionID)])
@@ -1858,9 +1860,8 @@ void performThreadedKeepAlive(void *ptr)
 			[[[self delegate] allDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter]] 
 			componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		for(id db in dbs) {
-			NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
-			if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
-				[[structure valueForKey:connectionID] setObject:db forKey:db_id];
+			if(![[self delegate] navigatorSchemaPathExistsForDatabase:db]) {
+				[[structure valueForKey:connectionID] setObject:db forKey:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
 			}
 		}
 
@@ -1907,7 +1908,7 @@ void performThreadedKeepAlive(void *ptr)
 			}
 		}
 
-		if(forceUpdate == nil) {
+		if(userInfo == nil || ![userInfo objectForKey:@"forceUpdate"]) {
 			if([[self delegate] navigatorSchemaPathExistsForDatabase:currentDatabase]) {
 				if(removeFlag)
 					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];

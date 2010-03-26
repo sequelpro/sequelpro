@@ -492,7 +492,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 			if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:[doc valueForKeyPath:@"mySQLConnection"] withObject:[NSNumber numberWithBool:YES]];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[doc valueForKeyPath:@"mySQLConnection"] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 		}
 	}
 

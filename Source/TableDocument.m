@@ -688,9 +688,6 @@
 														window:tableWindow
 											  notificationName:@"Connected"];
 
-	// // Query the structure of all databases in the background (mainly for completion)
-	// [NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:nil];
-
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
 	if(spfSession != nil && [spfSession objectForKey:@"queries"]) {
@@ -1025,7 +1022,7 @@
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		} else {
 			// reset chooseDatabaseButton
@@ -4104,7 +4101,7 @@
 	[allDatabases removeObject:[self database]];
 	// This only deletes the db and refreshes the navigator since nothing is changed
 	// that's why we can run this on main thread
-	[mySQLConnection queryDbStructureAndForceUpdate:nil];
+	[mySQLConnection queryDbStructureWithUserInfo:nil];
 
 	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
@@ -4196,7 +4193,7 @@
 	}
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:nil];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
 
 	[self endTask];
 	[taskPool drain];

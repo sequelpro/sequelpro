@@ -205,7 +205,7 @@
 	[tablesListInstance setStatusRequiresReload:YES];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 	[self loadTable:selectedTable];
 }
@@ -864,7 +864,7 @@ closes the keySheet
 		[tablesListInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureAndForceUpdate:) toTarget:mySQLConnection withObject:[NSNumber numberWithBool:YES]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		return YES;
 	} 
