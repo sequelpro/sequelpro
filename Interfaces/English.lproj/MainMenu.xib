@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="758"/>
+			<integer value="1053"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1200,6 +1200,56 @@
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
 								<object class="NSMenuItem" id="761247690">
+									<reference key="NSMenu" ref="466354362"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="718502827">
+									<reference key="NSMenu" ref="466354362"/>
+									<string key="NSTitle">Favorites</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+									<string key="NSAction">submenuAction:</string>
+									<object class="NSMenu" key="NSSubmenu" id="762202519">
+										<string key="NSTitle">Favorites</string>
+										<object class="NSMutableArray" key="NSMenuItems">
+											<bool key="EncodedWithXMLCoder">YES</bool>
+											<object class="NSMenuItem" id="518910568">
+												<reference key="NSMenu" ref="762202519"/>
+												<bool key="NSIsDisabled">YES</bool>
+												<string key="NSTitle">Sort By</string>
+												<string key="NSKeyEquiv"/>
+												<int key="NSMnemonicLoc">2147483647</int>
+												<reference key="NSOnImage" ref="625762401"/>
+												<reference key="NSMixedImage" ref="315854375"/>
+											</object>
+											<object class="NSMenuItem" id="140524426">
+												<reference key="NSMenu" ref="762202519"/>
+												<string key="NSTitle">Name</string>
+												<string key="NSKeyEquiv"/>
+												<int key="NSMnemonicLoc">2147483647</int>
+												<reference key="NSOnImage" ref="625762401"/>
+												<reference key="NSMixedImage" ref="315854375"/>
+											</object>
+											<object class="NSMenuItem" id="281907004">
+												<reference key="NSMenu" ref="762202519"/>
+												<string key="NSTitle">Host</string>
+												<string key="NSKeyEquiv"/>
+												<int key="NSMnemonicLoc">2147483647</int>
+												<reference key="NSOnImage" ref="625762401"/>
+												<reference key="NSMixedImage" ref="315854375"/>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="NSMenuItem" id="38833747">
 									<reference key="NSMenu" ref="466354362"/>
 									<bool key="NSIsDisabled">YES</bool>
 									<bool key="NSIsSeparator">YES</bool>
@@ -3392,6 +3442,8 @@
 							<reference ref="165449785"/>
 							<reference ref="756783652"/>
 							<reference ref="986291195"/>
+							<reference ref="718502827"/>
+							<reference ref="38833747"/>
 						</object>
 						<reference key="parent" ref="401969940"/>
 					</object>
@@ -4357,6 +4409,46 @@
 						<reference key="object" ref="986291195"/>
 						<reference key="parent" ref="466354362"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1052</int>
+						<reference key="object" ref="718502827"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="762202519"/>
+						</object>
+						<reference key="parent" ref="466354362"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1053</int>
+						<reference key="object" ref="762202519"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="518910568"/>
+							<reference ref="140524426"/>
+							<reference ref="281907004"/>
+						</object>
+						<reference key="parent" ref="718502827"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1054</int>
+						<reference key="object" ref="518910568"/>
+						<reference key="parent" ref="762202519"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1055</int>
+						<reference key="object" ref="38833747"/>
+						<reference key="parent" ref="466354362"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1056</int>
+						<reference key="object" ref="140524426"/>
+						<reference key="parent" ref="762202519"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1057</int>
+						<reference key="object" ref="281907004"/>
+						<reference key="parent" ref="762202519"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4385,6 +4477,13 @@
 					<string>1047.IBPluginDependency</string>
 					<string>1048.IBPluginDependency</string>
 					<string>1050.IBPluginDependency</string>
+					<string>1052.IBPluginDependency</string>
+					<string>1053.IBEditorWindowLastContentRect</string>
+					<string>1053.IBPluginDependency</string>
+					<string>1054.IBPluginDependency</string>
+					<string>1055.IBPluginDependency</string>
+					<string>1056.IBPluginDependency</string>
+					<string>1057.IBPluginDependency</string>
 					<string>106.IBEditorWindowLastContentRect</string>
 					<string>106.IBPluginDependency</string>
 					<string>106.ImportedFromIB2</string>
@@ -4753,6 +4852,13 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{765, 511}, {99, 63}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{824, 199}, {204, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4836,7 +4942,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{194, 636}, {511, 20}}</string>
+					<string>{{322, 824}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4889,7 +4995,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{431, 365}, {251, 293}}</string>
+					<string>{{514, 501}, {251, 323}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -5163,7 +5269,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1051</int>
+			<int key="maxID">1057</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5191,6 +5297,22 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/CMCopyTable.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">CMTextView</string>
+					<string key="superclassName">NSTextView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">showMySQLHelpForCurrentWord:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">scrollView</string>
+						<string key="NS.object.0">NSScrollView</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/CMTextView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -5318,12 +5440,19 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/SPNotLoaded.h</string>
+						<string key="minorKey">Source/SPMainThreadTrampoline.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPNotLoaded.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="422703120">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPQueryFavoriteManager.h</string>
 					</object>
@@ -5511,15 +5640,17 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>closeSheet:</string>
 							<string>copy:</string>
 							<string>killProcessConnection:</string>
 							<string>killProcessQuery:</string>
 							<string>refreshProcessList:</string>
 							<string>saveServerProcesses:</string>
+							<string>toggeleShowFullProcessList:</string>
+							<string>toggleShowProcessID:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5532,7 +5663,6 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>closeProcessListButton</string>
 							<string>filterProcessesSearchField</string>
 							<string>processListTableView</string>
 							<string>processesCountTextField</string>
@@ -5542,7 +5672,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSButton</string>
 							<string>NSSearchField</string>
 							<string>NSTableView</string>
 							<string>NSTextField</string>
@@ -5613,6 +5742,67 @@
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPQueryController.h</string>
 					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPQueryFavoriteManager</string>
+					<string key="superclassName">NSWindowController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addQueryFavorite:</string>
+							<string>closeQueryManagerSheet:</string>
+							<string>duplicateQueryFavorite:</string>
+							<string>exportFavorites:</string>
+							<string>importFavoritesByAdding:</string>
+							<string>importFavoritesByReplacing:</string>
+							<string>insertPlaceholder:</string>
+							<string>removeAllQueryFavorites:</string>
+							<string>removeQueryFavorite:</string>
+							<string>saveFavoriteToFile:</string>
+							<string>showHelp:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>encodingPopUp</string>
+							<string>favoriteNameTextField</string>
+							<string>favoriteQueryTextView</string>
+							<string>favoriteTabTriggerTextField</string>
+							<string>favoritesArrayController</string>
+							<string>favoritesTableView</string>
+							<string>removeButton</string>
+							<string>splitViewButtonBar</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSPopUpButton</string>
+							<string>NSTextField</string>
+							<string>CMTextView</string>
+							<string>NSTextField</string>
+							<string>NSArrayController</string>
+							<string>NSTableView</string>
+							<string>NSButton</string>
+							<string>BWAnchoredButtonBar</string>
+						</object>
+					</object>
+					<reference key="sourceIdentifier" ref="422703120"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPServerVariablesController</string>
@@ -5751,260 +5941,10 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">TableDocument</string>
-					<string key="superclassName">NSDocument</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addConnectionToFavorites:</string>
-							<string>addDatabase:</string>
-							<string>analyzeTable:</string>
-							<string>backForwardInHistory:</string>
-							<string>cancelTask:</string>
-							<string>checkTable:</string>
-							<string>checksumTable:</string>
-							<string>chooseDatabase:</string>
-							<string>chooseEncoding:</string>
-							<string>closeErrorConnectionSheet:</string>
-							<string>closePanelSheet:</string>
-							<string>closePasswordSheet:</string>
-							<string>closeSheet:</string>
-							<string>copyChecksumFromSheet:</string>
-							<string>copyCreateTableSyntax:</string>
-							<string>copyCreateTableSyntaxFromSheet:</string>
-							<string>export:</string>
-							<string>exportMultipleTables:</string>
-							<string>exportTable:</string>
-							<string>flushPrivileges:</string>
-							<string>flushTable:</string>
-							<string>focusOnTableContentFilter:</string>
-							<string>focusOnTableListFilter:</string>
-							<string>import:</string>
-							<string>openCurrentConnectionInNewWindow:</string>
-							<string>optimizeTable:</string>
-							<string>removeDatabase:</string>
-							<string>repairTable:</string>
-							<string>saveConnectionSheet:</string>
-							<string>saveCreateSyntax:</string>
-							<string>setDatabases:</string>
-							<string>showConsole:</string>
-							<string>showCreateTableSyntax:</string>
-							<string>showMySQLHelp:</string>
-							<string>showServerProcesses:</string>
-							<string>showServerVariables:</string>
-							<string>showUserManager:</string>
-							<string>validateSaveConnectionAccessory:</string>
-							<string>viewContent:</string>
-							<string>viewQuery:</string>
-							<string>viewRelations:</string>
-							<string>viewStatus:</string>
-							<string>viewStructure:</string>
-							<string>viewTriggers:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addDatabaseButton</string>
-							<string>chooseDatabaseButton</string>
-							<string>connectionErrorDialog</string>
-							<string>contentViewSplitter</string>
-							<string>createTableSyntaxTextField</string>
-							<string>createTableSyntaxTextView</string>
-							<string>createTableSyntaxWindow</string>
-							<string>customQueryInstance</string>
-							<string>customQueryTextView</string>
-							<string>databaseDataInstance</string>
-							<string>databaseEncodingButton</string>
-							<string>databaseNameField</string>
-							<string>databaseSheet</string>
-							<string>dbTablesTableView</string>
-							<string>encodingPopUp</string>
-							<string>exportControllerInstance</string>
-							<string>extendedTableInfoInstance</string>
-							<string>favoritesButton</string>
-							<string>historyControl</string>
-							<string>inputTextWindow</string>
-							<string>inputTextWindowHeader</string>
-							<string>inputTextWindowMessage</string>
-							<string>inputTextWindowSecureTextField</string>
-							<string>listFilterField</string>
-							<string>queryProgressBar</string>
-							<string>saveConnectionAccessory</string>
-							<string>saveConnectionAutoConnect</string>
-							<string>saveConnectionEncrypt</string>
-							<string>saveConnectionEncryptString</string>
-							<string>saveConnectionIncludeData</string>
-							<string>saveConnectionIncludeQuery</string>
-							<string>saveConnectionSavePassword</string>
-							<string>saveConnectionSavePasswordAlert</string>
-							<string>sidebarGrabber</string>
-							<string>spHistoryControllerInstance</string>
-							<string>statusTableAccessoryView</string>
-							<string>statusTableCopyChecksum</string>
-							<string>statusTableView</string>
-							<string>statusValues</string>
-							<string>tableContentInstance</string>
-							<string>tableDataInstance</string>
-							<string>tableDumpInstance</string>
-							<string>tableInfoCollapseButton</string>
-							<string>tableInfoTable</string>
-							<string>tableListSplitter</string>
-							<string>tableRelationsInstance</string>
-							<string>tableSourceInstance</string>
-							<string>tableTabView</string>
-							<string>tableTriggersInstance</string>
-							<string>tableWindow</string>
-							<string>tablesListInstance</string>
-							<string>taskCancelButton</string>
-							<string>taskCancellationCallbackObject</string>
-							<string>taskDescriptionText</string>
-							<string>taskProgressIndicator</string>
-							<string>taskProgressLayer</string>
-							<string>titleAccessoryView</string>
-							<string>titleImageView</string>
-							<string>titleStringView</string>
-							<string>userManagerInstance</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>NSWindow</string>
-							<string>NSSplitView</string>
-							<string>NSTextField</string>
-							<string>NSTextView</string>
-							<string>NSWindow</string>
-							<string>id</string>
-							<string>NSTextView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSTableView</string>
-							<string>NSPopUpButton</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSSearchField</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSSecureTextField</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSButton</string>
-							<string>NSTableView</string>
-							<string>NSSplitView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSTabView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSButton</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSBox</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>SPUserManager</string>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/TableDocument.h</string>
+						<string key="minorKey">Source/SPPrintController.h</string>
 					</object>
-				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="939419192">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Frameworks/Sparkle.framework/Versions/A/Headers/SUUpdater.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SUUpdater</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">checkForUpdates:</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">delegate</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<reference key="sourceIdentifier" ref="939419192"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">TableDocument</string>
@@ -6240,9 +6180,32 @@
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/TableDocument.h</string>
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/TableDocument.h</string>
 					</object>
+				</object>
+			</object>
+			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="939419192">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Frameworks/Sparkle.framework/Versions/A/Headers/SUUpdater.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SUUpdater</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">checkForUpdates:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">delegate</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<reference key="sourceIdentifier" ref="939419192"/>
 				</object>
 			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
@@ -6856,6 +6819,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSResponder.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSScrollView</string>
+					<string key="superclassName">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">AppKit.framework/Headers/NSScrollView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

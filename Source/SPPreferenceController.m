@@ -1113,7 +1113,7 @@
 		return ([favoritesTableView numberOfSelectedRows] > 0);
 	}
 	
-	return [super validateMenuItem:menuItem];
+	return YES;
 }
 
 
