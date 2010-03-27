@@ -233,7 +233,6 @@
 // Other methods
 - (void) setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
-- (IBAction)closeErrorConnectionSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;

@@ -75,15 +75,15 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
-
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-				   errorMessage]);
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
+		}
 		if (tableSourceResult) [tableSourceResult release];
 		return;
 	}
@@ -97,15 +97,15 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
-
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-				   errorMessage]);
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
+		}
 		if (indexResult) [indexResult release];
 		return;
 	}

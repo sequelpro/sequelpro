@@ -1996,11 +1996,11 @@ void performThreadedKeepAlive(void *ptr)
 				NSString *queryDbString = [NSString stringWithFormat:@""
 					@"SELECT TABLE_SCHEMA AS `databases`, TABLE_NAME AS `tables`, COLUMN_NAME AS `fields`, COLUMN_TYPE AS `type`, CHARACTER_SET_NAME AS `charset`, '0' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = '%@'"
 					@"UNION "
-					@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE c.TABLE_SCHEMA = '%@' AND c.TABLE_SCHEMA = v.TABLE_SCHEMA AND c.TABLE_NAME = v.TABLE_NAME "
+					@"SELECT c.TABLE_SCHEMA AS `DATABASES`, c.TABLE_NAME AS `TABLES`, c.COLUMN_NAME AS `fields`, c.COLUMN_TYPE AS `TYPE`, c.CHARACTER_SET_NAME AS `CHARSET`, '1' AS `structtype`, `COLUMN_KEY` AS `KEY`, `EXTRA` AS EXTRA, `PRIVILEGES` AS `PRIVILEGES`, `COLLATION_NAME` AS `collation`, `COLUMN_DEFAULT` AS `default`, `IS_NULLABLE` AS `is_nullable`, `COLUMN_COMMENT` AS `comment` FROM `information_schema`.`COLUMNS` AS c, `information_schema`.`VIEWS` AS v WHERE v.TABLE_SCHEMA = '%@' AND c.TABLE_SCHEMA = '%@' AND c.TABLE_NAME = v.TABLE_NAME "
 					@"UNION "
 					@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, `DTD_identifier` AS `TYPE`, '' AS `CHARSET`, '2' AS `structtype`, `IS_DETERMINISTIC` AS `KEY`, `SECURITY_TYPE` AS EXTRA, `DEFINER` AS `PRIVILEGES`, '' AS `collation`, '' AS `DEFAULT`, `SQL_DATA_ACCESS` AS `is_nullable`, '' AS `COMMENT` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_SCHEMA = '%@'"
 					@"UNION "
-					@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, `DTD_identifier` AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, `IS_DETERMINISTIC` AS `KEY`, `SECURITY_TYPE` AS EXTRA, `DEFINER` AS `PRIVILEGES`, '' AS `collation`, '' AS `DEFAULT`, `SQL_DATA_ACCESS` AS `is_nullable`, '' AS `COMMENT` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' AND ROUTINE_SCHEMA = '%@'", currentDatabaseEscaped, currentDatabaseEscaped, currentDatabaseEscaped, currentDatabaseEscaped];
+					@"SELECT ROUTINE_SCHEMA AS `DATABASES`, ROUTINE_NAME AS `TABLES`, ROUTINE_NAME AS `fields`, `DTD_identifier` AS `TYPE`, '' AS `CHARSET`, '3' AS `structtype`, `IS_DETERMINISTIC` AS `KEY`, `SECURITY_TYPE` AS EXTRA, `DEFINER` AS `PRIVILEGES`, '' AS `collation`, '' AS `DEFAULT`, `SQL_DATA_ACCESS` AS `is_nullable`, '' AS `COMMENT` FROM `information_schema`.`ROUTINES` WHERE ROUTINE_TYPE = 'FUNCTION' AND ROUTINE_SCHEMA = '%@'", currentDatabaseEscaped, currentDatabaseEscaped, currentDatabaseEscaped, currentDatabaseEscaped, currentDatabaseEscaped];
 				
 				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(queryDbString, theConnectionEncoding, 1);
 				const char *queryCString = [encodedQueryData bytes];
@@ -2522,8 +2522,9 @@ void performThreadedKeepAlive(void *ptr)
 {
 	delegate = nil;
 
-	// Ensure the query lock is unlocked
+	// Ensure the query lock is unlocked, thereafter setting to nil in case of pending calls
 	[self unlockConnection];
+	[queryLock release], queryLock = nil;
 
 	// Clean up connections if necessary
 	if (mConnected) [self disconnect];
@@ -2534,7 +2535,6 @@ void performThreadedKeepAlive(void *ptr)
 
 	[keepAliveTimer invalidate];
 	[keepAliveTimer release];
-	[queryLock release];
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];

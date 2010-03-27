@@ -2248,14 +2248,6 @@
 }
 
 /**
- * Invoked when user dismisses the error sheet displayed as a result of the current connection being lost.
- */
-- (IBAction)closeErrorConnectionSheet:(id)sender
-{
-	[NSApp stopModalWithCode:[sender tag]];
-}
-
-/**
  * Closes either the server variables or create syntax sheets.
  */
 - (IBAction)closePanelSheet:(id)sender
