@@ -89,8 +89,7 @@
 - (IBAction)addFavorite:(id)sender;
 - (IBAction)removeFavorite:(id)sender;
 - (IBAction)duplicateFavorite:(id)sender;
-- (IBAction)saveFavorite:(id)sender;
-- (IBAction)updateDefaultFavorite:(id)sender;
+ - (IBAction)updateDefaultFavorite:(id)sender;
 - (IBAction)showCustomQueryFontPanel:(id)sender;
 - (IBAction)showGlobalResultTableFontPanel:(id)sender;
 - (IBAction)setDefaultColors:(id)sender;
