@@ -25,6 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "SPConstants.h"
+
 @class SPKeychain;
 
 @interface SPPreferenceController : NSWindowController
@@ -57,15 +59,13 @@
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
 
 	IBOutlet id tableCell;
-
-	SPKeychain *keychain;
-	NSDictionary *currentFavorite;
-
+	
 	IBOutlet NSTextField *editorFontName;
 	IBOutlet NSTextField *globalResultTableFontName;
 
-	NSInteger fontChangeTarget;
-
+	SPKeychain *keychain;
+	NSDictionary *currentFavorite;
+	
 	NSToolbar *toolbar;
 	
 	NSToolbarItem *generalItem;
@@ -80,7 +80,10 @@
 	NSUserDefaults *prefs;
 	
 	BOOL favoriteNameFieldWasTouched;
-	NSInteger favoriteType;
+	NSInteger favoriteType, fontChangeTarget;
+	
+	BOOL reverseFavoritesSort;
+	SPFavoritesSortItem previousSortItem, currentSortItem;
 }
 
 - (void)applyRevisionChanges;
@@ -89,10 +92,12 @@
 - (IBAction)addFavorite:(id)sender;
 - (IBAction)removeFavorite:(id)sender;
 - (IBAction)duplicateFavorite:(id)sender;
- - (IBAction)updateDefaultFavorite:(id)sender;
+- (IBAction)updateDefaultFavorite:(id)sender;
 - (IBAction)showCustomQueryFontPanel:(id)sender;
 - (IBAction)showGlobalResultTableFontPanel:(id)sender;
 - (IBAction)setDefaultColors:(id)sender;
+- (IBAction)sortFavorites:(id)sender;
+- (IBAction)reverseFavoritesSortOrder:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;

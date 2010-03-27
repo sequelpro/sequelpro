@@ -3148,6 +3148,12 @@
 			
 		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 1); 
 	}
+	
+	// If validation for the sort favorites tableview items reaches here then the preferences window isn't
+	// open return NO.
+	if (([menuItem action] == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseFavoritesSortOrder:))) {
+		return NO;
+	}
 
 	return [super validateMenuItem:menuItem];
 }

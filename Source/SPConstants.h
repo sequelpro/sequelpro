@@ -93,6 +93,14 @@ typedef enum
 	SPSSHPasswordNone         = 2
 } SPSSHTunnelPasswordMode;
 
+// Sort by constants
+typedef enum
+{
+	SPFavoritesSortNameItem = 0,
+	SPFavoritesSortHostItem = 1,
+	SPFavoritesSortTypeItem = 2
+} SPFavoritesSortItem;
+
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;
 
@@ -200,6 +208,8 @@ extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
 extern NSString *SPProcessListShowProcessID;
 extern NSString *SPProcessListShowFullProcessList;
+extern NSString *SPFavoritesSortedBy;
+extern NSString *SPFavoritesSortedInReverse;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

@@ -130,6 +130,8 @@ NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollap
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
 NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
+NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
+NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";

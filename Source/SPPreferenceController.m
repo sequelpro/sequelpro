@@ -34,6 +34,7 @@
 @interface SPPreferenceController (PrivateAPI)
 
 - (void)_setupToolbar;
+- (void)_sortFavorites;
 - (void)_resizeWindowForContentView:(NSView *)view;
 
 @end
@@ -57,6 +58,9 @@
 		favoriteNameFieldWasTouched = YES;
 		favoriteType = 0;
 		fontChangeTarget = 0;
+		reverseFavoritesSort = NO;
+		
+		previousSortItem = SPFavoritesSortNameItem;
 	}
 
 	return self;
@@ -70,6 +74,10 @@
 	[self _setupToolbar];
 	
 	keychain = [[SPKeychain alloc] init];
+	
+	// Set sort items
+	currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
+	reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
 	
 	[tableCell setImage:[NSImage imageNamed:@"database"]];
 	
@@ -87,6 +95,8 @@
 	[self updateDefaultFavoritePopup];
 	
 	[prefs synchronize];
+	
+	[self _sortFavorites];
 }
 
 #pragma mark -
@@ -423,6 +433,38 @@
 		// Minus 2 from index to account for the "Last Used" and separator items
 		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:SPDefaultFavorite];
 	}
+}
+
+/**
+ * Sorts the favorites table view based on the selected sort by item
+ */
+- (IBAction)sortFavorites:(id)sender
+{
+	previousSortItem = currentSortItem;
+	currentSortItem  = [[sender menu] indexOfItem:sender];
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	
+	// Perform sorting
+	[self _sortFavorites];
+	
+	[[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
+}
+
+/**
+ * Reverses the favorites table view sorting based on the selected criteria
+ */
+- (IBAction)reverseFavoritesSortOrder:(id)sender
+{	
+	reverseFavoritesSort = (![sender state]);
+		
+	[prefs setBool:reverseFavoritesSort forKey:SPFavoritesSortedInReverse];
+	
+	// Perform re-sorting
+	[self _sortFavorites];
+	
+	[sender setState:reverseFavoritesSort]; 
 }
 
 #pragma mark -
@@ -1113,6 +1155,22 @@
 		return ([favoritesTableView numberOfSelectedRows] > 0);
 	}
 	
+	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseFavoritesSortOrder:))) {
+		
+		// Loop all the items in the sort by menu only checking the currently selected one
+		for (NSMenuItem *item in [[menuItem menu] itemArray])
+		{
+			[item setState:([[menuItem menu] indexOfItem:item] == currentSortItem) ? NSOnState : NSOffState];
+		}
+		
+		// Check or uncheck the reverse sort item
+		if (action == @selector(reverseFavoritesSortOrder:)) {
+			[menuItem setState:reverseFavoritesSort];
+		}
+		
+		return [[toolbar selectedItemIdentifier] isEqualToString:SPPreferenceToolbarFavorites];
+	}
+	
 	return YES;
 }
 
@@ -1217,6 +1275,43 @@
 	[preferencesWindow setShowsToolbarButton:NO];
 
 	[self displayGeneralPreferences:nil];
+}
+
+/**
+ * Sorts the connection favorites based on the selected criteria.
+ */
+- (void)_sortFavorites
+{
+	NSString *sortKey = @"";
+	
+	switch (currentSortItem)
+	{
+		case SPFavoritesSortNameItem:
+			sortKey = @"name";
+			break;
+		case SPFavoritesSortHostItem:
+			sortKey = @"host";
+			break;
+		case SPFavoritesSortTypeItem:
+			sortKey = @"type";
+			break;
+		default:
+			sortKey = @"name";
+			break;
+	}
+	
+	NSSortDescriptor *sortDescriptor = nil;
+	
+	if (currentSortItem == SPFavoritesSortTypeItem) {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:reverseFavoritesSort] autorelease];
+	}
+	else {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:reverseFavoritesSort selector:@selector(caseInsensitiveCompare:)] autorelease];
+	}
+	
+	[favoritesController setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+	
+	[favoritesTableView reloadData];
 }
 
 // -------------------------------------------------------------------------------
