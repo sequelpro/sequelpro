@@ -461,28 +461,50 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	mConnected = NO;
 	isDisconnecting = NO;
 	
-	// If there is a tunnel, ensure it's disconnected and attempt to reconnect it in blocking fashion
+	// If there is a proxy, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionProxy) {
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
 		if ([connectionProxy state] != PROXY_STATE_IDLE) [connectionProxy disconnect];
+
+		// Loop until the proxy has disconnected or the connection timeout has passed
+		NSDate *proxyDisconnectStartDate = [NSDate date], *eventLoopStartDate;
+		while ([connectionProxy state] != PROXY_STATE_IDLE
+				&& [[NSDate date] timeIntervalSinceDate:proxyDisconnectStartDate] < connectionTimeout)
+		{
+			eventLoopStartDate = [NSDate date];
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			if ([[NSDate date] timeIntervalSinceDate:eventLoopStartDate] < 0.25) {
+				usleep(250000 - (100000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate]));
+			}
+		}
+
+		// Reconnect the proxy, looping up to the connection timeout
 		[connectionProxy connect];
-		NSDate *tunnelStartDate = [NSDate date], *interfaceInteractionTimer;
-		
-		// Allow the tunnel to attempt to connect in a loop
+		NSDate *proxyStartDate = [NSDate date], *interfaceInteractionTimer;
 		while (1) {
+
+			// If the proxy has connected, break out of the loop
 			if ([connectionProxy state] == PROXY_STATE_CONNECTED) {
 				connectionPort = [connectionProxy localPort];
 				break;
 			}
-			if ([[NSDate date] timeIntervalSinceDate:tunnelStartDate] > (connectionTimeout + 1)) {
+
+			// If the proxy connection attempt time has exceeded the timeout, abort.
+			if ([[NSDate date] timeIntervalSinceDate:proxyStartDate] > (connectionTimeout + 1)) {
 				[connectionProxy disconnect];
 				break;
 			}
 			
-			// Process events for a short time, allowing dialogs to be shown but waiting for the tunnel
+			// Process events for a short time, allowing dialogs to be shown but waiting for
+			// the proxy. Capture how long this interface action took, so that if it was
+			// longer than the time alloted it can be added to the connection timeout.
 			interfaceInteractionTimer = [NSDate date];
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
-			tunnelStartDate = [tunnelStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
+			if ([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] > 0.25) {
+				proxyStartDate = [proxyStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
+			} else {
+				usleep(250000 - (100000 * [[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]));
+			}
 		}
 		
 		currentProxyState = [connectionProxy state];
