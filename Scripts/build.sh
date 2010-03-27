@@ -21,7 +21,7 @@ GENSTRINGS_ERRORS=$(genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROO
 # Check for genstrings errors
 if [ $? -ne 0 ]
 then
-	echo "Error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
+	echo "error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
 fi
 
 echo 'Updating build version...'
@@ -51,8 +51,8 @@ then
 	
 	if [ "$VERIFYERRORS" != '' ]
 	then
-		echo "Error: Signing verification threw an error: $VERIFYERRORS"
-		echo "Error: All distribution builds must be signed with the key used for all previous distribution signing!"
+		echo "error: Signing verification threw an error: $VERIFYERRORS"
+		echo "error: All distribution builds must be signed with the key used for all previous distribution signing!"
 		
 		exit 1
 	fi
