@@ -432,7 +432,10 @@
 				NSMenu *m = [[NSMenu alloc] init];
 				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects])
 					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
-				[m removeItemAtIndex:[m numberOfItems]-1];
+				if([m numberOfItems]>2) {
+					[m removeItemAtIndex:[m numberOfItems]-1];
+					[m removeItemAtIndex:0];
+				}
 				[b setMenu:m];
 				[m release];
 				[b setPreferredEdge:NSMinXEdge];
@@ -492,7 +495,7 @@
 						c = [[self filterString] characterAtIndex:i];
 						if(c != '`') {
 							if(c == '.')
-								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?",SPUniqueSchemaDelimiter]];
+								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%@",SPUniqueSchemaDelimiter]];
 							else if (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
 								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?\\%c",c]];
 							else
@@ -805,9 +808,10 @@
 		if([selectedItem objectForKey:@"isRef"] 
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
 				&& [[selectedItem objectForKey:@"path"] length]) {
-			NSString *path = [NSString stringWithFormat:@"%@.%@", 
-				[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst],
-				[candidateMatch backtickQuotedString]];
+			// NSString *path = [NSString stringWithFormat:@"%@.%@", 
+			// 	[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst],
+			// 	[candidateMatch backtickQuotedString]];
+			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
 
 			// Check if path's db name is the current selected db name
 			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];

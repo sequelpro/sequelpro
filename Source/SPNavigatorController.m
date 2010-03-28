@@ -70,6 +70,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		expandStatus1       = [[NSMutableDictionary alloc] init];
 		expandStatus2       = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
+		updatingConnections = [[NSMutableSet alloc] initWithCapacity:1];
 		selectedKey1        = @"";
 		selectedKey2        = @"";
 		ignoreUpdate        = NO;
@@ -89,6 +90,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(allSchemaKeys) [allSchemaKeys release];
 	if(schemaData) [schemaData release];
 	if(infoArray)  [infoArray release];
+	if(updatingConnections)  [updatingConnections release];
 	if(expandStatus1) [expandStatus1 release];
 	if(expandStatus2) [expandStatus2 release];
 }
@@ -123,6 +125,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
 												 name:@"SPDBStructureWasUpdated" object:nil];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(isUpdatingNavigator:)
+												 name:@"SPDBStructureIsUpdating" object:nil];
 
 }
 
@@ -215,7 +220,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		[outlineSchema2 collapseItem:[item objectForKey:[pathArray objectAtIndex:0]] collapseChildren:YES];
 		for(NSInteger i=0; i < [pathArray count]; i++) {
 			[aKey appendString:[pathArray objectAtIndex:i]];
-			if(![item objectForKey:aKey]) break;
+			if(!item || ![item isKindOfClass:[NSDictionary class]] || ![item objectForKey:aKey]) break;
 			item = [item objectForKey:aKey];
 			[outlineSchema2 expandItem:item];
 			[aKey appendString:SPUniqueSchemaDelimiter];
@@ -377,11 +382,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:YES];
 }
 
+- (void)isUpdatingNavigator:(NSNotification *)aNotification
+{
+	// todo
+}
+
 - (void)updateEntriesForConnection:(NSString*)connectionID
 {
 
-	if(![[self window] isVisible]) return;
-	NSLog(@"UPDATE NAVIGATOR called");
 	if(ignoreUpdate) {
 		ignoreUpdate = NO;
 		return;
@@ -390,7 +398,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[self saveSelectedItems];
 
 	[infoArray removeAllObjects];
-	
+
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 
@@ -406,7 +414,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				[schemaData setObject:[NSMutableDictionary dictionary] forKey:connectionName];
 			}
 
-
 			NSArray *dbs = [doc allDatabaseNames];
 			NSArray *keys = [[schemaData objectForKey:connectionName] allKeys];
 			for(id db in keys) {
@@ -420,17 +427,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 					[[schemaData objectForKey:connectionName] setObject:[[[theConnection getDbStructure] objectForKey:connectionName] objectForKey:item] forKey:item];
 				[allSchemaKeys setObject:[theConnection getAllKeysOfDbStructure] forKey:connectionName];
 			} else {
-
-				if([theConnection serverMajorVersion] > 4) {
-					[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
-					[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
-				} else {
-					[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data for this server version", connectionName]];
-					[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
-				}
-
+				[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
+				[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
 			}
-
 		}
 
 		[outlineSchema1 reloadData];
@@ -442,10 +441,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	[self syncButtonAction:self];
 
-	if(isFiltered)
+	if(isFiltered && [[self window] isVisible])
 		[self filterTree:self];
 	
-
 }
 
 - (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname
@@ -465,6 +463,13 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[[schemaData objectForKey:connectionID] removeObjectForKey:db_id];
 	[outlineSchema1 reloadData];
 	[outlineSchema2 reloadData];
+}
+
+- (NSDictionary *)dbStructureForConnection:(NSString*)connectionID
+{
+	if([schemaData objectForKey:connectionID])
+		return [NSDictionary dictionaryWithDictionary:[schemaData objectForKey:connectionID]];
+	return nil;
 }
 
 #pragma mark -
@@ -1070,42 +1075,26 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			case 0:
 			return @"DTD Identifier";
 			case 1:
-			return NSLocalizedString(@"Default", @"default label");
-			case 2:
 			return @"SQL Data Access";
-			case 3:
-			return NSLocalizedString(@"Encoding", @"encoding label");
-			case 4:
-			return NSLocalizedString(@"Collation", @"collation label");
-			case 5:
+			case 2:
 			return @"Is Deterministic";
-			case 6:
-			return @"Security Type";
-			case 7:
+			case 3:
+			return NSLocalizedString(@"Execution Privilege", @"execution privilege label");
+			case 4:
 			return @"Definer";
-			case 8:
-			return NSLocalizedString(@"Comment", @"comment label");
 		}
 	if(type == 3) // FUNCTION
 		switch(index) {
 			case 0:
 			return NSLocalizedString(@"Return Type", @"return type label");
 			case 1:
-			return NSLocalizedString(@"Default", @"default label");
-			case 2:
 			return @"SQL Data Access";
-			case 3:
-			return NSLocalizedString(@"Encoding", @"encoding label");
-			case 4:
-			return NSLocalizedString(@"Collation", @"collation label");
-			case 5:
+			case 2:
 			return @"Is Deterministic";
-			case 6:
+			case 3:
 			return NSLocalizedString(@"Execution Privilege", @"execution privilege label");
-			case 7:
+			case 4:
 			return @"Definer";
-			case 8:
-			return NSLocalizedString(@"Comment", @"comment label");
 		}
 	return @"";
 }

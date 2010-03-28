@@ -103,6 +103,16 @@
  */
 - (NSArray*)allSystemDatabaseNames;
 
+/**
+ *
+ */
+- (NSArray*)allTableNames;
+
+/**
+ *
+ */
+- (NSArray*)allViewNames;
+
 @end
 
 @interface MCPConnection : NSObject 
