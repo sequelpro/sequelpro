@@ -128,6 +128,10 @@ NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
+NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
+NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
+NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
+NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
@@ -167,6 +171,8 @@ NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/do
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
 NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
 NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@";
+NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
+NSString *SPGettingConnectedDocURL               = @"http://www.sequelpro.com/docs/Getting_Connected";
 
 // Toolbar constants
 

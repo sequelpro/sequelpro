@@ -163,7 +163,7 @@
 - (void) connect
 {
 	localPort = 0;
-	
+
 	if (connectionState != PROXY_STATE_IDLE) return;
 	[debugMessages removeAllObjects];
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
@@ -350,12 +350,10 @@
 - (void)disconnect
 {
     if (connectionState == PROXY_STATE_IDLE) return;
-	
+
 	// Before terminating the tunnel, check that it's actually running. This is to accommodate tunnels which
 	// suddenly disappear as a result of network disconnections. 
     if ([task isRunning]) [task terminate];
-    
-	connectionState = PROXY_STATE_IDLE;
 	
 	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 }

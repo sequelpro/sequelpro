@@ -640,7 +640,7 @@
 		}
 	}
 
-	if ([mySQLConnection queryCancelled] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+	if ([mySQLConnection queryCancelled] || [mySQLConnection queryErrored])
 		isInterruptedLoad = YES;
 	else 
 		isInterruptedLoad = NO;
@@ -1898,7 +1898,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
 	// If no rows have been changed, show error if appropriate.
-	if ( ![mySQLConnection affectedRows] && ![mySQLConnection getLastErrorMessage] && ![[mySQLConnection getLastErrorMessage] length]) {
+	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
 		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
@@ -1913,7 +1913,7 @@
 		return YES;
 
 	// On success...
-	} else if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	} else if ( ![mySQLConnection queryErrored] ) {
 		isEditingRow = NO;
 
 		// New row created successfully
@@ -2160,7 +2160,7 @@
 	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
-			if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			if ( ![mySQLConnection queryErrored] ) {
 
 				// Reset auto increment if suppression button was ticked
 				if([[sheet suppressionButton] state] == NSOnState)
@@ -2205,7 +2205,7 @@
 				// Get the number of rows in the table
 				MCPResult *r;
 				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]];
-				if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+				if (![mySQLConnection queryErrored]) {
 					NSArray *a = [r fetchRowAsArray];
 					if([a count])
 						numberOfRows = [[a objectAtIndex:0] integerValue];
@@ -2231,7 +2231,7 @@
 						[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
 
 						// Check for errors
-						if ( ![mySQLConnection affectedRows] || ![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+						if ( ![mySQLConnection affectedRows] || [mySQLConnection queryErrored]) {
 							// If error delete that index from selectedRows for reloading table if 
 							// "ReloadAfterRemovingRow" is disbaled
 							if(!reloadAfterRemovingRow)
@@ -2868,7 +2868,7 @@
 	previousTableRowsCount = tableRowsCount;
 	[self loadTableValues];
 
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
 		[tableDocumentInstance endTask];

@@ -581,6 +581,8 @@
 		[self viewStatus:self];
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
 		[self viewRelations:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
+		[self viewTriggers:self];
 
 	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
 
@@ -691,9 +693,6 @@
 														window:tableWindow
 											  notificationName:@"Connected"];
 
-	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
-
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
 	if(spfSession != nil && [spfSession objectForKey:@"queries"]) {
@@ -748,6 +747,9 @@
 				break;
 			case SPQueryEditorViewMode:
 				[self viewQuery:self];
+				break;
+			case SPTriggersViewMode:
+				[self viewTriggers:self];
 				break;
 		}
 	}
@@ -840,6 +842,8 @@
 	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
+	
+	
 }
 
 /**
@@ -865,6 +869,7 @@
 
 	// Select the database
 	[self selectDatabase:[chooseDatabaseButton titleOfSelectedItem] item:[self table]];
+
 }
 
 /**
@@ -874,7 +879,7 @@
 {
 
 	// Do not update the navigator since nothing is changed
-	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:YES];
+	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:NO];
 
 	// If Navigator runs in syncMode let it follow the selection
 	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
@@ -976,7 +981,7 @@
 		[prefs addObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
-	[processListController displayProcessListSheetAttachedToWindow:tableWindow];
+	[processListController displayProcessListWindow];
 }
 
 /**
@@ -1014,10 +1019,6 @@
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
-
-			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
-
 		}
 	}
 	// Add a new database
@@ -1026,7 +1027,7 @@
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		} else {
 			// reset chooseDatabaseButton
@@ -1066,7 +1067,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![mySQLConnection queryErrored]) {
 		NSInteger i;
 		NSInteger r = [theResult numOfRows];
 		if (r) [theResult dataSeek:0];
@@ -1089,6 +1090,11 @@
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+}
+
+- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname
+{
+	return [[SPNavigatorController sharedNavigatorController] schemaPathExistsForConnection:[self connectionID] andDatabase:dbname];
 }
 
 #pragma mark -
@@ -1153,7 +1159,7 @@
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
 	if(!isNavigatorVisible) {
-		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
+		[[SPNavigatorController sharedNavigatorController] updateEntriesForConnection:[self connectionID]];
 	}
 
 	// Show or hide the navigator
@@ -1169,16 +1175,6 @@
 	} else {
 		[[[SPNavigatorController sharedNavigatorController] window] makeKeyAndOrderFront:self];
 	}
-}
-
-/*
- * Called from MCPConnection or self to inform the navigator that an instance invoked queryDbStructure
- * or a window was closed
- */
-- (void)updateNavigator:(id)sender
-{
-	if([[[SPNavigatorController sharedNavigatorController] window] isVisible])
-		[[SPNavigatorController sharedNavigatorController] updateEntries:self];
 }
 
 #pragma mark -
@@ -1444,7 +1440,7 @@
 	// set encoding of connection and client
 	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
 
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![mySQLConnection queryErrored]) {
 		if (_encodingViaLatin1)
 			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
 		[mySQLConnection setEncoding:[MCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
@@ -1453,7 +1449,7 @@
 	} else {
 		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
 		_encodingViaLatin1 = NO;
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+		if ([mySQLConnection queryErrored]) {
 			NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
 			return;
 		}
@@ -1661,7 +1657,7 @@
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
@@ -1720,7 +1716,7 @@
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
@@ -1760,7 +1756,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to check selected items", @"unable to check selected items message") : NSLocalizedString(@"Unable to check table", @"unable to check table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -1836,7 +1832,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to analyze selected items", @"unable to analyze selected items message") : NSLocalizedString(@"Unable to analyze table", @"unable to analyze table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -1912,7 +1908,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to optimze selected items", @"unable to optimze selected items message") : NSLocalizedString(@"Unable to optimze table", @"unable to optimze table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -1987,7 +1983,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to repair selected items", @"unable to repair selected items message") : NSLocalizedString(@"Unable to repair table", @"unable to repair table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -2062,7 +2058,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		NSString *mText = ([selectedItems count]>1) ? NSLocalizedString(@"Unable to flush selected items", @"unable to flush selected items message") : NSLocalizedString(@"Unable to flush table", @"unable to flush table message");
 		if ([mySQLConnection isConnected]) {
 
@@ -2137,7 +2133,7 @@
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
 	// Check for errors, only displaying if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 
 			[[NSAlert alertWithMessageText:NSLocalizedString(@"Unable to perform the checksum", @"unable to perform the checksum")
@@ -2257,14 +2253,6 @@
 }
 
 /**
- * Invoked when user dismisses the error sheet displayed as a result of the current connection being lost.
- */
-- (IBAction)closeErrorConnectionSheet:(id)sender
-{
-	[NSApp stopModalWithCode:[sender tag]];
-}
-
-/**
  * Closes either the server variables or create syntax sheets.
  */
 - (IBAction)closePanelSheet:(id)sender
@@ -2281,7 +2269,7 @@
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
 	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	
-	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && ([result numOfRows] == 0)) {
+	if ([mySQLConnection queryErrored] && ([result numOfRows] == 0)) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unable to get list of users", @"unable to get list of users message")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -2328,7 +2316,7 @@
 {
 	[mySQLConnection queryString:@"FLUSH PRIVILEGES"];
 
-	if ( [[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+	if (![mySQLConnection queryErrored]) {
 		//flushed privileges without errors
 		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
@@ -2885,22 +2873,25 @@
 
 		switch([spHistoryControllerInstance currentlySelectedView]){
 			case SPHistoryViewStructure:
-			aString = @"SP_VIEW_STRUCTURE";
-			break;
+				aString = @"SP_VIEW_STRUCTURE";
+				break;
 			case SPHistoryViewContent:
-			aString = @"SP_VIEW_CONTENT";
-			break;
+				aString = @"SP_VIEW_CONTENT";
+				break;
 			case SPHistoryViewCustomQuery:
-			aString = @"SP_VIEW_CUSTOMQUERY";
-			break;
+				aString = @"SP_VIEW_CUSTOMQUERY";
+				break;
 			case SPHistoryViewStatus:
-			aString = @"SP_VIEW_STATUS";
-			break;
+				aString = @"SP_VIEW_STATUS";
+				break;
 			case SPHistoryViewRelations:
-			aString = @"SP_VIEW_RELATIONS";
-			break;
+				aString = @"SP_VIEW_RELATIONS";
+				break;
+			case SPHistoryViewTriggers:
+				aString = @"SP_VIEW_TRIGGERS";
+				break;
 			default:
-			aString = @"SP_VIEW_STRUCTURE";
+				aString = @"SP_VIEW_STRUCTURE";
 		}
 		[session setObject:aString forKey:@"view"];
 
@@ -3152,9 +3143,21 @@
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
 	}
 
-	// Focus on table list filter
+	// Focus on table list or filter resp.
 	if ([menuItem action] == @selector(focusOnTableListFilter:)) {
-		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 20); 
+		
+		if([[tablesListInstance valueForKeyPath:@"tables"] count] > 20)
+			[menuItem setTitle:NSLocalizedString(@"Filter Tables", @"filter tables menu item")];
+		else
+			[menuItem setTitle:NSLocalizedString(@"Change Focus to Table List", @"change focus to table list menu item")];
+			
+		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 1); 
+	}
+	
+	// If validation for the sort favorites tableview items reaches here then the preferences window isn't
+	// open return NO.
+	if (([menuItem action] == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseFavoritesSortOrder:))) {
+		return NO;
 	}
 
 	return [super validateMenuItem:menuItem];
@@ -3293,7 +3296,7 @@
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
-	//[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
+	[prefs setInteger:SPTriggersViewMode forKey:SPLastViewMode];
 }
 
 
@@ -4046,7 +4049,7 @@
 	// Create the database
 	[mySQLConnection queryString:createStatement];
 	
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		// An error occurred
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
 		
@@ -4083,7 +4086,7 @@
 	// Drop the database from the server
 	[mySQLConnection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [[self database] backtickQuotedString]]];
 	
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		// An error occurred
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
@@ -4094,7 +4097,15 @@
 		
 		return;
 	}
-	
+
+	// Remove db from navigator and completion list array,
+	// do to threading we have to delete it from 'allDatabases' directly
+	// before calling navigator
+	[allDatabases removeObject:[self database]];
+	// This only deletes the db and refreshes the navigator since nothing is changed
+	// that's why we can run this on main thread
+	[mySQLConnection queryDbStructureWithUserInfo:nil];
+
 	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 	
@@ -4104,6 +4115,7 @@
 	[tableDumpInstance setConnection:mySQLConnection];
 	
 	[tableWindow setTitle:[self displaySPName]];
+
 }
 
 /**
@@ -4178,10 +4190,13 @@
 			[tablesListInstance selectItemWithName:targetItemName];
 		} else {
 			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
 	}
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
 
 	[self endTask];
 	[taskPool drain];

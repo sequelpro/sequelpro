@@ -330,7 +330,7 @@
 	[theResult setReturnDataAsStrings:YES];
 	
 	// Check for any errors, but only display them if a connection still exists
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
@@ -349,6 +349,10 @@
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
 	NSArray *resultFieldNames = [theResult fetchFieldNames];
+	
+	// Only continue if syntaxResult is not nil. This accommodates causes where the above query caused the 
+	// connection reconnect dialog to appear and the user chose to close the connection.
+	if (!syntaxResult) return nil;
 	
 	if (tableCreateSyntax != nil) [tableCreateSyntax release];
 	
@@ -598,7 +602,7 @@
 	[theResult setReturnDataAsStrings:YES];
 	
 	// Check for any errors, but only display them if a connection still exists
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
 							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
@@ -692,7 +696,7 @@
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
@@ -711,7 +715,7 @@
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
@@ -809,7 +813,7 @@
 	}
 
 	// Check for any errors, only displaying them if the connection hasn't been terminated
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
 					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
@@ -840,7 +844,7 @@
 		// this happens e.g. for db "information_schema"
 		if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
 			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [escapedTableName backtickQuotedString] ]];
-			if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+			if (![mySQLConnection queryErrored])
 				[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 				[status setObject:@"y" forKey:@"RowsCountAccurate"];
 		}
@@ -1064,7 +1068,7 @@
 
 	if([r numOfRows] < 1) return nil;
 
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected])
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving the PRIAMRY KEY data:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		return nil;

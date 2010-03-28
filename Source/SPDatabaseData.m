@@ -433,8 +433,7 @@ const SPDatabaseCharSets charsets[] =
 
 	MCPResult *result = [connection queryString:query];
 
-	// Log any errors
-	if ([[connection getLastErrorMessage] isEqualToString:@""]) {
+	if (![connection queryErrored]) {
 		[result dataSeek:0];
 
 		for (NSInteger i = 0; i < [result numOfRows]; i++)

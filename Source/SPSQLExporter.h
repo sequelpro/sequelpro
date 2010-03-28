@@ -55,16 +55,29 @@
 
 @interface SPSQLExporter : SPExporter
 {
-	// Table
-	NSString *sqlTableName;
+	// Tables
+	NSArray *sqlExportTables;
+	
+	// Database info
+	NSString *sqlDatabaseHost;
+	NSString *sqlDatabaseName;
+	NSString *sqlDatabaseVersion;
 	
 	// SQL options
+	BOOL sqlOutputIncludeUTF8BOM;
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeCreateSyntax;
 	BOOL sqlOutputIncludeDropSyntax;
 	BOOL sqlOutputIncludeErrors;
 }
 
+@property(readwrite, retain) NSArray *sqlExportTables;
+
+@property(readwrite, retain) NSString *sqlDatabaseHost;
+@property(readwrite, retain) NSString *sqlDatabaseName;
+@property(readwrite, retain) NSString *sqlDatabaseVersion;
+
+@property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
 @property(readwrite, assign) BOOL sqlOutputIncludeStructure;
 @property(readwrite, assign) BOOL sqlOutputIncludeCreateSyntax;
 @property(readwrite, assign) BOOL sqlOutputIncludeDropSyntax;

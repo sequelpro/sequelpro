@@ -23,8 +23,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+
 #import "MCPResult.h"
+#import "mysql.h"
 
 @class MCPConnection;
 
@@ -39,20 +41,25 @@ typedef struct SP_MYSQL_ROWS {
 	MCPConnection *parentConnection;
 
 	MYSQL_FIELD *fieldDefinitions;
+	
 	BOOL fullyStreaming;
 	BOOL connectionUnlocked;
 	BOOL dataDownloaded;
 	BOOL dataFreed;
+	
 	LOCAL_ROW_DATA *localDataStore;
 	LOCAL_ROW_DATA *currentDataStoreEntry;
 	LOCAL_ROW_DATA *localDataStoreLastEntry;
+	
 	unsigned long localDataRows;
 	unsigned long localDataAllocated;
 	unsigned long downloadedRowCount;
 	unsigned long processedRowCount;
 	unsigned long freedRowCount;
+	
 	pthread_mutex_t dataCreationLock;
 	pthread_mutex_t dataFreeLock;
+	
 	IMP isConnectedPtr;
 	SEL isConnectedSEL;
 }

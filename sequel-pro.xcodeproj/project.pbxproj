@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
+		171FF360115FEC6400E18CA4 /* SPCSVExporterDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 171FF35F115FEC6400E18CA4 /* SPCSVExporterDelegate.m */; };
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
@@ -60,7 +61,7 @@
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
-		17DCC3F4115ADCC500F89A00 /* SPCSVExporterDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17DCC3F3115ADCC500F89A00 /* SPCSVExporterDelegate.m */; };
+		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
 		17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */; };
 		17DD52B911507217007D8950 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B811507217007D8950 /* Credits.rtf */; };
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
@@ -312,6 +313,8 @@
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
 		171312CD109D23C700FB465F /* SPTableTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTextFieldCell.m; sourceTree = "<group>"; };
+		171FF35E115FEC6400E18CA4 /* SPCSVExporterDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCSVExporterDelegate.h; sourceTree = "<group>"; };
+		171FF35F115FEC6400E18CA4 /* SPCSVExporterDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCSVExporterDelegate.m; sourceTree = "<group>"; };
 		17292441107AC41000B21980 /* SPXMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporter.h; sourceTree = "<group>"; };
 		17292442107AC41000B21980 /* SPXMLExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporter.m; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
@@ -404,8 +407,7 @@
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
-		17DCC3F2115ADCC500F89A00 /* SPCSVExporterDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCSVExporterDelegate.h; sourceTree = "<group>"; };
-		17DCC3F3115ADCC500F89A00 /* SPCSVExporterDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCSVExporterDelegate.m; sourceTree = "<group>"; };
+		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
 		17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-print-template.html"; sourceTree = "<group>"; };
 		17DD52B811507217007D8950 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		17DD52C2115074B3007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -796,6 +798,15 @@
 			name = Cells;
 			sourceTree = "<group>";
 		};
+		171FF35D115FEC3E00E18CA4 /* Delegate Categories */ = {
+			isa = PBXGroup;
+			children = (
+				171FF35E115FEC6400E18CA4 /* SPCSVExporterDelegate.h */,
+				171FF35F115FEC6400E18CA4 /* SPCSVExporterDelegate.m */,
+			);
+			name = "Delegate Categories";
+			sourceTree = "<group>";
+		};
 		173284E51088FEC20062E892 /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -978,7 +989,6 @@
 			children = (
 				17B7B5C4101603B200F057DE /* MCPConnection.h */,
 				17B7B5C5101603B200F057DE /* MCPConnection.m */,
-				17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */,
 				17B7B5C7101603B200F057DE /* MCPConstants.h */,
 				17B7B5C8101603B200F057DE /* MCPFastQueries.h */,
 				17B7B5C9101603B200F057DE /* MCPFastQueries.m */,
@@ -993,6 +1003,8 @@
 				17B7B5D2101603B200F057DE /* MCPResultPlus.m */,
 				583B779710386B0200B21F7E /* MCPStreamingResult.h */,
 				583B779810386B0200B21F7E /* MCPStreamingResult.m */,
+				17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */,
+				17B7B5C6101603B200F057DE /* MCPConnectionProxy.h */,
 			);
 			path = MCPFoundationKit;
 			sourceTree = "<group>";
@@ -1057,15 +1069,6 @@
 				17A66F6A10B1ED59004C9B12 /* old-appicon.icns */,
 			);
 			name = Icons;
-			sourceTree = "<group>";
-		};
-		17DCC3F1115ADCAC00F89A00 /* Delegate Categories */ = {
-			isa = PBXGroup;
-			children = (
-				17DCC3F2115ADCC500F89A00 /* SPCSVExporterDelegate.h */,
-				17DCC3F3115ADCC500F89A00 /* SPCSVExporterDelegate.m */,
-			);
-			name = "Delegate Categories";
 			sourceTree = "<group>";
 		};
 		17DD52D0115075B1007D8950 /* Help */ = {
@@ -1368,7 +1371,7 @@
 				17292442107AC41000B21980 /* SPXMLExporter.m */,
 				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
 				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
-				17DCC3F1115ADCAC00F89A00 /* Delegate Categories */,
+				171FF35D115FEC3E00E18CA4 /* Delegate Categories */,
 			);
 			name = "Data Export";
 			sourceTree = "<group>";
@@ -1519,6 +1522,7 @@
 				17B7B5EF101603D200F057DE /* mysql_time.h in Headers */,
 				17B7B5F0101603D200F057DE /* mysql_version.h in Headers */,
 				17B7B5F1101603D200F057DE /* typelib.h in Headers */,
+				17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1898,7 +1902,7 @@
 				BC2777A011514B940034DF6A /* SPNavigatorController.m in Sources */,
 				589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */,
 				BC4DF1981158FB280059FABD /* SPNavigatorOutlineView.m in Sources */,
-				17DCC3F4115ADCC500F89A00 /* SPCSVExporterDelegate.m in Sources */,
+				171FF360115FEC6400E18CA4 /* SPCSVExporterDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -27,11 +27,19 @@
 
 #import "SPSQLExporter.h"
 #import "TablesList.h"
+#import "SPConstants.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 
 @implementation SPSQLExporter
 
+@synthesize sqlExportTables;
+
+@synthesize sqlDatabaseHost;
+@synthesize sqlDatabaseName;
+@synthesize sqlDatabaseVersion;
+
+@synthesize sqlOutputIncludeUTF8BOM;
 @synthesize sqlOutputIncludeStructure;
 @synthesize sqlOutputIncludeCreateSyntax;
 @synthesize sqlOutputIncludeDropSyntax;
@@ -48,7 +56,7 @@
 		
 		NSInteger i,j,t,rowCount, colCount, lastProgressValue, queryLength;
 		NSInteger progressBarWidth;
-		NSInteger tableType = SP_TABLETYPE_TABLE;
+		SPTableType tableType = SPTableTypeTable;
 		MCPResult *queryResult;
 		MCPStreamingResult *streamingResult;
 		NSAutoreleasePool *exportAutoReleasePool = nil;
@@ -87,35 +95,37 @@
 		
 		// Copy over the selected item names into tables in preparation for iteration
 		NSMutableArray *targetArray;
-		for ( i = 0 ; i < [tables count] ; i++ ) {
-			if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
-				switch ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 2) intValue]) {
-					case SP_TABLETYPE_PROC:
+		
+		for (i = 0 ; i <[[self sqlExportTables] count]; i++) 
+		{
+			if ([NSArrayObjectAtIndex(NSArrayObjectAtIndex([self sqlExportTables], i), 0) boolValue]) {
+				switch ([NSArrayObjectAtIndex(NSArrayObjectAtIndex([self sqlExportTables], i), 2) intValue]) {
+					case SPTableTypeProc:
 						targetArray = selectedProcs;
 						break;
-					case SP_TABLETYPE_FUNC:
+					case SPTableTypeFunc:
 						targetArray = selectedFuncs;
 						break;
 					default:
 						targetArray = selectedTables;
 						break;
 				}
-				[targetArray addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 1)]];
+				
+				[targetArray addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex([self sqlExportTables], i), 1)]];
 			}
 		}
 		
 		
-		// If NoBOMforSQLdumpFile is not set to YES write the UTF-8 Byte Order Marker
-		[metaString setString:([prefs boolForKey:SPNoBOMforSQLdumpFile]) ? @"" : @"\xef\xbb\xbf"];
+		// If required write the UTF-8 Byte Order Mark
+		[metaString setString:([self sqlOutputIncludeUTF8BOM]) ? @"" : @"\xef\xbb\xbf"];
 		
-		// Add the dump header to the dump file.
-		[metaString appendString:@"# Sequel Pro dump\n"];
-		[metaString appendString:[NSString stringWithFormat:@"# Version %@\n",
-								  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-		[metaString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
-		[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
-								  [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-		[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
+		// Add the dump header to the dump file
+		[metaString appendString:@"# ************************************************************\n"];
+		[metaString appendString:@"# Sequel Pro SQL dump\n"];
+		[metaString appendString:[NSString stringWithFormat:@"# Version %@\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+		[metaString appendString:[NSString stringWithFormat:@"# %@\n#\n", SPDevURL]];
+		[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n", [self sqlDatabaseHost], [self sqlDatabaseVersion]]];
+		[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [self sqlDatabaseName]]];
 		[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
 		[metaString appendString:@"# ************************************************************\n\n"];
 		
@@ -126,15 +136,16 @@
 		[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
 		
 		// Add commands to store and disable unique checks, foreign key checks, mode and notes where supported.
-		// Include trailing semicolons to ensure they're run individually.  Use mysql-version based comments.
-		if ( [addDropTableSwitch state] == NSOnState )
+		// Include trailing semicolons to ensure they're run individually. Use MySQL-version based comments.
+		if ([self sqlOutputIncludeDropSyntax]) {
 			[metaString appendString:@"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n"];
+		}
 		
 		[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
 		[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
 		[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
 		
-		[[self exportOutput[self exportOutputFileHandle]] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+		[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 		
 		// Store the current connection encoding so it can be restored after the dump.
 		previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
@@ -157,8 +168,7 @@
 			[[singleProgressBar onMainThread] startAnimation:self];*/
 			
 			// Add the name of table
-			[[self exportOutputFileHandle]] writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName]
-								   dataUsingEncoding:NSUTF8StringEncoding]];
+			[[self exportOutputFileHandle]] writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName] dataUsingEncoding:NSUTF8StringEncoding]];
 			
 			
 			// Determine whether this table is a table or a view via the create table command, and keep the create table syntax
@@ -169,24 +179,25 @@
 				if ([tableDetails objectForKey:@"Create View"]) {
 					[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
 					createTableSyntax = [self createViewPlaceholderSyntaxForView:tableName];
-					tableType = SP_TABLETYPE_VIEW;
+					tableType = SPTableTypeView;
 				} else {
 					createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
-					tableType = SP_TABLETYPE_TABLE;
+					tableType = SPTableTypeTable;
 				}
 				[tableDetails release];
 			}
 			if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
 				[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
-				if ( [addErrorsSwitch state] == NSOnState ) {
+				
+				if ([self sqlOutputIncludeErrors]) {
 					[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 			}
 			
 			
 			// Add a "drop table" command if specified in the export dialog
-			if ( [addDropTableSwitch state] == NSOnState )
-				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SP_TABLETYPE_TABLE)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
+			if ([self sqlOutputIncludeDropSyntax])
+				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
 									   dataUsingEncoding:NSUTF8StringEncoding]];
 			
 			
@@ -339,7 +350,8 @@
 				
 				if ( ![[connection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
-					if ( [addErrorsSwitch state] == NSOnState ) {
+					
+					if ([self sqlOutputIncludeErrors]) {
 						[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
 											   dataUsingEncoding:NSUTF8StringEncoding]];
 					}
@@ -387,7 +399,8 @@
 				
 				if ( ![[connection getLastErrorMessage] isEqualToString:@""] ) {
 					[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
-					if ( [addErrorsSwitch state] == NSOnState ) {
+					
+					if ([self sqlOutputIncludeErrors]) {
 						[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
 											   dataUsingEncoding:NSUTF8StringEncoding]];
 					}
@@ -443,14 +456,14 @@
 					}
 					
 					// Add the "drop" command if specified in the export dialog
-					if ([addDropTableSwitch state] == NSOnState) {
+					if ([self sqlOutputIncludeDropSyntax]) {
 						[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", 
 												  procedureType,
 												  [procedureName backtickQuotedString]]];
 					}
 					
 					// Only continue if the "create syntax" is specified in the export dialog
-					if ([addCreateTableSwitch state] == NSOffState) {
+					if ([self sqlOutputIncludeCreateSyntax]) {
 						[proceduresList release];
 						continue;
 					}
@@ -497,7 +510,8 @@
 			
 			if ( ![[connection getLastErrorMessage] isEqualToString:@""] ) {
 				[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
-				if ( [addErrorsSwitch state] == NSOnState ) {
+				
+				if ([self sqlOutputIncludeErrors]) {
 					[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
 										   dataUsingEncoding:NSUTF8StringEncoding]];
 				}
@@ -510,8 +524,10 @@
 		[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
 		[metaString appendString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n"];
 		[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
-		if ( [addDropTableSwitch state] == NSOnState )
+		
+		if ([self sqlOutputIncludeDropSyntax]) {
 			[metaString appendString:@"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n"];
+		}
 		
 		// Restore the client encoding to the original encoding before import
 		[metaString appendString:@"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n"];

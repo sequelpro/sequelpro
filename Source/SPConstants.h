@@ -31,7 +31,8 @@ typedef enum {
 	SPContentViewMode	  = 2,
 	SPRelationsViewMode	  = 3,
 	SPTableInfoViewMode   = 4,
-	SPQueryEditorViewMode = 5
+	SPQueryEditorViewMode = 5,
+	SPTriggersViewMode    = 6
 } SPViewMode;
 
 // Query modes
@@ -101,7 +102,8 @@ typedef enum
 	SPHistoryViewContent     = 1,
 	SPHistoryViewCustomQuery = 2,
 	SPHistoryViewStatus      = 3,
-	SPHistoryViewRelations   = 4
+	SPHistoryViewRelations   = 4,
+	SPHistoryViewTriggers    = 5
 } SPHistoryViewType;
 
 // SSH tunnel password modes
@@ -111,6 +113,14 @@ typedef enum
 	SPSSHPasswordAsksUI       = 1,
 	SPSSHPasswordNone         = 2
 } SPSSHTunnelPasswordMode;
+
+// Sort by constants
+typedef enum
+{
+	SPFavoritesSortNameItem = 0,
+	SPFavoritesSortHostItem = 1,
+	SPFavoritesSortTypeItem = 2
+} SPFavoritesSortItem;
 
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;
@@ -217,6 +227,10 @@ extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
+extern NSString *SPProcessListShowProcessID;
+extern NSString *SPProcessListShowFullProcessList;
+extern NSString *SPFavoritesSortedBy;
+extern NSString *SPFavoritesSortedInReverse;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;
@@ -256,6 +270,8 @@ extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
 extern NSString *SPKeyboardShortcutsURL;
 extern NSString *SPMySQLSearchURL;
+extern NSString *SPDevURL;
+extern NSString *SPGettingConnectedDocURL;
 
 // Toolbar constants
 

@@ -153,5 +153,13 @@
 	<true/>
 	<key>PrintWarningRowLimit</key>
 	<integer>1000</integer>
+	<key>ProcessListShowProcessID</key>
+	<true/>
+	<key>ProcessListShowFullProcessList</key>
+	<true/>
+	<key>FavoritesSortedBy</key>
+	<integer>0</integer>
+	<key>FavoritesSortedInReverse</key>
+	<false/>
 </dict>
 </plist>

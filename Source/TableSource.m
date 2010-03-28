@@ -74,16 +74,16 @@
 	tableSourceResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [aTable backtickQuotedString]]] retain];
 
 	// If an error occurred, reset the interface and abort
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
-
+	if ([mySQLConnection queryErrored]) {
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-				   errorMessage]);
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
+		}
 		if (tableSourceResult) [tableSourceResult release];
 		return;
 	}
@@ -96,16 +96,16 @@
 	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]] retain];
 
 	// If an error occurred, reset the interface and abort
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
-		NSString *errorMessage = [NSString stringWithString:[mySQLConnection getLastErrorMessage]];
-
+	if ([mySQLConnection queryErrored]) {
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-				nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-				   errorMessage]);
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
+					   [mySQLConnection getLastErrorMessage]]);
+		}
 		if (indexResult) [indexResult release];
 		return;
 	}
@@ -193,6 +193,7 @@
 
 	// Send the query finished/work complete notification
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	
 }
 
 /**
@@ -202,6 +203,10 @@
 {
 	[tableDataInstance resetAllData];
 	[tablesListInstance setStatusRequiresReload:YES];
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+
 	[self loadTable:selectedTable];
 }
 
@@ -579,7 +584,7 @@ closes the keySheet
 
 	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], valueAsString]];
 
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
@@ -846,7 +851,7 @@ closes the keySheet
 	// Execute query
 	[mySQLConnection queryString:queryString];
 
-	if ([[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if (![mySQLConnection queryErrored]) {
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
@@ -859,7 +864,7 @@ closes the keySheet
 		[tablesListInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		return YES;
 	} 
@@ -1066,7 +1071,7 @@ closes the keySheet
 			if ([NSThread isMainThread]) {
 				[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
 				
-				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 			} 
 			else {
 				[self _removeIndexAndForeignKey:removeKey];
@@ -1442,7 +1447,7 @@ would result in a position change.
 
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
-	if ( ![[mySQLConnection getLastErrorMessage] isEqualTo:@""] ) {
+	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
 	} else {
@@ -1699,7 +1704,7 @@ would result in a position change.
 									  [tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
 		
 		// Check for errors, but only if the query wasn't cancelled
-		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
 		}
@@ -1745,7 +1750,7 @@ would result in a position change.
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
 		
 		// Check for errors, but only if the query wasn't cancelled
-		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -1759,7 +1764,7 @@ would result in a position change.
 								  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"] backtickQuotedString]]];
 	
 	// Check for errors, but only if the query wasn't cancelled
-	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
@@ -1813,7 +1818,7 @@ would result in a position change.
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [constraintName backtickQuotedString]]];
 		
 		// Check for errors, but only if the query wasn't cancelled
-		if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -1831,7 +1836,7 @@ would result in a position change.
 	}
 	
 	// Check for errors, but only if the query wasn't cancelled
-	if ((![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) && (![mySQLConnection queryCancelled])) {
+	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Unable to remove index", @"error removing index message"),

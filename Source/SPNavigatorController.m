@@ -24,7 +24,7 @@
 
 #import "SPNavigatorController.h"
 #import "RegexKitLite.h"
-#import "SPOutlineView.h"
+#import "SPNavigatorOutlineView.h"
 #import "SPConstants.h"
 #import "ImageAndTextCell.h"
 #import "TableDocument.h"
@@ -64,14 +64,16 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 	if((self = [super initWithWindowNibName:@"Navigator"])) {
 
-		schemaData    = [[NSMutableDictionary alloc] init];
-		schemaDataUnFiltered    = [[NSMutableDictionary alloc] init];
-		expandStatus1 = [[NSMutableDictionary alloc] init];
-		expandStatus2 = [[NSMutableDictionary alloc] init];
-		infoArray     = [[NSMutableArray alloc] init];
-		selectedKey1  = @"";
-		selectedKey2  = @"";
-		ignoreUpdate  = NO;
+		schemaDataFiltered  = [[NSMutableDictionary alloc] init];
+		allSchemaKeys       = [[NSMutableDictionary alloc] init];
+		schemaData          = [[NSMutableDictionary alloc] init];
+		expandStatus1       = [[NSMutableDictionary alloc] init];
+		expandStatus2       = [[NSMutableDictionary alloc] init];
+		infoArray           = [[NSMutableArray alloc] init];
+		selectedKey1        = @"";
+		selectedKey2        = @"";
+		ignoreUpdate        = NO;
+		isFiltered          = NO;
 		[syncButton setState:NSOffState];
 		
 	}
@@ -82,8 +84,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	if(schemaDataFiltered) [schemaDataFiltered release];
+	if(allSchemaKeys) [allSchemaKeys release];
 	if(schemaData) [schemaData release];
-	if(schemaDataUnFiltered) [schemaDataUnFiltered release];
 	if(infoArray)  [infoArray release];
 	if(expandStatus1) [expandStatus1 release];
 	if(expandStatus2) [expandStatus2 release];
@@ -117,6 +121,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
+												 name:@"SPDBStructureWasUpdated" object:nil];
+
 }
 
 - (NSString *)windowFrameAutosaveName
@@ -142,39 +149,48 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	for( i = 0; i < [outlineSchema1 numberOfRows]; i++ ) {
 		id item = [outlineSchema1 itemAtRow:i];
 		id parentObject = [outlineSchema1 parentForItem:item] ? [outlineSchema1 parentForItem:item] : schemaData;
+		if(!parentObject) return;
 		id parentKeys = [parentObject allKeysForObject:item];
 		if(parentKeys && [parentKeys count] == 1)
 			if( [expandStatus1 objectForKey:[parentKeys objectAtIndex:0]] )
 				[outlineSchema1 expandItem:item];
 	}
-	for( i = 0; i < [outlineSchema2 numberOfRows]; i++ ) {
-		id item = [outlineSchema2 itemAtRow:i];
-		id parentObject = [outlineSchema2 parentForItem:item] ? [outlineSchema2 parentForItem:item] : schemaData;
-		id parentKeys = [parentObject allKeysForObject:item];
-		if(parentKeys && [parentKeys count] == 1)
-			if( [expandStatus2 objectForKey:[parentKeys objectAtIndex:0]] )
-				[outlineSchema2 expandItem:item];
+	if(!isFiltered) {
+		for( i = 0; i < [outlineSchema2 numberOfRows]; i++ ) {
+			id item = [outlineSchema2 itemAtRow:i];
+			id parentObject = [outlineSchema2 parentForItem:item] ? [outlineSchema2 parentForItem:item] : schemaData;
+			id parentKeys = [parentObject allKeysForObject:item];
+			if(parentKeys && [parentKeys count] == 1)
+				if( [expandStatus2 objectForKey:[parentKeys objectAtIndex:0]] )
+					[outlineSchema2 expandItem:item];
+		}
 	}
 }
 
 - (void)saveSelectedItems
 {
 	selectedKey1 = @"";
-	selectedKey2 = @"";
 	selectionViewPort1 = [outlineSchema1 visibleRect];
-	selectionViewPort2 = [outlineSchema2 visibleRect];
 	if(schemaData) {
 		id selection = nil;
 		selection = [outlineSchema1 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema1 parentForItem:selection] ? [outlineSchema1 parentForItem:selection] : schemaData;
+			if(!parentObject) return;
 			id parentKeys = [parentObject allKeysForObject:selection];
 			if(parentKeys && [parentKeys count] == 1)
 				selectedKey1 = [[parentKeys objectAtIndex:0] description];
 		}
+		
+		if(isFiltered) return;
+
+		selectedKey2 = @"";
+		selectionViewPort2 = [outlineSchema2 visibleRect];
+
 		selection = [outlineSchema2 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema2 parentForItem:selection] ? [outlineSchema2 parentForItem:selection] : schemaData;
+			if(!parentObject) return;
 			id parentKeys = [parentObject allKeysForObject:selection];
 			if(parentKeys && [parentKeys count] == 1)
 				selectedKey2 = [[parentKeys objectAtIndex:0] description];
@@ -212,7 +228,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
 				id item = [outlineSchema2 selectedItem];
 				// Try to scroll the view that all children of schemaPath are visible if possible
-				NSInteger cnt = [item count]+1;
+				NSInteger cnt = 1;
+				if([item isKindOfClass:[NSDictionary class]] || [item isKindOfClass:[NSArray class]])
+					cnt = [item count]+1;
 				NSRange r = [outlineSchema2 rowsInRect:[outlineSchema2 visibleRect]];
 				NSInteger offset = (cnt > r.length) ? (r.length-2) : cnt;
 				offset += [outlineSchema2 selectedRow];
@@ -254,7 +272,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			}
 		}
 	}
-	if(selectedKey2 && [selectedKey2 length]) {
+	if(!isFiltered && selectedKey2 && [selectedKey2 length]) {
 		id item = schemaData;
 		NSArray *pathArray = [selectedKey2 componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		NSMutableString *aKey = [NSMutableString string];
@@ -285,7 +303,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(schemaData && [schemaData objectForKey:connectionID]) {
 		
 		NSInteger docCounter = 0;
-		
+
+		// Detect if more than one connection windows with the connectionID are open.
+		// If so, don't remove it.
 		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 			for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 				if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
@@ -297,11 +317,15 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		if(docCounter > 1) return;
 		
+		[schemaDataFiltered removeObjectForKey:connectionID];
 		[schemaData removeObjectForKey:connectionID];
+		[allSchemaKeys removeObjectForKey:connectionID];
 		[self saveSelectedItems];
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
 		[self restoreSelectedItems];
+		if(isFiltered)
+			[self filterTree:self];
 	}
 }
 
@@ -310,6 +334,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if([outlineView levelForItem:item] == 0) return;
 	
 	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	if(!parentObject) return;
 	id parentKeys = [parentObject allKeysForObject:item];
 	if(parentKeys && [parentKeys count] == 1) {
 
@@ -342,12 +367,21 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 }
 
-#pragma mark -
-#pragma mark IBActions
+- (void)updateNavigator:(NSNotification *)aNotification
+{
+	id object = [aNotification object];
+	
+	if([object isKindOfClass:[TableDocument class]])
+		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:[object connectionID] waitUntilDone:YES];
+	else
+		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:YES];
+}
 
-- (IBAction)updateEntries:(id)sender;
+- (void)updateEntriesForConnection:(NSString*)connectionID
 {
 
+	if(![[self window] isVisible]) return;
+	NSLog(@"UPDATE NAVIGATOR called");
 	if(ignoreUpdate) {
 		ignoreUpdate = NO;
 		return;
@@ -356,34 +390,47 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[self saveSelectedItems];
 
 	[infoArray removeAllObjects];
-	[schemaData removeAllObjects];
-
-	[outlineSchema1 reloadData];
-	[outlineSchema2 reloadData];
 	
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 
-			if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
+			id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
+
+			if(!theConnection || ![theConnection isConnected]) continue;
 
 			NSString *connectionName = [doc connectionID];
 
-			if(!connectionName || [connectionName isEqualToString:@"_"]) continue;
+			if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) continue;
 
 			if(![schemaData objectForKey:connectionName]) {
+				[schemaData setObject:[NSMutableDictionary dictionary] forKey:connectionName];
+			}
 
-				if([[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] && [[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] objectForKey:connectionName]) {
-					[schemaData setObject:[[[doc valueForKeyPath:@"mySQLConnection"] getDbStructure] objectForKey:connectionName] forKey:connectionName];
-				} else {
 
-					if([[doc valueForKeyPath:@"mySQLConnection"] serverMajorVersion] > 4) {
-						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
-					} else {
-						[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data for this server version", connectionName]];
-					}
-
+			NSArray *dbs = [doc allDatabaseNames];
+			NSArray *keys = [[schemaData objectForKey:connectionName] allKeys];
+			for(id db in keys) {
+				if(![dbs containsObject:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1]]) {
+					[[schemaData objectForKey:connectionName] removeObjectForKey:db];
 				}
 			}
+
+			if([theConnection getDbStructure] && [[theConnection getDbStructure] objectForKey:connectionName]) {
+				for(id item in [[[theConnection getDbStructure] objectForKey:connectionName] allKeys])
+					[[schemaData objectForKey:connectionName] setObject:[[[theConnection getDbStructure] objectForKey:connectionName] objectForKey:item] forKey:item];
+				[allSchemaKeys setObject:[theConnection getAllKeysOfDbStructure] forKey:connectionName];
+			} else {
+
+				if([theConnection serverMajorVersion] > 4) {
+					[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
+					[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
+				} else {
+					[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data for this server version", connectionName]];
+					[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
+				}
+
+			}
+
 		}
 
 		[outlineSchema1 reloadData];
@@ -391,19 +438,47 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		[self restoreExpandStatus];
 		[self restoreSelectedItems];
-
 	}
 
 	[self syncButtonAction:self];
 
+	if(isFiltered)
+		[self filterTree:self];
+	
 
 }
+
+- (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname
+{
+	NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, dbname];
+
+	if([[[schemaData objectForKey:connectionID] allKeys] containsObject:db_id] 
+		&& [[[schemaData objectForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]
+		&& [[[schemaData objectForKey:connectionID] objectForKey:db_id] count])
+		return YES;
+
+	return NO;
+}
+
+- (void)removeDatabase:(NSString*)db_id forConnectionID:(NSString*)connectionID
+{
+	[[schemaData objectForKey:connectionID] removeObjectForKey:db_id];
+	[outlineSchema1 reloadData];
+	[outlineSchema2 reloadData];
+}
+
+#pragma mark -
+#pragma mark IBActions
+
 
 - (IBAction)reloadAllStructures:(id)sender
 {
 
 	// Reset everything
+	[searchField setStringValue:@""];
+	[schemaDataFiltered removeAllObjects];
 	[schemaData removeAllObjects];
+	[allSchemaKeys removeAllObjects];
 	[infoArray removeAllObjects];
 	[expandStatus1 removeAllObjects];
 	[expandStatus2 removeAllObjects];
@@ -414,11 +489,12 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	selectionViewPort1 = NSZeroRect;
 	selectionViewPort2 = NSZeroRect;
 	[syncButton setState:NSOffState];
+	isFiltered = NO;
 
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 			if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
-			[NSThread detachNewThreadSelector:@selector(queryDbStructure) toTarget:[doc valueForKeyPath:@"mySQLConnection"] withObject:nil];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[doc valueForKeyPath:@"mySQLConnection"] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 		}
 	}
 
@@ -431,7 +507,82 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (IBAction)filterTree:(id)sender
 {
-	NSString *pattern = [searchField stringValue];
+	NSString *pattern = [[[searchField stringValue] stringByReplacingOccurrencesOfString:@"." withString:SPUniqueSchemaDelimiter] lowercaseString];
+
+	[self saveSelectedItems];
+
+	id currentItem = [outlineSchema2 selectedItem];
+	id parentObject = nil;
+	if(isFiltered)
+		parentObject = [outlineSchema2 parentForItem:currentItem] ? [outlineSchema2 parentForItem:currentItem] : schemaDataFiltered;
+	else
+		parentObject = [outlineSchema2 parentForItem:currentItem] ? [outlineSchema2 parentForItem:currentItem] : schemaData;
+
+	NSString *connectionID = nil;
+	if(parentObject && [[parentObject allKeys] count])
+		connectionID = [[[[parentObject allKeys] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:0];
+	
+	if((pattern && ![pattern length]) || !parentObject || ![[parentObject allKeys] count] || !connectionID || [connectionID length] < 2 || ![allSchemaKeys objectForKey:connectionID]) {
+		isFiltered = NO;
+		[searchField setStringValue:@""];
+		[schemaDataFiltered removeAllObjects];
+		[outlineSchema2 reloadData];
+		[self restoreExpandStatus];
+		[self restoreSelectedItems];
+		return;
+	}
+
+	isFiltered = YES;
+
+	[syncButton setState:NSOffState];
+
+	NSMutableDictionary *structure = [NSMutableDictionary dictionary];
+	[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
+
+
+	for(NSString* item in [allSchemaKeys objectForKey:connectionID]) {
+		if([[item lowercaseString] rangeOfString:pattern].length) {
+
+			NSArray *a = [item componentsSeparatedByString:SPUniqueSchemaDelimiter];
+
+			NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID,SPUniqueSchemaDelimiter,[a objectAtIndex:1]];
+
+			if(!a || [a count] < 2) continue;
+
+			if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
+				[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
+			}
+			if([a count] > 2) {
+
+				NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id,SPUniqueSchemaDelimiter,[a objectAtIndex:2]];
+
+				if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id]) {
+					[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
+				}
+
+				if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "])
+					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
+						[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "] forKey:@"  struct_type  "];
+				else
+					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
+						[NSNumber numberWithInt:0] forKey:@"  struct_type  "];
+
+				if([a count] > 3) {
+					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id,SPUniqueSchemaDelimiter,[a objectAtIndex:3]];
+					if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:field_id])
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
+							[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:field_id] forKey:field_id];
+				}
+			}
+			
+		}
+	}
+	[outlineSchema1 reloadData];
+	[schemaDataFiltered removeAllObjects];
+	[outlineSchema2 reloadData];
+	[schemaDataFiltered setDictionary:[structure retain]];
+	[outlineSchema2 reloadData];
+	[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
 }
 
 - (IBAction)syncButtonAction:(id)sender
@@ -440,6 +591,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(!schemaData) return;
 
 	if([syncButton state] == NSOnState) {
+
+		if(isFiltered) {
+			isFiltered = NO;
+			[schemaDataFiltered removeAllObjects];
+			[outlineSchema2 reloadData];
+			[searchField setStringValue:@""];
+		}
+
 		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 			TableDocument *doc = [[NSDocumentController sharedDocumentController] currentDocument];
 			NSMutableString *key = [NSMutableString string];
@@ -462,10 +621,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)outlineViewItemDidExpand:(NSNotification *)notification
 {
-	SPOutlineView *ov = [notification object];
+	SPNavigatorOutlineView *ov = [notification object];
 	id item = [[notification userInfo] objectForKey:@"NSObject"];
 	
-	id parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaData;
+	id parentObject = nil;
+	if(isFiltered && ov == outlineSchema2)
+		parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaDataFiltered;
+	else
+		parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaData;
 
 	if(!parentObject || ![parentObject allKeysForObject:item] || ![[parentObject allKeysForObject:item] count]) return;
 
@@ -473,7 +636,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	{
 		[expandStatus1 setObject:@"" forKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
 	}
-	else if(ov == outlineSchema2)
+	else if(ov == outlineSchema2 && !isFiltered)
 	{
 		[expandStatus2 setObject:@"" forKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
 	}
@@ -481,22 +644,32 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)outlineViewItemDidCollapse:(NSNotification *)notification
 {
-	SPOutlineView *ov = [notification object];
+	SPNavigatorOutlineView *ov = [notification object];
 	id item = [[notification userInfo] objectForKey:@"NSObject"];
 	
-	id parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaData;
-
+	id parentObject = nil;
+	if(isFiltered && ov == outlineSchema2)
+		parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaDataFiltered;
+	else
+		parentObject = [ov parentForItem:item] ? [ov parentForItem:item] : schemaData;
+	
 	if(!parentObject || ![parentObject allKeysForObject:item] || ![[parentObject allKeysForObject:item] count]) return;
 
 	if(ov == outlineSchema1)
 		[expandStatus1 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
-	else if(ov == outlineSchema2)
+	else if(ov == outlineSchema2 && !isFiltered)
 		[expandStatus2 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
 }
 
 - (id)outlineView:(id)outlineView child:(NSInteger)index ofItem:(id)item
 {
-	if (item == nil) item = schemaData;
+
+	if (item == nil) {
+		if(isFiltered && outlineView == outlineSchema2)
+			item = schemaDataFiltered;
+		else
+			item = schemaData;
+	}
 
 	if ([item isKindOfClass:[NSDictionary class]] && [item allKeys] && [[item allKeys] count]) {
 		NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
@@ -527,10 +700,13 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (NSInteger)outlineView:(id)outlineView numberOfChildrenOfItem:(id)item
 {
 
-	if(!schemaData) return 0;
-
-	if(item == nil)
-		return [schemaData count];
+	if(isFiltered && outlineView == outlineSchema2) {
+		if(item == nil)
+			return [schemaDataFiltered count];
+	} else {
+		if(item == nil)
+			return [schemaData count];
+	}
 
 	if([item isKindOfClass:[NSDictionary class]] || [item isKindOfClass:[NSArray class]])
 		return [item count];
@@ -541,9 +717,12 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (id)outlineView:(id)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
 
-	if(!schemaData) return @"";
+	id parentObject = nil;
 
-	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	if(outlineView == outlineSchema2 && isFiltered)
+		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaDataFiltered;
+	else
+		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
 
 	if(!parentObject) return @"…";
 
@@ -587,20 +766,27 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				} else {
 					[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
 				}
-				if([[parentObject allKeysForObject:item] count])
+				if([[parentObject allKeysForObject:item] count] == 1) {
 					return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
-				else
+				} else {
 					return @"…";
+				}
 
 			} else {
 				if([[parentObject allKeysForObject:item] count]) {
-					// It's a field and use the key "  struct_type  " to increase the distance between node and first child
-					if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
-						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
+					if([outlineView levelForItem:item] == 1) {
+						// It's a db name which wasn't queried yet
+						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
 						return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 					} else {
-						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
-						return nil;
+						// It's a field and use the key "  struct_type  " to increase the distance between node and first child
+						if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
+							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
+							return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
+						} else {
+							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
+							return nil;
+						}
 					}
 				}
 				return @"…";
@@ -644,7 +830,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:outlineView isGroupItem:(id)item
 {
-	if ([item isKindOfClass:[NSDictionary class]])
+	if ([item isKindOfClass:[NSDictionary class]] || [outlineView levelForItem:item] == 1)
 		return YES;
 		
 	return NO;
@@ -652,8 +838,15 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
-	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
-	
+	id parentObject = nil;
+
+	if(outlineView == outlineSchema2 && isFiltered)
+		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaDataFiltered;
+	else
+		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+
+	if(!parentObject) return 0;
+
 	// Use "  struct_type  " as placeholder to increase distance between table and first field name otherwise it looks ugly 
 	if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count] && [[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 		return 5.0;
@@ -668,7 +861,15 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
-	id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	id parentObject = nil;
+
+	if(outlineView == outlineSchema2 && isFiltered)
+		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaDataFiltered;
+	else
+		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+
+	if(!parentObject) return NO;
+
 	if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count] && [[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
 		return NO;
 	return YES;
@@ -684,13 +885,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)aNotification
 {
-	id ov = [aNotification object];
-	id selectedItem;
-	if(ov == outlineSchema1) {
-		selectedItem = [outlineSchema1 selectedItem];
-	} else if (ov == outlineSchema2) {
-		selectedItem = [outlineSchema2 selectedItem];
-	}
+
+	id selectedItem = [[aNotification object] selectedItem];
 
 	if(selectedItem) {
 		[infoArray removeAllObjects];
@@ -753,6 +949,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	NSMutableArray *draggedItems = [NSMutableArray array];
 	for(id item in items) {
 		id parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+		if(!parentObject) return NO;
 		id parentKeys = [parentObject allKeysForObject:item];
 		if(parentKeys && [parentKeys count] == 1)
 			[draggedItems addObject:[[[parentKeys objectAtIndex:0] description] stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"^.*?%@", SPUniqueSchemaDelimiter] withString:@""]];
@@ -793,7 +990,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	// Use first row as dummy to increase the distance between content and header
-	return (row == 0) ? 5.0 : 15; //[tableView rowHeight];
+	return (row == 0) ? 5.0 : 16.0;
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex

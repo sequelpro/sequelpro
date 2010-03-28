@@ -132,11 +132,8 @@
 	
 	// Execute query
 	[connection queryString:query];
-	
-	NSInteger retCode = (![[connection getLastErrorMessage] isEqualToString:@""]);
-		
-	// 0 indicates success
-	if (retCode) {
+
+	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
@@ -404,7 +401,7 @@
 				
 				[connection queryString:query];
 				
-				if (![[connection getLastErrorMessage] isEqualToString:@""] ) {
+				if ([connection queryErrored]) {
 					
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),

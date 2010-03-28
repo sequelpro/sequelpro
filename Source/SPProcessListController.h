@@ -31,13 +31,15 @@
 {
 	MCPConnection *connection;
 	
+	BOOL showFullProcessList;
+	
+	NSUserDefaults *prefs;
 	NSMutableArray *processes, *processesFiltered;
 	
 	IBOutlet NSTableView         *processListTableView;
 	IBOutlet NSTextField         *processesCountTextField;
 	IBOutlet NSSearchField       *filterProcessesSearchField;
 	IBOutlet NSProgressIndicator *refreshProgressIndicator; 
-	IBOutlet NSButton            *closeProcessListButton;
 	IBOutlet NSButton            *saveProcessesButton;
 	IBOutlet NSButton            *refreshProcessesButton;
 }
@@ -45,12 +47,13 @@
 @property (readwrite, assign) MCPConnection *connection;
 
 - (IBAction)copy:(id)sender;
-- (IBAction)closeSheet:(id)sender;
 - (IBAction)refreshProcessList:(id)sender;
 - (IBAction)saveServerProcesses:(id)sender;
 - (IBAction)killProcessQuery:(id)sender;
 - (IBAction)killProcessConnection:(id)sender;
+- (IBAction)toggleShowProcessID:(id)sender;
+- (IBAction)toggeleShowFullProcessList:(id)sender;
 
-- (void)displayProcessListSheetAttachedToWindow:(NSWindow *)window;
+- (void)displayProcessListWindow;
 
 @end

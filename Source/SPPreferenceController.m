@@ -34,6 +34,7 @@
 @interface SPPreferenceController (PrivateAPI)
 
 - (void)_setupToolbar;
+- (void)_sortFavorites;
 - (void)_resizeWindowForContentView:(NSView *)view;
 
 @end
@@ -49,6 +50,7 @@
 {
 	if (self = [super initWithWindowNibName:@"Preferences"]) {
 		prefs = [NSUserDefaults standardUserDefaults];
+		
 		[self applyRevisionChanges];
 
 		currentFavorite = nil;
@@ -56,6 +58,9 @@
 		favoriteNameFieldWasTouched = YES;
 		favoriteType = 0;
 		fontChangeTarget = 0;
+		reverseFavoritesSort = NO;
+		
+		previousSortItem = SPFavoritesSortNameItem;
 	}
 
 	return self;
@@ -69,6 +74,10 @@
 	[self _setupToolbar];
 	
 	keychain = [[SPKeychain alloc] init];
+	
+	// Set sort items
+	currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
+	reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
 	
 	[tableCell setImage:[NSImage imageNamed:@"database"]];
 	
@@ -86,6 +95,8 @@
 	[self updateDefaultFavoritePopup];
 	
 	[prefs synchronize];
+	
+	[self _sortFavorites];
 }
 
 #pragma mark -
@@ -410,14 +421,6 @@
 }
 
 // -------------------------------------------------------------------------------
-// saveFavorite:
-// -------------------------------------------------------------------------------
-- (IBAction)saveFavorite:(id)sender
-{
-	
-}
-
-// -------------------------------------------------------------------------------
 // updateDefaultFavorite:
 // -------------------------------------------------------------------------------
 - (IBAction)updateDefaultFavorite:(id)sender
@@ -430,6 +433,38 @@
 		// Minus 2 from index to account for the "Last Used" and separator items
 		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:SPDefaultFavorite];
 	}
+}
+
+/**
+ * Sorts the favorites table view based on the selected sort by item
+ */
+- (IBAction)sortFavorites:(id)sender
+{
+	previousSortItem = currentSortItem;
+	currentSortItem  = [[sender menu] indexOfItem:sender];
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	
+	// Perform sorting
+	[self _sortFavorites];
+	
+	[[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
+}
+
+/**
+ * Reverses the favorites table view sorting based on the selected criteria
+ */
+- (IBAction)reverseFavoritesSortOrder:(id)sender
+{	
+	reverseFavoritesSort = (![sender state]);
+		
+	[prefs setBool:reverseFavoritesSort forKey:SPFavoritesSortedInReverse];
+	
+	// Perform re-sorting
+	[self _sortFavorites];
+	
+	[sender setState:reverseFavoritesSort]; 
 }
 
 #pragma mark -
@@ -558,15 +593,15 @@
 // -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
-
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:nil];
 		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPFavoritesPasteboardDragType];
+		
 		return YES;
-	} else {
+	} 
+	else {
 		return NO;
 	}
-
 }
 
 // -------------------------------------------------------------------------------
@@ -627,6 +662,7 @@
 	if ([prefs integerForKey:SPDefaultFavorite] == originalRow) {
 		[prefs setInteger:destinationRow forKey:SPDefaultFavorite];
 	}
+	
 	[self updateDefaultFavoritePopup];
 	
 	return YES;
@@ -777,7 +813,6 @@
 // -------------------------------------------------------------------------------
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
 {
-
 	// Request a password refresh to keep keychain references in synch with favorites
 	[self updateFavoritePasswordsFromField:control];
 
@@ -793,8 +828,8 @@
 // -------------------------------------------------------------------------------
 - (void)controlTextDidChange:(NSNotification *)aNotification
 {
-
 	id field = [aNotification object];
+	
 	BOOL nameFieldIsEmpty = (
 		[[favoritesController valueForKeyPath:@"selection.name"] isEqualToString:@""] 
 		|| [[favoriteNameTextField stringValue] isEqualToString:@""]);
@@ -831,11 +866,9 @@
 		break;
 	}
 	
-		
 	if(field == favoriteNameTextField) {
 		favoriteNameFieldWasTouched = YES;
 	}
-
 }
 // -------------------------------------------------------------------------------
 // favoriteTypeDidChange:
@@ -843,7 +876,6 @@
 // -------------------------------------------------------------------------------
 - (IBAction)favoriteTypeDidChange:(id)sender
 {
-
 	// If not socket and host is localhost, clear.
 	if ([sender indexOfSelectedItem] != 1
 		&& [[favoritesController valueForKeyPath:@"selection.host"] isEqualToString:@"localhost"])
@@ -963,11 +995,9 @@
 // -------------------------------------------------------------------------------
 - (void)windowWillClose:(NSNotification *)notification
 {
-
 	// Mark the currently selected field in the window as having finished editing, to trigger saves.
 	if ([preferencesWindow firstResponder])
 		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
-
 }
 
 #pragma mark -
@@ -1072,10 +1102,10 @@
 	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
 }
+
 // reset syntax highlighting colors
 - (IBAction)setDefaultColors:(id)sender
 {
-
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:SPCustomQueryEditorCommentColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:SPCustomQueryEditorQuoteColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:SPCustomQueryEditorSQLKeywordColor];
@@ -1086,7 +1116,6 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorTextColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
-
 }
 
 // Set font panel's valid modes
@@ -1099,19 +1128,54 @@
 - (void)changeFont:(id)sender
 {
 	NSFont *nf;
-	switch(fontChangeTarget) {
+	
+	switch(fontChangeTarget) 
+	{
 		case 1:
-		nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]]];
-		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPGlobalResultTableFont];
-		[globalResultTableFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
-		break;
+			nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]]];
+			[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPGlobalResultTableFont];
+			[globalResultTableFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+			break;
 		case 2:
-		nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
-		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
-		[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
-		break;
+			nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
+			[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
+			[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
+			break;
 	}
 }
+
+/**
+ * Menu item validation;
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	SEL action = [menuItem action];
+	
+	if ((action == @selector(removeFavorite:)) || (action == @selector(duplicateFavorite:))) {
+		return ([favoritesTableView numberOfSelectedRows] > 0);
+	}
+	
+	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseFavoritesSortOrder:))) {
+		
+		// Loop all the items in the sort by menu only checking the currently selected one
+		for (NSMenuItem *item in [[menuItem menu] itemArray])
+		{
+			[item setState:([[menuItem menu] indexOfItem:item] == currentSortItem) ? NSOnState : NSOffState];
+		}
+		
+		// Check or uncheck the reverse sort item
+		if (action == @selector(reverseFavoritesSortOrder:)) {
+			[menuItem setState:reverseFavoritesSort];
+		}
+		
+		return [[toolbar selectedItemIdentifier] isEqualToString:SPPreferenceToolbarFavorites];
+	}
+	
+	return YES;
+}
+
+
+#pragma mark -
 
 // -------------------------------------------------------------------------------
 // dealloc
@@ -1211,6 +1275,43 @@
 	[preferencesWindow setShowsToolbarButton:NO];
 
 	[self displayGeneralPreferences:nil];
+}
+
+/**
+ * Sorts the connection favorites based on the selected criteria.
+ */
+- (void)_sortFavorites
+{
+	NSString *sortKey = @"";
+	
+	switch (currentSortItem)
+	{
+		case SPFavoritesSortNameItem:
+			sortKey = @"name";
+			break;
+		case SPFavoritesSortHostItem:
+			sortKey = @"host";
+			break;
+		case SPFavoritesSortTypeItem:
+			sortKey = @"type";
+			break;
+		default:
+			sortKey = @"name";
+			break;
+	}
+	
+	NSSortDescriptor *sortDescriptor = nil;
+	
+	if (currentSortItem == SPFavoritesSortTypeItem) {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:reverseFavoritesSort] autorelease];
+	}
+	else {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:reverseFavoritesSort selector:@selector(caseInsensitiveCompare:)] autorelease];
+	}
+	
+	[favoritesController setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+	
+	[favoritesTableView reloadData];
 }
 
 // -------------------------------------------------------------------------------

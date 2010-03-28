@@ -826,7 +826,7 @@ static SPQueryController *sharedQueryController = nil;
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
 		
-		[saveConsoleButton setTitle:@"Save As..."];
+		[saveConsoleButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
 		
 		// Hide progress spinner
 		[progressIndicator setHidden:YES];
@@ -859,7 +859,7 @@ static SPQueryController *sharedQueryController = nil;
 		[clearConsoleButton setEnabled:YES];
 	}
 	
-	[saveConsoleButton setTitle:@"Save View As..."];
+	[saveConsoleButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
 	
 	// Hide progress spinner
 	[progressIndicator setHidden:YES];

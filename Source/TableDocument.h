@@ -189,6 +189,7 @@
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
+- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
 
 // Task progress and notification methods
 - (void)startTaskWithDescription:(NSString *)description;
@@ -232,7 +233,6 @@
 // Other methods
 - (void) setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
-- (IBAction)closeErrorConnectionSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;
@@ -251,7 +251,6 @@
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
 - (IBAction)toggleNavigator:(id)sender;
-- (void)updateNavigator:(id)sender;
 
 // Accessor methods
 - (NSString *)host;

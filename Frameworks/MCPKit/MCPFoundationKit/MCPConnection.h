@@ -27,48 +27,81 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/Foundation.h>
+#import <pthread.h>
 
 #import "MCPConstants.h"
-
 #import "mysql.h"
-#include <pthread.h>
 
-enum
-{
-	MCP_NO_STREAMING = 0,
-	MCP_FAST_STREAMING = 1,
-	MCP_LOWMEM_STREAMING = 2
-};
-typedef NSUInteger mcp_query_streaming_types;
-
-@class MCPResult, MCPStreamingResult;
 @protocol MCPConnectionProxy;
 
-/**
- * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
- */
-static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger encoding, NSInteger lossy) 
-{
-	typedef NSData* (*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, NSInteger, NSInteger);
-	static SPStringDataUsingLossyEncodingMethodPtr SPNSStringDataUsingLossyEncoding;
-	if (!SPNSStringDataUsingLossyEncoding) SPNSStringDataUsingLossyEncoding = (SPStringDataUsingLossyEncodingMethodPtr)[self methodForSelector:@selector(dataUsingEncoding:allowLossyConversion:)];
-	NSData* to_return = SPNSStringDataUsingLossyEncoding(self, @selector(dataUsingEncoding:allowLossyConversion:), encoding, lossy);
-	return to_return;
-}
+@class MCPResult, MCPStreamingResult;
 
-// Connection delegate interface
 @interface NSObject (MCPConnectionDelegate)
 
+/**
+ *
+ */
 - (void)willQueryString:(NSString *)query connection:(id)connection;
+
+/**
+ *
+ */
 - (void)queryGaveError:(NSString *)error connection:(id)connection;
+
+/**
+ *
+ */
 - (BOOL)connectionEncodingViaLatin1:(id)connection;
+
+/**
+ *
+ */
 - (NSString *)keychainPasswordForConnection:(id)connection;
+
+/**
+ *
+ */
 - (NSString *)onReconnectShouldSelectDatabase:(id)connection;
+
+/**
+ *
+ */
 - (NSString *)onReconnectShouldUseEncoding:(id)connection;
+
+/**
+ *
+ */
 - (void)noConnectionAvailable:(id)connection;
+
+/**
+ *
+ */
 - (MCPConnectionCheck)connectionLost:(id)connection;
-- (void)updateNavigator:(id)sender;
+
+/**
+ *
+ */
 - (NSString *)connectionID;
+
+/**
+ *
+ */
+- (NSString *)database;
+
+/**
+ *
+ */
+- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
+
+/**
+ *
+ */
+- (NSArray*)allDatabaseNames;
+
+/**
+ *
+ */
+- (NSArray*)allSystemDatabaseNames;
 
 @end
 
@@ -79,9 +112,10 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	NSStringEncoding mEncoding;        /* The encoding used by MySQL server, to ISO-1 default. */
 	NSTimeZone		 *mTimeZone;       /* The time zone of the session. */
 	NSUInteger       mConnectionFlags; /* The flags to be used for the connection to the database. */
-	id				 delegate;         /* Connection delegate */
 	
-	NSLock			 *queryLock;	   /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
+	id delegate; /* Connection delegate */
+	
+	NSLock *queryLock; /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
 
 	BOOL useKeepAlive;
 	BOOL isDisconnecting;
@@ -109,10 +143,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	BOOL isMaxAllowedPacketEditable;
 	
 	NSString *serverVersionString;
-	NSDictionary *theDbStructure;
-	NSDictionary *uniqueDbIdentifier;
+	NSMutableDictionary *structure;
+	NSMutableSet *allKeysofDbStructure;
 	
 	NSTimer *keepAliveTimer;
+	double lastKeepAliveTime;
 	pthread_t keepAliveThread;
 	pthread_t pingThread;
 	uint64_t connectionStartTime;
@@ -128,15 +163,11 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 	// Pointers
 	IMP cStringPtr;
 	IMP willQueryStringPtr;
-	IMP stopKeepAliveTimerPtr;
-	IMP startKeepAliveTimerPtr;
 	IMP timeConnectedPtr;
 	
 	// Selectors
 	SEL cStringSEL;
 	SEL willQueryStringSEL;
-	SEL stopKeepAliveTimerSEL;
-	SEL startKeepAliveTimerSEL;
 	SEL timeConnectedSEL;
 }
 
@@ -174,8 +205,6 @@ static inline NSData* NSStringDataUsingLossyEncoding(NSString* self, NSInteger e
 - (BOOL)checkConnection;
 - (BOOL)pingConnection;
 void pingConnectionTask(void *ptr);
-- (void)startKeepAliveTimer;
-- (void)stopKeepAliveTimer;
 - (void)keepAlive:(NSTimer *)theTimer;
 - (void)threadedKeepAlive;
 void performThreadedKeepAlive(void *ptr);
@@ -204,6 +233,7 @@ void performThreadedKeepAlive(void *ptr);
 - (BOOL)selectDB:(NSString *)dbName;
 
 // Error information
+- (BOOL)queryErrored;
 - (NSString *)getLastErrorMessage;
 - (void)setLastErrorMessage:(NSString *)theErrorMessage;
 - (NSUInteger)getLastErrorID;
@@ -217,7 +247,7 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream;
-- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResult;
+- (id)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding streamingResult:(NSInteger)streamResult;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;
 - (void)cancelCurrentQuery;
@@ -236,9 +266,10 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
-- (void)queryDbStructure;
+- (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo;
 - (NSDictionary *)getDbStructure;
 - (NSInteger)getUniqueDbIdentifierFor:(NSString*)term;
+- (NSArray *)getAllKeysOfDbStructure;
 
 // Server information
 - (NSString *)clientInfo;

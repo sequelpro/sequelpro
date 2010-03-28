@@ -42,7 +42,8 @@
 	NSUserDefaults *prefs;
 
 	NSMutableDictionary *schemaData;
-	NSMutableDictionary *schemaDataUnFiltered;
+	NSMutableDictionary *schemaDataFiltered;
+	NSMutableDictionary *allSchemaKeys;
 	NSMutableArray *infoArray;
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
@@ -52,18 +53,19 @@
 	NSRect selectionViewPort1;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
+	BOOL isFiltered;
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
 
 - (IBAction)outlineViewAction:(id)sender;
-- (IBAction)updateEntries:(id)sender;
 - (IBAction)reloadAllStructures:(id)sender;
 - (IBAction)filterTree:(id)sender;
 - (IBAction)syncButtonAction:(id)sender;
 
+- (void)updateEntriesForConnection:(NSString*)connectionID;
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
-
+- (void)updateNavigator:(NSNotification *)aNotification;
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
 - (void)selectPath:(NSString*)schemaPath;
@@ -71,4 +73,6 @@
 - (void)removeConnection:(NSString*)connectionID;
 - (void)selectInActiveDocumentItem:(id)item fromView:(id)outlineView;
 
+- (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname;
+- (void)removeDatabase:(NSString*)db_id forConnectionID:(NSString*)connectionID;
 @end

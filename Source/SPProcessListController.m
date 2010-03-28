@@ -31,6 +31,8 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 
+#define TABLEVIEW_ID_COLUMN_IDENTIFIER @"Id"
+
 @interface SPProcessListController (PrivateAPI)
 
 - (void)_getDatabaseProcessList;
@@ -51,6 +53,11 @@
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseProcessList"])) {
 		processes = [[NSMutableArray alloc] init];
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+		
+		// Default the process list comment to SHOW FULL PROCESSLIST
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
 	}
 	
 	return self;
@@ -60,8 +67,13 @@
  * Interface initialisation
  */
 - (void)awakeFromNib
-{
-	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+{	
+	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[[NSDocumentController sharedDocumentController] currentDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
+	
+	[self setWindowFrameAutosaveName:@"ProcessList"];
+	
+	// Show/hide table columns
+	[[processListTableView tableColumnWithIdentifier:TABLEVIEW_ID_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPProcessListShowProcessID]];
 	
 	// Set the process table view's vertical gridlines if required
 	[processListTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -128,15 +140,14 @@
 /**
  * Close the process list sheet.
  */
-- (IBAction)closeSheet:(id)sender
+- (void)close
 {
-	[NSApp endSheet:[self window] returnCode:[sender tag]];
-	[[self window] orderOut:self];
-	
 	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
 	if ((processesFiltered) && (processesFiltered != processes)) {
 		[processesFiltered release], processesFiltered = nil;
-	}		
+	}
+	
+	[super close];
 }
 
 /**
@@ -144,13 +155,16 @@
  */
 - (IBAction)refreshProcessList:(id)sender
 {
+	// If the document is currently performing a task (most likely threaded) on the current connection, don't
+	// allow a refresh to prevent connection lock errors.
+	if ([(TableDocument *)[connection delegate] isWorking]) return;
+	
 	// Start progress Indicator
 	[refreshProgressIndicator startAnimation:self];
 	[refreshProgressIndicator setHidden:NO];
 	
 	// Disable controls
 	[refreshProcessesButton setEnabled:NO];
-	[closeProcessListButton setEnabled:NO];
 	[saveProcessesButton setEnabled:NO];
 	[filterProcessesSearchField setEnabled:NO];
 	
@@ -166,7 +180,6 @@
 	// Enable controls
 	[filterProcessesSearchField setEnabled:YES];
 	[saveProcessesButton setEnabled:YES];
-	[closeProcessListButton setEnabled:YES];
 	[refreshProcessesButton setEnabled:YES];
 	
 	// Stop progress Indicator
@@ -244,30 +257,38 @@
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessConnectionMode];
 }
 
+/**
+ *
+ */
+- (IBAction)toggleShowProcessID:(id)sender
+{
+	[[processListTableView tableColumnWithIdentifier:TABLEVIEW_ID_COLUMN_IDENTIFIER] setHidden:([sender state])];
+}
+
+/**
+ *
+ */
+- (IBAction)toggeleShowFullProcessList:(id)sender
+{
+	showFullProcessList = (!showFullProcessList);
+		
+	[self refreshProcessList:self];
+}
+
 #pragma mark -
 #pragma mark Other methods
 
 /**
  * Displays the process list sheet attached to the supplied window.
  */
-- (void)displayProcessListSheetAttachedToWindow:(NSWindow *)window
+- (void)displayProcessListWindow
 {
 	// Weak reference
 	processesFiltered = processes;
 	
-	// Get the current process list
-	[self _getDatabaseProcessList];
-	
-	// Reload the tableview
-	[processListTableView reloadData];
-	
-	// If the search field already has value from when the panel was previously open, apply the filter.
-	if ([[filterProcessesSearchField stringValue] length] > 0) {
-		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];
-	}
+	[self refreshProcessList:self];
 	 
-	// Open the sheet
-	[NSApp beginSheet:[self window] modalForWindow:window modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[self showWindow:self];
 }
 
 /**
@@ -275,7 +296,6 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
@@ -343,6 +363,14 @@
 }
 
 /**
+ * NSWindow autosave name
+ */
+- (NSString *)windowFrameAutosaveName
+{
+	return @"ProcessList";
+}
+
+/**
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -383,7 +411,7 @@
 {	
 	id object = [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]];
 	
-	return (![object isNSNull]) ? object : @"NULL";
+	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
 }
 
 #pragma mark -
@@ -408,7 +436,7 @@
  */
 - (void)dealloc
 {
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
 	[processes release], processes = nil;
 	
@@ -427,7 +455,8 @@
 	NSUInteger i = 0;
 	
 	// Get processes
-	MCPResult *processList = [connection queryString:@"SHOW PROCESSLIST"];
+	MCPResult *processList = [connection queryString:(showFullProcessList) ? @"SHOW FULL PROCESSLIST" : @"SHOW PROCESSLIST"];
+	
 	[processList setReturnDataAsStrings:YES];
 	
 	if ([processList numOfRows]) [processList dataSeek:0];
@@ -449,7 +478,7 @@
 	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %lu", (unsigned long)processId]];
 	
 	// Check for errors
-	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
+	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
 	}
@@ -467,7 +496,7 @@
 	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %lu", (unsigned long)processId]];
 	
 	// Check for errors
-	if (![[connection getLastErrorMessage] isEqualToString:@""]) {
+	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
 	}
@@ -498,7 +527,7 @@
 		processesFiltered = processes;
 		
 		[saveProcessesButton setEnabled:YES];
-		[saveProcessesButton setTitle:@"Save As..."];
+		[saveProcessesButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
 		[processesCountTextField setStringValue:@""];
 		
 		[processListTableView reloadData];
@@ -524,13 +553,13 @@
 	
 	[processListTableView reloadData];
 	
-	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%lu of %lu", "filtered item count"), (unsigned long)[processesFiltered count], (unsigned long)[processes count]]];
+	[processesCountTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Showing %lu of %lu processes", "filtered item count"), (unsigned long)[processesFiltered count], (unsigned long)[processes count]]];
 	[processesCountTextField setHidden:NO];
 	
 	if ([processesFiltered count] == 0) return;
 	
 	[saveProcessesButton setEnabled:YES];
-	[saveProcessesButton setTitle:@"Save View As..."];
+	[saveProcessesButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
 }
 
 @end

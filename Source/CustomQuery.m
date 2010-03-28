@@ -579,7 +579,7 @@
 		[streamingResult release];
 
 		// Store any error messages
-		if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] || [mySQLConnection queryCancelled]) {
+		if ([mySQLConnection queryErrored] || [mySQLConnection queryCancelled]) {
 
 			NSString *errorString;
 			if ([mySQLConnection queryCancelled]) {
@@ -1672,7 +1672,7 @@
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 			// Check for errors while UPDATE
-			if ( ![[mySQLConnection getLastErrorMessage] isEqualToString:@""] ) {
+			if ([mySQLConnection queryErrored]) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
 
@@ -1808,7 +1808,7 @@
 {
 	queryIsTableSorter = NO;
 
-	if(![[mySQLConnection getLastErrorMessage] isEqualToString:@""]) {
+	if ([mySQLConnection queryErrored]) {
 		sortColumn = nil;
 		return;
 	}
@@ -2565,7 +2565,7 @@
 	
 	// search via: HELP 'searchString'
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
-	if (![[mySQLConnection getLastErrorMessage] isEqualToString:@""])
+	if ([mySQLConnection queryErrored])
 	{
 		// if an error or HELP is not supported fall back to online search but
 		// don't open it if autoHelp is enabled
