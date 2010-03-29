@@ -28,13 +28,16 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "TableContent.h"
+#import "SPTableTriggers.h"
+#import "SPTableRelations.h"
 #import "CustomQuery.h"
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
 #import "SPDataStorage.h"
 
-NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2001;
-NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
+NSInteger MENU_EDIT_COPY             = 2001;
+NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
+NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 @implementation CMCopyTable
 
@@ -75,19 +78,35 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2002;
 	return NSDragOperationCopy;
 }
 
-//only have the copy menu item enabled when row(s) are selected
+/**
+ * Only have the copy menu item enabled when row(s) are selected in
+ * supported tables.
+ */
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem 
-{	
-	if ( [[anItem title] isEqualToString:@"Copy"] 
-		|| [anItem tag] == MENU_EDIT_COPY_WITH_COLUMN )
-	{
-		return ([self selectedRow] > -1);
+{
+	NSInteger menuItemTag = [anItem tag];
+
+	// Don't validate anything other than the copy commands
+	if (menuItemTag != MENU_EDIT_COPY && menuItemTag != MENU_EDIT_COPY_WITH_COLUMN && menuItemTag != MENU_EDIT_COPY_AS_SQL) {
+		return YES;
 	}
-	if ( [anItem tag] == MENU_EDIT_COPY_AS_SQL )
-	{
-		return (columnDefinitions != nil && [self selectedRow] > -1);
+
+	// Don't enable menus for relations or triggers - no action to take yet
+	if ([[self delegate] isKindOfClass:[SPTableRelations class]] || [[self delegate] isKindOfClass:[SPTableTriggers class]]) {
+		return NO;
 	}
-	return YES;
+
+	// Enable the Copy [with column names] commands if a row is selected
+	if (menuItemTag == MENU_EDIT_COPY || menuItemTag == MENU_EDIT_COPY_WITH_COLUMN) {
+		return ([self numberOfSelectedRows] > 0);
+	}
+
+	// Enable the Copy as SQL commands if rows are selected and column definitions are available
+	if (menuItemTag == MENU_EDIT_COPY_AS_SQL) {
+		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
+	}
+
+	return NO;
 }
 
 //get selected rows a string of newline separated lines of tab separated fields

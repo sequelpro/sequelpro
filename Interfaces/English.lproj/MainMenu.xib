@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1059"/>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -691,6 +691,7 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
+									<int key="NSTag">2001</int>
 								</object>
 								<object class="NSMenuItem" id="609933882">
 									<reference key="NSMenu" ref="71086556"/>
@@ -700,7 +701,7 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
-									<int key="NSTag">2001</int>
+									<int key="NSTag">2002</int>
 								</object>
 								<object class="NSMenuItem" id="121139500">
 									<reference key="NSMenu" ref="71086556"/>
@@ -710,7 +711,7 @@
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
-									<int key="NSTag">2002</int>
+									<int key="NSTag">2003</int>
 								</object>
 								<object class="NSMenuItem" id="892596559">
 									<reference key="NSMenu" ref="71086556"/>
@@ -5183,7 +5184,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{428, 215}, {235, 333}}</string>
+					<string>{{428, 491}, {235, 333}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -6139,7 +6140,6 @@
 							<string>checksumTable:</string>
 							<string>chooseDatabase:</string>
 							<string>chooseEncoding:</string>
-							<string>closeErrorConnectionSheet:</string>
 							<string>closePanelSheet:</string>
 							<string>closePasswordSheet:</string>
 							<string>closeSheet:</string>
@@ -6179,7 +6179,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
