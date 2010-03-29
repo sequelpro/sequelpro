@@ -181,7 +181,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		selection = [outlineSchema1 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema1 parentForItem:selection] ? [outlineSchema1 parentForItem:selection] : schemaData;
-			if(!parentObject) return;
+			if(!parentObject || ![parentObject isKindOfClass:[NSDictionary class]] || ![parentObject objectForKey:selection]) return;
 			id parentKeys = [parentObject allKeysForObject:selection];
 			if(parentKeys && [parentKeys count] == 1)
 				selectedKey1 = [[parentKeys objectAtIndex:0] description];
@@ -195,7 +195,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		selection = [outlineSchema2 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema2 parentForItem:selection] ? [outlineSchema2 parentForItem:selection] : schemaData;
-			if(!parentObject) return;
+			if(!parentObject || ![parentObject isKindOfClass:[NSDictionary class]] || ![parentObject objectForKey:selection]) return;
 			id parentKeys = [parentObject allKeysForObject:selection];
 			if(parentKeys && [parentKeys count] == 1)
 				selectedKey2 = [[parentKeys objectAtIndex:0] description];
@@ -321,11 +321,17 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 
 		if(docCounter > 1) return;
-		
-		[schemaDataFiltered removeObjectForKey:connectionID];
-		[schemaData removeObjectForKey:connectionID];
-		[allSchemaKeys removeObjectForKey:connectionID];
-		[self saveSelectedItems];
+
+		if(schemaData && [schemaData objectForKey:connectionID])
+			[self saveSelectedItems];
+
+		if(schemaDataFiltered)
+			[schemaDataFiltered removeObjectForKey:connectionID];
+		if(schemaData)
+			[schemaData removeObjectForKey:connectionID];
+		if(allSchemaKeys)
+			[allSchemaKeys removeObjectForKey:connectionID];
+			
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
 		[self restoreSelectedItems];
@@ -481,9 +487,12 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID
 {
-	if([allSchemaKeys objectForKey:connectionID])
-		return [NSArray arrayWithArray:[allSchemaKeys objectForKey:connectionID]];
-	return [NSArray array];
+	if([allSchemaKeys objectForKey:connectionID]) {
+		NSArray *a = [allSchemaKeys objectForKey:connectionID];
+		if(a && [a count])
+			return a;
+	}
+	return nil;
 }
 
 /**

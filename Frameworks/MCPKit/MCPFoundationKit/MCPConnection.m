@@ -1877,10 +1877,16 @@ void performThreadedKeepAlive(void *ptr)
 			connectionID = @"_";
 
 		// Re-init with already cached data from navigator controller
+		NSDictionary *dbstructure = [[[self delegate] getDbStructure] retain];
 		[structure removeAllObjects];
-		[structure setObject:[NSMutableDictionary dictionaryWithDictionary:[[self delegate] getDbStructure]] forKey:connectionID];
-		[allKeysofDbStructure removeAllObjects];
-		[allKeysofDbStructure addObjectsFromArray:[[self delegate] allSchemaKeys]];
+		[structure setObject:[NSMutableDictionary dictionaryWithDictionary:dbstructure] forKey:connectionID];
+		NSArray *allStructureKeys = [[[self delegate] allSchemaKeys] retain];
+		if(allStructureKeys && [allStructureKeys count]) {
+			[allKeysofDbStructure removeAllObjects];
+			[allKeysofDbStructure addObjectsFromArray:allStructureKeys];
+		}
+		if(allStructureKeys) [allStructureKeys release], allStructureKeys = nil;
+		if(dbstructure) [dbstructure release], dbstructure = nil;
 
 		BOOL removeAddFlag = NO;
 
