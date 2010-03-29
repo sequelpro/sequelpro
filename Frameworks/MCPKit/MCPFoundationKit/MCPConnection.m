@@ -2029,8 +2029,8 @@ void performThreadedKeepAlive(void *ptr)
 				NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
 				NSString *charset;
 
-				if(numberOfTables > 1000) {
-					NSLog(@"%ld items in database %@. Stop parsing.", numberOfTables, currentDatabase);
+				if(numberOfTables > 2000) {
+					NSLog(@"%ld items in database %@. Only 2000 items can be parsed. Stopped parsing.", numberOfTables, currentDatabase);
 					isQueryingDbStructure = NO;
 					[queryPool release];
 					return;
@@ -2209,7 +2209,9 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSArray *)getAllKeysOfDbStructure
 {
-	return [allKeysofDbStructure allObjects];
+	if(allKeysofDbStructure && [allKeysofDbStructure count])
+		return [allKeysofDbStructure allObjects];
+	return [NSArray array];
 }
 
 #pragma mark -

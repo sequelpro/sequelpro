@@ -365,20 +365,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(!aDbName) {
 
 				// Try to suggest only items which are uniquely valid for the parsed string
-				NSInteger uniqueSchemaKind = [[SPNavigatorController sharedNavigatorController] getUniqueDbIdentifierFor:[aTableName lowercaseString] andConnection:[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] connectionID]];
+				NSArray *uniqueSchema = [[SPNavigatorController sharedNavigatorController] getUniqueDbIdentifierFor:[aTableName lowercaseString] andConnection:[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] connectionID]];
+				NSInteger uniqueSchemaKind = [[uniqueSchema objectAtIndex:0] intValue];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
 			 	if(aTableName && [aTableName length] 
 						&& [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] isKindOfClass:[NSDictionary class]]
-						&& [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName]] 
+						&& [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]]] 
 						&& uniqueSchemaKind == 2) {
 					aTableNameExists = YES;
+					aTableName = [uniqueSchema objectAtIndex:1];
+					aTableName_id = [NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName];
 					aDbName_id = [NSString stringWithString:currentDb];
 				}
 
 				// If no db name but table name check if table name is a valid db name
 				if(!aTableNameExists && aTableName && [aTableName length] && uniqueSchemaKind == 1) {
-					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, aTableName];
+					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]];
 					aTableNameExists = NO;
 				}
 

@@ -481,15 +481,18 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID
 {
-	return [NSArray arrayWithArray:[allSchemaKeys objectForKey:connectionID]];
+	if([allSchemaKeys objectForKey:connectionID])
+		return [NSArray arrayWithArray:[allSchemaKeys objectForKey:connectionID]];
+	return [NSArray array];
 }
 
 /**
- * Returns 1 for db and 2 for table name if table name is not a db name and versa visa.
+ * Returns an array with 1 for db and 2 for table name if table name is not a db name and versa visa and the found name
+ * in cases user entered `foo` but an unique item is found like `Foo`.
  * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
  * a db name or a table name.
  */
-- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID
+- (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID
 {
 
 	NSString *SPUniqueSchemaDelimiter = @"￸";
@@ -497,12 +500,12 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH[c] %@", [NSString stringWithFormat:@"%@%@", SPUniqueSchemaDelimiter, [term lowercaseString]]];
 	NSArray *result = [[allSchemaKeys objectForKey:connectionID] filteredArrayUsingPredicate:predicate];
 
-	if([result count] < 1 ) return 0;
+	if([result count] < 1 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 	if([result count] == 1) {
 		NSArray *split = [[result objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		if([split count] == 2 ) return 1;
-		if([split count] == 3 ) return 2;
-		return 0;
+		if([split count] == 2 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:1], [split lastObject], nil];
+		if([split count] == 3 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:2], [split lastObject], nil];
+		return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 	}
 	// case if field is equal to a table or db name
 	NSMutableArray *arr = [NSMutableArray array];
@@ -510,14 +513,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
 			[arr addObject:item];
 	}
-	if([arr count] < 1 ) return 0;
+	if([arr count] < 1 ) [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 	if([arr count] == 1) {
 		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		if([split count] == 2 ) return 1;
-		if([split count] == 3 ) return 2;
-		return 0;
+		if([split count] == 2 ) [NSArray arrayWithObjects:[NSNumber numberWithInt:1], [split lastObject], nil];
+		if([split count] == 3 ) [NSArray arrayWithObjects:[NSNumber numberWithInt:2], [split lastObject], nil];
+		return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 	}
-	return 0;
+	return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 }
 
 
@@ -599,43 +602,43 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
 
 
-	for(NSString* item in [allSchemaKeys objectForKey:connectionID]) {
-		if([[item lowercaseString] rangeOfString:pattern].length) {
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[c] %@", pattern];
+	NSArray *filteredItems = [[allSchemaKeys objectForKey:connectionID] filteredArrayUsingPredicate:predicate];
 
-			NSArray *a = [item componentsSeparatedByString:SPUniqueSchemaDelimiter];
+	for(NSString* item in filteredItems) {
+		NSArray *a = [item componentsSeparatedByString:SPUniqueSchemaDelimiter];
 
-			NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID,SPUniqueSchemaDelimiter,[a objectAtIndex:1]];
+		NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID,SPUniqueSchemaDelimiter,[a objectAtIndex:1]];
 
-			if(!a || [a count] < 2) continue;
+		if(!a || [a count] < 2) continue;
 
-			if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
-				[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
+		if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
+			[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
+		}
+		if([a count] > 2) {
+
+			NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id,SPUniqueSchemaDelimiter,[a objectAtIndex:2]];
+
+			if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id]) {
+				[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 			}
-			if([a count] > 2) {
 
-				NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id,SPUniqueSchemaDelimiter,[a objectAtIndex:2]];
+			if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "])
+				[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
+					[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "] forKey:@"  struct_type  "];
+			else
+				[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
+					[NSNumber numberWithInt:0] forKey:@"  struct_type  "];
 
-				if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id]) {
-					[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
-				}
-
-				if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "])
+			if([a count] > 3) {
+				NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id,SPUniqueSchemaDelimiter,[a objectAtIndex:3]];
+				if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:field_id])
 					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-						[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "] forKey:@"  struct_type  "];
-				else
-					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-						[NSNumber numberWithInt:0] forKey:@"  struct_type  "];
-
-				if([a count] > 3) {
-					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id,SPUniqueSchemaDelimiter,[a objectAtIndex:3]];
-					if([[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:field_id])
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-							[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:field_id] forKey:field_id];
-				}
+						[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:field_id] forKey:field_id];
 			}
-			
 		}
 	}
+
 	[outlineSchema1 reloadData];
 	[schemaDataFiltered removeAllObjects];
 	[outlineSchema2 reloadData];
