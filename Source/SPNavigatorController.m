@@ -394,6 +394,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	
 	if([object isKindOfClass:[TableDocument class]])
 		[updatingConnections addObject:[object connectionID]];
+	
 }
 
 - (void)updateEntriesForConnection:(NSString*)connectionID
@@ -440,7 +441,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				[[schemaData objectForKey:connectionName] setObject:[[structureData objectForKey:connectionName] objectForKey:item] forKey:item];
 
 			if([theConnection getAllKeysOfDbStructure])
-				[allSchemaKeys setObject:[theConnection getAllKeysOfDbStructure] forKey:connectionName];
+				[allSchemaKeys setObject:[[NSSet setWithArray:[theConnection getAllKeysOfDbStructure]] allObjects] forKey:connectionName];
 		} else {
 			[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
 			[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
@@ -798,10 +799,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if(!parentObject) return @"…";
 
 	if ([[tableColumn identifier] isEqualToString:@"field"]) {
-
 		// top level is connection
+		[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 		if([outlineView levelForItem:item] == 0) {
-			[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 			if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count]) {
 				NSString *key = [[parentObject allKeysForObject:item] objectAtIndex:0];
 				if([key rangeOfString:@"&SSH&"].length)
@@ -882,7 +882,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			}
 		}
 
-		if ([item isKindOfClass:[NSArray class]] && [item count]>5 && [[parentObject allKeysForObject:item] count] && ![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) 
+		if([outlineView levelForItem:item] == 3 && [item isKindOfClass:[NSArray class]])
 		{
 			NSString *typ = [NSString stringWithFormat:@"%@,%@,%@", [[item objectAtIndex:0] stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"], [item objectAtIndex:3], [item objectAtIndex:5]]; 
 			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:typ] autorelease];
@@ -901,10 +901,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:outlineView isGroupItem:(id)item
 {
-	if ([item isKindOfClass:[NSDictionary class]] || [outlineView levelForItem:item] == 1)
-		return YES;
+	if ([outlineView levelForItem:item] == 3)
+		return NO;
 		
-	return NO;
+	return YES;
 }
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
@@ -918,8 +918,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	if(!parentObject) return 0;
 
-	// Use "  struct_type  " as placeholder to increase distance between table and first field name otherwise it looks ugly 
-	if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count] && [[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+	if([outlineView levelForItem:item] == 3 && [outlineView isExpandable:[outlineView itemAtRow:[outlineView rowForItem:item]-1]])
 		return 5.0;
 
 	return 18.0;
@@ -941,7 +940,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	if(!parentObject) return NO;
 
-	if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count] && [[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "])
+	if([outlineView levelForItem:item] == 3 && [outlineView isExpandable:[outlineView itemAtRow:[outlineView rowForItem:item]-1]])
 		return NO;
 	return YES;
 }

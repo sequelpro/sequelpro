@@ -116,7 +116,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		keepAliveInterval = 60;  
 		
 		structure = [[NSMutableDictionary alloc] initWithCapacity:1];
-		allKeysofDbStructure = [[NSMutableSet alloc] initWithCapacity:20];
+		allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:20];
 		isQueryingDbStructure = NO;
 
 		connectionThreadId     = 0;
@@ -1880,12 +1880,13 @@ void performThreadedKeepAlive(void *ptr)
 		NSDictionary *dbstructure = [[[self delegate] getDbStructure] retain];
 		[structure removeAllObjects];
 		[structure setObject:[NSMutableDictionary dictionaryWithDictionary:dbstructure] forKey:connectionID];
-		NSArray *allStructureKeys = [[[self delegate] allSchemaKeys] retain];
+		NSArray *allStructureKeys = [[self delegate] allSchemaKeys];
 		if(allStructureKeys && [allStructureKeys count]) {
-			[allKeysofDbStructure removeAllObjects];
-			[allKeysofDbStructure addObjectsFromArray:allStructureKeys];
+			if(allKeysofDbStructure) [allKeysofDbStructure release];
+			allKeysofDbStructure = nil;
+			allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:[allKeysofDbStructure count]];
+			[allKeysofDbStructure setArray:allStructureKeys];
 		}
-		if(allStructureKeys) [allStructureKeys release], allStructureKeys = nil;
 		if(dbstructure) [dbstructure release], dbstructure = nil;
 
 		BOOL removeAddFlag = NO;
@@ -2215,8 +2216,9 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSArray *)getAllKeysOfDbStructure
 {
-	if(allKeysofDbStructure && [allKeysofDbStructure count])
-		return [allKeysofDbStructure allObjects];
+	if(allKeysofDbStructure && [allKeysofDbStructure count]) {
+		return [NSArray arrayWithArray:allKeysofDbStructure];
+	}
 	return [NSArray array];
 }
 

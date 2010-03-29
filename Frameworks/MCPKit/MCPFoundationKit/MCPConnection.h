@@ -159,7 +159,7 @@
 	
 	NSString *serverVersionString;
 	NSMutableDictionary *structure;
-	NSMutableSet *allKeysofDbStructure;
+	NSMutableArray *allKeysofDbStructure;
 	
 	NSTimer *keepAliveTimer;
 	double lastKeepAliveTime;
