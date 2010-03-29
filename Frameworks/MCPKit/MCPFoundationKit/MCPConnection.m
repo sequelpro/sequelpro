@@ -1862,7 +1862,11 @@ void performThreadedKeepAlive(void *ptr)
 
 	if (!isQueryingDbStructure) {
 
-// NSLog(@"queryDbStructureWithUserInfo called");
+// NSLog(@"queryDbStructureWithUserInfo called with %@ and db %@", [userInfo description], [[[self delegate] database] description]);
+
+		isQueryingDbStructure = YES;
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
 
 		NSString *SPUniqueSchemaDelimiter = @"￸";
 
@@ -1872,10 +1876,15 @@ void performThreadedKeepAlive(void *ptr)
 		else
 			connectionID = @"_";
 
-		if(![structure valueForKey:connectionID])
-			[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
+		// Re-init with already cached data from navigator controller
+		[structure removeAllObjects];
+		[structure setObject:[NSMutableDictionary dictionaryWithDictionary:[[self delegate] getDbStructure]] forKey:connectionID];
+		[allKeysofDbStructure removeAllObjects];
+		[allKeysofDbStructure addObjectsFromArray:[[self delegate] allSchemaKeys]];
 
-		// Add all known database coming from connection if they aren't parsed yet
+		BOOL removeAddFlag = NO;
+
+		// Add all known databases coming from connection if they aren't parsed yet
 		NSArray *dbs = [[NSString stringWithFormat:@"%@%@%@",
 			[[[self delegate] allSystemDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter], 
 			SPUniqueSchemaDelimiter, 
@@ -1883,6 +1892,8 @@ void performThreadedKeepAlive(void *ptr)
 			componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		for(id db in dbs) {
 			if(![[structure valueForKey:connectionID] objectForKey:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]]) {
+// NSLog(@"added db %@", db);
+				removeAddFlag = YES;
 				[[structure valueForKey:connectionID] setObject:db forKey:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
 			}
 		}
@@ -1890,12 +1901,14 @@ void performThreadedKeepAlive(void *ptr)
 		// Remove deleted databases in structure and keys in allKeysofDbStructure
 		// Use a dict to avoid <NSCFDictionary> was mutated while being enumerated. while iterating via allKeys
 		NSArray *keys = [[NSDictionary dictionaryWithDictionary:[structure valueForKey:connectionID]] allKeys];
-		BOOL removeFlag = NO;
 		for(id key in keys) {
 			NSString *db = [[key componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1];
 			if(![dbs containsObject:db]) {
-				removeFlag = YES;
-				[[structure valueForKey:connectionID] removeObjectForKey:key];
+// NSLog(@"removed db %@", db);
+				removeAddFlag = YES;
+				if([[structure valueForKey:connectionID] isKindOfClass:[NSDictionary class]]) {
+					[[structure valueForKey:connectionID] removeObjectForKey:key];
+				}
 				NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", key, SPUniqueSchemaDelimiter]];
 				[allKeysofDbStructure filterUsingPredicate:predicate];
 				[allKeysofDbStructure removeObject:key];
@@ -1907,33 +1920,41 @@ void performThreadedKeepAlive(void *ptr)
 			currentDatabase = [[self delegate] database];
 
 		if(!currentDatabase || (currentDatabase && ![currentDatabase length])) {
+// NSLog(@"no db - return");
 			isQueryingDbStructure = NO;
-			if(removeFlag)
+			if(removeAddFlag)
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 			[queryPool release];
 			return;
 		}
 
-		// if([currentDatabase isEqualToString:@"mysql"]) {
-		// 	if(![[structure valueForKey:connectionID] objectForKey:currentDatabase] || ![[[structure valueForKey:connectionID] objectForKey:currentDatabase] isKindOfClass:[NSDictionary class]]) {
-		// 		if(removeFlag)
-		// 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-		// 		[queryPool release];
-		// 		return;
-		// 	}
-		// }
-		// if([currentDatabase isEqualToString:@"information_schema"]) {
-		// 	if(![[structure valueForKey:connectionID] objectForKey:currentDatabase] || ![[[structure valueForKey:connectionID] objectForKey:currentDatabase] isKindOfClass:[NSDictionary class]]) {
-		// 		if(removeFlag)
-		// 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-		// 		[queryPool release];
-		// 		return;
-		// 	}
-		// }
+		NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, currentDatabase];
+
+		// mysql and information_schema's schema will never change thus query data only once
+		if([currentDatabase isEqualToString:@"mysql"]) {
+			if([[structure valueForKey:connectionID] objectForKey:db_id] && [[[structure valueForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+// NSLog(@"mysql was parsed - return");
+				if(removeAddFlag)
+					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+				[queryPool release];
+				return;
+			}
+		}
+		if([currentDatabase isEqualToString:@"information_schema"]) {
+			if([[structure valueForKey:connectionID] objectForKey:db_id] && [[[structure valueForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+// NSLog(@"information_schema was parsed - return");
+				if(removeAddFlag)
+					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+				[queryPool release];
+				return;
+			}
+		}
 
 		if(userInfo == nil || ![userInfo objectForKey:@"forceUpdate"]) {
-			if([[self delegate] navigatorSchemaPathExistsForDatabase:currentDatabase]) {
-				if(removeFlag)
+			if([[structure valueForKey:connectionID] objectForKey:db_id] && [[[structure valueForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+// NSLog(@"no forceUpdate - return");
+				isQueryingDbStructure = NO;
+				if(removeAddFlag)
 					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 				[queryPool release];
 				return;
@@ -1942,8 +1963,6 @@ void performThreadedKeepAlive(void *ptr)
 
 		NSArray *tables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableNames];
 		NSArray *tableviews = [[[self delegate] valueForKeyPath:@"tablesListInstance"] allViewNames];
-
-		NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, currentDatabase];
 
 		NSUInteger numberOfTables = 0;
 		if(tables && [tables count]) numberOfTables += [tables count];
@@ -1961,11 +1980,13 @@ void performThreadedKeepAlive(void *ptr)
 		}
 
 		// Delete all stored data for to be queried db
-		[[structure valueForKey:connectionID] removeObjectForKey:db_id];
+		if([[structure valueForKey:connectionID] isKindOfClass:[NSDictionary class]])
+			[[structure valueForKey:connectionID] removeObjectForKey:db_id];
 		NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", db_id, SPUniqueSchemaDelimiter]];
 		[allKeysofDbStructure filterUsingPredicate:predicate];
 		[allKeysofDbStructure removeObject:db_id];
-
+		// Re-add currentDatabase in case that structure querying will fail
+		[[structure valueForKey:connectionID] setObject:currentDatabase forKey:db_id];
 
 		NSString *currentDatabaseEscaped = [currentDatabase stringByReplacingOccurrencesOfString:@"`" withString:@"``"];
 
@@ -1976,8 +1997,6 @@ void performThreadedKeepAlive(void *ptr)
 			const char *thePass = NULL;
 			const char *theSocket;
 			void *connectionSetupStatus;
-
-			isQueryingDbStructure = YES;
 
 			mysql_options(structConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 
@@ -2165,62 +2184,28 @@ void performThreadedKeepAlive(void *ptr)
 				// Notify that the structure querying has been performed
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 
-				// NSLog(@"QUERIED INFO");
 				mysql_close(structConnection);
-				isQueryingDbStructure = NO;
 			}
 		}
+	} else {
+		// Notify that the structure querying has been performed
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 	}
 
+	isQueryingDbStructure = NO;
 	[queryPool release];
 }
 
 /**
- * Returns 1 for db and 2 for table name if table name is not a db name and versa visa.
- * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
- * a db name or a table name.
- */
-- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term
-{
-
-	NSString *SPUniqueSchemaDelimiter = @"￸";
-
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH[c] %@", [NSString stringWithFormat:@"%@%@", SPUniqueSchemaDelimiter, [term lowercaseString]]];
-	NSArray *result = [[allKeysofDbStructure allObjects] filteredArrayUsingPredicate:predicate];
-
-	if([result count] < 1 ) return 0;
-	if([result count] == 1) {
-		NSArray *split = [[result objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		if([split count] == 2 ) return 1;
-		if([split count] == 3 ) return 2;
-		return 0;
-	}
-	// case if field is equal to a table or db name
-	NSMutableArray *arr = [NSMutableArray array];
-	for(NSString *item in result) {
-		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
-			[arr addObject:item];
-	}
-	if([arr count] < 1 ) return 0;
-	if([arr count] == 1) {
-		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		if([split count] == 2 ) return 1;
-		if([split count] == 3 ) return 2;
-		return 0;
-	}
-	return 0;
-}
-
-/**
- * Returns a dict containing the structure of all available databases (mainly for completion).
+ * Returns a dict containing the structure of all available databases
  */
 - (NSDictionary *)getDbStructure
 {
-	return [NSDictionary dictionaryWithDictionary:structure];;
+	return [NSDictionary dictionaryWithDictionary:structure];
 }
 
 /**
- * Returns all keys of the db structure.
+ * Returns all keys of the db structure
  */
 - (NSArray *)getAllKeysOfDbStructure
 {

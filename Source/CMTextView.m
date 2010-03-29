@@ -363,9 +363,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			BOOL aTableNameExists = NO;
 			if(!aDbName) {
-				// Try to suggest only items which are uniquely valid for the parsed string
 
-				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIdentifierFor:[aTableName lowercaseString]];
+				// Try to suggest only items which are uniquely valid for the parsed string
+				NSInteger uniqueSchemaKind = [[SPNavigatorController sharedNavigatorController] getUniqueDbIdentifierFor:[aTableName lowercaseString] andConnection:[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] connectionID]];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
 			 	if(aTableName && [aTableName length] 

@@ -384,7 +384,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)isUpdatingNavigator:(NSNotification *)aNotification
 {
-	// todo
+	id object = [aNotification object];
+	
+	if([object isKindOfClass:[TableDocument class]])
+		[updatingConnections addObject:[object connectionID]];
 }
 
 - (void)updateEntriesForConnection:(NSString*)connectionID
@@ -400,37 +403,43 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	[infoArray removeAllObjects];
 
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
-		for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
 
-			id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
+		id doc = [[NSDocumentController sharedDocumentController] currentDocument];
+		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
 
-			if(!theConnection || ![theConnection isConnected]) continue;
+		if(!theConnection || ![theConnection isConnected]) return;
 
-			NSString *connectionName = [doc connectionID];
+		NSString *connectionName = [doc connectionID];
 
-			if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) continue;
+		if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) {
+// NSLog(@"navigator update skipped %@", connectionName);
+			return;
+		}
 
-			if(![schemaData objectForKey:connectionName]) {
-				[schemaData setObject:[NSMutableDictionary dictionary] forKey:connectionName];
-			}
+		if(![schemaData objectForKey:connectionName]) {
+			[schemaData setObject:[NSMutableDictionary dictionary] forKey:connectionName];
+		}
 
-			NSArray *dbs = [doc allDatabaseNames];
-			NSArray *keys = [[schemaData objectForKey:connectionName] allKeys];
-			for(id db in keys) {
-				if(![dbs containsObject:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1]]) {
-					[[schemaData objectForKey:connectionName] removeObjectForKey:db];
-				}
-			}
-
-			if([theConnection getDbStructure] && [[theConnection getDbStructure] objectForKey:connectionName]) {
-				for(id item in [[[theConnection getDbStructure] objectForKey:connectionName] allKeys])
-					[[schemaData objectForKey:connectionName] setObject:[[[theConnection getDbStructure] objectForKey:connectionName] objectForKey:item] forKey:item];
-				[allSchemaKeys setObject:[theConnection getAllKeysOfDbStructure] forKey:connectionName];
-			} else {
-				[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
-				[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
+		// Remove deleted dbs
+		NSArray *dbs = [doc allDatabaseNames];
+		NSArray *keys = [[schemaData objectForKey:connectionName] allKeys];
+		for(id db in keys) {
+			if(![dbs containsObject:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1]]) {
+				[[schemaData objectForKey:connectionName] removeObjectForKey:db];
 			}
 		}
+		id structureData = [theConnection getDbStructure];
+		if(structureData && [structureData objectForKey:connectionName] && [[structureData objectForKey:connectionName] isKindOfClass:[NSDictionary class]]) {
+			for(id item in [[structureData objectForKey:connectionName] allKeys])
+				[[schemaData objectForKey:connectionName] setObject:[[structureData objectForKey:connectionName] objectForKey:item] forKey:item];
+
+			if([theConnection getAllKeysOfDbStructure])
+				[allSchemaKeys setObject:[theConnection getAllKeysOfDbStructure] forKey:connectionName];
+		} else {
+			[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
+			[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
+		}
+		[updatingConnections removeObject:connectionName];
 
 		[outlineSchema1 reloadData];
 		[outlineSchema2 reloadData];
@@ -450,9 +459,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 	NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, dbname];
 
-	if([[[schemaData objectForKey:connectionID] allKeys] containsObject:db_id] 
-		&& [[[schemaData objectForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]
-		&& [[[schemaData objectForKey:connectionID] objectForKey:db_id] count])
+	if([schemaData objectForKey:connectionID] && [[[schemaData objectForKey:connectionID] allKeys] containsObject:db_id])
 		return YES;
 
 	return NO;
@@ -470,6 +477,53 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	if([schemaData objectForKey:connectionID])
 		return [NSDictionary dictionaryWithDictionary:[schemaData objectForKey:connectionID]];
 	return nil;
+}
+
+- (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID
+{
+	return [NSArray arrayWithArray:[allSchemaKeys objectForKey:connectionID]];
+}
+
+/**
+ * Returns 1 for db and 2 for table name if table name is not a db name and versa visa.
+ * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
+ * a db name or a table name.
+ */
+- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID
+{
+
+	NSString *SPUniqueSchemaDelimiter = @"￸";
+
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH[c] %@", [NSString stringWithFormat:@"%@%@", SPUniqueSchemaDelimiter, [term lowercaseString]]];
+	NSArray *result = [[allSchemaKeys objectForKey:connectionID] filteredArrayUsingPredicate:predicate];
+
+	if([result count] < 1 ) return 0;
+	if([result count] == 1) {
+		NSArray *split = [[result objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		if([split count] == 2 ) return 1;
+		if([split count] == 3 ) return 2;
+		return 0;
+	}
+	// case if field is equal to a table or db name
+	NSMutableArray *arr = [NSMutableArray array];
+	for(NSString *item in result) {
+		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
+			[arr addObject:item];
+	}
+	if([arr count] < 1 ) return 0;
+	if([arr count] == 1) {
+		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		if([split count] == 2 ) return 1;
+		if([split count] == 3 ) return 2;
+		return 0;
+	}
+	return 0;
+}
+
+
+- (BOOL)isUpdatingConnection:(NSString*)connectionID
+{
+	return ([updatingConnections containsObject:connectionID]) ? YES : NO;
 }
 
 #pragma mark -

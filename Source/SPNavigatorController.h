@@ -71,6 +71,10 @@
 - (void)isUpdatingNavigator:(NSNotification *)aNotification;
 
 - (NSDictionary *)dbStructureForConnection:(NSString*)connectionID;
+- (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID;
+- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID;
+
+- (BOOL)isUpdatingConnection:(NSString*)connectionID;
 
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;

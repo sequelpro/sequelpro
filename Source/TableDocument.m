@@ -1092,6 +1092,16 @@
 	return [[SPNavigatorController sharedNavigatorController] schemaPathExistsForConnection:[self connectionID] andDatabase:dbname];
 }
 
+- (NSDictionary*)getDbStructure
+{
+	return [[SPNavigatorController sharedNavigatorController] dbStructureForConnection:[self connectionID]];
+}
+
+- (NSArray *)allSchemaKeys
+{
+	return [[SPNavigatorController sharedNavigatorController] allSchemaKeysForConnection:[self connectionID]];
+}
+
 #pragma mark -
 #pragma mark Console methods
 
