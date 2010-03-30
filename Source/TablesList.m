@@ -1977,22 +1977,27 @@
 }
 
 /**
- * Adds a new table table to the database.
+ * Adds a new table table to the database using the selected character set encoding and storage engine.
  */
 - (void)addTable
 {
-	NSString *tableName = [tableNameField stringValue];
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT)", [tableName backtickQuotedString]];
+	NSString *charSetStatement = @"";
+	NSString *engineStatement  = @"";
 	
+	NSString *tableType = [tableTypeButton title];
+	NSString *tableName = [tableNameField stringValue];
+		
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[tableDocumentInstance mysqlEncodingFromDisplayEncoding:[tableEncodingButton title]] backtickQuotedString]];
+		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [[tableDocumentInstance mysqlEncodingFromDisplayEncoding:[tableEncodingButton title]] backtickQuotedString]];
 	}
 	
 	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableTypeButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ ENGINE = %@", createStatement, [[tableTypeButton title] backtickQuotedString]];
+		engineStatement = [NSString stringWithFormat:@"ENGINE = %@", [tableType backtickQuotedString]];
 	}
+	
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (%@) %@ %@", [tableName backtickQuotedString], ([tableType isEqualToString:@"CSV"]) ? @"id INT NOT NULL" : @"id INT", charSetStatement, engineStatement];
 	
 	// Create the table
 	[mySQLConnection queryString:createStatement];
@@ -2001,32 +2006,42 @@
 		
 		// Table creation was successful - insert the new item into the tables list and select it.
 		NSInteger addItemAtIndex = NSNotFound;
-		for (NSInteger i = 0; i < [tables count]; i++) {
+		
+		for (NSInteger i = 0; i < [tables count]; i++) 
+		{
 			NSInteger tableType = [[tableTypes objectAtIndex:i] integerValue];
+			
 			if (tableType == SPTableTypeNone) continue;
 			if (tableType == SPTableTypeProc || tableType == SPTableTypeFunc) {
-				addItemAtIndex = i - 1;
+				addItemAtIndex = (i - 1);
 				break;
 			}
+			
 			if ([tableName localizedCompare:[tables objectAtIndex:i]] == NSOrderedAscending) {
 				addItemAtIndex = i;
 				break;
 			}
 		}
+		
 		if (addItemAtIndex == NSNotFound) {
 			[tables addObject:tableName];
 			[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
-		} else {
+		} 
+		else {
 			[tables insertObject:tableName atIndex:addItemAtIndex];
 			[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeTable] atIndex:addItemAtIndex];		
 		}
 		
 		// Set the selected table name and type, and then use updateFilter and updateSelection to update the filter list and selection.
 		if (selectedTableName) [selectedTableName release];
+		
 		selectedTableName = [[NSString alloc] initWithString:tableName];
 		selectedTableType = SPTableTypeTable;
+		
 		[self updateFilter:self];
+		
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+		
 		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
 
 		// Query the structure of all databases in the background (mainly for completion)
@@ -2037,10 +2052,10 @@
 		// Error while creating new table
 		alertSheetOpened = YES;
 		
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"), 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't add table %@.\nMySQL said: %@", @"message of panel when table cannot be created with the given name"),
-						   tableName, [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
 		
 		[tablesListView reloadData];
 	}
