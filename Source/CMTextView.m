@@ -314,13 +314,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		if(dbs != nil && [dbs isKindOfClass:[NSDictionary class]] && [dbs count]) {
 			NSMutableArray *allDbs = [NSMutableArray array];
-			[allDbs addObjectsFromArray:[dbs allKeys]];
-
-			// Add database names having no tables since they don't appear in the information_schema
-			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"] != nil)
-				for(id db in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
-					if(![allDbs containsObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]])
-						[allDbs addObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
+			@try { [allDbs addObjectsFromArray:[dbs allKeys]]; }
+			@catch(id ae) { ; }
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [NSMutableArray array];

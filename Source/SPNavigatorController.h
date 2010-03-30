@@ -55,6 +55,8 @@
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
 	BOOL isFiltered;
+	
+	Class NSDictionaryClass;
 }
 
 + (SPNavigatorController *)sharedNavigatorController;

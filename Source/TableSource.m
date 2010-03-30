@@ -863,8 +863,8 @@ closes the keySheet
 		// Mark the content table for refresh
 		[tablesListInstance setContentRequiresReload:YES];
 
-		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		// Query the structure of all databases in the background
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInt:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	} 

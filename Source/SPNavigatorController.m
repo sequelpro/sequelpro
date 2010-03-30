@@ -76,7 +76,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		ignoreUpdate        = NO;
 		isFiltered          = NO;
 		[syncButton setState:NSOffState];
-		
+		NSDictionaryClass   = [NSDictionary class];
+
 	}
 
 	return self;
@@ -181,7 +182,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		selection = [outlineSchema1 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema1 parentForItem:selection] ? [outlineSchema1 parentForItem:selection] : schemaData;
-			if(!parentObject || ![parentObject isKindOfClass:[NSDictionary class]] || ![parentObject objectForKey:selection]) return;
+			if(!parentObject || ![parentObject isKindOfClass:NSDictionaryClass] || ![parentObject objectForKey:selection]) return;
 			id parentKeys = [parentObject allKeysForObject:selection];
 			if(parentKeys && [parentKeys count] == 1)
 				selectedKey1 = [[parentKeys objectAtIndex:0] description];
@@ -195,7 +196,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		selection = [outlineSchema2 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema2 parentForItem:selection] ? [outlineSchema2 parentForItem:selection] : schemaData;
-			if(!parentObject || ![parentObject isKindOfClass:[NSDictionary class]] || ![parentObject objectForKey:selection]) return;
+			if(!parentObject || ![parentObject isKindOfClass:NSDictionaryClass] || ![parentObject objectForKey:selection]) return;
 			id parentKeys = [parentObject allKeysForObject:selection];
 			if(parentKeys && [parentKeys count] == 1)
 				selectedKey2 = [[parentKeys objectAtIndex:0] description];
@@ -220,7 +221,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		[outlineSchema2 collapseItem:[item objectForKey:[pathArray objectAtIndex:0]] collapseChildren:YES];
 		for(NSInteger i=0; i < [pathArray count]; i++) {
 			[aKey appendString:[pathArray objectAtIndex:i]];
-			if(!item || ![item isKindOfClass:[NSDictionary class]] || ![item objectForKey:aKey]) break;
+			if(!item || ![item isKindOfClass:NSDictionaryClass] || ![item objectForKey:aKey]) break;
 			item = [item objectForKey:aKey];
 			[outlineSchema2 expandItem:item];
 			[aKey appendString:SPUniqueSchemaDelimiter];
@@ -234,7 +235,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				id item = [outlineSchema2 selectedItem];
 				// Try to scroll the view that all children of schemaPath are visible if possible
 				NSInteger cnt = 1;
-				if([item isKindOfClass:[NSDictionary class]] || [item isKindOfClass:[NSArray class]])
+				if([item isKindOfClass:NSDictionaryClass] || [item isKindOfClass:[NSArray class]])
 					cnt = [item count]+1;
 				NSRange r = [outlineSchema2 rowsInRect:[outlineSchema2 visibleRect]];
 				NSInteger offset = (cnt > r.length) ? (r.length-2) : cnt;
@@ -436,12 +437,13 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			}
 		}
 		id structureData = [theConnection getDbStructure];
-		if(structureData && [structureData objectForKey:connectionName] && [[structureData objectForKey:connectionName] isKindOfClass:[NSDictionary class]]) {
+		if(structureData && [structureData objectForKey:connectionName] && [[structureData objectForKey:connectionName] isKindOfClass:NSDictionaryClass]) {
 			for(id item in [[structureData objectForKey:connectionName] allKeys])
 				[[schemaData objectForKey:connectionName] setObject:[[structureData objectForKey:connectionName] objectForKey:item] forKey:item];
 
-			if([theConnection getAllKeysOfDbStructure])
-				[allSchemaKeys setObject:[[NSSet setWithArray:[theConnection getAllKeysOfDbStructure]] allObjects] forKey:connectionName];
+			NSArray *a = [theConnection getAllKeysOfDbStructure];
+			if(a)
+				[allSchemaKeys setObject:a forKey:connectionName];
 		} else {
 			[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
 			[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
@@ -743,7 +745,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			item = schemaData;
 	}
 
-	if ([item isKindOfClass:[NSDictionary class]] && [item allKeys] && [[item allKeys] count]) {
+	if ([item isKindOfClass:NSDictionaryClass]) {
 		NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 		NSArray *sortedItems = [[item allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 		[desc release];
@@ -758,9 +760,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item
 {
-	if([item isKindOfClass:[NSDictionary class]] && [item count]) {
+	if([item isKindOfClass:NSDictionaryClass]) {
 		// Suppress expanding for PROCEDUREs and FUNCTIONs
-		if([item objectForKey:@"  struct_type  "] && [[item objectForKey:@"  struct_type  "] intValue] > 1) {
+		if([[item objectForKey:@"  struct_type  "] intValue] > 1) {
 			return NO;
 		}
 		return YES;
@@ -780,7 +782,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			return [schemaData count];
 	}
 
-	if([item isKindOfClass:[NSDictionary class]] || [item isKindOfClass:[NSArray class]])
+	if([item isKindOfClass:NSDictionaryClass] || [item isKindOfClass:[NSArray class]])
 		return [item count];
 
 	return 0;
@@ -791,17 +793,20 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	id parentObject = nil;
 
-	if(outlineView == outlineSchema2 && isFiltered)
-		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaDataFiltered;
-	else
-		parentObject = [outlineView parentForItem:item] ? [outlineView parentForItem:item] : schemaData;
+	if(outlineView == outlineSchema2 && isFiltered) {
+		parentObject = [outlineView parentForItem:item];
+		if(!parentObject) parentObject = schemaDataFiltered;
+	} else {
+		parentObject = [outlineView parentForItem:item];
+		if(!parentObject) parentObject = schemaData;
+	}
 
 	if(!parentObject) return @"…";
 
-	if ([[tableColumn identifier] isEqualToString:@"field"]) {
+	if ([(NSString*)[tableColumn identifier] characterAtIndex:0] == 'f') {
 		// top level is connection
-		[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 		if([outlineView levelForItem:item] == 0) {
+			[[tableColumn dataCell] setImage:[NSImage imageNamed:@"network-small"]];
 			if([parentObject allKeysForObject:item] && [[parentObject allKeysForObject:item] count]) {
 				NSString *key = [[parentObject allKeysForObject:item] objectAtIndex:0];
 				if([key rangeOfString:@"&SSH&"].length)
@@ -815,12 +820,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			}
 		}
 
-		if ([parentObject isKindOfClass:[NSDictionary class]]) {
-			if([item isKindOfClass:[NSDictionary class]]) {
+		if ([parentObject isKindOfClass:NSDictionaryClass]) {
+			if([item isKindOfClass:NSDictionaryClass]) {
 				if([item objectForKey:@"  struct_type  "]) {
-
-					NSInteger type = [[item objectForKey:@"  struct_type  "] intValue];
-					switch(type) {
+					switch([[item objectForKey:@"  struct_type  "] intValue]) {
 						case 0:
 						[[tableColumn dataCell] setImage:[NSImage imageNamed:@"table-small-square"]];
 						break;
@@ -837,11 +840,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				} else {
 					[[tableColumn dataCell] setImage:[NSImage imageNamed:@"database-small"]];
 				}
-				if([[parentObject allKeysForObject:item] count] == 1) {
-					return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
-				} else {
-					return @"…";
-				}
+				return [[NSArrayObjectAtIndex([parentObject allKeysForObject:item], 0) componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 
 			} else {
 				if([[parentObject allKeysForObject:item] count]) {
@@ -851,9 +850,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 						return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 					} else {
 						// It's a field and use the key "  struct_type  " to increase the distance between node and first child
-						if(![[[parentObject allKeysForObject:item] objectAtIndex:0] hasPrefix:@"  "]) {
+						if(![NSArrayObjectAtIndex([parentObject allKeysForObject:item], 0) hasPrefix:@"  "]) {
 							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"field-small-square"]];
-							return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
+							return [[NSArrayObjectAtIndex([parentObject allKeysForObject:item], 0) componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 						} else {
 							[[tableColumn dataCell] setImage:[NSImage imageNamed:@"dummy-small"]];
 							return nil;
@@ -865,7 +864,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 		return [item description];
 	}
-	else if ([[tableColumn identifier] isEqualToString:@"type"]) {
+	else if ([(NSString*)[tableColumn identifier] characterAtIndex:0] == 't') {
 
 		// top level is connection
 		if([outlineView levelForItem:item] == 0) {
@@ -884,12 +883,11 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		if([outlineView levelForItem:item] == 3 && [item isKindOfClass:[NSArray class]])
 		{
-			NSString *typ = [NSString stringWithFormat:@"%@,%@,%@", [[item objectAtIndex:0] stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"], [item objectAtIndex:3], [item objectAtIndex:5]]; 
+			NSString *typ = [NSString stringWithFormat:@"%@,%@,%@", [NSArrayObjectAtIndex(item, 0) stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"], NSArrayObjectAtIndex(item, 3), NSArrayObjectAtIndex(item, 5)]; 
 			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:typ] autorelease];
 			[b setEditable:NO];
 			[b setAlignment:NSRightTextAlignment];
 			[b setFont:[NSFont systemFontOfSize:11]];
-			[b setDelegate:self];
 			[b setWraps:NO];
 			return b;
 		}
@@ -975,7 +973,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 
 		// check if selected item is a PROCEDURE or FUNCTION
-		else if([selectedItem isKindOfClass:[NSDictionary class]] && [selectedItem objectForKey:@"  struct_type  "] && [[selectedItem objectForKey:@"  struct_type  "] intValue] > 1) {
+		else if([selectedItem isKindOfClass:NSDictionaryClass] && [selectedItem objectForKey:@"  struct_type  "] && [[selectedItem objectForKey:@"  struct_type  "] intValue] > 1) {
 			NSInteger i = 0;
 			NSInteger type = [[selectedItem objectForKey:@"  struct_type  "] intValue];
 			NSArray *keys = [selectedItem allKeys];

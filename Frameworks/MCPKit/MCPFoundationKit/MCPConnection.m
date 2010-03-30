@@ -2055,6 +2055,8 @@ void performThreadedKeepAlive(void *ptr)
 					;
 				}
 
+				[allKeysofDbStructure addObject:db_id];
+
 				// Query all tables
 				for(NSString* table in tables) {
 					NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
@@ -2068,7 +2070,11 @@ void performThreadedKeepAlive(void *ptr)
 						continue;
 					}
 					theResult = mysql_use_result(structConnection);
+
 					NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
+
+					[allKeysofDbStructure addObject:table_id];
+
 					while(row = mysql_fetch_row(theResult)) {
 						NSString *field = [self stringWithUTF8CString:row[0]];
 						NSString *type = [self stringWithUTF8CString:row[1]];
@@ -2083,8 +2089,6 @@ void performThreadedKeepAlive(void *ptr)
 						NSArray *a = [coll componentsSeparatedByString:@"_"];
 						charset = ([a count]) ? [a objectAtIndex:0] : @"";
 
-						[allKeysofDbStructure addObject:db_id];
-						[allKeysofDbStructure addObject:table_id];
 						[allKeysofDbStructure addObject:field_id];
 					
 						if(![[structure valueForKey:connectionID] valueForKey:db_id] || [[[structure valueForKey:connectionID] valueForKey:db_id] isKindOfClass:[NSString class]] )
@@ -2112,8 +2116,12 @@ void performThreadedKeepAlive(void *ptr)
 						// NSLog(@"error %@", table);
 						continue;
 					}
+
 					theResult = mysql_use_result(structConnection);
 					NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
+
+					[allKeysofDbStructure addObject:table_id];
+
 					NSString *charset;
 					while(row = mysql_fetch_row(theResult)) {
 						NSString *field = [self stringWithUTF8CString:row[0]];
@@ -2129,8 +2137,6 @@ void performThreadedKeepAlive(void *ptr)
 						NSArray *a = [coll componentsSeparatedByString:@"_"];
 						charset = ([a count]) ? [a objectAtIndex:0] : @"";
 
-						[allKeysofDbStructure addObject:db_id];
-						[allKeysofDbStructure addObject:table_id];
 						[allKeysofDbStructure addObject:field_id];
 					
 						if(![[structure valueForKey:connectionID] valueForKey:db_id] || [[[structure valueForKey:connectionID] valueForKey:db_id] isKindOfClass:[NSString class]] )
@@ -2167,7 +2173,6 @@ void performThreadedKeepAlive(void *ptr)
 							NSString *security_type = [self stringWithUTF8CString:row[14]];
 							NSString *definer = [self stringWithUTF8CString:row[19]];
 
-							[allKeysofDbStructure addObject:db_id];
 							[allKeysofDbStructure addObject:table_id];
 							[allKeysofDbStructure addObject:field_id];
 				
@@ -2208,7 +2213,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSDictionary *)getDbStructure
 {
-	return [NSDictionary dictionaryWithDictionary:structure];
+	return [structure copy];
 }
 
 /**
@@ -2216,10 +2221,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSArray *)getAllKeysOfDbStructure
 {
-	if(allKeysofDbStructure && [allKeysofDbStructure count]) {
-		return [NSArray arrayWithArray:allKeysofDbStructure];
-	}
-	return [NSArray array];
+	return [allKeysofDbStructure copy];
 }
 
 #pragma mark -
