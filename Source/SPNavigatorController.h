@@ -56,6 +56,8 @@
 	BOOL ignoreUpdate;
 	BOOL isFiltered;
 	
+	BOOL isFiltering;
+	
 	NSImage *connectionIcon;
 	NSImage *databaseIcon;
 	NSImage *tableIcon;

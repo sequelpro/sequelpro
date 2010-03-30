@@ -33,6 +33,7 @@
 #import "MCPStreamingResult.h"
 #import "MCPConnectionProxy.h"
 #import "MCPStringAdditions.h"
+#import "RegexKitLite.h"
 
 #include <unistd.h>
 #include <mach/mach_time.h>
@@ -1897,11 +1898,14 @@ void performThreadedKeepAlive(void *ptr)
 			SPUniqueSchemaDelimiter, 
 			[[[self delegate] allDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter]] 
 			componentsSeparatedByString:SPUniqueSchemaDelimiter];
+
 		for(id db in dbs) {
-			if(![[structure valueForKey:connectionID] objectForKey:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]]) {
+			NSString *dbid = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
+			if(![[structure valueForKey:connectionID] objectForKey:dbid]) {
 // NSLog(@"added db %@", db);
 				removeAddFlag = YES;
-				[[structure valueForKey:connectionID] setObject:db forKey:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
+				[[structure valueForKey:connectionID] setObject:db forKey:dbid];
+				[allKeysofDbStructure addObject:dbid];
 			}
 		}
 
@@ -2078,6 +2082,7 @@ void performThreadedKeepAlive(void *ptr)
 					while(row = mysql_fetch_row(theResult)) {
 						NSString *field = [self stringWithUTF8CString:row[0]];
 						NSString *type = [self stringWithUTF8CString:row[1]];
+						NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
 						NSString *coll = [self stringWithUTF8CString:row[2]];
 						NSString *isnull = [self stringWithUTF8CString:row[3]];
 						NSString *key = [self stringWithUTF8CString:row[4]];
@@ -2097,7 +2102,7 @@ void performThreadedKeepAlive(void *ptr)
 						if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id])
 							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 					
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, type_display, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
 						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:@"0" forKey:@"  struct_type  "];
 						uniqueCounter++;
 					}
@@ -2126,6 +2131,7 @@ void performThreadedKeepAlive(void *ptr)
 					while(row = mysql_fetch_row(theResult)) {
 						NSString *field = [self stringWithUTF8CString:row[0]];
 						NSString *type = [self stringWithUTF8CString:row[1]];
+						NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
 						NSString *coll = [self stringWithUTF8CString:row[2]];
 						NSString *isnull = [self stringWithUTF8CString:row[3]];
 						NSString *key = [self stringWithUTF8CString:row[4]];
@@ -2145,7 +2151,7 @@ void performThreadedKeepAlive(void *ptr)
 						if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id])
 							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 					
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, type_display, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
 						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:@"1" forKey:@"  struct_type  "];
 						uniqueCounter++;
 					}
@@ -2213,7 +2219,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSDictionary *)getDbStructure
 {
-	return [structure copy];
+	return [[structure copy] autorelease];
 }
 
 /**
@@ -2221,7 +2227,23 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSArray *)getAllKeysOfDbStructure
 {
-	return [allKeysofDbStructure copy];
+	NSArray *r = nil;
+	@try
+	{
+		r = [NSArray arrayWithArray:allKeysofDbStructure];
+	}
+	@catch(id ae)
+	{
+		@try
+		{
+			r = [NSArray arrayWithArray:allKeysofDbStructure];
+		}
+		@catch(id ae)
+		{
+			return nil;
+		}
+	}
+	return r;
 }
 
 #pragma mark -
