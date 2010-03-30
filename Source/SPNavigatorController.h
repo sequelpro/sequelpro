@@ -56,6 +56,14 @@
 	BOOL ignoreUpdate;
 	BOOL isFiltered;
 	
+	NSImage *connectionIcon;
+	NSImage *databaseIcon;
+	NSImage *tableIcon;
+	NSImage *viewIcon;
+	NSImage *procedureIcon;
+	NSImage *functionIcon;
+	NSImage *fieldIcon;
+	
 	Class NSDictionaryClass;
 }
 
