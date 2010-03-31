@@ -476,7 +476,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			eventLoopStartDate = [NSDate date];
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
 			if ([[NSDate date] timeIntervalSinceDate:eventLoopStartDate] < 0.25) {
-				usleep(250000 - (100000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate]));
+				usleep(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate]));
 			}
 		}
 
@@ -505,7 +505,10 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			if ([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] > 0.25) {
 				proxyStartDate = [proxyStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
 			} else {
-				usleep(250000 - (100000 * [[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]));
+				usleep(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]));
+				if ([connectionProxy state] == PROXY_STATE_WAITING_FOR_AUTH) {
+					proxyStartDate = [proxyStartDate addTimeInterval:0.26];
+				}
 			}
 		}
 		
