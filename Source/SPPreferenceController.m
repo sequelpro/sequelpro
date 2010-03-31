@@ -43,9 +43,9 @@
 
 @implementation SPPreferenceController
 
-// -------------------------------------------------------------------------------
-// init
-// -------------------------------------------------------------------------------
+/**
+ * init.
+ */
 - (id)init
 {
 	if (self = [super initWithWindowNibName:@"Preferences"]) {
@@ -66,9 +66,9 @@
 	return self;
 }
 
-// -------------------------------------------------------------------------------
-// windowDidLoad
-// -------------------------------------------------------------------------------
+/**
+ * Sets up various interface controls once the window is loaded.
+ */
 - (void)windowDidLoad
 {	
 	[self _setupToolbar];
@@ -102,12 +102,10 @@
 #pragma mark -
 #pragma mark Preferences upgrade routine
 
-// -------------------------------------------------------------------------------
-// applyRevisionChanges
-// Checks the revision number, applies any preference upgrades, and updates to
-// latest revision.
-// Currently uses both lastUsedVersion and LastUsedVersion for <0.9.5 compatibility.
-// -------------------------------------------------------------------------------
+/**
+ * Checks the revision number, applies any preference upgrades, and updates to latest revision.
+ * Currently uses both lastUsedVersion and LastUsedVersion for <0.9.5 compatibility.
+ */
 - (void)applyRevisionChanges
 {
 	NSInteger i;
@@ -310,9 +308,9 @@
 #pragma mark -
 #pragma mark IBAction methods
 
-// -------------------------------------------------------------------------------
-// addFavorite:
-// -------------------------------------------------------------------------------
+/**
+ * Adds a new connection favorite.
+ */
 - (IBAction)addFavorite:(id)sender
 {
 	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -322,10 +320,11 @@
 																	   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"host", @"socket", @"user", @"port", @"database", @"sshHost", @"sshUser", @"sshPort", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
-	[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
+	[favoritesController setSelectedObjects:[NSArray arrayWithObject:favorite]];
 
 	[favoritesTableView reloadData];
 	[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
+	
 	[self updateDefaultFavoritePopup];
 	
 	favoriteNameFieldWasTouched = NO;
@@ -333,9 +332,9 @@
 	[[self window] makeFirstResponder:favoriteHostTextField];
 }
 
-// -------------------------------------------------------------------------------
-// removeFavorite:
-// -------------------------------------------------------------------------------
+/**
+ * Removes the selected connection favorite.
+ */
 - (IBAction)removeFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
@@ -369,13 +368,14 @@
 		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
 		
 		[favoritesTableView reloadData];
+		
 		[self updateDefaultFavoritePopup];
 	}
 }
 
-// -------------------------------------------------------------------------------
-// duplicateFavorite:
-// -------------------------------------------------------------------------------
+/**
+ * Duplicates the selected connection favorite.
+ */
 - (IBAction)duplicateFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
@@ -410,29 +410,26 @@
 		password = nil, sshPassword = nil;
 		
 		[favoritesController addObject:favorite];
-		[favoritesController setSelectionIndex:[[favoritesController arrangedObjects] count]-1];
+		[favoritesController setSelectedObjects:[NSArray arrayWithObject:favorite]];
 
 		[favoritesTableView reloadData];
 		[favoritesTableView scrollRowToVisible:[favoritesTableView selectedRow]];
+		
 		[self updateDefaultFavoritePopup];
 
 		[[self window] makeFirstResponder:favoriteNameTextField];
 	}
 }
 
-// -------------------------------------------------------------------------------
-// updateDefaultFavorite:
-// -------------------------------------------------------------------------------
+/**
+ * Updates the default favorite.
+ */ 
 - (IBAction)updateDefaultFavorite:(id)sender
 {
-	if ([defaultFavoritePopup indexOfSelectedItem] == 0) {
-		[prefs setBool:YES forKey:SPSelectLastFavoriteUsed];
-	} else {
-		[prefs setBool:NO forKey:SPSelectLastFavoriteUsed];
+	[prefs setBool:([defaultFavoritePopup indexOfSelectedItem] == 0) forKey:SPSelectLastFavoriteUsed];
 
-		// Minus 2 from index to account for the "Last Used" and separator items
-		[prefs setInteger:[defaultFavoritePopup indexOfSelectedItem]-2 forKey:SPDefaultFavorite];
-	}
+	// Minus 2 from index to account for the "Last Used" and separator items
+	[prefs setInteger:([defaultFavoritePopup indexOfSelectedItem] - 2) forKey:SPDefaultFavorite];
 }
 
 /**
@@ -1177,9 +1174,9 @@
 
 #pragma mark -
 
-// -------------------------------------------------------------------------------
-// dealloc
-// -------------------------------------------------------------------------------
+/**
+ * Dealloc.
+ */
 - (void)dealloc
 {
 	if (keychain) [keychain release], keychain = nil;
