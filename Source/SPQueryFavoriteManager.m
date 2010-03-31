@@ -129,7 +129,7 @@
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
 	
-	// Set the button delegate 
+	// Set the button bar delegate 
 	[splitViewButtonBar setSplitViewDelegate:self];
 }
 

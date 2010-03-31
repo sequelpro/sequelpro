@@ -91,6 +91,9 @@
 	
 	// Hide the tabs on the favorites tab view - left visible in IB for easy use
 	[favoritesTabView setTabViewType:NSNoTabsNoBorder];
+	
+	// Set the button bar delegate 
+	[splitViewButtonBar setSplitViewDelegate:self];
 
 	[self updateDefaultFavoritePopup];
 	

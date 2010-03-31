@@ -1605,6 +1605,8 @@
 																			<int key="NSMnemonicLoc">2147483647</int>
 																			<reference key="NSOnImage" ref="1039721224"/>
 																			<reference key="NSMixedImage" ref="720177216"/>
+																			<string key="NSAction">_popUpItemAction:</string>
+																			<reference key="NSTarget" ref="858997662"/>
 																		</object>
 																		<object class="NSMenuItem" id="760230945">
 																			<reference key="NSMenu" ref="978204089"/>
@@ -1613,6 +1615,8 @@
 																			<int key="NSMnemonicLoc">2147483647</int>
 																			<reference key="NSOnImage" ref="1039721224"/>
 																			<reference key="NSMixedImage" ref="720177216"/>
+																			<string key="NSAction">_popUpItemAction:</string>
+																			<reference key="NSTarget" ref="858997662"/>
 																		</object>
 																		<object class="NSMenuItem" id="334938006">
 																			<reference key="NSMenu" ref="978204089"/>
@@ -1621,6 +1625,8 @@
 																			<int key="NSMnemonicLoc">2147483647</int>
 																			<reference key="NSOnImage" ref="1039721224"/>
 																			<reference key="NSMixedImage" ref="720177216"/>
+																			<string key="NSAction">_popUpItemAction:</string>
+																			<reference key="NSTarget" ref="858997662"/>
 																		</object>
 																		<object class="NSMenuItem" id="375388028">
 																			<reference key="NSMenu" ref="978204089"/>
@@ -1631,6 +1637,8 @@
 																			<int key="NSMnemonicLoc">2147483647</int>
 																			<reference key="NSOnImage" ref="1039721224"/>
 																			<reference key="NSMixedImage" ref="720177216"/>
+																			<string key="NSAction">_popUpItemAction:</string>
+																			<reference key="NSTarget" ref="858997662"/>
 																		</object>
 																		<object class="NSMenuItem" id="140840656">
 																			<reference key="NSMenu" ref="978204089"/>
@@ -1639,13 +1647,14 @@
 																			<int key="NSMnemonicLoc">2147483647</int>
 																			<reference key="NSOnImage" ref="1039721224"/>
 																			<reference key="NSMixedImage" ref="720177216"/>
+																			<string key="NSAction">_popUpItemAction:</string>
+																			<reference key="NSTarget" ref="858997662"/>
 																		</object>
 																	</object>
 																</object>
 															</object>
 														</object>
 													</object>
-													<int key="NSSelectedIndex">2</int>
 													<bool key="NSPullDown">YES</bool>
 													<int key="NSPreferredEdge">1</int>
 													<bool key="NSUsesItemFromMenu">YES</bool>
@@ -6484,6 +6493,14 @@ AQAAAAA</bytes>
 					</object>
 					<int key="connectionID">1611</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">splitViewButtonBar</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1068562664"/>
+					</object>
+					<int key="connectionID">1612</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -10049,7 +10066,7 @@ AQAAAAA</bytes>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{637, 464}, {500, 381}}</string>
+					<string>{{648, 147}, {500, 381}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -10351,7 +10368,7 @@ AQAAAAA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1611</int>
+			<int key="maxID">1612</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -10518,6 +10535,7 @@ AQAAAAA</bytes>
 							<string>notificationsView</string>
 							<string>preferencesWindow</string>
 							<string>socketPasswordField</string>
+							<string>splitViewButtonBar</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLPasswordField</string>
 							<string>standardPasswordField</string>
@@ -10546,6 +10564,7 @@ AQAAAAA</bytes>
 							<string>NSView</string>
 							<string>NSWindow</string>
 							<string>NSSecureTextField</string>
+							<string>BWAnchoredButtonBar</string>
 							<string>NSSecureTextField</string>
 							<string>NSSecureTextField</string>
 							<string>NSSecureTextField</string>
