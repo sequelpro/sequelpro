@@ -1877,14 +1877,12 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Re-init with already cached data from navigator controller
 	NSMutableDictionary *queriedStructure = [NSMutableDictionary dictionary];
-	NSDictionary *dbstructure = [[[self delegate] getDbStructure] retain];
+	NSDictionary *dbstructure = [[self delegate] getDbStructure];
 	[queriedStructure setDictionary:[NSMutableDictionary dictionaryWithDictionary:dbstructure]];
 
 	NSMutableArray *queriedStructureKeys = [NSMutableArray array];
-	NSArray *dbStructureKeys = [[[self delegate] allSchemaKeys] retain];
+	NSArray *dbStructureKeys = [[self delegate] allSchemaKeys];
 	[queriedStructureKeys setArray:dbStructureKeys];
-	if(dbstructure) [dbstructure release], dbstructure = nil;
-	if(dbStructureKeys) [dbStructureKeys release], dbStructureKeys = nil;
 
 	BOOL removeAddFlag = NO;
 
@@ -1927,7 +1925,7 @@ void performThreadedKeepAlive(void *ptr)
 		// Updating the global variables and make sure that no request reads these global variables
 		// while updating
 		[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
-		[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:queriedStructure, @"structure", queriedStructureKeys, @"keys", nil] waitUntilDone:YES];
 		[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
 		if(removeAddFlag)
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
@@ -1944,7 +1942,7 @@ void performThreadedKeepAlive(void *ptr)
 			// Updating the global variables and make sure that no request reads these global variables
 			// while updating
 			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
-			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:queriedStructure, @"structure", queriedStructureKeys, @"keys", nil] waitUntilDone:YES];
 			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
 			if(removeAddFlag)
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
@@ -1957,7 +1955,7 @@ void performThreadedKeepAlive(void *ptr)
 			// Updating the global variables and make sure that no request reads these global variables
 			// while updating
 			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
-			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:queriedStructure, @"structure", queriedStructureKeys, @"keys", nil] waitUntilDone:YES];
 			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
 			if(removeAddFlag)
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
@@ -1971,7 +1969,7 @@ void performThreadedKeepAlive(void *ptr)
 			// Updating the global variables and make sure that no request reads these global variables
 			// while updating
 			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
-			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:queriedStructure, @"structure", queriedStructureKeys, @"keys", nil] waitUntilDone:YES];
 			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
 			if(removeAddFlag)
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
@@ -2208,7 +2206,7 @@ void performThreadedKeepAlive(void *ptr)
 			// Updating the global variables and make sure that no request reads these global variables
 			// while updating
 			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
-			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:queriedStructure, @"structure", queriedStructureKeys, @"keys", nil] waitUntilDone:YES];
 			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
 
 
@@ -2233,8 +2231,8 @@ void performThreadedKeepAlive(void *ptr)
 	if([connectionID length] < 2) return;
 	if(![structure valueForKey:connectionID])
 		[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
-	[structure setObject:[[object objectForKey:@"structure"] retain] forKey:connectionID];
-	[allKeysofDbStructure setArray:[[object objectForKey:@"keys"] retain]];
+	[structure setObject:[object objectForKey:@"structure"] forKey:connectionID];
+	[allKeysofDbStructure setArray:[object objectForKey:@"keys"]];
 	usleep(100);
 }
 
