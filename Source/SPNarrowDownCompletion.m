@@ -165,7 +165,7 @@
 				[stateTimer release];
 				stateTimer = nil;
 				if(syncArrowImages) [syncArrowImages release];
-				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
+				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:NO];
 				closeMe = YES;
 				return;
 			}
@@ -449,13 +449,21 @@
 		return @"";
 
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		if(rowIndex == -1) return @"fetching structure…";
-		
 		[[aTableColumn dataCell] setFont:[NSFont systemFontOfSize:12]];
+		if(rowIndex == -1) return @"fetching structure…";
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"list"]) {
-		if(rowIndex == -1) return @"";
+		if(rowIndex == -1) {
+			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+			[b setPullsDown:NO];
+			[b setArrowPosition:NSPopUpNoArrow];
+			[b setControlSize:NSMiniControlSize];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			[aTableColumn setDataCell:b];
+			return @"";
+		} 
 		if(dictMode) {
 			return @"";
 		} else {
@@ -483,7 +491,9 @@
 		}
 
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
-		if(rowIndex == -1) return @"";
+		if(rowIndex == -1) {
+			return @"";
+		} 
 		if(dictMode) {
 			return @"";
 		} else {
@@ -496,7 +506,16 @@
 		}
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
-		if(rowIndex == -1) return @"";
+		if(rowIndex == -1) {
+			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+			[b setPullsDown:NO];
+			[b setArrowPosition:NSPopUpNoArrow];
+			[b setControlSize:NSMiniControlSize];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			[aTableColumn setDataCell:b];
+			return @"";
+		} 
 		if(dictMode) {
 			return @"";
 		} else {
