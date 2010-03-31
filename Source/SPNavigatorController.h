@@ -76,7 +76,7 @@
 - (IBAction)filterTree:(id)sender;
 - (IBAction)syncButtonAction:(id)sender;
 
-- (void)updateEntriesForConnection:(NSString*)connectionID;
+- (void)updateEntriesForConnection:(id)object;
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
 
 - (void)updateNavigator:(NSNotification *)aNotification;

@@ -409,15 +409,16 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 - (void)updateNavigator:(NSNotification *)aNotification
 {
+
 	id object = [aNotification object];
-	
+
 	if([object isKindOfClass:[TableDocument class]])
-		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:[object connectionID] waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:object waitUntilDone:NO];
 	else
-		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:NO];
 }
 
-- (void)updateEntriesForConnection:(NSString*)connectionID
+- (void)updateEntriesForConnection:(id)doc
 {
 
 	if(ignoreUpdate) {
@@ -430,14 +431,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		[infoArray removeAllObjects];
 	}
 
-	id doc = nil;
 
-	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
+	if (doc && [doc isKindOfClass:[TableDocument class]] && [[[NSDocumentController sharedDocumentController] documents] count]) {
 
-		doc = [[NSDocumentController sharedDocumentController] currentDocument];
 		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
 
 		if(!theConnection || ![theConnection isConnected]) return;
+
+		NSString *connectionID = [doc connectionID];
 
 		NSString *connectionName = [doc connectionID];
 
@@ -446,7 +447,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		}
 
 		[updatingConnections addObject:connectionName];
-
 
 		if(![schemaData objectForKey:connectionName]) {
 			[schemaData setObject:[NSMutableDictionary dictionary] forKey:connectionName];
@@ -492,7 +492,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		[self filterTree:self];
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPNavigatorStructureWasUpdated" object:doc];
-
 
 }
 
