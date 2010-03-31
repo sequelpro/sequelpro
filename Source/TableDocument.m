@@ -3691,6 +3691,17 @@
 - (void)windowWillClose:(NSNotification *)aNotification
 {
 
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+
 	[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
 
 	[mySQLConnection setDelegate:nil];

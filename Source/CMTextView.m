@@ -519,13 +519,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) doAutoCompletion
 {
 
+	if(completionIsOpen || !self || ![self delegate]) return;
+
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doAutoCompletion) 
 								object:nil];
 
-	if(completionIsOpen) return;
 
 	NSRange r = [self selectedRange];
 
@@ -539,6 +540,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if([[NSApp keyWindow] firstResponder] == self)
 				[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
 	}
+
 }
 
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
@@ -3279,7 +3281,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doAutoCompletion) 
 								object:nil];
-
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

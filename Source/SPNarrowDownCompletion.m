@@ -165,8 +165,8 @@
 				[stateTimer release];
 				stateTimer = nil;
 				if(syncArrowImages) [syncArrowImages release];
-				usleep(1000);
-				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:NO];
+				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
+				closeMe = YES;
 				return;
 			}
 		}
