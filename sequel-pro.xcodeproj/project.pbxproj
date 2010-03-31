@@ -1095,6 +1095,17 @@
 			path = topics;
 			sourceTree = "<group>";
 		};
+		17DF51241163C68600E3F396 /* Outline Views */ = {
+			isa = PBXGroup;
+			children = (
+				173C44D61044A6AF001F3A30 /* SPOutlineView.h */,
+				173C44D71044A6B0001F3A30 /* SPOutlineView.m */,
+				BC4DF1961158FB280059FABD /* SPNavigatorOutlineView.h */,
+				BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */,
+			);
+			name = "Outline Views";
+			sourceTree = "<group>";
+		};
 		17E641420EF01E8A001BC333 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -1158,16 +1169,13 @@
 			isa = PBXGroup;
 			children = (
 				171312CF109D23CA00FB465F /* Cells */,
+				17DF51241163C68600E3F396 /* Outline Views */,
 				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
 				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
-				173C44D61044A6AF001F3A30 /* SPOutlineView.h */,
-				173C44D71044A6B0001F3A30 /* SPOutlineView.m */,
 				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
 				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
 				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
 				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
-				BC4DF1961158FB280059FABD /* SPNavigatorOutlineView.h */,
-				BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";

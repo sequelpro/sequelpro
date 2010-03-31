@@ -85,7 +85,6 @@ static inline CGFloat SPRectRight(NSRect rectangle) { return rectangle.origin.x+
 static inline CGFloat SPPointDistance(NSPoint a, NSPoint b) { return sqrt( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y) ); }
 static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NSMakePoint(a.x*(1.-t) + b.x*t, a.y*(1.-t) + b.y*t); }
 
-
 @implementation CMTextView
 
 @synthesize queryHiliteColor;
