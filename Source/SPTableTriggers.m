@@ -217,6 +217,15 @@
 		
 		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
 	}
+	
+	// If a proc or function is selected disable everything.
+	if (([tablesListInstance tableType] == SPTableTypeProc) || ([tablesListInstance tableType] == SPTableTypeFunc)) {
+		[addTriggerButton setEnabled:NO];		
+		[refreshTriggersButton setEnabled:NO];
+		[triggersTableView setEnabled:NO];	
+		
+		[labelTextField setStringValue:@""];
+	}
 }
 
 #pragma mark -
