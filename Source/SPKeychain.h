@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Foundation/Foundation.h>
-#import <Cocoa/Cocoa.h>
 
 @interface SPKeychain : NSObject
 

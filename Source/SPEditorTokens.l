@@ -37,6 +37,7 @@
  */
  
 #import "SPEditorTokens.h"
+
 size_t utf8strlen(const char * _s);
 size_t yyuoffset, yyuleng;
 

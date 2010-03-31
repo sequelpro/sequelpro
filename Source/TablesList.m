@@ -41,6 +41,7 @@
 #import "SPAlertSheets.h"
 #import "SPNavigatorController.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPHistoryController.h"
 
 @interface TablesList (PrivateAPI)
 

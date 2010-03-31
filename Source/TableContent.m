@@ -25,8 +25,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "TableContent.h"
 #import "TableDocument.h"
 #import "TableSource.h"
@@ -52,6 +50,7 @@
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPHistoryController.h"
 
 @implementation TableContent
 

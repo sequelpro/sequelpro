@@ -33,7 +33,6 @@
 #import "SPConstants.h"
 
 #import <Sparkle/Sparkle.h>
-#import <FeedbackReporter/FRFeedbackReporter.h>
 
 @implementation SPAppController
 

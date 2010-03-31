@@ -25,7 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-#import "SPHistoryController.h"
+
+@class SPHistoryController;
 
 @interface NSObject (NSSplitView)
 

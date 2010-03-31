@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 // View modes
 typedef enum {

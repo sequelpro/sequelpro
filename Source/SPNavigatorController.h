@@ -97,4 +97,5 @@
 
 - (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname;
 - (void)removeDatabase:(NSString*)db_id forConnectionID:(NSString*)connectionID;
+
 @end

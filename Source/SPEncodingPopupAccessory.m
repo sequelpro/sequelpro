@@ -24,7 +24,6 @@
 
 #import "SPEncodingPopupAccessory.h"
 
-
 @implementation SPEncodingPopupAccessory
 
 + (NSView *)encodingAccessory:(NSUInteger)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup {

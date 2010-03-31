@@ -23,8 +23,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#import <MCPKit/MCPKit.h>
 
-@class MCPConnection, BWAnchoredButtonBar;
+@class BWAnchoredButtonBar;
 
 @interface SPUserManager : NSWindowController 
 {	

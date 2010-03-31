@@ -32,7 +32,6 @@
 
 @end
 
-
 @implementation SPDataStorage
 
 static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorage* self, NSUInteger numExtraRows) {

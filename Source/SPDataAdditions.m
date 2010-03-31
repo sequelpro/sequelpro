@@ -28,6 +28,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDataAdditions.h"
+
 #include <zlib.h>
 #include <openssl/aes.h>
 #include <openssl/sha.h>
@@ -107,7 +108,7 @@ static char base64encodingTable[64] = {
 	return base64;
 }
 
-- (NSData*)dataEncryptedWithPassword:(NSString*)password
+- (NSData *)dataEncryptedWithPassword:(NSString *)password
 {
 	// Create a random 128-bit initialization vector
 	srand(time(NULL));
@@ -146,7 +147,7 @@ static char base64encodingTable[64] = {
 	return [NSData dataWithBytesNoCopy:encryptedBytes length:totalLength];
 }
 
-- (NSData*)dataDecryptedWithPassword:(NSString*)password
+- (NSData *)dataDecryptedWithPassword:(NSString *)password
 {
 	
 	// Create the key from the password hash

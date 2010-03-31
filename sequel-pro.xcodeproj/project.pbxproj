@@ -1451,8 +1451,8 @@
 				5822D3081061833C00CE2157 /* SPCSVParser.m */,
 				179F15040F7C433C00579954 /* SPEditorTokens.h */,
 				179F15050F7C433C00579954 /* SPEditorTokens.l */,
-				BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */,
 				BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */,
+				BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */,
 			);
 			name = Parsing;
 			sourceTree = "<group>";

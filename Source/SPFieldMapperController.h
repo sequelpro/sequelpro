@@ -24,7 +24,8 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-#import "CMTextView.h"
+
+@class CMTextView;
 
 @interface SPFieldMapperController : NSWindowController 
 {

@@ -29,7 +29,6 @@
 #import "SPKeychain.h"
 #import "TableDocument.h"
 #import "SPConnectionController.h"
-#import "SPConstants.h"
 
 @interface SPPreferenceController (PrivateAPI)
 
@@ -1303,10 +1302,10 @@
 	NSSortDescriptor *sortDescriptor = nil;
 	
 	if (currentSortItem == SPFavoritesSortTypeItem) {
-		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:reverseFavoritesSort] autorelease];
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort)] autorelease];
 	}
 	else {
-		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:reverseFavoritesSort selector:@selector(caseInsensitiveCompare:)] autorelease];
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
 	}
 	
 	[favoritesController setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
