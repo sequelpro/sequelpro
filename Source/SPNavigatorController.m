@@ -70,7 +70,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		expandStatus1       = [[NSMutableDictionary alloc] init];
 		expandStatus2       = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
-		updatingConnections = [[NSMutableSet alloc] initWithCapacity:1];
+		updatingConnections = [[NSMutableArray alloc] init];
 		selectedKey1        = @"";
 		selectedKey2        = @"";
 		ignoreUpdate        = NO;
@@ -142,9 +142,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
 												 name:@"SPDBStructureWasUpdated" object:nil];
-
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(isUpdatingNavigator:)
-												 name:@"SPDBStructureIsUpdating" object:nil];
 
 }
 
@@ -349,12 +346,14 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			[schemaData removeObjectForKey:connectionID];
 		if(allSchemaKeys)
 			[allSchemaKeys removeObjectForKey:connectionID];
-			
-		[outlineSchema1 reloadData];
-		[outlineSchema2 reloadData];
-		[self restoreSelectedItems];
-		if(isFiltered)
-			[self filterTree:self];
+
+		if([[self window] isVisible]) {
+			[outlineSchema1 reloadData];
+			[outlineSchema2 reloadData];
+			[self restoreSelectedItems];
+			if(isFiltered)
+				[self filterTree:self];
+		}
 	}
 }
 
@@ -418,15 +417,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:YES];
 }
 
-- (void)isUpdatingNavigator:(NSNotification *)aNotification
-{
-	// id object = [aNotification object];
-	// 
-	// if([object isKindOfClass:[TableDocument class]])
-	// 	[updatingConnections addObject:[object connectionID]];
-	
-}
-
 - (void)updateEntriesForConnection:(NSString*)connectionID
 {
 
@@ -435,13 +425,16 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		return;
 	}
 
-	[self saveSelectedItems];
+	if([[self window] isVisible]) {
+		[self saveSelectedItems];
+		[infoArray removeAllObjects];
+	}
 
-	[infoArray removeAllObjects];
+	id doc = nil;
 
 	if ([[[NSDocumentController sharedDocumentController] documents] count]) {
 
-		id doc = [[NSDocumentController sharedDocumentController] currentDocument];
+		doc = [[NSDocumentController sharedDocumentController] currentDocument];
 		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
 
 		if(!theConnection || ![theConnection isConnected]) return;
@@ -449,7 +442,6 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		NSString *connectionName = [doc connectionID];
 
 		if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) {
-// NSLog(@"navigator update skipped %@", connectionName);
 			return;
 		}
 
@@ -481,21 +473,27 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
 		}
 
-		[outlineSchema1 reloadData];
-		[outlineSchema2 reloadData];
-
-		[self restoreExpandStatus];
-		[self restoreSelectedItems];
-
 		[updatingConnections removeObject:connectionName];
+
+		if([[self window] isVisible]) {
+			[outlineSchema1 reloadData];
+			[outlineSchema2 reloadData];
+
+			[self restoreExpandStatus];
+			[self restoreSelectedItems];
+		}
 
 	}
 
-	[self syncButtonAction:self];
+	if([[self window] isVisible])
+		[self syncButtonAction:self];
 
 	if(isFiltered && [[self window] isVisible])
 		[self filterTree:self];
-	
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPNavigatorStructureWasUpdated" object:doc];
+
+
 }
 
 - (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname
@@ -573,6 +571,11 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (BOOL)isUpdatingConnection:(NSString*)connectionID
 {
 	return ([updatingConnections containsObject:connectionID]) ? YES : NO;
+}
+
+- (BOOL)isUpdating
+{
+	return ([updatingConnections count]) ? YES : NO;
 }
 
 #pragma mark -
@@ -824,6 +827,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		return [item objectAtIndex:index];
 	}
 	return nil;
+
 }
 
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item

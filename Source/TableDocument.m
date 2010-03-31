@@ -3690,9 +3690,8 @@
  */
 - (void)windowWillClose:(NSNotification *)aNotification
 {
-	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) {
-		[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
-	}
+
+	[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
 
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];

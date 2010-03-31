@@ -173,7 +173,8 @@
 	BOOL delegateQueryLogging;
 	BOOL delegateResponseToWillQueryString;
 	BOOL delegateSupportsConnectionLostDecisions;
-	BOOL isQueryingDbStructure;
+	NSInteger isQueryingDbStructure;
+	BOOL lockQuerying;
 	
 	// Pointers
 	IMP cStringPtr;
@@ -286,6 +287,12 @@ void performThreadedKeepAlive(void *ptr);
 - (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo;
 - (NSDictionary *)getDbStructure;
 - (NSArray *)getAllKeysOfDbStructure;
+- (BOOL)isQueryingDatabaseStructure;
+- (void)incrementQueryingDbStructure;
+- (void)decrementQueryingDbStructure;
+- (void)lockQuerying;
+- (void)unlockQuerying;
+- (void)updateGlobalVariablesWith:(NSDictionary*)object;
 
 // Server information
 - (NSString *)clientInfo;

@@ -118,7 +118,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		structure = [[NSMutableDictionary alloc] initWithCapacity:1];
 		allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:20];
-		isQueryingDbStructure = NO;
+		isQueryingDbStructure = 0;
+		lockQuerying = NO;
 
 		connectionThreadId     = 0;
 		maxAllowedPacketSize   = -1;
@@ -1861,365 +1862,416 @@ void performThreadedKeepAlive(void *ptr)
 {
 	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 
-	if (!isQueryingDbStructure) {
+	// Requests are queued
+	while(isQueryingDbStructure > 0) { usleep(1000000); }
 
-// NSLog(@"queryDbStructureWithUserInfo called with %@ and db %@", [userInfo description], [[[self delegate] database] description]);
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
 
-		isQueryingDbStructure = YES;
+	NSString *SPUniqueSchemaDelimiter = @"￸";
 
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
+	NSString *connectionID;
+	if([delegate respondsToSelector:@selector(connectionID)])
+		connectionID = [NSString stringWithString:[[self delegate] connectionID]];
+	else
+		connectionID = @"_";
 
-		NSString *SPUniqueSchemaDelimiter = @"￸";
+	// Re-init with already cached data from navigator controller
+	NSMutableDictionary *queriedStructure = [NSMutableDictionary dictionary];
+	NSDictionary *dbstructure = [[[self delegate] getDbStructure] retain];
+	[queriedStructure setDictionary:[NSMutableDictionary dictionaryWithDictionary:dbstructure]];
 
-		NSString *connectionID;
-		if([delegate respondsToSelector:@selector(connectionID)])
-			connectionID = [NSString stringWithString:[[self delegate] connectionID]];
-		else
-			connectionID = @"_";
+	NSMutableArray *queriedStructureKeys = [NSMutableArray array];
+	NSArray *dbStructureKeys = [[[self delegate] allSchemaKeys] retain];
+	[queriedStructureKeys setArray:dbStructureKeys];
+	if(dbstructure) [dbstructure release], dbstructure = nil;
+	if(dbStructureKeys) [dbStructureKeys release], dbStructureKeys = nil;
 
-		// Re-init with already cached data from navigator controller
-		NSDictionary *dbstructure = [[[self delegate] getDbStructure] retain];
-		[structure removeAllObjects];
-		[structure setObject:[NSMutableDictionary dictionaryWithDictionary:dbstructure] forKey:connectionID];
-		NSArray *allStructureKeys = [[self delegate] allSchemaKeys];
-		if(allStructureKeys && [allStructureKeys count]) {
-			if(allKeysofDbStructure) [allKeysofDbStructure release];
-			allKeysofDbStructure = nil;
-			allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:[allKeysofDbStructure count]];
-			[allKeysofDbStructure setArray:allStructureKeys];
+	BOOL removeAddFlag = NO;
+
+	// Add all known databases coming from connection if they aren't parsed yet
+	NSArray *dbs = [[NSString stringWithFormat:@"%@%@%@",
+		[[[self delegate] allSystemDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter], 
+		SPUniqueSchemaDelimiter, 
+		[[[self delegate] allDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter]] 
+		componentsSeparatedByString:SPUniqueSchemaDelimiter];
+
+	for(id db in dbs) {
+		NSString *dbid = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
+		if(![queriedStructure objectForKey:dbid]) {
+			removeAddFlag = YES;
+			[queriedStructure setObject:db forKey:dbid];
+			[queriedStructureKeys addObject:dbid];
 		}
-		if(dbstructure) [dbstructure release], dbstructure = nil;
+	}
 
-		BOOL removeAddFlag = NO;
-
-		// Add all known databases coming from connection if they aren't parsed yet
-		NSArray *dbs = [[NSString stringWithFormat:@"%@%@%@",
-			[[[self delegate] allSystemDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter], 
-			SPUniqueSchemaDelimiter, 
-			[[[self delegate] allDatabaseNames] componentsJoinedByString:SPUniqueSchemaDelimiter]] 
-			componentsSeparatedByString:SPUniqueSchemaDelimiter];
-
-		for(id db in dbs) {
-			NSString *dbid = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
-			if(![[structure valueForKey:connectionID] objectForKey:dbid]) {
-// NSLog(@"added db %@", db);
-				removeAddFlag = YES;
-				[[structure valueForKey:connectionID] setObject:db forKey:dbid];
-				[allKeysofDbStructure addObject:dbid];
-			}
+	// Remove deleted databases in structure and keys in allKeysofDbStructure
+	// Use a dict to avoid <NSCFDictionary> was mutated while being enumerated. while iterating via allKeys
+	NSArray *keys = [queriedStructure allKeys];
+	for(id key in keys) {
+		NSString *db = [[key componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1];
+		if(![dbs containsObject:db]) {
+			removeAddFlag = YES;
+			[queriedStructure removeObjectForKey:key];
+			NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", key, SPUniqueSchemaDelimiter]];
+			[queriedStructureKeys filterUsingPredicate:predicate];
+			[queriedStructureKeys removeObject:key];
 		}
+	}
 
-		// Remove deleted databases in structure and keys in allKeysofDbStructure
-		// Use a dict to avoid <NSCFDictionary> was mutated while being enumerated. while iterating via allKeys
-		NSArray *keys = [[NSDictionary dictionaryWithDictionary:[structure valueForKey:connectionID]] allKeys];
-		for(id key in keys) {
-			NSString *db = [[key componentsSeparatedByString:SPUniqueSchemaDelimiter] objectAtIndex:1];
-			if(![dbs containsObject:db]) {
-// NSLog(@"removed db %@", db);
-				removeAddFlag = YES;
-				if([[structure valueForKey:connectionID] isKindOfClass:[NSDictionary class]]) {
-					[[structure valueForKey:connectionID] removeObjectForKey:key];
-				}
-				NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", key, SPUniqueSchemaDelimiter]];
-				[allKeysofDbStructure filterUsingPredicate:predicate];
-				[allKeysofDbStructure removeObject:key];
-			}
-		}
+	NSString *currentDatabase = nil;
+	if([delegate respondsToSelector:@selector(database)])
+		currentDatabase = [[self delegate] database];
 
-		NSString *currentDatabase = nil;
-		if([delegate respondsToSelector:@selector(database)])
-			currentDatabase = [[self delegate] database];
+	if(!currentDatabase || (currentDatabase && ![currentDatabase length])) {
 
-		if(!currentDatabase || (currentDatabase && ![currentDatabase length])) {
-// NSLog(@"no db - return");
-			isQueryingDbStructure = NO;
+		// Updating the global variables and make sure that no request reads these global variables
+		// while updating
+		[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
+		if(removeAddFlag)
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+		[queryPool release];
+		return;
+	}
+
+	NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, currentDatabase];
+
+	// mysql and information_schema's schema will never change thus query data only once
+	if([currentDatabase isEqualToString:@"mysql"]) {
+		if([queriedStructure objectForKey:db_id] && [[queriedStructure objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+
+			// Updating the global variables and make sure that no request reads these global variables
+			// while updating
+			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
 			if(removeAddFlag)
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
 			[queryPool release];
 			return;
 		}
+	}
+	if([currentDatabase isEqualToString:@"information_schema"]) {
+		if([queriedStructure objectForKey:db_id] && [[queriedStructure objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+			// Updating the global variables and make sure that no request reads these global variables
+			// while updating
+			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
+			if(removeAddFlag)
+				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+			[queryPool release];
+			return;
+		}
+	}
 
-		NSString *db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, currentDatabase];
+	if(userInfo == nil || ![userInfo objectForKey:@"forceUpdate"]) {
+		if([queriedStructure objectForKey:db_id] && [[queriedStructure objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+			// Updating the global variables and make sure that no request reads these global variables
+			// while updating
+			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
+			if(removeAddFlag)
+				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+			[queryPool release];
+			return;
+		}
+	}
 
-		// mysql and information_schema's schema will never change thus query data only once
-		if([currentDatabase isEqualToString:@"mysql"]) {
-			if([[structure valueForKey:connectionID] objectForKey:db_id] && [[[structure valueForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
-// NSLog(@"mysql was parsed - return");
-				if(removeAddFlag)
-					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+	NSArray *tables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableNames];
+	NSArray *tableviews = [[[self delegate] valueForKeyPath:@"tablesListInstance"] allViewNames];
+
+	NSUInteger numberOfTables = 0;
+	if(tables && [tables count]) numberOfTables += [tables count];
+	if(tableviews && [tableviews count]) numberOfTables += [tableviews count];
+
+	// For future usage
+	NSString *affectedItem = nil;
+	NSInteger affectedItemType = -1;
+	if(userInfo && [userInfo objectForKey:@"affectedItem"]) {
+		affectedItem = [userInfo objectForKey:@"affectedItem"];
+		if([userInfo objectForKey:@"affectedItemType"])
+			affectedItemType = [[userInfo objectForKey:@"affectedItemType"] intValue];
+		else
+			affectedItem = nil;
+	}
+
+	// Delete all stored data for to be queried db
+	if([queriedStructure isKindOfClass:[NSDictionary class]])
+		[queriedStructure removeObjectForKey:db_id];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", db_id, SPUniqueSchemaDelimiter]];
+	[queriedStructureKeys filterUsingPredicate:predicate];
+	[queriedStructureKeys removeObject:db_id];
+
+	// Re-add currentDatabase in case that structure querying will fail
+	[queriedStructure setObject:currentDatabase forKey:db_id];
+
+	NSString *currentDatabaseEscaped = [currentDatabase stringByReplacingOccurrencesOfString:@"`" withString:@"``"];
+
+	MYSQL *structConnection = mysql_init(NULL);
+	if (structConnection) {
+		const char *theLogin = [self cStringFromString:connectionLogin];
+		const char *theHost;
+		const char *thePass = NULL;
+		const char *theSocket;
+		void *connectionSetupStatus;
+
+		mysql_options(structConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+
+		// Set up the host, socket and password as per the connect method
+		if (!connectionHost || ![connectionHost length]) {
+			theHost = NULL;
+		} else {
+			theHost = [self cStringFromString:connectionHost];
+		}
+		if (connectionSocket == nil || ![connectionSocket length]) {
+			theSocket = kMCPConnectionDefaultSocket;
+		} else {
+			theSocket = [self cStringFromString:connectionSocket];
+		}
+		if (!connectionPassword) {
+			if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+				thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+			}
+		} else {
+			thePass = [self cStringFromString:connectionPassword];
+		}
+
+		// Connect
+		connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+		thePass = NULL;
+		if (connectionSetupStatus) {
+			MYSQL_RES *theResult;
+			MYSQL_ROW row;
+
+			NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
+			NSString *charset;
+
+			if(numberOfTables > 2000) {
+				NSLog(@"%ld items in database %@. Only 2000 items can be parsed. Stopped parsing.", numberOfTables, currentDatabase);
 				[queryPool release];
 				return;
 			}
-		}
-		if([currentDatabase isEqualToString:@"information_schema"]) {
-			if([[structure valueForKey:connectionID] objectForKey:db_id] && [[[structure valueForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
-// NSLog(@"information_schema was parsed - return");
-				if(removeAddFlag)
-					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-				[queryPool release];
-				return;
-			}
-		}
 
-		if(userInfo == nil || ![userInfo objectForKey:@"forceUpdate"]) {
-			if([[structure valueForKey:connectionID] objectForKey:db_id] && [[[structure valueForKey:connectionID] objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
-// NSLog(@"no forceUpdate - return");
-				isQueryingDbStructure = NO;
-				if(removeAddFlag)
-					[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-				[queryPool release];
-				return;
-			}
-		}
+			[self performSelectorOnMainThread:@selector(incrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
 
-		NSArray *tables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableNames];
-		NSArray *tableviews = [[[self delegate] valueForKeyPath:@"tablesListInstance"] allViewNames];
+			NSUInteger uniqueCounter = 0; // used to make field data unique
 
-		NSUInteger numberOfTables = 0;
-		if(tables && [tables count]) numberOfTables += [tables count];
-		if(tableviews && [tableviews count]) numberOfTables += [tableviews count];
-
-		// For future usage
-		NSString *affectedItem = nil;
-		NSInteger affectedItemType = -1;
-		if(userInfo && [userInfo objectForKey:@"affectedItem"]) {
-			affectedItem = [userInfo objectForKey:@"affectedItem"];
-			if([userInfo objectForKey:@"affectedItemType"])
-				affectedItemType = [[userInfo objectForKey:@"affectedItemType"] intValue];
-			else
-				affectedItem = nil;
-		}
-
-		// Delete all stored data for to be queried db
-		if([[structure valueForKey:connectionID] isKindOfClass:[NSDictionary class]])
-			[[structure valueForKey:connectionID] removeObjectForKey:db_id];
-		NSPredicate *predicate = [NSPredicate predicateWithFormat:@"NOT SELF BEGINSWITH %@", [NSString stringWithFormat:@"%@%@", db_id, SPUniqueSchemaDelimiter]];
-		[allKeysofDbStructure filterUsingPredicate:predicate];
-		[allKeysofDbStructure removeObject:db_id];
-		// Re-add currentDatabase in case that structure querying will fail
-		[[structure valueForKey:connectionID] setObject:currentDatabase forKey:db_id];
-
-		NSString *currentDatabaseEscaped = [currentDatabase stringByReplacingOccurrencesOfString:@"`" withString:@"``"];
-
-		MYSQL *structConnection = mysql_init(NULL);
-		if (structConnection) {
-			const char *theLogin = [self cStringFromString:connectionLogin];
-			const char *theHost;
-			const char *thePass = NULL;
-			const char *theSocket;
-			void *connectionSetupStatus;
-
-			mysql_options(structConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
-
-			// Set up the host, socket and password as per the connect method
-			if (!connectionHost || ![connectionHost length]) {
-				theHost = NULL;
-			} else {
-				theHost = [self cStringFromString:connectionHost];
-			}
-			if (connectionSocket == nil || ![connectionSocket length]) {
-				theSocket = kMCPConnectionDefaultSocket;
-			} else {
-				theSocket = [self cStringFromString:connectionSocket];
-			}
-			if (!connectionPassword) {
-				if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-					thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
-				}
-			} else {
-				thePass = [self cStringFromString:connectionPassword];
+			NSString *query = @"SET NAMES 'utf8'";
+			NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
+			const char *queryCString = [encodedQueryData bytes];
+			unsigned long queryCStringLength = [encodedQueryData length];
+			if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
+				;
 			}
 
-			// Connect
-			connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
-			thePass = NULL;
-			if (connectionSetupStatus) {
-				MYSQL_RES *theResult;
-				MYSQL_ROW row;
+			[queriedStructureKeys addObject:db_id];
 
-				NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
-				NSString *charset;
-
-				if(numberOfTables > 2000) {
-					NSLog(@"%ld items in database %@. Only 2000 items can be parsed. Stopped parsing.", numberOfTables, currentDatabase);
-					isQueryingDbStructure = NO;
-					[queryPool release];
-					return;
-				}
-
-// NSLog(@"queryDbStructureWithUserInfo started");
-
-				NSUInteger uniqueCounter = 0; // used to make field data unique
-
-				NSString *query = @"SET NAMES 'utf8'";
+			// Query all tables
+			for(NSString* table in tables) {
+				NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
+					[table stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
+					currentDatabaseEscaped];
 				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
 				const char *queryCString = [encodedQueryData bytes];
 				unsigned long queryCStringLength = [encodedQueryData length];
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
-					;
+					// NSLog(@"error %@", table);
+					continue;
 				}
+				theResult = mysql_use_result(structConnection);
 
-				[allKeysofDbStructure addObject:db_id];
+				NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
 
-				// Query all tables
-				for(NSString* table in tables) {
-					NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
-						[table stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
-						currentDatabaseEscaped];
-					NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
-					const char *queryCString = [encodedQueryData bytes];
-					unsigned long queryCStringLength = [encodedQueryData length];
-					if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
-						// NSLog(@"error %@", table);
-						continue;
-					}
-					theResult = mysql_use_result(structConnection);
+				[queriedStructureKeys addObject:table_id];
 
-					NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
+				while(row = mysql_fetch_row(theResult)) {
+					NSString *field = [self stringWithUTF8CString:row[0]];
+					NSString *type = [self stringWithUTF8CString:row[1]];
+					NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
+					NSString *coll = [self stringWithUTF8CString:row[2]];
+					NSString *isnull = [self stringWithUTF8CString:row[3]];
+					NSString *key = [self stringWithUTF8CString:row[4]];
+					NSString *def = [self stringWithUTF8CString:row[5]];
+					NSString *extra = [self stringWithUTF8CString:row[6]];
+					NSString *priv = [self stringWithUTF8CString:row[7]];
+					NSString *comment = [self stringWithUTF8CString:row[8]];
+					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
+					NSArray *a = [coll componentsSeparatedByString:@"_"];
+					charset = ([a count]) ? [a objectAtIndex:0] : @"";
 
-					[allKeysofDbStructure addObject:table_id];
-
-					while(row = mysql_fetch_row(theResult)) {
-						NSString *field = [self stringWithUTF8CString:row[0]];
-						NSString *type = [self stringWithUTF8CString:row[1]];
-						NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
-						NSString *coll = [self stringWithUTF8CString:row[2]];
-						NSString *isnull = [self stringWithUTF8CString:row[3]];
-						NSString *key = [self stringWithUTF8CString:row[4]];
-						NSString *def = [self stringWithUTF8CString:row[5]];
-						NSString *extra = [self stringWithUTF8CString:row[6]];
-						NSString *priv = [self stringWithUTF8CString:row[7]];
-						NSString *comment = [self stringWithUTF8CString:row[8]];
-						NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
-						NSArray *a = [coll componentsSeparatedByString:@"_"];
-						charset = ([a count]) ? [a objectAtIndex:0] : @"";
-
-						[allKeysofDbStructure addObject:field_id];
-					
-						if(![[structure valueForKey:connectionID] valueForKey:db_id] || [[[structure valueForKey:connectionID] valueForKey:db_id] isKindOfClass:[NSString class]] )
-							[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
-					
-						if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id])
-							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
-					
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, type_display, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:@"0" forKey:@"  struct_type  "];
-						uniqueCounter++;
-					}
-					mysql_free_result(theResult);
-					usleep(10);
-				}
-				// Query all views
-				for(NSString* table in tableviews) {
-					NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
-						[table stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
-						currentDatabaseEscaped];
-					NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
-					const char *queryCString = [encodedQueryData bytes];
-					unsigned long queryCStringLength = [encodedQueryData length];
-					if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
-						// NSLog(@"error %@", table);
-						continue;
-					}
-
-					theResult = mysql_use_result(structConnection);
-					NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
-
-					[allKeysofDbStructure addObject:table_id];
-
-					NSString *charset;
-					while(row = mysql_fetch_row(theResult)) {
-						NSString *field = [self stringWithUTF8CString:row[0]];
-						NSString *type = [self stringWithUTF8CString:row[1]];
-						NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
-						NSString *coll = [self stringWithUTF8CString:row[2]];
-						NSString *isnull = [self stringWithUTF8CString:row[3]];
-						NSString *key = [self stringWithUTF8CString:row[4]];
-						NSString *def = [self stringWithUTF8CString:row[5]];
-						NSString *extra = [self stringWithUTF8CString:row[6]];
-						NSString *priv = [self stringWithUTF8CString:row[7]];
-						NSString *comment = [self stringWithUTF8CString:row[8]];
-						NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
-						NSArray *a = [coll componentsSeparatedByString:@"_"];
-						charset = ([a count]) ? [a objectAtIndex:0] : @"";
-
-						[allKeysofDbStructure addObject:field_id];
-					
-						if(![[structure valueForKey:connectionID] valueForKey:db_id] || [[[structure valueForKey:connectionID] valueForKey:db_id] isKindOfClass:[NSString class]] )
-							[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
-					
-						if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id])
-							[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
-					
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, type_display, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
-						[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:@"1" forKey:@"  struct_type  "];
-						uniqueCounter++;
-					}
-					mysql_free_result(theResult);
-					usleep(10);
-				}
-
-				if([self serverMajorVersion] >= 5) {
-					// Query for procedures and functions
-					query = [NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\'"]];
-					encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
-					queryCString = [encodedQueryData bytes];
-					queryCStringLength = [encodedQueryData length];
-					if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
-						theResult = mysql_use_result(structConnection);
-						NSUInteger numberOfFields = mysql_num_fields(theResult);
-						while(row = mysql_fetch_row(theResult)) {
-							NSString *field = [self stringWithUTF8CString:row[0]];
-							NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, field];
-							NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
-							NSString *type = ([[self stringWithUTF8CString:row[4]] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
-							NSString *dtd = [self stringWithUTF8CString:row[5]];
-							NSString *det = [self stringWithUTF8CString:row[11]];
-							NSString *access = [self stringWithUTF8CString:row[12]];
-							NSString *security_type = [self stringWithUTF8CString:row[14]];
-							NSString *definer = [self stringWithUTF8CString:row[19]];
-
-							[allKeysofDbStructure addObject:table_id];
-							[allKeysofDbStructure addObject:field_id];
+					[queriedStructureKeys addObject:field_id];
 				
-							if(![[structure valueForKey:connectionID] valueForKey:db_id] || [[[structure valueForKey:connectionID] valueForKey:db_id] isKindOfClass:[NSString class]] )
-								[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
+					if(![queriedStructure valueForKey:db_id] || [[queriedStructure valueForKey:db_id] isKindOfClass:[NSString class]] )
+						[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
 				
-							if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id])
-								[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
+					if(![[queriedStructure valueForKey:db_id] valueForKey:table_id])
+						[[queriedStructure valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 				
-							[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-								[NSArray arrayWithObjects:dtd, access, det, security_type, definer, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
-							[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:type forKey:@"  struct_type  "];
-							uniqueCounter++;
-						}
-						mysql_free_result(theResult);
-					}
+					[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, type_display, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+					[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:@"0" forKey:@"  struct_type  "];
+					uniqueCounter++;
 				}
-
-// NSLog(@"queryDbStructureWithUserInfo done");
-
-				// Notify that the structure querying has been performed
-				[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-
-				mysql_close(structConnection);
+				mysql_free_result(theResult);
+				usleep(10);
 			}
-		}
-	} else {
-		// Notify that the structure querying has been performed
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-	}
+			// Query all views
+			for(NSString* table in tableviews) {
+				NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
+					[table stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
+					currentDatabaseEscaped];
+				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
+				const char *queryCString = [encodedQueryData bytes];
+				unsigned long queryCStringLength = [encodedQueryData length];
+				if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
+					// NSLog(@"error %@", table);
+					continue;
+				}
 
-	isQueryingDbStructure = NO;
+				theResult = mysql_use_result(structConnection);
+				NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, table];
+
+				[queriedStructureKeys addObject:table_id];
+
+				NSString *charset;
+				while(row = mysql_fetch_row(theResult)) {
+					NSString *field = [self stringWithUTF8CString:row[0]];
+					NSString *type = [self stringWithUTF8CString:row[1]];
+					NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
+					NSString *coll = [self stringWithUTF8CString:row[2]];
+					NSString *isnull = [self stringWithUTF8CString:row[3]];
+					NSString *key = [self stringWithUTF8CString:row[4]];
+					NSString *def = [self stringWithUTF8CString:row[5]];
+					NSString *extra = [self stringWithUTF8CString:row[6]];
+					NSString *priv = [self stringWithUTF8CString:row[7]];
+					NSString *comment = [self stringWithUTF8CString:row[8]];
+					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
+					NSArray *a = [coll componentsSeparatedByString:@"_"];
+					charset = ([a count]) ? [a objectAtIndex:0] : @"";
+
+					[queriedStructureKeys addObject:field_id];
+				
+					if(![queriedStructure valueForKey:db_id] || [[[queriedStructure valueForKey:connectionID] valueForKey:db_id] isKindOfClass:[NSString class]] )
+						[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
+				
+					if(![[queriedStructure valueForKey:db_id] valueForKey:table_id])
+						[[queriedStructure valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
+				
+					[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:[NSArray arrayWithObjects:type, def, isnull, charset, coll, key, extra, priv, comment, type_display, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+					[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:@"1" forKey:@"  struct_type  "];
+					uniqueCounter++;
+				}
+				mysql_free_result(theResult);
+				usleep(10);
+			}
+
+			if([self serverMajorVersion] >= 5) {
+				// Query for procedures and functions
+				query = [NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\'"]];
+				encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
+				queryCString = [encodedQueryData bytes];
+				queryCStringLength = [encodedQueryData length];
+				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
+					theResult = mysql_use_result(structConnection);
+					NSUInteger numberOfFields = mysql_num_fields(theResult);
+					while(row = mysql_fetch_row(theResult)) {
+						NSString *field = [self stringWithUTF8CString:row[0]];
+						NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, field];
+						NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
+						NSString *type = ([[self stringWithUTF8CString:row[4]] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
+						NSString *dtd = [self stringWithUTF8CString:row[5]];
+						NSString *det = [self stringWithUTF8CString:row[11]];
+						NSString *access = [self stringWithUTF8CString:row[12]];
+						NSString *security_type = [self stringWithUTF8CString:row[14]];
+						NSString *definer = [self stringWithUTF8CString:row[19]];
+
+						[queriedStructureKeys addObject:table_id];
+						[queriedStructureKeys addObject:field_id];
+			
+						if(![queriedStructure valueForKey:db_id] || [[queriedStructure valueForKey:db_id] isKindOfClass:[NSString class]] )
+							[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
+			
+						if(![[queriedStructure valueForKey:db_id] valueForKey:table_id])
+							[[queriedStructure valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
+			
+						[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:
+							[NSArray arrayWithObjects:dtd, access, det, security_type, definer, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+						[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:type forKey:@"  struct_type  "];
+						uniqueCounter++;
+					}
+					mysql_free_result(theResult);
+				}
+			}
+
+			// Updating the global variables and make sure that no request reads these global variables
+			// while updating
+			[self performSelectorOnMainThread:@selector(lockQuerying) withObject:nil waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(updateGlobalVariablesWith:) withObject:[NSDictionary dictionaryWithObjectsAndKeys:[queriedStructure retain], @"structure", [queriedStructureKeys retain], @"keys", nil] waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(unlockQuerying) withObject:nil waitUntilDone:YES];
+
+
+			mysql_close(structConnection);
+
+			// Notify that the structure querying has been performed
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+
+			[self performSelectorOnMainThread:@selector(decrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
+		}
+	}
+	
 	[queryPool release];
 }
 
+/*
+ * Update global variables on main thread to avoid accessing from different threads
+ */
+- (void)updateGlobalVariablesWith:(NSDictionary*)object
+{
+	NSString *connectionID = [[self delegate] connectionID];
+	if([connectionID length] < 2) return;
+	if(![structure valueForKey:connectionID])
+		[structure setObject:[NSMutableDictionary dictionary] forKey:connectionID];
+	[structure setObject:[[object objectForKey:@"structure"] retain] forKey:connectionID];
+	[allKeysofDbStructure setArray:[[object objectForKey:@"keys"] retain]];
+	usleep(100);
+}
+
+- (void)incrementQueryingDbStructure
+{
+	isQueryingDbStructure++;
+}
+
+- (void)decrementQueryingDbStructure
+{
+	isQueryingDbStructure--;
+	if(isQueryingDbStructure < 0) isQueryingDbStructure = 0;
+}
+
+- (BOOL)isQueryingDatabaseStructure
+{
+	return (isQueryingDbStructure > 0) ? YES : NO;
+}
+
+- (void)lockQuerying
+{
+	lockQuerying = YES;
+}
+
+- (void)unlockQuerying
+{
+	lockQuerying = NO;
+	usleep(50000);
+}
 /**
  * Returns a dict containing the structure of all available databases
  */
 - (NSDictionary *)getDbStructure
 {
-	return [[structure copy] autorelease];
+	if(lockQuerying) return nil;
+	NSDictionary *d = [NSDictionary dictionaryWithDictionary:structure];
+	return d;
 }
 
 /**
@@ -2227,22 +2279,8 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSArray *)getAllKeysOfDbStructure
 {
-	NSArray *r = nil;
-	@try
-	{
-		r = [NSArray arrayWithArray:allKeysofDbStructure];
-	}
-	@catch(id ae)
-	{
-		@try
-		{
-			r = [NSArray arrayWithArray:allKeysofDbStructure];
-		}
-		@catch(id ae)
-		{
-			return nil;
-		}
-	}
+	if(lockQuerying) return nil;
+	NSArray *r = [NSArray arrayWithArray:allKeysofDbStructure];
 	return r;
 }
 

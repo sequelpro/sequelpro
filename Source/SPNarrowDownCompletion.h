@@ -49,11 +49,18 @@
 	BOOL commaInsertionMode;
 	BOOL autoCompletionMode;
 	BOOL oneColumnMode;
+	BOOL isQueryingDatabaseStructure;
 	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;
 	NSRange theParseRange;
 	NSString *theDbName;
+
+	NSTimer *stateTimer;
+	NSArray *syncArrowImages;
+	NSInteger currentSyncImage;
+
+	NSUInteger timeCounter;
 
 	id theView;
 	
@@ -71,10 +78,15 @@
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch 
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
-	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn;
+	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
+	isQueryingDBStructure:(BOOL)isQueryingDBStructure;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertCommonPrefix;
 - (void)adjustWorkingRangeByDelta:(NSInteger)delta;
+
+- (void)updateSyncArrowStatus;
+- (void)reInvokeCompletion;
+
 
 @end

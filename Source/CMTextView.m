@@ -309,13 +309,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		else
 			connectionID = @"_";
 
-		// NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		// Try to get structure data
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[SPNavigatorController sharedNavigatorController] dbStructureForConnection:connectionID]];
 
 		if(dbs != nil && [dbs isKindOfClass:[NSDictionary class]] && [dbs count]) {
 			NSMutableArray *allDbs = [NSMutableArray array];
-			@try { [allDbs addObjectsFromArray:[dbs allKeys]]; }
-			@catch(id ae) { ; }
+			[allDbs addObjectsFromArray:[dbs allKeys]];
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [NSMutableArray array];
@@ -520,11 +519,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) doAutoCompletion
 {
 
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 	if(completionIsOpen) return;
 
 	NSRange r = [self selectedRange];
 
-	if(![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
+	if(![self delegate] || ![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
 
 	if(r.location) {
 		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
@@ -539,13 +544,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
 {
 
-	if(![self isEditable] || (completionIsOpen && !completionWasReinvokedAutomatically)) return;
-
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doAutoCompletion) 
 								object:nil];
+
+	if(![self isEditable] || (completionIsOpen && !completionWasReinvokedAutomatically)) {
+		return;
+	}
 
 	[self breakUndoCoalescing];
 
@@ -728,6 +735,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	completionIsOpen = YES;
 
+	// Cancel autocompletion trigger again if user typed something in while parsing
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
 					alreadyTyped:filter 
 					staticPrefix:prefix 
@@ -746,7 +759,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					selectedDb:currentDb
 					caretMovedLeft:caretMovedLeft
 					autoComplete:autoCompleteMode
-					oneColumn:isDictMode];
+					oneColumn:isDictMode
+					isQueryingDBStructure:[mySQLConnection isQueryingDatabaseStructure]];
 
 	completionParseRangeLocation = parseRange.location;
 
@@ -1275,6 +1289,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
+	completionIsOpen = YES;
+
 	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 					alreadyTyped:@"" 
 					staticPrefix:@"" 
@@ -1293,7 +1309,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					selectedDb:@""
 					caretMovedLeft:NO
 					autoComplete:NO
-					oneColumn:NO];
+					oneColumn:NO
+					isQueryingDBStructure:NO];
 
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,0) actualCharacterRange:NULL];
@@ -1303,7 +1320,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Adjust list location to be under the current word or insertion point
 	pos.y -= [[self font] pointSize]*1.25;
 	[completionPopUp setCaretPos:pos];
-	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
 
 }
@@ -1438,7 +1454,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
 							for(id w in list)
 								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
-						
+
+							completionIsOpen = YES;
+
 							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 											alreadyTyped:@"" 
 											staticPrefix:@"" 
@@ -1457,7 +1475,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											selectedDb:@""
 											caretMovedLeft:NO
 											autoComplete:NO
-											oneColumn:YES];
+											oneColumn:YES
+											isQueryingDBStructure:NO];
 							//Get the NSPoint of the first character of the current word
 							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
 							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
@@ -1466,7 +1485,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 							// Adjust list location to be under the current word or insertion point
 							pos.y -= [[self font] pointSize]*1.25;
 							[completionPopUp setCaretPos:pos];
-							completionIsOpen = YES;
 							[completionPopUp orderFront:self];
 						}
 					}
@@ -3251,6 +3269,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) dealloc
 {
+
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

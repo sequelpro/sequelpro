@@ -45,7 +45,7 @@
 	NSMutableDictionary *schemaDataFiltered;
 	NSMutableDictionary *allSchemaKeys;
 	NSMutableArray *infoArray;
-	NSMutableSet *updatingConnections;
+	NSMutableArray *updatingConnections;
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
 
@@ -80,13 +80,13 @@
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
 
 - (void)updateNavigator:(NSNotification *)aNotification;
-- (void)isUpdatingNavigator:(NSNotification *)aNotification;
 
 - (NSDictionary *)dbStructureForConnection:(NSString*)connectionID;
 - (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID;
 - (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID;
 
 - (BOOL)isUpdatingConnection:(NSString*)connectionID;
+- (BOOL)isUpdating;
 
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
