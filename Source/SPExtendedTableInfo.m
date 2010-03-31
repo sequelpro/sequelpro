@@ -238,11 +238,12 @@
 			[tableCreateSyntaxTextView setString:@""];
 			
 			NSString *createViewSyntax = [[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier];
-			
-			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
-			[tableCreateSyntaxTextView insertText:createViewSyntax];
-			[tableCreateSyntaxTextView didChangeText];
-			[tableCreateSyntaxTextView setEditable:NO];
+			if (createViewSyntax) {
+				[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
+				[tableCreateSyntaxTextView insertText:createViewSyntax];
+				[tableCreateSyntaxTextView didChangeText];
+				[tableCreateSyntaxTextView setEditable:NO];
+			}
 		} else {
 			[tableCreateSyntaxTextView setEditable:YES];
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];

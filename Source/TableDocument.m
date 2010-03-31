@@ -1672,6 +1672,17 @@
 
 	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
+	// A NULL value indicates that the user does not have permission to view the syntax
+	if ([tableSyntax isNSNull]) {
+		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+						 defaultButton:NSLocalizedString(@"OK", @"OK")
+					   alternateButton:nil otherButton:nil
+			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+			  beginSheetModalForWindow:tableWindow
+						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		return;
+	}
+
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
 
 	[createTableSyntaxTextView setEditable:YES];
@@ -1729,6 +1740,17 @@
 	}
 
 	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
+
+	// A NULL value indicates that the user does not have permission to view the syntax
+	if ([tableSyntax isNSNull]) {
+		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+						 defaultButton:NSLocalizedString(@"OK", @"OK")
+					   alternateButton:nil otherButton:nil
+			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+			  beginSheetModalForWindow:tableWindow
+						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		return;
+	}
 
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];

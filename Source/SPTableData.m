@@ -93,7 +93,10 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	
+
+	// On failure, return nil
+	if (!tableCreateSyntax) return nil;
+
 	return [NSString stringWithString:tableCreateSyntax];
 }
 
@@ -354,8 +357,19 @@
 	// connection reconnect dialog to appear and the user chose to close the connection.
 	if (!syntaxResult) return nil;
 	
-	if (tableCreateSyntax != nil) [tableCreateSyntax release];
-	
+	if (tableCreateSyntax != nil) [tableCreateSyntax release], tableCreateSyntax = nil;
+
+	// A NULL value indicates that the user does not have permission to view the syntax
+	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
+		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+						 defaultButton:NSLocalizedString(@"OK", @"OK")
+					   alternateButton:nil otherButton:nil
+			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+			  beginSheetModalForWindow:[NSApp mainWindow]
+						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		return nil;
+	}
+
 	tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
 	createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
 
@@ -708,7 +722,20 @@
 
 	// Retrieve the table syntax string
 	if (tableCreateSyntax) [tableCreateSyntax release], tableCreateSyntax = nil;
-	tableCreateSyntax = [[NSString alloc] initWithString:[[theResult fetchRowAsArray] objectAtIndex:1]];
+	NSString *syntaxString = [[theResult fetchRowAsArray] objectAtIndex:1];
+
+	// A NULL value indicates that the user does not have permission to view the syntax
+	if ([syntaxString isNSNull]) {
+		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+						 defaultButton:NSLocalizedString(@"OK", @"OK")
+					   alternateButton:nil otherButton:nil
+			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+			  beginSheetModalForWindow:[NSApp mainWindow]
+						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		return nil;
+	}
+
+	tableCreateSyntax = [[NSString alloc] initWithString:syntaxString];
 
 	// Retrieve the SHOW COLUMNS syntax for the table
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [viewName backtickQuotedString]]];
