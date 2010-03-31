@@ -178,9 +178,9 @@
 
 - (void)reInvokeCompletion
 {
-	[theView setCompletionWasReinvokedAutomatically:YES];
-	closeMe = YES;
+	[theView setCompletionIsOpen:NO];
 	[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+	[self close];
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
