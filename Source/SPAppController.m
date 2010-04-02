@@ -62,12 +62,14 @@
  */
 - (void)awakeFromNib
 {
-	// Set Sparkle delegate
-	[[SUUpdater sharedUpdater] setDelegate:self];
-	
+
+	// Set up the prefs controller
 	prefsController = [[SPPreferenceController alloc] init];
 	aboutController = nil;
-	
+
+	// Set Sparkle delegate
+	[[SUUpdater sharedUpdater] setDelegate:self];
+
 	// Register SPAppController as services provider
 	[NSApp setServicesProvider:self];
 	

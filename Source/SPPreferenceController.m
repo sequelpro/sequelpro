@@ -303,8 +303,8 @@
 		[prefs removeObjectForKey:@"FetchCorrectRowCount"];
 	}
 
-	// For versions prior to r2056 (~0.9.8), reset the Sparkle prefs so the user is prompted about submitting information
-	if (recordedVersionNumber < 2056 && [prefs objectForKey:@"SUEnableAutomaticChecks"]) {
+	// For versions prior to r2057 (~0.9.8), reset the Sparkle prefs so the user is prompted about submitting information
+	if (recordedVersionNumber < 2057 && [prefs objectForKey:@"SUEnableAutomaticChecks"]) {
 		[prefs removeObjectForKey:@"SUEnableAutomaticChecks"];
 		[prefs removeObjectForKey:@"SUSendProfileInfo"];
 	}
