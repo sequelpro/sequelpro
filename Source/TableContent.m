@@ -2718,7 +2718,7 @@
 	if (isWorking) {
 		pthread_mutex_lock(&tableValuesLock);
 		if (rowIndex < tableRowsCount && columnIndex < [tableValues columnCount]) {
-			theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
+			theValue = [[SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex) copy] autorelease];
 		}
 		pthread_mutex_unlock(&tableValuesLock);
 
