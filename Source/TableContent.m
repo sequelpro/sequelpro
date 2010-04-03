@@ -1400,7 +1400,7 @@
 		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
 		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 			[alert setShowsSuppressionButton:YES];
-			[[alert suppressionButton] setState:NSOffState];
+			[[alert suppressionButton] setState:NSOnState];
 			[[[alert suppressionButton] cell] setControlSize:NSSmallControlSize];
 			[[[alert suppressionButton] cell] setFont:[NSFont systemFontOfSize:11]];
 			[[alert suppressionButton] setTitle:NSLocalizedString(@"Reset AUTO_INCREMENT after deletion?", @"reset auto_increment after deletion of all rows message")];
