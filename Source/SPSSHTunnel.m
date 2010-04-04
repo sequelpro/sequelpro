@@ -510,6 +510,7 @@
     
     //show the question window
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[parentWindow makeKeyAndOrderFront:self];
 }
 /*
  * Ends an existing modal session
@@ -575,6 +576,7 @@
 	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[parentWindow makeKeyAndOrderFront:self];
 }
  
 /*

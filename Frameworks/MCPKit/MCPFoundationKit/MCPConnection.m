@@ -295,12 +295,13 @@ static BOOL sTruncateLongFieldInLogs = YES;
 {
 	NSInteger newState = [proxy state];
 	
-	// Restart the tunnel if it dies
+	// Restart the tunnel if it dies - use a new thread to allow the main thread to process
+	// events as required.
 	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
 		currentProxyState = newState;
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
-		if (!isDisconnecting) [self reconnect];
-		
+		if (!isDisconnecting) [NSThread detachNewThreadSelector:@selector(reconnect) toTarget:self withObject:nil];
+
 		return;
 	}
 	
@@ -434,9 +435,12 @@ static BOOL sTruncateLongFieldInLogs = YES;
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either a connection has been established or
  * the connection and document have been closed.
+ * Runs its own autorelease pool as sometimes called in a thread following proxy changes
+ * (where the return code doesn't matter).
  */
 - (BOOL)reconnect
 {
+	NSAutoreleasePool *reconnectionPool = [[NSAutoreleasePool alloc] init];
 	NSString *currentEncoding = nil;
 	BOOL currentEncodingUsesLatin1Transport = NO;
 	NSString *currentDatabase = nil;
@@ -462,7 +466,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	mConnected = NO;
 	isDisconnecting = NO;
-	
+
 	// If there is a proxy, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionProxy) {
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
@@ -482,6 +486,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 		// Reconnect the proxy, looping up to the connection timeout
 		[connectionProxy connect];
+
 		NSDate *proxyStartDate = [NSDate date], *interfaceInteractionTimer;
 		while (1) {
 
@@ -498,24 +503,23 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			}
 			
 			// Process events for a short time, allowing dialogs to be shown but waiting for
-			// the proxy. Capture how long this interface action took, so that if it was
-			// longer than the time alloted it can be added to the connection timeout.
+			// the proxy. Capture how long this interface action took, standardising the
+			// overall time and extending the connection timeout by any interface time.
 			interfaceInteractionTimer = [NSDate date];
-			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
-			if ([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] > 0.25) {
-				proxyStartDate = [proxyStartDate addTimeInterval:([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] - 0.25)];
-			} else {
+			[[NSRunLoop mainRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			//[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			if ([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] < 0.25) {
 				usleep(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]));
-				if ([connectionProxy state] == PROXY_STATE_WAITING_FOR_AUTH) {
-					proxyStartDate = [proxyStartDate addTimeInterval:0.26];
-				}
+			}
+			if ([connectionProxy state] == PROXY_STATE_WAITING_FOR_AUTH) {
+				proxyStartDate = [proxyStartDate addTimeInterval:[[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]];
 			}
 		}
 		
 		currentProxyState = [connectionProxy state];
 		[connectionProxy setConnectionStateChangeSelector:@selector(connectionProxyStateChange:) delegate:self];
 	}
-	
+
 	if (!connectionProxy || [connectionProxy state] == PROXY_STATE_CONNECTED) {
 		
 		// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
@@ -557,12 +561,15 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		switch (failureDecision) {				
 			case MCPConnectionCheckDisconnect:
+				[reconnectionPool release];
 				return NO;				
 			default:
+				[reconnectionPool release];
 				return [self reconnect];
 		}
 	}
-	
+
+	[reconnectionPool release];
 	return mConnected;
 }
 
