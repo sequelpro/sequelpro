@@ -42,9 +42,6 @@
 @synthesize sqlExportCurrentTable;
 
 @synthesize sqlOutputIncludeUTF8BOM;
-/*@synthesize sqlOutputIncludeStructure;
-@synthesize sqlOutputIncludeContent;
-@synthesize sqlOutputIncludeDropSyntax;*/
 @synthesize sqlOutputIncludeErrors;
 
 @synthesize sqlTableInformation;

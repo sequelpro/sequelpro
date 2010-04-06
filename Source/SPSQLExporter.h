@@ -73,9 +73,6 @@
 	
 	// SQL options
 	BOOL sqlOutputIncludeUTF8BOM;
-	/*BOOL sqlOutputIncludeStructure;
-	BOOL sqlOutputIncludeContent;
-	BOOL sqlOutputIncludeDropSyntax;*/
 	BOOL sqlOutputIncludeErrors;
 	
 	// Table information
@@ -91,9 +88,6 @@
 @property(readwrite, retain) NSString *sqlExportCurrentTable;
 
 @property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
-/*@property(readwrite, assign) BOOL sqlOutputIncludeStructure;
-@property(readwrite, assign) BOOL sqlOutputIncludeContent;
-@property(readwrite, assign) BOOL sqlOutputIncludeDropSyntax;*/
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
 
 @property(readwrite, retain) NSDictionary *sqlTableInformation;

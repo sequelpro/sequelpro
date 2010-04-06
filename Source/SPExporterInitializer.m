@@ -39,8 +39,7 @@
 @implementation SPExportController (SPExporterInitializer)
 
 /**
- * Exports the contents' of the supplied array of tables. Note that this method currently only supports 
- * exporting in CSV and XML formats.
+ * Exports the contents' of the supplied array of tables or data array.
  */
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
@@ -175,13 +174,6 @@
 		for (NSArray *table in exportTables)
 		{
 			[infoDict setObject:[tableDataInstance informationForTable:[table objectAtIndex:0]] forKey:[table objectAtIndex:0]];
-			
-			/*for (i = 0; i < [tables count]; i++)
-			{
-				if ([[[tables objectAtIndex:i] objectAtIndex:0] isEqualToString:table]) {
-					[tableTypes addObject:[NSArray arrayWithObjects:table, [[tables objectAtIndex:i] objectAtIndex:4], nil]];
-				}
-			}*/
 		}
 		
 		[sqlExporter setSqlTableInformation:infoDict];

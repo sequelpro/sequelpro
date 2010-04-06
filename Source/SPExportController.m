@@ -121,7 +121,7 @@
 }
 
 /**
- * Closes the export dialog
+ * Closes the export dialog.
  */
 - (IBAction)closeSheet:(id)sender
 {
@@ -149,6 +149,8 @@
 		BOOL isCSV = [tabLabel isEqualToString:@"csv"];
 		BOOL isSQL = [[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"];
 		BOOL hideColumns = (isCSV || [tabLabel isEqualToString:@"xml"]);
+		
+		[exportUseUTF8BOMButton setEnabled:(!isCSV)];
 		
 		[exportFilePerTableCheck setHidden:isSQL];
 		[exportFilePerTableNote setHidden:isSQL];
@@ -205,7 +207,7 @@
 }
 
 /**
- *
+ * Opens the open panel when user selects to change the output path.
  */
 - (IBAction)changeExportOutputPath:(id)sender
 {
@@ -279,7 +281,7 @@
 }
 
 /**
- * Selects or de-selects all tables
+ * Selects or de-selects all tables.
  */
 - (IBAction)selectDeselectAllTables:(id)sender
 {
@@ -315,7 +317,7 @@
 }
 
 /**
- *
+ * Toggles the export button when choosing to include or table structures in an SQL export.
  */
 - (IBAction)toggleSQLIncludeStructure:(id)sender
 {
@@ -325,7 +327,7 @@
 }
 
 /**
- *
+ * Toggles the export button when choosing to include or exclude table contents in an SQL export.
  */
 - (IBAction)toggleSQLIncludeContent:(id)sender
 {
@@ -337,7 +339,7 @@
 }
 
 /**
- *
+ * Toggles the export button when choosing to include or exclude table drop syntax in an SQL export.
  */
 - (IBAction)toggleSQLIncludeDropSyntax:(id)sender
 {
@@ -401,7 +403,7 @@
 #pragma mark Other 
 
 /**
- * Invoked when the user 
+ * Invoked when the user dismissing the export dialog and starts the export process if required.
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
@@ -414,7 +416,7 @@
 }
 
 /**
- * Invoked when the user dismisses the save panel. Updates the selected directory is they clicked OK.
+ * Invoked when the user dismisses the save panel. Updates the selected directory if they clicked OK.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
@@ -441,7 +443,7 @@
 #pragma mark Private API
 
 /**
- *
+ * Enables or disables the export button based on the state of various interface controls.
  */
 - (void)_toggleExportButton
 {
@@ -464,7 +466,7 @@
 }
 
 /**
- *
+ * Initializes the export process by analysing the selected criteria.
  */
 - (void)_initializeExportUsingSelectedOptions
 {
@@ -554,7 +556,7 @@
 	NSUInteger buttonBarMask    = [exportTableListButtonBar autoresizingMask];
 	NSUInteger tabBarMask       = [exportTabBar autoresizingMask];
 	NSUInteger buttonMask       = [exportAdvancedOptionsViewButton autoresizingMask];
-	NSUInteger textFieldMask    = [exportAdvancedOptionsTextField autoresizingMask];
+	NSUInteger textFieldMask    = [exportAdvancedOptionsViewLabelButton autoresizingMask];
 	NSUInteger advancedViewMask = [exportAdvancedOptionsView autoresizingMask];
 	
 	NSRect frame = [[self window] frame];
@@ -563,7 +565,7 @@
 	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportAdvancedOptionsTextField setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	
 	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
@@ -584,7 +586,7 @@
 	[exportTableListButtonBar setAutoresizingMask:buttonBarMask];
 	[exportTabBar setAutoresizingMask:tabBarMask];
 	[exportAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
-	[exportAdvancedOptionsTextField setAutoresizingMask:textFieldMask];
+	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:textFieldMask];
 	[exportAdvancedOptionsView setAutoresizingMask:advancedViewMask];
 }
 
