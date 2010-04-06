@@ -375,7 +375,6 @@
 								</object>
 								<object class="NSMenuItem" id="934534577">
 									<reference key="NSMenu" ref="709725194"/>
-									<bool key="NSIsHidden">YES</bool>
 									<string key="NSTitle">Export…</string>
 									<string key="NSKeyEquiv">E</string>
 									<int key="NSKeyEquivModMask">1048576</int>

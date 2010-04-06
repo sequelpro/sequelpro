@@ -28,7 +28,7 @@
 @implementation SPXMLExporter
 
 /**
- * Start the SQL data conversion process. This method is automatically called when an instance of this object
+ * Start the XML export process. This method is automatically called when an instance of this class
  * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
  */
 - (void)main
@@ -40,9 +40,7 @@
 		
 		[pool release];
 	}
-	@catch (NSException *e) {
-		
-	}
+	@catch (NSException *e) { }
 }
 
 @end

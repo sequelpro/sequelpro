@@ -23,23 +23,25 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit/MCPKit.h>
 
 #import "SPConstants.h"
 
-@interface SPExportController : NSObject
+@class MCPConnection, BWAnchoredButtonBar;
+
+@interface SPExportController : NSWindowController
 {	
 	// Controllers
-	id tableDocumentInstance;
-	id tableContentInstance;
-	id customQueryInstance;
-	id tableDataInstance;
+	IBOutlet id tableDocumentInstance;
+	IBOutlet id tableContentInstance;
+	IBOutlet id customQueryInstance;
+	IBOutlet id tablesListInstance;
+	IBOutlet id tableDataInstance;
 	
 	// Connection window
 	IBOutlet NSWindow *tableWindow;
 	
 	// Export window
-	IBOutlet NSWindow *exportWindow;
+	IBOutlet NSButton *exportButton;
 	IBOutlet NSToolbar *exportToolbar;
 	IBOutlet NSTextField *exportPathField;
 	IBOutlet NSTableView *exportTableList;
@@ -47,11 +49,20 @@
 	IBOutlet NSMatrix *exportInputMatrix;
 	IBOutlet NSButton *exportFilePerTableCheck;
 	IBOutlet NSTextField *exportFilePerTableNote;
-	IBOutlet NSButton *exportUseUTF8BOM;
-	IBOutlet NSButton *exportProcessLowMemory;
 	IBOutlet NSButton *exportSelectAllTablesButton;
 	IBOutlet NSButton *exportDeselectAllTablesButton;
 	IBOutlet NSButton *exportRefreshTablesButton;
+	IBOutlet NSScrollView *exportTablelistScrollView;
+	
+	// Advanced options view
+	IBOutlet NSButton *exportAdvancedOptionsViewButton;
+	IBOutlet NSView *exportAdvancedOptionsView;
+	IBOutlet NSTextField *exportAdvancedOptionsTextField;
+	IBOutlet NSButton *exportUseUTF8BOMButton;
+	IBOutlet NSButton *exportProcessLowMemoryButton;
+	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
+	
+	IBOutlet BWAnchoredButtonBar *exportTableListButtonBar;
 	
 	// Export progress sheet
 	IBOutlet NSWindow *exportProgressWindow;
@@ -59,10 +70,15 @@
 	IBOutlet NSTextField *exportProgressText;
 	IBOutlet NSProgressIndicator *exportProgressIndicator;
 	
+	// Custom filename view
+	IBOutlet NSView *exportCustomFilenameView;
+	IBOutlet NSTokenField *exportCustomFilenameTokenField;
+	IBOutlet NSTokenField *exportCustomFilenameTokensField;
+	
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
 	IBOutlet NSButton *exportSQLIncludeDropSyntaxCheck;
-	IBOutlet NSButton *exportSQLIncludeCreateSyntaxCheck;
+	IBOutlet NSButton *exportSQLIncludeContentCheck;
 	IBOutlet NSButton *exportSQLIncludeErrorsCheck;
 	
 	// Excel
@@ -84,12 +100,6 @@
 	
 	// PDF
 	IBOutlet NSButton *exportPDFIncludeStructureCheck;
-	
-	// Token name view
-	IBOutlet id tokenNameView;
-	IBOutlet id tokenNameField;
-	IBOutlet id tokenNameTokensField;
-	IBOutlet id exampleNameLabel;
 	
 	// Cancellation flag
 	BOOL exportCancelled;
@@ -124,12 +134,19 @@
 	// Export options
 	SPExportType exportType;
 	SPExportSource exportSource;
+	
+	BOOL showAdvancedView;
+	
+	NSInteger heightOffset;
+	NSUInteger windowMinWidth;
+	NSUInteger windowMinHeigth;
+	
+	NSUserDefaults *prefs;
+	
+	// Encodings
+	NSString *sqlPreviousConnectionEncoding;
+	BOOL sqlPreviousConnectionEncodingViaLatin1;
 }
-
-@property (assign) id tableDocumentInstance;
-@property (assign) id tableContentInstance;
-@property (assign) id customQueryInstance;
-@property (assign) id tableDataInstance;
 
 @property (readwrite, assign) BOOL exportCancelled;
 @property (readwrite, assign) BOOL exportToMultipleFiles;
@@ -144,5 +161,10 @@
 - (IBAction)changeExportOutputPath:(id)sender;
 - (IBAction)refreshTableList:(id)sender;
 - (IBAction)selectDeselectAllTables:(id)sender;
+- (IBAction)toggleAdvancedExportOptionsView:(id)sender;
+
+- (IBAction)toggleSQLIncludeStructure:(id)sender;
+- (IBAction)toggleSQLIncludeContent:(id)sender;
+- (IBAction)toggleSQLIncludeDropSyntax:(id)sender;
 
 @end

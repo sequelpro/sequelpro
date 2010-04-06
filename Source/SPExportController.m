@@ -22,8 +22,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <MCPKit/MCPKit.h>
+
 #import "SPExportController.h"
-#import "SPCSVExporter.h"
+#import "SPExporterInitializer.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "TableDocument.h"
@@ -33,23 +35,16 @@
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
 #import "SPGrowlController.h"
-#import "SPMainThreadTrampoline.h"
 
 @interface SPExportController (PrivateAPI)
 
+- (void)_toggleExportButton;
 - (void)_initializeExportUsingSelectedOptions;
-- (void)_exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
-- (SPExporter *)_initializeExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
-- (NSFileHandle *)_getFileHandleForFilePath:(NSString *)filePath;
+- (void)_resizeWindowByHeightDelta:(NSInteger)delta;
 
 @end
 
 @implementation SPExportController
-
-@synthesize tableDocumentInstance;
-@synthesize tableContentInstance;
-@synthesize customQueryInstance;
-@synthesize tableDataInstance;
 
 @synthesize connection;
 @synthesize exportToMultipleFiles;
@@ -60,7 +55,8 @@
  */
 - (id)init
 {
-	if ((self = [super init])) {
+	if (self = [super initWithWindowNibName:@"ExportDialog"]) {
+		
 		[self setExportCancelled:NO];
 		[self setExportToMultipleFiles:YES];
 		
@@ -73,6 +69,14 @@
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
 		operationQueue = [[NSOperationQueue alloc] init];
+		
+		showAdvancedView = NO;
+		
+		heightOffset = 0;
+		windowMinWidth = [[self window] minSize].width;
+		windowMinHeigth = [[self window] minSize].height;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
 	}
 	
 	return self;
@@ -82,9 +86,16 @@
  * Upon awakening select the first toolbar item
  */
 - (void)awakeFromNib
-{
+{	
 	// Upon awakening select the SQL tab
 	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+	
+	// Disable the 'filtered result' and 'query result' options
+	[[exportInputMatrix cellAtRow:0 column:0] setEnabled:NO];
+	[[exportInputMatrix cellAtRow:1 column:0] setEnabled:NO];
+	
+	// Select the 'selected tables' option
+	[exportInputMatrix selectCellAtRow:2 column:0];
 }
 
 #pragma mark -
@@ -94,9 +105,7 @@
  * Display the export window allowing the user to select what and of what type to export.
  */
 - (void)export
-{
-	if (!exportWindow) [NSBundle loadNibNamed:@"ExportDialog" owner:self];
-	
+{	
 	[self refreshTableList:self];
 	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
@@ -104,7 +113,7 @@
 	// If found the set the default path to the user's desktop, otherwise use their home directory
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	
-	[NSApp beginSheet:exportWindow
+	[NSApp beginSheet:[self window]
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
@@ -116,8 +125,14 @@
  */
 - (IBAction)closeSheet:(id)sender
 {
-	[NSApp endSheet:exportWindow returnCode:[sender tag]];
-	[exportWindow orderOut:self];
+	// Close the advanced options view if it's open
+	[exportAdvancedOptionsView setHidden:YES];
+	[exportAdvancedOptionsViewButton setState:NSOffState];
+	
+	[self _resizeWindowByHeightDelta:0];
+	
+	[NSApp endSheet:[self window] returnCode:[sender tag]];
+	[[self window] orderOut:self];
 }
 
 /**
@@ -126,7 +141,31 @@
 - (IBAction)switchTab:(id)sender
 {
 	if ([sender isKindOfClass:[NSToolbarItem class]]) {
-		[exportTabBar selectTabViewItemWithIdentifier:[[sender label] lowercaseString]];		
+		
+		NSString *tabLabel = [[sender label] lowercaseString];
+		
+		[exportTabBar selectTabViewItemWithIdentifier:tabLabel];
+		
+		BOOL isCSV = [tabLabel isEqualToString:@"csv"];
+		BOOL isSQL = [[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"];
+		BOOL hideColumns = (isCSV || [tabLabel isEqualToString:@"xml"]);
+		
+		[exportFilePerTableCheck setHidden:isSQL];
+		[exportFilePerTableNote setHidden:isSQL];
+		
+		// Disable the 'filtered result' and 'query result' options
+		[[exportInputMatrix cellAtRow:0 column:0] setEnabled:hideColumns];
+		[[exportInputMatrix cellAtRow:1 column:0] setEnabled:hideColumns];
+		
+		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:hideColumns];
+		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:hideColumns];
+		
+		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(hideColumns) ? @"" : @"C"]; 
+		
+		[exportCSVNULLValuesAsTextField setEnabled:isCSV];
+		[exportCSVNULLValuesAsTextField setStringValue:(isCSV) ? [prefs stringForKey:SPNullValue] : @""]; 
+		
+		[self refreshTableList:self];
 	}
 }
 
@@ -140,7 +179,7 @@
 		BOOL isSelectedTables = ([[sender selectedCell] tag] == 3);
 		
 		[exportFilePerTableCheck setHidden:(!isSelectedTables)];
-		[exportFilePerTableNote  setHidden:(!isSelectedTables)];
+		[exportFilePerTableNote setHidden:(!isSelectedTables)];
 		
 		[exportTableList setEnabled:isSelectedTables];
 		[exportSelectAllTablesButton setEnabled:isSelectedTables];
@@ -175,10 +214,11 @@
 	[panel setCanChooseFiles:NO];
 	[panel setCanChooseDirectories:YES];
 	[panel setCanCreateDirectories:YES];
+	[panel setAccessoryView:exportCustomFilenameView];
 	
 	[panel beginSheetForDirectory:NSHomeDirectory() 
 							 file:nil 
-				   modalForWindow:exportWindow 
+				   modalForWindow:[self window] 
 					modalDelegate:self 
 				   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
 					  contextInfo:nil];
@@ -193,16 +233,46 @@
 	
 	[tables removeAllObjects];
 	
-	MCPResult *queryResult = (MCPResult *)[[self connection] listTables];
+	// For all modes, retrieve table and view names
+	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
 	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	
-	for (i = 0; i < [queryResult numOfRows]; i++) 
-	{
+	for (id itemName in tablesAndViews) {
 		[tables addObject:[NSMutableArray arrayWithObjects:
-						   [NSNumber numberWithBool:YES],
-						   NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0),
+						   itemName, 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithInt:SPTableTypeTable], 
 						   nil]];
+	}
+	
+	// For SQL only, add procedures and functions
+	if ([[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"]) {
+		NSArray *procedures = [tablesListInstance allProcedureNames];
+		
+		for (id procName in procedures) 
+		{
+			[tables addObject:[NSMutableArray arrayWithObjects:
+							   procName,
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithInt:SPTableTypeProc], 
+							   nil]];
+		}
+		
+		NSArray *functions = [tablesListInstance allFunctionNames];
+		
+		for (id funcName in functions) 
+		{
+			[tables addObject:[NSMutableArray arrayWithObjects:
+							   funcName,
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithInt:SPTableTypeFunc], 
+							   nil]];
+		}	
 	}
 	
 	[exportTableList reloadData];
@@ -219,10 +289,61 @@
 	
 	for (NSMutableArray *table in tables)
 	{
-		[table replaceObjectAtIndex:0 withObject:([sender tag]) ? [NSNumber numberWithBool:YES] : [NSNumber numberWithBool:NO]];
+		[table replaceObjectAtIndex:2 withObject:([sender tag]) ? [NSNumber numberWithBool:YES] : [NSNumber numberWithBool:NO]];
 	}
 	
 	[exportTableList reloadData];
+}
+
+/**
+ * Toggles the display of the advanced options box.
+ */
+- (IBAction)toggleAdvancedExportOptionsView:(id)sender
+{
+	showAdvancedView = !showAdvancedView;
+	
+	if (showAdvancedView) {
+		[exportAdvancedOptionsViewButton setState:NSOnState];
+		[self _resizeWindowByHeightDelta:([exportAdvancedOptionsView frame].size.height + 10)];
+		[exportAdvancedOptionsView setHidden:NO];
+	} 
+	else {
+		[exportAdvancedOptionsViewButton setState:NSOffState];
+		[self _resizeWindowByHeightDelta:0];
+		[exportAdvancedOptionsView setHidden:YES];
+	}
+}
+
+/**
+ *
+ */
+- (IBAction)toggleSQLIncludeStructure:(id)sender
+{
+	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(![sender state])];
+	
+	[self _toggleExportButton];
+}
+
+/**
+ *
+ */
+- (IBAction)toggleSQLIncludeContent:(id)sender
+{
+	[sender setTag:[sender state]];
+	
+	[self selectDeselectAllTables:sender];
+	
+	[self _toggleExportButton];
+}
+
+/**
+ *
+ */
+- (IBAction)toggleSQLIncludeDropSyntax:(id)sender
+{
+	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(![sender state])];
+	
+	[self _toggleExportButton];
 }
 
 #pragma mark -
@@ -233,30 +354,30 @@
 	return [tables count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{	
-	return NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], ([[aTableColumn identifier] isEqualToString:@"switch"]) ? 0 : 1);
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{		
+	return NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], [exportTableList columnWithIdentifier:[tableColumn identifier]]);
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)tableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
+	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
 }
 
 #pragma mark -
 #pragma mark Table view delegate methods
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return (aTableView != exportTableList);
+	return (tableView != exportTableList);
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldTrackCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+- (BOOL)tableView:(NSTableView *)tableView shouldTrackCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	return (aTableView == exportTableList);
+	return (tableView == exportTableList);
 }
 
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
@@ -316,9 +437,31 @@
 	[super dealloc];
 }
 
-@end
+#pragma mark -
+#pragma mark Private API
 
-@implementation SPExportController (PrivateAPI)
+/**
+ *
+ */
+- (void)_toggleExportButton
+{
+	BOOL structureEnabled = [exportSQLIncludeStructureCheck state];
+	BOOL contentEnabled   = [exportSQLIncludeContentCheck state];
+	BOOL dropEnabled      = [exportSQLIncludeDropSyntaxCheck state];
+	
+	// Disable if all are unchecked
+	if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
+		[exportButton setEnabled:NO];
+	}
+	// Disable if structure is unchecked, but content and drop are as dropping a table then trying to insert
+	// into it is obviously an error
+	else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
+		[exportButton setEnabled:NO];
+	}
+	else {
+		[exportButton setEnabled:(contentEnabled || (structureEnabled || dropEnabled))];
+	}
+}
 
 /**
  *
@@ -355,13 +498,21 @@
 			// Create an array of tables to export
 			for (NSMutableArray *table in tables)
 			{
-				if ([[table objectAtIndex:0] boolValue]) {
-					[exportTables addObject:[table objectAtIndex:1]];
+				if (exportType == SPSQLExport) {
+					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
+						[exportTables addObject:table];
+					}
+				}
+				else {
+					if ([[table objectAtIndex:2] boolValue]) {
+						[exportTables addObject:[table objectAtIndex:0]];
+					}
 				}
 			}
-			
 			break;
 	}
+	
+	NSLog(@"tables = %@", exportTables);
 	
 	// Set the type label 
 	switch (exportType)
@@ -382,255 +533,59 @@
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			[self _exportTables:nil orDataArray:[tableContentInstance currentResult]];
+			[self exportTables:nil orDataArray:[tableContentInstance currentResult]];
 			break;
 		case SPQueryExport:
-			[self _exportTables:nil orDataArray:[customQueryInstance currentResult]];
+			[self exportTables:nil orDataArray:[customQueryInstance currentResult]];
 			break;
 		case SPTableExport:
-			[self _exportTables:exportTables orDataArray:nil];
+			[self exportTables:exportTables orDataArray:nil];
 			break;
 	}
 }
 
 /**
- * Exports the contents' of the supplied array of tables. Note that this method currently only supports 
- * exporting in CSV and XML formats.
+ * Resizes the export window's height by the supplied delta, while retaining the position of 
+ * all interface controls.
  */
-- (void)_exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
+- (void)_resizeWindowByHeightDelta:(NSInteger)delta
 {
-	NSUInteger i;
-	NSFileHandle *singleFileHandle = nil;
-	BOOL singleFileHeaderHasBeenWritten = NO;
+	NSUInteger scrollMask       = [exportTablelistScrollView autoresizingMask];
+	NSUInteger buttonBarMask    = [exportTableListButtonBar autoresizingMask];
+	NSUInteger tabBarMask       = [exportTabBar autoresizingMask];
+	NSUInteger buttonMask       = [exportAdvancedOptionsViewButton autoresizingMask];
+	NSUInteger textFieldMask    = [exportAdvancedOptionsTextField autoresizingMask];
+	NSUInteger advancedViewMask = [exportAdvancedOptionsView autoresizingMask];
 	
-	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
+	NSRect frame = [[self window] frame];
 	
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
+	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportAdvancedOptionsTextField setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	
-	// Reset the interface
-	[[exportProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
-	[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
 	
-	[[exportProgressText onMainThread] displayIfNeeded];
-	[[exportProgressIndicator onMainThread] setDoubleValue:0];
-	[[exportProgressIndicator onMainThread] displayIfNeeded];
+	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
 	
-	// Open the progress sheet
-	[NSApp beginSheet:exportProgressWindow
-	   modalForWindow:tableWindow 
-		modalDelegate:self
-	   didEndSelector:nil 
-		  contextInfo:nil];
+	frame.origin.y += heightOffset;
+	frame.size.height -= heightOffset;
 	
-	// If the user has selected to only export to a single file or this is a filtered or custom query 
-	// export create the single file now and assign it to all subsequently created exporters.
-	if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
-		
-		NSString *filename = @"";
-		
-		// Determine what the file name should be
-		switch (exportSource) 
-		{
-			case SPFilteredExport:
-				filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
-				break;
-			case SPQueryExport:
-				filename = @"query_result";
-				break;
-			case SPTableExport:
-				filename = [tableDocumentInstance database];
-				break;
-		}
-		
-		singleFileHandle = [self _getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:filename]];
-	}
+	heightOffset = delta;
 	
-	// Start the export process depending on the data source
-	if (exportSource == SPTableExport) {
-		
-		// Cache the number of tables being exported
-		exportTableCount = [exportTables count];
-		
-		// Loop through the tables, creating an exporter for each
-		for (NSString *table in exportTables) 
-		{
-			if ([self exportCancelled]) break;
-			
-			SPExporter *exporter = [self _initializeExporterForTable:table orDataArray:nil];
-			
-			// If required set the single file handle
-			if ((![self exportToMultipleFiles]) || (exportType == SPCSVExport)) {
-				[exporter setExportOutputFileHandle:singleFileHandle];
-				
-				if (!singleFileHeaderHasBeenWritten) {
-					// Write the file header and the first table name
-					[singleFileHandle writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
-												  NSLocalizedString(@"Host", @"csv export host heading"),
-												  [tableDocumentInstance host], 
-												  NSLocalizedString(@"Database", @"csv export database heading"),
-												  [tableDocumentInstance database], 
-												  NSLocalizedString(@"Generation Time", @"csv export generation time heading"),
-												  [NSDate date], 
-												  [exportCSVLinesTerminatedField stringValue], 
-												  [exportCSVLinesTerminatedField stringValue],
-												  NSLocalizedString(@"Table", @"csv export table heading"),
-												  table,
-												  [exportCSVLinesTerminatedField stringValue], 
-												  [exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[exporter exportOutputEncoding]]];
-					
-					singleFileHeaderHasBeenWritten = YES;
-				}
-				
-			}
-						
-			[exporters addObject:exporter];
-		}		
-	}
-	else {
-		SPExporter *exporter = [self _initializeExporterForTable:nil orDataArray:dataArray];
-		
-		[exporter setExportOutputFileHandle:singleFileHandle];
-		
-		[exporters addObject:exporter];
-	}
+	frame.origin.y -= heightOffset;
+	frame.size.height += heightOffset;
 	
-	// Add the first exporter to the operation queue
-	[operationQueue addOperation:[exporters objectAtIndex:0]];
+	[[self window] setFrame:frame display:YES animate:YES];
 	
-	// Remove the exporter we just added to the operation queue from our list of exporters 
-	// so we know it's already been done.
-	[exporters removeObjectAtIndex:0];	
-}
-
-/**
- *
- */
-- (SPExporter *)_initializeExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
-{
-	NSString *exportFile = @"";
-	NSFileHandle *fileHandle = nil;
-	
-	NSDictionary *tableDetails = [NSDictionary dictionary];
-	NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
-	
-	if (exportSource == SPTableExport) {
-		
-		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [table backtickQuotedString]]];
-		
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numOfRows]) {
-			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
-			
-			tableDetails = [NSDictionary dictionaryWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [tableDataInstance informationForView:table] : [tableDataInstance informationForTable:table]];
-		}
-		
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
-		{
-			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
-		}
-	}
-	
-	SPExporter *exporter;
-	SPCSVExporter *csvExporter;
-	
-	// Based on the type of export create a new instance of the corresponding exporter and set it's specific options
-	switch (exportType)
-	{
-		case SPSQLExport:
-			
-			break;
-		case SPCSVExport:
-			csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
-			
-			// Depeding on the export source, set the table name or result array
-			if (exportSource == SPTableExport) {
-				[csvExporter setCsvTableName:table];
-			}
-			else {
-				[csvExporter setCsvDataArray:dataArray];
-			}
-			
-			[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
-			[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
-			[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
-			[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
-			[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
-			
-			[csvExporter setExportOutputEncoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
-			[csvExporter setCsvNULLString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]];
-			
-			[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
-			
-			// If required create separate files
-			if ((exportSource == SPTableExport) && [self exportToMultipleFiles] && (exportTableCount > 0)) {
-				exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:table];
-								
-				fileHandle = [self _getFileHandleForFilePath:exportFile];
-			}
-			
-			exporter = csvExporter;
-			
-			break;
-		case SPXMLExport:
-			
-			break;
-	}
-	
-	// Set the exporter's generic properties
-	[exporter setConnection:connection];
-	[exporter setExportOutputFileHandle:fileHandle];
-	[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemory state] == NSOnState)];
-	
-	return exporter;
-}
-	
-/**
- *
- */
-- (NSFileHandle *)_getFileHandleForFilePath:(NSString *)filePath
-{
-	NSFileHandle *fileHandle = nil;
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	
-	if ([fileManager fileExistsAtPath:filePath]) {
-		if ((![fileManager isWritableFileAtPath:filePath]) || (!(fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath]))) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
-			return nil;
-		}
-		
-		// Truncates the file to zero bytes
-		[fileHandle truncateFileAtOffset:0];
-	} 
-	// Otherwise attempt to create a file
-	else {
-		if (![fileManager createFileAtPath:filePath contents:[NSData data] attributes:nil]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-			return nil;
-		}
-		
-		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath];
-		
-		if (!fileHandle) {
-			[[NSFileManager defaultManager] removeFileAtPath:filePath handler:nil];
-			
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-			return nil;
-		}
-	}
-	
-	return fileHandle;
+	[exportTablelistScrollView setAutoresizingMask:scrollMask];
+	[exportTableListButtonBar setAutoresizingMask:buttonBarMask];
+	[exportTabBar setAutoresizingMask:tabBarMask];
+	[exportAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
+	[exportAdvancedOptionsTextField setAutoresizingMask:textFieldMask];
+	[exportAdvancedOptionsView setAutoresizingMask:advancedViewMask];
 }
 
 @end

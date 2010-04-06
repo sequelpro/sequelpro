@@ -51,6 +51,11 @@
  */
 - (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter;
 
+/**
+ *
+ */
+- (void)sqlExportProcessWillBeginExportingItem:(SPSQLExporter *)exporter;
+
 @end
 
 @interface SPSQLExporter : SPExporter
@@ -63,12 +68,18 @@
 	NSString *sqlDatabaseName;
 	NSString *sqlDatabaseVersion;
 	
+	// Current table
+	NSString *sqlExportCurrentTable;
+	
 	// SQL options
 	BOOL sqlOutputIncludeUTF8BOM;
-	BOOL sqlOutputIncludeStructure;
-	BOOL sqlOutputIncludeCreateSyntax;
-	BOOL sqlOutputIncludeDropSyntax;
+	/*BOOL sqlOutputIncludeStructure;
+	BOOL sqlOutputIncludeContent;
+	BOOL sqlOutputIncludeDropSyntax;*/
 	BOOL sqlOutputIncludeErrors;
+	
+	// Table information
+	NSDictionary *sqlTableInformation;
 }
 
 @property(readwrite, retain) NSArray *sqlExportTables;
@@ -77,10 +88,14 @@
 @property(readwrite, retain) NSString *sqlDatabaseName;
 @property(readwrite, retain) NSString *sqlDatabaseVersion;
 
+@property(readwrite, retain) NSString *sqlExportCurrentTable;
+
 @property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
-@property(readwrite, assign) BOOL sqlOutputIncludeStructure;
-@property(readwrite, assign) BOOL sqlOutputIncludeCreateSyntax;
-@property(readwrite, assign) BOOL sqlOutputIncludeDropSyntax;
+/*@property(readwrite, assign) BOOL sqlOutputIncludeStructure;
+@property(readwrite, assign) BOOL sqlOutputIncludeContent;
+@property(readwrite, assign) BOOL sqlOutputIncludeDropSyntax;*/
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
+
+@property(readwrite, retain) NSDictionary *sqlTableInformation;
 
 @end

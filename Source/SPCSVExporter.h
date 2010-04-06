@@ -25,7 +25,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "MCPKit.h"
 #import "SPExporter.h"
 
 @class SPCSVExporter;
@@ -58,7 +57,6 @@
 {		
 	// CSV data
 	NSArray *csvDataArray;
-	MCPStreamingResult *csvDataResult;
 	
 	// Table
 	NSString *csvTableName;
@@ -75,8 +73,6 @@
 }
 
 @property (readwrite, retain) NSArray *csvDataArray;
-@property (readwrite, retain) MCPStreamingResult *csvDataResult;
-
 @property (readwrite, retain) NSString *csvTableName;
 
 @property (readwrite, assign) BOOL csvOutputFieldNames;

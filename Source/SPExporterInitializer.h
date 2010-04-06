@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPCSVExporterDelegate.h
+//  SPExporterInitializer.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 21, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on March 31, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,18 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <Cocoa/Cocoa.h>
+
 #import "SPExportController.h"
 
-@interface SPExportController (SPCSVExporterDelegate)
+@class SPCSVExporter, SPSQLExporter;
+
+@interface SPExportController (SPExporterInitializer)
+
+- (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
+
+- (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
+
+- (NSFileHandle *)getFileHandleForFilePath:(NSString *)filePath;
 
 @end

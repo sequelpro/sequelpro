@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPCSVExporterDelegate.h
+//  SPSQLExporterDelegate.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 21, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on March 28, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,6 @@
 
 #import "SPExportController.h"
 
-@interface SPExportController (SPCSVExporterDelegate)
+@interface SPExportController (SPSQLExporterDelegate) 
 
 @end
