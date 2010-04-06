@@ -33,6 +33,7 @@
 #import "SPQueryController.h"
 #import "SPTooltip.h"
 #import "TablesList.h"
+#import "SPNavigatorController.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -83,7 +84,6 @@ static inline CGFloat SPRectLeft(NSRect rectangle) { return rectangle.origin.x; 
 static inline CGFloat SPRectRight(NSRect rectangle) { return rectangle.origin.x+rectangle.size.width; }
 static inline CGFloat SPPointDistance(NSPoint a, NSPoint b) { return sqrt( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y) ); }
 static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NSMakePoint(a.x*(1.-t) + b.x*t, a.y*(1.-t) + b.y*t); }
-
 
 @implementation CMTextView
 
@@ -308,17 +308,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		else
 			connectionID = @"_";
 
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		// Try to get structure data
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[SPNavigatorController sharedNavigatorController] dbStructureForConnection:connectionID]];
 
-		if(dbs != nil && [dbs count]) {
+		if(dbs != nil && [dbs isKindOfClass:[NSDictionary class]] && [dbs count]) {
 			NSMutableArray *allDbs = [NSMutableArray array];
 			[allDbs addObjectsFromArray:[dbs allKeys]];
-
-			// Add database names having no tables since they don't appear in the information_schema
-			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"] != nil)
-				for(id db in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
-					if(![allDbs containsObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]])
-						[allDbs addObject:[NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db]];
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [NSMutableArray array];
@@ -361,24 +356,32 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			BOOL aTableNameExists = NO;
 			if(!aDbName) {
-				// Try to suggest only items which are uniquely valid for the parsed string
 
-				NSInteger uniqueSchemaKind = [mySQLConnection getUniqueDbIdentifierFor:[aTableName lowercaseString]];
+				// Try to suggest only items which are uniquely valid for the parsed string
+				NSArray *uniqueSchema = [[SPNavigatorController sharedNavigatorController] getUniqueDbIdentifierFor:[aTableName lowercaseString] andConnection:[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] connectionID]];
+				NSInteger uniqueSchemaKind = [[uniqueSchema objectAtIndex:0] intValue];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
-			 	if(aTableName && [aTableName length] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName]] && uniqueSchemaKind == 2) {
+			 	if(aTableName && [aTableName length] 
+						&& [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] isKindOfClass:[NSDictionary class]]
+						&& [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]]] 
+						&& uniqueSchemaKind == 2) {
 					aTableNameExists = YES;
+					aTableName = [uniqueSchema objectAtIndex:1];
+					aTableName_id = [NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName];
 					aDbName_id = [NSString stringWithString:currentDb];
 				}
 
 				// If no db name but table name check if table name is a valid db name
 				if(!aTableNameExists && aTableName && [aTableName length] && uniqueSchemaKind == 1) {
-					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, aTableName];
+					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]];
 					aTableNameExists = NO;
 				}
 
 			} else if (aDbName && [aDbName length]) {
-				if(aTableName && [aTableName length] && [dbs objectForKey:aDbName_id] && [[dbs objectForKey:aDbName_id] objectForKey:[NSString stringWithFormat:@"%@%@%@", aDbName_id, SPUniqueSchemaDelimiter, aTableName]]) {
+				if(aTableName && [aTableName length] 
+						&& [dbs objectForKey:aDbName_id]  && [[dbs objectForKey:aDbName_id] isKindOfClass:[NSDictionary class]]
+						&& [[dbs objectForKey:aDbName_id] objectForKey:[NSString stringWithFormat:@"%@%@%@", aDbName_id, SPUniqueSchemaDelimiter, aTableName]]) {
 					aTableNameExists = YES;
 				}
 			}
@@ -399,6 +402,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					continue;
 				}
 
+				NSString *dbpath = [db substringFromIndex:[db rangeOfString:SPUniqueSchemaDelimiter].location];
+
 				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
 					[sortedTables addObject:aTableName_id];
@@ -411,24 +416,25 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					}
 				}
 				for(id table in sortedTables) {
-					NSDictionary * theTable = [[dbs objectForKey:db] objectForKey:table];
+					NSDictionary *theTable = [[dbs objectForKey:db] objectForKey:table];
+					NSString *tablepath = [table substringFromIndex:[table rangeOfString:SPUniqueSchemaDelimiter].location];
 					NSArray *allFields = [theTable allKeys];
 					NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
 					BOOL breakFlag = NO;
 					if(!aTableNameExists)
 						switch(structtype) {
 							case 0:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-small-square", @"image", db, @"path", @"", @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-small-square", @"image", tablepath, @"path", @"", @"isRef", nil]];
 							break;
 							case 1:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-view-small-square", @"image", db, @"path", @"", @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"table-view-small-square", @"image", tablepath, @"path", @"", @"isRef", nil]];
 							break;
 							case 2:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"proc-small", @"image", db, @"path", @"", @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"proc-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 							case 3:
-							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", db, @"path", @"", @"isRef", nil]];
+							[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[table componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"func-small", @"image", tablepath, @"path", @"", @"isRef", nil]];
 							breakFlag = YES;
 							break;
 						}
@@ -436,6 +442,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
+								NSString *fieldpath = [field substringFromIndex:[field rangeOfString:SPUniqueSchemaDelimiter].location];
 								NSArray *def = [theTable objectForKey:field];
 								NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:3], [def objectAtIndex:5]];
 								// Check if type definition contains a , if so replace the bracket content by … and add 
@@ -446,7 +453,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
 										@"field-small-square", @"image", 
-										table, @"path", 
+										fieldpath, @"path", 
 										t, @"type", 
 										lst, @"list", 
 										@"", @"isRef", 
@@ -455,7 +462,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
 										@"field-small-square", @"image", 
-										table, @"path",
+										fieldpath, @"path",
 										typ, @"type", 
 										@"", @"isRef", 
 										nil]];
@@ -467,9 +474,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			}
 			if(desc) [desc release];
 		} else {
-			// Fallback for MySQL < 5 and if the data gathering is in progress
-			if(mySQLmajorVersion > 4)
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"fetching table data…", @"fetching table data for completion in progress message"), @"path", @"", @"noCompletion", nil]];
+
+			// [possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"fetching table data…", @"fetching table data for completion in progress message"), @"path", @"", @"noCompletion", nil]];
 
 			// Add all database names to completions list
 			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
@@ -511,9 +517,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) doAutoCompletion
 {
+
+	if(completionIsOpen || !self || ![self delegate]) return;
+
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+
 	NSRange r = [self selectedRange];
 
-	if(![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
+	if(![self delegate] || ![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
 
 	if(r.location) {
 		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
@@ -523,12 +539,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if([[NSApp keyWindow] firstResponder] == self)
 				[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
 	}
+
 }
 
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
 {
 
-	if(![self isEditable]) return;
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
+	if(![self isEditable] || (completionIsOpen && !completionWasReinvokedAutomatically)) {
+		return;
+	}
 
 	[self breakUndoCoalescing];
 
@@ -709,6 +734,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		filter = [NSString stringWithString:currentWord];
 	}
 
+	completionIsOpen = YES;
+
+	// Cancel autocompletion trigger again if user typed something in while parsing
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+
 	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
 					alreadyTyped:filter 
 					staticPrefix:prefix 
@@ -727,7 +760,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					selectedDb:currentDb
 					caretMovedLeft:caretMovedLeft
 					autoComplete:autoCompleteMode
-					oneColumn:isDictMode];
+					oneColumn:isDictMode
+					isQueryingDBStructure:[mySQLConnection isQueryingDatabaseStructure]];
 
 	completionParseRangeLocation = parseRange.location;
 
@@ -745,7 +779,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	pos.y -= [[self font] pointSize]*1.25;
 	
 	[completionPopUp setCaretPos:pos];
-	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
 	if(!autoCompleteMode)
 		[completionPopUp insertCommonPrefix];
@@ -1257,6 +1290,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
+	completionIsOpen = YES;
+
 	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 					alreadyTyped:@"" 
 					staticPrefix:@"" 
@@ -1275,7 +1310,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					selectedDb:@""
 					caretMovedLeft:NO
 					autoComplete:NO
-					oneColumn:NO];
+					oneColumn:NO
+					isQueryingDBStructure:NO];
 
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,0) actualCharacterRange:NULL];
@@ -1285,7 +1321,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Adjust list location to be under the current word or insertion point
 	pos.y -= [[self font] pointSize]*1.25;
 	[completionPopUp setCaretPos:pos];
-	completionIsOpen = YES;
 	[completionPopUp orderFront:self];
 
 }
@@ -1420,7 +1455,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
 							for(id w in list)
 								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
-						
+
+							completionIsOpen = YES;
+
 							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 											alreadyTyped:@"" 
 											staticPrefix:@"" 
@@ -1439,7 +1476,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											selectedDb:@""
 											caretMovedLeft:NO
 											autoComplete:NO
-											oneColumn:YES];
+											oneColumn:YES
+											isQueryingDBStructure:NO];
 							//Get the NSPoint of the first character of the current word
 							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
 							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
@@ -1448,7 +1486,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 							// Adjust list location to be under the current word or insertion point
 							pos.y -= [[self font] pointSize]*1.25;
 							[completionPopUp setCaretPos:pos];
-							completionIsOpen = YES;
 							[completionPopUp orderFront:self];
 						}
 					}
@@ -3233,6 +3270,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) dealloc
 {
+
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

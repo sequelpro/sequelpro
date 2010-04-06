@@ -25,8 +25,8 @@
 
 #import "SPKeychain.h"
 
-#import <CoreFoundation/CoreFoundation.h>
 #import <Security/Security.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 @implementation SPKeychain
 

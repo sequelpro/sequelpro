@@ -103,6 +103,21 @@
  */
 - (NSArray*)allSystemDatabaseNames;
 
+/**
+ *
+ */
+- (NSArray*)allTableNames;
+
+/**
+ *
+ */
+- (NSArray*)allViewNames;
+
+/**
+ *
+ */
+- (NSArray*)allSchemaKeys;
+
 @end
 
 @interface MCPConnection : NSObject 
@@ -144,7 +159,7 @@
 	
 	NSString *serverVersionString;
 	NSMutableDictionary *structure;
-	NSMutableSet *allKeysofDbStructure;
+	NSMutableArray *allKeysofDbStructure;
 	
 	NSTimer *keepAliveTimer;
 	double lastKeepAliveTime;
@@ -158,7 +173,8 @@
 	BOOL delegateQueryLogging;
 	BOOL delegateResponseToWillQueryString;
 	BOOL delegateSupportsConnectionLostDecisions;
-	BOOL isQueryingDbStructure;
+	NSInteger isQueryingDbStructure;
+	BOOL lockQuerying;
 	
 	// Pointers
 	IMP cStringPtr;
@@ -266,10 +282,17 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
+
+// Structure querying
 - (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo;
 - (NSDictionary *)getDbStructure;
-- (NSInteger)getUniqueDbIdentifierFor:(NSString*)term;
 - (NSArray *)getAllKeysOfDbStructure;
+- (BOOL)isQueryingDatabaseStructure;
+- (void)incrementQueryingDbStructure;
+- (void)decrementQueryingDbStructure;
+- (void)lockQuerying;
+- (void)unlockQuerying;
+- (void)updateGlobalVariablesWith:(NSDictionary*)object;
 
 // Server information
 - (NSString *)clientInfo;

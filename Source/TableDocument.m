@@ -1092,6 +1092,16 @@
 	return [[SPNavigatorController sharedNavigatorController] schemaPathExistsForConnection:[self connectionID] andDatabase:dbname];
 }
 
+- (NSDictionary*)getDbStructure
+{
+	return [[SPNavigatorController sharedNavigatorController] dbStructureForConnection:[self connectionID]];
+}
+
+- (NSArray *)allSchemaKeys
+{
+	return [[SPNavigatorController sharedNavigatorController] allSchemaKeysForConnection:[self connectionID]];
+}
+
 #pragma mark -
 #pragma mark Console methods
 
@@ -1154,7 +1164,7 @@
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
 	if(!isNavigatorVisible) {
-		[[SPNavigatorController sharedNavigatorController] updateEntriesForConnection:[self connectionID]];
+		[[SPNavigatorController sharedNavigatorController] updateEntriesForConnection:self];
 	}
 
 	// Show or hide the navigator
@@ -1662,6 +1672,17 @@
 
 	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
 
+	// A NULL value indicates that the user does not have permission to view the syntax
+	if ([tableSyntax isNSNull]) {
+		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+						 defaultButton:NSLocalizedString(@"OK", @"OK")
+					   alternateButton:nil otherButton:nil
+			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+			  beginSheetModalForWindow:tableWindow
+						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		return;
+	}
+
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
 
 	[createTableSyntaxTextView setEditable:YES];
@@ -1719,6 +1740,17 @@
 	}
 
 	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
+
+	// A NULL value indicates that the user does not have permission to view the syntax
+	if ([tableSyntax isNSNull]) {
+		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+						 defaultButton:NSLocalizedString(@"OK", @"OK")
+					   alternateButton:nil otherButton:nil
+			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+			  beginSheetModalForWindow:tableWindow
+						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		return;
+	}
 
 	// copy to the clipboard
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -3210,8 +3242,8 @@
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarCustomQuery];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Set the focus on the text field if no query has been run
-	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
+	// Set the focus on the text field
+	[tableWindow makeFirstResponder:customQueryTextView];
 	
 	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
 }
@@ -3658,9 +3690,19 @@
  */
 - (void)windowWillClose:(NSNotification *)aNotification
 {
-	if ([[[SPNavigatorController sharedNavigatorController] window] isVisible]) {
-		[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
-	}
+
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+
+	[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
 
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];

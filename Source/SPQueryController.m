@@ -941,8 +941,15 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error
 {
-	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:[[[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "] stringByAppendingString:@";"] date:[NSDate date] connection:connection];
+	NSString *messageTemp = [[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
+
+	// Only append a semi-colon (;) if the supplied message is not an error
+	if (!error) {
+		messageTemp = [messageTemp stringByAppendingString:@";"];
+	}
 	
+	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:messageTemp date:[NSDate date] connection:connection];
+		
 	[consoleMessage setIsError:error];
 	
 	[messagesFullSet addObject:consoleMessage];

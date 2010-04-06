@@ -152,7 +152,7 @@
 
 	if (maxWidth < mainStringWidth) {
 		for (i = 0; i <= [mainString length]; i++) {
-			if ([[mainString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth) {	
+			if ([[mainString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth && i >= 3) {
 				mainString = [[[NSMutableAttributedString alloc] initWithString:[[[mainString attributedSubstringFromRange:NSMakeRange(0, i - 3)] string] stringByAppendingString:@"..."] attributes:[self mainStringAttributedStringAttributes]] autorelease];
 			}
 		}
@@ -160,7 +160,7 @@
 	
 	if (maxWidth < subStringWidth) {
 		for (i = 0; i <= [subString length]; i++) {
-			if ([[subString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth) {	
+			if ([[subString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth && i >= 3) {
 				subString = [[[NSMutableAttributedString alloc] initWithString:[[[subString attributedSubstringFromRange:NSMakeRange(0, i - 3)] string] stringByAppendingString:@"..."] attributes:[self subStringAttributedStringAttributes]] autorelease];
 			}
 		}

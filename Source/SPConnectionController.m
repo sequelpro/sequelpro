@@ -706,6 +706,7 @@
 	connectionKeychainItemAccount = [[keychain accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:(([self type] == SPSocketConnection)?@"localhost":[self valueForKeyPath:@"selectedFavorite.host"]) database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
 	[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 	if (![[self password] length]) {
+		[self setPassword:nil];
 		[connectionKeychainItemName release], connectionKeychainItemName = nil;
 		[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
 	}
@@ -715,6 +716,7 @@
 	connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[self valueForKeyPath:@"selectedFavorite.sshUser"] sshHost:[self valueForKeyPath:@"selectedFavorite.sshHost"]] retain];
 	[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
 	if (![[self sshPassword] length]) {
+		[self setSshPassword:nil];
 		[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
 		[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	}

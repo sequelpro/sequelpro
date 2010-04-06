@@ -32,6 +32,7 @@
 
 #import "NoodleLineNumberView.h"
 #import "SPArrayAdditions.h"
+
 #include <tgmath.h>
 
 #define DEFAULT_THICKNESS	22.0

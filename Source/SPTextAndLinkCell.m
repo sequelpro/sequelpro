@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTextAndLinkCell.h"
+#import "SPConstants.h"
 
 @implementation SPTextAndLinkCell
 
@@ -48,7 +49,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 		hasLink = NO;
 		linkButton = nil;
 		linkTarget = nil;
-		drawState = SP_LINKDRAWSTATE_NORMAL;
+		drawState = SPLinkDrawStateNormal;
 		
 		lastLinkColumn = NSNotFound;
 		lastLinkRow = NSNotFound;
@@ -140,22 +141,22 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	NSInteger newDrawState = ([self isHighlighted])?
 							((([(NSTableView *)[self controlView] editedColumn] != -1
 								|| [[[self controlView] window] firstResponder] == [self controlView])
-								&& [[[self controlView] window] isKeyWindow])?SP_LINKDRAWSTATE_HIGHLIGHT:SP_LINKDRAWSTATE_BACKGROUNDHIGHLIGHT):
-							SP_LINKDRAWSTATE_NORMAL;
+								&& [[[self controlView] window] isKeyWindow])?SPLinkDrawStateHighlight:SPLinkDrawStateBackgroundHighlight):
+							SPLinkDrawStateNormal;
 
 	// Update the link arrow style if the state has changed
 	if (drawState != newDrawState) {
 		drawState = newDrawState;
 		switch (drawState) {
-			case SP_LINKDRAWSTATE_NORMAL:
+			case SPLinkDrawStateNormal:
 				[linkButton setImage:[NSImage imageNamed:@"link-arrow"]];
 				[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow-clicked"]];
 				break;
-			case SP_LINKDRAWSTATE_HIGHLIGHT:
+			case SPLinkDrawStateHighlight:
 				[linkButton setImage:[NSImage imageNamed:@"link-arrow-highlighted"]];
 				[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow-highlighted-clicked"]];
 				break;
-			case SP_LINKDRAWSTATE_BACKGROUNDHIGHLIGHT:
+			case SPLinkDrawStateBackgroundHighlight:
 				[linkButton setImage:[NSImage imageNamed:@"link-arrow-clicked"]];
 				[linkButton setAlternateImage:[NSImage imageNamed:@"link-arrow"]];
 				break;

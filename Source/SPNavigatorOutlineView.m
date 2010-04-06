@@ -26,7 +26,6 @@
 #import "SPNavigatorOutlineView.h"
 #import "SPNavigatorController.h"
 
-
 @implementation SPNavigatorOutlineView
 
 - (BOOL)acceptsFirstResponder

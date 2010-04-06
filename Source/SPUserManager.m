@@ -23,9 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPUserManager.h"
-#import "MCPConnection.h"
 #import "SPUserMO.h"
-#import "MCPResult.h"
 #import "ImageAndTextCell.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"

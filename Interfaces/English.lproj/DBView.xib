@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10C540</string>
+		<string key="IBDocument.SystemVersion">10D573</string>
 		<string key="IBDocument.InterfaceBuilderVersion">740</string>
-		<string key="IBDocument.AppKitVersion">1038.25</string>
-		<string key="IBDocument.HIToolboxVersion">458.00</string>
+		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.HIToolboxVersion">460.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
@@ -23,6 +23,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="6225"/>
+			<integer value="5824"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -61,7 +63,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{780, 480}</string>
 				<object class="NSView" key="NSWindowView" id="579726586">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5550,6 +5552,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{944, 550}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{780, 502}</string>
@@ -11949,6 +11952,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="450876295"/>
 						<reference key="NSMixedImage" ref="414351669"/>
+						<int key="NSTag">2001</int>
 					</object>
 					<object class="NSMenuItem" id="639717326">
 						<reference key="NSMenu" ref="481018596"/>
@@ -11957,7 +11961,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="450876295"/>
 						<reference key="NSMixedImage" ref="414351669"/>
-						<int key="NSTag">2001</int>
+						<int key="NSTag">2002</int>
 					</object>
 					<object class="NSMenuItem" id="825940728">
 						<reference key="NSMenu" ref="481018596"/>
@@ -11966,7 +11970,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<int key="NSMnemonicLoc">2147483647</int>
 						<reference key="NSOnImage" ref="450876295"/>
 						<reference key="NSMixedImage" ref="414351669"/>
-						<int key="NSTag">2002</int>
+						<int key="NSTag">2003</int>
 					</object>
 					<object class="NSMenuItem" id="870308047">
 						<reference key="NSMenu" ref="481018596"/>
@@ -15400,6 +15404,30 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
+						<string key="label">tablesListInstance</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="438574515"/>
+					</object>
+					<int key="connectionID">6620</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableDocumentInstance</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="427689665"/>
+					</object>
+					<int key="connectionID">6621</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableDataInstance</string>
+						<reference key="source" ref="4626"/>
+						<reference key="destination" ref="1006422530"/>
+					</object>
+					<int key="connectionID">6622</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
 						<string key="label">tableWindow</string>
 						<reference key="source" ref="4626"/>
 						<reference key="destination" ref="207157706"/>
@@ -16269,38 +16297,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="936957743"/>
 					</object>
 					<int key="connectionID">6921</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">customQueryInstance</string>
-						<reference key="source" ref="4626"/>
-						<reference key="destination" ref="601471102"/>
-					</object>
-					<int key="connectionID">6922</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">tableDocumentInstance</string>
-						<reference key="source" ref="4626"/>
-						<reference key="destination" ref="427689665"/>
-					</object>
-					<int key="connectionID">6923</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">tableDataInstance</string>
-						<reference key="source" ref="4626"/>
-						<reference key="destination" ref="1006422530"/>
-					</object>
-					<int key="connectionID">6928</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">tablesListInstance</string>
-						<reference key="source" ref="4626"/>
-						<reference key="destination" ref="438574515"/>
-					</object>
-					<int key="connectionID">6929</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -25831,7 +25827,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>{{735, 570}, {233, 53}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{886, 867}, {231, 113}}</string>
+					<string>{{898, 501}, {228, 113}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -26462,7 +26458,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">6929</int>
+			<int key="maxID">6921</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -26865,14 +26861,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPExportController</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/SPCSVExporterDelegate.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPExportController</string>
-					<string key="superclassName">NSWindowController</string>
+					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -26880,23 +26869,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>cancelExport:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
-							<string>refreshTableList:</string>
-							<string>selectDeselectAllTables:</string>
 							<string>switchInput:</string>
 							<string>switchTab:</string>
-							<string>toggleAdvancedExportOptionsView:</string>
-							<string>toggleSQLIncludeContent:</string>
-							<string>toggleSQLIncludeDropSyntax:</string>
-							<string>toggleSQLIncludeStructure:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -26908,20 +26885,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>customQueryInstance</string>
-							<string>exportAdvancedOptionsTextField</string>
-							<string>exportAdvancedOptionsView</string>
-							<string>exportAdvancedOptionsViewButton</string>
+							<string>exampleNameLabel</string>
 							<string>exportCSVFieldsEscapedField</string>
 							<string>exportCSVFieldsTerminatedField</string>
 							<string>exportCSVFieldsWrappedField</string>
 							<string>exportCSVIncludeFieldNamesCheck</string>
 							<string>exportCSVLinesTerminatedField</string>
-							<string>exportCSVNULLValuesAsTextField</string>
-							<string>exportCustomFilenameTokenField</string>
-							<string>exportCustomFilenameTokensField</string>
-							<string>exportCustomFilenameView</string>
-							<string>exportDeselectAllTablesButton</string>
 							<string>exportExcelSheetOrFilePerTableMatrix</string>
 							<string>exportFilePerTableCheck</string>
 							<string>exportFilePerTableNote</string>
@@ -26930,89 +26899,68 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportInputMatrix</string>
 							<string>exportPDFIncludeStructureCheck</string>
 							<string>exportPathField</string>
-							<string>exportProcessLowMemoryButton</string>
+							<string>exportProcessLowMemory</string>
 							<string>exportProgressIndicator</string>
 							<string>exportProgressText</string>
 							<string>exportProgressTitle</string>
 							<string>exportProgressWindow</string>
-							<string>exportRefreshTablesButton</string>
-							<string>exportSQLIncludeContentCheck</string>
 							<string>exportSQLIncludeDropSyntaxCheck</string>
 							<string>exportSQLIncludeErrorsCheck</string>
 							<string>exportSQLIncludeStructureCheck</string>
-							<string>exportSelectAllTablesButton</string>
 							<string>exportTabBar</string>
 							<string>exportTableList</string>
-							<string>exportTableListButtonBar</string>
-							<string>exportTablelistScrollView</string>
 							<string>exportToolbar</string>
-							<string>exportUseUTF8BOMButton</string>
+							<string>exportWindow</string>
 							<string>exportXMLIncludeStructureCheck</string>
-							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
 							<string>tableDocumentInstance</string>
 							<string>tableWindow</string>
 							<string>tablesListInstance</string>
+							<string>tokenNameField</string>
+							<string>tokenNameTokensField</string>
+							<string>tokenNameView</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
-							<string>NSTextField</string>
-							<string>NSView</string>
-							<string>NSButton</string>
-							<string>NSComboBox</string>
-							<string>NSComboBox</string>
-							<string>NSComboBox</string>
-							<string>NSButton</string>
-							<string>NSComboBox</string>
-							<string>NSTextField</string>
-							<string>NSTokenField</string>
-							<string>NSTokenField</string>
-							<string>NSView</string>
-							<string>NSButton</string>
-							<string>NSMatrix</string>
-							<string>NSButton</string>
-							<string>NSTextField</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSMatrix</string>
-							<string>NSButton</string>
-							<string>NSTextField</string>
-							<string>NSButton</string>
-							<string>NSProgressIndicator</string>
-							<string>NSTextField</string>
-							<string>NSTextField</string>
-							<string>NSWindow</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSTabView</string>
-							<string>NSTableView</string>
-							<string>BWAnchoredButtonBar</string>
-							<string>NSScrollView</string>
-							<string>NSToolbar</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>NSWindow</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPExportController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPExportController</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/SPSQLExporterDelegate.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -28451,14 +28399,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">NSMatrix</string>
-					<string key="superclassName">NSControl</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSMatrix.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">NSMenu</string>
 					<string key="superclassName">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="68662337">
@@ -29032,22 +28972,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSTextView.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSTokenField</string>
-					<string key="superclassName">NSTextField</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSTokenField.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSToolbar</string>
-					<string key="superclassName">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSToolbar.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

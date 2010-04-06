@@ -30,6 +30,7 @@
 #import "SPConstants.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
+#import "CMTextView.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -129,7 +130,7 @@
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
 	
-	// Set the button delegate 
+	// Set the button bar delegate 
 	[splitViewButtonBar setSplitViewDelegate:self];
 }
 

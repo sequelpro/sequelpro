@@ -24,14 +24,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-enum sptextandlinkcell_drawstates
+@interface SPTextAndLinkCell : NSTextFieldCell 
 {
-	SP_LINKDRAWSTATE_NORMAL = 0,
-	SP_LINKDRAWSTATE_HIGHLIGHT = 1,
-	SP_LINKDRAWSTATE_BACKGROUNDHIGHLIGHT = 2
-};
-
-@interface SPTextAndLinkCell : NSTextFieldCell {
 	BOOL hasLink;
 
 	NSButtonCell *linkButton;

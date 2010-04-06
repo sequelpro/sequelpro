@@ -45,6 +45,7 @@
 	NSMutableDictionary *schemaDataFiltered;
 	NSMutableDictionary *allSchemaKeys;
 	NSMutableArray *infoArray;
+	NSMutableArray *updatingConnections;
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
 
@@ -54,6 +55,18 @@
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
 	BOOL isFiltered;
+	
+	BOOL isFiltering;
+	
+	NSImage *connectionIcon;
+	NSImage *databaseIcon;
+	NSImage *tableIcon;
+	NSImage *viewIcon;
+	NSImage *procedureIcon;
+	NSImage *functionIcon;
+	NSImage *fieldIcon;
+	
+	Class NSDictionaryClass;
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
@@ -63,9 +76,18 @@
 - (IBAction)filterTree:(id)sender;
 - (IBAction)syncButtonAction:(id)sender;
 
-- (void)updateEntriesForConnection:(NSString*)connectionID;
+- (void)updateEntriesForConnection:(id)object;
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
+
 - (void)updateNavigator:(NSNotification *)aNotification;
+
+- (NSDictionary *)dbStructureForConnection:(NSString*)connectionID;
+- (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID;
+- (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID;
+
+- (BOOL)isUpdatingConnection:(NSString*)connectionID;
+- (BOOL)isUpdating;
+
 - (void)restoreSelectedItems;
 - (void)setIgnoreUpdate:(BOOL)flag;
 - (void)selectPath:(NSString*)schemaPath;
@@ -75,4 +97,5 @@
 
 - (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname;
 - (void)removeDatabase:(NSString*)db_id forConnectionID:(NSString*)connectionID;
+
 @end

@@ -27,6 +27,7 @@
 #import "RegexKitLite.h"
 #import "SPKeychain.h"
 #import "SPConstants.h"
+#import "SPMainThreadTrampoline.h"
 
 #import <netinet/in.h>
 
@@ -55,6 +56,7 @@
 	stateChangeSelector = nil;
 	lastError = nil;
 	debugMessages = [[NSMutableArray alloc] init];
+	answerAvailableLock = [[NSLock alloc] init];
 
 	// Set up a connection for use by the tunnel process
 	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -137,6 +139,14 @@
  */
 - (NSInteger) state
 {
+
+	// See if an auth dialog is up
+	if (![answerAvailableLock tryLock]) {
+		return PROXY_STATE_WAITING_FOR_AUTH;
+	}
+	[answerAvailableLock unlock];
+
+	// Return the currently recorded state
 	return connectionState;
 }
 
@@ -467,21 +477,20 @@
  */
 - (BOOL) getResponseForQuestion:(NSString *)theQuestion
 {
-    // prepare the condition
-    [answerAvailableCondition lock];
-    isAnswerAvailable = NO;
+    // Lock the answer available lock
+    [[answerAvailableLock onMainThread] lock];
     
-    // request an answer on the main thread (UI stuff must be done on main thread)
+    // Request an answer on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetResponseForQuestion:) withObject:theQuestion waitUntilDone:YES];
 	
-    // wait for the signal in closeSSHQuestionSheet:
-    while (!isAnswerAvailable) [answerAvailableCondition wait];
+    // Wait for closeSSHQuestionSheet: to unlock the lock, indicating an answer is available
+	while (![answerAvailableLock tryLock]) usleep(25000);
     
-    // save the answer
+    // Save the answer
     BOOL response = requestedResponse;
     
-    //unlock condition
-    [answerAvailableCondition unlock];
+    // Unlock the lock again
+    [answerAvailableLock unlock];
     
     //return the answer
 	return response;
@@ -501,19 +510,17 @@
     
     //show the question window
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[parentWindow makeKeyAndOrderFront:self];
 }
 /*
  * Ends an existing modal session
  */
 - (IBAction) closeSSHQuestionSheet:(id)sender
 {
-    [answerAvailableCondition lock];
     requestedResponse = [sender tag]==1 ? YES : NO;
     [NSApp endSheet:sshQuestionDialog];
 	[sshQuestionDialog orderOut:nil];
-    isAnswerAvailable = YES;
-    [answerAvailableCondition signal];
-    [answerAvailableCondition unlock];
+    [[answerAvailableLock onMainThread] unlock];
 }
 
 /*
@@ -524,27 +531,26 @@
 {
 	if (![theHash isEqualToString:tunnelConnectionVerifyHash]) return nil;
 
-    // prepare the condition
-    [answerAvailableCondition lock];
-    isAnswerAvailable = NO;
+    // Lock the answer available lock
+    [[answerAvailableLock onMainThread] lock];
     
-    // request password on the main thread (UI stuff must be done on main thread)
+    // Request password on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetPasswordForQuery:) withObject:theQuery waitUntilDone:YES];
 
-    // wait for the signal in closeSSHPasswordSheet:
-    while (!isAnswerAvailable) [answerAvailableCondition wait];
+    // Wait for closeSSHPasswordSheet: to unlock the lock, indicating an answer is available
+	while (![answerAvailableLock tryLock]) usleep(25000);
 
-    // save the answer
+    // Save the answer
 	NSString *thePassword = nil;
     if (requestedPassphrase) {
         thePassword = [NSString stringWithString:requestedPassphrase];
         [requestedPassphrase release], requestedPassphrase = nil;
     }
     
-    //unlock condition
-    [answerAvailableCondition unlock];
+    // Unlock the lock again
+    [answerAvailableLock unlock];
     
-    //return the answer
+    // Return the answer
 	return thePassword;
 }
 - (void) workerGetPasswordForQuery:(NSString *)theQuery
@@ -570,6 +576,7 @@
 	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[parentWindow makeKeyAndOrderFront:self];
 }
  
 /*
@@ -577,7 +584,6 @@
  */
 - (IBAction) closeSSHPasswordSheet:(id)sender
 {
-    [answerAvailableCondition lock];
     requestedResponse = [sender tag]==1 ? YES : NO;
 	[NSApp endSheet:sshPasswordDialog];
 	[sshPasswordDialog orderOut:nil];
@@ -602,9 +608,7 @@
         }
     }
     
-    isAnswerAvailable = YES;
-    [answerAvailableCondition signal];
-    [answerAvailableCondition unlock];
+    [[answerAvailableLock onMainThread] unlock];
 }
 
 
@@ -621,6 +625,9 @@
 	[tunnelConnection invalidate];
 	[tunnelConnection release];
 	[debugMessages release];
+	[answerAvailableLock tryLock];
+	[answerAvailableLock unlock];
+	[answerAvailableLock release];
 	if (password) [password release];
 	if (keychainName) [keychainName release];
 	if (keychainAccount) [keychainAccount release];

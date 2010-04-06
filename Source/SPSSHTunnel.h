@@ -61,8 +61,7 @@
 	NSInteger localPortFallback;
 	NSInteger connectionState;
     
-    BOOL isAnswerAvailable;
-    NSCondition *answerAvailableCondition;
+    NSLock *answerAvailableLock;
     NSString *currentKeyName;
 }
 

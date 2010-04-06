@@ -114,5 +114,6 @@
 
 @end
 
+extern NSInteger MENU_EDIT_COPY;
 extern NSInteger MENU_EDIT_COPY_WITH_COLUMN;
 extern NSInteger MENU_EDIT_COPY_AS_SQL;

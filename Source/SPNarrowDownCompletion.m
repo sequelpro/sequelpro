@@ -39,6 +39,7 @@
 #import "CMTextView.h"
 #import "SPConstants.h"
 
+
 @interface NSTableView (MovingSelectedRow)
 
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent;
@@ -60,6 +61,7 @@
 
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent
 {
+
 	NSInteger visibleRows = (NSInteger)floor(NSHeight([self visibleRect]) / ([self rowHeight]+[self intercellSpacing].height)) - 1;
 
 	struct { unichar key; NSInteger rows; } const key_movements[] =
@@ -73,9 +75,7 @@
 	};
 
 	unichar keyCode = 0;
-	if([anEvent type] == NSScrollWheel)
-		keyCode = [anEvent deltaY] >= 0.0 ? NSUpArrowFunctionKey : NSDownArrowFunctionKey;
-	else if([anEvent type] == NSKeyDown && [[anEvent characters] length] == 1)
+	if([anEvent type] == NSKeyDown && [[anEvent characters] length] == 1)
 		keyCode = [[anEvent characters] characterAtIndex:0];
 
 
@@ -84,9 +84,13 @@
 		if(keyCode == key_movements[i].key)
 		{
 			NSInteger row = MAX(0, MIN([self selectedRow] + key_movements[i].rows, [self numberOfRows]-1));
-			[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+			if(row == 0 && ![[[self delegate] tableView:self selectionIndexesForProposedSelection:[NSIndexSet indexSetWithIndex:row]] containsIndex:0]) {
+				if(visibleRows > 1)
+					[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
+			} else {
+				[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+			}
 			[self scrollRowToVisible:row];
-
 			return YES;
 		}
 	}
@@ -106,24 +110,39 @@
 
 	maxWindowWidth = 450;
 
-	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:YES])
 	{
 		mutablePrefix = [NSMutableString new];
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
 		caseSensitive = YES;
 		filtered = nil;
 		spaceCounter = 0;
-
+		currentSyncImage = 0;
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
+
+		syncArrowImages = [[NSArray alloc] initWithObjects:
+			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_01" ofType:@"tiff"]],
+			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_02" ofType:@"tiff"]],
+			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_03" ofType:@"tiff"]],
+			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_04" ofType:@"tiff"]],
+			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_05" ofType:@"tiff"]],
+			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_06" ofType:@"tiff"]],
+			nil];
+		
 	}
 	return self;
 }
 
 - (void)dealloc
 {
+	if(stateTimer != nil) {
+		[stateTimer invalidate];
+		[stateTimer release];
+	}
+	stateTimer = nil;
 	[staticPrefix release];
 	[mutablePrefix release];
 	[textualInputCharacters release];
@@ -135,12 +154,49 @@
 	[super dealloc];
 }
 
+- (void)updateSyncArrowStatus
+{
+	// update sync arrow image
+	currentSyncImage++;
+	if(currentSyncImage >= [syncArrowImages count]) currentSyncImage = 0;
+
+	// check if connection is still querying the db structure
+	timeCounter++;
+	if(timeCounter > 20) {
+		timeCounter = 0;
+		if(![[theView valueForKeyPath:@"mySQLConnection"] isQueryingDatabaseStructure]) {
+			isQueryingDatabaseStructure = NO;
+			if(stateTimer) {
+				[stateTimer invalidate];
+				[stateTimer release];
+				stateTimer = nil;
+				if(syncArrowImages) [syncArrowImages release];
+				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:NO];
+				closeMe = YES;
+				return;
+			}
+		}
+	}
+
+	[theTableView setNeedsDisplay:YES];
+
+}
+
+- (void)reInvokeCompletion
+{
+	[theView setCompletionIsOpen:NO];
+	[self close];
+	usleep(70);
+	[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+}
+
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
 	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
 	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
+	isQueryingDBStructure:(BOOL)isQueryingDBStructure
 {
 	if(self = [self init])
 	{
@@ -151,6 +207,10 @@
 
 		autoCompletionMode = autoComplete;
 		oneColumnMode = oneColumn;
+		isQueryingDatabaseStructure = isQueryingDBStructure;
+
+		if(isQueryingDatabaseStructure)
+			stateTimer = [[NSTimer scheduledTimerWithTimeInterval:0.07f target:self selector:@selector(updateSyncArrowStatus) userInfo:nil repeats:YES] retain];
 
 		fuzzyMode = fuzzySearch;
 		if(fuzzyMode)
@@ -176,6 +236,8 @@
 
 		theView = aView;
 		dictMode = mode;
+
+		timeCounter = 0;
 
 		suggestions = [someSuggestions retain];
 
@@ -253,13 +315,11 @@
 
 	theTableView = [[[NSTableView alloc] initWithFrame:NSZeroRect] autorelease];
 	[theTableView setFocusRingType:NSFocusRingTypeNone];
-	[theTableView setAllowsEmptySelection:NO];
+	[theTableView setAllowsEmptySelection:YES];
 	[theTableView setHeaderView:nil];
-	[theTableView setDelegate:self];
 
 	NSTableColumn *column0 = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
-	[column0 setDataCell:[[ImageAndTextCell new] autorelease]];
-	[column0 setEditable:NO];
+	[column0 setDataCell:[NSImageCell new]];
 	[theTableView addTableColumn:column0];
 	[column0 setMinWidth:0];
 	[column0 setWidth:20];
@@ -286,9 +346,11 @@
 	[column4 setWidth:95];
 
 	[theTableView setDataSource:self];
+	[theTableView setDelegate:self];
 	[scrollView setDocumentView:theTableView];
 
 	[self setContentView:scrollView];
+
 }
 
 // ========================
@@ -302,6 +364,9 @@
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
 {
 	if([[aTableColumn identifier] isEqualToString:@"image"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0)
+			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+
 		if(!dictMode) {
 			NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
 			if([imageName hasPrefix:@"dummy"])
@@ -321,8 +386,15 @@
 		}
 		return @"";
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) 
+			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+
 	} else if ([[aTableColumn identifier] isEqualToString:@"list"] || [[aTableColumn identifier] isEqualToString:@"type"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) 
+			return NSLocalizedString(@"fetching database structure data in progress", @"fetching database structure data in progress");
+
 		if(dictMode) {
 			return @"";
 		} else {
@@ -341,6 +413,9 @@
 		}
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) 
+			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+
 		if(dictMode) {
 			return @"";
 		} else {
@@ -360,6 +435,14 @@
 	return @"";
 }
 
+- (NSIndexSet *)tableView:(NSTableView *)tableView selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
+{
+	if(isQueryingDatabaseStructure && [proposedSelectionIndexes containsIndex:0])
+		return [tableView selectedRowIndexes];
+
+	return proposedSelectionIndexes;
+}
+
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;
@@ -367,19 +450,36 @@
 
 	if([[aTableColumn identifier] isEqualToString:@"image"]) {
 		if(!dictMode) {
-			imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
-			if(imageName)
-				image = [NSImage imageNamed:imageName];
-			[[aTableColumn dataCell] setImage:image];
+			if(isQueryingDatabaseStructure && rowIndex == 0) {
+				return [syncArrowImages objectAtIndex:currentSyncImage];
+			} else {
+				imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+				if(imageName)
+					image = [NSImage imageNamed:imageName];
+				return image;
+			}
 		}
 		return @"";
 
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		// NSTextFieldCell *b = [[[NSTextFieldCell new] initTextCell:[[filtered objectAtIndex:rowIndex] objectForKey:@"display"]] autorelease];
 		[[aTableColumn dataCell] setFont:[NSFont systemFontOfSize:12]];
+
+		if(isQueryingDatabaseStructure && rowIndex == 0)
+			return @"fetching structure…";
+
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"list"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
+			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+			[b setPullsDown:NO];
+			[b setArrowPosition:NSPopUpNoArrow];
+			[b setControlSize:NSMiniControlSize];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			[aTableColumn setDataCell:b];
+			return @"";
+		} 
 		if(dictMode) {
 			return @"";
 		} else {
@@ -407,11 +507,12 @@
 		}
 
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
+			return @"";
+		} 
 		if(dictMode) {
 			return @"";
 		} else {
-			// [[aTableColumn dataCell] setTextColor:([aTableView selectedRow] == rowIndex)?[NSColor whiteColor]:[NSColor darkGrayColor]];
-			// return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"";
 			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""] autorelease];
 			[b setEditable:NO];
 			[b setAlignment:NSRightTextAlignment];
@@ -421,6 +522,16 @@
 		}
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
+			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+			[b setPullsDown:NO];
+			[b setArrowPosition:NSPopUpNoArrow];
+			[b setControlSize:NSMiniControlSize];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			[aTableColumn setDataCell:b];
+			return @"";
+		} 
 		if(dictMode) {
 			return @"";
 		} else {
@@ -432,7 +543,10 @@
 				NSMenu *m = [[NSMenu alloc] init];
 				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects])
 					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
-				[m removeItemAtIndex:[m numberOfItems]-1];
+				if([m numberOfItems]>2) {
+					[m removeItemAtIndex:[m numberOfItems]-1];
+					[m removeItemAtIndex:0];
+				}
 				[b setMenu:m];
 				[m release];
 				[b setPreferredEdge:NSMinXEdge];
@@ -458,7 +572,7 @@
 	if(autoCompletionMode) return;
 	if(spaceCounter < 1)
 		for(id w in filtered){
-			if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length) {
+			if([[w objectForKey:@"match"] ?: [w objectForKey:@"display"] rangeOfString:@" "].length && ![w objectForKey:@"noCompletion"]) {
 				[textualInputCharacters addCharactersInString:@" "];
 				break;
 			}
@@ -472,6 +586,7 @@
 {
 
 	NSMutableArray* newFiltered = [[NSMutableArray alloc] initWithCapacity:5];
+	
 	if([mutablePrefix length] > 0)
 	{
 		if(dictMode) {
@@ -492,7 +607,7 @@
 						c = [[self filterString] characterAtIndex:i];
 						if(c != '`') {
 							if(c == '.')
-								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?",SPUniqueSchemaDelimiter]];
+								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%@",SPUniqueSchemaDelimiter]];
 							else if (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
 								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?\\%c",c]];
 							else
@@ -555,6 +670,11 @@
 		return;
 	}
 
+
+	// if fetching db structure add dummy row for displaying that info on top of the list
+	if(isQueryingDatabaseStructure)
+		[newFiltered insertObject:[NSDictionary dictionaryWithObjectsAndKeys:@"dummy", @"display", @"", @"noCompletion", nil] atIndex:0];
+
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 
 	NSInteger displayedRows = [newFiltered count] < SPNarrowDownCompletionMaxRows ? [newFiltered count] : SPNarrowDownCompletionMaxRows;
@@ -578,6 +698,7 @@
 	if(!dictMode)
 		[self checkSpaceForAllowedCharacter];
 	[theTableView reloadData];
+	[theTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:(isQueryingDatabaseStructure)?1:0] byExtendingSelection:NO];
 }
 
 // =========================
@@ -612,6 +733,9 @@
 
 - (void)watchUserEvents
 {
+
+	[theView setCompletionIsOpen:YES];
+
 	closeMe = NO;
 	while(!closeMe)
 	{
@@ -794,9 +918,12 @@
 {
 	if([theTableView selectedRow] == -1) return;
 
-	NSDictionary* selectedItem = [filtered objectAtIndex:[theTableView selectedRow]];
+	NSDictionary *selectedItem = [filtered objectAtIndex:[theTableView selectedRow]];
 
-	if([selectedItem objectForKey:@"noCompletion"]) return;
+	if([selectedItem objectForKey:@"noCompletion"]) {
+		closeMe = YES;
+		return;
+	}
 
 	if(dictMode){
 		[self insert_text:[selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"]];
@@ -805,9 +932,8 @@
 		if([selectedItem objectForKey:@"isRef"] 
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
 				&& [[selectedItem objectForKey:@"path"] length]) {
-			NSString *path = [NSString stringWithFormat:@"%@.%@", 
-				[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst],
-				[candidateMatch backtickQuotedString]];
+
+			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
 
 			// Check if path's db name is the current selected db name
 			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];

@@ -190,6 +190,8 @@
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
 - (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
+- (NSDictionary *)getDbStructure;
+- (NSArray *)allSchemaKeys;
 
 // Task progress and notification methods
 - (void)startTaskWithDescription:(NSString *)description;

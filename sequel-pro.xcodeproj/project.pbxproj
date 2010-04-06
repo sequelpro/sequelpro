@@ -443,7 +443,7 @@
 		17E090E711498FC9007FC1B4 /* SPPrintController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrintController.m; sourceTree = "<group>"; };
 		17E0937D114AE154007FC1B4 /* sequel-pro-table-info-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-table-info-print-template.html"; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "sequel-pro_Prefix.pch"; sourceTree = "<group>"; };
+		17E641450EF01EB5001BC333 /* Sequel-Pro.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Sequel-Pro.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* CustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomQuery.h; sourceTree = "<group>"; };
 		17E641490EF01EF6001BC333 /* CustomQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomQuery.m; sourceTree = "<group>"; };
 		17E6414A0EF01EF6001BC333 /* SPAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAppController.h; sourceTree = "<group>"; };
@@ -1124,11 +1124,22 @@
 			path = topics;
 			sourceTree = "<group>";
 		};
+		17DF51241163C68600E3F396 /* Outline Views */ = {
+			isa = PBXGroup;
+			children = (
+				173C44D61044A6AF001F3A30 /* SPOutlineView.h */,
+				173C44D71044A6B0001F3A30 /* SPOutlineView.m */,
+				BC4DF1961158FB280059FABD /* SPNavigatorOutlineView.h */,
+				BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */,
+			);
+			name = "Outline Views";
+			sourceTree = "<group>";
+		};
 		17E641420EF01E8A001BC333 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				17E641440EF01EB5001BC333 /* main.m */,
-				17E641450EF01EB5001BC333 /* sequel-pro_Prefix.pch */,
+				17E641450EF01EB5001BC333 /* Sequel-Pro.pch */,
 				17E641470EF01EB8001BC333 /* Controllers */,
 				17E6415D0EF01EF9001BC333 /* Model */,
 				17E641670EF01F19001BC333 /* Views */,
@@ -1187,16 +1198,13 @@
 			isa = PBXGroup;
 			children = (
 				171312CF109D23CA00FB465F /* Cells */,
+				17DF51241163C68600E3F396 /* Outline Views */,
 				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
 				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
-				173C44D61044A6AF001F3A30 /* SPOutlineView.h */,
-				173C44D71044A6B0001F3A30 /* SPOutlineView.m */,
 				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
 				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
 				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
 				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
-				BC4DF1961158FB280059FABD /* SPNavigatorOutlineView.h */,
-				BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1482,8 +1490,8 @@
 				5822D3081061833C00CE2157 /* SPCSVParser.m */,
 				179F15040F7C433C00579954 /* SPEditorTokens.h */,
 				179F15050F7C433C00579954 /* SPEditorTokens.l */,
-				BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */,
 				BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */,
+				BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */,
 			);
 			name = Parsing;
 			sourceTree = "<group>";
@@ -2382,7 +2390,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
@@ -2472,7 +2480,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
@@ -2494,7 +2502,7 @@
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Source/sequel-pro_Prefix.pch";
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
@@ -2510,6 +2518,7 @@
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -2532,6 +2541,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;

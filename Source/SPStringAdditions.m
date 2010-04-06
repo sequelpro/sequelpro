@@ -26,8 +26,10 @@
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
-@interface NSString (Private)
+@interface NSString (PrivateAPI)
+
 - (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c;
+
 @end
 
 @implementation NSString (SPStringAdditions)
@@ -381,6 +383,5 @@
 
 	return min;
 }
-
 
 @end

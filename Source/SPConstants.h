@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 // View modes
 typedef enum {
@@ -121,6 +121,14 @@ typedef enum
 	SPFavoritesSortHostItem = 1,
 	SPFavoritesSortTypeItem = 2
 } SPFavoritesSortItem;
+
+// Text and link cell draw states
+typedef enum
+{
+	SPLinkDrawStateNormal              = 0,
+	SPLinkDrawStateHighlight           = 1,
+	SPLinkDrawStateBackgroundHighlight = 2
+} SPTextAndLinkCellDrawState;
 
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;

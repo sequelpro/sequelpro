@@ -56,6 +56,7 @@
 
 #import "SPTooltip.h"
 #import "SPTextViewAdditions.h"
+
 #include <tgmath.h>
 
 static NSInteger spTooltipCounter = 0;

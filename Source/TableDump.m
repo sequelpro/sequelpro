@@ -754,6 +754,9 @@
 	// Update current database tables 
 	[tablesListInstance updateTables:self];
 	
+	// Query the structure of all databases in the background
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
@@ -1840,6 +1843,39 @@
 					continue;
 				}
 
+				// Retrieve the procedure CREATE syntax
+				MCPResult *createProcedureResult;
+				createProcedureResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", 
+																	  procedureType,
+																	  [procedureName backtickQuotedString]]];
+				[createProcedureResult setReturnDataAsStrings:YES];
+
+				if ([mySQLConnection queryErrored]) {
+					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+					if ( [addErrorsSwitch state] == NSOnState ) {
+						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
+											   dataUsingEncoding:NSUTF8StringEncoding]];
+					}
+					[proceduresList release];
+					continue;
+				}
+
+				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
+				NSString *createProcedure = [procedureInfo objectForKey:[NSString stringWithFormat:@"Create %@", [procedureType capitalizedString]]];
+
+				// A NULL result indicates a permission problem
+				if ([createProcedure isNSNull]) {
+					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permisions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
+					[errors appendString:errorString];
+					if ( [addErrorsSwitch state] == NSOnState ) {
+						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", errorString]
+											   dataUsingEncoding:NSUTF8StringEncoding]];
+					}
+					[proceduresList release];
+					[procedureInfo release];
+					continue;
+				}
+
 				// Add the "drop" command if specified in the export dialog
 				if ([addDropTableSwitch state] == NSOnState) {
 					[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", 
@@ -1860,17 +1896,10 @@
 											[[procedureDefiner objectAtIndex:1] backtickQuotedString]
 											];
 				
-				MCPResult *createProcedureResult;
-				createProcedureResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", 
-																	  procedureType,
-																	  [procedureName backtickQuotedString]]];
-				[createProcedureResult setReturnDataAsStrings:YES];
-				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
 				
 				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", 
 										  [procedureInfo objectForKey:@"sql_mode"]]];
 				
-				NSString *createProcedure = [procedureInfo objectForKey:[NSString stringWithFormat:@"Create %@", [procedureType capitalizedString]]];			
 				NSRange procedureRange = [createProcedure rangeOfString:procedureType options:NSCaseInsensitiveSearch];
 				NSString *procedureBody = [createProcedure substringFromIndex:procedureRange.location];
 				

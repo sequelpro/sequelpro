@@ -25,8 +25,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "TableContent.h"
 #import "TableDocument.h"
 #import "TableSource.h"
@@ -52,6 +50,7 @@
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPHistoryController.h"
 
 @implementation TableContent
 
@@ -846,7 +845,7 @@
 
 	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:(caseSensitive) ? @"BINARY" : @""];
 	[clause flushCachedRegexData];
-	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
+	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:([fieldField titleOfSelectedItem]) ? [[fieldField titleOfSelectedItem] backtickQuotedString] : @""];
 	[clause flushCachedRegexData];
 
 	// Escape % sign
@@ -1401,7 +1400,7 @@
 		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
 		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 			[alert setShowsSuppressionButton:YES];
-			[[alert suppressionButton] setState:NSOffState];
+			[[alert suppressionButton] setState:NSOnState];
 			[[[alert suppressionButton] cell] setControlSize:NSSmallControlSize];
 			[[[alert suppressionButton] cell] setFont:[NSFont systemFontOfSize:11]];
 			[[alert suppressionButton] setTitle:NSLocalizedString(@"Reset AUTO_INCREMENT after deletion?", @"reset auto_increment after deletion of all rows message")];
@@ -2719,7 +2718,7 @@
 	if (isWorking) {
 		pthread_mutex_lock(&tableValuesLock);
 		if (rowIndex < tableRowsCount && columnIndex < [tableValues columnCount]) {
-			theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
+			theValue = [[SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex) copy] autorelease];
 		}
 		pthread_mutex_unlock(&tableValuesLock);
 

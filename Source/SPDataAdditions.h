@@ -29,8 +29,8 @@
 - (NSString *)base64EncodingWithLineLength:(NSUInteger)lineLength;
 - (NSString *)dataToFormattedHexString;
 - (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
-- (NSData*)dataEncryptedWithPassword:(NSString*)password;
-- (NSData*)dataDecryptedWithPassword:(NSString*)password;
+- (NSData *)dataEncryptedWithPassword:(NSString *)password;
+- (NSData *)dataDecryptedWithPassword:(NSString *)password;
 - (NSData *)compress;
 - (NSData *)decompress;
 

@@ -27,7 +27,7 @@
 
 #import "SPConstants.h"
 
-@class SPKeychain;
+@class BWAnchoredButtonBar, SPKeychain;
 
 @interface SPPreferenceController : NSWindowController
 {
@@ -62,6 +62,8 @@
 	
 	IBOutlet NSTextField *editorFontName;
 	IBOutlet NSTextField *globalResultTableFontName;
+	
+	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	SPKeychain *keychain;
 	NSDictionary *currentFavorite;
