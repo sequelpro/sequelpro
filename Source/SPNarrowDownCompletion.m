@@ -61,6 +61,7 @@
 
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent
 {
+
 	NSInteger visibleRows = (NSInteger)floor(NSHeight([self visibleRect]) / ([self rowHeight]+[self intercellSpacing].height)) - 1;
 
 	struct { unichar key; NSInteger rows; } const key_movements[] =
@@ -74,9 +75,7 @@
 	};
 
 	unichar keyCode = 0;
-	if([anEvent type] == NSScrollWheel)
-		keyCode = [anEvent deltaY] >= 0.0 ? NSUpArrowFunctionKey : NSDownArrowFunctionKey;
-	else if([anEvent type] == NSKeyDown && [[anEvent characters] length] == 1)
+	if([anEvent type] == NSKeyDown && [[anEvent characters] length] == 1)
 		keyCode = [[anEvent characters] characterAtIndex:0];
 
 
@@ -85,9 +84,13 @@
 		if(keyCode == key_movements[i].key)
 		{
 			NSInteger row = MAX(0, MIN([self selectedRow] + key_movements[i].rows, [self numberOfRows]-1));
-			[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+			if(row == 0 && ![[[self delegate] tableView:self selectionIndexesForProposedSelection:[NSIndexSet indexSetWithIndex:row]] containsIndex:0]) {
+				if(visibleRows > 1)
+					[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
+			} else {
+				[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+			}
 			[self scrollRowToVisible:row];
-
 			return YES;
 		}
 	}
@@ -107,7 +110,7 @@
 
 	maxWindowWidth = 450;
 
-	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:YES])
 	{
 		mutablePrefix = [NSMutableString new];
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
@@ -153,9 +156,12 @@
 
 - (void)updateSyncArrowStatus
 {
+	// update sync arrow image
 	currentSyncImage++;
-	timeCounter++;
 	if(currentSyncImage >= [syncArrowImages count]) currentSyncImage = 0;
+
+	// check if connection is still querying the db structure
+	timeCounter++;
 	if(timeCounter > 20) {
 		timeCounter = 0;
 		if(![[theView valueForKeyPath:@"mySQLConnection"] isQueryingDatabaseStructure]) {
@@ -179,8 +185,9 @@
 - (void)reInvokeCompletion
 {
 	[theView setCompletionIsOpen:NO];
-	[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
 	[self close];
+	usleep(70);
+	[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
@@ -229,6 +236,8 @@
 
 		theView = aView;
 		dictMode = mode;
+
+		timeCounter = 0;
 
 		suggestions = [someSuggestions retain];
 
@@ -306,13 +315,11 @@
 
 	theTableView = [[[NSTableView alloc] initWithFrame:NSZeroRect] autorelease];
 	[theTableView setFocusRingType:NSFocusRingTypeNone];
-	[theTableView setAllowsEmptySelection:NO];
+	[theTableView setAllowsEmptySelection:YES];
 	[theTableView setHeaderView:nil];
-	[theTableView setDelegate:self];
 
 	NSTableColumn *column0 = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
 	[column0 setDataCell:[NSImageCell new]];
-	// [column0 setEditable:NO];
 	[theTableView addTableColumn:column0];
 	[column0 setMinWidth:0];
 	[column0 setWidth:20];
@@ -339,9 +346,11 @@
 	[column4 setWidth:95];
 
 	[theTableView setDataSource:self];
+	[theTableView setDelegate:self];
 	[scrollView setDocumentView:theTableView];
 
 	[self setContentView:scrollView];
+
 }
 
 // ========================
@@ -354,10 +363,10 @@
 
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
 {
-	if(isQueryingDatabaseStructure) rowIndex--;
-
 	if([[aTableColumn identifier] isEqualToString:@"image"]) {
-		if(rowIndex == -1) return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+		if(isQueryingDatabaseStructure && rowIndex == 0)
+			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+
 		if(!dictMode) {
 			NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
 			if([imageName hasPrefix:@"dummy"])
@@ -377,10 +386,15 @@
 		}
 		return @"";
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		if(rowIndex == -1) return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+		if(isQueryingDatabaseStructure && rowIndex == 0) 
+			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
+
 	} else if ([[aTableColumn identifier] isEqualToString:@"list"] || [[aTableColumn identifier] isEqualToString:@"type"]) {
-		if(rowIndex == -1) return NSLocalizedString(@"fetching database structure data in progress", @"fetching database structure data in progress");
+		if(isQueryingDatabaseStructure && rowIndex == 0) 
+			return NSLocalizedString(@"fetching database structure data in progress", @"fetching database structure data in progress");
+
 		if(dictMode) {
 			return @"";
 		} else {
@@ -399,7 +413,9 @@
 		}
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
-		if(rowIndex == -1) return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+		if(isQueryingDatabaseStructure && rowIndex == 0) 
+			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
+
 		if(dictMode) {
 			return @"";
 		} else {
@@ -419,25 +435,22 @@
 	return @"";
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+- (NSIndexSet *)tableView:(NSTableView *)tableView selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
 {
-	if(rowIndex == 0 && isQueryingDatabaseStructure)
-		return NO;
+	if(isQueryingDatabaseStructure && [proposedSelectionIndexes containsIndex:0])
+		return [tableView selectedRowIndexes];
 
-	return YES;
+	return proposedSelectionIndexes;
 }
-
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSImage* image = nil;
 	NSString* imageName = nil;
 
-	if(isQueryingDatabaseStructure) rowIndex--;
-
 	if([[aTableColumn identifier] isEqualToString:@"image"]) {
 		if(!dictMode) {
-			if(rowIndex == -1) {
+			if(isQueryingDatabaseStructure && rowIndex == 0) {
 				return [syncArrowImages objectAtIndex:currentSyncImage];
 			} else {
 				imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
@@ -450,11 +463,14 @@
 
 	} else if([[aTableColumn identifier] isEqualToString:@"name"]) {
 		[[aTableColumn dataCell] setFont:[NSFont systemFontOfSize:12]];
-		if(rowIndex == -1) return @"fetching structure…";
+
+		if(isQueryingDatabaseStructure && rowIndex == 0)
+			return @"fetching structure…";
+
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"list"]) {
-		if(rowIndex == -1) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
 			[b setPullsDown:NO];
 			[b setArrowPosition:NSPopUpNoArrow];
@@ -491,7 +507,7 @@
 		}
 
 	} else if([[aTableColumn identifier] isEqualToString:@"type"]) {
-		if(rowIndex == -1) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return @"";
 		} 
 		if(dictMode) {
@@ -506,7 +522,7 @@
 		}
 
 	} else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
-		if(rowIndex == -1) {
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
 			[b setPullsDown:NO];
 			[b setArrowPosition:NSPopUpNoArrow];
@@ -570,6 +586,7 @@
 {
 
 	NSMutableArray* newFiltered = [[NSMutableArray alloc] initWithCapacity:5];
+	
 	if([mutablePrefix length] > 0)
 	{
 		if(dictMode) {
@@ -653,6 +670,11 @@
 		return;
 	}
 
+
+	// if fetching db structure add dummy row for displaying that info on top of the list
+	if(isQueryingDatabaseStructure)
+		[newFiltered insertObject:[NSDictionary dictionaryWithObjectsAndKeys:@"dummy", @"display", @"", @"noCompletion", nil] atIndex:0];
+
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 
 	NSInteger displayedRows = [newFiltered count] < SPNarrowDownCompletionMaxRows ? [newFiltered count] : SPNarrowDownCompletionMaxRows;
@@ -676,6 +698,7 @@
 	if(!dictMode)
 		[self checkSpaceForAllowedCharacter];
 	[theTableView reloadData];
+	[theTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:(isQueryingDatabaseStructure)?1:0] byExtendingSelection:NO];
 }
 
 // =========================
@@ -895,17 +918,7 @@
 {
 	if([theTableView selectedRow] == -1) return;
 
-	NSDictionary* selectedItem;
-	NSInteger selectedRowNumber = [theTableView selectedRow];
-	if(isQueryingDatabaseStructure) {
-		if(selectedRowNumber < 1) {
-			closeMe = YES;
-			return;
-		}
-	 	selectedItem = [filtered objectAtIndex:selectedRowNumber-1];
-	} else {
-		selectedItem = [filtered objectAtIndex:selectedRowNumber];
-	}
+	NSDictionary *selectedItem = [filtered objectAtIndex:[theTableView selectedRow]];
 
 	if([selectedItem objectForKey:@"noCompletion"]) {
 		closeMe = YES;
@@ -919,9 +932,7 @@
 		if([selectedItem objectForKey:@"isRef"] 
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
 				&& [[selectedItem objectForKey:@"path"] length]) {
-			// NSString *path = [NSString stringWithFormat:@"%@.%@", 
-			// 	[[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst],
-			// 	[candidateMatch backtickQuotedString]];
+
 			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
 
 			// Check if path's db name is the current selected db name
