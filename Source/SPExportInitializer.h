@@ -31,6 +31,8 @@
 
 @interface SPExportController (SPExporterInitializer)
 
+- (void)initializeExportUsingSelectedOptions;
+
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
 
 - (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;

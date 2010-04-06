@@ -60,7 +60,7 @@
 		17B7B5F1101603D200F057DE /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 17B7B5E9101603D200F057DE /* typelib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17B7B61D101605E300F057DE /* MCPKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 17B7B5621016012700F057DE /* MCPKit.framework */; };
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
-		17C8E7451162C094001A6165 /* SPExporterInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C8E7441162C094001A6165 /* SPExporterInitializer.m */; };
+		17C8E7451162C094001A6165 /* SPExportInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C8E7441162C094001A6165 /* SPExportInitializer.m */; };
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
@@ -406,8 +406,8 @@
 		17B7B698101611C800F057DE /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
 		17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
-		17C8E7431162C094001A6165 /* SPExporterInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExporterInitializer.h; sourceTree = "<group>"; };
-		17C8E7441162C094001A6165 /* SPExporterInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExporterInitializer.m; sourceTree = "<group>"; };
+		17C8E7431162C094001A6165 /* SPExportInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportInitializer.h; sourceTree = "<group>"; };
+		17C8E7441162C094001A6165 /* SPExportInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportInitializer.m; sourceTree = "<group>"; };
 		17CC97F110B4ABE90034CD7A /* SPAboutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAboutController.h; sourceTree = "<group>"; };
 		17CC97F210B4ABE90034CD7A /* SPAboutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAboutController.m; sourceTree = "<group>"; };
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
@@ -1082,8 +1082,8 @@
 		17C8E7421162C018001A6165 /* Controller Categories */ = {
 			isa = PBXGroup;
 			children = (
-				17C8E7431162C094001A6165 /* SPExporterInitializer.h */,
-				17C8E7441162C094001A6165 /* SPExporterInitializer.m */,
+				17C8E7431162C094001A6165 /* SPExportInitializer.h */,
+				17C8E7441162C094001A6165 /* SPExportInitializer.m */,
 			);
 			name = "Controller Categories";
 			sourceTree = "<group>";
@@ -1930,7 +1930,7 @@
 				171FF360115FEC6400E18CA4 /* SPCSVExporterDelegate.m in Sources */,
 				171FF36D115FEF7000E18CA4 /* SPSQLExporterDelegate.m in Sources */,
 				171FF62E1160CDB000E18CA4 /* SPSQLExporter.m in Sources */,
-				17C8E7451162C094001A6165 /* SPExporterInitializer.m in Sources */,
+				17C8E7451162C094001A6165 /* SPExportInitializer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

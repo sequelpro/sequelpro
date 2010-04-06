@@ -28,9 +28,7 @@
 #import "SPExporterInitializer.h"
 #import "TablesList.h"
 #import "SPTableData.h"
-#import "TableDocument.h"
 #import "TableContent.h"
-#import "CustomQuery.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
@@ -39,7 +37,6 @@
 @interface SPExportController (PrivateAPI)
 
 - (void)_toggleExportButton;
-- (void)_initializeExportUsingSelectedOptions;
 - (void)_resizeWindowByHeightDelta:(NSInteger)delta;
 
 @end
@@ -411,7 +408,7 @@
 	if (returnCode == NSOKButton) {
 		
 		// Initialize the export after half a second to give the export sheet a chance to close 
-		[self performSelector:@selector(_initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
+		[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
 	}
 }
 
@@ -462,87 +459,6 @@
 	}
 	else {
 		[exportButton setEnabled:(contentEnabled || (structureEnabled || dropEnabled))];
-	}
-}
-
-/**
- * Initializes the export process by analysing the selected criteria.
- */
-- (void)_initializeExportUsingSelectedOptions
-{
-	// First determine what type of export the user selected
-	for (NSToolbarItem *item in [exportToolbar items])
-	{
-		if ([[item itemIdentifier] isEqualToString:[exportToolbar selectedItemIdentifier]]) {
-			exportType = [item tag];
-			break;
-		}
-	}
-	
-	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-	exportSource = ([exportInputMatrix selectedRow] + 1);
-	
-	NSMutableArray *exportTables = [NSMutableArray array];
-	
-	// Set whether or not we are to export to multiple files
-	[self setExportToMultipleFiles:[exportFilePerTableCheck state]];
-	
-	// Get the data depending on the source
-	switch (exportSource) 
-	{
-		case SPFilteredExport:
-			
-			break;
-		case SPQueryExport:
-			
-			break;
-		case SPTableExport:
-			// Create an array of tables to export
-			for (NSMutableArray *table in tables)
-			{
-				if (exportType == SPSQLExport) {
-					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
-						[exportTables addObject:table];
-					}
-				}
-				else {
-					if ([[table objectAtIndex:2] boolValue]) {
-						[exportTables addObject:[table objectAtIndex:0]];
-					}
-				}
-			}
-			break;
-	}
-	
-	NSLog(@"tables = %@", exportTables);
-	
-	// Set the type label 
-	switch (exportType)
-	{
-		case SPSQLExport:
-			exportTypeLabel = @"SQL";
-			break;
-		case SPCSVExport:
-			exportTypeLabel = @"CSV";
-			break;
-		case SPXMLExport:
-			exportTypeLabel = @"XML";
-			break;
-			
-	}
-	
-	// Begin the export based on the source
-	switch (exportSource) 
-	{
-		case SPFilteredExport:
-			[self exportTables:nil orDataArray:[tableContentInstance currentResult]];
-			break;
-		case SPQueryExport:
-			[self exportTables:nil orDataArray:[customQueryInstance currentResult]];
-			break;
-		case SPTableExport:
-			[self exportTables:exportTables orDataArray:nil];
-			break;
 	}
 }
 
