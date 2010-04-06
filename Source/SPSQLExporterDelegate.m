@@ -35,7 +35,11 @@
  */
 - (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter
 {
+	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
+	[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	
+	[[exportProgressTitle onMainThread] displayIfNeeded];
+	[[exportProgressText onMainThread] displayIfNeeded];
 }
 
 /**
@@ -57,32 +61,33 @@
  */
 - (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter
 {
-	
+	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
 /**
  *
  */
-- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter
+- (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter
 {
-	
-}
-
-/**
- *
- */
-- (void)sqlExportProcessWillBeginExportingItem:(SPSQLExporter *)exporter
-{
-	[[exportProgressText onMainThread] displayIfNeeded];
-	
-	[[exportProgressIndicator onMainThread] setIndeterminate:YES];
-	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:YES];
-	[[exportProgressIndicator onMainThread] startAnimation:self];
-	
 	// Update the current table export index
 	currentTableExportIndex = (exportTableCount - [exporters count]);
 	
 	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter sqlExportCurrentTable]]];
+		
+	[[exportProgressText onMainThread] displayIfNeeded];
+	
+	[[exportProgressIndicator onMainThread] stopAnimation:self];
+	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
+	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
+	[[exportProgressIndicator onMainThread] setDoubleValue:0];
+}
+
+/**
+ * 
+ */
+- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter
+{
+	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter sqlExportCurrentTable]]];
 	
 	[[exportProgressText onMainThread] displayIfNeeded];
 }

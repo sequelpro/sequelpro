@@ -49,12 +49,12 @@
 /**
  *
  */
-- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter;
+- (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter;
 
 /**
  *
  */
-- (void)sqlExportProcessWillBeginExportingItem:(SPSQLExporter *)exporter;
+- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter;
 
 @end
 
@@ -77,6 +77,9 @@
 	
 	// Table information
 	NSDictionary *sqlTableInformation;
+	
+	// Max progress
+	NSInteger sqlExportMaxProgress;
 }
 
 @property(readwrite, retain) NSArray *sqlExportTables;
@@ -91,5 +94,6 @@
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
 
 @property(readwrite, retain) NSDictionary *sqlTableInformation;
+@property(readwrite, assign) NSInteger sqlExportMaxProgress;
 
 @end

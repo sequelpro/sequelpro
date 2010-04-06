@@ -359,8 +359,10 @@
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
+{	
 	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
+
+	[self _toggleExportButton];
 }
 
 #pragma mark -
@@ -444,21 +446,38 @@
  */
 - (void)_toggleExportButton
 {
-	BOOL structureEnabled = [exportSQLIncludeStructureCheck state];
-	BOOL contentEnabled   = [exportSQLIncludeContentCheck state];
-	BOOL dropEnabled      = [exportSQLIncludeDropSyntaxCheck state];
+	BOOL isCSV = [[exportToolbar selectedItemIdentifier] isEqualToString:@"csv"];
+	BOOL isSQL = [[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"];
 	
-	// Disable if all are unchecked
-	if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
+	if (isCSV) {
 		[exportButton setEnabled:NO];
+		
+		// Only enable the button if at least one table is selected
+		for (NSArray *table in tables)
+		{
+			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
+				[exportButton setEnabled:YES];
+				break;
+			}
+		}
 	}
-	// Disable if structure is unchecked, but content and drop are as dropping a table then trying to insert
-	// into it is obviously an error
-	else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
-		[exportButton setEnabled:NO];
-	}
-	else {
-		[exportButton setEnabled:(contentEnabled || (structureEnabled || dropEnabled))];
+	else if (isSQL) {
+		BOOL structureEnabled = [exportSQLIncludeStructureCheck state];
+		BOOL contentEnabled   = [exportSQLIncludeContentCheck state];
+		BOOL dropEnabled      = [exportSQLIncludeDropSyntaxCheck state];
+		
+		// Disable if all are unchecked
+		if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
+			[exportButton setEnabled:NO];
+		}
+		// Disable if structure is unchecked, but content and drop are as dropping a table then trying to insert
+		// into it is obviously an error
+		else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
+			[exportButton setEnabled:NO];
+		}
+		else {
+			[exportButton setEnabled:(contentEnabled || (structureEnabled || dropEnabled))];
+		}
 	}
 }
 

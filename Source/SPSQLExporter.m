@@ -45,6 +45,7 @@
 @synthesize sqlOutputIncludeErrors;
 
 @synthesize sqlTableInformation;
+@synthesize sqlExportMaxProgress;
 
 @interface SPSQLExporter (PrivateAPI)
 
@@ -72,7 +73,7 @@
 		SPTableType tableType = SPTableTypeTable;
 		
 		id createTableSyntax = nil;
-		NSUInteger i, j, t, s, rowCount, queryLength;
+		NSUInteger i, j, t, s, rowCount, queryLength, lastProgressValue;
 		
 		BOOL sqlOutputIncludeStructure;
 		BOOL sqlOutputIncludeContent;
@@ -88,9 +89,7 @@
 		NSMutableString *sqlString  = [[NSMutableString alloc] init];
 		
 		NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
-		
-		NSInteger progressBarWidth;
-		
+				
 		// Check that we have all the required info before starting the export
 		if ((![self sqlExportTables])     || ([[self sqlExportTables] count] == 0)          ||
 			(![self sqlTableInformation]) || ([[self sqlTableInformation] count] == 0)      ||
@@ -108,23 +107,7 @@
 		
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
-		
-		// Reset the interface
-		/*[errorsView setString:@""];
-		[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
-		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
-		[[singleProgressBar onMainThread] setDoubleValue:0];
-		progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-		[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
-		
-		// Open the progress sheet
-		[[NSApp onMainThread] beginSheet:singleProgressSheet
-						  modalForWindow:tableWindow modalDelegate:self
-						  didEndSelector:nil contextInfo:nil];
-		[[singleProgressSheet onMainThread] makeKeyWindow];
-		
-		[tableDocumentInstance setQueryMode:SPImportExportQueryMode];*/
-		
+				
 		// Copy over the selected item names into tables in preparation for iteration
 		NSMutableArray *targetArray;
 		
@@ -193,20 +176,12 @@
 			
 			[self setSqlExportCurrentTable:tableName];
 			
-			// Inform the delegate that the export process is about to begin
-			if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBeginExportingItem:)]) {
-				[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBeginExportingItem:) withObject:self waitUntilDone:NO];
+			// Inform the delegate that we are about to start fetcihing data for the current table
+			if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBeginFetchingData:)]) {
+				[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBeginFetchingData:) withObject:self waitUntilDone:NO];
 			}
 			
-			//if (progressCancelled) break;
-			//lastProgressValue = 0;
-			
-			// Update the progress text and reset the progress bar to indeterminate status while fetching data
-			/*[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-			[[singleProgressText onMainThread] displayIfNeeded];
-			[[singleProgressBar onMainThread] setIndeterminate:YES];
-			[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-			[[singleProgressBar onMainThread] startAnimation:self];*/
+			lastProgressValue = 0;
 			
 			// Add the name of table
 			[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName] dataUsingEncoding:[self exportOutputEncoding]]];
@@ -285,11 +260,10 @@
 				
 				NSArray *fieldNames = [streamingResult fetchFieldNames];
 				
-				// Update the progress text and set the progress bar back to determinate
-				/*[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Dumping...", @"text showing that app is writing data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-				[[singleProgressBar onMainThread] stopAnimation:self];
-				[[singleProgressBar onMainThread] setIndeterminate:NO];
-				[[singleProgressBar onMainThread] setDoubleValue:0];*/
+				// Inform the delegate that we are about to start writing data for the current table
+				if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBeginWritingData:)]) {
+					[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
+				}
 								
 				if (rowCount) {
 					queryLength = 0;
@@ -318,22 +292,24 @@
 					while (row = [streamingResult fetchNextRowAsArray]) 
 					{
 						// Check for cancellation flag
-						if ([self isCancelled]) return;
-						
-						/*if (progressCancelled) {
+						if ([self isCancelled]) {
 							[connection cancelCurrentQuery];
 							[streamingResult cancelResultLoad];
-							break;
-						}*/
+							return;
+						}
 						
 						j++;
 						[sqlString setString:@""];
 						
-						// Update the progress bar
-						/*if ((j*progressBarWidth/rowCount) > lastProgressValue) {
-							[singleProgressBar setDoubleValue:(j*progressBarWidth/rowCount)];
-							lastProgressValue = (j*progressBarWidth/rowCount);
-						}*/
+						// Update the progress 
+						if ((j * ([self sqlExportMaxProgress] / rowCount)) > lastProgressValue) {
+							
+							NSInteger progress = (j * ([self sqlExportMaxProgress] / rowCount));
+							
+							[self setExportProgressValue:progress];
+							
+							lastProgressValue = progress;
+						}
 						
 						// Inform the delegate that the export's progress has been updated
 						if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessProgressUpdated:)]) {

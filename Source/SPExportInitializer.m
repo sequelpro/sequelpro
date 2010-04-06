@@ -89,8 +89,6 @@
 			break;
 	}
 	
-	NSLog(@"tables = %@", exportTables);
-	
 	// Set the type label 
 	switch (exportType)
 	{
@@ -130,6 +128,7 @@
 	NSFileHandle *singleFileHandle = nil;
 	BOOL singleFileHeaderHasBeenWritten = NO;
 	
+	// Change query logging mode
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 	
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
@@ -239,9 +238,6 @@
 		[sqlExporter setSqlDatabaseVersion:[tableDocumentInstance mySQLVersion]];
 		
 		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
-		/*[sqlExporter setSqlOutputIncludeStructure:[exportSQLIncludeStructureCheck state]];
-		[sqlExporter setSqlOutputIncludeContent:[exportSQLIncludeContentCheck state]];
-		[sqlExporter setSqlOutputIncludeDropSyntax:[exportSQLIncludeDropSyntaxCheck state]];*/
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
@@ -261,6 +257,9 @@
 		
 		[sqlExporter setSqlTableInformation:infoDict];
 		[sqlExporter setSqlExportTables:exportTables];
+		
+		// Set the exporter's max progress
+		[sqlExporter setSqlExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
 		
 		[infoDict release];
 		[tableTypes release];
@@ -372,7 +371,7 @@
 }
 
 /**
- *
+ * Returns a file handle for writing at the supplied path.
  */
 - (NSFileHandle *)getFileHandleForFilePath:(NSString *)filePath
 {

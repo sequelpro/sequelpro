@@ -105,6 +105,8 @@
 	else {
 		[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing data...", @"export label showing app is writing data")];
 	}
+	
+	[[exportProgressText onMainThread] displayIfNeeded];
 		
 	[[exportProgressIndicator onMainThread] stopAnimation:self];
 	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
