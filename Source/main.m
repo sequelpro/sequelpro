@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPExporter.h
+//  main.m
 //  sequel-pro
 //
 //  Copyright (c) 2009 Sequel Pro team. All rights reserved.
