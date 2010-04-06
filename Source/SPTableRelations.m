@@ -497,8 +497,8 @@
 									[[constraint objectForKey:@"columns"] objectAtIndex:0], @"columns",
 									[constraint objectForKey:@"ref_table"], @"fk_table",
 									[constraint objectForKey:@"ref_columns"], @"fk_columns",
-									[constraint objectForKey:@"update"], @"on_update",
-									[constraint objectForKey:@"delete"], @"on_delete",
+									([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
+									([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
 									nil]];
 			
 		}
