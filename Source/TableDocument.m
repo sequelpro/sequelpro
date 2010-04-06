@@ -3242,8 +3242,8 @@
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarCustomQuery];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Set the focus on the text field if no query has been run
-	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
+	// Set the focus on the text field
+	[tableWindow makeFirstResponder:customQueryTextView];
 	
 	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
 }
