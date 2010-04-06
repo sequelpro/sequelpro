@@ -273,8 +273,8 @@
 	[connectionController setSshUser:@""];
 	[connectionController setSshPort:@""];
 	[connectionController setDatabase:@""];
-	[connectionController setPassword:@""];
-	[connectionController setSshPassword:@""];
+	[connectionController setPassword:nil];
+	[connectionController setSshPassword:nil];
 
 	// Deselect all favorites
 	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
@@ -2877,8 +2877,8 @@
 	if([[spfDocData_temp objectForKey:@"save_password"] boolValue]) {
 		NSString *pw = [self keychainPasswordForConnection:nil];
 		if(![pw length]) pw = [connectionController password];
-		[connection setObject:pw forKey:@"password"];
-		if([connectionController type] == SPSSHTunnelConnection)
+		if (pw) [connection setObject:pw forKey:@"password"];
+		if([connectionController type] == SPSSHTunnelConnection && [connectionController sshPassword])
 			[connection setObject:[connectionController sshPassword] forKey:@"ssh_password"];
 	}
 
