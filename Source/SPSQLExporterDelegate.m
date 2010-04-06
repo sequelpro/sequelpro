@@ -23,8 +23,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPSQLExporter.h"
 #import "SPSQLExporterDelegate.h"
+#import "SPSQLExporter.h"
 #import "TableDocument.h"
 #import "SPMainThreadTrampoline.h"
 

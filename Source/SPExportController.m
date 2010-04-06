@@ -25,7 +25,7 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPExportController.h"
-#import "SPExporterInitializer.h"
+#import "SPExportInitializer.h"
 #import "TablesList.h"
 #import "SPTableData.h"
 #import "TableContent.h"
