@@ -346,38 +346,22 @@
 - (IBAction)removeFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		
-		// Get selected favorite's details
-		NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
-		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
-		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
-		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
-		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
-		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
-		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
-		NSInteger type		   = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Remove favorite '%@'?", @"remove database message"), [favoritesController valueForKeyPath:@"selection.name"]]
+										 defaultButton:NSLocalizedString(@"Remove", @"remove button") 
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+										  otherButton:nil 
+							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to remove the favorite '%@'? This operation cannot be undone.", @"remove database informative message"), [favoritesController valueForKeyPath:@"selection.name"]]];
 
-		// Remove passwords from the Keychain
-		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
-								account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
-		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
-								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
-		
-		// Reset last used favorite
-		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
-			[prefs setInteger:0	forKey:SPLastFavoriteIndex];
-		}
-		
-		// Reset default favorite
-		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
-			[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
-		}
+		NSArray *buttons = [alert buttons];
 
-		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
-		
-		[favoritesTableView reloadData];
-		
-		[self updateDefaultFavoritePopup];
+		// Change the alert's cancel button to have the key equivalent of return
+		[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+
+		[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeFavorite"];
 	}
 }
 
@@ -1008,6 +992,53 @@
 #pragma mark -
 #pragma mark Other
 
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
+	// Remove the current database
+	if ([contextInfo isEqualToString:@"removeFavorite"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+
+		// Get selected favorite's details
+		NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
+		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
+		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
+		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
+		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
+		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
+		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
+		NSInteger type     = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
+
+		// Remove passwords from the Keychain
+		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
+								account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
+		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
+								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
+		
+		// Reset last used favorite
+		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
+			[prefs setInteger:0	forKey:SPLastFavoriteIndex];
+		}
+		
+		// Reset default favorite
+		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
+			[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
+		}
+
+		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
+		
+		[favoritesTableView reloadData];
+		
+		[self updateDefaultFavoritePopup];
+		}
+	}
+}
 
 - (void)setGrowlEnabled:(BOOL)value
 {
