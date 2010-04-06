@@ -171,7 +171,7 @@
 				[stateTimer release];
 				stateTimer = nil;
 				if(syncArrowImages) [syncArrowImages release];
-				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:NO];
+				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
 				closeMe = YES;
 				return;
 			}
@@ -184,10 +184,14 @@
 
 - (void)reInvokeCompletion
 {
+	if(stateTimer) {
+		[stateTimer invalidate];
+		[stateTimer release];
+		stateTimer = nil;
+	}
 	[theView setCompletionIsOpen:NO];
 	[self close];
-	usleep(70);
-	[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+	[theView performSelector:@selector(refreshCompletion) withObject:nil afterDelay:0.0];
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
