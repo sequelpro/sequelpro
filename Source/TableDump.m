@@ -867,6 +867,13 @@
 			[csvDataBuffer release];
 			[parsedRows release];
 			[parsePositions release];
+			if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+			if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+			if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+			if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+			if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+			if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+			if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 			[importPool drain];
 			[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 			return;
@@ -907,6 +914,13 @@
 					[csvDataBuffer release];
 					[parsedRows release];
 					[parsePositions release];
+					if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+					if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+					if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+					if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+					if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+					if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+					if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 					[importPool drain];
 					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 					return;
@@ -951,6 +965,13 @@
 					[csvDataBuffer release];
 					[parsedRows release];
 					[parsePositions release];
+					if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+					if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+					if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+					if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+					if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+					if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+					if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 					[importPool drain];
 					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 					return;
@@ -988,7 +1009,23 @@
 			if (!fieldMappingArray) continue;
 			
 			// Before entering the following loop, check that we actually have a connection. If not, bail.
-			if (![mySQLConnection isConnected]) return;
+			if (![mySQLConnection isConnected]) {
+				[self closeAndStopProgressSheet];
+				[csvParser release];
+				[csvDataBuffer release];
+				[parsedRows release];
+				[parsePositions release];
+				if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+				if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+				if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+				if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+				if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+				if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+				if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+				[importPool drain];
+				[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+				return;
+			}
 
 			// If we have more than the csvRowsPerQuery amount, or if we're at the end of the
 			// available data, construct and run a query.
@@ -1123,13 +1160,13 @@
 	[csvDataBuffer release];
 	[parsedRows release];
 	[parsePositions release];
-	if(csvImportTailString) [csvImportTailString release]; csvImportTailString = nil;
-	if(csvImportHeaderString) [csvImportHeaderString release]; csvImportHeaderString = nil;
-	if(fieldMappingArray) [fieldMappingArray release]; fieldMappingArray = nil;
-	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release]; fieldMappingGlobalValueArray = nil;
-	if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release]; fieldMappingTableColumnNames = nil;
-	if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release]; fieldMappingTableDefaultValues = nil;
-	if(fieldMapperOperator) [fieldMapperOperator release]; fieldMapperOperator = nil;
+	if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+	if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+	if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+	if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+	if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+	if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 
