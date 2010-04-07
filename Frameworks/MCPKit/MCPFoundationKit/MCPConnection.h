@@ -179,6 +179,7 @@
 	BOOL delegateResponseToWillQueryString;
 	BOOL delegateSupportsConnectionLostDecisions;
 	NSInteger isQueryingDbStructure;
+	BOOL cancelQueryingDbStructure;
 	BOOL lockQuerying;
 	
 	// Pointers

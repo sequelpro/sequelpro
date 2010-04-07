@@ -1872,8 +1872,14 @@ void performThreadedKeepAlive(void *ptr)
 {
 	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 
+	// if 'cancelQuerying' is set try to interrupt any current querying
+	if(userInfo && [userInfo objectForKey:@"cancelQuerying"])
+		cancelQueryingDbStructure = YES;
+
 	// Requests are queued
 	while(isQueryingDbStructure > 0) { usleep(1000000); }
+
+	cancelQueryingDbStructure = NO;
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
 
@@ -2085,6 +2091,11 @@ void performThreadedKeepAlive(void *ptr)
 
 			// Query all tables
 			for(NSString* table in tables) {
+				if(cancelQueryingDbStructure) {
+					[self performSelectorOnMainThread:@selector(decrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
+					[queryPool release];
+					return;
+				}
 				NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
 					[table stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
 					currentDatabaseEscaped];
@@ -2133,6 +2144,11 @@ void performThreadedKeepAlive(void *ptr)
 			}
 			// Query all views
 			for(NSString* table in tableviews) {
+				if(cancelQueryingDbStructure) {
+					[self performSelectorOnMainThread:@selector(decrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
+					[queryPool release];
+					return;
+				}
 				NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
 					[table stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
 					currentDatabaseEscaped];
@@ -2197,6 +2213,11 @@ void performThreadedKeepAlive(void *ptr)
 						theResult = mysql_use_result(structConnection);
 						NSUInteger numberOfFields = mysql_num_fields(theResult);
 						while(row = mysql_fetch_row(theResult)) {
+							if(cancelQueryingDbStructure) {
+								[self performSelectorOnMainThread:@selector(decrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
+								[queryPool release];
+								return;
+							}
 							NSString *field = [self stringWithUTF8CString:row[0]];
 							NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, field];
 							NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];

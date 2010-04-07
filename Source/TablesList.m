@@ -252,7 +252,12 @@
 	if (previousSelectedTable) [previousSelectedTable release];
 
 	// Query the structure of all databases in the background
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
+	if(sender == self)
+		// Invoked by SP 
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
+	else
+		// User press refresh button ergo force update
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
 
 	
 }
