@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPExporterInitializer.h
+//  SPExportInitializer.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on March 31, 2010
@@ -29,7 +29,7 @@
 
 @class SPCSVExporter, SPSQLExporter;
 
-@interface SPExportController (SPExporterInitializer)
+@interface SPExportController (SPExportInitializer)
 
 - (void)initializeExportUsingSelectedOptions;
 

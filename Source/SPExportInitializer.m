@@ -38,7 +38,7 @@
 #import "SPSQLExporter.h"
 #import "SPXMLExporter.h"
 
-@implementation SPExportController (SPExporterInitializer)
+@implementation SPExportController (SPExportInitializer)
 
 /**
  * Initializes the export process by analysing the selected criteria.
