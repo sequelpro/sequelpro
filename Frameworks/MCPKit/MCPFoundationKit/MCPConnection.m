@@ -1995,6 +1995,13 @@ void performThreadedKeepAlive(void *ptr)
 	if(tables && [tables count]) numberOfTables += [tables count];
 	if(tableviews && [tableviews count]) numberOfTables += [tableviews count];
 
+	// Do not parse more than 2000 tables/views per db
+	if(numberOfTables > 2000) {
+		NSLog(@"%ld items in database %@. Only 2000 items can be parsed. Stopped parsing.", numberOfTables, currentDatabase);
+		[queryPool release];
+		return;
+	}
+
 	// For future usage
 	NSString *affectedItem = nil;
 	NSInteger affectedItemType = -1;
@@ -2053,27 +2060,26 @@ void performThreadedKeepAlive(void *ptr)
 		if (connectionSetupStatus) {
 			MYSQL_RES *theResult;
 			MYSQL_ROW row;
-
-			NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(structConnection)];
 			NSString *charset;
-
-			if(numberOfTables > 2000) {
-				NSLog(@"%ld items in database %@. Only 2000 items can be parsed. Stopped parsing.", numberOfTables, currentDatabase);
-				[queryPool release];
-				return;
-			}
-
-			[self performSelectorOnMainThread:@selector(incrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
-
 			NSUInteger uniqueCounter = 0; // used to make field data unique
 
-			NSString *query = @"SET NAMES 'utf8'";
+			// Get the doc encoding due to pref settings etc.
+			NSString *docEncoding = [[self delegate] connectionEncoding];
+			NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:[self cStringFromString:docEncoding]];
+
+			// Try to set connection encoding
+			NSString *query = [NSString stringWithFormat:@"SET NAMES '%@'", docEncoding];
 			NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
 			const char *queryCString = [encodedQueryData bytes];
 			unsigned long queryCStringLength = [encodedQueryData length];
 			if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
-				;
+				NSLog(@"Error while querying the database structure. Could not set encoding to %@", docEncoding);
+				[queryPool release];
+				return;
 			}
+
+			// Increase global query-db-counter 
+			[self performSelectorOnMainThread:@selector(incrementQueryingDbStructure) withObject:nil waitUntilDone:YES];
 
 			[queriedStructureKeys addObject:db_id];
 
@@ -2096,16 +2102,16 @@ void performThreadedKeepAlive(void *ptr)
 				[queriedStructureKeys addObject:table_id];
 
 				while(row = mysql_fetch_row(theResult)) {
-					NSString *field = [self stringWithUTF8CString:row[0]];
-					NSString *type = [self stringWithUTF8CString:row[1]];
+					NSString *field = [self stringWithCString:row[0] usingEncoding:theConnectionEncoding] ;
+					NSString *type = [self stringWithCString:row[1] usingEncoding:theConnectionEncoding] ;
 					NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
-					NSString *coll = [self stringWithUTF8CString:row[2]];
-					NSString *isnull = [self stringWithUTF8CString:row[3]];
-					NSString *key = [self stringWithUTF8CString:row[4]];
-					NSString *def = [self stringWithUTF8CString:row[5]];
-					NSString *extra = [self stringWithUTF8CString:row[6]];
-					NSString *priv = [self stringWithUTF8CString:row[7]];
-					NSString *comment = [self stringWithUTF8CString:row[8]];
+					NSString *coll = [self stringWithCString:row[2] usingEncoding:theConnectionEncoding] ;
+					NSString *isnull = [self stringWithCString:row[3] usingEncoding:theConnectionEncoding] ;
+					NSString *key = [self stringWithCString:row[4] usingEncoding:theConnectionEncoding] ;
+					NSString *def = [self stringWithCString:row[5] usingEncoding:theConnectionEncoding] ;
+					NSString *extra = [self stringWithCString:row[6] usingEncoding:theConnectionEncoding] ;
+					NSString *priv = [self stringWithCString:row[7] usingEncoding:theConnectionEncoding] ;
+					NSString *comment = [self stringWithCString:row[8] usingEncoding:theConnectionEncoding] ;
 					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
 					NSArray *a = [coll componentsSeparatedByString:@"_"];
 					charset = ([a count]) ? [a objectAtIndex:0] : @"";
@@ -2145,16 +2151,16 @@ void performThreadedKeepAlive(void *ptr)
 
 				NSString *charset;
 				while(row = mysql_fetch_row(theResult)) {
-					NSString *field = [self stringWithUTF8CString:row[0]];
-					NSString *type = [self stringWithUTF8CString:row[1]];
+					NSString *field = [self stringWithCString:row[0] usingEncoding:theConnectionEncoding] ;
+					NSString *type = [self stringWithCString:row[1] usingEncoding:theConnectionEncoding] ;
 					NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
-					NSString *coll = [self stringWithUTF8CString:row[2]];
-					NSString *isnull = [self stringWithUTF8CString:row[3]];
-					NSString *key = [self stringWithUTF8CString:row[4]];
-					NSString *def = [self stringWithUTF8CString:row[5]];
-					NSString *extra = [self stringWithUTF8CString:row[6]];
-					NSString *priv = [self stringWithUTF8CString:row[7]];
-					NSString *comment = [self stringWithUTF8CString:row[8]];
+					NSString *coll = [self stringWithCString:row[2] usingEncoding:theConnectionEncoding] ;
+					NSString *isnull = [self stringWithCString:row[3] usingEncoding:theConnectionEncoding] ;
+					NSString *key = [self stringWithCString:row[4] usingEncoding:theConnectionEncoding] ;
+					NSString *def = [self stringWithCString:row[5] usingEncoding:theConnectionEncoding] ;
+					NSString *extra = [self stringWithCString:row[6] usingEncoding:theConnectionEncoding] ;
+					NSString *priv = [self stringWithCString:row[7] usingEncoding:theConnectionEncoding] ;
+					NSString *comment = [self stringWithCString:row[8] usingEncoding:theConnectionEncoding] ;
 					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
 					NSArray *a = [coll componentsSeparatedByString:@"_"];
 					charset = ([a count]) ? [a objectAtIndex:0] : @"";
@@ -2176,40 +2182,49 @@ void performThreadedKeepAlive(void *ptr)
 			}
 
 			if([self serverMajorVersion] >= 5) {
-				// Query for procedures and functions
-				query = [NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\'"]];
+				// information_schema is UTF-8 encoded
+				query = @"SET NAMES 'utf8'";
 				encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
 				queryCString = [encodedQueryData bytes];
 				queryCStringLength = [encodedQueryData length];
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
-					theResult = mysql_use_result(structConnection);
-					NSUInteger numberOfFields = mysql_num_fields(theResult);
-					while(row = mysql_fetch_row(theResult)) {
-						NSString *field = [self stringWithUTF8CString:row[0]];
-						NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, field];
-						NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
-						NSString *type = ([[self stringWithUTF8CString:row[4]] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
-						NSString *dtd = [self stringWithUTF8CString:row[5]];
-						NSString *det = [self stringWithUTF8CString:row[11]];
-						NSString *access = [self stringWithUTF8CString:row[12]];
-						NSString *security_type = [self stringWithUTF8CString:row[14]];
-						NSString *definer = [self stringWithUTF8CString:row[19]];
+					// Query for procedures and functions
+					query = [NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\'"]];
+					encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
+					queryCString = [encodedQueryData bytes];
+					queryCStringLength = [encodedQueryData length];
+					if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
+						theResult = mysql_use_result(structConnection);
+						NSUInteger numberOfFields = mysql_num_fields(theResult);
+						while(row = mysql_fetch_row(theResult)) {
+							NSString *field = [self stringWithUTF8CString:row[0]];
+							NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, field];
+							NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id, SPUniqueSchemaDelimiter, field];
+							NSString *type = ([[self stringWithUTF8CString:row[4]] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
+							NSString *dtd = [self stringWithUTF8CString:row[5]];
+							NSString *det = [self stringWithUTF8CString:row[11]];
+							NSString *access = [self stringWithUTF8CString:row[12]];
+							NSString *security_type = [self stringWithUTF8CString:row[14]];
+							NSString *definer = [self stringWithUTF8CString:row[19]];
 
-						[queriedStructureKeys addObject:table_id];
-						[queriedStructureKeys addObject:field_id];
+							[queriedStructureKeys addObject:table_id];
+							[queriedStructureKeys addObject:field_id];
 			
-						if(![queriedStructure valueForKey:db_id] || [[queriedStructure valueForKey:db_id] isKindOfClass:[NSString class]] )
-							[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
+							if(![queriedStructure valueForKey:db_id] || [[queriedStructure valueForKey:db_id] isKindOfClass:[NSString class]] )
+								[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
 			
-						if(![[queriedStructure valueForKey:db_id] valueForKey:table_id])
-							[[queriedStructure valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
+							if(![[queriedStructure valueForKey:db_id] valueForKey:table_id])
+								[[queriedStructure valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 			
-						[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:
-							[NSArray arrayWithObjects:dtd, access, det, security_type, definer, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
-						[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:type forKey:@"  struct_type  "];
-						uniqueCounter++;
+							[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:
+								[NSArray arrayWithObjects:dtd, access, det, security_type, definer, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+							[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:type forKey:@"  struct_type  "];
+							uniqueCounter++;
+						}
+						mysql_free_result(theResult);
+					} else {
+						NSLog(@"Error while querying the database structure for procedures and functions. Could not set encoding to utf8");
 					}
-					mysql_free_result(theResult);
 				}
 			}
 
@@ -2640,6 +2655,26 @@ void performThreadedKeepAlive(void *ptr)
 	
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
 	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
+	
+	if (theString) {
+		[theString autorelease];
+	}
+	
+	return theString;
+}
+
+/**
+ * Returns a NSString from a C style string.
+ */
+- (NSString *)stringWithCString:(const char *)theCString usingEncoding:(NSStringEncoding)encoding
+{
+	NSData	 *theData;
+	NSString *theString;
+	
+	if (theCString == NULL) return @"";
+	
+	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
+	theString = [[NSString alloc] initWithData:theData encoding:encoding];
 	
 	if (theString) {
 		[theString autorelease];
