@@ -791,8 +791,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-	if(!autoCompleteMode)
-		[completionPopUp insertCommonPrefix];
+	[completionPopUp insertCommonPrefix];
 
 }
 
