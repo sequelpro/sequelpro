@@ -1684,10 +1684,10 @@
 	}
 
 	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
-
+		
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
-	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
+	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [[tableSyntax createViewSyntaxPrettifier] stringByAppendingString:@";"] : [tableSyntax stringByAppendingString:@";"]];
 	[createTableSyntaxTextView setEditable:NO];
 
 	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
