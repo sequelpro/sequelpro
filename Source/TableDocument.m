@@ -273,8 +273,8 @@
 	[connectionController setSshUser:@""];
 	[connectionController setSshPort:@""];
 	[connectionController setDatabase:@""];
-	[connectionController setPassword:@""];
-	[connectionController setSshPassword:@""];
+	[connectionController setPassword:nil];
+	[connectionController setSshPassword:nil];
 
 	// Deselect all favorites
 	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
@@ -1687,7 +1687,7 @@
 
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
-	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
+	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [[tableSyntax createViewSyntaxPrettifier] stringByAppendingString:@";"] : [tableSyntax stringByAppendingString:@";"]];
 	[createTableSyntaxTextView setEditable:NO];
 
 	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
@@ -2877,8 +2877,8 @@
 	if([[spfDocData_temp objectForKey:@"save_password"] boolValue]) {
 		NSString *pw = [self keychainPasswordForConnection:nil];
 		if(![pw length]) pw = [connectionController password];
-		[connection setObject:pw forKey:@"password"];
-		if([connectionController type] == SPSSHTunnelConnection)
+		if (pw) [connection setObject:pw forKey:@"password"];
+		if([connectionController type] == SPSSHTunnelConnection && [connectionController sshPassword])
 			[connection setObject:[connectionController sshPassword] forKey:@"ssh_password"];
 	}
 
@@ -3025,6 +3025,14 @@
 /**
  * Passes the request to the tableDump object
  */
+- (IBAction)importFromClipboard:(id)sender
+{
+	[tableDumpInstance importFromClipboard];
+}
+
+/**
+ * Passes the request to the tableDump object
+ */
 - (IBAction)export:(id)sender
 {
 	if ([sender tag] == -1) {
@@ -3086,7 +3094,13 @@
 	{
 		return ([self database] != nil);
 	}
-
+	
+	if ([menuItem action] == @selector(importFromClipboard:))
+	{
+		return ([[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]]) ? YES : NO;
+		
+	}
+	
 	// Change "Save Query/Queries" menu item title dynamically
 	// and disable it if no query in the editor
 	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {

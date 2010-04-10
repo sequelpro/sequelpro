@@ -118,7 +118,10 @@
 		filtered = nil;
 		spaceCounter = 0;
 		currentSyncImage = 0;
+		commonPrefixWasInsertedByAutoComplete = NO;
 		prefs = [NSUserDefaults standardUserDefaults];
+		originalFilterString = [[NSMutableString alloc] init];
+		[originalFilterString setString:@""];
 
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
@@ -146,7 +149,7 @@
 	[staticPrefix release];
 	[mutablePrefix release];
 	[textualInputCharacters release];
-
+	[originalFilterString release];
 	if(suggestions) [suggestions release];
 
 	if (filtered) [filtered release];
@@ -171,7 +174,7 @@
 				[stateTimer release];
 				stateTimer = nil;
 				if(syncArrowImages) [syncArrowImages release];
-				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:NO];
+				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
 				closeMe = YES;
 				return;
 			}
@@ -184,10 +187,14 @@
 
 - (void)reInvokeCompletion
 {
+	if(stateTimer) {
+		[stateTimer invalidate];
+		[stateTimer release];
+		stateTimer = nil;
+	}
 	[theView setCompletionIsOpen:NO];
 	[self close];
-	usleep(70);
-	[theView doCompletionByUsingSpellChecker:dictMode fuzzyMode:fuzzyMode autoCompleteMode:NO];
+	[theView performSelector:@selector(refreshCompletion) withObject:nil afterDelay:0.0];
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
@@ -206,6 +213,10 @@
 			[mutablePrefix appendString:aUserString];
 
 		autoCompletionMode = autoComplete;
+
+		if(autoCompletionMode)
+			[originalFilterString appendString:aUserString];
+
 		oneColumnMode = oneColumn;
 		isQueryingDatabaseStructure = isQueryingDBStructure;
 
@@ -761,6 +772,16 @@
 			// e.g. for US keyboard "⌥u a" to insert ä
 			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0)
 			{
+				if(autoCompletionMode) {
+					if(commonPrefixWasInsertedByAutoComplete) {
+						[theView setSelectedRange:theCharRange];
+						[theView insertText:originalFilterString];
+						[NSApp sendEvent:event];
+						[theView setCompletionIsOpen:NO];
+						[self close];
+						break;
+					}
+				}
 				[NSApp sendEvent: event];
 
 				if(commaInsertionMode)
@@ -783,6 +804,15 @@
 					[theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
 					[self filter];
 				} else {
+					if(autoCompletionMode) {
+						if(commonPrefixWasInsertedByAutoComplete) {
+							[theView setSelectedRange:theCharRange];
+							[theView insertText:originalFilterString];
+						}
+						[theView setCompletionIsOpen:NO];
+						[self close];
+						break;
+					}
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					break;
 				}
@@ -793,6 +823,14 @@
 			}
 			else if(key == NSBackspaceCharacter || key == NSDeleteCharacter)
 			{
+				if(autoCompletionMode) {
+					if(commonPrefixWasInsertedByAutoComplete) {
+						[theView setSelectedRange:theCharRange];
+						[theView insertText:originalFilterString];
+					}
+					[NSApp sendEvent:event];
+					break;
+				}
 				[NSApp sendEvent:event];
 				if([mutablePrefix length] == 0 || commaInsertionMode)
 					break;
@@ -805,6 +843,18 @@
 			}
 			else if([textualInputCharacters characterIsMember:key])
 			{
+
+				if(autoCompletionMode) {
+					[theView setCompletionIsOpen:NO];
+					[self close];
+					if(commonPrefixWasInsertedByAutoComplete) {
+						[theView setSelectedRange:theCharRange];
+						[theView insertText:originalFilterString];
+					}
+					[NSApp sendEvent:event];
+					return;
+				}
+
 				[NSApp sendEvent:event];
 
 				if(commaInsertionMode)
@@ -833,6 +883,12 @@
 			} else {
 				[NSApp sendEvent:event];
 				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
+					if(autoCompletionMode) {
+						if(commonPrefixWasInsertedByAutoComplete) {
+							[theView setSelectedRange:theCharRange];
+							[theView insertText:originalFilterString];
+						}
+					}
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					break;
 				}
@@ -883,6 +939,7 @@
 		theCharRange.length += [toInsert length];
 		theParseRange.length += [toInsert length];
 		[theView insertText:[toInsert lowercaseString]];
+		commonPrefixWasInsertedByAutoComplete = YES;
 		[self checkSpaceForAllowedCharacter];
 	}
 }

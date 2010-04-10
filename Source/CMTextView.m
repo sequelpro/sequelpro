@@ -131,6 +131,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	mirroredCounter = -1;
 	completionIsOpen = NO;
 	isProcessingMirroredSnippets = NO;
+	completionWasRefreshed = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -542,6 +543,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
+- (void) refreshCompletion
+{
+	if(completionWasRefreshed) return;
+	completionWasRefreshed = YES;
+	[self doCompletionByUsingSpellChecker:NO fuzzyMode:completionFuzzyMode autoCompleteMode:NO];
+}
+
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
 {
 
@@ -556,6 +564,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	[self breakUndoCoalescing];
+	
+	// Remember state for refreshCompletion
+	completionFuzzyMode = fuzzySearch;
 
 	NSUInteger caretPos = NSMaxRange([self selectedRange]);
 
@@ -780,8 +791,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	[completionPopUp setCaretPos:pos];
 	[completionPopUp orderFront:self];
-	if(!autoCompleteMode)
-		[completionPopUp insertCommonPrefix];
+	[completionPopUp insertCommonPrefix];
 
 }
 
@@ -1999,7 +2009,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
 
 		[self setCompletionWasReinvokedAutomatically:NO];
-
+		completionWasRefreshed = NO;
 		// Cancel autocompletion trigger
 		if([prefs boolForKey:SPCustomQueryAutoComplete])
 			[NSObject cancelPreviousPerformRequestsWithTarget:self 

@@ -50,6 +50,8 @@
 	BOOL autoCompletionMode;
 	BOOL oneColumnMode;
 	BOOL isQueryingDatabaseStructure;
+	BOOL commonPrefixWasInsertedByAutoComplete;
+	NSMutableString *originalFilterString;
 	NSInteger backtickMode;
 	NSFont *tableFont;
 	NSRange theCharRange;

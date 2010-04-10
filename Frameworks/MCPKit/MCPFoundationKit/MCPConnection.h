@@ -91,6 +91,11 @@
 /**
  *
  */
+- (NSString *)connectionEncoding;
+
+/**
+ *
+ */
 - (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
 
 /**
@@ -174,6 +179,7 @@
 	BOOL delegateResponseToWillQueryString;
 	BOOL delegateSupportsConnectionLostDecisions;
 	NSInteger isQueryingDbStructure;
+	BOOL cancelQueryingDbStructure;
 	BOOL lockQuerying;
 	
 	// Pointers
@@ -321,6 +327,7 @@ void performThreadedKeepAlive(void *ptr);
 - (const char *)cStringFromString:(NSString *)theString;
 - (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding;
 - (NSString *)stringWithCString:(const char *)theCString;
+- (NSString *)stringWithCString:(const char *)theCString usingEncoding:(NSStringEncoding)encoding;
 - (NSString *)stringWithText:(NSData *)theTextData;
 - (NSString *)stringWithUTF8CString:(const char *)theCString;
 

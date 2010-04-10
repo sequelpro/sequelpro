@@ -237,7 +237,8 @@
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
 			[tableCreateSyntaxTextView setString:@""];
 			
-			NSString *createViewSyntax = [[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier];
+			NSString *createViewSyntax = [[[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier] stringByAppendingString:@";"];
+			
 			if (createViewSyntax) {
 				[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
 				[tableCreateSyntaxTextView insertText:createViewSyntax];
@@ -281,6 +282,7 @@
 	NSArray *collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 	
 	if (([engines count] > 0) && ([statusFields objectForKey:@"Engine"])) {
+		
 		// Populate type popup button
 		for (NSDictionary *engine in engines)
 		{		
@@ -351,14 +353,14 @@
 	[tableCommentsTextView setString:[statusFields objectForKey:@"Comment"]];
 	[tableCommentsTextView didChangeText];
 	[tableCommentsTextView setEditable:enableInteraction];
-	
+			
 	// Set create syntax
 	[tableCreateSyntaxTextView setEditable:YES];
 	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:@""];
 	[tableCreateSyntaxTextView setString:@""];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:[tableDataInstance tableCreateSyntax]];
-	[tableCreateSyntaxTextView insertText:[tableDataInstance tableCreateSyntax]];
+	[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] stringByAppendingString:@";"]];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
 	

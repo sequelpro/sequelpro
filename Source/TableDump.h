@@ -74,6 +74,10 @@
 	IBOutlet id importLinesTerminatedField;
 	IBOutlet id importFieldMapperSheetWindow;
 
+	IBOutlet id importFromClipboardSheet;
+	IBOutlet NSTextView *importFromClipboardTextView;
+	IBOutlet id importFromClipboardAccessoryView;
+
 	IBOutlet id addDropTableSwitch;
 	IBOutlet id addCreateTableSwitch;
 	IBOutlet id addTableContentSwitch;
@@ -133,11 +137,12 @@
 
 // Import methods
 - (void)importFile;
+- (void)importFromClipboard;
 - (void)importSQLFile:(NSString *)filename;
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
-- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
+- (void)openPanelDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
 - (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray;
 - (NSString *) mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;

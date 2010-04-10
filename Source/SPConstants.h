@@ -251,6 +251,7 @@ extern NSString *SPCSVImportFieldEnclosedBy;
 extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
+extern NSString *SPImportClipboardTempFileNamePrefix;
 
 // Misc
 extern NSString *SPContentFilters;
