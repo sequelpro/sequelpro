@@ -144,6 +144,7 @@ NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
+NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";

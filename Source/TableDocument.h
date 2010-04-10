@@ -275,6 +275,7 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)anItem;
 - (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
+- (IBAction)importFromClipboard:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)exportTable:(id)sender;
 - (IBAction)exportMultipleTables:(id)sender;
