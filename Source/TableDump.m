@@ -791,6 +791,8 @@
 	[sqlDataBuffer release];
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+	if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
+		[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 
 	// Close progress sheet
 	[self closeAndStopProgressSheet];
