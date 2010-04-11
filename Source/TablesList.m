@@ -756,37 +756,43 @@
 
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release];
+		
 		if ([indexes count]) {
 			selectedTableName = [[NSString alloc] initWithString:@""];
-		} else {
+		} 
+		else {
 			selectedTableName = nil;
 		}
+		
 		selectedTableType = SPTableTypeNone;
 
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 		[extendedTableInfoInstance loadTable:nil];
+		
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
-		if([indexes count]) {
+		if ([indexes count]) {
+			
 			NSUInteger currentIndex = [indexes lastIndex];
 			BOOL areTableTypeEqual = YES;
 			NSInteger lastType = [[filteredTableTypes objectAtIndex:currentIndex] integerValue];
+			
 			while (currentIndex != NSNotFound)
 			{
-				if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] != lastType)
-				{
+				if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] != lastType) {
 					areTableTypeEqual = NO;
 					break;
 				}
+				
 				currentIndex = [indexes indexLessThanIndex:currentIndex];
 			}
-			if (areTableTypeEqual)
-			{
+			
+			if (areTableTypeEqual) {
 				switch (lastType) {
 					case SPTableTypeTable:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
@@ -823,15 +829,21 @@
 				[truncateTableContextButton setHidden:YES];
 			}
 		}
+		
+		// Context menu
 		[renameTableContextMenuItem setHidden:YES];
 		[duplicateTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
+		[separatorTableContextMenuItem2 setHidden:YES];
+		[showCreateSyntaxContextMenuItem setHidden:YES];
 
+		// 'Gear' menu
 		[renameTableMenuItem setHidden:YES];
 		[duplicateTableMenuItem setHidden:YES];
 		[separatorTableMenuItem setHidden:YES];
-		[separatorTableContextMenuItem setHidden:YES];
-
+		[separatorTableMenuItem2 setHidden:YES];
+		[showCreateSyntaxMenuItem setHidden:YES];
+		
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
 		
 		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
@@ -880,18 +892,23 @@
 	// Reset the table information caches
 	[tableDataInstance resetAllData];
 
+	// Show menu separatoes
 	[separatorTableMenuItem setHidden:NO];
 	[separatorTableContextMenuItem setHidden:NO];
-
+	[separatorTableMenuItem2 setHidden:NO];
+	[separatorTableContextMenuItem2 setHidden:NO];
+	
 	// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 	// according to the table types
 	NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
 	
-	if(selectedTableType == SPTableTypeView)
+	// Enable/disable the various menu items depending on the selected item. Also update their titles.
+	// Note, that this should ideally be moved to menu item validation as opposed to using fixed item positions.
+	if (selectedTableType == SPTableTypeView)
 	{
 		// Change mainMenu > Table > ... according to table type
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create View Syntax", @"show create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // Divider
 		[[tableSubMenu itemAtIndex:6] setHidden:NO];
 		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
@@ -909,6 +926,7 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 
 		[renameTableContextMenuItem setHidden:NO]; // we don't have to check the mysql version
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
@@ -916,10 +934,11 @@
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableContextButton setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 	} 
-	else if(selectedTableType == SPTableTypeTable) {
+	else if (selectedTableType == SPTableTypeTable) {
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Table Syntax", @"show create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
 		[[tableSubMenu itemAtIndex:6] setHidden:NO];
 		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
@@ -942,6 +961,8 @@
 		[truncateTableButton setHidden:NO];
 		[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+		[showCreateSyntaxMenuItem setHidden:NO];
+		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 
 		[renameTableContextMenuItem setHidden:NO];
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
@@ -950,11 +971,12 @@
 		[truncateTableContextButton setHidden:NO];
 		[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
-
+		[showCreateSyntaxContextMenuItem setHidden:NO];
+		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 	} 
-	else if(selectedTableType == SPTableTypeProc) {
+	else if (selectedTableType == SPTableTypeProc) {
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Procedure Syntax", @"show create proc syntax menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
 		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // copy columns
 		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
@@ -970,18 +992,21 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
-
+		[showCreateSyntaxMenuItem setHidden:NO];
+		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
+		
 		[renameTableContextMenuItem setHidden:NO];
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableContextButton setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
-
+		[showCreateSyntaxContextMenuItem setHidden:NO];
+		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 	}
-	else if(selectedTableType == SPTableTypeFunc) {
+	else if (selectedTableType == SPTableTypeFunc) {
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Function Syntax", @"show create func syntax menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
 		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // copy columns
 		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
@@ -997,13 +1022,17 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
-
+		[showCreateSyntaxMenuItem setHidden:NO];
+		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
+		
 		[renameTableContextMenuItem setHidden:NO];
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableContextButton setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
+		[showCreateSyntaxContextMenuItem setHidden:NO];
+		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 	}
 
 	// set window title
