@@ -223,7 +223,7 @@ extern NSString *SPFavoritesSortedInReverse;
 extern NSString *SPPrintWarningRowLimit;
 extern NSString *SPDisplayServerVersionInWindowTitle;
 
-// Import
+// Import and export
 extern NSString *SPCSVImportFieldTerminator;
 extern NSString *SPCSVImportLineTerminator;
 extern NSString *SPCSVImportFieldEnclosedBy;
@@ -231,6 +231,7 @@ extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
+extern NSString *SPSQLExportUseCompression;
 
 // Misc
 extern NSString *SPContentFilters;

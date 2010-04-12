@@ -137,7 +137,7 @@ NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
 NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
-// Import
+// Import and export
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";
 NSString *SPCSVImportFieldEscapeCharacter        = @"CSVImportFieldEscapeCharacter";
 NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
@@ -145,6 +145,7 @@ NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader"
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
 NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
+NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
