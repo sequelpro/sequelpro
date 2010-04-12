@@ -169,7 +169,7 @@
 			[self reloadTables:self];
 			[sqlCompressionSwitch setState:[prefs boolForKey:SPSQLExportUseCompression]?NSOnState:NSOffState];
 			if ([prefs boolForKey:SPSQLExportUseCompression]) {
-				[currentExportPanel setRequiredFileType:@"gz"];
+				[currentExportPanel setRequiredFileType:@"sql.gz"];
 			} else {
 				[currentExportPanel setRequiredFileType:@"sql"];
 			}
@@ -265,6 +265,18 @@
 	[currentExportPanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
 										  file:file modalForWindow:tableWindow modalDelegate:self
 								didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+								
+
+	// Wait for the SavePanel and check for '.sql.gz' extension; if so - select only the path name without any extensions
+	while(![currentExportPanel isVisible]) { usleep(100); }
+	if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
+		NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
+		if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:@".sql.gz"]) {
+			NSRange selRange = [filenameTextView selectedRange];
+			selRange.length -= 4;
+			[filenameTextView setSelectedRange:selRange];
+		}
+	}
 }
 
 /**
@@ -3151,7 +3163,7 @@
 {
 	if (exportMode == SPExportingSQL) {
 		if ([sender state] == NSOnState) {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:@"gz"]];
+			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
 		} else {
 			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:@"sql"]];
 		}
