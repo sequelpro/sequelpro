@@ -3164,6 +3164,17 @@
 	if (exportMode == SPExportingSQL) {
 		if ([sender state] == NSOnState) {
 			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
+
+			// if file name text view is the first responder re-select the path name only without '.sql.gz'
+			if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
+				NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
+				if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:@".sql.gz"]) {
+					NSRange selRange = [filenameTextView selectedRange];
+					selRange.length -= 4;
+					[filenameTextView setSelectedRange:selRange];
+				}
+			}
+
 		} else {
 			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:@"sql"]];
 		}
