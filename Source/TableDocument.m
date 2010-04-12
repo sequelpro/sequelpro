@@ -3096,7 +3096,7 @@
 	
 	if ([menuItem action] == @selector(importFromClipboard:))
 	{
-		return ([[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]]) ? YES : NO;
+		return ([self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]]) ? YES : NO;
 		
 	}
 	
