@@ -72,6 +72,7 @@
 			(![self csvLineEndingString]) ||
 			(![self csvTableColumnNumericStatus]))
 		{
+			[pool release];
 			return;
 		}
 			 
@@ -80,6 +81,7 @@
 			([[self csvEscapeString] isEqualToString:@""]) ||
 			([[self csvLineEndingString] isEqualToString:@""])) 
 		{
+			[pool release];
 			return;
 		}
 						
@@ -162,7 +164,15 @@
 		while (1) 
 		{
 			// Check for cancellation flag
-			if ([self isCancelled]) return;
+			if ([self isCancelled]) {
+				if ((![self csvDataArray]) && [self csvTableName]) {
+					[connection cancelCurrentQuery];
+					[streamingResult cancelResultLoad];
+				}
+				
+				[pool release];
+				return;
+			}
 			
 			// Retrieve the next row from the supplied data, either directly from the array...
 			if ([self csvDataArray]) {

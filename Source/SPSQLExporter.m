@@ -99,6 +99,7 @@
 			(![self sqlDatabaseName])     || ([[self sqlDatabaseName] isEqualToString:@""]) ||
 			(![self sqlDatabaseVersion]   || ([[self sqlDatabaseName] isEqualToString:@""])))
 		{
+			[pool release];
 			return;
 		}
 				
@@ -116,7 +117,10 @@
 		for (NSArray *item in [self sqlExportTables]) 
 		{
 			// Check for cancellation flag
-			if ([self isCancelled]) return;
+			if ([self isCancelled]) {
+				[pool release];
+				return;
+			}
 			
 			switch ([NSArrayObjectAtIndex(item, 4) intValue]) {
 				case SPTableTypeProc:
@@ -171,7 +175,10 @@
 		for (NSArray *table in [self sqlExportTables]) 
 		{
 			// Check for cancellation flag
-			if ([self isCancelled]) return;
+			if ([self isCancelled]) {
+				[pool release];
+				return;
+			}
 			
 			tableName = NSArrayObjectAtIndex(table, 0);
 						
@@ -250,7 +257,10 @@
 				for (j = 0; j < colCount; j++) 
 				{
 					// Check for cancellation flag
-					if ([self isCancelled]) return;
+					if ([self isCancelled]) {
+						[pool release];
+						return;
+					}
 					
 					NSString *tableColumnTypeGrouping = [NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j) objectForKey:@"typegrouping"];
 					
@@ -300,6 +310,7 @@
 						if ([self isCancelled]) {
 							[connection cancelCurrentQuery];
 							[streamingResult cancelResultLoad];
+							[pool release];
 							return;
 						}
 						
@@ -324,7 +335,10 @@
 						for (t = 0; t < colCount; t++) 
 						{
 							// Check for cancellation flag
-							if ([self isCancelled]) return;
+							if ([self isCancelled]) {
+								[pool release];
+								return;
+							}
 							
 							// Add NULL values directly to the output row
 							if ([NSArrayObjectAtIndex(row, t) isMemberOfClass:[NSNull class]]) {
@@ -427,7 +441,10 @@
 					for (s = 0; s < [queryResult numOfRows]; s++) 
 					{
 						// Check for cancellation flag
-						if ([self isCancelled]) return;
+						if ([self isCancelled]) {
+							[pool release];
+							return;
+						}
 						
 						NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 						
@@ -478,7 +495,10 @@
 		for (tableName in viewSyntaxes) 
 		{
 			// Check for cancellation flag
-			if ([self isCancelled]) return;
+			if ([self isCancelled]) {
+				[pool release];
+				return;
+			}
 			
 			[metaString setString:@"\n\n"];
 			[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
@@ -491,7 +511,10 @@
 		for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) 
 		{
 			// Check for cancellation flag
-			if ([self isCancelled]) return;
+			if ([self isCancelled]) {
+				[pool release];
+				return;
+			}
 			
 			// Retrieve the array of selected procedures or functions, and skip export if not selected
 			NSMutableArray *items;
@@ -521,7 +544,10 @@
 				for (s = 0; s < [queryResult numOfRows]; s++) 
 				{
 					// Check for cancellation flag
-					if ([self isCancelled]) return;
+					if ([self isCancelled]) {
+						[pool release];
+						return;
+					}
 					
 					NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 					NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
@@ -536,7 +562,10 @@
 					for (NSArray *item in items)
 					{
 						// Check for cancellation flag
-						if ([self isCancelled]) return;
+						if ([self isCancelled]) {
+							[pool release];
+							return;
+						}
 						
 						if ([NSArrayObjectAtIndex(item, 0) isEqualToString:procedureName]) {
 							sqlOutputIncludeStructure  = [NSArrayObjectAtIndex(item, 1) boolValue];
