@@ -30,6 +30,7 @@
 #import "SPConstants.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
+#import "SPFileHandle.h"
 
 @implementation SPSQLExporter
 
@@ -43,6 +44,7 @@
 
 @synthesize sqlOutputIncludeUTF8BOM;
 @synthesize sqlOutputIncludeErrors;
+@synthesize sqlOutputCompressFile;
 
 @synthesize sqlTableInformation;
 @synthesize sqlExportMaxProgress;
@@ -133,6 +135,9 @@
 		
 		// If required write the UTF-8 Byte Order Mark
 		[metaString setString:([self sqlOutputIncludeUTF8BOM]) ? @"" : @"\xef\xbb\xbf"];
+			
+		// If required set the file handle to compress it's output
+		[[self exportOutputFileHandle] setShouldWriteWithGzipCompression:[self sqlOutputCompressFile]];
 		
 		// Add the dump header to the dump file
 		[metaString appendString:@"# ************************************************************\n"];
@@ -159,7 +164,7 @@
 		[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
 		[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
 		[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
-		
+				
 		[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Loop through the selected tables
@@ -626,6 +631,9 @@
 		}*/
 				
 		[sqlString release];
+		
+		// Close the file
+		[[self exportOutputFileHandle] closeFile];
 		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];

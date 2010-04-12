@@ -59,6 +59,7 @@
 	IBOutlet NSView *exportAdvancedOptionsView;
 	IBOutlet NSButton *exportAdvancedOptionsViewLabelButton;
 	IBOutlet NSButton *exportUseUTF8BOMButton;
+	IBOutlet NSButton *exportCompressOutputFile;
 	IBOutlet NSButton *exportProcessLowMemoryButton;
 	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
 	

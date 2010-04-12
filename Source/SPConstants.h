@@ -253,6 +253,7 @@ extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
 extern NSString *SPSQLExportUseCompression;
+extern NSString *SPNoBOMforSQLdumpFile;
 
 // Misc
 extern NSString *SPContentFilters;
@@ -260,7 +261,6 @@ extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDocumentTaskStartNotification;
 extern NSString *SPFieldEditorSheetFont;
 extern NSString *SPLastSQLFileEncoding;
-extern NSString *SPNoBOMforSQLdumpFile;
 extern NSString *SPPrintBackground;
 extern NSString *SPPrintImagePreviews;
 extern NSString *SPQueryFavorites;

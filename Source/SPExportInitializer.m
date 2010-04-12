@@ -33,6 +33,7 @@
 #import "SPMainThreadTrampoline.h"
 #import "TableDocument.h"
 #import "CustomQuery.h"
+#import "SPFileHandle.h"
 
 #import "SPCSVExporter.h"
 #import "SPSQLExporter.h"
@@ -125,7 +126,7 @@
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
 	NSUInteger i;
-	NSFileHandle *singleFileHandle = nil;
+	SPFileHandle *singleFileHandle = nil;
 	BOOL singleFileHeaderHasBeenWritten = NO;
 	
 	// Change query logging mode
@@ -238,6 +239,7 @@
 		[sqlExporter setSqlDatabaseVersion:[tableDocumentInstance mySQLVersion]];
 		
 		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
+		[sqlExporter setSqlOutputCompressFile:[exportCompressOutputFile state]];
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
@@ -264,7 +266,7 @@
 		[infoDict release];
 		[tableTypes release];
 		
-		NSFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%@.sql", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]]];
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_%@.%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil], ([exportCompressOutputFile state]) ? @"gz" : @"sql"]]];
 				
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		
@@ -274,7 +276,7 @@
 	// Set the exporter's generic properties
 	[exporter setConnection:connection];
 	[exporter setExportOutputEncoding:[connection encoding]];
-	[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemoryButton state] == NSOnState)];
+	[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 	
 	[exporters addObject:exporter];
 	
@@ -292,7 +294,7 @@
 - (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
 {
 	NSString *exportFile = @"";
-	NSFileHandle *fileHandle = nil;
+	SPFileHandle *fileHandle = nil;
 	
 	NSDictionary *tableDetails = [NSDictionary dictionary];
 	NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
@@ -373,20 +375,17 @@
 /**
  * Returns a file handle for writing at the supplied path.
  */
-- (NSFileHandle *)getFileHandleForFilePath:(NSString *)filePath
+- (SPFileHandle *)getFileHandleForFilePath:(NSString *)filePath
 {
-	NSFileHandle *fileHandle = nil;
+	SPFileHandle *fileHandle = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
 	if ([fileManager fileExistsAtPath:filePath]) {
-		if ((![fileManager isWritableFileAtPath:filePath]) || (!(fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath]))) {
+		if ((![fileManager isWritableFileAtPath:filePath]) || (!(fileHandle = [SPFileHandle fileHandleForWritingAtPath:filePath]))) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			return nil;
 		}
-		
-		// Truncates the file to zero bytes
-		[fileHandle truncateFileAtOffset:0];
 	} 
 	// Otherwise attempt to create a file
 	else {
@@ -397,7 +396,7 @@
 		}
 		
 		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath];
+		fileHandle = [SPFileHandle fileHandleForWritingAtPath:filePath];
 		
 		if (!fileHandle) {
 			[[NSFileManager defaultManager] removeFileAtPath:filePath handler:nil];

@@ -74,6 +74,7 @@
 	// SQL options
 	BOOL sqlOutputIncludeUTF8BOM;
 	BOOL sqlOutputIncludeErrors;
+	BOOL sqlOutputCompressFile;
 	
 	// Table information
 	NSDictionary *sqlTableInformation;
@@ -82,18 +83,19 @@
 	NSInteger sqlExportMaxProgress;
 }
 
-@property(readwrite, retain) NSArray *sqlExportTables;
+@property (readwrite, retain) NSArray *sqlExportTables;
 
-@property(readwrite, retain) NSString *sqlDatabaseHost;
-@property(readwrite, retain) NSString *sqlDatabaseName;
-@property(readwrite, retain) NSString *sqlDatabaseVersion;
+@property (readwrite, retain) NSString *sqlDatabaseHost;
+@property (readwrite, retain) NSString *sqlDatabaseName;
+@property (readwrite, retain) NSString *sqlDatabaseVersion;
 
-@property(readwrite, retain) NSString *sqlExportCurrentTable;
+@property (readwrite, retain) NSString *sqlExportCurrentTable;
 
-@property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
-@property(readwrite, assign) BOOL sqlOutputIncludeErrors;
+@property (readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
+@property (readwrite, assign) BOOL sqlOutputIncludeErrors;
+@property (readwrite, assign) BOOL sqlOutputCompressFile;
 
-@property(readwrite, retain) NSDictionary *sqlTableInformation;
-@property(readwrite, assign) NSInteger sqlExportMaxProgress;
+@property (readwrite, retain) NSDictionary *sqlTableInformation;
+@property (readwrite, assign) NSInteger sqlExportMaxProgress;
 
 @end

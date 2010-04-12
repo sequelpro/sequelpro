@@ -45,7 +45,7 @@
  * once the exporter instance is placed on the operation queue once its ready to be run.
  */
 
-@class MCPConnection;
+@class MCPConnection, SPFileHandle;
 
 @interface SPExporter : NSOperation
 {
@@ -59,7 +59,7 @@
 	BOOL exportUsingLowMemoryBlockingStreaming;
 	
 	NSString *exportData;
-	NSFileHandle *exportOutputFileHandle;
+	SPFileHandle *exportOutputFileHandle;
 	NSStringEncoding exportOutputEncoding;
 }
 
@@ -73,7 +73,7 @@
 @property (readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
 
 @property (readwrite, retain) NSString *exportData;
-@property (readwrite, retain) NSFileHandle *exportOutputFileHandle;
+@property (readwrite, retain) SPFileHandle *exportOutputFileHandle;
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
 
 - (id)initWithDelegate:(id)exportDelegate;

@@ -147,7 +147,8 @@
 		BOOL isSQL = [[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"];
 		BOOL hideColumns = (isCSV || [tabLabel isEqualToString:@"xml"]);
 		
-		[exportUseUTF8BOMButton setEnabled:(!isCSV)];
+		[exportUseUTF8BOMButton setEnabled:(!hideColumns)];
+		[exportCompressOutputFile setEnabled:(!hideColumns)];
 		
 		[exportFilePerTableCheck setHidden:isSQL];
 		[exportFilePerTableNote setHidden:isSQL];

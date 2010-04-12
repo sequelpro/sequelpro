@@ -28,6 +28,7 @@
 #import "SPCSVExporter.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
+#import "SPFileHandle.h"
 
 @implementation SPCSVExporter
 
@@ -315,6 +316,9 @@
 				csvExportPool = [[NSAutoreleasePool alloc] init];
 			}
 		}
+		
+		// Close the file
+		[[self exportOutputFileHandle] closeFile];
 		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];

@@ -146,6 +146,7 @@ NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
 NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
 NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
+NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
@@ -153,7 +154,6 @@ NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
 NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
 NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
-NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
 NSString *SPPrintBackground                      = @"PrintBackground";
 NSString *SPPrintImagePreviews                   = @"PrintImagePreviews";
 NSString *SPQueryFavorites                       = @"queryFavorites";
