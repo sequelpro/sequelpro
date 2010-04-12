@@ -2764,6 +2764,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	[keepAliveTimer invalidate];
 	[keepAliveTimer release];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	if (lastQueryErrorMessage) [lastQueryErrorMessage release];
 	if (connectionHost) [connectionHost release];
 	if (connectionLogin) [connectionLogin release];

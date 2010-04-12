@@ -141,6 +141,7 @@
 
 - (void)dealloc
 {
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	if(stateTimer != nil) {
 		[stateTimer invalidate];
 		[stateTimer release];

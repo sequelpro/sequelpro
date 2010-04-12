@@ -240,6 +240,7 @@ static CGFloat slow_in_out (CGFloat t)
 
 - (void)dealloc
 {
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[didOpenAtDate release];
 	[webView release];
 	[webPreferences release];

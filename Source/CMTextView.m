@@ -2940,12 +2940,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 
 	// Start autocompletion if enabled
 	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore editedRange].length)
-		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] retain] doubleValue]];
+		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
@@ -3281,15 +3281,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) dealloc
 {
 
-	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-									selector:@selector(autoHelp) 
-									object:nil];
-
-	if([prefs boolForKey:SPCustomQueryAutoComplete])
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-								selector:@selector(doAutoCompletion) 
-								object:nil];
+	// Cancel any deferred calls
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

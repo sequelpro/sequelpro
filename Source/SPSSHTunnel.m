@@ -345,7 +345,7 @@
 	// On tunnel close, clean up
 	[[NSNotificationCenter defaultCenter] removeObserver:self 
 													name:@"NSFileHandleDataAvailableNotification"
-												  object:[standardError fileHandleForReading]];
+												  object:nil];
 	[task release], task = nil;
 	[standardError release], standardError = nil;
 	[taskEnvironment release], taskEnvironment = nil;
