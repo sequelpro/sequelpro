@@ -1,16 +1,35 @@
 //
+//  $Id$
+//
 //  SPFileHandle.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on 05/04/2010.
-//  Copyright 2010 Arboreal. All rights reserved.
+//  Created by Rowan Beentje on April 5, 2010
+//  Copyright (c) 2010 Rowan Beentje. All rights reserved.
 //
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFileHandle.h"
 #import "zlib.1.2.4.h"
+#import "pthread.h"
 
-// Define the size of the background read/write buffer.  This affects speed and memory usage.
-#define SPFH_BUFFER_SIZE 1048576
+// Define the maximum size of the background write buffer before the writing thread
+// waits until some has been written out.  This can affect speed and memory usage.
+#define SPFH_MAX_WRITE_BUFFER_SIZE 1048576
 
 @interface SPFileHandle (PrivateAPI)
 - (void) _writeBufferToData;
@@ -131,7 +150,9 @@
 #pragma mark -
 #pragma mark Data reading
 
-// Reads data up to a specified number of bytes from the file
+/**
+ * Reads data up to a specified number of uncompressed bytes from the file.
+ */
 - (NSMutableData *) readDataOfLength:(NSUInteger)length
 {
 	void *theData = malloc(length);
@@ -139,13 +160,19 @@
 	return [NSMutableData dataWithBytesNoCopy:theData length:theDataLength freeWhenDone:YES];
 }
 
-// Returns the data to the end of the file
+/**
+ * Returns all the data to the end of the file.
+ */
 - (NSMutableData *) readDataToEndOfFile
 {
 	return [self readDataOfLength:NSUIntegerMax];
 }
 
-// Returns the on-disk (raw) length of data read so far - can be used in progress bars
+/**
+ * Returns the on-disk (raw/uncompressed) length of data read so far.
+ * This includes any compression headers within the data, and can be used
+ * for progress bars when processing files.
+ */
 - (NSUInteger) realDataReadLength
 {
 	if (fileMode == O_WRONLY) return 0;
@@ -178,7 +205,10 @@
 }
 
 
-// Write the provided data to the file
+/**
+ * Write the supplied data to the file.  The data may not be written to the
+ * disk at once (see synchronizeFile).
+ */
 - (void) writeData:(NSData *)data
 {
 
@@ -191,7 +221,7 @@
 	bufferDataLength += [data length];
 
 	// If the buffer is large, wait for some to be written out
-	while (bufferDataLength > SPFH_BUFFER_SIZE) {
+	while (bufferDataLength > SPFH_MAX_WRITE_BUFFER_SIZE) {
 		pthread_mutex_unlock(&bufferLock);
 		usleep(100);
 		pthread_mutex_lock(&bufferLock);
@@ -199,7 +229,9 @@
 	pthread_mutex_unlock(&bufferLock);
 }
 
-// Ensures any buffers are written to disk
+/**
+ * Blocks until all data has been written to disk.
+ */
 - (void) synchronizeFile
 {
 	pthread_mutex_lock(&bufferLock);
@@ -211,8 +243,11 @@
 	pthread_mutex_unlock(&bufferLock);
 }
 
-// Prevent further access to the file
-- (void)closeFile
+/**
+ * Ensure all data is written out, close any file handles, and prevent any
+ * more data from being written to the file.
+ */
+- (void) closeFile
 {
 	if (!fileIsClosed) {
 		[self synchronizeFile];
@@ -257,7 +292,7 @@
 	NSAutoreleasePool *writePool = [[NSAutoreleasePool alloc] init];
 
 	// Process the buffer in a loop into the file, until cancelled
-	while (![processingThread isCancelled]) {
+	while (!fileIsClosed && ![processingThread isCancelled]) {
 
 		// Check whether any data in the buffer needs to be written out - using thread locks for safety
 		pthread_mutex_lock(&bufferLock);
