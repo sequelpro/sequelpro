@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="81"/>
+			<integer value="758"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1486,7 +1486,7 @@
 								</object>
 								<object class="NSMenuItem" id="638185532">
 									<reference key="NSMenu" ref="1056168652"/>
-									<string key="NSTitle">Show Create Table Syntax</string>
+									<string key="NSTitle">Show Create Table Syntax...</string>
 									<string key="NSKeyEquiv">s</string>
 									<int key="NSKeyEquivModMask">1572864</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -4432,7 +4432,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{564, 345}, {255, 203}}</string>
+					<string>{{472, 271}, {255, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -4501,7 +4501,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{517, 403}, {279, 233}}</string>
+					<string>{{553, 241}, {292, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

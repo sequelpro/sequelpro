@@ -145,6 +145,8 @@
 	<string>\</string>
 	<key>CSVImportFirstLineIsHeader</key>
 	<true/>
+	<key>SQLExportUseCompression</key>
+	<false/>
 	<key>NoBOMforSQLdumpFile</key>
 	<true/>
 	<key>BlobTextEditorSpellCheckingEnabled</key>

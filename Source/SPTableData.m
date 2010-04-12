@@ -360,7 +360,7 @@
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
 		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK")
+						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:[NSApp mainWindow]
@@ -725,7 +725,7 @@
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([syntaxString isNSNull]) {
 		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK")
+						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:[NSApp mainWindow]

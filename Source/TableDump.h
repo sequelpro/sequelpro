@@ -27,7 +27,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class SPFieldMapperController;
+@class SPFieldMapperController, SPFileHandle;
 
 @interface TableDump : NSObject 
 {
@@ -83,6 +83,7 @@
 	IBOutlet id addTableContentSwitch;
 	IBOutlet id addErrorsSwitch;
 	IBOutlet id sqlFullStreamingSwitch;
+	IBOutlet id sqlCompressionSwitch;
 	IBOutlet id csvFullStreamingSwitch;
 	IBOutlet id multiCSVFullStreamingSwitch;
 	IBOutlet id multiXMLFullStreamingSwitch;
@@ -121,6 +122,8 @@
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
+
+	NSSavePanel *currentExportPanel;
 }
 
 // IBAction methods
@@ -148,21 +151,21 @@
 - (NSString *) mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;
 
 // Export methods
-- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
-- (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle;
+- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(SPFileHandle *)fileHandle;
+- (BOOL)dumpSchemaAsDotToFileHandle:(SPFileHandle *)fileHandle;
 - (BOOL)writeCsvForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult
-	toFileHandle:(NSFileHandle *)fileHandle
+	toFileHandle:(SPFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
 	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus totalRows:(NSInteger)totalRows silently:(BOOL)silently;
 - (BOOL)writeXmlForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult
-	toFileHandle:(NSFileHandle *)fileHandle
+	toFileHandle:(SPFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header totalRows:(NSInteger)totalRows silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
 - (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName;
 
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
-- (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
+- (BOOL)exportSelectedTablesToFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type;
 
 // New Export methods
 - (IBAction)switchTab:(id)sender;
@@ -174,5 +177,6 @@
 
 // Import/export delegate notifications
 - (void)panelSelectionDidChange:(id)sender;
+- (IBAction)updateExportCompressionSetting:(id)sender;
 
 @end
