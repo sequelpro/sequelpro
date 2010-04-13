@@ -550,6 +550,9 @@
 	// If no table is selected, return
 	if (!selectedTable) return;
 
+	// Wrap the values load in an autorelease pool to ensure full and timely release
+	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
+
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
@@ -670,6 +673,8 @@
 
 	// Trigger a full reload if required
 	if (fullTableReloadRequired) [self reloadTable:self];
+
+	[loadPool drain];
 }
 
 /*
