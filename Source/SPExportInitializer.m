@@ -207,7 +207,7 @@
 													  NSLocalizedString(@"Table", @"csv export table heading"),
 													  table,
 													  [exportCSVLinesTerminatedField stringValue], 
-													  [exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:NSUTF8StringEncoding]];
+													  [exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[connection encoding]]];
 						
 						singleFileHeaderHasBeenWritten = YES;
 					}
