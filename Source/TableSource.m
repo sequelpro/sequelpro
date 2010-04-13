@@ -913,16 +913,27 @@ closes the keySheet
 	}
 }
 
-/*
- * Show Error sheet (can be called from inside of a endSheet selector)
- * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
+/**
+ * A method to show an error sheet after a short delay, so that it can
+ * be called from within an endSheet selector. This should be called on 
+ * the main thread.
  */
--(void)showErrorSheetWith:(id)error
+-(void)showErrorSheetWith:(NSDictionary *)errorDictionary
 {
-	// error := first object is the title , second the message, only one button OK
-	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+
+	// If this method has been called directly, invoke a delay.  Invoking the delay
+	// on the main thread ensures the timer fires on the main thread.
+	if (![errorDictionary objectForKey:@"delayed"]) {
+		NSMutableDictionary *delayedErrorDictionary = [NSMutableDictionary dictionaryWithDictionary:errorDictionary];
+		[delayedErrorDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"delayed"];
+		[self performSelector:@selector(showErrorSheetWith:) withObject:delayedErrorDictionary afterDelay:0.3];
+		return;
+	}
+	
+	// Display the error sheet
+	SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"), 
 			nil, nil, tableWindow, self, nil, nil, nil,
-			[error objectAtIndex:1]);
+			[errorDictionary objectForKey:@"message"]);
 }
 
 /**
@@ -1751,11 +1762,10 @@ would result in a position change.
 		
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-			
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), relationName, [mySQLConnection getLastErrorMessage]]);	
+			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+			[errorDictionary setObject:NSLocalizedString(@"Unable to remove relation", @"error removing relation message") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), relationName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		} 
 	}
 	
@@ -1765,14 +1775,12 @@ would result in a position change.
 	
 	// Check for errors, but only if the query wasn't cancelled
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-		
-		[self performSelector:@selector(showErrorSheetWith:) 
-				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
-								[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
-								[mySQLConnection getLastErrorMessage]],
-							   nil] 
-				   afterDelay:0.3];
+		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+		[errorDictionary setObject:NSLocalizedString(@"Error", @"error") forKey:@"title"];
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
+									[mySQLConnection getLastErrorMessage]] forKey:@"message"];
+		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	} 
 	else {
 		[tableDataInstance resetAllData];
@@ -1819,11 +1827,10 @@ would result in a position change.
 		
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-			
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]]);	
+			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+			[errorDictionary setObject:NSLocalizedString(@"Unable to remove relation", @"error removing relation message") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		} 
 	}
 	
@@ -1837,11 +1844,10 @@ would result in a position change.
 	
 	// Check for errors, but only if the query wasn't cancelled
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-		
-		[self performSelector:@selector(showErrorSheetWith:) 
-				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Unable to remove index", @"error removing index message"),
-							   [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]], nil] 
-				   afterDelay:0.3];
+		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+		[errorDictionary setObject:NSLocalizedString(@"Unable to remove index", @"error removing index message") forKey:@"title"];
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	} 
 	else {
 		[tableDataInstance resetAllData];

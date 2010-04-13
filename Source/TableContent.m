@@ -731,7 +731,7 @@
 				[tableDocumentInstance setTaskPercentage:(rowsProcessed*relativeTargetRowCount)];
 			} else if (rowsProcessed == targetRowCount) {
 				[tableDocumentInstance setTaskPercentage:100.0];
-				[tableDocumentInstance performSelectorOnMainThread:@selector(setTaskProgressToIndeterminateAfterDelay:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:NO];
+				[[tableDocumentInstance onMainThread] setTaskProgressToIndeterminateAfterDelay:YES];
 			}
 		}
 

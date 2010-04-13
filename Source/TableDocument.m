@@ -1282,7 +1282,8 @@
  * Sets the task progress indicator back to indeterminate (also performed
  * automatically whenever a new task is started).
  * This can optionally be called with afterDelay set, in which case the intederminate
- * switch will be made a fter a short pause to minimise flicker for short actions.
+ * switch will be made after a short pause to minimise flicker for short actions.
+ * Should be called on the main thread.
  */
 - (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay
 {
@@ -4050,6 +4051,8 @@
 	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
 	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
 	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	[_encoding release];
 	[allDatabases release];

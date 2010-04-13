@@ -777,6 +777,7 @@ static SPQueryController *sharedQueryController = nil;
 - (void)dealloc
 {
 	messagesVisibleSet = nil;
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	
 	[dateFormatter release], dateFormatter = nil;
 	
