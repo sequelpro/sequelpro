@@ -152,10 +152,10 @@
 		
 		[exportFilePerTableCheck setHidden:isSQL];
 		[exportFilePerTableNote setHidden:isSQL];
-		
-		// Disable the 'filtered result' and 'query result' options
-		[[exportInputMatrix cellAtRow:0 column:0] setEnabled:hideColumns];
-		[[exportInputMatrix cellAtRow:1 column:0] setEnabled:hideColumns];
+				
+		// Enable/disable the 'filtered result' and 'query result' options
+		[[exportInputMatrix cellAtRow:0 column:0] setEnabled:((hideColumns) && ([[tableContentInstance currentResult] count] > 1))];
+		[[exportInputMatrix cellAtRow:1 column:0] setEnabled:((hideColumns) && ([[customQueryInstance currentResult] count] > 1))];
 		
 		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:hideColumns];
 		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:hideColumns];

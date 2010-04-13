@@ -3086,9 +3086,12 @@
 			return YES;
 		}
 	}
+	
+	if ([menuItem action] == @selector(export:)) {
+		return (([self database] != nil) && ([[tablesListInstance tables] count] > 1));
+	}
 
 	if ([menuItem action] == @selector(import:) ||
-		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
 		[menuItem action] == @selector(removeDatabase:))
 	{
