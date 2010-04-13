@@ -27,6 +27,42 @@
 
 #import "SPExporter.h"
 
+@class SPXMLExporter;
+
+@interface SPXMLExporterDelegate
+
+/**
+ *
+ */
+- (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter;
+
+/**
+ * 
+ */
+- (void)xmlExportProcessComplete:(SPXMLExporter *)exporter;
+
+/**
+ *
+ */
+- (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter;
+
+/**
+ *
+ */
+- (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter;
+
+@end
+
 @interface SPXMLExporter : SPExporter 
+{
+	// XML data
+	NSArray *xmlDataArray;
+	
+	// Table
+	NSString *xmlTableName;
+}
+
+@property (readwrite, retain) NSArray *xmlDataArray;
+@property (readwrite, retain) NSString *xmlTableName;
 
 @end

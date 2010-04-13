@@ -27,7 +27,7 @@
 
 #import "SPExportController.h"
 
-@class SPCSVExporter, SPSQLExporter, SPFileHandle;
+@class SPCSVExporter, SPSQLExporter, SPXMLExporter, SPFileHandle;
 
 @interface SPExportController (SPExportInitializer)
 
@@ -36,7 +36,9 @@
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
 
 - (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
+- (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
 
+- (void)writeXMLHeaderToFileHandle:(SPFileHandle *)fileHandle;
 - (SPFileHandle *)getFileHandleForFilePath:(NSString *)filePath;
 
 @end

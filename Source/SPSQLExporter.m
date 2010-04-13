@@ -35,17 +35,13 @@
 @implementation SPSQLExporter
 
 @synthesize sqlExportTables;
-
 @synthesize sqlDatabaseHost;
 @synthesize sqlDatabaseName;
 @synthesize sqlDatabaseVersion;
-
 @synthesize sqlExportCurrentTable;
-
 @synthesize sqlOutputIncludeUTF8BOM;
 @synthesize sqlOutputIncludeErrors;
 @synthesize sqlOutputCompressFile;
-
 @synthesize sqlTableInformation;
 @synthesize sqlExportMaxProgress;
 

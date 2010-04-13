@@ -26,7 +26,87 @@
 #import "SPXMLExporterDelegate.h"
 #import "SPXMLExporter.h"
 #import "SPMainThreadTrampoline.h"
+#import "TableDocument.h"
 
-@implementation SPExportController (SPXMLExporterDelegate) 
+@implementation SPExportController (SPXMLExporterDelegate)
+
+/**
+ *
+ */
+- (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter
+{
+	[[exportProgressText onMainThread] displayIfNeeded];
+	
+	[[exportProgressIndicator onMainThread] setIndeterminate:YES];
+	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:YES];
+	[[exportProgressIndicator onMainThread] startAnimation:self];
+	
+	// Only update the progress text if this is a table export
+	if (exportSource == SPTableExport) {
+		// Update the current table export index
+		currentTableExportIndex = (exportTableCount - [exporters count]);
+		
+		[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
+	}
+	else {
+		[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Fetching data...", @"export label showing that the app is fetching data")];
+	}
+	
+	[[exportProgressText onMainThread] displayIfNeeded];
+}
+
+/**
+ * 
+ */
+- (void)xmlExportProcessComplete:(SPXMLExporter *)exporter
+{
+	NSUInteger exportCount = [exporters count];
+	
+	// If required add the next exporter to the operation queue
+	if ((exportCount > 0) && (exportSource == SPTableExport)) {
+		
+		[operationQueue addOperation:[exporters objectAtIndex:0]];
+		
+		// Remove the exporter we just added to the operation queue from our list of exporters 
+		// so we know it's already been done.
+		[exporters removeObjectAtIndex:0];
+	}
+	// Otherwise if the exporter list is empty, close the progress sheet
+	else {
+		[NSApp endSheet:exportProgressWindow returnCode:0];
+		[exportProgressWindow orderOut:self];
+		
+		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+	}
+}
+
+/**
+ *
+ */
+- (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter
+{
+	// Only update the progress text if this is a table export
+	if (exportSource == SPTableExport) {
+		[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
+	}
+	else {
+		[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing data...", @"export label showing app is writing data")];
+	}
+	
+	[[exportProgressText onMainThread] displayIfNeeded];
+	
+	[[exportProgressIndicator onMainThread] stopAnimation:self];
+	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
+	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
+	[[exportProgressIndicator onMainThread] setDoubleValue:0];
+}
+
+/**
+ *
+ */
+- (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter
+{
+	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
+}
 
 @end

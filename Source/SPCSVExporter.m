@@ -54,8 +54,8 @@
 		NSMutableString *csvString     = [NSMutableString string];
 		NSMutableString *csvCellString = [NSMutableString string];
 
-		NSArray *csvRow;
-		NSScanner *csvNumericTester;
+		NSArray *csvRow = nil;
+		NSScanner *csvNumericTester = nil;
 		MCPStreamingResult *streamingResult = nil;
 		NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString, *dataConversionString;
 
@@ -165,7 +165,7 @@
 		{
 			// Check for cancellation flag
 			if ([self isCancelled]) {
-				if ((![self csvDataArray]) && [self csvTableName]) {
+				if (streamingResult) {
 					[connection cancelCurrentQuery];
 					[streamingResult cancelResultLoad];
 				}
@@ -200,7 +200,10 @@
 			for (i = 0 ; i < csvCellCount; i++) 
 			{
 				// Check for cancellation flag
-				if ([self isCancelled]) return;
+				if ([self isCancelled]) {
+					[pool release];
+					return;
+				}
 				
 				csvCell = NSArrayObjectAtIndex(csvRow, i);
 								
@@ -348,7 +351,9 @@
  */
 - (void)dealloc
 {
-	[csvDataArray release], csvDataArray = nil;
+	if (csvDataArray) [csvDataArray release], csvDataArray = nil;
+	if (csvTableName) [csvTableName release], csvTableName = nil;
+	
 	[csvFieldSeparatorString release], csvFieldSeparatorString = nil;
 	[csvEnclosingCharacterString release], csvEnclosingCharacterString = nil;
 	[csvEscapeString release], csvEscapeString = nil;
