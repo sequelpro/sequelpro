@@ -29,6 +29,7 @@
 #import "SPStringAdditions.h"
 #import "SPTableData.h"
 #import "TableDocument.h"
+#import "TablesList.h"
 #import "SPGrowlController.h"
 #import "SPMainThreadTrampoline.h"
 #import "TableDocument.h"
@@ -104,9 +105,8 @@
 		case SPXMLExport:
 			exportTypeLabel = @"XML";
 			break;
-			
 	}
-	
+		
 	// Begin the export based on the source
 	switch (exportSource) 
 	{
@@ -290,17 +290,20 @@
 			switch (exportSource) 
 			{
 				case SPFilteredExport:
-					filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
+					filename = [NSString stringWithFormat:@"%@_view.xml", [tableDocumentInstance table]];
 					break;
 				case SPQueryExport:
-					filename = @"query_result";
+					filename = @"query_result.xml";
 					break;
 				case SPTableExport:
-					filename = [tableDocumentInstance database];
+					filename = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
 					break;
 			}
 			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:filename]];
+			
+			// Write the file header
+			[self writeXMLHeaderToFileHandle:singleFileHandle];
 		}
 		
 		// Start the export process depending on the data source
@@ -438,6 +441,10 @@
 		[xmlExporter setXmlDataArray:dataArray];
 	}
 	
+	// Regardless of the export source, set exporter's table name as it's used in the output
+	// of table and table content exports.
+	[xmlExporter setXmlTableName:[tablesListInstance tableName]];
+	
 	// If required create separate files
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:table];
@@ -469,14 +476,16 @@
 	[header setString:@"<?xml version=\"1.0\"?>\n\n"];
 	[header appendString:@"<!--\n-\n"];
 	[header appendString:@"- Sequel Pro XML dump\n"];
-	[header appendString:[NSString stringWithFormat:@"- Version %@\n\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
+	[header appendString:[NSString stringWithFormat:@"- Version %@\n-\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
 	[header appendString:[NSString stringWithFormat:@"- %@\n- %@\n-\n", SPHomePageURL, SPDevURL]];
 	[header appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n", [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
 	[header appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
 	[header appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
 	[header appendString:@"-\n-->\n\n"];
 	
-	[header appendString:[NSString stringWithFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]]];
+	if (exportSource == SPTableExport) {
+		[header appendString:[NSString stringWithFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]]];
+	}
 		
 	[fileHandle writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];	
 }

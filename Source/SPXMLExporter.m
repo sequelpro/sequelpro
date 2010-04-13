@@ -57,6 +57,14 @@
 		NSUInteger xmlRowCount = 0;
 		NSUInteger i, totalRows, currentRowIndex, lastProgressValue, currentPoolDataLength;
 		
+		// Check to see if we have at least a table name or data array
+		if ((![self xmlTableName]) && (![self xmlDataArray]) ||
+			([[self xmlTableName] isEqualToString:@""]) && ([[self xmlDataArray] count] == 0))
+		{
+			[pool release];
+			return;
+		}
+				
 		// Inform the delegate that the export process is about to begin
 		if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessWillBegin:)]) {
 			[[self delegate] performSelectorOnMainThread:@selector(xmlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
@@ -90,7 +98,7 @@
 		[[self exportOutputFileHandle] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Write an opening tag in the form of the table name
-		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t<%@>\n", [[self xmlTableName] HTMLEscapeString]] dataUsingEncoding:[self exportOutputEncoding]]];
+		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t<%@>\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Set up the starting row, which is 0 for streaming result sets and
 		// 1 for supplied arrays which include the column headers as the first row.
@@ -193,7 +201,7 @@
 		}
 		
 		// Write the closing tag for the table
-		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", [[self xmlTableName] HTMLEscapeString]] dataUsingEncoding:[self exportOutputEncoding]]];
+		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Write data to disk
 		[[self exportOutputFileHandle] synchronizeFile];

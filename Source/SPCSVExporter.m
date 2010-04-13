@@ -65,6 +65,14 @@
 	
 		NSUInteger i, totalRows, csvCellCount = 0;
 		
+		// Check to see if we have at least a table name or data array
+		if ((![self csvTableName]) && (![self csvDataArray]) ||
+			([[self csvTableName] isEqualToString:@""]) && ([[self csvDataArray] count] == 0))
+		{
+			[pool release];
+			return;
+		}
+		
 		// Check that we have all the required info before starting the export
 		if ((![self csvOutputFieldNames]) ||
 			(![self csvFieldSeparatorString]) ||

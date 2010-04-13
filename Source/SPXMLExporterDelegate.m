@@ -83,7 +83,9 @@
 	}
 	// Otherwise if the exporter list is empty, close the progress sheet
 	else {
-		[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
+		if (exportSource == SPTableExport) {
+			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
+		}
 		
 		// Close the last exporter's file handle
 		[[exporter exportOutputFileHandle] closeFile]; 
