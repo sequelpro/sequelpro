@@ -194,6 +194,23 @@
 					[csvExporter setExportOutputFileHandle:singleFileHandle];
 					
 					if (!singleFileHeaderHasBeenWritten) {
+						
+						NSMutableString *lineEnding = [NSMutableString stringWithString:[exportCSVLinesTerminatedField stringValue]];
+						
+						// Escape tabs, line endings and carriage returns
+						[lineEnding replaceOccurrencesOfString:@"\\t" withString:@"\t"
+													   options:NSLiteralSearch
+														 range:NSMakeRange(0, [lineEnding length])];
+						
+						
+						[lineEnding replaceOccurrencesOfString:@"\\n" withString:@"\n"
+													   options:NSLiteralSearch
+														 range:NSMakeRange(0, [lineEnding length])];
+						
+						[lineEnding replaceOccurrencesOfString:@"\\r" withString:@"\r"
+													   options:NSLiteralSearch
+														 range:NSMakeRange(0, [lineEnding length])];
+						
 						// Write the file header and the first table name
 						[singleFileHandle writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
 													  NSLocalizedString(@"Host", @"csv export host heading"),
@@ -202,12 +219,12 @@
 													  [tableDocumentInstance database], 
 													  NSLocalizedString(@"Generation Time", @"csv export generation time heading"),
 													  [NSDate date], 
-													  [exportCSVLinesTerminatedField stringValue], 
-													  [exportCSVLinesTerminatedField stringValue],
+													  lineEnding, 
+													  lineEnding,
 													  NSLocalizedString(@"Table", @"csv export table heading"),
 													  table,
-													  [exportCSVLinesTerminatedField stringValue], 
-													  [exportCSVLinesTerminatedField stringValue]] dataUsingEncoding:[connection encoding]]];
+													  lineEnding, 
+													  lineEnding] dataUsingEncoding:[connection encoding]]];
 						
 						singleFileHeaderHasBeenWritten = YES;
 					}
