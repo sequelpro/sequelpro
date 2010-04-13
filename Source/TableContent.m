@@ -761,9 +761,13 @@
 		pthread_mutex_unlock(&tableValuesLock);
 	}
 
-	// Ensure the table is aware of changes, especially for non-threaded loads
-	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
-	[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+	// Ensure the table is aware of changes
+    if ([NSThread isMainThread]) {
+        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+    } else {
+        [tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+    }
 	
 	// Clean up the autorelease pool and reset the progress indicator
 	[dataLoadingPool drain];
@@ -1963,13 +1967,12 @@
  */
 - (BOOL)saveRowOnDeselect
 {
+	// Save any edits which have been made but not saved to the table yet.
+	[tableWindow endEditingFor:nil];
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
 	isSavingRow = YES;
-
-	// Save any edits which have been made but not saved to the table yet.
-	[tableWindow endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
@@ -3128,7 +3131,7 @@
 #pragma mark Other methods
 
 /*
- * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
+ * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
@@ -3139,9 +3142,8 @@
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
 
-	// Trap enter and tab keys
-	if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ||
-		[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	// Trap tab key
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
 	{
 		[[control window] makeFirstResponder:control];
 
@@ -3170,7 +3172,39 @@
 		}
 		return TRUE;
 	}
-	
+    
+    // Trap enter key
+    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+    {
+        [[control window] makeFirstResponder:control];
+        [self addRowToDB];
+		return TRUE;
+    }
+    
+    // Trap down arrow key
+    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
+    {
+        if (row==tableRowsCount) return TRUE; //already at the end of the list
+
+        [[control window] makeFirstResponder:control];
+        [self addRowToDB];
+        [tableContentView selectRow:row+1 byExtendingSelection:NO];
+        [tableContentView editColumn:column row:row+1 withEvent:nil select:YES];
+		return TRUE;
+    }
+    
+    // Trap up arrow key
+    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
+    {
+        if (row==0) return TRUE; //already at the beginning of the list
+        
+        [[control window] makeFirstResponder:control];
+        [self addRowToDB];
+        [tableContentView selectRow:row-1 byExtendingSelection:NO];
+        [tableContentView editColumn:column row:row-1 withEvent:nil select:YES];
+		return TRUE;
+    }
+    
 	// Trap the escape key
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
 			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
