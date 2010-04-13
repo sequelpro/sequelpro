@@ -141,6 +141,9 @@
 	
 	NSUserDefaults *prefs;
 	
+	// Current toolbar item
+	NSToolbarItem *currentToolbarItem;
+	
 	// Encodings
 	NSString *sqlPreviousConnectionEncoding;
 	BOOL sqlPreviousConnectionEncodingViaLatin1;

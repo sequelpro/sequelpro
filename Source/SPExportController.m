@@ -139,12 +139,14 @@
 {
 	if ([sender isKindOfClass:[NSToolbarItem class]]) {
 		
-		NSString *tabLabel = [[sender label] lowercaseString];
+		currentToolbarItem = sender;
+		
+		NSString *tabLabel = [[currentToolbarItem label] lowercaseString];
 		
 		[exportTabBar selectTabViewItemWithIdentifier:tabLabel];
 		
 		BOOL isCSV = [tabLabel isEqualToString:@"csv"];
-		BOOL isSQL = [[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"];
+		BOOL isSQL = [tabLabel isEqualToString:@"sql"];
 		BOOL hideColumns = (isCSV || [tabLabel isEqualToString:@"xml"]);
 		
 		[exportUseUTF8BOMButton setEnabled:(!hideColumns)];
@@ -245,9 +247,9 @@
 						   [NSNumber numberWithInt:SPTableTypeTable], 
 						   nil]];
 	}
-	
+		
 	// For SQL only, add procedures and functions
-	if ([[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"]) {
+	if ([[[currentToolbarItem label] lowercaseString] isEqualToString:@"sql"]) {
 		NSArray *procedures = [tablesListInstance allProcedureNames];
 		
 		for (id procName in procedures) 
@@ -293,6 +295,8 @@
 	}
 	
 	[exportTableList reloadData];
+	
+	[self _toggleExportButton];
 }
 
 /**
@@ -447,10 +451,13 @@
  */
 - (void)_toggleExportButton
 {
-	BOOL isCSV = [[exportToolbar selectedItemIdentifier] isEqualToString:@"csv"];
-	BOOL isSQL = [[exportToolbar selectedItemIdentifier] isEqualToString:@"sql"];
+	NSString *label = [[currentToolbarItem label] lowercaseString];
 	
-	if (isCSV) {
+	BOOL isSQL = [label isEqualToString:@"sql"];
+	BOOL isCSV = [label isEqualToString:@"csv"];
+	BOOL isXML = [label isEqualToString:@"xml"];
+		
+	if (isCSV || isXML) {
 		[exportButton setEnabled:NO];
 		
 		// Only enable the button if at least one table is selected
