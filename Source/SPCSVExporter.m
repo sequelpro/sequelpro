@@ -330,8 +330,8 @@
 			}
 		}
 		
-		// Close the file
-		[[self exportOutputFileHandle] closeFile];
+		// Write data to disk
+		[[self exportOutputFileHandle] synchronizeFile];
 		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];

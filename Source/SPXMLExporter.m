@@ -31,12 +31,6 @@
 #import "SPFileHandle.h"
 #import "SPConstants.h"
 
-@interface SPXMLExporter (PrivateAPI)
-
-- (NSString *)_HTMLEscapeString:(NSString *)string;
-
-@end
-
 @implementation SPXMLExporter
 
 @synthesize xmlDataArray;
@@ -62,15 +56,6 @@
 		
 		NSUInteger xmlRowCount = 0;
 		NSUInteger i, totalRows, currentRowIndex, lastProgressValue, progressBarWidth, currentPoolDataLength;
-		
-		// Check that we have all the required info before starting the export
-		/*if ((![self xmlDatabaseHost])     || ([[self xmlDatabaseHost] isEqualToString:@""]) ||
-			(![self xmlDatabaseName])     || ([[self xmlDatabaseName] isEqualToString:@""]) ||
-			(![self xmlDatabaseVersion]   || ([[self xmlDatabaseName] isEqualToString:@""])))
-		{
-			[pool release];
-			return;
-		}*/
 		
 		// Inform the delegate that the export process is about to begin
 		if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessWillBegin:)]) {
@@ -103,27 +88,14 @@
 		{
 			[xmlTags addObject:[NSMutableArray array]];
 			
-			[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"\t\t<%@>", [self _HTMLEscapeString:[[xmlRow objectAtIndex:i] description]]]];
-			[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"</%@>\n", [self _HTMLEscapeString:[[xmlRow objectAtIndex:i] description]]]];
+			[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"\t\t<%@>", [[[xmlRow objectAtIndex:i] description] HTMLEscapeString]]];
+			[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"</%@>\n", [[[xmlRow objectAtIndex:i] description] HTMLEscapeString]]];
 		}
-		
-		/*if ( !silently ) {
-			
-			// Set the progress text
-			[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting XML", @"text showing that the application is exporting XML")];
-			[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-			
-			// Open progress sheet
-			[[NSApp onMainThread] beginSheet:singleProgressSheet
-							  modalForWindow:tableWindow modalDelegate:self
-							  didEndSelector:nil contextInfo:nil];
-			[[singleProgressSheet onMainThread] makeKeyWindow];
-		}*/
 		
 		[[self exportOutputFileHandle] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Write an opening tag in the form of the table name
-		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t<%@>\n", [self _HTMLEscapeString:[self xmlTableName]]] dataUsingEncoding:[self exportOutputEncoding]]];
+		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t<%@>\n", [[self xmlTableName] HTMLEscapeString]] dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Set up the starting row, which is 0 for streaming result sets and
 		// 1 for supplied arrays which include the column headers as the first row.
@@ -185,7 +157,7 @@
 				
 				// Add the opening and closing tag and the contents to the XML string
 				[xmlString appendString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(xmlTags, i), 0)];
-				[xmlString appendString:[self _HTMLEscapeString:xmlItem]];
+				[xmlString appendString:[xmlItem HTMLEscapeString]];
 				[xmlString appendString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(xmlTags, i), 1)];
 			}
 			
@@ -221,19 +193,10 @@
 		}
 		
 		// Write the closing tag for the table
-		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t</%@>", [self _HTMLEscapeString:[self xmlTableName]]] dataUsingEncoding:[self exportOutputEncoding]]];
-				
-		// Close the progress sheet if appropriate
-		/*if ( !silently ) {
-			[self closeAndStopProgressSheet];
-		} else {
-			
-			// Restore the progress bar to a normal maximum
-			[[singleProgressBar onMainThread] setMaxValue:100];
-		}*/
+		[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", [[self xmlTableName] HTMLEscapeString]] dataUsingEncoding:[self exportOutputEncoding]]];
 		
-		// Close the file
-		[[self exportOutputFileHandle] closeFile];
+		// Write data to disk
+		[[self exportOutputFileHandle] synchronizeFile];
 		
 		// Mark the process as not running
 		[self setExportProcessIsRunning:NO];
@@ -246,32 +209,6 @@
 		[pool release];
 	}
 	@catch (NSException *e) { }
-}
-
-/**
- * Escapes HTML special characters.
- */
-- (NSString *)_HTMLEscapeString:(NSString *)string
-{
-	NSMutableString *mutableString = [NSMutableString stringWithString:string];
-	
-	[mutableString replaceOccurrencesOfString:@"&" withString:@"&amp;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	
-	[mutableString replaceOccurrencesOfString:@"<" withString:@"&lt;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	
-	[mutableString replaceOccurrencesOfString:@">" withString:@"&gt;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	
-	[mutableString replaceOccurrencesOfString:@"\"" withString:@"&quot;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	
-	return [NSString stringWithString:mutableString];
 }
 
 /**

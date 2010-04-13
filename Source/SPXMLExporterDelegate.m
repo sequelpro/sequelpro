@@ -27,6 +27,8 @@
 #import "SPXMLExporter.h"
 #import "SPMainThreadTrampoline.h"
 #import "TableDocument.h"
+#import "SPFileHandle.h"
+#import "SPStringAdditions.h"
 
 @implementation SPExportController (SPXMLExporterDelegate)
 
@@ -65,6 +67,14 @@
 	// If required add the next exporter to the operation queue
 	if ((exportCount > 0) && (exportSource == SPTableExport)) {
 		
+		// If we're exporting to multiple files then close the file handle of the exporter
+		// that just finished, ensuring its data is written to disk.
+		if (exportToMultipleFiles) {
+			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
+			
+			[[exporter exportOutputFileHandle] closeFile]; 
+		}
+		
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
 		
 		// Remove the exporter we just added to the operation queue from our list of exporters 
@@ -73,9 +83,15 @@
 	}
 	// Otherwise if the exporter list is empty, close the progress sheet
 	else {
+		[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
+		
+		// Close the last exporter's file handle
+		[[exporter exportOutputFileHandle] closeFile]; 
+		
 		[NSApp endSheet:exportProgressWindow returnCode:0];
 		[exportProgressWindow orderOut:self];
 		
+		// Restore query mode
 		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	}
 }

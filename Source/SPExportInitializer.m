@@ -150,8 +150,6 @@
 	   didEndSelector:nil 
 		  contextInfo:nil];
 	
-	SPExporter *exporter;
-	
 	// CSV export
 	if (exportType == SPCSVExport) {
 		
@@ -214,15 +212,17 @@
 						singleFileHeaderHasBeenWritten = YES;
 					}
 				}
+				
+				[exporters addObject:csvExporter];
 			}		
 		}
 		else {
 			csvExporter = [self initializeCSVExporterForTable:nil orDataArray:dataArray];
 			
 			[csvExporter setExportOutputFileHandle:singleFileHandle];
+			
+			[exporters addObject:csvExporter];
 		}
-		
-		exporter = csvExporter;
 	}
 	// SQL export
 	else if (exportType == SPSQLExport) {
@@ -239,6 +239,11 @@
 		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
 		[sqlExporter setSqlOutputCompressFile:[exportCompressOutputFile state]];
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
+		
+		// Set generic properties
+		[sqlExporter setConnection:connection];
+		[sqlExporter setExportOutputEncoding:[connection encoding]];
+		[sqlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
 		sqlPreviousConnectionEncoding = [tableDocumentInstance connectionEncoding];
@@ -268,7 +273,7 @@
 				
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		
-		exporter = sqlExporter;
+		[exporters addObject:sqlExporter];
 	}
 	// XML export
 	else if (exportType == SPXMLExport) {
@@ -321,24 +326,19 @@
 						singleFileHeaderHasBeenWritten = YES;
 					}
 				}
+				
+				[exporters addObject:xmlExporter];
 			}		
 		}
 		else {
 			xmlExporter = [self initializeXMLExporterForTable:nil orDataArray:dataArray];
 			
 			[xmlExporter setExportOutputFileHandle:singleFileHandle];
-		}
 		
-		exporter = xmlExporter;
+			[exporters addObject:xmlExporter];
+		}
 	}
-	
-	// Set the exporter's generic properties
-	[exporter setConnection:connection];
-	[exporter setExportOutputEncoding:[connection encoding]];
-	[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
-	
-	[exporters addObject:exporter];
-	
+		
 	// Add the first exporter to the operation queue
 	[operationQueue addOperation:[exporters objectAtIndex:0]];
 	
@@ -408,11 +408,13 @@
 		
 		fileHandle = [self getFileHandleForFilePath:exportFile];
 		
-		// Write the file header
-		[self writeXMLHeaderToFileHandle:fileHandle];
-		
 		[csvExporter setExportOutputFileHandle:fileHandle];
 	}
+	
+	// Set generic properties
+	[csvExporter setConnection:connection];
+	[csvExporter setExportOutputEncoding:[connection encoding]];
+	[csvExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 
 	return [csvExporter autorelease];
 }
@@ -436,13 +438,21 @@
 	}
 	
 	// If required create separate files
-	if ((exportSource == SPTableExport) && [self exportToMultipleFiles] && (exportTableCount > 0)) {
+	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		exportFile = [[exportPathField stringValue] stringByAppendingPathComponent:table];
 		
 		fileHandle = [self getFileHandleForFilePath:exportFile];
+						
+		// Write the file header
+		[self writeXMLHeaderToFileHandle:fileHandle];
 		
 		[xmlExporter setExportOutputFileHandle:fileHandle];
 	}
+	
+	// Set generic properties
+	[xmlExporter setConnection:connection];
+	[xmlExporter setExportOutputEncoding:[connection encoding]];
+	[xmlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 	
 	return [xmlExporter autorelease];
 }
@@ -464,7 +474,9 @@
 	[header appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
 	[header appendString:@"-\n-->\n\n"];
 	
-	[fileHandle writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];
+	[header appendString:[NSString stringWithFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]]];
+		
+	[fileHandle writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];	
 }
 
 /**

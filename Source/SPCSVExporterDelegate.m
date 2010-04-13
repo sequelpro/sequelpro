@@ -69,15 +69,24 @@
 	// If required add the next exporter to the operation queue
 	if ((exportCount > 0) && (exportSource == SPTableExport)) {
 			
-		// If we're exporting multiple tables to a single file then append some space and the next table's
-		// name, but only if there is at least 2 exportes left.
-		[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@", 
-													   [exporter csvLineEndingString], 
-													   [exporter csvLineEndingString],
-													   NSLocalizedString(@"Table", @"csv export table heading"),
-													   [(SPCSVExporter *)[exporters objectAtIndex:0] csvTableName],
-													   [exporter csvLineEndingString],
-													   [exporter csvLineEndingString]] dataUsingEncoding:[exporter exportOutputEncoding]]];		
+		// If we're only exporting to a single file then write a header for the next table
+		if (!exportToMultipleFiles) {
+			
+			// If we're exporting multiple tables to a single file then append some space and the next table's
+			// name, but only if there is at least 2 exportes left.
+			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@", 
+														   [exporter csvLineEndingString], 
+														   [exporter csvLineEndingString],
+														   NSLocalizedString(@"Table", @"csv export table heading"),
+														   [(SPCSVExporter *)[exporters objectAtIndex:0] csvTableName],
+														   [exporter csvLineEndingString],
+														   [exporter csvLineEndingString]] dataUsingEncoding:[exporter exportOutputEncoding]]];
+		}
+		// Otherwise close the file handle of the exporter that just finished 
+		// ensuring it's data is written to disk.
+		else {
+			[[exporter exportOutputFileHandle] closeFile];
+		}
 		
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
 		
@@ -87,9 +96,13 @@
 	}
 	// Otherwise if the exporter list is empty, close the progress sheet
 	else {
+		// Close the last exporter's file handle
+		[[exporter exportOutputFileHandle] closeFile];
+		
 		[NSApp endSheet:exportProgressWindow returnCode:0];
 		[exportProgressWindow orderOut:self];
 		
+		// Restore query mode
 		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	}
 }

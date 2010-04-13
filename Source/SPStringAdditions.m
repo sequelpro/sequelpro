@@ -83,11 +83,9 @@
 }
 
 
-// -------------------------------------------------------------------------------
-// stringForTimeInterval:
-//
-// Returns a human readable version string of the supplied time interval.
-// -------------------------------------------------------------------------------
+/**
+ * Returns a human readable version string of the supplied time interval.
+ */ 
 + (NSString *)stringForTimeInterval:(CGFloat)timeInterval
 {
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
@@ -145,42 +143,64 @@
 	return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:timeInterval]];
 }
 
+/**
+ * Escapes HTML special characters.
+ */
+- (NSString *)HTMLEscapeString
+{
+	NSMutableString *mutableString = [NSMutableString stringWithString:self];
+	
+	[mutableString replaceOccurrencesOfString:@"&" withString:@"&amp;"
+									  options:NSLiteralSearch
+										range:NSMakeRange(0, [mutableString length])];
+	
+	[mutableString replaceOccurrencesOfString:@"<" withString:@"&lt;"
+									  options:NSLiteralSearch
+										range:NSMakeRange(0, [mutableString length])];
+	
+	[mutableString replaceOccurrencesOfString:@">" withString:@"&gt;"
+									  options:NSLiteralSearch
+										range:NSMakeRange(0, [mutableString length])];
+	
+	[mutableString replaceOccurrencesOfString:@"\"" withString:@"&quot;"
+									  options:NSLiteralSearch
+										range:NSMakeRange(0, [mutableString length])];
+	
+	return [NSString stringWithString:mutableString];
+}
 
-// -------------------------------------------------------------------------------
-// backtickQuotedString
-//
-// Returns the string quoted with backticks as required for MySQL identifiers
-// eg.:  tablename    =>   `tablename`
-//       my`table     =>   `my``table`
-// -------------------------------------------------------------------------------
+/**
+ * Returns the string quoted with backticks as required for MySQL identifiers
+ * eg.:  tablename    =>   `tablename`
+ *       my`table     =>   `my``table`
+ */
 - (NSString *)backtickQuotedString
 {
 	return [NSString stringWithFormat: @"`%@`", [self stringByReplacingOccurrencesOfString:@"`" withString:@"``"]];
 }
 
-// -------------------------------------------------------------------------------
-// tickQuotedString
-//
-// Returns the string quoted with ticks as required for MySQL identifiers
-// eg.:  tablename    =>   'tablename'
-//       my'table     =>   'my''table'
-// -------------------------------------------------------------------------------
+/**
+ * Returns the string quoted with ticks as required for MySQL identifiers
+ * eg.:  tablename    =>   'tablename'
+ *       my'table     =>   'my''table'
+ */
 - (NSString *)tickQuotedString
 {
 	return [NSString stringWithFormat: @"'%@'", [self stringByReplacingOccurrencesOfString:@"'" withString:@"''"]];
 }
 
+/**
+ *
+ */
 - (NSString *)replaceUnderscoreWithSpace
 {
 	return [self stringByReplacingOccurrencesOfString:@"_" withString:@" "];
 }
 
-// -------------------------------------------------------------------------------
-// createViewSyntaxPrettifier
-//
-// Returns a 'CREATE VIEW SYNTAX' string a bit more readable
-// If the string doesn't match it returns the unchanged string.
-// -------------------------------------------------------------------------------
+/**
+ * Returns a 'CREATE VIEW SYNTAX' string a bit more readable
+ * If the string doesn't match it returns the unchanged string.
+ */
 - (NSString *)createViewSyntaxPrettifier
 {
 	NSRange searchRange = NSMakeRange(0, [self length]);
@@ -219,16 +239,13 @@
 	return(tblSyntax);
 }
 
-
-// -------------------------------------------------------------------------------
-// lineRangesForRange
-//
-// Returns an array of serialised NSRanges, each representing a line within the string
-// which is at least partially covered by the NSRange supplied.
-// Each line includes the line termination character(s) for the line.  As per
-// lineRangeForRange, lines are split by CR, LF, CRLF, U+2028 (Unicode line separator),
-// or U+2029 (Unicode paragraph separator).
-// -------------------------------------------------------------------------------
+/**
+ * Returns an array of serialised NSRanges, each representing a line within the string
+ * which is at least partially covered by the NSRange supplied.
+ * Each line includes the line termination character(s) for the line.  As per
+ * lineRangeForRange, lines are split by CR, LF, CRLF, U+2028 (Unicode line separator),
+ * or U+2029 (Unicode paragraph separator).
+ */
 - (NSArray *)lineRangesForRange:(NSRange)aRange
 {
 	NSMutableArray *lineRangesArray = [NSMutableArray array];
@@ -251,7 +268,6 @@
 	// Return the constructed array of ranges
 	return lineRangesArray;
 }
-
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
 /*
@@ -286,8 +302,10 @@
 }
 #endif
 
-
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(NSUInteger) mask
+/**
+ *
+ */
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet options:(NSUInteger)mask
 {
 	NSRange                 range;
 	NSMutableString*        newString = [NSMutableString string];
@@ -316,13 +334,17 @@
 	return newString;
 }
 
-
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet
+/**
+ *
+ */
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet
 {
 	return [self stringByRemovingCharactersInSet:charSet options:0];
 }
 
-// calculate the distance between two string case-insensitively
+/**
+ * Calculate the distance between two string case-insensitively
+ */
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB
 {
 	// normalize strings
@@ -368,10 +390,13 @@
 
 		return distance;
 	}
+	
 	return 0.0;
 }
 
-// return the minimum of a, b and c
+/**
+ * Returns the minimum of a, b and c
+ */
 - (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c
 {
 	NSInteger min = a;
