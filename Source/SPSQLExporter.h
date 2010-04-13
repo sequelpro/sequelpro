@@ -78,9 +78,6 @@
 	
 	// Table information
 	NSDictionary *sqlTableInformation;
-	
-	// Max progress
-	NSInteger sqlExportMaxProgress;
 }
 
 @property (readwrite, retain) NSArray *sqlExportTables;
@@ -96,6 +93,5 @@
 @property (readwrite, assign) BOOL sqlOutputCompressFile;
 
 @property (readwrite, retain) NSDictionary *sqlTableInformation;
-@property (readwrite, assign) NSInteger sqlExportMaxProgress;
 
 @end

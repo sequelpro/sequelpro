@@ -35,6 +35,7 @@
 @synthesize exportData;
 @synthesize exportOutputFileHandle;
 @synthesize exportOutputEncoding;
+@synthesize exportMaxProgress;
 
 /**
  * Initialise an instance of SPCSVExporter using the supplied delegate and set some default values.

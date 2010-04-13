@@ -55,7 +55,7 @@
 		NSMutableString *xmlItem = [NSMutableString string];
 		
 		NSUInteger xmlRowCount = 0;
-		NSUInteger i, totalRows, currentRowIndex, lastProgressValue, progressBarWidth, currentPoolDataLength;
+		NSUInteger i, totalRows, currentRowIndex, lastProgressValue, currentPoolDataLength;
 		
 		// Inform the delegate that the export process is about to begin
 		if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessWillBegin:)]) {
@@ -65,12 +65,7 @@
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
 		
-		// Updating the progress bar can take >20% of processing time - store details to only update when required
-		/*progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
 		lastProgressValue = 0;
-		[[singleProgressBar onMainThread] setIndeterminate:NO];
-		[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
-		[[singleProgressBar onMainThread] setDoubleValue:0];*/
 		
 		// Make a streaming request for the data if the data array isn't set
 		if ((![self xmlDataArray]) && [self xmlTableName]) {
@@ -172,10 +167,15 @@
 			// Update the progress counter and progress bar
 			currentRowIndex++;
 			
-			/*if (totalRows && (currentRowIndex*progressBarWidth/totalRows) > lastProgressValue) {
-				[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-				lastProgressValue = (currentRowIndex*progressBarWidth/totalRows);
-			}*/
+			// Update the progress
+			if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
+				
+				NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
+				
+				[self setExportProgressValue:progress];
+								
+				lastProgressValue = progress;
+			}
 			
 			// Inform the delegate that the export's progress has been updated
 			if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessProgressUpdated:)]) {

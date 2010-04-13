@@ -264,7 +264,7 @@
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Set the exporter's max progress
-		[sqlExporter setSqlExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
+		[sqlExporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
 		
 		[infoDict release];
 		[tableTypes release];
@@ -414,6 +414,7 @@
 	// Set generic properties
 	[csvExporter setConnection:connection];
 	[csvExporter setExportOutputEncoding:[connection encoding]];
+	[csvExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
 	[csvExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 
 	return [csvExporter autorelease];
@@ -452,6 +453,7 @@
 	// Set generic properties
 	[xmlExporter setConnection:connection];
 	[xmlExporter setExportOutputEncoding:[connection encoding]];
+	[xmlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
 	[xmlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 	
 	return [xmlExporter autorelease];

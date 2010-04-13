@@ -61,6 +61,8 @@
 	NSString *exportData;
 	SPFileHandle *exportOutputFileHandle;
 	NSStringEncoding exportOutputEncoding;
+
+	NSInteger exportMaxProgress;
 }
 
 @property (readwrite, assign) id delegate;
@@ -75,6 +77,8 @@
 @property (readwrite, retain) NSString *exportData;
 @property (readwrite, retain) SPFileHandle *exportOutputFileHandle;
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
+
+@property (readwrite, assign) NSInteger exportMaxProgress;
 
 - (id)initWithDelegate:(id)exportDelegate;
 

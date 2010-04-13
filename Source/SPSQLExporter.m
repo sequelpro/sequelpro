@@ -43,7 +43,6 @@
 @synthesize sqlOutputIncludeErrors;
 @synthesize sqlOutputCompressFile;
 @synthesize sqlTableInformation;
-@synthesize sqlExportMaxProgress;
 
 @interface SPSQLExporter (PrivateAPI)
 
@@ -314,9 +313,9 @@
 						[sqlString setString:@""];
 						
 						// Update the progress 
-						if ((j * ([self sqlExportMaxProgress] / rowCount)) > lastProgressValue) {
+						if ((j * ([self exportMaxProgress] / rowCount)) > lastProgressValue) {
 							
-							NSInteger progress = (j * ([self sqlExportMaxProgress] / rowCount));
+							NSInteger progress = (j * ([self exportMaxProgress] / rowCount));
 							
 							[self setExportProgressValue:progress];
 							
