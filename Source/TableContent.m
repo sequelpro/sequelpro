@@ -1333,8 +1333,6 @@
 	
 	//copy row
 	tempRow = [tableValues rowContentsAtIndex:[tableContentView selectedRow]];
-	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
-	tableRowsCount++;
 	
 	//if we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
@@ -1359,6 +1357,10 @@
 			[tempRow replaceObjectAtIndex:i withObject:[dbDataRow objectAtIndex:i]];
 		}
 	}
+	
+	//insert the copied row
+	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
+	tableRowsCount++;
 	
 	//select row and go in edit mode
 	[tableContentView reloadData];
