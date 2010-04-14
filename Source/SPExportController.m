@@ -87,7 +87,7 @@
 - (void)awakeFromNib
 {	
 	// Upon awakening select the SQL tab
-	[exportToolbar setSelectedItemIdentifier:@"sql"];
+	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
 	
 	// Disable the 'filtered result' and 'query result' options
 	[[exportInputMatrix cellAtRow:0 column:0] setEnabled:NO];
@@ -159,28 +159,47 @@
 {
 	if ([sender isKindOfClass:[NSToolbarItem class]]) {
 				
-		NSString *identifier = [[exportToolbar selectedItemIdentifier] lowercaseString];
+		currentToolbarItem = sender;
 		
-		[exportTabBar selectTabViewItemWithIdentifier:identifier];
+		NSString *tabLabel = [[currentToolbarItem label] lowercaseString];
 		
-		BOOL isCSV = [identifier isEqualToString:@"csv"];
-		BOOL isSQL = [identifier isEqualToString:@"sql"];
-		BOOL hideColumns = (isCSV || [identifier isEqualToString:@"xml"]);
-		
-		[exportUseUTF8BOMButton setEnabled:(!hideColumns)];
-		[exportCompressOutputFile setEnabled:(!hideColumns)];
-		
-		[exportFilePerTableCheck setHidden:isSQL];
-		[exportFilePerTableNote setHidden:isSQL];
+		[exportTabBar selectTabViewItemWithIdentifier:tabLabel];
 				
-		// Enable/disable the 'filtered result' and 'query result' options
-		[[exportInputMatrix cellAtRow:0 column:0] setEnabled:((hideColumns) && ([[tableContentInstance currentResult] count] > 1))];
-		[[exportInputMatrix cellAtRow:1 column:0] setEnabled:((hideColumns) && ([[customQueryInstance currentResult] count] > 1))];
+		BOOL isSQL      = [tabLabel isEqualToString:@"sql"];
+		BOOL isCSV      = [tabLabel isEqualToString:@"csv"];
+		BOOL isXML      = [tabLabel isEqualToString:@"xml"];
+		BOOL isGraphviz = [tabLabel isEqualToString:@"graphviz"];
 		
-		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:hideColumns];
-		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:hideColumns];
+		BOOL disable = (isCSV || isXML || isGraphviz);
 		
-		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(hideColumns) ? @"" : @"C"]; 
+		[exportUseUTF8BOMButton setEnabled:(!disable)];
+		[exportCompressOutputFile setEnabled:(!disable)];
+		
+		[exportFilePerTableCheck setHidden:(isSQL || isGraphviz)];
+		[exportFilePerTableNote setHidden:(isSQL || isGraphviz)];
+		
+		[exportTableList setEnabled:(!isGraphviz)];
+		[exportSelectAllTablesButton setEnabled:(!isGraphviz)];
+		[exportDeselectAllTablesButton setEnabled:(!isGraphviz)];
+		[exportRefreshTablesButton setEnabled:(!isGraphviz)];
+		
+		[[exportInputMatrix cellAtRow:2 column:0] setEnabled:(!isGraphviz)];
+		
+		if (isGraphviz) {
+			// Disable all source checkboxes
+			[[exportInputMatrix cellAtRow:0 column:0] setEnabled:NO];
+			[[exportInputMatrix cellAtRow:1 column:0] setEnabled:NO];
+		}
+		else {
+			// Enable/disable the 'filtered result' and 'query result' options
+			[[exportInputMatrix cellAtRow:0 column:0] setEnabled:((disable) && ([[tableContentInstance currentResult] count] > 1))];
+			[[exportInputMatrix cellAtRow:1 column:0] setEnabled:((disable) && ([[customQueryInstance currentResult] count] > 1))];			
+		}
+		
+		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:disable];
+		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:disable];
+		
+		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(disable) ? @"" : @"C"]; 
 		
 		[exportCSVNULLValuesAsTextField setEnabled:isCSV];
 		[exportCSVNULLValuesAsTextField setStringValue:(isCSV) ? [prefs stringForKey:SPNullValue] : @""]; 
@@ -267,7 +286,7 @@
 	}
 		
 	// For SQL only, add procedures and functions
-	if ([[[exportToolbar selectedItemIdentifier] lowercaseString] isEqualToString:@"sql"]) {
+	if ([[[currentToolbarItem label] lowercaseString] isEqualToString:@"sql"]) {
 		NSArray *procedures = [tablesListInstance allProcedureNames];
 		
 		for (id procName in procedures) 
@@ -411,7 +430,7 @@
 
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	NSMutableArray *items = [NSMutableArray arrayWithCapacity:6];
+	NSMutableArray *items = [NSMutableArray array];
 	
 	for (NSToolbarItem *item in [toolbar items])
 	{	
@@ -469,11 +488,11 @@
  */
 - (void)_toggleExportButton
 {
-	NSString *identifier = [[exportToolbar selectedItemIdentifier] lowercaseString];
+	NSString *label = [[currentToolbarItem label] lowercaseString];
 	
-	BOOL isSQL = [identifier isEqualToString:@"sql"];
-	BOOL isCSV = [identifier isEqualToString:@"csv"];
-	BOOL isXML = [identifier isEqualToString:@"xml"];
+	BOOL isSQL = [label isEqualToString:@"sql"];
+	BOOL isCSV = [label isEqualToString:@"csv"];
+	BOOL isXML = [label isEqualToString:@"xml"];
 		
 	if (isCSV || isXML) {
 		[exportButton setEnabled:NO];

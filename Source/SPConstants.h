@@ -53,12 +53,13 @@ typedef NSUInteger SPConnectionType;
 
 // Export type constants
 enum {
-	SPSQLExport   = 1,
-	SPCSVExport   = 2,
-	SPXMLExport   = 3,
-	SPPDFExport   = 4,
-	SPHTMLExport  = 5,
-	SPExcelExport = 6
+	SPSQLExport      = 1,
+	SPCSVExport      = 2,
+	SPXMLExport      = 3,
+	SPPDFExport      = 4,
+	SPHTMLExport     = 5,
+	SPExcelExport    = 6,
+	SPGraphvizExport = 7
 };
 typedef NSUInteger SPExportType;
 

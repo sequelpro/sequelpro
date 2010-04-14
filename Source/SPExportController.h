@@ -91,10 +91,10 @@
 	
 	// CSV
 	IBOutlet NSButton *exportCSVIncludeFieldNamesCheck;
-    IBOutlet NSComboBox *exportCSVFieldsTerminatedField;
-    IBOutlet NSComboBox *exportCSVFieldsWrappedField;
-    IBOutlet NSComboBox *exportCSVFieldsEscapedField;
-    IBOutlet NSComboBox *exportCSVLinesTerminatedField;
+	IBOutlet NSComboBox *exportCSVFieldsTerminatedField;
+	IBOutlet NSComboBox *exportCSVFieldsWrappedField;
+	IBOutlet NSComboBox *exportCSVFieldsEscapedField;
+	IBOutlet NSComboBox *exportCSVLinesTerminatedField;
 	
 	// HTML
 	IBOutlet NSButton *exportHTMLIncludeStructureCheck;
@@ -144,6 +144,9 @@
 	NSUInteger windowMinHeigth;
 	
 	NSUserDefaults *prefs;
+	
+	// Current toolbar item
+	NSToolbarItem *currentToolbarItem;
 	
 	// Encodings
 	NSString *sqlPreviousConnectionEncoding;
