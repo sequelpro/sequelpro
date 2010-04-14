@@ -62,6 +62,8 @@
 		currentTableExportIndex = 0;
 		
 		exportTypeLabel = @"";
+		sqlPreviousConnectionEncoding = @"";
+		sqlPreviousConnectionEncodingViaLatin1 = NO;
 		
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
@@ -118,18 +120,36 @@
 }
 
 /**
+ *
+ */
+- (void)openExportErrorsSheetWithString:(NSString *)errors
+{
+	[errorsTextView setString:@""];
+	[errorsTextView setString:errors];
+	
+	[NSApp beginSheet:errorsWindow 
+	   modalForWindow:tableWindow 
+		modalDelegate:self 
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		  contextInfo:nil];
+}
+
+/**
  * Closes the export dialog.
  */
 - (IBAction)closeSheet:(id)sender
 {
-	// Close the advanced options view if it's open
-	[exportAdvancedOptionsView setHidden:YES];
-	[exportAdvancedOptionsViewButton setState:NSOffState];
+	if ([sender window] == [self window]) {
+		
+		// Close the advanced options view if it's open
+		[exportAdvancedOptionsView setHidden:YES];
+		[exportAdvancedOptionsViewButton setState:NSOffState];
+		
+		[self _resizeWindowByHeightDelta:0];
+	}
 	
-	[self _resizeWindowByHeightDelta:0];
-	
-	[NSApp endSheet:[self window] returnCode:[sender tag]];
-	[[self window] orderOut:self];
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 /**

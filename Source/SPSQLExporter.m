@@ -39,6 +39,7 @@
 @synthesize sqlDatabaseName;
 @synthesize sqlDatabaseVersion;
 @synthesize sqlExportCurrentTable;
+@synthesize sqlExportErrors;
 @synthesize sqlOutputIncludeUTF8BOM;
 @synthesize sqlOutputIncludeErrors;
 @synthesize sqlOutputCompressFile;
@@ -82,7 +83,7 @@
 		
 		NSMutableString *metaString = [NSMutableString string];
 		NSMutableString *cellValue  = [NSMutableString string];
-		NSMutableString *errors     = [NSMutableString string];
+		NSMutableString *errors     = [[NSMutableString alloc] init];
 		NSMutableString *sqlString  = [[NSMutableString alloc] init];
 		
 		NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
@@ -105,6 +106,9 @@
 		
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
+		
+		// Clear errors
+		[self setSqlExportErrors:@""];
 				
 		// Copy over the selected item names into tables in preparation for iteration
 		NSMutableArray *targetArray;
@@ -213,6 +217,8 @@
 				
 				[tableDetails release];
 			}
+			
+			[errors appendString:@"Test error\n"];
 			
 			if ([connection queryErrored]) {
 				[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
@@ -652,12 +658,11 @@
 		
 		// Write footer-type information to the file
 		[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-		
-		// Show errors sheet if there have been errors
-		/*if ( [errors length] ) {
-			[self showErrorSheetWithMessage:errors];
-		}*/
 				
+		// Set export errors
+		[self setSqlExportErrors:errors];
+				
+		[errors release];
 		[sqlString release];
 		
 		// Close the file
@@ -667,13 +672,21 @@
 		[self setExportProcessIsRunning:NO];
 		
 		// Inform the delegate that the export process is complete
-		if (delegate && [delegate respondsToSelector:@selector(csvExportProcessComplete:)]) {
-			[[self delegate] performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
+		if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessComplete:)]) {
+			[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
 		}
 		
 		[pool release];
 	}
 	@catch (NSException *e) {}
+}
+
+/**
+ * Returns whether or not any export errors occurred by examing the length of the errors string.
+ */
+- (BOOL)didExportErrorsOccur
+{
+	return [[self sqlExportErrors] length];
 }
 
 /**

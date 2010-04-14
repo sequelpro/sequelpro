@@ -71,6 +71,9 @@
 	// Current table
 	NSString *sqlExportCurrentTable;
 	
+	// Export errors
+	NSString *sqlExportErrors;
+	
 	// SQL options
 	BOOL sqlOutputIncludeUTF8BOM;
 	BOOL sqlOutputIncludeErrors;
@@ -87,11 +90,14 @@
 @property (readwrite, retain) NSString *sqlDatabaseVersion;
 
 @property (readwrite, retain) NSString *sqlExportCurrentTable;
+@property (readwrite, retain) NSString *sqlExportErrors;
 
 @property (readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
 @property (readwrite, assign) BOOL sqlOutputIncludeErrors;
 @property (readwrite, assign) BOOL sqlOutputCompressFile;
 
 @property (readwrite, retain) NSDictionary *sqlTableInformation;
+
+- (BOOL)didExportErrorsOccur;
 
 @end

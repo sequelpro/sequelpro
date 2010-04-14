@@ -54,6 +54,10 @@
 	IBOutlet NSButton *exportRefreshTablesButton;
 	IBOutlet NSScrollView *exportTablelistScrollView;
 	
+	// Errors sheet
+	IBOutlet NSWindow *errorsWindow;
+	IBOutlet NSTextView *errorsTextView;
+	
 	// Advanced options view
 	IBOutlet NSButton *exportAdvancedOptionsViewButton;
 	IBOutlet NSView *exportAdvancedOptionsView;
@@ -155,6 +159,8 @@
 
 // IB action methods
 - (void)export;
+- (void)openExportErrorsSheetWithString:(NSString *)errors;
+
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)switchTab:(id)sender;
 - (IBAction)switchInput:(id)sender;

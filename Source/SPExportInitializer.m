@@ -265,7 +265,7 @@
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
 		sqlPreviousConnectionEncoding = [tableDocumentInstance connectionEncoding];
 		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
-		
+				
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 		
 		NSMutableArray *tableTypes = [[NSMutableArray alloc] init];
