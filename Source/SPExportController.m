@@ -87,7 +87,7 @@
 - (void)awakeFromNib
 {	
 	// Upon awakening select the SQL tab
-	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+	[exportToolbar setSelectedItemIdentifier:@"sql"];
 	
 	// Disable the 'filtered result' and 'query result' options
 	[[exportInputMatrix cellAtRow:0 column:0] setEnabled:NO];
@@ -158,16 +158,14 @@
 - (IBAction)switchTab:(id)sender
 {
 	if ([sender isKindOfClass:[NSToolbarItem class]]) {
+				
+		NSString *identifier = [[exportToolbar selectedItemIdentifier] lowercaseString];
 		
-		currentToolbarItem = sender;
+		[exportTabBar selectTabViewItemWithIdentifier:identifier];
 		
-		NSString *tabLabel = [[currentToolbarItem label] lowercaseString];
-		
-		[exportTabBar selectTabViewItemWithIdentifier:tabLabel];
-		
-		BOOL isCSV = [tabLabel isEqualToString:@"csv"];
-		BOOL isSQL = [tabLabel isEqualToString:@"sql"];
-		BOOL hideColumns = (isCSV || [tabLabel isEqualToString:@"xml"]);
+		BOOL isCSV = [identifier isEqualToString:@"csv"];
+		BOOL isSQL = [identifier isEqualToString:@"sql"];
+		BOOL hideColumns = (isCSV || [identifier isEqualToString:@"xml"]);
 		
 		[exportUseUTF8BOMButton setEnabled:(!hideColumns)];
 		[exportCompressOutputFile setEnabled:(!hideColumns)];
@@ -269,7 +267,7 @@
 	}
 		
 	// For SQL only, add procedures and functions
-	if ([[[currentToolbarItem label] lowercaseString] isEqualToString:@"sql"]) {
+	if ([[[exportToolbar selectedItemIdentifier] lowercaseString] isEqualToString:@"sql"]) {
 		NSArray *procedures = [tablesListInstance allProcedureNames];
 		
 		for (id procName in procedures) 
@@ -471,11 +469,11 @@
  */
 - (void)_toggleExportButton
 {
-	NSString *label = [[currentToolbarItem label] lowercaseString];
+	NSString *identifier = [[exportToolbar selectedItemIdentifier] lowercaseString];
 	
-	BOOL isSQL = [label isEqualToString:@"sql"];
-	BOOL isCSV = [label isEqualToString:@"csv"];
-	BOOL isXML = [label isEqualToString:@"xml"];
+	BOOL isSQL = [identifier isEqualToString:@"sql"];
+	BOOL isCSV = [identifier isEqualToString:@"csv"];
+	BOOL isXML = [identifier isEqualToString:@"xml"];
 		
 	if (isCSV || isXML) {
 		[exportButton setEnabled:NO];
