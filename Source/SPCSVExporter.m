@@ -63,7 +63,7 @@
 		BOOL csvCellIsNumeric;
 		BOOL quoteFieldSeparators = [[self csvEnclosingCharacterString] isEqualToString:@""];
 	
-		NSUInteger i, totalRows, csvCellCount = 0;
+		NSUInteger i, totalRows, lastProgressValue, csvCellCount = 0;
 		
 		// Check to see if we have at least a table name or data array
 		if ((![self csvTableName]) && (![self csvDataArray]) ||
@@ -100,6 +100,8 @@
 				
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
+		
+		lastProgressValue = 0;
 		
 		// Make a streaming request for the data if the data array isn't set
 		if ((![self csvDataArray]) && [self csvTableName]) {
@@ -178,7 +180,9 @@
 					[streamingResult cancelResultLoad];
 				}
 				
+				[csvExportPool release];
 				[pool release];
+				
 				return;
 			}
 			
@@ -209,7 +213,9 @@
 			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
+					[csvExportPool release];
 					[pool release];
+					
 					return;
 				}
 				
@@ -320,8 +326,15 @@
 			
 			currentRowIndex++;
 			
-			// Update the progress value
-			if (totalRows) [self setExportProgressValue:(((i + 1) * 100) / totalRows)];
+			// Update the progress
+			if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
+				
+				NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
+				
+				[self setExportProgressValue:progress];
+				
+				lastProgressValue = progress;
+			}
 			
 			// Inform the delegate that the export's progress has been updated
 			if (delegate && [delegate respondsToSelector:@selector(csvExportProcessProgressUpdated:)]) {
@@ -333,7 +346,7 @@
 			
 			// Drain the autorelease pool as required to keep memory usage low
 			if (currentPoolDataLength > 250000) {
-				[csvExportPool drain];
+				[csvExportPool release];
 				csvExportPool = [[NSAutoreleasePool alloc] init];
 			}
 		}

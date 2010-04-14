@@ -120,7 +120,9 @@
 					[streamingResult cancelResultLoad];
 				}
 				
+				[xmlExportPool release];
 				[pool release];
+				
 				return;
 			}
 			
@@ -143,6 +145,19 @@
 			
 			for (i = 0; i < xmlRowCount; i++) 
 			{
+				// Check for cancellation flag
+				if ([self isCancelled]) {
+					if (streamingResult) {
+						[connection cancelCurrentQuery];
+						[streamingResult cancelResultLoad];
+					}
+					
+					[xmlExportPool release];
+					[pool release];
+					
+					return;
+				}
+				
 				// Retrieve the contents of this tag
 				if ([NSArrayObjectAtIndex(xmlRow, i) isKindOfClass:[NSData class]]) {
 					dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(xmlRow, i) encoding:[self exportOutputEncoding]];
@@ -195,7 +210,7 @@
 			
 			// Drain the autorelease pool as required to keep memory usage low
 			if (currentPoolDataLength > 250000) {
-				[xmlExportPool drain];
+				[xmlExportPool release];
 				xmlExportPool = [[NSAutoreleasePool alloc] init];
 			}
 		}

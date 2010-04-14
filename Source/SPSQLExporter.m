@@ -305,7 +305,9 @@
 						if ([self isCancelled]) {
 							[connection cancelCurrentQuery];
 							[streamingResult cancelResultLoad];
+							[sqlExportPool release];
 							[pool release];
+							
 							return;
 						}
 						
@@ -331,7 +333,9 @@
 						{
 							// Check for cancellation flag
 							if ([self isCancelled]) {
+								[sqlExportPool release];
 								[pool release];
+								
 								return;
 							}
 							
@@ -383,7 +387,7 @@
 								queryLength = 0;
 								
 								// Use the opportunity to drain and reset the autorelease pool
-								[sqlExportPool drain];
+								[sqlExportPool release];
 								sqlExportPool = [[NSAutoreleasePool alloc] init];
 							} 
 							else {
@@ -409,7 +413,7 @@
 					[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 					
 					// Drain the autorelease pool
-					[sqlExportPool drain];
+					[sqlExportPool release];
 				}
 				
 				if ([connection queryErrored]) {
