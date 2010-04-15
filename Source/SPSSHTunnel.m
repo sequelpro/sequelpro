@@ -56,6 +56,7 @@
 	stateChangeSelector = nil;
 	lastError = nil;
 	debugMessages = [[NSMutableArray alloc] init];
+	debugMessagesLock = [[NSLock alloc] init];
 	answerAvailableLock = [[NSLock alloc] init];
 
 	// Set up a connection for use by the tunnel process
@@ -164,7 +165,10 @@
  * by line endings.
  */
 - (NSString *) debugMessages {
-	return [debugMessages componentsJoinedByString:@"\n"];
+	[debugMessagesLock lock];
+	NSString *debugMessagesString = [debugMessages componentsJoinedByString:@"\n"];
+	[debugMessagesLock unlock];
+	return debugMessagesString;
 }
 
 /*
@@ -175,7 +179,9 @@
 	localPort = 0;
 
 	if (connectionState != PROXY_STATE_IDLE) return;
+	[debugMessagesLock lock];
 	[debugMessages removeAllObjects];
+	[debugMessagesLock unlock];
 	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
 }
 
@@ -369,7 +375,8 @@
 }
  
 /*
- * Processes messages recieved from the SSH task
+ * Processes messages recieved from the SSH task.  These may be received singly
+ * or several stuck together.
  */
 - (void)standardErrorHandler:(NSNotification*)aNotification
 {
@@ -385,7 +392,9 @@
 		enumerator = [messages objectEnumerator];
 		while (message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {			
 			if (![message length]) continue;
+			[debugMessagesLock lock];
 			[debugMessages addObject:[NSString stringWithString:message]];
+			[debugMessagesLock unlock];
 
 			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound) {
 				connectionState = PROXY_STATE_CONNECTED;
@@ -625,6 +634,7 @@
 	[tunnelConnection invalidate];
 	[tunnelConnection release];
 	[debugMessages release];
+	[debugMessagesLock release];
 	[answerAvailableLock tryLock];
 	[answerAvailableLock unlock];
 	[answerAvailableLock release];
