@@ -33,8 +33,29 @@
 
 @implementation SPXMLExporter
 
+@synthesize delegate;
 @synthesize xmlDataArray;
 @synthesize xmlTableName;
+
+/**
+ * Initialise an instance of SPXMLExporter using the supplied delegate.
+ */
+- (id)initWithDelegate:(NSObject *)exportDelegate
+{
+	if ((self = [super init])) {
+		
+		// Check that the delegate conforms the exporter protocol, if not throw an exception
+		if (![exportDelegate conformsToProtocol:@protocol(SPXMLExporterProtocol)]) {
+			@throw [NSException exceptionWithName:@"Protocol Conformance" 
+										   reason:@"The supplied delegate does not conform to the protocol 'SPXMLExporterProtocol'." 
+										 userInfo:nil];
+		}
+		
+		[self setDelegate:exportDelegate];
+	}
+	
+	return self;
+}
 
 /**
  * Start the XML export process. This method is automatically called when an instance of this class
@@ -66,9 +87,7 @@
 		}
 				
 		// Inform the delegate that the export process is about to begin
-		if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessWillBegin:)]) {
-			[[self delegate] performSelectorOnMainThread:@selector(xmlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
-		}
+		[delegate performSelectorOnMainThread:@selector(xmlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
 		
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
@@ -201,9 +220,7 @@
 			}
 			
 			// Inform the delegate that the export's progress has been updated
-			if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessProgressUpdated:)]) {
-				[[self delegate] performSelectorOnMainThread:@selector(xmlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
-			}
+			[delegate performSelectorOnMainThread:@selector(xmlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 			
 			// If an array was supplied and we've processed all rows, break
 			if ([self xmlDataArray] && totalRows == currentRowIndex) break;
@@ -225,9 +242,7 @@
 		[self setExportProcessIsRunning:NO];
 		
 		// Inform the delegate that the export process is complete
-		if (delegate && [delegate respondsToSelector:@selector(xmlExportProcessComplete:)]) {
-			[[self delegate] performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:NO];
-		}
+		[delegate performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:NO];
 		
 		[pool release];
 	}

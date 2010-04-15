@@ -328,6 +328,9 @@
 		172AF7F111736FC20006FFA7 /* SPSQLExporterDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLExporterDelegate.m; sourceTree = "<group>"; };
 		172AF7F211736FC20006FFA7 /* SPXMLExporterDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporterDelegate.h; sourceTree = "<group>"; };
 		172AF7F311736FC20006FFA7 /* SPXMLExporterDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporterDelegate.m; sourceTree = "<group>"; };
+		172AFE121177AF720006FFA7 /* SPCSVExporterProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCSVExporterProtocol.h; sourceTree = "<group>"; };
+		172AFE651177C0C70006FFA7 /* SPSQLExporterProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLExporterProtocol.h; sourceTree = "<group>"; };
+		172AFE661177C0F40006FFA7 /* SPXMLExporterProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporterProtocol.h; sourceTree = "<group>"; };
 		173284E81088FEDE0062E892 /* SPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConstants.h; sourceTree = "<group>"; };
 		173284E91088FEDE0062E892 /* SPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConstants.m; sourceTree = "<group>"; };
 		173C4361104455CA001F3A30 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/QueryFavoriteManager.xib; sourceTree = "<group>"; };
@@ -829,6 +832,16 @@
 				172AF7F311736FC20006FFA7 /* SPXMLExporterDelegate.m */,
 			);
 			name = "Delegate Categories";
+			sourceTree = "<group>";
+		};
+		172AFE111177AEB70006FFA7 /* Exporter Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				172AFE121177AF720006FFA7 /* SPCSVExporterProtocol.h */,
+				172AFE651177C0C70006FFA7 /* SPSQLExporterProtocol.h */,
+				172AFE661177C0F40006FFA7 /* SPXMLExporterProtocol.h */,
+			);
+			name = "Exporter Protocols";
 			sourceTree = "<group>";
 		};
 		173284E51088FEC20062E892 /* Data */ = {
@@ -1405,6 +1418,7 @@
 				B5E92F1A0F75B2E800012500 /* SPExportController.h */,
 				B5E92F1B0F75B2E800012500 /* SPExportController.m */,
 				172AF7E911736F730006FFA7 /* Controller Categories */,
+				172AFE111177AEB70006FFA7 /* Exporter Protocols */,
 				172AF7EA11736F810006FFA7 /* Delegate Categories */,
 			);
 			name = "Data Export";

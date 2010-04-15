@@ -26,40 +26,14 @@
 #import <Cocoa/Cocoa.h>
 
 #import "SPExporter.h"
+#import "SPSQLExporterProtocol.h"
 
 @class SPSQLExporter;
 
-@interface SPSQLExporterDelegate
-
-/**
- *
- */
-- (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter;
-
-/**
- * 
- */
-- (void)sqlExportProcessComplete:(SPSQLExporter *)exporter;
-
-/**
- *
- */
-- (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter;
-
-/**
- *
- */
-- (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter;
-
-/**
- *
- */
-- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter;
-
-@end
-
 @interface SPSQLExporter : SPExporter
 {
+	NSObject <SPSQLExporterProtocol> *delegate;
+	
 	// Tables
 	NSArray *sqlExportTables;
 	
@@ -83,6 +57,8 @@
 	NSDictionary *sqlTableInformation;
 }
 
+@property (readwrite, assign) NSObject *delegate;
+
 @property (readwrite, retain) NSArray *sqlExportTables;
 
 @property (readwrite, retain) NSString *sqlDatabaseHost;
@@ -97,6 +73,8 @@
 @property (readwrite, assign) BOOL sqlOutputCompressFile;
 
 @property (readwrite, retain) NSDictionary *sqlTableInformation;
+
+- (id)initWithDelegate:(NSObject *)exportDelegate;
 
 - (BOOL)didExportErrorsOccur;
 

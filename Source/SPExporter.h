@@ -48,9 +48,7 @@
 @class MCPConnection, SPFileHandle;
 
 @interface SPExporter : NSOperation
-{
-	id delegate;
-	
+{	
 	MCPConnection *connection;
 		
 	double exportProgressValue;
@@ -65,8 +63,6 @@
 	NSInteger exportMaxProgress;
 }
 
-@property (readwrite, assign) id delegate;
-
 @property (readwrite, retain) MCPConnection *connection;
 
 @property (readwrite, assign) double exportProgressValue;
@@ -79,7 +75,5 @@
 @property (readwrite, assign) NSStringEncoding exportOutputEncoding;
 
 @property (readwrite, assign) NSInteger exportMaxProgress;
-
-- (id)initWithDelegate:(id)exportDelegate;
 
 @end

@@ -34,6 +34,7 @@
 
 @implementation SPSQLExporter
 
+@synthesize delegate;
 @synthesize sqlExportTables;
 @synthesize sqlDatabaseHost;
 @synthesize sqlDatabaseName;
@@ -50,6 +51,26 @@
 - (NSString *)_createViewPlaceholderSyntaxForView:(NSString *)viewName;
 
 @end
+
+/**
+ * Initialise an instance of SPSQLExporter using the supplied delegate.
+ */
+- (id)initWithDelegate:(NSObject *)exportDelegate
+{
+	if ((self = [super init])) {
+		
+		// Check that the delegate conforms the exporter protocol, if not throw an exception
+		if (![exportDelegate conformsToProtocol:@protocol(SPSQLExporterProtocol)]) {
+			@throw [NSException exceptionWithName:@"Protocol Conformance" 
+										   reason:@"The supplied delegate does not conform to the protocol 'SPSQLExporterProtocol'." 
+										 userInfo:nil];
+		}
+		
+		[self setDelegate:exportDelegate];
+	}
+	
+	return self;
+}
 
 /**
  * Start the SQL export process. This method is automatically called when an instance of this class
@@ -100,9 +121,7 @@
 		}
 				
 		// Inform the delegate that the export process is about to begin
-		if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBegin:)]) {
-			[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
-		}
+		[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
 		
 		// Mark the process as running
 		[self setExportProcessIsRunning:YES];
@@ -188,9 +207,7 @@
 			[self setSqlExportCurrentTable:tableName];
 			
 			// Inform the delegate that we are about to start fetcihing data for the current table
-			if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBeginFetchingData:)]) {
-				[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBeginFetchingData:) withObject:self waitUntilDone:NO];
-			}
+			[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginFetchingData:) withObject:self waitUntilDone:NO];
 			
 			lastProgressValue = 0;
 			
@@ -217,9 +234,7 @@
 				
 				[tableDetails release];
 			}
-			
-			[errors appendString:@"Test error\n"];
-			
+						
 			if ([connection queryErrored]) {
 				[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
 				
@@ -277,9 +292,7 @@
 				NSArray *fieldNames = [streamingResult fetchFieldNames];
 				
 				// Inform the delegate that we are about to start writing data for the current table
-				if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBeginWritingData:)]) {
-					[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
-				}
+				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 								
 				if (rowCount) {
 					queryLength = 0;
@@ -301,9 +314,7 @@
 					sqlExportPool = [[NSAutoreleasePool alloc] init];
 					
 					// Inform the delegate that we are about to start writing the data to disk
-					if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessWillBeginWritingData:)]) {
-						[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
-					}
+					[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 					
 					while (row = [streamingResult fetchNextRowAsArray]) 
 					{
@@ -331,9 +342,7 @@
 						}
 						
 						// Inform the delegate that the export's progress has been updated
-						if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessProgressUpdated:)]) {
-							[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
-						}
+						[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 						
 						for (t = 0; t < colCount; t++) 
 						{
@@ -672,9 +681,7 @@
 		[self setExportProcessIsRunning:NO];
 		
 		// Inform the delegate that the export process is complete
-		if (delegate && [delegate respondsToSelector:@selector(sqlExportProcessComplete:)]) {
-			[[self delegate] performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
-		}
+		[delegate performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
 		
 		[pool release];
 	}

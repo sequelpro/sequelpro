@@ -26,35 +26,14 @@
 #import <Cocoa/Cocoa.h>
 
 #import "SPExporter.h"
+#import "SPCSVExporterProtocol.h"
 
 @class SPCSVExporter;
 
-@interface SPCSVExporterDelegate
-
-/**
- *
- */
-- (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter;
-
-/**
- * 
- */
-- (void)csvExportProcessComplete:(SPCSVExporter *)exporter;
-
-/**
- *
- */
-- (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter;
-
-/**
- *
- */
-- (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter;
-
-@end
-
 @interface SPCSVExporter : SPExporter
 {		
+	NSObject <SPCSVExporterProtocol> *delegate;
+	
 	// CSV data
 	NSArray *csvDataArray;
 	
@@ -72,6 +51,8 @@
 	NSArray  *csvTableColumnNumericStatus;
 }
 
+@property (readwrite, assign) NSObject <SPCSVExporterProtocol> *delegate;
+
 @property (readwrite, retain) NSArray *csvDataArray;
 @property (readwrite, retain) NSString *csvTableName;
 
@@ -83,5 +64,7 @@
 @property (readwrite, retain) NSString *csvLineEndingString;
 @property (readwrite, retain) NSString *csvNULLString;
 @property (readwrite, retain) NSArray  *csvTableColumnNumericStatus;
+
+- (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

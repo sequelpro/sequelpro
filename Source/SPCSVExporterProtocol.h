@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPCSVExporterProtocol.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on April 15, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,29 +23,28 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+@class SPCSVExporter;
 
-#import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
+@protocol SPCSVExporterProtocol
 
-@class SPXMLExporter;
+/**
+ *
+ */
+- (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter;
 
-@interface SPXMLExporter : SPExporter 
-{
-	NSObject <SPXMLExporterProtocol> *delegate;
-	
-	// XML data
-	NSArray *xmlDataArray;
-	
-	// Table
-	NSString *xmlTableName;
-}
+/**
+ * 
+ */
+- (void)csvExportProcessComplete:(SPCSVExporter *)exporter;
 
-@property (readwrite, assign) NSObject *delegate;
+/**
+ *
+ */
+- (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter;
 
-@property (readwrite, retain) NSArray *xmlDataArray;
-@property (readwrite, retain) NSString *xmlTableName;
-
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+/**
+ *
+ */
+- (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter;
 
 @end

@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPXMLExporterProtocol.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on April 15, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,29 +23,28 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
-#import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
-
 @class SPXMLExporter;
 
-@interface SPXMLExporter : SPExporter 
-{
-	NSObject <SPXMLExporterProtocol> *delegate;
-	
-	// XML data
-	NSArray *xmlDataArray;
-	
-	// Table
-	NSString *xmlTableName;
-}
+@protocol SPXMLExporterProtocol
 
-@property (readwrite, assign) NSObject *delegate;
+/**
+ *
+ */
+- (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter;
 
-@property (readwrite, retain) NSArray *xmlDataArray;
-@property (readwrite, retain) NSString *xmlTableName;
+/**
+ * 
+ */
+- (void)xmlExportProcessComplete:(SPXMLExporter *)exporter;
 
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+/**
+ *
+ */
+- (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter;
+
+/**
+ *
+ */
+- (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter;
 
 @end

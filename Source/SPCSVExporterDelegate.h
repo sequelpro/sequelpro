@@ -24,7 +24,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportController.h"
+#import "SPCSVExporterProtocol.h"
 
-@interface SPExportController (SPCSVExporterDelegate)
+@interface SPExportController (SPCSVExporterDelegate) <SPCSVExporterProtocol>
 
 @end

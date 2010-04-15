@@ -24,7 +24,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportController.h"
+#import "SPSQLExporterProtocol.h"
 
-@interface SPExportController (SPSQLExporterDelegate) 
+@interface SPExportController (SPSQLExporterDelegate) <SPSQLExporterProtocol>
 
 @end
