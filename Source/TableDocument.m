@@ -1220,7 +1220,6 @@
 		[taskCancelButton setHidden:YES];
 
 		// Set flags and prevent further UI interaction in this window
-		[historyControl setEnabled:NO];
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		[mainToolbar validateVisibleItems];
@@ -1336,7 +1335,6 @@
 		[taskProgressIndicator setIndeterminate:YES];
 
 		// Re-enable window interface
-		[historyControl setEnabled:YES];
 		databaseListIsSelectable = YES;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
 		[mainToolbar validateVisibleItems];
@@ -3437,6 +3435,9 @@
 
 	// update the toolbar item size
 	[self updateChooseDatabaseToolbarItemWidth];
+
+	// The history controller needs to track toolbar item state - trigger setup.
+	[spHistoryControllerInstance setupInterface];
 }
 
 /**

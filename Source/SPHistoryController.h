@@ -37,6 +37,7 @@
 	NSMutableDictionary *tableContentStates;
 	NSUInteger historyPosition;
 	BOOL modifyingState;
+	BOOL toolbarItemVisible;
 }
 
 @property (readonly) NSUInteger historyPosition;
@@ -49,6 +50,7 @@
 - (void)goForwardInHistory;
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
 - (NSUInteger) currentlySelectedView;
+- (void) setupInterface;
 
 // Adding or updating history entries
 - (void) updateHistoryEntries;
