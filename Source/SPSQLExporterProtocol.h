@@ -25,30 +25,40 @@
 
 @class SPSQLExporter;
 
+/**
+ * @protocol SPSQLExporterProtocol SPSQLExporterProtocol.h
+ *
+ * SQL exporter delegate protocol.
+ */
 @protocol SPSQLExporterProtocol
 
 /**
- *
+ * 
+ * @param SPSQLExporter The expoter calling the method.
  */
 - (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter;
 
 /**
  * 
+ * @param SPSQLExporter The expoter calling the method.
  */
 - (void)sqlExportProcessComplete:(SPSQLExporter *)exporter;
 
 /**
- *
+ * 
+ * @param SPSQLExporter The expoter calling the method.
  */
 - (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter;
 
 /**
- *
+ * 
+ * @param SPSQLExporter The expoter calling the method.
  */
 - (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter;
 
 /**
- *
+ * 
+ * @param SPSQLExporter The expoter calling the method.
  */
 - (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter;
 

@@ -25,25 +25,37 @@
 
 @class SPCSVExporter;
 
+/**
+ * @protocol SPCSVExporterProtocol SPCSVExporterProtocol.h
+ *
+ * CSV exporter delegate protocol.
+ */
 @protocol SPCSVExporterProtocol
 
 /**
- *
+ * 
+ * @param SPCSVExporter The expoter calling the method.
  */
 - (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter;
 
 /**
  * 
+ *
+ * @param SPCSVExporter The expoter calling the method.
  */
 - (void)csvExportProcessComplete:(SPCSVExporter *)exporter;
 
 /**
  *
+ *
+ * @param SPCSVExporter The expoter calling the method.
  */
 - (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter;
 
 /**
  *
+ *
+ * @param SPCSVExporter The expoter calling the method.
  */
 - (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter;
 

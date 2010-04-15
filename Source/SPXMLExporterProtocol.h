@@ -25,25 +25,34 @@
 
 @class SPXMLExporter;
 
+/**
+ * @protocol SPXMLExporterProtocol SPXMLExporterProtocol.h
+ *
+ * SQL exporter delegate protocol.
+ */
 @protocol SPXMLExporterProtocol
 
 /**
- *
+ * 
+ * @param SPXMLExporter The expoter calling the method.
  */
 - (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter;
 
 /**
  * 
+ * @param SPXMLExporter The expoter calling the method.
  */
 - (void)xmlExportProcessComplete:(SPXMLExporter *)exporter;
 
 /**
- *
+ * 
+ * @param SPXMLExporter The expoter calling the method.
  */
 - (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter;
 
 /**
- *
+ * 
+ * @param SPXMLExporter The expoter calling the method.
  */
 - (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter;
 
