@@ -546,12 +546,8 @@
  */
 - (void) loadTableValues
 {
-
 	// If no table is selected, return
 	if (!selectedTable) return;
-
-	// Wrap the values load in an autorelease pool to ensure full and timely release
-	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
 
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
@@ -673,8 +669,6 @@
 
 	// Trigger a full reload if required
 	if (fullTableReloadRequired) [self reloadTable:self];
-
-	[loadPool drain];
 }
 
 /*
@@ -3191,10 +3185,12 @@
     // Trap down arrow key
     else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
     {
-        if (row==tableRowsCount) return TRUE; //already at the end of the list
+        if (row==tableRowsCount) return TRUE; //check if we're already at the end of the list
 
         [[control window] makeFirstResponder:control];
         [self addRowToDB];
+        
+        if (row==tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
         [tableContentView selectRow:row+1 byExtendingSelection:NO];
         [tableContentView editColumn:column row:row+1 withEvent:nil select:YES];
 		return TRUE;

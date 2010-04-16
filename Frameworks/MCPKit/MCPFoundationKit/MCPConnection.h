@@ -134,8 +134,10 @@
 	NSUInteger       mConnectionFlags; /* The flags to be used for the connection to the database. */
 	
 	id delegate; /* Connection delegate */
-	
-	NSLock *queryLock; /* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
+    
+	/* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
+    /* Always lock the connection first. Don't use this lock directly, use the lockConnection method! */
+	NSConditionLock *connectionLock; 
 
 	BOOL useKeepAlive;
 	BOOL isDisconnecting;
@@ -278,6 +280,7 @@ void performThreadedKeepAlive(void *ptr);
 
 // Locking
 - (void)lockConnection;
+- (BOOL)tryLockConnection;
 - (void)unlockConnection;
 
 // Database structure

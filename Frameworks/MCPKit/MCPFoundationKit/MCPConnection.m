@@ -90,9 +90,12 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		mEncoding = NSISOLatin1StringEncoding;
 		mConnectionFlags = kMCPConnectionDefaultOption;
-		
-		queryLock = [[NSLock alloc] init];
-		
+        
+        // Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings
+        // Always lock the connection first. Don't use this lock directly, use the lockConnection method!
+		connectionLock = [[NSConditionLock alloc] initWithCondition:MCPConnectionIdle];
+		[connectionLock setName:@"MCPConnection connectionLock"];
+        
 		connectionHost = nil;
 		connectionLogin = nil;
 		connectionSocket = nil;
@@ -642,7 +645,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 - (BOOL)pingConnection
 {
 	// Set up a query lock
-	[queryLock lock];
+	[self lockConnection];
 
 	uint64_t currentTime_t;
 	Nanoseconds elapsedTime;
@@ -671,7 +674,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	}
 	pthread_attr_destroy(&attr);
 
-	[queryLock unlock];
+	[self unlockConnection];
 
 	return lastPingSuccess;
 }
@@ -708,10 +711,11 @@ void pingConnectionTask(void *ptr)
 		return;
 	}
 
-	// Attempt to get a query lock, but release it to ensure the connection isn't locked
-	// by a background ping.
-	if (![queryLock tryLock]) return;
-	[queryLock unlock];
+	// Attempt to lock the connection. If the connection currently is busy,
+    // we don't need a ping. The connection is unlocked in threadedKeepAlive
+    // before the ping actually returns, to prevent the ping from delaying
+    // other queries
+	if (![self tryLockConnection]) return;
 
 	// Store the ping time
 	lastKeepAliveTime = timeConnected;
@@ -726,7 +730,11 @@ void pingConnectionTask(void *ptr)
  */
 - (void)threadedKeepAlive
 {
-	if (!mConnected || keepAliveThread != NULL) return;
+	if (!mConnected || keepAliveThread != NULL) {
+        // unlock the connection now. it has been locked in keepAlive:
+        [self unlockConnection];
+        return;
+    }
 
 	// Use a ping timeout between zero and thirty seconds
 	NSInteger pingTimeout = 30;
@@ -738,6 +746,9 @@ void pingConnectionTask(void *ptr)
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	pthread_create(&keepAliveThread, &attr, (void *)&performThreadedKeepAlive, (void *)mConnection);
 
+    // unlock the connection now. it has been locked in keepAlive:
+	[self unlockConnection];
+    
 	// Give the connection time to respond, but force a timeout after the ping timeout
 	// if the thread hasn't already closed itself.
 	sleep(pingTimeout);
@@ -1129,13 +1140,12 @@ void performThreadedKeepAlive(void *ptr)
 	
 	if (mConnected) {
 		const char	 *theDBName = [self cStringFromString:dbName];
-		[queryLock lock];
+		[self lockConnection];
 		if (0 == mysql_select_db(mConnection, theDBName)) {
-			[queryLock unlock];
-			
+			[self unlockConnection];
 			return YES;
 		}
-		[queryLock unlock];
+		[self unlockConnection];
 	}
 	
 	[self setLastErrorMessage:nil];
@@ -1444,10 +1454,7 @@ void performThreadedKeepAlive(void *ptr)
 			}
 		}
 		
-		// Lock the connection - on this thread for normal result sets (avoiding blocking issues
-		// when the app is in modal mode), or ensuring a lock on the main thread for streaming queries.
-		if (streamResultType == MCPStreamingNone) [queryLock lock];
-		else [self lockConnection];
+		[self lockConnection];
 
 		// Run (or re-run) the query, timing the execution time of the query - note
 		// that this time will include network lag.
@@ -1466,7 +1473,7 @@ void performThreadedKeepAlive(void *ptr)
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCPStreamingNone) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-					if (!queryCancelled || !queryCancelUsedReconnect) [queryLock unlock];
+					if (!queryCancelled || !queryCancelUsedReconnect) [self unlockConnection];
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
 				} else if (streamResultType == MCPStreamingFast) {
@@ -1482,8 +1489,7 @@ void performThreadedKeepAlive(void *ptr)
 					break;
 				}
 			} else {
-				if (streamResultType == MCPStreamingNone) [queryLock unlock];
-				else [self unlockConnection];
+				[self unlockConnection];
 			}
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
@@ -1495,8 +1501,7 @@ void performThreadedKeepAlive(void *ptr)
 		// On failure, set the error messages and IDs
 		} else {
 			if (!queryCancelled || !queryCancelUsedReconnect) {
-				if (streamResultType == MCPStreamingNone) [queryLock unlock];
-				else [self unlockConnection];
+				[self unlockConnection];
 			}
 			
 			if (queryCancelled) {
@@ -1586,8 +1591,8 @@ void performThreadedKeepAlive(void *ptr)
 	if (![self isConnected]) return;
 
 	// Check whether a query is actually being performed - if not, also return.
-	if ([queryLock tryLock]) {
-		[queryLock unlock];
+	if ([self tryLockConnection]) {
+		[self unlockConnection];
 		return;
 	}
 
@@ -1677,32 +1682,55 @@ void performThreadedKeepAlive(void *ptr)
 #pragma mark Connection locking
 
 /**
- * Lock the connection from any thread; ensure the the connection is locked on
- * the main thread, but as fast as possible.
+ * Lock the connection. This must be done before performing any operation
+ * that is not thread safe, eg. performing queries or pinging.
  */
 - (void)lockConnection
 {
-	if ([NSThread isMainThread]) [queryLock lock];
-	else [queryLock performSelectorOnMainThread:@selector(lock) withObject:nil waitUntilDone:YES];
+    // We can only start a query as soon as the condition is MCPConnectionIdle
+	[connectionLock lockWhenCondition:MCPConnectionIdle];
+    
+    // We now set the condition to MCPConnectionBusy
+    [connectionLock unlockWithCondition:MCPConnectionBusy];
 }
 
 /**
- * Unlock the connection from any thread; ensure the connection is unlocked on
- * the main thread, but as fast as possible.
+ * Try locking the connection. If the connection is idle (unlocked), this method
+ * locks the connection and returns YES. The connection must afterwards be unlocked
+ * using unlockConnection. If the connection is currently busy (locked), this
+ * method immediately returns NO and doesn't lock the connection.
+ */
+- (BOOL)tryLockConnection
+{
+    // check if the condition is MCPConnectionIdle
+	if ([connectionLock tryLockWhenCondition:MCPConnectionIdle]) {
+        // We're allowed to use the connection!
+        [connectionLock unlockWithCondition:MCPConnectionBusy];
+        return YES;
+    } else {
+        // Someone else is using the connection right now
+        return NO;
+    }
+}
+
+
+/**
+ * Unlock the connection.
  */
 - (void)unlockConnection
 {
-
-	// Ensure the unlock occurs on the main thread
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(unlockConnection) withObject:nil waitUntilDone:NO];
-		return;
-	}
-
-	// Unlock the connection, first ensuring it is locked to avoid
-	// multiple unlock call issues (eg reconnected queries, threading)
-	[queryLock tryLock];
-	[queryLock unlock];
+    // We don't care if the connection is busy or not
+    [connectionLock lock];
+    
+    // We check if the connection actually was busy. If it wasn't busy,
+    // it means we probably tried to unlock the connection twice. This is
+    // potentially dangerous, therefore we log this to the console
+    if ([connectionLock condition]!=MCPConnectionBusy) {
+        NSLog(@"Tried to unlock the connection, but it wasn't locked.");
+    }
+    
+    // We tell everyone that the connection is available again!
+    [connectionLock unlockWithCondition:MCPConnectionIdle];
 }
 
 #pragma mark -
@@ -1731,7 +1759,7 @@ void performThreadedKeepAlive(void *ptr)
 	
 	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
 	
-	[queryLock lock];
+	[self lockConnection];
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_dbs(mConnection, NULL)) {
 			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
@@ -1750,7 +1778,7 @@ void performThreadedKeepAlive(void *ptr)
 			theResult = [[MCPResult alloc] init];
 		}        
 	}
-	[queryLock unlock];
+	[self unlockConnection];
 	
 	if (theResult) {
 		[theResult autorelease];
@@ -1784,7 +1812,7 @@ void performThreadedKeepAlive(void *ptr)
 	
 	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
 
-	[queryLock lock];
+	[self lockConnection];
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_tables(mConnection, NULL)) {
 			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
@@ -1803,7 +1831,7 @@ void performThreadedKeepAlive(void *ptr)
 		}
 	}
 	
-	[queryLock unlock];
+	[self unlockConnection];
 
 	if (theResult) {
 		[theResult autorelease];
@@ -2375,14 +2403,14 @@ void performThreadedKeepAlive(void *ptr)
 	MCPResult *theResult = nil;
 	MYSQL_RES *theResPtr;
 	
-	[queryLock lock];
+	[self lockConnection];
 	if (theResPtr = mysql_list_processes(mConnection)) {
 		theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
 	} 
 	else {
 		theResult = [[MCPResult alloc] init];
 	}
-	[queryLock unlock];
+	[self unlockConnection];
 	
 	if (theResult) {
 		[theResult autorelease];
@@ -2547,7 +2575,7 @@ void performThreadedKeepAlive(void *ptr)
 	if ([self serverMajorVersion] == 3) queryString = "SHOW VARIABLES LIKE 'max_allowed_packet'";
 	else queryString = "SELECT @@global.max_allowed_packet";
 	
-	[queryLock lock];
+	[self lockConnection];
 	if (0 == mysql_query(mConnection, queryString)) {
 		if (mysql_field_count(mConnection) != 0) {
 			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
@@ -2555,13 +2583,13 @@ void performThreadedKeepAlive(void *ptr)
 			NSArray *a = [r fetchRowAsArray];
 			[r autorelease];
 			if([a count]) {
-				[queryLock unlock];
+				[self unlockConnection];
 				maxAllowedPacketSize = [[a objectAtIndex:([self serverMajorVersion] == 3)?1:0] integerValue];
 				return true;
 			}
 		}
 	}
-	[queryLock unlock];
+	[self unlockConnection];
 	
 	return false;
 }
@@ -2596,9 +2624,9 @@ void performThreadedKeepAlive(void *ptr)
 {
 	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return maxAllowedPacketSize;
 	
-	[queryLock lock];
+	[self lockConnection];
 	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %ld", newSize] UTF8String]);
-	[queryLock unlock];
+	[self unlockConnection];
 
 	// Inform the user via a log entry about that change according to reset value
 	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:connection:)])
@@ -2617,9 +2645,9 @@ void performThreadedKeepAlive(void *ptr)
 {
 	BOOL isEditable;
 
-	[queryLock lock];
+	[self lockConnection];
 	isEditable = !mysql_query(mConnection, "SET GLOBAL max_allowed_packet = @@global.max_allowed_packet");
-	[queryLock unlock];
+	[self unlockConnection];
 
 	return isEditable;
 }
@@ -2753,7 +2781,7 @@ void performThreadedKeepAlive(void *ptr)
 
 	// Ensure the query lock is unlocked, thereafter setting to nil in case of pending calls
 	[self unlockConnection];
-	[queryLock release], queryLock = nil;
+	[connectionLock release], connectionLock = nil;
 
 	// Clean up connections if necessary
 	if (mConnected) [self disconnect];
