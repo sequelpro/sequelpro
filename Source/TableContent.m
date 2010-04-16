@@ -3185,14 +3185,17 @@
     // Trap down arrow key
     else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
     {
-        if (row==tableRowsCount) return TRUE; //check if we're already at the end of the list
+        NSUInteger newRow = row+1;
+        if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
 
         [[control window] makeFirstResponder:control];
         [self addRowToDB];
         
-        if (row==tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
-        [tableContentView selectRow:row+1 byExtendingSelection:NO];
-        [tableContentView editColumn:column row:row+1 withEvent:nil select:YES];
+        if (newRow>=tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
+        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
+        
+        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
 		return TRUE;
     }
     
@@ -3200,11 +3203,16 @@
     else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
     {
         if (row==0) return TRUE; //already at the beginning of the list
+        NSUInteger newRow = row-1;
         
         [[control window] makeFirstResponder:control];
         [self addRowToDB];
-        [tableContentView selectRow:row-1 byExtendingSelection:NO];
-        [tableContentView editColumn:column row:row-1 withEvent:nil select:YES];
+        
+        if (newRow>=tableRowsCount) return TRUE; // addRowToDB could reload the table and change the number of rows
+        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
+        
+        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
 		return TRUE;
     }
     
