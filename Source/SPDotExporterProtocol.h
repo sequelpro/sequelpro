@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPCSVExporterProtocol.h
+//  SPDotExporterProtocol.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on April 15, 2010
@@ -23,40 +23,43 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPCSVExporter;
+@class SPDotExporter;
 
 /**
- * \protocol SPCSVExporterProtocol SPCSVExporterProtocol.h
+ * \protocol SPDotExporterProtocol SPDotExporterProtocol.h
  *
- * CSV exporter delegate protocol.
+ * Dot schema exporter delegate protocol.
  */
-@protocol SPCSVExporterProtocol
-
-/**
- * 
- * @param SPCSVExporter The expoter calling the method.
- */
-- (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter;
+@protocol SPDotExporterProtocol
 
 /**
  * 
- *
- * @param SPCSVExporter The expoter calling the method.
+ * @param SPDotExpoter The expoter calling the method.
  */
-- (void)csvExportProcessComplete:(SPCSVExporter *)exporter;
+- (void)dotExportProcessWillBegin:(SPDotExporter *)exporter;
 
 /**
- *
- *
- * @param SPCSVExporter The expoter calling the method.
+ * 
+ * @param SPDotExpoter The expoter calling the method.
  */
-- (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter;
+- (void)dotExportProcessComplete:(SPDotExporter *)exporter;
 
 /**
- *
- *
- * @param SPCSVExporter The expoter calling the method.
+ * 
+ * @param SPDotExpoter The expoter calling the method.
  */
-- (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter;
+- (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter;
+
+/**
+ * 
+ * @param SPDotExpoter The expoter calling the method.
+ */
+- (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter;
+
+/**
+ * 
+ * @param SPDotExpoter The expoter calling the method.
+ */
+- (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter;
 
 @end

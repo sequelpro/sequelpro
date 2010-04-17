@@ -26,7 +26,7 @@
 @class SPXMLExporter;
 
 /**
- * @protocol SPXMLExporterProtocol SPXMLExporterProtocol.h
+ * \protocol SPXMLExporterProtocol SPXMLExporterProtocol.h
  *
  * SQL exporter delegate protocol.
  */

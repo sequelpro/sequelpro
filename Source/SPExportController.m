@@ -61,6 +61,7 @@
 		exportTableCount = 0;
 		currentTableExportIndex = 0;
 		
+		exportFilename = @"";
 		exportTypeLabel = @"";
 		sqlPreviousConnectionEncoding = @"";
 		sqlPreviousConnectionEncodingViaLatin1 = NO;
@@ -135,6 +136,18 @@
 }
 
 /**
+ *
+ */
+- (void)displayExportFinishedGrowlNotification
+{
+	// Export finished Growl notification
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
+														window:tableWindow
+											  notificationName:@"Export Finished"];
+}
+
+/**
  * Closes the export dialog.
  */
 - (IBAction)closeSheet:(id)sender
@@ -165,27 +178,27 @@
 		
 		[exportTabBar selectTabViewItemWithIdentifier:tabLabel];
 				
-		BOOL isSQL      = [tabLabel isEqualToString:@"sql"];
-		BOOL isCSV      = [tabLabel isEqualToString:@"csv"];
-		BOOL isXML      = [tabLabel isEqualToString:@"xml"];
-		BOOL isGraphviz = [tabLabel isEqualToString:@"graphviz"];
+		BOOL isSQL = [tabLabel isEqualToString:@"sql"];
+		BOOL isCSV = [tabLabel isEqualToString:@"csv"];
+		BOOL isXML = [tabLabel isEqualToString:@"xml"];
+		BOOL isDot = [tabLabel isEqualToString:@"dot"];
 		
-		BOOL disable = (isCSV || isXML || isGraphviz);
+		BOOL disable = (isCSV || isXML || isDot);
 		
 		[exportUseUTF8BOMButton setEnabled:(!disable)];
 		[exportCompressOutputFile setEnabled:(!disable)];
 		
-		[exportFilePerTableCheck setHidden:(isSQL || isGraphviz)];
-		[exportFilePerTableNote setHidden:(isSQL || isGraphviz)];
+		[exportFilePerTableCheck setHidden:(isSQL || isDot)];
+		[exportFilePerTableNote setHidden:(isSQL || isDot)];
 		
-		[exportTableList setEnabled:(!isGraphviz)];
-		[exportSelectAllTablesButton setEnabled:(!isGraphviz)];
-		[exportDeselectAllTablesButton setEnabled:(!isGraphviz)];
-		[exportRefreshTablesButton setEnabled:(!isGraphviz)];
+		[exportTableList setEnabled:(!isDot)];
+		[exportSelectAllTablesButton setEnabled:(!isDot)];
+		[exportDeselectAllTablesButton setEnabled:(!isDot)];
+		[exportRefreshTablesButton setEnabled:(!isDot)];
 		
-		[[exportInputMatrix cellAtRow:2 column:0] setEnabled:(!isGraphviz)];
+		[[exportInputMatrix cellAtRow:2 column:0] setEnabled:(!isDot)];
 		
-		if (isGraphviz) {
+		if (isDot) {
 			// Disable all source checkboxes
 			[[exportInputMatrix cellAtRow:0 column:0] setEnabled:NO];
 			[[exportInputMatrix cellAtRow:1 column:0] setEnabled:NO];

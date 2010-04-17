@@ -118,6 +118,9 @@
 	// Export type label
 	NSString *exportTypeLabel;
 	
+	// Export filename
+	NSString *exportFilename;
+	
 	// Current database's tables
 	NSMutableArray *tables;
 	
@@ -157,10 +160,11 @@
 @property (readwrite, assign) BOOL exportToMultipleFiles;
 @property (readwrite, assign) MCPConnection *connection;
 
-// IB action methods
 - (void)export;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
+- (void)displayExportFinishedGrowlNotification;
 
+// IB action methods
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)switchTab:(id)sender;
 - (IBAction)switchInput:(id)sender;

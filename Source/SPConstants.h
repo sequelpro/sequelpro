@@ -53,13 +53,13 @@ typedef NSUInteger SPConnectionType;
 
 // Export type constants
 enum {
-	SPSQLExport      = 1,
-	SPCSVExport      = 2,
-	SPXMLExport      = 3,
-	SPPDFExport      = 4,
-	SPHTMLExport     = 5,
-	SPExcelExport    = 6,
-	SPGraphvizExport = 7
+	SPSQLExport   = 1,
+	SPCSVExport   = 2,
+	SPXMLExport   = 3,
+	SPPDFExport   = 4,
+	SPHTMLExport  = 5,
+	SPExcelExport = 6,
+	SPDotExport   = 7
 };
 typedef NSUInteger SPExportType;
 
@@ -73,9 +73,9 @@ typedef NSUInteger SPExportSource;
 
 // Table row count query usage levels
 typedef enum {
-	SPRowCountFetchNever	= 0,
-	SPRowCountFetchIfCheap	= 1,
-	SPRowCountFetchAlways	= 2
+	SPRowCountFetchNever   = 0,
+	SPRowCountFetchIfCheap = 1,
+	SPRowCountFetchAlways  = 2
 } SPRowCountQueryUsageLevels;
 
 // Export type

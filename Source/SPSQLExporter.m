@@ -67,6 +67,7 @@
 		}
 		
 		[self setDelegate:exportDelegate];
+		[self setSqlExportCurrentTable:nil];
 	}
 	
 	return self;
@@ -204,6 +205,7 @@
 			sqlOutputIncludeContent    = [NSArrayObjectAtIndex(table, 2) boolValue];
 			sqlOutputIncludeDropSyntax = [NSArrayObjectAtIndex(table, 3) boolValue];
 			
+			// Set the current table
 			[self setSqlExportCurrentTable:tableName];
 			
 			// Inform the delegate that we are about to start fetcihing data for the current table

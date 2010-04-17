@@ -95,6 +95,9 @@
 		
 		// Restore query mode
 		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+		
+		// Display Growl notification
+		[self displayExportFinishedGrowlNotification];
 	}
 }
 

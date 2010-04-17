@@ -39,6 +39,7 @@
 #import "SPCSVExporter.h"
 #import "SPSQLExporter.h"
 #import "SPXMLExporter.h"
+#import "SPDotExporter.h"
 
 @implementation SPExportController (SPExportInitializer)
 
@@ -59,7 +60,7 @@
 	}
 	
 	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-	exportSource = ([exportInputMatrix selectedRow] + 1);
+	exportSource = (exportType == SPDotExport) ? SPTableExport : ([exportInputMatrix selectedRow] + 1);
 	
 	NSMutableArray *exportTables = [NSMutableArray array];
 	
@@ -84,12 +85,16 @@
 						[exportTables addObject:table];
 					}
 				}
+				else if (exportType == SPDotExport) {
+					[exportTables addObject:[table objectAtIndex:0]];
+				}
 				else {
 					if ([[table objectAtIndex:2] boolValue]) {
 						[exportTables addObject:[table objectAtIndex:0]];
 					}
 				}
 			}
+			
 			break;
 	}
 	
@@ -104,6 +109,9 @@
 			break;
 		case SPXMLExport:
 			exportTypeLabel = @"XML";
+			break;
+		case SPDotExport:
+			exportTypeLabel = @"Dot";
 			break;
 	}
 		
@@ -357,6 +365,42 @@
 		
 			[exporters addObject:xmlExporter];
 		}
+	}
+	// Dot export
+	else if (exportType == SPDotExport) {
+		
+		// Cache the number of tables being exported
+		exportTableCount = [exportTables count];
+		
+		SPDotExporter *dotExporter = [[SPDotExporter alloc] initWithDelegate:self];
+		
+		[dotExporter setDotTableData:tableDataInstance];
+		
+		[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
+		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
+		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
+				
+		// Set generic properties
+		[dotExporter setConnection:connection];
+		[dotExporter setExportOutputEncoding:[connection encoding]];
+		[dotExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
+		
+		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
+		sqlPreviousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
+		
+		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
+		
+		[dotExporter setDotExportTables:exportTables];
+		
+		// Set the exporter's max progress
+		[dotExporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
+		
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.dot", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]]];
+		
+		[dotExporter setExportOutputFileHandle:fileHandle];
+		
+		[exporters addObject:dotExporter];
 	}
 		
 	// Add the first exporter to the operation queue

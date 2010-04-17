@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPCSVExporterProtocol.h
+//  SPDotExporterDelegate.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on April 15, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,40 +23,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPCSVExporter;
+#import "SPExportController.h"
+#import "SPDotExporterProtocol.h"
 
-/**
- * \protocol SPCSVExporterProtocol SPCSVExporterProtocol.h
- *
- * CSV exporter delegate protocol.
- */
-@protocol SPCSVExporterProtocol
-
-/**
- * 
- * @param SPCSVExporter The expoter calling the method.
- */
-- (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter;
-
-/**
- * 
- *
- * @param SPCSVExporter The expoter calling the method.
- */
-- (void)csvExportProcessComplete:(SPCSVExporter *)exporter;
-
-/**
- *
- *
- * @param SPCSVExporter The expoter calling the method.
- */
-- (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter;
-
-/**
- *
- *
- * @param SPCSVExporter The expoter calling the method.
- */
-- (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter;
+@interface SPExportController (SPDotExporterDelegate) <SPDotExporterProtocol>
 
 @end

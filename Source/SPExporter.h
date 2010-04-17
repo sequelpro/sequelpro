@@ -26,6 +26,8 @@
 #import <Cocoa/Cocoa.h>
 
 /**
+ * @class SPExporter SPExporter.m  
+ *
  * This class is designed to be the base class of all data exporters and provide basic functionality
  * common to each of them. Each data exporter (i.e. CSV, SQL, XML, etc.) should be implemented as a subclass
  * of this class, with the end result being a modular export architecture separated by export type. All exporters
