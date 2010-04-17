@@ -239,7 +239,7 @@
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow orderFront:self];
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
-	[taskProgressWindow release];
+	[taskProgressWindow setReleasedWhenClosed:YES];
 	[taskProgressWindow setContentView:taskProgressLayer];
 	[self centerTaskWindow];
 }
@@ -4059,6 +4059,7 @@
 	[allDatabases release];
 	[allSystemDatabases release];
 	[printWebView release];
+	[taskProgressWindow close];
 	
 	if (connectionController) [connectionController release];
 	if (processListController) [processListController release];
