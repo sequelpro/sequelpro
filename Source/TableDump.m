@@ -169,9 +169,9 @@
 			[self reloadTables:self];
 			[sqlCompressionSwitch setState:[prefs boolForKey:SPSQLExportUseCompression]?NSOnState:NSOffState];
 			if ([prefs boolForKey:SPSQLExportUseCompression]) {
-				[currentExportPanel setRequiredFileType:@"sql.gz"];
+				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
 			} else {
-				[currentExportPanel setRequiredFileType:@"sql"];
+				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
 			}
 			file = [NSString stringWithFormat:@"%@_%@.%@", [tableDocumentInstance database], currentDate, [currentExportPanel requiredFileType]];
 			[currentExportPanel setAccessoryView:exportDumpView];
