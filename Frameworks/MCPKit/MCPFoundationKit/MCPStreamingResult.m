@@ -85,7 +85,9 @@
 			[mNames release];
 			mNames = nil;
 		}
-
+        
+        
+        
 		mResult = mysql_use_result(mySQLPtr);
 
 		if (mResult) {
@@ -98,7 +100,7 @@
 		// Obtain SEL references and pointer
 		isConnectedSEL = @selector(isConnected);
 		isConnectedPtr = [parentConnection methodForSelector:isConnectedSEL];
-
+                
 		// If the result is opened in download-data-fast safe mode, set up the additional variables
 		// and threads required.
 		if (!fullyStreaming) {
@@ -131,9 +133,14 @@
  */
 - (void) dealloc
 {
-	[self cancelResultLoad];
-	if (!connectionUnlocked) [parentConnection unlockConnection];
-
+	[self cancelResultLoad]; //this should close the connection if it is still open
+    
+    if (!connectionUnlocked) {
+        //this should NEVER happen
+        NSLog(@"MCPStreamingResult: The connection has not been unlocked.");
+        [parentConnection unlockConnection];
+    }
+    
 	if (!fullyStreaming) {
 		pthread_mutex_destroy(&dataFreeLock);
 		pthread_mutex_destroy(&dataCreationLock);
@@ -162,8 +169,14 @@
 	if (fullyStreaming) {
 		theRow = mysql_fetch_row(mResult);
 
-		// If no data was returned, we're at the end of the result set - return nil.
-		if (theRow == NULL) return nil;
+		// If no data was returned, we're at the end of the result set - unlock the connection and return nil
+		if (theRow == NULL) {
+            if (!connectionUnlocked) {
+                [parentConnection unlockConnection];
+                connectionUnlocked = YES;
+            }
+            return nil;
+        }
 
 		// Retrieve the lengths of the returned data
 		fieldLengths = mysql_fetch_lengths(mResult);
@@ -333,6 +346,7 @@
 
 /*
  * Ensure the result set is fully processed and freed without any processing
+ * This method ensures that the connection is unlocked.
  */
 - (void) cancelResultLoad
 {
@@ -345,7 +359,13 @@
 			theRow = mysql_fetch_row(mResult);
 
 			// If no data was returned, we're at the end of the result set - return.
-			if (theRow == NULL) return;
+			if (theRow == NULL) {
+                if (!connectionUnlocked) {
+                    [parentConnection unlockConnection];
+                    connectionUnlocked = YES;
+                }
+                return;
+            }
 		}
 
 	// If in cached-streaming/fast download mode, loop until all data is fetched and freed
@@ -361,8 +381,8 @@
 			// once all memory has been freed
 			if (processedRowCount == downloadedRowCount) {
 				while (!dataFreed) usleep(1000);
-				[parentConnection unlockConnection];
-				connectionUnlocked = YES;
+                // we don't need to unlock the connection because
+                // the data loading thread already did that
 				return;
 			}
 			processedRowCount++;
@@ -459,8 +479,8 @@
 	}
 
 	// Unlock the parent connection now data has been retrieved
-	connectionUnlocked = YES;
-	[parentConnection unlockConnection];
+    [parentConnection unlockConnection];
+    connectionUnlocked = YES;
 
 	dataDownloaded = YES;
 	[downloadPool drain];

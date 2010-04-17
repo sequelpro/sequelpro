@@ -56,10 +56,16 @@
 {
 	tableContentInstance = [theDocument valueForKey:@"tableContentInstance"];
 	tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
+	toolbarItemVisible = NO;
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toolbarWillAddItem:) name:NSToolbarWillAddItemNotification object:[theDocument valueForKey:@"mainToolbar"]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toolbarDidRemoveItem:) name:NSToolbarDidRemoveItemNotification object:[theDocument valueForKey:@"mainToolbar"]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(startDocumentTask:) name:SPDocumentTaskStartNotification object:theDocument];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(endDocumentTask:) name:SPDocumentTaskEndNotification object:theDocument];
 }
 
 - (void) dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[tableContentStates release];
 	[history release];
 	[super dealloc];
@@ -73,6 +79,11 @@
  */
 - (void) updateToolbarItem
 {
+
+	// If the toolbar item isn't visible, don't perform any actions - as manipulating
+	// items not on the toolbar can cause crashes.
+	if (!toolbarItemVisible) return;
+
 	BOOL backEnabled = NO;
 	BOOL forwardEnabled = NO;
 	NSInteger i;
@@ -81,7 +92,7 @@
 	// Set the active state of the segments if appropriate
 	if ([history count] && historyPosition > 0) backEnabled = YES;
 	if ([history count] && historyPosition + 1 < [history count]) forwardEnabled = YES;
-	
+
 	[historyControl setEnabled:backEnabled forSegment:0];
 	[historyControl setEnabled:forwardEnabled forSegment:1];
 
@@ -173,6 +184,61 @@
 	}
 
 	return theView;
+}
+
+/**
+ * Set up the toolbar items as appropriate.
+ * State tracking is necessary as manipulating items not on the toolbar
+ * can cause crashes.
+ */
+- (void) setupInterface
+{
+	NSArray *toolbarItems = [[theDocument valueForKey:@"mainToolbar"] items];
+	for (NSToolbarItem *toolbarItem in toolbarItems) {
+		if ([[toolbarItem itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
+			toolbarItemVisible = YES;
+			break;
+		}
+	}
+}
+
+/**
+ * Disable the controls during a task.
+ */
+- (void) startDocumentTask:(NSNotification *)aNotification
+{
+	if (toolbarItemVisible) [historyControl setEnabled:NO];
+}
+
+/**
+ * Enable the controls once a task has completed.
+ */
+- (void) endDocumentTask:(NSNotification *)aNotification
+{
+	if (toolbarItemVisible) [historyControl setEnabled:YES];
+}
+
+/**
+ * Update the state when the item is added from the toolbar.
+ * State tracking is necessary as manipulating items not on the toolbar
+ * can cause crashes.
+ */
+- (void) toolbarWillAddItem:(NSNotification *)aNotification {
+	if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
+		toolbarItemVisible = YES;
+		[self performSelector:@selector(updateToolbarItem) withObject:nil afterDelay:0.1];
+	}
+}
+
+/**
+ * Update the state when the item is removed from the toolbar
+ * State tracking is necessary as manipulating items not on the toolbar
+ * can cause crashes.
+ */
+- (void) toolbarDidRemoveItem:(NSNotification *)aNotification {
+	if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
+		toolbarItemVisible = NO;
+	}
 }
 
 #pragma mark -

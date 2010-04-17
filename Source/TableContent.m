@@ -546,7 +546,6 @@
  */
 - (void) loadTableValues
 {
-
 	// If no table is selected, return
 	if (!selectedTable) return;
 
@@ -761,9 +760,13 @@
 		pthread_mutex_unlock(&tableValuesLock);
 	}
 
-	// Ensure the table is aware of changes, especially for non-threaded loads
-	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
-	[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+	// Ensure the table is aware of changes
+    if ([NSThread isMainThread]) {
+        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+    } else {
+        [tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+    }
 	
 	// Clean up the autorelease pool and reset the progress indicator
 	[dataLoadingPool drain];
@@ -1324,8 +1327,6 @@
 	
 	//copy row
 	tempRow = [tableValues rowContentsAtIndex:[tableContentView selectedRow]];
-	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
-	tableRowsCount++;
 	
 	//if we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
@@ -1350,6 +1351,10 @@
 			[tempRow replaceObjectAtIndex:i withObject:[dbDataRow objectAtIndex:i]];
 		}
 	}
+	
+	//insert the copied row
+	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
+	tableRowsCount++;
 	
 	//select row and go in edit mode
 	[tableContentView reloadData];
@@ -1963,13 +1968,12 @@
  */
 - (BOOL)saveRowOnDeselect
 {
+	// Save any edits which have been made but not saved to the table yet.
+	[tableWindow endEditingFor:nil];
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
 	isSavingRow = YES;
-
-	// Save any edits which have been made but not saved to the table yet.
-	[tableWindow endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
@@ -3128,7 +3132,7 @@
 #pragma mark Other methods
 
 /*
- * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
+ * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
@@ -3139,9 +3143,8 @@
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
 
-	// Trap enter and tab keys
-	if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ||
-		[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	// Trap tab key
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
 	{
 		[[control window] makeFirstResponder:control];
 
@@ -3170,7 +3173,49 @@
 		}
 		return TRUE;
 	}
-	
+    
+    // Trap enter key
+    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+    {
+        [[control window] makeFirstResponder:control];
+        [self addRowToDB];
+		return TRUE;
+    }
+    
+    // Trap down arrow key
+    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
+    {
+        NSUInteger newRow = row+1;
+        if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
+
+        [[control window] makeFirstResponder:control];
+        [self addRowToDB];
+        
+        if (newRow>=tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
+        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
+        
+        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
+		return TRUE;
+    }
+    
+    // Trap up arrow key
+    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
+    {
+        if (row==0) return TRUE; //already at the beginning of the list
+        NSUInteger newRow = row-1;
+        
+        [[control window] makeFirstResponder:control];
+        [self addRowToDB];
+        
+        if (newRow>=tableRowsCount) return TRUE; // addRowToDB could reload the table and change the number of rows
+        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
+        
+        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
+		return TRUE;
+    }
+    
 	// Trap the escape key
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
 			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
