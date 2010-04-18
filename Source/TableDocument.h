@@ -58,7 +58,7 @@
 	
 	IBOutlet NSSearchField *listFilterField;
 
-	IBOutlet id tableWindow;
+	IBOutlet NSWindow *tableWindow;
 	
 	IBOutlet id titleAccessoryView;
 	IBOutlet id titleImageView;
@@ -168,6 +168,7 @@
 }
 
 - (BOOL)isUntitled;
+- (BOOL)couldCommitCurrentViewActions;
 
 - (void)initQueryEditorWithString:(NSString *)query;
 - (void)initWithConnectionFile:(NSString *)path;

@@ -221,7 +221,7 @@
 	}
 	
 	// Update display if necessary
-	[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+	[[tableContentView onMainThread] setNeedsDisplay:YES];
 	
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
@@ -737,9 +737,9 @@
 		// Update the table view with new results every now and then
 		if (rowsProcessed > nextTableDisplayBoundary) {
 			if (rowsProcessed > tableRowsCount) tableRowsCount = rowsProcessed;
-			[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+			[[tableContentView onMainThread] noteNumberOfRowsChanged];
 			if (!tableViewRedrawn) {
-				[tableContentView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+				[[tableContentView onMainThread] setNeedsDisplay:YES];
 				tableViewRedrawn = YES;
 			}
 			nextTableDisplayBoundary *= 2;

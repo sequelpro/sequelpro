@@ -275,6 +275,7 @@ extern NSString *SPMainToolbarTableInfo;
 extern NSString *SPMainToolbarTableRelations;
 extern NSString *SPMainToolbarTableTriggers;
 extern NSString *SPMainToolbarUserManager;
+extern NSString **SPViewModeToMainToolbarMap[];
 
 // Preferences toolbar
 extern NSString *SPPreferenceToolbarGeneral;
