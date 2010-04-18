@@ -77,6 +77,9 @@
 		windowMinHeigth = [[self window] minSize].height;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		
+		// Default filename tokens
+		availableFilenameTokens = @"host,database,table,date,time";
 	}
 	
 	return self;
@@ -145,6 +148,65 @@
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
 														window:tableWindow
 											  notificationName:@"Export Finished"];
+}
+
+/**
+ *
+ */
+- (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table
+{
+	NSMutableString *string = [NSMutableString stringWithString:format];
+	
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+	
+	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+	
+	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+	
+	[string replaceOccurrencesOfString:@"host" withString:[tableDocumentInstance host]
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	[string replaceOccurrencesOfString:@"database" withString:[tableDocumentInstance database]
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	if (table) {
+		[string replaceOccurrencesOfString:@"table" withString:table
+								   options:NSLiteralSearch
+									 range:NSMakeRange(0, [string length])];
+	}
+	else {
+		[string replaceOccurrencesOfString:@"table" withString:@""
+								   options:NSLiteralSearch
+									 range:NSMakeRange(0, [string length])];
+	}
+	
+	[string replaceOccurrencesOfString:@"date" withString:[dateFormatter stringFromDate:[NSDate date]]
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
+	
+	[string replaceOccurrencesOfString:@"time" withString:[dateFormatter stringFromDate:[NSDate date]]
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	// Strip comma separators
+	[string replaceOccurrencesOfString:@"," withString:@""
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	// Replace colons with hyphens
+	[string replaceOccurrencesOfString:@":" withString:@"-"
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	[dateFormatter release];
+	
+	return string;
 }
 
 /**
@@ -228,7 +290,7 @@
 {
 	if ([sender isKindOfClass:[NSMatrix class]]) {
 		
-		BOOL isSelectedTables = ([[sender selectedCell] tag] == 3);
+		BOOL isSelectedTables = ([[sender selectedCell] tag] == SPTableExport);
 		
 		[exportFilePerTableCheck setHidden:(!isSelectedTables)];
 		[exportFilePerTableNote setHidden:(!isSelectedTables)];
@@ -237,6 +299,8 @@
 		[exportSelectAllTablesButton setEnabled:isSelectedTables];
 		[exportDeselectAllTablesButton setEnabled:isSelectedTables];
 		[exportRefreshTablesButton setEnabled:isSelectedTables];
+		
+		availableFilenameTokens = ([[sender selectedCell] tag] == SPQueryExport) ? @"host,database,date,time" : @"host,database,table,date,time";
 	}
 }
 
@@ -261,6 +325,9 @@
  */
 - (IBAction)changeExportOutputPath:(id)sender
 {
+	[exportCustomFilenameTokenField setStringValue:@""];
+	[exportCustomFilenameTokensField setStringValue:availableFilenameTokens];
+	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	
 	[panel setCanChooseFiles:NO];
@@ -347,6 +414,15 @@
 	[exportTableList reloadData];
 	
 	[self _toggleExportButton];
+}
+
+/**
+ *
+ */
+- (IBAction)toggleCustomFilenameFormat:(id)sender
+{
+	[exportCustomFilenameTokenField setEnabled:[sender state]];
+	[exportCustomFilenameTokensField setEnabled:[sender state]];
 }
 
 /**
@@ -451,6 +527,20 @@
 	}
 	
     return items;
+}
+
+#pragma mark -
+#pragma mark Textt Field delegate methods
+
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+	if ([notification object] == exportCustomFilenameTokenField) {
+		
+		// Create the table name, but since this is only an example, use the first table in the list
+		NSString *filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:[[tablesListInstance tables] objectAtIndex:1]];
+				
+		[exportCustomFilenameExampleTextField setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Example", @"example label"), filename]];
+	}
 }
 
 #pragma mark -

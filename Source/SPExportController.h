@@ -77,8 +77,10 @@
 	
 	// Custom filename view
 	IBOutlet NSView *exportCustomFilenameView;
+	IBOutlet NSButton *exportCustomFilenameButton;
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
 	IBOutlet NSTokenField *exportCustomFilenameTokensField;
+	IBOutlet NSTextField *exportCustomFilenameExampleTextField;
 	
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
@@ -140,6 +142,9 @@
 	SPExportType exportType;
 	SPExportSource exportSource;
 	
+	// Available filename tokens
+	NSString *availableFilenameTokens;
+	
 	BOOL showAdvancedView;
 	
 	NSInteger heightOffset;
@@ -163,6 +168,7 @@
 - (void)export;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
+- (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table;
 
 // IB action methods
 - (IBAction)closeSheet:(id)sender;
@@ -172,6 +178,7 @@
 - (IBAction)changeExportOutputPath:(id)sender;
 - (IBAction)refreshTableList:(id)sender;
 - (IBAction)selectDeselectAllTables:(id)sender;
+- (IBAction)toggleCustomFilenameFormat:(id)sender;
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
 
 - (IBAction)toggleSQLIncludeStructure:(id)sender;
