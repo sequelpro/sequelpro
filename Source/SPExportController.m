@@ -247,9 +247,6 @@
 		
 		BOOL disable = (isCSV || isXML || isDot);
 		
-		[exportUseUTF8BOMButton setEnabled:(!disable)];
-		[exportCompressOutputFile setEnabled:(!disable)];
-		
 		[exportFilePerTableCheck setHidden:(isSQL || isDot)];
 		[exportFilePerTableNote setHidden:(isSQL || isDot)];
 		
@@ -276,8 +273,7 @@
 		
 		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(disable) ? @"" : @"C"]; 
 		
-		[exportCSVNULLValuesAsTextField setEnabled:isCSV];
-		[exportCSVNULLValuesAsTextField setStringValue:(isCSV) ? [prefs stringForKey:SPNullValue] : @""]; 
+		[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 		
 		[self refreshTableList:self];
 	}

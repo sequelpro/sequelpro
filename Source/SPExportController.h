@@ -87,6 +87,7 @@
 	IBOutlet NSButton *exportSQLIncludeDropSyntaxCheck;
 	IBOutlet NSButton *exportSQLIncludeContentCheck;
 	IBOutlet NSButton *exportSQLIncludeErrorsCheck;
+	IBOutlet NSButton *exportSQLBLOBFieldsAsHexCheck;
 	
 	// Excel
 	IBOutlet NSMatrix *exportExcelSheetOrFilePerTableMatrix;
