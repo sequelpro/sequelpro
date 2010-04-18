@@ -187,9 +187,9 @@
 		[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
 		[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
 		[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
-				
-		[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 		
+		[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
+				
 		// Loop through the selected tables
 		for (NSArray *table in [self sqlExportTables]) 
 		{

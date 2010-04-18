@@ -309,8 +309,8 @@
 		else {
 			filename = [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
 		}
-		
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingString:([exportCompressOutputFile state]) ? @"gz" : @"sql"]]];
+				
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"gz" : @"sql"]]];
 				
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		
@@ -347,7 +347,7 @@
 				}
 			}
 			
-			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingString:@".xml"]]];
+			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:@"xml"]]];
 			
 			// Write the file header
 			[self writeXMLHeaderToFileHandle:singleFileHandle];
@@ -428,7 +428,7 @@
 			filename = [tableDocumentInstance database];
 		}
 		
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingString:@".dot"]]];
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:@"dot"]]];
 		
 		[dotExporter setExportOutputFileHandle:fileHandle];
 		
