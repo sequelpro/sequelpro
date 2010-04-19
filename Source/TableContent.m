@@ -1372,9 +1372,13 @@
 - (IBAction)removeRow:(id)sender
 {
 	// Check whether a save of the current row is required.
-	if (![self saveRowOnDeselect]) 
-		return;
+	// if (![self saveRowOnDeselect]) 
+	//	return;
 
+	// cancel editing (maybe this is not the ideal method -- see xcode docs for that method)
+	[tableWindow endEditingFor:nil];
+
+	
 	if (![tableContentView numberOfSelectedRows])
 		return;
 	
@@ -2182,11 +2186,43 @@
 		}
 	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-
-			errors = 0;
-
 			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
+
+			//check if the user is currently editing a row
+			if (isEditingRow) {
+				//make sure that only one row is selected. This should never happen
+				if ([selectedRows count]!=1) {
+					NSLog(@"Expected only one selected row, but found %d",[selectedRows count]);
+				}
+				// this code is pretty much taken from the escape key handler
+				if ( isEditingNewRow ) {
+					// since the user is currently editing a new row, we don't actually have to delete any rows from the database
+					// we just have to remove the row from the view (and the store)
+					isEditingRow = NO;
+					isEditingNewRow = NO;
+					tableRowsCount--;
+					[tableValues removeRowAtIndex:currentlyEditingRow];
+					currentlyEditingRow = -1;
+					[self updateCountText];
+					[tableContentView reloadData];
+					
+					//deselect the row
+					[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+
+					// we also don't have to reload the table, since no query went to the database
+					return;
+				} else {
+					//cancel the edit
+					isEditingRow = NO;
+					// in case the delete fails, make sure we at least stay in a somewhat consistent state
+					[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
+					currentlyEditingRow = -1;				
+				}
+
+			}
 			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+			
+			errors = 0;
 
 			// Disable updating of the Console Log window for large number of queries
 			// to speed the deletion
@@ -2352,6 +2388,7 @@
 
 			if ( errors ) {
 				NSArray *message;
+				//TODO: The following three messages are NOT localisable!
 				if(errors < 0) {
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
 							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
@@ -2383,7 +2420,11 @@
 				[tableContentView reloadData];
 			}
 			[tableContentView deselectAll:self];
+		} else {
+			// The user clicked cancel in the "sure you wanna delete" message
+			// restore editing or whatever
 		}
+
 	}
 }
 
@@ -3231,6 +3272,7 @@
 			isEditingNewRow = NO;
 			tableRowsCount--;
 			[tableValues removeRowAtIndex:row];
+			[self updateCountText];
 			[tableContentView reloadData];
 		}
 		currentlyEditingRow = -1;
