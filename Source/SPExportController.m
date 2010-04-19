@@ -64,6 +64,8 @@
 		exportFilename = @"";
 		exportTypeLabel = @"";
 		sqlPreviousConnectionEncoding = @"";
+		
+		createCustomFilename = NO;
 		sqlPreviousConnectionEncodingViaLatin1 = NO;
 		
 		tables = [[NSMutableArray alloc] init];
@@ -331,7 +333,9 @@
 	[panel setCanCreateDirectories:YES];
 	[panel setAccessoryView:exportCustomFilenameView];
 	
-	[panel beginSheetForDirectory:NSHomeDirectory() 
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
+	
+	[panel beginSheetForDirectory:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory() 
 							 file:nil 
 				   modalForWindow:[self window] 
 					modalDelegate:self 

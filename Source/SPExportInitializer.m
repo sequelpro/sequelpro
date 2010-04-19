@@ -50,6 +50,8 @@
 {
 	NSArray *dataArray = nil;
 	
+	createCustomFilename = ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""]));
+	
 	// First determine what type of export the user selected
 	for (NSToolbarItem *item in [exportToolbar items])
 	{
@@ -170,7 +172,7 @@
 			NSString *filename = @"";
 			
 			// Create custom filename if required
-			if ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""])) {
+			if (createCustomFilename) {
 				filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
 			}
 			else {
@@ -295,7 +297,7 @@
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Set the exporter's max progress
-		[sqlExporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
+		[sqlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
 		
 		[infoDict release];
 		[tableTypes release];
@@ -303,12 +305,7 @@
 		NSString *filename = @"";
 		
 		// Create custom filename if required
-		if ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""])) {
-			filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
-		}
-		else {
-			filename = [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
-		}
+		filename = (createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
 				
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"gz" : @"sql"]]];
 				
@@ -328,7 +325,7 @@
 			NSString *filename = @"";
 			
 			// Create custom filename if required
-			if ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""])) {
+			if (createCustomFilename) {
 				filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
 			}
 			else {
@@ -421,7 +418,7 @@
 		NSString *filename = @"";
 		
 		// Create custom filename if required
-		if ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""])) {
+		if (createCustomFilename) {
 			filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
 		}
 		else {
@@ -499,10 +496,22 @@
 	[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
 	
 	// If required create separate files
-	if ((exportSource == SPTableExport) && [self exportToMultipleFiles] && (exportTableCount > 0)) {
-		filename = [[exportPathField stringValue] stringByAppendingPathComponent:table];
+	if ([self exportToMultipleFiles]) {
 		
-		fileHandle = [self getFileHandleForFilePath:filename];
+		if (createCustomFilename) {
+			
+			// Create custom filename based on the selected format
+			filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:table];
+			
+			// If the user chose to use a custom filename format and we exporting to multiple files, make
+			// sure the table name is included to ensure the output files are unique.
+			filename = ([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [filename stringByAppendingFormat:@"_%@", table] : filename;
+		}
+		else {
+			filename = table;
+		}
+				
+		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:filename]];
 		
 		[csvExporter setExportOutputFileHandle:fileHandle];
 	}

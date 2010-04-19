@@ -112,6 +112,9 @@
 	// Multi-file export flag
 	BOOL exportToMultipleFiles;
 	
+	// Create custom filename flag
+	BOOL createCustomFilename;
+	
 	// Number of tables being exported
 	NSUInteger exportTableCount;
 	
