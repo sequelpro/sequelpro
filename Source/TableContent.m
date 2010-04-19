@@ -1402,7 +1402,7 @@
 
 	NSString *contextInfo = @"removerow";
 	
-	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited && !isInterruptedLoad) {
+	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited && !isInterruptedLoad && !isEditingNewRow) {
 
 		contextInfo = @"removeallrows";
 		
@@ -2164,8 +2164,17 @@
 			currentlyEditingRow = -1;
 		}
 		[tableContentView reloadData];
-	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {
+	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {		
 		if ( returnCode == NSAlertDefaultReturn ) {
+			//check if the user is currently editing a row
+			if (isEditingRow) {
+				//cancel the edit
+				isEditingRow = NO;
+				// in case the delete fails, make sure we at least stay in a somewhat consistent state
+				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
+				currentlyEditingRow = -1;				
+			}
+			
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( ![mySQLConnection queryErrored] ) {
 
