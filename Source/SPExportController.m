@@ -95,10 +95,6 @@
 	// Upon awakening select the SQL tab
 	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
 	
-	// Disable the 'filtered result' and 'query result' options
-	[[exportInputMatrix cellAtRow:0 column:0] setEnabled:NO];
-	[[exportInputMatrix cellAtRow:1 column:0] setEnabled:NO];
-	
 	// Select the 'selected tables' option
 	[exportInputMatrix selectCellAtRow:2 column:0];
 }
@@ -111,10 +107,51 @@
  */
 - (void)export
 {	
+	[self exportTables:nil asFormat:0];
+}
+
+/**
+ * Displays the export window with the supplied tables and export type/format selected.
+ */
+- (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format
+{
 	[self refreshTableList:self];
 	
+	if (exportTables && format) {
+		[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:(format - 1)] itemIdentifier]];
+	
+		// Select the 'selected tables' option
+		[exportInputMatrix selectCellAtRow:2 column:0];
+		
+		// Disable all tables
+		for (NSMutableArray *table in tables)
+		{
+			[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:NO]];
+			[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:NO]];
+			[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:NO]];
+		}
+		
+		// Select the supplied tables
+		for (NSMutableArray *table in tables)
+		{
+			for (NSString *exportTable in exportTables)
+			{
+				if ([exportTable isEqualToString:[table objectAtIndex:0]]) {
+					[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:YES]];
+					[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:YES]];
+					[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:YES]];
+				}
+			}
+		}
+		
+		[exportTableList reloadData];
+		
+		// Ensure interface validation
+		[self switchTab:[[exportToolbar items] objectAtIndex:(format - 1)]];
+	}
+	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
-
+	
 	// If found the set the default path to the user's desktop, otherwise use their home directory
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	
@@ -401,14 +438,12 @@
  * Selects or de-selects all tables.
  */
 - (IBAction)selectDeselectAllTables:(id)sender
-{
-	NSUInteger i;
-	
+{	
 	[self refreshTableList:self];
 	
 	for (NSMutableArray *table in tables)
 	{
-		[table replaceObjectAtIndex:2 withObject:([sender tag]) ? [NSNumber numberWithBool:YES] : [NSNumber numberWithBool:NO]];
+		[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:[sender tag]]];
 	}
 	
 	[exportTableList reloadData];

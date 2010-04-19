@@ -170,6 +170,7 @@
 @property (readwrite, assign) MCPConnection *connection;
 
 - (void)export;
+- (void)exportTables:(NSArray *)table asFormat:(SPExportType)format;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
 - (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table;

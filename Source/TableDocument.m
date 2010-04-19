@@ -2255,6 +2255,14 @@
 	[tablesListInstance performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.1];
 }
 
+/**
+ * Exports the selected tables in the chosen file format.
+ */
+- (IBAction)exportSelectedTablesAs:(id)sender
+{
+	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag]];
+}
+
 #pragma mark -
 #pragma mark Other Methods
 
@@ -3085,8 +3093,14 @@
 		}
 	}
 	
+	// Data export
 	if ([menuItem action] == @selector(export:)) {
 		return (([self database] != nil) && ([[tablesListInstance tables] count] > 1));
+	}
+	
+	// Selected tables data export
+	if ([menuItem action] == @selector(exportSelectedTablesAs:)) {
+		return (([self database] != nil) && ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]));
 	}
 
 	if ([menuItem action] == @selector(import:) ||
