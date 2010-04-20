@@ -38,7 +38,8 @@
 {
 
 	// If TableDocument is performing a task suppress any context menu
-	if([[[self window] delegate] isWorking])
+	if ([[[[[self window] delegate] class] description] isEqualToString:@"TableDocument"]
+		&& [[[self window] delegate] isWorking])
 		return nil;
 
 	// If more than one row is selected only returns the default contextual menu
