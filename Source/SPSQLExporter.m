@@ -155,15 +155,20 @@
 			
 			[targetArray addObject:item];
 		}
-		
+				
 		// If required write the UTF-8 Byte Order Mark
-		[metaString setString:([self sqlOutputIncludeUTF8BOM]) ? @"" : @"\xef\xbb\xbf"];
+		if ([self sqlOutputIncludeUTF8BOM]) {
+			[metaString setString:@"\xef\xbb\xbf"];
+			[metaString appendString:@"# ************************************************************\n"];
+		}
+		else {
+			[metaString setString:@"# ************************************************************\n"];
+		}
 			
 		// If required set the file handle to compress it's output
 		[[self exportOutputFileHandle] setShouldWriteWithGzipCompression:[self sqlOutputCompressFile]];
 		
 		// Add the dump header to the dump file
-		[metaString appendString:@"# ************************************************************\n"];
 		[metaString appendString:@"# Sequel Pro SQL dump\n"];
 		[metaString appendString:[NSString stringWithFormat:@"# Version %@\n#\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
 		[metaString appendString:[NSString stringWithFormat:@"# %@\n# %@\n#\n", SPHomePageURL, SPDevURL]];
@@ -302,7 +307,7 @@
 					// Lock the table for writing and disable keys if supported
 					[metaString setString:@""];
 					[metaString appendString:[NSString stringWithFormat:@"LOCK TABLES %@ WRITE;\n", [tableName backtickQuotedString]]];
-					[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n", [tableName backtickQuotedString]]];
+					[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n\n", [tableName backtickQuotedString]]];
 					
 					[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 					
@@ -653,7 +658,7 @@
 		}
 		
 		// Restore unique checks, foreign key checks, and other settings saved at the start
-		[metaString setString:@"\n\n\n"];
+		[metaString setString:@"\n"];
 		[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
 		[metaString appendString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n"];
 		[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
