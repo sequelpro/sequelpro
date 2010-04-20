@@ -1429,12 +1429,8 @@
 		return NO;
 	}
 
-	// We have to be sure that TableSource and TableContent have finished editing
-	if ( ![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect] ) {
-		return NO;
-	} else {
-		return YES;
-	}
+	// We have to be sure that document views have finished editing
+	return [tableDocumentInstance couldCommitCurrentViewActions];
 }
 
 /**

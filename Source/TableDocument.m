@@ -239,7 +239,7 @@
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow orderFront:self];
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
-	[taskProgressWindow release];
+	[taskProgressWindow setReleasedWhenClosed:YES];
 	[taskProgressWindow setContentView:taskProgressLayer];
 	[self centerTaskWindow];
 }
@@ -615,6 +615,10 @@
  */
 - (IBAction)backForwardInHistory:(id)sender
 {
+
+	// Ensure history navigation is permitted - trigger end editing and any required saves
+	if (![self couldCommitCurrentViewActions]) return;
+
 	switch ([sender tag])
 	{
 		// Go backward
@@ -2403,6 +2407,31 @@
 	return ([[self fileURL] isFileURL]) ? NO : YES;
 }
 
+/**
+ * Asks any currently editing views to commit their changes;
+ * returns YES if changes were successfully committed, and NO
+ * if an error occurred or user interaction is required.
+ */
+- (BOOL)couldCommitCurrentViewActions
+{
+	[tableWindow endEditingFor:nil];
+	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
+
+		// Table structure view
+		case 0:
+			return [tableSourceInstance saveRowOnDeselect];
+
+		// Table content view
+		case 1:
+			return [tableContentInstance saveRowOnDeselect];
+
+		default:
+			break;
+	}
+
+	return YES;
+}
+
 #pragma mark -
 #pragma mark Accessor methods
 
@@ -2865,7 +2894,7 @@
 		break;
 		case SPSocketConnection:
 		aString = @"SPSocketConnection";
-		[connection setObject:[connectionController socket] forKey:@"socket"];
+		if ([connectionController socket] && [[connectionController socket] length]) [connection setObject:[connectionController socket] forKey:@"socket"];
 		break;
 		case SPSSHTunnelConnection:
 		aString = @"SPSSHTunnelConnection";
@@ -3221,10 +3250,9 @@
 
 - (IBAction)viewStructure:(id)sender
 {
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3237,10 +3265,10 @@
 
 - (IBAction)viewContent:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3253,17 +3281,10 @@
 
 - (IBAction)viewQuery:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-		return;
-	}
 
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3279,17 +3300,10 @@
 
 - (IBAction)viewStatus:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-		return;
-	}
 
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3310,17 +3324,10 @@
 
 - (IBAction)viewRelations:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-		return;
-	}
 
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3333,20 +3340,12 @@
 
 - (IBAction)viewTriggers:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
-	}
-	
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
-		return;
-	}
-	
+	}	
 	
 	[tableTabView selectTabViewItemAtIndex:5];
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
@@ -4076,6 +4075,7 @@
 	[allDatabases release];
 	[allSystemDatabases release];
 	[printWebView release];
+	[taskProgressWindow close];
 	
 	if (connectionController) [connectionController release];
 	if (processListController) [processListController release];

@@ -1083,9 +1083,9 @@
 	
 	// Add item to switch to edit favorites pane
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	[defaultFavoritePopup addItemWithTitle:@"Edit Favorites…"];
-	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setAction:@selector(displayFavoritePreferences:)];
-	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
+	[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item")];
+	[[[defaultFavoritePopup menu] itemWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item")] setAction:@selector(displayFavoritePreferences:)];
+	[[[defaultFavoritePopup menu] itemWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item")] setTarget:self];
 	
 	// Select the default favorite from prefs
 	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
@@ -1104,17 +1104,6 @@
 {
 	[favoritesController setSelectedObjects:favorites];
 	[favoritesTableView scrollRowToVisible:[favoritesController selectionIndex]];
-}
-
-// -------------------------------------------------------------------------------
-// selectFavoriteAtIndex:
-//
-// Selects the favorite at the specified index in the favorites list
-// -------------------------------------------------------------------------------
-- (void)selectFavoriteAtIndex:(NSUInteger)theIndex
-{
-	[favoritesController setSelectionIndex:theIndex];
-	[favoritesTableView scrollRowToVisible:theIndex];
 }
 
 // -------------------------------------------------------------------------------

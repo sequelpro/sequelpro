@@ -518,7 +518,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) doAutoCompletion
 {
-
 	if(completionIsOpen || !self || ![self delegate]) return;
 
 	// Cancel autocompletion trigger
@@ -533,12 +532,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(![self delegate] || ![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
 
 	if(r.location) {
-		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
-			return;
-	 	if(![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[[self string] characterAtIndex:r.location-1]])
-			// Suppress auto-completion if window isn't active anymore
-			if([[NSApp keyWindow] firstResponder] == self)
-				[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+		NSCharacterSet *ignoreCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"\"'`;,()[]{}=+/<> \t\n\r"];
+
+		// Check the previous character and don't autocomplete if the character is whitespace or certain types of punctuation
+		if ([ignoreCharacterSet characterIsMember:[[self string] characterAtIndex:r.location - 1]]) return;
+
+		// Suppress auto-completion if the window isn't active anymore
+		if ([[NSApp keyWindow] firstResponder] != self) return;
+
+		// Trigger the completion
+		[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
 	}
 
 }

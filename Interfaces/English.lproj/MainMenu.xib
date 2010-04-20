@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="758"/>
+			<integer value="81"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4669,7 +4669,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1072</int>
+			<int key="maxID">1076</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5370,6 +5370,7 @@
 							<string>copyCreateTableSyntaxFromSheet:</string>
 							<string>export:</string>
 							<string>exportMultipleTables:</string>
+							<string>exportSelectedTablesAs:</string>
 							<string>exportTable:</string>
 							<string>flushPrivileges:</string>
 							<string>flushTable:</string>
@@ -5402,6 +5403,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5566,7 +5568,7 @@
 							<string>id</string>
 							<string>NSTabView</string>
 							<string>id</string>
-							<string>id</string>
+							<string>NSWindow</string>
 							<string>id</string>
 							<string>NSButton</string>
 							<string>id</string>

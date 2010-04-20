@@ -145,6 +145,9 @@
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl
 {
 
+	// Ensure history navigation is permitted - trigger end editing and any required saves
+	if (![theDocument couldCommitCurrentViewActions]) return;
+
 	switch ([theControl selectedSegment]) 
 	{
 		// Back button clicked:
