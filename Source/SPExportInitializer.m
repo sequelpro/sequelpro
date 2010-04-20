@@ -312,6 +312,8 @@
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		
 		[exporters addObject:sqlExporter];
+		
+		[sqlExporter release];
 	}
 	// XML export
 	else if (exportType == SPXMLExport) {
