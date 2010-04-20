@@ -1107,17 +1107,6 @@
 }
 
 // -------------------------------------------------------------------------------
-// selectFavoriteAtIndex:
-//
-// Selects the favorite at the specified index in the favorites list
-// -------------------------------------------------------------------------------
-- (void)selectFavoriteAtIndex:(NSUInteger)theIndex
-{
-	[favoritesController setSelectionIndex:theIndex];
-	[favoritesTableView scrollRowToVisible:theIndex];
-}
-
-// -------------------------------------------------------------------------------
 // global table font selection
 // -------------------------------------------------------------------------------
 // show the font panel

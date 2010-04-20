@@ -113,7 +113,6 @@
 // Other
 - (void)updateDefaultFavoritePopup;
 - (void)selectFavorites:(NSArray *)favorite;
-- (void)selectFavoriteAtIndex:(NSUInteger)theIndex;
 - (void)changeFont:(id)sender;
 - (IBAction)favoriteTypeDidChange:(id)sender;
 - (void)updateFavoritePasswordsFromField:(NSControl *)passwordControl;
