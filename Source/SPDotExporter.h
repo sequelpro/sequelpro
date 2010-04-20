@@ -75,14 +75,14 @@
 	NSString *dotDatabaseVersion;
 }
 
-@property (readwrite, assign) NSObject *delegate;
-@property (readwrite, retain) NSArray *dotExportTables;
-@property (readwrite, retain) NSString *dotExportCurrentTable;
-@property (readwrite, retain) SPTableData *dotTableData;
+@property(readwrite, assign) NSObject *delegate;
+@property(readwrite, retain) NSArray *dotExportTables;
+@property(readwrite, retain) NSString *dotExportCurrentTable;
+@property(readwrite, retain) SPTableData *dotTableData;
 
-@property (readwrite, retain) NSString *dotDatabaseHost;
-@property (readwrite, retain) NSString *dotDatabaseName;
-@property (readwrite, retain) NSString *dotDatabaseVersion;
+@property(readwrite, retain) NSString *dotDatabaseHost;
+@property(readwrite, retain) NSString *dotDatabaseName;
+@property(readwrite, retain) NSString *dotDatabaseVersion;
 
 /**
  * Initialise an instance of SPDotExporter using the supplied delegate.

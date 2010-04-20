@@ -28,6 +28,8 @@
 #import "SPExporter.h"
 #import "SPCSVExporterProtocol.h"
 
+@class SPTableData;
+
 /**
  * @class SPCSVExporter SPCSVExporter.m
  *
@@ -83,9 +85,9 @@
 	NSString *csvNULLString;
 	
 	/**
-	 * Table column numeric status
+	 * Table data
 	 */
-	NSArray  *csvTableColumnNumericStatus;
+	SPTableData *csvTableData;
 }
 
 @property(readwrite, assign) NSObject <SPCSVExporterProtocol> *delegate;
@@ -100,7 +102,8 @@
 @property(readwrite, retain) NSString *csvEscapeString;
 @property(readwrite, retain) NSString *csvLineEndingString;
 @property(readwrite, retain) NSString *csvNULLString;
-@property(readwrite, retain) NSArray  *csvTableColumnNumericStatus;
+
+@property(readwrite, retain) SPTableData *csvTableData;
 
 /**
  * Initialise an instance of SPCSVExporter using the supplied delegate.

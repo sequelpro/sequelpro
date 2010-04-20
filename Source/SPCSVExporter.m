@@ -29,6 +29,7 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPFileHandle.h"
+#import "SPTableData.h"
 
 @implementation SPCSVExporter
 
@@ -41,7 +42,7 @@
 @synthesize csvEscapeString;
 @synthesize csvLineEndingString;
 @synthesize csvNULLString;
-@synthesize csvTableColumnNumericStatus;
+@synthesize csvTableData;
 
 /**
  * Initialise an instance of SPCSVExporter using the supplied delegate.
@@ -74,6 +75,8 @@
 		
 		NSMutableString *csvString     = [NSMutableString string];
 		NSMutableString *csvCellString = [NSMutableString string];
+		
+		NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
 
 		NSArray *csvRow = nil;
 		NSScanner *csvNumericTester = nil;
@@ -98,8 +101,7 @@
 		if ((![self csvOutputFieldNames]) ||
 			(![self csvFieldSeparatorString]) ||
 			(![self csvEscapeString]) ||
-			(![self csvLineEndingString]) ||
-			(![self csvTableColumnNumericStatus]))
+			(![self csvLineEndingString]))
 		{
 			[pool release];
 			return;
@@ -179,6 +181,34 @@
 		
 		if ([self csvDataArray]) totalRows = [[self csvDataArray] count];
 		if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
+		
+		if ([self csvTableName] && (![self csvDataArray])) {
+			
+			NSDictionary *tableDetails = [[NSDictionary alloc] init];
+			
+			// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
+			MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
+			
+			[queryResult setReturnDataAsStrings:YES];
+			
+			if ([queryResult numOfRows]) {
+				tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
+				
+				tableDetails = [NSDictionary dictionaryWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
+			}
+			
+			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+			for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+			{
+				NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
+				
+				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
+																			  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
+																			  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
+			}
+			
+			[tableDetails release];
+		}
 		
 		// Drop into the processing loop
 		NSAutoreleasePool *csvExportPool = [[NSAutoreleasePool alloc] init];
@@ -273,8 +303,8 @@
 				}
 				else {
 					// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
-					if ([[self csvTableColumnNumericStatus] count] > 0) {
-						csvCellIsNumeric = [NSArrayObjectAtIndex([self csvTableColumnNumericStatus], i) boolValue];
+					if ([tableColumnNumericStatus count] > 0) {
+						csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, i) boolValue];
 					} 
 					// Otherwise, first test whether this cell contains data
 					else if ([NSArrayObjectAtIndex(csvRow, i) isKindOfClass:[NSData class]]) {
@@ -393,7 +423,7 @@
 	[csvEscapeString release], csvEscapeString = nil;
 	[csvLineEndingString release], csvLineEndingString = nil;
 	[csvNULLString release], csvNULLString = nil;
-	[csvTableColumnNumericStatus release], csvTableColumnNumericStatus = nil;
+	[csvTableData release], csvTableData = nil;
 	
 	[super dealloc];
 }

@@ -455,30 +455,6 @@
 	NSDictionary *tableDetails = [NSDictionary dictionary];
 	NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
 	
-	if (exportSource == SPTableExport) {
-		
-		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [table backtickQuotedString]]];
-		
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numOfRows]) {
-			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
-			
-			tableDetails = [NSDictionary dictionaryWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [tableDataInstance informationForView:table] : [tableDataInstance informationForTable:table]];
-		}
-		
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
-		{
-			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
-		}
-	}
-	
 	SPCSVExporter *csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
 	
 	// Depeding on the export source, set the table name or data array
@@ -489,16 +465,15 @@
 		[csvExporter setCsvDataArray:dataArray];
 	}
 	
+	[csvExporter setCsvTableData:tableDataInstance];
+	
 	[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
 	[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
 	[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
 	[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
 	[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
-	
 	[csvExporter setCsvNULLString:[exportCSVNULLValuesAsTextField stringValue]];
-	
-	[csvExporter setCsvTableColumnNumericStatus:tableColumnNumericStatus];
-	
+		
 	// If required create separate files
 	if ([self exportToMultipleFiles]) {
 		
