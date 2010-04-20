@@ -432,6 +432,8 @@
 		[dotExporter setExportOutputFileHandle:fileHandle];
 		
 		[exporters addObject:dotExporter];
+		
+		[dotExporter release];
 	}
 		
 	// Add the first exporter to the operation queue
