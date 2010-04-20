@@ -2886,7 +2886,7 @@
 		break;
 		case SPSocketConnection:
 		aString = @"SPSocketConnection";
-		[connection setObject:[connectionController socket] forKey:@"socket"];
+		if ([connectionController socket] && [[connectionController socket] length]) [connection setObject:[connectionController socket] forKey:@"socket"];
 		break;
 		case SPSSHTunnelConnection:
 		aString = @"SPSSHTunnelConnection";
