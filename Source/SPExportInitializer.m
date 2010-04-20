@@ -445,7 +445,7 @@
 }
 
 /**
- *
+ * Initialises a CSV exporter for the supplied table name or data array.
  */
 - (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
 {
@@ -530,7 +530,7 @@
 }
 
 /**
- *
+ * Initialises a XML exporter for the supplied table name or data array.
  */
 - (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
 {
@@ -573,7 +573,7 @@
 }
 
 /**
- *
+ * Writes the XML file header to the supplied file handle.
  */
 - (void)writeXMLHeaderToFileHandle:(SPFileHandle *)fileHandle
 {

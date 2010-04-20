@@ -26,7 +26,9 @@
 #import <Cocoa/Cocoa.h>
 
 /**
- * @class SPExporter SPExporter.m  
+ * @class SPExporter SPExporter.m
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
  *
  * This class is designed to be the base class of all data exporters and provide basic functionality
  * common to each of them. Each data exporter (i.e. CSV, SQL, XML, etc.) should be implemented as a subclass
@@ -65,17 +67,17 @@
 	NSInteger exportMaxProgress;
 }
 
-@property (readwrite, retain) MCPConnection *connection;
+@property(readwrite, retain) MCPConnection *connection;
 
-@property (readwrite, assign) double exportProgressValue;
+@property(readwrite, assign) double exportProgressValue;
 
-@property (readwrite, assign) BOOL exportProcessIsRunning;
-@property (readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
+@property(readwrite, assign) BOOL exportProcessIsRunning;
+@property(readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
 
-@property (readwrite, retain) NSString *exportData;
-@property (readwrite, retain) SPFileHandle *exportOutputFileHandle;
-@property (readwrite, assign) NSStringEncoding exportOutputEncoding;
+@property(readwrite, retain) NSString *exportData;
+@property(readwrite, retain) SPFileHandle *exportOutputFileHandle;
+@property(readwrite, assign) NSStringEncoding exportOutputEncoding;
 
-@property (readwrite, assign) NSInteger exportMaxProgress;
+@property(readwrite, assign) NSInteger exportMaxProgress;
 
 @end

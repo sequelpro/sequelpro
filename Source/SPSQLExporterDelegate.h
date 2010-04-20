@@ -26,6 +26,13 @@
 #import "SPExportController.h"
 #import "SPSQLExporterProtocol.h"
 
+/**
+ * @category SPSQLExporterDelegate SPSQLExporterDelegate.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * SQL exporter delegate category.
+ */
 @interface SPExportController (SPSQLExporterDelegate) <SPSQLExporterProtocol>
 
 @end

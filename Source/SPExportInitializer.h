@@ -29,6 +29,13 @@
 
 @class SPCSVExporter, SPSQLExporter, SPXMLExporter, SPFileHandle;
 
+/**
+ * @category SPExportInitializer SPExportInitializer.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Export initializer category.
+ */
 @interface SPExportController (SPExportInitializer)
 
 - (void)initializeExportUsingSelectedOptions;

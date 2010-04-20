@@ -28,6 +28,13 @@
 
 @class MCPConnection, BWAnchoredButtonBar;
 
+/**
+ * @class SPExportController SPExportController.m
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Export controller.
+ */
 @interface SPExportController : NSWindowController
 {	
 	// Controllers
@@ -106,68 +113,114 @@
 	// PDF
 	IBOutlet NSButton *exportPDFIncludeStructureCheck;
 	
-	// Cancellation flag
+	/**
+	 * Cancellation flag
+	 */
 	BOOL exportCancelled;
 	
-	// Multi-file export flag
+	/** 
+	 * Multi-file export flag
+	 */
 	BOOL exportToMultipleFiles;
 	
-	// Create custom filename flag
+	/**
+	 * Create custom filename flag
+	 */
 	BOOL createCustomFilename;
 	
-	// Number of tables being exported
-	NSUInteger exportTableCount;
+	/**
+	 * Number of tables being exported
+	 */
+	 NSUInteger exportTableCount;
 	
-	// Index of the current table being exported
+	/** 
+	 * Index of the current table being exported
+	 */
 	NSUInteger currentTableExportIndex;
 	
-	// Export type label
+	/**
+	 * Export type label
+	 */
 	NSString *exportTypeLabel;
 	
-	// Export filename
+	/** 
+	 * Export filename
+	 */
 	NSString *exportFilename;
 	
-	// Current database's tables
+	/**
+	 * Current database's tables
+	 */
 	NSMutableArray *tables;
 	
-	// Database connection
+	/** 
+	 * Database connection
+	 */
 	MCPConnection *connection;
 	
-	// Concurrent operation queue
+	/**
+	 * Concurrent operation queue
+	 */
 	NSOperationQueue *operationQueue;
 	
-	// Exporters 
+	/** 
+	 * Exporters
+	 */
 	NSMutableArray *exporters;
 	
-	// Global export file handle
+	/**
+	 * Global export file handle
+	 */
 	NSFileHandle *exportFileHandle;
 	
-	// Export options
+	/**
+	 * Export type
+	 */
 	SPExportType exportType;
+	
+	/**
+	 * Export source
+	 */
 	SPExportSource exportSource;
 	
-	// Available filename tokens
+	/**
+	 * Available filename tokens
+	 */
 	NSString *availableFilenameTokens;
 	
+	/**
+	 * Display advanced view flag
+	 */
 	BOOL showAdvancedView;
 	
+	/**
+	 * User defaults
+	 */
+	NSUserDefaults *prefs;
+	
+	/**
+	 * Current toolbar item
+	 */
+	NSToolbarItem *currentToolbarItem;
+	
+	/**
+	 * Previous connection encoding
+	 */
+	NSString *sqlPreviousConnectionEncoding;
+	
+	/**
+	 * Previous connection encoding was via Latin1
+	 */
+	BOOL sqlPreviousConnectionEncodingViaLatin1;
+
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
-	
-	NSUserDefaults *prefs;
-	
-	// Current toolbar item
-	NSToolbarItem *currentToolbarItem;
-	
-	// Encodings
-	NSString *sqlPreviousConnectionEncoding;
-	BOOL sqlPreviousConnectionEncodingViaLatin1;
 }
 
-@property (readwrite, assign) BOOL exportCancelled;
-@property (readwrite, assign) BOOL exportToMultipleFiles;
-@property (readwrite, assign) MCPConnection *connection;
+@property(readwrite, assign) BOOL exportCancelled;
+@property(readwrite, assign) BOOL exportToMultipleFiles;
+@property(readwrite, assign) MCPConnection *connection;
 
 - (void)export;
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format;

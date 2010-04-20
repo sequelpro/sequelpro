@@ -26,38 +26,45 @@
 @class SPDotExporter;
 
 /**
- * \protocol SPDotExporterProtocol SPDotExporterProtocol.h
+ * @protocol SPDotExporterProtocol SPDotExporterProtocol.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
  *
  * Dot schema exporter delegate protocol.
  */
 @protocol SPDotExporterProtocol
 
 /**
- * 
+ * Called when the dot export process is about to begin. 
+ *
  * @param SPDotExpoter The expoter calling the method.
  */
 - (void)dotExportProcessWillBegin:(SPDotExporter *)exporter;
 
 /**
- * 
+ * Called when the dot export process is complete.
+ *
  * @param SPDotExpoter The expoter calling the method.
  */
 - (void)dotExportProcessComplete:(SPDotExporter *)exporter;
 
 /**
- * 
+ * Called when the progress of the dot export process is updated.
+ *
  * @param SPDotExpoter The expoter calling the method.
  */
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter;
 
 /**
- * 
+ * Called when the dot export process is about to begin fetching data from the database.
+ *
  * @param SPDotExpoter The expoter calling the method.
  */
 - (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter;
 
 /**
- * 
+ * Called when the dot export process is about to begin writing data to disk. 
+ *
  * @param SPDotExpoter The expoter calling the method.
  */
 - (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter;

@@ -28,24 +28,43 @@
 #import "SPExporter.h"
 #import "SPXMLExporterProtocol.h"
 
-@class SPXMLExporter;
-
+/**
+ * @class SPXMLExporter SPXMLExporter.m
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * XML exporter class.
+ */
 @interface SPXMLExporter : SPExporter 
 {
+	/**
+	 * Exporter delegate
+	 */
 	NSObject <SPXMLExporterProtocol> *delegate;
 	
-	// XML data
+	/**
+	 * Data array
+	 */
 	NSArray *xmlDataArray;
 	
-	// Table
+	/**
+	 * Table name
+	 */
 	NSString *xmlTableName;
 }
 
-@property (readwrite, assign) NSObject *delegate;
+@property(readwrite, assign) NSObject *delegate;
 
-@property (readwrite, retain) NSArray *xmlDataArray;
-@property (readwrite, retain) NSString *xmlTableName;
+@property(readwrite, retain) NSArray *xmlDataArray;
+@property(readwrite, retain) NSString *xmlTableName;
 
+/**
+ * Initialise an instance of SPXMLExporter using the supplied delegate.
+ *
+ * @param exportDelegate The exporter delegate
+ *
+ * @return The initialised instance
+ */
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

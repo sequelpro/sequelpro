@@ -163,7 +163,7 @@
 }
 
 /**
- *
+ * Opens the errors sheet and displays the supplied errors string.
  */
 - (void)openExportErrorsSheetWithString:(NSString *)errors
 {
@@ -178,7 +178,7 @@
 }
 
 /**
- *
+ * Displays the export finished Growl notification.
  */
 - (void)displayExportFinishedGrowlNotification
 {
@@ -190,7 +190,7 @@
 }
 
 /**
- *
+ * Expands the custom filename format based on the selected tokens.
  */
 - (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table
 {
@@ -452,7 +452,7 @@
 }
 
 /**
- *
+ * Toggles the state of the custom filename format token fields.
  */
 - (IBAction)toggleCustomFilenameFormat:(id)sender
 {

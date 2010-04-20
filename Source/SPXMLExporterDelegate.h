@@ -26,6 +26,13 @@
 #import "SPExportController.h"
 #import "SPXMLExporterProtocol.h"
 
+/**
+ * @category SPXMLExporterDelegate SPXMLExporterDelegate.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * XML exporter delegate category.
+ */
 @interface SPExportController (SPXMLExporterDelegate) <SPXMLExporterProtocol>
 
 @end

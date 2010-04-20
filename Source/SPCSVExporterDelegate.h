@@ -26,6 +26,13 @@
 #import "SPExportController.h"
 #import "SPCSVExporterProtocol.h"
 
+/**
+ * @category SPCSVExporterDelegate SPCSVExporterDelegate.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * CSV exporter delegate category.
+ */
 @interface SPExportController (SPCSVExporterDelegate) <SPCSVExporterProtocol>
 
 @end

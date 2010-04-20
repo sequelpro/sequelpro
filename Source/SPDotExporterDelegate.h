@@ -26,6 +26,13 @@
 #import "SPExportController.h"
 #import "SPDotExporterProtocol.h"
 
+/**
+ * @category SPDotExporterDelegate SPDotExporterDelegate.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Dot exporter delegate category.
+ */
 @interface SPExportController (SPDotExporterDelegate) <SPDotExporterProtocol>
 
 @end

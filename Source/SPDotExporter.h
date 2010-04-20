@@ -30,10 +30,17 @@
 
 @class SPTableData;
 
+/**
+ * @class SPXMLExporter SPXMLExporter.m
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * XML exporter class.
+ */
 @interface SPDotExporter : SPExporter 
 {
 	/**
-	 * Delegate
+	 * Exporter delegate
 	 */
 	NSObject <SPDotExporterProtocol> *delegate;
 	
@@ -78,9 +85,11 @@
 @property (readwrite, retain) NSString *dotDatabaseVersion;
 
 /**
- * Initializes an instance of SPDotExporter with the supplied delegate.
+ * Initialise an instance of SPDotExporter using the supplied delegate.
  *
- * @param NSObject The exporter delegate.
+ * @param exportDelegate The exporter delegate
+ *
+ * @return The initialised instance
  */
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
