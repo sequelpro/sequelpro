@@ -212,6 +212,18 @@ const SPDatabaseCharSets charsets[] =
 }
 
 /**
+ * Set the current connection the supplied connection instance.
+ */
+- (void)setConnection:(MCPConnection *)dbConnection
+{
+	connection = dbConnection;
+	
+	serverMajorVersion   = [connection serverMajorVersion];
+	serverMinorVersion   = [connection serverMinorVersion];
+	serverReleaseVersion = [connection serverReleaseVersion];
+}
+
+/**
  * Reset all the cached values.
  */
 - (void)resetAllData
@@ -234,7 +246,7 @@ const SPDatabaseCharSets charsets[] =
 	if ([collations count] == 0) {
 		
 		// Try to retrieve the available collations from the database
-		if ([connection serverMajorVersion] >= 5)
+		if (serverMajorVersion >= 5)
 			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema.collations` ORDER BY `collation_name` ASC"]];	
 
 		// If that failed, get the list of collations from the hard-coded list
@@ -267,7 +279,7 @@ const SPDatabaseCharSets charsets[] =
 		characterSetEncoding = [[NSString alloc] initWithString:encoding];
 		
 		// Try to retrieve the available collations for the supplied encoding from the database
-		if ([connection serverMajorVersion] >= 5)
+		if (serverMajorVersion >= 5)
 			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];	
 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
@@ -296,7 +308,7 @@ const SPDatabaseCharSets charsets[] =
 - (NSArray *)getDatabaseStorageEngines
 {	
 	if ([storageEngines count] == 0) {
-		if ([connection serverMajorVersion] < 5) {
+		if (serverMajorVersion < 5) {
 			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
 			
 			// Check if InnoDB support is enabled
@@ -310,7 +322,7 @@ const SPDatabaseCharSets charsets[] =
 			}
 			
 			// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was included
-			if (([connection serverMajorVersion] <= 4) && ([connection serverMinorVersion] < 100)) {
+			if ((serverMajorVersion <= 4) && (serverMinorVersion < 100)) {
 				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"HEAP" forKey:@"Engine"]];
 				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ISAM" forKey:@"Engine"]];
 			}
@@ -319,28 +331,28 @@ const SPDatabaseCharSets charsets[] =
 			}
 			
 			// BLACKHOLE storage engine was added in MySQL 4.1.11
-			if (([connection serverMajorVersion]   >= 4) &&
-				([connection serverMinorVersion]   >= 1) &&
-				([connection serverReleaseVersion] >= 11))
+			if ((serverMajorVersion   >= 4) &&
+				(serverMinorVersion   >= 1) &&
+				(serverReleaseVersion >= 11))
 			{
 				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"BLACKHOLE" forKey:@"Engine"]];
 				
 				// ARCHIVE storage engine was added in MySQL 4.1.3
-				if ([connection serverReleaseVersion] >= 3) {
+				if (serverReleaseVersion >= 3) {
 					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ARCHIVE" forKey:@"Engine"]];
 				}
 				
 				// CSV storage engine was added in MySQL 4.1.4
-				if ([connection serverReleaseVersion] >= 4) {
+				if (serverReleaseVersion >= 4) {
 					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"CSV" forKey:@"Engine"]];
 				}
 			}			
 		}
 		// The table information_schema.engines didn't exist until MySQL 5.1.5
 		else {
-			if (([connection serverMajorVersion]   >= 5) &&
-				([connection serverMinorVersion]   >= 1) &&
-				([connection serverReleaseVersion] >= 5))
+			if ((serverMajorVersion   >= 5) &&
+				(serverMinorVersion   >= 1) &&
+				(serverReleaseVersion >= 5))
 			{
 				// Check the information_schema.engines table is accessible
 				MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'ENGINES'"];
@@ -380,7 +392,7 @@ const SPDatabaseCharSets charsets[] =
 		
 		// Try to retrieve the available character set encodings from the database
 		// Check the information_schema.character_sets table is accessible
-		if ([connection serverMajorVersion] >= 5)
+		if (serverMajorVersion >= 5)
 			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];	
 
 		// If that failed, get the list of character set encodings from the hard-coded list
@@ -418,10 +430,6 @@ const SPDatabaseCharSets charsets[] =
 	
 	[super dealloc];
 }
-
-@end
-
-@implementation SPDatabaseData (PrivateAPI)
 
 /**
  * Executes the supplied query against the current connection and returns the result as an array of 

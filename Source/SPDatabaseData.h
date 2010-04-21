@@ -38,6 +38,10 @@ typedef struct
 {
 	NSString *characterSetEncoding;
 	
+	NSInteger serverMajorVersion;
+	NSInteger serverMinorVersion;
+	NSInteger serverReleaseVersion;
+	
 	NSMutableArray *collations;
 	NSMutableArray *characterSetCollations;
 	NSMutableArray *storageEngines;
