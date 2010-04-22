@@ -639,7 +639,7 @@
 		[spHistoryControllerInstance updateHistoryEntries];
 		
 		// Notify listeners of the table change now that the state is fully set up
-		[[NSNotificationCenter defaultCenter] postNotificationName:SPTableChangedNotification object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
 
 		return;
 	}
