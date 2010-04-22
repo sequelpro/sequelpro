@@ -4144,7 +4144,7 @@
 		// An error occurred
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), 
+							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't delete the database.\nMySQL said: %@", @"message of panel when deleting db failed"), 
 								[mySQLConnection getLastErrorMessage]],
 							   nil] 
 				   afterDelay:0.3];

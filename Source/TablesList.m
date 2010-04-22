@@ -795,36 +795,36 @@
 			if (areTableTypeEqual) {
 				switch (lastType) {
 					case SPTableTypeTable:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
 					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
 					[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
 					[truncateTableButton setHidden:NO];
 					[truncateTableContextButton setHidden:NO];
 					break;
 					case SPTableTypeView:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
 					case SPTableTypeProc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
 					case SPTableTypeFunc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
 				}
 			
 			} else {
-				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
-				[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Items", @"delete items menu title")];
+				[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Items", @"delete items menu title")];
 				[truncateTableButton setHidden:YES];
 				[truncateTableContextButton setHidden:YES];
 			}
@@ -925,7 +925,7 @@
 		[duplicateTableMenuItem setHidden:NO];
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableButton setHidden:YES];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 
 		[renameTableContextMenuItem setHidden:NO]; // we don't have to check the mysql version
@@ -933,7 +933,7 @@
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableContextButton setHidden:YES];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 	} 
 	else if (selectedTableType == SPTableTypeTable) {
@@ -960,7 +960,7 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
 		[truncateTableButton setHidden:NO];
 		[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 
@@ -970,7 +970,7 @@
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
 		[truncateTableContextButton setHidden:NO];
 		[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 	} 
@@ -991,7 +991,7 @@
 		[duplicateTableMenuItem setHidden:NO];
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableButton setHidden:YES];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 		
@@ -1000,7 +1000,7 @@
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableContextButton setHidden:YES];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 	}
@@ -1021,7 +1021,7 @@
 		[duplicateTableMenuItem setHidden:NO];
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableButton setHidden:YES];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 		
@@ -1030,7 +1030,7 @@
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableContextButton setHidden:YES];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 	}
@@ -1928,7 +1928,7 @@
 				[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
 			}
 			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
-			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove '%@'.\nMySQL said: %@", @"message of panel when an item cannot be removed"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
 			[alert setAlertStyle:NSWarningAlertStyle];
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
 				[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -2351,7 +2351,7 @@
         
         [mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", stringTableType, [oldTableName backtickQuotedString]]];
         if ([mySQLConnection queryErrored]) {
-            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't remove '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't remove old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
+            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't delete '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't delete old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         return;
     }

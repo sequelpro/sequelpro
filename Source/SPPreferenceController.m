@@ -346,11 +346,11 @@
 - (IBAction)removeFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Remove favorite '%@'?", @"remove database message"), [favoritesController valueForKeyPath:@"selection.name"]]
-										 defaultButton:NSLocalizedString(@"Remove", @"remove button") 
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete favorite '%@'?", @"delete database message"), [favoritesController valueForKeyPath:@"selection.name"]]
+										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to remove the favorite '%@'? This operation cannot be undone.", @"remove database informative message"), [favoritesController valueForKeyPath:@"selection.name"]]];
+							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the favorite '%@'? This operation cannot be undone.", @"delete database informative message"), [favoritesController valueForKeyPath:@"selection.name"]]];
 
 		NSArray *buttons = [alert buttons];
 

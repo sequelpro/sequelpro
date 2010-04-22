@@ -354,7 +354,7 @@
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Use 'Remove table' (DROP TABLE) instead.", @"You cannot delete the last field in that table. Use 'Remove table' (DROP TABLE) instead")];
+							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Delete the table instead.", @"You cannot delete the last field in a table. Delete the table instead.")];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -385,7 +385,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to remove the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
+						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -433,7 +433,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil 
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to remove the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
+						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -1763,8 +1763,8 @@ would result in a position change.
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			[errorDictionary setObject:NSLocalizedString(@"Unable to remove relation", @"error removing relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), relationName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), relationName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
 			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		} 
 	}
@@ -1777,7 +1777,7 @@ would result in a position change.
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 		[errorDictionary setObject:NSLocalizedString(@"Error", @"error") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
 									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
 									[mySQLConnection getLastErrorMessage]] forKey:@"message"];
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
@@ -1828,8 +1828,8 @@ would result in a position change.
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			[errorDictionary setObject:NSLocalizedString(@"Unable to remove relation", @"error removing relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
 			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		} 
 	}
@@ -1845,8 +1845,8 @@ would result in a position change.
 	// Check for errors, but only if the query wasn't cancelled
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-		[errorDictionary setObject:NSLocalizedString(@"Unable to remove index", @"error removing index message") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [mySQLConnection getLastErrorMessage]] forKey:@"message"];
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	} 
 	else {
