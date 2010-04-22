@@ -31,6 +31,8 @@
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
+@class SPNarrowDownCompletion;
+
 @interface CMTextView : NSTextView 
 {
 	BOOL autoindentEnabled;
@@ -47,6 +49,7 @@
 	NSString *showMySQLHelpFor;
 	
 	IBOutlet NSScrollView *scrollView;
+	SPNarrowDownCompletion *completionPopup;
 	
 	NSUserDefaults *prefs;
 

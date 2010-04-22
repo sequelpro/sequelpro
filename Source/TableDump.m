@@ -2059,6 +2059,7 @@
 				// Only continue if the "create syntax" is specified in the export dialog
 				if ([addCreateTableSwitch state] == NSOffState) {
 					[proceduresList release];
+					[procedureInfo release];
 					continue;
 				}
 				
