@@ -47,6 +47,9 @@
 @synthesize exportToMultipleFiles;
 @synthesize exportCancelled;
 
+#pragma mark -
+#pragma mark Initialization
+
 /**
  * Initializes an instance of SPExportController
  */
@@ -567,7 +570,7 @@
 }
 
 #pragma mark -
-#pragma mark Textt Field delegate methods
+#pragma mark Text field delegate methods
 
 - (void)controlTextDidChange:(NSNotification *)notification
 {

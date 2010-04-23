@@ -217,8 +217,19 @@
 	NSUInteger windowMinHeigth;
 }
 
+/**
+ * @property exportCancelled Export cancellation flag
+ */
 @property(readwrite, assign) BOOL exportCancelled;
+
+/**
+ * @property exportToMultipleFiles Export to multiple files flag
+ */
 @property(readwrite, assign) BOOL exportToMultipleFiles;
+
+/**
+ * @property connection Database connection
+ */
 @property(readwrite, assign) MCPConnection *connection;
 
 - (void)export;
