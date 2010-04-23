@@ -108,7 +108,6 @@
 	
 	// HTML
 	IBOutlet NSButton *exportHTMLIncludeStructureCheck;
-	IBOutlet NSButton *exportHTMLIncludeHeadAndBodyTagsCheck;
 	
 	// PDF
 	IBOutlet NSButton *exportPDFIncludeStructureCheck;

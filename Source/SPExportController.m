@@ -275,16 +275,18 @@
 				
 		currentToolbarItem = sender;
 		
-		NSString *tabLabel = [[currentToolbarItem label] lowercaseString];
+		NSString *label = [[currentToolbarItem label] lowercaseString];
 		
-		[exportTabBar selectTabViewItemWithIdentifier:tabLabel];
+		[exportTabBar selectTabViewItemWithIdentifier:label];
 				
-		BOOL isSQL = [tabLabel isEqualToString:@"sql"];
-		BOOL isCSV = [tabLabel isEqualToString:@"csv"];
-		BOOL isXML = [tabLabel isEqualToString:@"xml"];
-		BOOL isDot = [tabLabel isEqualToString:@"dot"];
+		BOOL isSQL  = [label isEqualToString:@"sql"];
+		BOOL isCSV  = [label isEqualToString:@"csv"];
+		BOOL isXML  = [label isEqualToString:@"xml"];
+		BOOL isHTML = [label isEqualToString:@"html"];
+		BOOL isPDF  = [label isEqualToString:@"pdf"];
+		BOOL isDot  = [label isEqualToString:@"dot"];
 		
-		BOOL disable = (isCSV || isXML || isDot);
+		BOOL disable = (isCSV || isXML || isHTML || isPDF || isDot);
 		
 		[exportFilePerTableCheck setHidden:(isSQL || isDot)];
 		[exportFilePerTableNote setHidden:(isSQL || isDot)];
@@ -628,11 +630,13 @@
 {
 	NSString *label = [[currentToolbarItem label] lowercaseString];
 	
-	BOOL isSQL = [label isEqualToString:@"sql"];
-	BOOL isCSV = [label isEqualToString:@"csv"];
-	BOOL isXML = [label isEqualToString:@"xml"];
+	BOOL isSQL  = [label isEqualToString:@"sql"];
+	BOOL isCSV  = [label isEqualToString:@"csv"];
+	BOOL isXML  = [label isEqualToString:@"xml"];
+	BOOL isHTML = [label isEqualToString:@"html"];
+	BOOL isPDF  = [label isEqualToString:@"pdf"];
 		
-	if (isCSV || isXML) {
+	if (isCSV || isXML || isHTML || isPDF) {
 		[exportButton setEnabled:NO];
 		
 		// Only enable the button if at least one table is selected
