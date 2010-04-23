@@ -5,6 +5,7 @@
 //  sequel-pro
 //
 //  Created by Ben Perry (benperry.com.au) on 21/02/09.
+//  Modified by Stuart Connolly (stuconnolly.com)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by

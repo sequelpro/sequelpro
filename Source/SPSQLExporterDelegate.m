@@ -51,9 +51,9 @@
 	[exportProgressWindow orderOut:self];
 		
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-			
+	
 	// Restore the connection encoding to it's pre-export value
-	//[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", sqlPreviousConnectionEncoding, (sqlPreviousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", sqlPreviousConnectionEncoding, (sqlPreviousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 	
 	// Display Growl notification
 	[self displayExportFinishedGrowlNotification];

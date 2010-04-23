@@ -50,6 +50,9 @@
 {
 	NSArray *dataArray = nil;
 	
+	// Get rid of the cached connection encoding
+	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
+	
 	createCustomFilename = ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""]));
 	
 	// First determine what type of export the user selected
@@ -279,7 +282,7 @@
 		[sqlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
 		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 				
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
@@ -407,7 +410,7 @@
 		[dotExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [tableDocumentInstance connectionEncoding];
+		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
 		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 		
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];

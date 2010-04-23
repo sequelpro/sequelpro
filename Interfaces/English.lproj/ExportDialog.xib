@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="13"/>
+			<integer value="78"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -753,7 +753,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSTabViewItem" id="838824691">
 									<string key="NSIdentifier">sql</string>
 									<object class="NSView" key="NSView" id="382068224">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="281488100"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -902,13 +902,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 											<object class="NSButton" id="271088881">
 												<reference key="NSNextResponder" ref="382068224"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{12, 82}, {134, 18}}</string>
+												<string key="NSFrame">{{12, 82}, {149, 18}}</string>
 												<reference key="NSSuperview" ref="382068224"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSButtonCell" key="NSCell" id="415134766">
 													<int key="NSCellFlags">67239424</int>
 													<int key="NSCellFlags2">131072</int>
-													<string key="NSContents">Compress output</string>
+													<string key="NSContents">Compress output (gzip)</string>
 													<reference key="NSSupport" ref="26"/>
 													<reference key="NSControlView" ref="271088881"/>
 													<int key="NSButtonFlags">1211912703</int>
@@ -945,6 +945,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 7}, {189, 239}}</string>
+										<reference key="NSSuperview" ref="281488100"/>
 									</object>
 									<string key="NSLabel">SQL</string>
 									<reference key="NSColor" ref="683790803"/>
@@ -1762,7 +1763,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSTabViewItem" id="565437007">
 									<string key="NSIdentifier">pdf</string>
 									<object class="NSView" key="NSView" id="316748837">
-										<reference key="NSNextResponder" ref="281488100"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1806,7 +1807,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 7}, {189, 239}}</string>
-										<reference key="NSSuperview" ref="281488100"/>
 									</object>
 									<string key="NSLabel">PDF</string>
 									<reference key="NSColor" ref="683790803"/>
@@ -1824,14 +1824,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<reference key="NSTabView" ref="281488100"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="565437007"/>
+							<reference key="NSSelectedTabViewItem" ref="838824691"/>
 							<reference key="NSFont" ref="695505032"/>
 							<int key="NSTvFlags">4</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="316748837"/>
+								<reference ref="382068224"/>
 							</object>
 						</object>
 						<object class="NSButton" id="413491970">
@@ -5339,7 +5339,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>exportExcelSheetOrFilePerTableMatrix</string>
 							<string>exportFilePerTableCheck</string>
 							<string>exportFilePerTableNote</string>
-							<string>exportHTMLIncludeHeadAndBodyTagsCheck</string>
 							<string>exportHTMLIncludeStructureCheck</string>
 							<string>exportInputMatrix</string>
 							<string>exportPDFIncludeStructureCheck</string>
@@ -5393,7 +5392,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>NSMatrix</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
-							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSMatrix</string>
 							<string>NSButton</string>

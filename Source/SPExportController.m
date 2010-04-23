@@ -5,6 +5,7 @@
 //  sequel-pro
 //
 //  Created by Ben Perry (benperry.com.au) on 21/02/09.
+//  Modified by Stuart Connolly (stuconnolly.com)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -66,7 +67,6 @@
 		
 		exportFilename = @"";
 		exportTypeLabel = @"";
-		sqlPreviousConnectionEncoding = @"";
 		
 		createCustomFilename = NO;
 		sqlPreviousConnectionEncodingViaLatin1 = NO;
@@ -619,6 +619,8 @@
     [tables release], tables = nil;
 	[exporters release], exporters = nil;
 	[operationQueue release], operationQueue = nil;
+	
+	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
 	
 	[super dealloc];
 }
