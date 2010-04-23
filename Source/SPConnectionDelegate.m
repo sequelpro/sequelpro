@@ -110,17 +110,22 @@
  */
 - (MCPConnectionCheck)connectionLost:(id)connection
 {
-
-	// Display the connection error dialog and wait for the return code
-	[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	NSInteger connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
-
-	[NSApp endSheet:connectionErrorDialog];
-	[connectionErrorDialog orderOut:nil];
-
-	// If 'disconnect' was selected, trigger a window close.
-	if (connectionErrorCode == MCPConnectionCheckDisconnect) {
-		[self performSelectorOnMainThread:@selector(closeDocumentWindowAndDisconnect) withObject:nil waitUntilDone:YES];
+	NSInteger connectionErrorCode = MCPConnectionCheckDisconnect;
+	
+	// Only display the reconnect dialog if the window is visible
+	if ([tableWindow isVisible]) {
+		
+		// Display the connection error dialog and wait for the return code
+		[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+		
+		[NSApp endSheet:connectionErrorDialog];
+		[connectionErrorDialog orderOut:nil];
+		
+		// If 'disconnect' was selected, trigger a window close.
+		if (connectionErrorCode == MCPConnectionCheckDisconnect) {
+			[self performSelectorOnMainThread:@selector(closeDocumentWindowAndDisconnect) withObject:nil waitUntilDone:YES];
+		}
 	}
 
 	return connectionErrorCode;
