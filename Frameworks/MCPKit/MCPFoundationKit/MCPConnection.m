@@ -388,16 +388,23 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	connectionThreadId = mConnection->thread_id;
 	[self timeZone]; // Getting the timezone used by the server.
 	
-	isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
-	
-	if (![self fetchMaxAllowedPacket]) {
-		[self setLastErrorMessage:nil];
+	// Only attempt to set the max allowed packet if we have a connection
+	if (mConnection != NULL) {
 		
-		lastQueryErrorId = mysql_errno(mConnection);
+		isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
 		
-		return mConnected = NO;
+		if (![self fetchMaxAllowedPacket]) {
+			[self setLastErrorMessage:nil];
+			
+			lastQueryErrorId = mysql_errno(mConnection);
+			
+			mConnected = NO;
+		}
 	}
-
+	else {
+		mConnected = NO;
+		isMaxAllowedPacketEditable = NO;
+	}
 	
 	return mConnected;
 }

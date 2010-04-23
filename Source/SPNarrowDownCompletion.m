@@ -118,6 +118,8 @@
 		filtered = nil;
 		spaceCounter = 0;
 		currentSyncImage = 0;
+		staticPrefix = nil;
+		suggestions = nil;
 		commonPrefixWasInsertedByAutoComplete = NO;
 		prefs = [NSUserDefaults standardUserDefaults];
 		originalFilterString = [[NSMutableString alloc] init];
@@ -127,12 +129,12 @@
 		[self setupInterface];
 
 		syncArrowImages = [[NSArray alloc] initWithObjects:
-			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_01" ofType:@"tiff"]],
-			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_02" ofType:@"tiff"]],
-			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_03" ofType:@"tiff"]],
-			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_04" ofType:@"tiff"]],
-			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_05" ofType:@"tiff"]],
-			[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_06" ofType:@"tiff"]],
+			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_01" ofType:@"tiff"]] autorelease],
+			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_02" ofType:@"tiff"]] autorelease],
+			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_03" ofType:@"tiff"]] autorelease],
+			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_04" ofType:@"tiff"]] autorelease],
+			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_05" ofType:@"tiff"]] autorelease],
+			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_06" ofType:@"tiff"]] autorelease],
 			nil];
 		
 	}
@@ -147,15 +149,23 @@
 		[stateTimer release];
 	}
 	stateTimer = nil;
-	[staticPrefix release];
+	if (staticPrefix) [staticPrefix release];
 	[mutablePrefix release];
 	[textualInputCharacters release];
 	[originalFilterString release];
+	[syncArrowImages release];
 	if(suggestions) [suggestions release];
 
 	if (filtered) [filtered release];
 
 	[super dealloc];
+}
+
+- (void)close
+{
+	closeMe = YES;
+	[theView setCompletionIsOpen:NO];
+	[super close];
 }
 
 - (void)updateSyncArrowStatus
@@ -331,7 +341,7 @@
 	[theTableView setHeaderView:nil];
 
 	NSTableColumn *column0 = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
-	[column0 setDataCell:[NSImageCell new]];
+	[column0 setDataCell:[[NSImageCell new] autorelease]];
 	[theTableView addTableColumn:column0];
 	[column0 setMinWidth:0];
 	[column0 setWidth:20];
@@ -758,6 +768,9 @@
 
 		if(!event)
 			continue;
+
+		// Exit if closeMe has been set in the meantime
+		if(closeMe) return;
 		
 		NSEventType t = [event type];
 		if([theTableView SP_NarrowDownCompletion_canHandleEvent:event])
@@ -777,9 +790,9 @@
 					if(commonPrefixWasInsertedByAutoComplete) {
 						[theView setSelectedRange:theCharRange];
 						[theView insertText:originalFilterString];
-						[NSApp sendEvent:event];
 						[theView setCompletionIsOpen:NO];
 						[self close];
+						[NSApp sendEvent:event];
 						break;
 					}
 				}
@@ -882,7 +895,6 @@
 			if(([event clickCount] == 2)) {
 				[self completeAndInsertSnippet];
 			} else {
-				[NSApp sendEvent:event];
 				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
 					if(autoCompletionMode) {
 						if(commonPrefixWasInsertedByAutoComplete) {
@@ -891,8 +903,10 @@
 						}
 					}
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
+					[NSApp sendEvent:event];
 					break;
 				}
+				[NSApp sendEvent:event];
 			}
 		}
 		else

@@ -2187,7 +2187,7 @@
 			} else {
 				[self performSelector:@selector(showErrorSheetWith:)
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\nMySQL said: %@", @"message of panel when field cannot be removed"),
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete rows.\nMySQL said: %@", @"message when deleteing all rows failed"),
 						   [mySQLConnection getLastErrorMessage]],
 						nil]
 					afterDelay:0.3];
@@ -2400,16 +2400,16 @@
 				//TODO: The following three messages are NOT localisable!
 				if(errors < 0) {
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
 							   nil];
 				} else {
 					if(primaryKeyFieldNames == nil)
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
 								   nil];
 					else
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
 								   nil];
 				}
 				[self performSelector:@selector(showErrorSheetWith:)
