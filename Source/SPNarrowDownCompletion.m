@@ -790,9 +790,9 @@
 					if(commonPrefixWasInsertedByAutoComplete) {
 						[theView setSelectedRange:theCharRange];
 						[theView insertText:originalFilterString];
-						[NSApp sendEvent:event];
 						[theView setCompletionIsOpen:NO];
 						[self close];
+						[NSApp sendEvent:event];
 						break;
 					}
 				}
@@ -895,7 +895,6 @@
 			if(([event clickCount] == 2)) {
 				[self completeAndInsertSnippet];
 			} else {
-				[NSApp sendEvent:event];
 				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
 					if(autoCompletionMode) {
 						if(commonPrefixWasInsertedByAutoComplete) {
@@ -904,8 +903,10 @@
 						}
 					}
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
+					[NSApp sendEvent:event];
 					break;
 				}
+				[NSApp sendEvent:event];
 			}
 		}
 		else
