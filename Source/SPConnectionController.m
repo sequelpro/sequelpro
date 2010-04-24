@@ -436,8 +436,10 @@
 		[delegate connectionControllerConnectAttemptFailed:self];
 	}
 
-	// Display the connection error message
-	SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, nil, @selector(errorSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	// Only display the connection error message if there is a window visible
+	if ([documentWindow isVisible]) {
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, nil, @selector(errorSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	}
 }
 
 /**
@@ -521,7 +523,8 @@
 	
 	[prefsController showWindow:self];
 	[prefsController displayFavoritePreferences:self];
-	if ([favoritesTable numberOfSelectedRows]) [prefsController selectFavoriteAtIndex:([favoritesTable selectedRow] - 1)];	
+	
+	if ([favoritesTable numberOfSelectedRows]) [prefsController selectFavorites:[NSArray arrayWithObject:[self valueForKeyPath:@"selectedFavorite"]]];
 }
 
 /**

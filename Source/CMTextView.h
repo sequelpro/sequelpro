@@ -31,6 +31,8 @@
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
+@class SPNarrowDownCompletion;
+
 @interface CMTextView : NSTextView 
 {
 	BOOL autoindentEnabled;
@@ -47,6 +49,7 @@
 	NSString *showMySQLHelpFor;
 	
 	IBOutlet NSScrollView *scrollView;
+	SPNarrowDownCompletion *completionPopup;
 	
 	NSUserDefaults *prefs;
 
@@ -64,6 +67,8 @@
 
 	BOOL completionIsOpen;
 	BOOL completionWasReinvokedAutomatically;
+	BOOL completionWasRefreshed;
+	BOOL completionFuzzyMode;
 	NSUInteger completionParseRangeLocation;
 
 	NSColor *queryHiliteColor;
@@ -120,6 +125,7 @@
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode;
 - (void) doAutoCompletion;
+- (void) refreshCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
 - (void) selectCurrentQuery;
 - (void) processMirroredSnippets;

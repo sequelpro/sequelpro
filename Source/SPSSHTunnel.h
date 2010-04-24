@@ -52,6 +52,7 @@
 	NSString *keychainAccount;
 	NSString *requestedPassphrase;
 	NSMutableArray *debugMessages;
+	NSLock *debugMessagesLock;
 	BOOL useHostFallback;
 	BOOL requestedResponse;
 	BOOL passwordInKeychain;

@@ -407,7 +407,7 @@
  */
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {	
-	id object = [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]];
+	id object = (row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
 	
 	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
 }

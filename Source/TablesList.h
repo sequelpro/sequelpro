@@ -74,17 +74,23 @@
 
 	IBOutlet NSSearchField *listFilterField;
 
+	// Table list 'gear' menu items
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
+	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
+	IBOutlet NSMenuItem *separatorTableMenuItem2;
 
 	MCPConnection *mySQLConnection;
 	
+	// Table list context menu items
 	IBOutlet NSMenuItem *removeTableContextMenuItem;
 	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
 	IBOutlet NSMenuItem *renameTableContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
+	IBOutlet NSMenuItem *showCreateSyntaxContextMenuItem;
+	IBOutlet NSMenuItem *separatorTableContextMenuItem2;
 
 	NSMutableArray *tables;
 	NSMutableArray *filteredTables;

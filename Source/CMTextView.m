@@ -129,8 +129,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	textBufferSizeIncreased = NO;
 	snippetControlCounter = -1;
 	mirroredCounter = -1;
+	completionPopup = nil;
 	completionIsOpen = NO;
 	isProcessingMirroredSnippets = NO;
+	completionWasRefreshed = NO;
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -517,7 +519,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) doAutoCompletion
 {
-
 	if(completionIsOpen || !self || ![self delegate]) return;
 
 	// Cancel autocompletion trigger
@@ -532,14 +533,25 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(![self delegate] || ![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
 
 	if(r.location) {
-		if([[[self textStorage] attribute:kQuote atIndex:r.location-1 effectiveRange:nil] isEqualToString:kQuoteValue])
-			return;
-	 	if(![[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[[self string] characterAtIndex:r.location-1]])
-			// Suppress auto-completion if window isn't active anymore
-			if([[NSApp keyWindow] firstResponder] == self)
-				[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+		NSCharacterSet *ignoreCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"\"'`;,()[]{}=+/<> \t\n\r"];
+
+    	// Check the previous character and don't autocomplete if the character is whitespace or certain types of punctuation
+    	if ([ignoreCharacterSet characterIsMember:[[self string] characterAtIndex:r.location - 1]]) return;
+
+    	// Suppress auto-completion if the window isn't active anymore
+    	if ([[NSApp keyWindow] firstResponder] != self) return;
+
+    	// Trigger the completion
+    	[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
 	}
 
+}
+
+- (void) refreshCompletion
+{
+    if(completionWasRefreshed) return;
+    completionWasRefreshed = YES;
+    [self doCompletionByUsingSpellChecker:NO fuzzyMode:completionFuzzyMode autoCompleteMode:NO];
 }
 
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
@@ -556,6 +568,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	[self breakUndoCoalescing];
+
+	// Remember state for refreshCompletion
+	completionFuzzyMode = fuzzySearch;
 
 	NSUInteger caretPos = NSMaxRange([self selectedRange]);
 
@@ -734,15 +749,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		filter = [NSString stringWithString:currentWord];
 	}
 
-	completionIsOpen = YES;
-
 	// Cancel autocompletion trigger again if user typed something in while parsing
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(doAutoCompletion) 
 								object:nil];
 
-	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
+	if (completionIsOpen) [completionPopup close], completionPopup = nil;
+	completionIsOpen = YES;
+	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
 					alreadyTyped:filter 
 					staticPrefix:prefix 
 					additionalWordCharacters:allow 
@@ -778,10 +793,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Adjust list location to be under the current word or insertion point
 	pos.y -= [[self font] pointSize]*1.25;
 	
-	[completionPopUp setCaretPos:pos];
-	[completionPopUp orderFront:self];
-	if(!autoCompleteMode)
-		[completionPopUp insertCommonPrefix];
+	[completionPopup setCaretPos:pos];
+	[completionPopup orderFront:self];
+	[completionPopup insertCommonPrefix];
 
 }
 
@@ -1290,9 +1304,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
+	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 	completionIsOpen = YES;
 
-	SPNarrowDownCompletion* completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 					alreadyTyped:@"" 
 					staticPrefix:@"" 
 					additionalWordCharacters:@"_." 
@@ -1320,8 +1335,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 	// Adjust list location to be under the current word or insertion point
 	pos.y -= [[self font] pointSize]*1.25;
-	[completionPopUp setCaretPos:pos];
-	[completionPopUp orderFront:self];
+	[completionPopup setCaretPos:pos];
+	[completionPopup orderFront:self];
 
 }
 
@@ -1336,15 +1351,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		NSInteger i, j, k, deltaLength;
 		NSRange mirroredRange;
-		id aCompletionList;
-
-		// Get the completion list pointer if open
-		if(completionIsOpen)
-			for(id w in [NSApp windows])
-				if([w isKindOfClass:[SPNarrowDownCompletion class]]) {
-					aCompletionList = w;
-					break;
-				}
 
 		// Go through each defined mirrored snippet and update it
 		for(i=0; i<=mirroredCounter; i++) {
@@ -1375,7 +1381,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				// If a completion list is open adjust the theCharRange and theParseRange if a mirrored snippet
 				// was updated which is located before the initial position 
 				if(completionIsOpen && snippetMirroredControlArray[i][1] < completionParseRangeLocation)
-					[aCompletionList adjustWorkingRangeByDelta:deltaLength];
+					[completionPopup adjustWorkingRangeByDelta:deltaLength];
 
 				// Adjust all other snippets accordingly
 				for(j=0; j<=snippetControlMax; j++) {
@@ -1445,7 +1451,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						BOOL fuzzySearchMode = ([snip hasPrefix:@"¦¦"] && [snip hasSuffix:@"¦¦"]) ? YES : NO;
 						NSInteger offset = (fuzzySearchMode) ? 2 : 1;
 						NSRange insertRange = NSMakeRange(r2.location,0);
-						SPNarrowDownCompletion* completionPopUp;
 						NSString *newSnip = [snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))];
 						if([newSnip hasPrefix:@"$SP_ASLIST_"]) {
 							[self showCompletionListFor:newSnip atRange:NSMakeRange(r2.location, 0) fuzzySearch:fuzzySearchMode];
@@ -1456,9 +1461,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 							for(id w in list)
 								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
 
+							if (completionIsOpen) [completionPopup close], completionPopup = nil;
 							completionIsOpen = YES;
 
-							completionPopUp = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
+							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 											alreadyTyped:@"" 
 											staticPrefix:@"" 
 											additionalWordCharacters:@"_." 
@@ -1478,6 +1484,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											autoComplete:NO
 											oneColumn:YES
 											isQueryingDBStructure:NO];
+
 							//Get the NSPoint of the first character of the current word
 							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
 							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
@@ -1485,8 +1492,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 							// Adjust list location to be under the current word or insertion point
 							pos.y -= [[self font] pointSize]*1.25;
-							[completionPopUp setCaretPos:pos];
-							[completionPopUp orderFront:self];
+							[completionPopup setCaretPos:pos];
+							[completionPopup orderFront:self];
 						}
 					}
 				} else {
@@ -1538,7 +1545,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			targetRange = NSIntersectionRange(NSMakeRange(0,[[self string] length]), targetRange);
 		[snip setString:theSnippet];
 
-		if(snip == nil || ![snip length]) return;
+		if (snip == nil) return;
+		if (![snip length]) {
+			[snip release];
+			return;
+		}
 
 		// Replace `${x:…}` by ${x:`…`} for convience 
 		[snip replaceOccurrencesOfRegex:@"`(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}`" withString:@"${$1:`$2`}"];
@@ -1999,7 +2010,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if ([theEvent keyCode] == 53 && [self isEditable]){ // ESC key for internal completion
 
 		[self setCompletionWasReinvokedAutomatically:NO];
-
+		completionWasRefreshed = NO;
 		// Cancel autocompletion trigger
 		if([prefs boolForKey:SPCustomQueryAutoComplete])
 			[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2930,12 +2941,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
-		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoHelpDelay] retain] doubleValue]];
+		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 
 	// Start autocompletion if enabled
 	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore editedRange].length)
-		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] retain] doubleValue]];
+		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
 	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
@@ -3137,6 +3148,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 		[self breakUndoCoalescing];
 		[self insertText:dragString];
+		if (draggedItems) [draggedItems release];
 		return YES;
 	}
 
@@ -3271,15 +3283,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) dealloc
 {
 
-	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-									selector:@selector(autoHelp) 
-									object:nil];
-
-	if([prefs boolForKey:SPCustomQueryAutoComplete])
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-								selector:@selector(doAutoCompletion) 
-								object:nil];
+	// Cancel any deferred calls
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -3297,6 +3302,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
 
+	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 	[prefs release];
 	[lineNumberView release];
 	if(queryHiliteColor) [queryHiliteColor release];

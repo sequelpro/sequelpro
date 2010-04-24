@@ -360,7 +360,7 @@
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
 		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK")
+						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:[NSApp mainWindow]
@@ -725,7 +725,7 @@
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([syntaxString isNSNull]) {
 		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK")
+						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:[NSApp mainWindow]
@@ -1088,25 +1088,29 @@
 	NSInteger i;
 	NSMutableArray *keyColumns = [NSMutableArray array];
 
-	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ WHERE `key` = 'PRI'", [selectedTable backtickQuotedString]]];
+	// select all columns that are primary keys
+	// MySQL before 5.0.3 does not support the WHERE syntax
+	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ /*!50003 WHERE `key` = 'PRI'*/", [selectedTable backtickQuotedString]]];
 	[r setReturnDataAsStrings:YES];
 
 	if([r numOfRows] < 1) return nil;
 
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected])
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving the PRIAMRY KEY data:\n\n%@", [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the PRIMARY KEY data:\n\n%@",@"message when the query that fetches the primary keys fails"), [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		return nil;
 	}
 
 	
 	for( i = 0; i < [r numOfRows]; i++ ) {
 		resultRow = [r fetchRowAsArray];
-		[keyColumns addObject:[NSArrayObjectAtIndex(resultRow, 0) description]];
+		// check if the row is indeed a key (for MySQL servers before 5.0.3)
+		if ([[[resultRow objectAtIndex:3] description] isEqualToString:@"PRI"]) {
+			[keyColumns addObject:[[resultRow objectAtIndex:0] description]];
+		}
 	}
 
-	if([keyColumns count])
-		return keyColumns;
+	if([keyColumns count]) return keyColumns;
 
 	return nil;
 }

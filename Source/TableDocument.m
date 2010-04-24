@@ -239,7 +239,7 @@
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow orderFront:self];
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
-	[taskProgressWindow release];
+	[taskProgressWindow setReleasedWhenClosed:YES];
 	[taskProgressWindow setContentView:taskProgressLayer];
 	[self centerTaskWindow];
 }
@@ -273,8 +273,8 @@
 	[connectionController setSshUser:@""];
 	[connectionController setSshPort:@""];
 	[connectionController setDatabase:@""];
-	[connectionController setPassword:@""];
-	[connectionController setSshPassword:@""];
+	[connectionController setPassword:nil];
+	[connectionController setSshPassword:nil];
 
 	// Deselect all favorites
 	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
@@ -615,6 +615,10 @@
  */
 - (IBAction)backForwardInHistory:(id)sender
 {
+
+	// Ensure history navigation is permitted - trigger end editing and any required saves
+	if (![self couldCommitCurrentViewActions]) return;
+
 	switch ([sender tag])
 	{
 		// Go backward
@@ -1283,7 +1287,8 @@
  * Sets the task progress indicator back to indeterminate (also performed
  * automatically whenever a new task is started).
  * This can optionally be called with afterDelay set, in which case the intederminate
- * switch will be made a fter a short pause to minimise flicker for short actions.
+ * switch will be made after a short pause to minimise flicker for short actions.
+ * Should be called on the main thread.
  */
 - (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay
 {
@@ -1675,7 +1680,7 @@
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([tableSyntax isNSNull]) {
 		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK")
+						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:tableWindow
@@ -1687,7 +1692,7 @@
 
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
-	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax];
+	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [[tableSyntax createViewSyntaxPrettifier] stringByAppendingString:@";"] : [tableSyntax stringByAppendingString:@";"]];
 	[createTableSyntaxTextView setEditable:NO];
 
 	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
@@ -1744,7 +1749,7 @@
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([tableSyntax isNSNull]) {
 		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK")
+						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:tableWindow
@@ -2397,6 +2402,31 @@
 	return ([[self fileURL] isFileURL]) ? NO : YES;
 }
 
+/**
+ * Asks any currently editing views to commit their changes;
+ * returns YES if changes were successfully committed, and NO
+ * if an error occurred or user interaction is required.
+ */
+- (BOOL)couldCommitCurrentViewActions
+{
+    [tableWindow endEditingFor:nil];
+    switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
+
+    	// Table structure view
+    	case 0:
+    		return [tableSourceInstance saveRowOnDeselect];
+
+    	// Table content view
+    	case 1:
+    		return [tableContentInstance saveRowOnDeselect];
+
+    	default:
+    		break;
+    }
+
+    return YES;
+}
+
 #pragma mark -
 #pragma mark Accessor methods
 
@@ -2859,7 +2889,7 @@
 		break;
 		case SPSocketConnection:
 		aString = @"SPSocketConnection";
-		[connection setObject:[connectionController socket] forKey:@"socket"];
+		if ([connectionController socket] && [[connectionController socket] length]) [connection setObject:[connectionController socket] forKey:@"socket"];
 		break;
 		case SPSSHTunnelConnection:
 		aString = @"SPSSHTunnelConnection";
@@ -2877,8 +2907,8 @@
 	if([[spfDocData_temp objectForKey:@"save_password"] boolValue]) {
 		NSString *pw = [self keychainPasswordForConnection:nil];
 		if(![pw length]) pw = [connectionController password];
-		[connection setObject:pw forKey:@"password"];
-		if([connectionController type] == SPSSHTunnelConnection)
+		if (pw) [connection setObject:pw forKey:@"password"];
+		if([connectionController type] == SPSSHTunnelConnection && [connectionController sshPassword])
 			[connection setObject:[connectionController sshPassword] forKey:@"ssh_password"];
 	}
 
@@ -3192,10 +3222,9 @@
 
 - (IBAction)viewStructure:(id)sender
 {
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3208,10 +3237,10 @@
 
 - (IBAction)viewContent:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3224,17 +3253,10 @@
 
 - (IBAction)viewQuery:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-		return;
-	}
 
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3242,25 +3264,18 @@
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarCustomQuery];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Set the focus on the text field if no query has been run
-	if (![[customQueryTextView string] length]) [tableWindow makeFirstResponder:customQueryTextView];
+	// Set the focus on the text field
+	[tableWindow makeFirstResponder:customQueryTextView];
 	
 	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
 }
 
 - (IBAction)viewStatus:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-		return;
-	}
 
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3281,17 +3296,10 @@
 
 - (IBAction)viewRelations:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-		return;
-	}
 
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
@@ -3304,20 +3312,12 @@
 
 - (IBAction)viewTriggers:(id)sender
 {
-	// Cancel the selection if currently editing structure/a field and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& ![tableSourceInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+
+	// Cancel the selection if currently editing a view and unable to save
+	if (![self couldCommitCurrentViewActions]) {
+		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
-	
-	// Cancel the selection if currently editing a content row and unable to save
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-		&& ![tableContentInstance saveRowOnDeselect]) {
-		[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
-		return;
-	}
-	
 	
 	[tableTabView selectTabViewItemAtIndex:5];
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
@@ -4037,12 +4037,15 @@
 	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
 	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
 	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	[_encoding release];
 	[allDatabases release];
 	[allSystemDatabases release];
 	[printWebView release];
-	
+	[taskProgressWindow close];
+
 	if (connectionController) [connectionController release];
 	if (processListController) [processListController release];
 	if (serverVariablesController) [serverVariablesController release];
