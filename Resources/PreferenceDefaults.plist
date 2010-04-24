@@ -159,8 +159,10 @@
 	<integer>1000</integer>
 	<key>ProcessListShowProcessID</key>
 	<true/>
-	<key>ProcessListShowFullProcessList</key>
-	<true/>
+	<key>ProcessListEnableAutoRefresh</key>
+	<false/>
+	<key>ProcessListAutoRrefreshInterval</key>
+	<integer>10</integer>
 	<key>FavoritesSortedBy</key>
 	<integer>0</integer>
 	<key>FavoritesSortedInReverse</key>

@@ -215,7 +215,8 @@ extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
 extern NSString *SPProcessListShowProcessID;
-extern NSString *SPProcessListShowFullProcessList;
+extern NSString *SPProcessListEnableAutoRefresh;
+extern NSString *SPProcessListAutoRrefreshInterval;
 extern NSString *SPFavoritesSortedBy;
 extern NSString *SPFavoritesSortedInReverse;
 

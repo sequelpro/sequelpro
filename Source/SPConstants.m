@@ -129,7 +129,8 @@ NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
-NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
+NSString *SPProcessListEnableAutoRefresh         = @"ProcessListEnableAutoRefresh";
+NSString *SPProcessListAutoRrefreshInterval      = @"ProcessListAutoRrefreshInterval";
 NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
 NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 
