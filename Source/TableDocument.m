@@ -56,6 +56,7 @@
 #import "SPAlertSheets.h"
 #import "SPConstants.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPLogger.h"
 
 @interface TableDocument (PrivateAPI)
 
@@ -112,7 +113,7 @@
 		statusValues = nil;
 		printThread = nil;
 	}
-
+	
 	return self;
 }
 
@@ -241,7 +242,7 @@
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
 	[taskProgressWindow setReleasedWhenClosed:YES];
 	[taskProgressWindow setContentView:taskProgressLayer];
-	[self centerTaskWindow];
+	[self centerTaskWindow];	
 }
 
 /**
@@ -2571,6 +2572,10 @@
 		}
 
 	[tablesListInstance selectionShouldChangeInTableView:nil];
+	
+	// Note that this call does not need to be removed in release builds as leaks analysis output is only
+	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
+	[[SPLogger logger] dumpLeaks];
 }
 
 #pragma mark -

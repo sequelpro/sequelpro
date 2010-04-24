@@ -25,7 +25,19 @@
 
 #import "SPLogger.h"
 
+#include <stdio.h>
+#include <dirent.h>
+#include <sys/dir.h>
+#include <sys/types.h>
+
 static SPLogger *logger = nil;
+
+@interface SPLogger (PrivateAPI)
+
+- (void)_initLogFile;
+- (void)_outputTimeString;
+
+@end
 
 /**
  * This is a small class intended to aid in user issue debugging; by including
@@ -77,41 +89,8 @@ static SPLogger *logger = nil;
 - (id)init
 {
 	if ((self = [super init])) {
-		NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDesktopDirectory, NSUserDomainMask, YES);
-		NSString *logFilePath = [NSString stringWithFormat:@"%@/Sequel Pro Debug Log.txt", [paths objectAtIndex:0]];
-
+		dumpLeaksOnTermination = NO;
 		initializedSuccessfully = YES;
-		
-		// Check if the debug file exists, and is writable
-		if ( [[NSFileManager defaultManager] fileExistsAtPath:logFilePath] ) {
-			if ( ![[NSFileManager defaultManager] isWritableFileAtPath:logFilePath] ) {
-				initializedSuccessfully = NO;
-				NSRunAlertPanel(@"Logging error", @"Log file exists but is not writeable; no debug log will be generated!", @"OK", nil, nil);
-			}
-		
-		// Otherwise try creating one
-		} else {
-			if ( ![[NSFileManager defaultManager] createFileAtPath:logFilePath contents:[NSData data] attributes:nil] ) {
-				initializedSuccessfully = NO;
-				NSRunAlertPanel(@"Logging error", @"Could not create log file for writing; no debug log will be generated!", @"OK", nil, nil);
-			}
-		}
-		
-		// Get a file handle to the file if possible
-		if (initializedSuccessfully) {
-			logFileHandle = [NSFileHandle fileHandleForWritingAtPath:logFilePath];
-			if (!logFileHandle) {
-				initializedSuccessfully = NO;
-				NSRunAlertPanel(@"Logging error", @"Could not open log file for writing; no debug log will be generated!", @"OK", nil, nil);
-			} else {
-				[logFileHandle retain];
-				[logFileHandle seekToEndOfFile];
-				NSString *bundleName = [[NSFileManager defaultManager] displayNameAtPath:[[NSBundle mainBundle] bundlePath]];
-				NSMutableString *logStart = [NSMutableString stringWithString:@"\n\n\n==========================================================================\n\n"];
-				[logStart appendString:[NSString stringWithFormat:@"%@ (r%ld)\n", bundleName, (long)[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] integerValue]]];
-				[logFileHandle writeData:[logStart dataUsingEncoding:NSUTF8StringEncoding]];
-			}
-		}
 	}
 	
 	return self;
@@ -120,9 +99,11 @@ static SPLogger *logger = nil;
 #pragma mark -
 #pragma mark Logging functions
 
-- (void) log:(NSString *)theString, ...
+- (void)log:(NSString *)theString, ...
 {
 	if (!initializedSuccessfully) return;
+	
+	if (!logFileHandle) [self _initLogFile];
 
 	// Extract any supplied arguments and build the formatted log string
 	va_list arguments;
@@ -131,16 +112,113 @@ static SPLogger *logger = nil;
 	va_end(arguments);
 
 	// Write the log line, forcing an immediate write to disk to ensure logging
-	[logFileHandle writeData:[[NSString stringWithFormat:@"%@  %@\n", [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], logString] dataUsingEncoding:NSUTF8StringEncoding]];
+	[logFileHandle writeData:[[NSString stringWithFormat:@"%@ %@\n", [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], logString] dataUsingEncoding:NSUTF8StringEncoding]];
 	[logFileHandle synchronizeFile];
 
 	[logString release];
 }
 
-- (void) outputTimeString
+- (void)setDumpLeaksOnTermination
+{
+	dumpLeaksOnTermination = YES;
+}
+
+- (void)dumpLeaks
+{
+	if (dumpLeaksOnTermination) {
+		
+		// Remove old leaks logs
+		int count, i;
+		int isSPLeaksLog();
+		struct direct **files;
+		
+		count = scandir("/tmp", &files, isSPLeaksLog, NULL);
+				
+		char fpath[32];
+		
+		for (i = 0; i < count; i++)
+		{
+			snprintf(fpath, sizeof(fpath), "/tmp/%s", files[i]->d_name);
+			
+			if (remove(fpath) != 0) {
+				printf("Unable to remove Sequel Pro leaks log '%s'", files[i]->d_name);
+			}
+		}
+		
+		FILE *fp;
+		FILE *fp2;
+		size_t len;
+		
+		char cmd[32], file[32], buf[512];
+		
+		snprintf(cmd, sizeof(cmd), "/usr/bin/leaks %d", getpid());
+		snprintf(file, sizeof(file), "/tmp/sp.leaks.%d.tmp", getpid());
+		
+		// Write new leaks log
+		if ((fp = popen(cmd, "r")) && (fp2 = fopen(file, "w"))) {
+			
+			while(len = fread(buf, 1, sizeof(buf), fp))
+			{
+				fwrite(buf, 1, len, fp2);
+			}
+				
+			pclose(fp);
+		}
+	}
+}
+
+int isSPLeaksLog(struct direct *entry)
+{
+	return (strstr(entry->d_name, "sp.leaks") != NULL);
+}
+
+- (void)_initLogFile
+{
+	NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDesktopDirectory, NSUserDomainMask, YES);
+	NSString *logFilePath = [NSString stringWithFormat:@"%@/Sequel Pro Debug Log.log", [paths objectAtIndex:0]];
+	
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	// Check if the debug file exists, and is writable
+	if ([fileManager fileExistsAtPath:logFilePath]) {
+		if (![fileManager isWritableFileAtPath:logFilePath]) {
+			initializedSuccessfully = NO;
+			NSRunAlertPanel(@"Logging error", @"Log file exists but is not writeable; no debug log will be generated!", @"OK", nil, nil);
+		}
+		// Otherwise try creating one
+	} 
+	else {
+		if (![fileManager createFileAtPath:logFilePath contents:[NSData data] attributes:nil]) {
+			initializedSuccessfully = NO;
+			NSRunAlertPanel(@"Logging error", @"Could not create log file for writing; no debug log will be generated!", @"OK", nil, nil);
+		}
+	}
+	
+	// Get a file handle to the file if possible
+	if (initializedSuccessfully) {
+		logFileHandle = [NSFileHandle fileHandleForWritingAtPath:logFilePath];
+		
+		if (!logFileHandle) {
+			initializedSuccessfully = NO;
+			NSRunAlertPanel(@"Logging error", @"Could not open log file for writing; no debug log will be generated!", @"OK", nil, nil);
+		} 
+		else {
+			[logFileHandle retain];
+			[logFileHandle seekToEndOfFile];
+			
+			NSString *bundleName = [fileManager displayNameAtPath:[[NSBundle mainBundle] bundlePath]];
+			NSMutableString *logStart = [NSMutableString stringWithString:@"\n\n\n==========================================================================\n\n"];
+			
+			[logStart appendString:[NSString stringWithFormat:@"%@ (r%ld)\n", bundleName, (long)[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] integerValue]]];
+			[logFileHandle writeData:[logStart dataUsingEncoding:NSUTF8StringEncoding]];
+		}
+	}
+}
+
+- (void)_outputTimeString
 {
 	if (!initializedSuccessfully) return;
-
+	
 	[logFileHandle writeData:[[NSString stringWithFormat:@"Launched at %@\n\n", [[NSDate date] description]] dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
