@@ -25,6 +25,7 @@
 
 #import "SPLogger.h"
 
+#include <pwd.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/dir.h>
@@ -128,36 +129,63 @@ static SPLogger *logger = nil;
 	if (dumpLeaksOnTermination) {
 		
 		// Remove old leaks logs
-		int count, i;
+		int cnt, cnt2, i;
 		int isSPLeaksLog();
 		struct direct **files;
 		
-		count = scandir("/tmp", &files, isSPLeaksLog, NULL);
-				
-		char fpath[32];
+		char *lgn;
+		struct passwd *pw;
+		boolean_t hdir = FALSE;
 		
-		for (i = 0; i < count; i++)
+		// Determine where to write the log to
+		if ((lgn = getlogin()) == NULL || (pw = getpwnam(lgn)) == NULL) {
+			fprintf(stderr, "Unable to get user info, falling back to /tmp\n"); 
+		}
+		else {
+			hdir = TRUE;
+		}
+		
+		cnt  = scandir("/tmp", &files, isSPLeaksLog, NULL);
+		
+		char fpath[32], fpath2[32], fpath3[64];
+		
+		for (i = 0; i < cnt; i++)
 		{
 			snprintf(fpath, sizeof(fpath), "/tmp/%s", files[i]->d_name);
 			
 			if (remove(fpath) != 0) {
-				printf("Unable to remove Sequel Pro leaks log '%s'", files[i]->d_name);
+				printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
 			}
 		}
 		
-		FILE *fp;
-		FILE *fp2;
-		size_t len;
+		free(&files);
 		
-		char cmd[32], file[32], buf[512];
+		if (hdir) {
+			snprintf(fpath2, sizeof(fpath2), "%s/Desktop", pw->pw_dir);
+		
+			cnt2 = scandir(fpath2, &files, isSPLeaksLog, NULL);
+			
+			for (i = 0; i < cnt2; i++)
+			{
+				snprintf(fpath3, sizeof(fpath3), "%s/%s", fpath2, files[i]->d_name);
+				
+				if (remove(fpath3) != 0) {
+					printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
+				}
+			}
+		}
+	
+		size_t len;
+		FILE *fp, *fp2;
+		char cmd[32], file[64], buf[512];
 		
 		snprintf(cmd, sizeof(cmd), "/usr/bin/leaks %d", getpid());
-		snprintf(file, sizeof(file), "/tmp/sp.leaks.%d.tmp", getpid());
+		snprintf(file, sizeof(file), (hdir) ? "%s/Desktop/sp.leaks.%d.log" : "%s/sp.leaks.%d.log", (hdir) ? pw->pw_dir : "/tmp", getpid());
 		
 		// Write new leaks log
 		if ((fp = popen(cmd, "r")) && (fp2 = fopen(file, "w"))) {
 			
-			while(len = fread(buf, 1, sizeof(buf), fp))
+			while (len = fread(buf, 1, sizeof(buf), fp))
 			{
 				fwrite(buf, 1, len, fp2);
 			}
