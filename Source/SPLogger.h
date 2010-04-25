@@ -33,6 +33,11 @@
 	BOOL dumpLeaksOnTermination;
 	
 	/**
+	 * Remove old leak dumps on termination flag.
+	 */
+	BOOL removeOldLeakDumpsOnTermination;
+	
+	/**
 	 * Log file initialized successfully flag.
 	 */
 	BOOL initializedSuccessfully;
@@ -50,10 +55,8 @@
  */
 + (SPLogger *)logger;
 
-/**
- * Tells the logger to dump leaks analysis upon app termination.
- */
-- (void)setDumpLeaksOnTermination;
+@property(readwrite, assign) BOOL dumpLeaksOnTermination;
+@property(readwrite, assign) BOOL removeOldLeakDumpsOnTermination;
 
 /**
  * Dumps the result of running leaks to the file '/tmp/sp.leaks.<pid>.tmp'.

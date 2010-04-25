@@ -53,6 +53,9 @@ static SPLogger *logger = nil;
 
 @implementation SPLogger
 
+@synthesize dumpLeaksOnTermination;
+@synthesize removeOldLeakDumpsOnTermination;
+
 /*
  * Returns the shared logger object.
  */
@@ -90,8 +93,10 @@ static SPLogger *logger = nil;
 - (id)init
 {
 	if ((self = [super init])) {
-		dumpLeaksOnTermination = NO;
 		initializedSuccessfully = YES;
+		
+		[self setDumpLeaksOnTermination:NO];
+		[self setRemoveOldLeakDumpsOnTermination:YES];
 	}
 	
 	return self;
@@ -119,19 +124,9 @@ static SPLogger *logger = nil;
 	[logString release];
 }
 
-- (void)setDumpLeaksOnTermination
-{
-	dumpLeaksOnTermination = YES;
-}
-
 - (void)dumpLeaks
 {
-	if (dumpLeaksOnTermination) {
-		
-		// Remove old leaks logs
-		int cnt, cnt2, i;
-		int isSPLeaksLog();
-		struct direct **files;
+	if ([self dumpLeaksOnTermination]) {
 		
 		char *lgn;
 		struct passwd *pw;
@@ -145,32 +140,40 @@ static SPLogger *logger = nil;
 			hdir = TRUE;
 		}
 		
-		cnt  = scandir("/tmp", &files, isSPLeaksLog, NULL);
-		
-		char fpath[32], fpath2[32], fpath3[64];
-		
-		for (i = 0; i < cnt; i++)
-		{
-			snprintf(fpath, sizeof(fpath), "/tmp/%s", files[i]->d_name);
+		// If required remove old logs
+		if ([self removeOldLeakDumpsOnTermination]) {
 			
-			if (remove(fpath) != 0) {
-				printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
-			}
-		}
-		
-		free(&files);
-		
-		if (hdir) {
-			snprintf(fpath2, sizeof(fpath2), "%s/Desktop", pw->pw_dir);
-		
-			cnt2 = scandir(fpath2, &files, isSPLeaksLog, NULL);
+			int cnt, cnt2, i;
+			int isSPLeaksLog();
+			struct direct **files;
 			
-			for (i = 0; i < cnt2; i++)
+			cnt  = scandir("/tmp", &files, isSPLeaksLog, NULL);
+			
+			char fpath[32], fpath2[32], fpath3[64];
+			
+			for (i = 0; i < cnt; i++)
 			{
-				snprintf(fpath3, sizeof(fpath3), "%s/%s", fpath2, files[i]->d_name);
+				snprintf(fpath, sizeof(fpath), "/tmp/%s", files[i]->d_name);
 				
-				if (remove(fpath3) != 0) {
+				if (remove(fpath) != 0) {
 					printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
+				}
+			}
+			
+			free(&files);
+			
+			if (hdir) {
+				snprintf(fpath2, sizeof(fpath2), "%s/Desktop", pw->pw_dir);
+				
+				cnt2 = scandir(fpath2, &files, isSPLeaksLog, NULL);
+				
+				for (i = 0; i < cnt2; i++)
+				{
+					snprintf(fpath3, sizeof(fpath3), "%s/%s", fpath2, files[i]->d_name);
+					
+					if (remove(fpath3) != 0) {
+						printf("Unable to remove Sequel Pro leaks log '%s'\n", files[i]->d_name);
+					}
 				}
 			}
 		}
