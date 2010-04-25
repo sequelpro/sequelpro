@@ -31,6 +31,7 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPFileHandle.h"
+#import "SPExportUtilities.h"
 
 @implementation SPSQLExporter
 
@@ -58,13 +59,7 @@
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
 	if ((self = [super init])) {
-		
-		// Check that the delegate conforms the exporter protocol, if not throw an exception
-		if (![exportDelegate conformsToProtocol:@protocol(SPSQLExporterProtocol)]) {
-			@throw [NSException exceptionWithName:@"Protocol Conformance" 
-										   reason:@"The supplied delegate does not conform to the protocol 'SPSQLExporterProtocol'." 
-										 userInfo:nil];
-		}
+		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPSQLExporterProtocol));
 		
 		[self setDelegate:exportDelegate];
 		[self setSqlExportCurrentTable:nil];

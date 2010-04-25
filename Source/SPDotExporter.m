@@ -28,6 +28,7 @@
 #import "SPFileHandle.h"
 #import "SPArrayAdditions.h"
 #import "SPTableData.h"
+#import "SPExportUtilities.h"
 
 @implementation SPDotExporter
 
@@ -45,13 +46,7 @@
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
 	if ((self = [super init])) {
-		
-		// Check that the delegate conforms the exporter protocol, if not throw an exception
-		if (![exportDelegate conformsToProtocol:@protocol(SPDotExporterProtocol)]) {
-			@throw [NSException exceptionWithName:@"Protocol Conformance" 
-										   reason:@"The supplied delegate does not conform to the protocol 'SPDotExporterProtocol'." 
-										 userInfo:nil];
-		}
+		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPDotExporterProtocol));
 		
 		[self setDelegate:exportDelegate];
 		[self setDotExportCurrentTable:nil];

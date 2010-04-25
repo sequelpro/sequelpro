@@ -30,6 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPFileHandle.h"
 #import "SPConstants.h"
+#import "SPExportUtilities.h"
 
 @implementation SPXMLExporter
 
@@ -43,13 +44,7 @@
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
 	if ((self = [super init])) {
-		
-		// Check that the delegate conforms the exporter protocol, if not throw an exception
-		if (![exportDelegate conformsToProtocol:@protocol(SPXMLExporterProtocol)]) {
-			@throw [NSException exceptionWithName:@"Protocol Conformance" 
-										   reason:@"The supplied delegate does not conform to the protocol 'SPXMLExporterProtocol'." 
-										 userInfo:nil];
-		}
+		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPXMLExporterProtocol));
 		
 		[self setDelegate:exportDelegate];
 	}

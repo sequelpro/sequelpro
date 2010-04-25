@@ -30,6 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPFileHandle.h"
 #import "SPTableData.h"
+#import "SPExportUtilities.h"
 
 @implementation SPCSVExporter
 
@@ -50,13 +51,7 @@
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
 	if ((self = [super init])) {
-		
-		// Check that the delegate conforms the exporter protocol, if not throw an exception
-		if (![exportDelegate conformsToProtocol:@protocol(SPCSVExporterProtocol)]) {
-			@throw [NSException exceptionWithName:@"Protocol Conformance" 
-										   reason:@"The supplied delegate does not conform to the protocol 'SPCSVExporterProtocol'." 
-										 userInfo:nil];
-		}
+		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPCSVExporterProtocol));
 		
 		[self setDelegate:exportDelegate];
 	}

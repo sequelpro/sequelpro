@@ -455,9 +455,6 @@
 	NSString *filename = @"";
 	SPFileHandle *fileHandle = nil;
 	
-	NSDictionary *tableDetails = [NSDictionary dictionary];
-	NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
-	
 	SPCSVExporter *csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
 	
 	// Depeding on the export source, set the table name or data array
