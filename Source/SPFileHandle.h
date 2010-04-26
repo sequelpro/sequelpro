@@ -44,6 +44,7 @@
 
 	int fileMode;
 	BOOL dataWritten;
+	BOOL allDataWritten;
 	BOOL fileIsClosed;
 	BOOL useGzip;
 }
