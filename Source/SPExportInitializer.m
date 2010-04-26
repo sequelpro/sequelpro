@@ -35,6 +35,7 @@
 #import "TableDocument.h"
 #import "CustomQuery.h"
 #import "SPFileHandle.h"
+#import "SPAlertSheets.h"
 
 #import "SPCSVExporter.h"
 #import "SPSQLExporter.h"
