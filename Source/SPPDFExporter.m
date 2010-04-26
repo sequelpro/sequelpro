@@ -53,6 +53,7 @@
 	@try {
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		
+		[pool release];
 	}
 	@catch (NSException *e) { }
 }
