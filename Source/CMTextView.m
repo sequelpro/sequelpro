@@ -34,6 +34,7 @@
 #import "SPTooltip.h"
 #import "TablesList.h"
 #import "SPNavigatorController.h"
+#import "SPAlertSheets.h"
 
 #pragma mark -
 #pragma mark lex init
