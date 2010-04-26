@@ -926,6 +926,7 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
+		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 
 		[renameTableContextMenuItem setHidden:NO]; // we don't have to check the mysql version
@@ -934,6 +935,7 @@
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableContextButton setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
+		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 	} 
 	else if (selectedTableType == SPTableTypeTable) {

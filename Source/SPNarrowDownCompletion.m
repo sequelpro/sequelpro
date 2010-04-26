@@ -153,7 +153,7 @@
 	[mutablePrefix release];
 	[textualInputCharacters release];
 	[originalFilterString release];
-	[syncArrowImages release];
+	if(syncArrowImages) [syncArrowImages release];
 	if(suggestions) [suggestions release];
 
 	if (filtered) [filtered release];
@@ -184,7 +184,7 @@
 				[stateTimer invalidate];
 				[stateTimer release];
 				stateTimer = nil;
-				if(syncArrowImages) [syncArrowImages release];
+				if(syncArrowImages) [syncArrowImages release], syncArrowImages = nil;
 				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
 				closeMe = YES;
 				return;

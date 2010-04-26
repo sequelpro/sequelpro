@@ -32,26 +32,36 @@
 	
 	BOOL showFullProcessList;
 	
+	NSTimer *autoRefreshTimer;
+	
 	NSUserDefaults *prefs;
 	NSMutableArray *processes, *processesFiltered;
 	
+	IBOutlet NSWindow            *customIntervalWindow;
+	IBOutlet NSTextField         *customIntervalTextField;
+	IBOutlet NSButton            *customIntervalButton;
 	IBOutlet NSTableView         *processListTableView;
 	IBOutlet NSTextField         *processesCountTextField;
 	IBOutlet NSSearchField       *filterProcessesSearchField;
 	IBOutlet NSProgressIndicator *refreshProgressIndicator; 
 	IBOutlet NSButton            *saveProcessesButton;
 	IBOutlet NSButton            *refreshProcessesButton;
+	IBOutlet NSButton            *autoRefreshButton;
+	IBOutlet NSMenuItem          *autoRefreshIntervalMenuItem;
 }
 
 @property (readwrite, assign) MCPConnection *connection;
 
 - (IBAction)copy:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 - (IBAction)refreshProcessList:(id)sender;
 - (IBAction)saveServerProcesses:(id)sender;
 - (IBAction)killProcessQuery:(id)sender;
 - (IBAction)killProcessConnection:(id)sender;
 - (IBAction)toggleShowProcessID:(id)sender;
-- (IBAction)toggeleShowFullProcessList:(id)sender;
+- (IBAction)toggleProcessListAutoRefresh:(id)sender;
+- (IBAction)setAutoRefreshInterval:(id)sender;
+- (IBAction)setCustomAutoRefreshInterval:(id)sender;
 
 - (void)displayProcessListWindow;
 

@@ -2407,23 +2407,23 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPResult *)listProcesses
 {
-	MCPResult *theResult = nil;
+	MCPResult *result = nil;
 	MYSQL_RES *theResPtr;
 	
 	[self lockConnection];
+	
 	if (theResPtr = mysql_list_processes(mConnection)) {
-		theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+		result = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
 	} 
 	else {
-		theResult = [[MCPResult alloc] init];
+		result = [[MCPResult alloc] init];
 	}
+	
 	[self unlockConnection];
 	
-	if (theResult) {
-		[theResult autorelease];
-	}
+	if (result) [result autorelease];
 	
-	return theResult;
+	return result;
 }
 
 /**

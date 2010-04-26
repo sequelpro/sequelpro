@@ -25,6 +25,7 @@
 
 #import "SPGrowlController.h"
 #import "SPConstants.h"
+#import "SPMainThreadTrampoline.h"
 
 #include <mach/mach_time.h>
 
@@ -88,6 +89,13 @@ static SPGrowlController *sharedGrowlController = nil;
  */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description window:(NSWindow *)window notificationName:(NSString *)name
 {
+
+	// Ensure that the delayed notification call is made on the main thread
+	if (![NSThread isMainThread]) {
+		[[self onMainThread] notifyWithTitle:title description:description window:window notificationName:name];
+		return;
+	}
+
 	NSMutableDictionary *notificationDictionary = [NSMutableDictionary dictionary];
 	[notificationDictionary setObject:title forKey:@"title"];
 	[notificationDictionary setObject:description forKey:@"description"];
