@@ -1025,7 +1025,7 @@
 	{
 		NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
 									[[grantPrivileges componentsJoinedByCommas] uppercaseString],
-									dbName,
+									[dbName backtickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
 		DLog(@"%@", grantStatement);
@@ -1038,7 +1038,7 @@
 	{
 		NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
 									 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
-									 dbName,
+									 [dbName backtickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
 		DLog(@"%@", revokeStatement);
