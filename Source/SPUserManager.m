@@ -265,6 +265,8 @@
 - (void)_initializeSchemaPrivs
 {
 	// Initialize Databases
+	[schemas removeAllObjects];
+	
 	MCPResult *results = [self.mySqlConnection listDBs];
 	
 	if ([results numOfRows]) {
@@ -1302,6 +1304,16 @@
 		}
 
 	}		
+}
+
+#pragma mark -
+#pragma mark Tab view delegate methods
+
+- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+		[self _initializeSchemaPrivs];
+	}
 }
 
 #pragma mark -
