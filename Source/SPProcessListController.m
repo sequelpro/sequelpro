@@ -623,17 +623,20 @@
 	NSUInteger i = 0;
 	
 	// Get processes
-	MCPResult *processList = [connection listProcesses];
-	
-	[processList setReturnDataAsStrings:YES];
-	
-	if ([processList numOfRows]) [processList dataSeek:0];
-	
-	[processes removeAllObjects];
-
-	for (i = 0; i < [processList numOfRows]; i++) 
-	{
-		[processes addObject:[processList fetchRowAsDictionary]];
+	if ([connection isConnected]) {
+		
+		MCPResult *processList = [connection listProcesses];
+		
+		[processList setReturnDataAsStrings:YES];
+		
+		if ([processList numOfRows]) [processList dataSeek:0];
+		
+		[processes removeAllObjects];
+		
+		for (i = 0; i < [processList numOfRows]; i++) 
+		{
+			[processes addObject:[processList fetchRowAsDictionary]];
+		}
 	}
 	
 	// Update the UI on the main thread

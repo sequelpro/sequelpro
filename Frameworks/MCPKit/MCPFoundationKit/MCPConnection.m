@@ -2412,12 +2412,14 @@ void performThreadedKeepAlive(void *ptr)
 	
 	[self lockConnection];
 	
-	if (theResPtr = mysql_list_processes(mConnection)) {
-		result = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+	if (mConnected && (mConnection != NULL)) {
+		if (theResPtr = mysql_list_processes(mConnection)) {
+			result = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+		} 
+		else {
+			result = [[MCPResult alloc] init];
+		}
 	} 
-	else {
-		result = [[MCPResult alloc] init];
-	}
 	
 	[self unlockConnection];
 	
