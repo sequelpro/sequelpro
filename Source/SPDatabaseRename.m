@@ -1,5 +1,5 @@
 //
-//  $Id: $
+//  $Id$
 //
 //  SPDatabaseRename.m
 //  sequel-pro

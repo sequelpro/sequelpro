@@ -1,5 +1,5 @@
 //
-//  $Id: $
+//  $Id$
 //
 //  SPTableCopy.h
 //  sequel-pro

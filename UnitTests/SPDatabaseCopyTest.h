@@ -1,5 +1,5 @@
 //
-//  $Id: $
+//  $Id$
 //
 //  DatabaseCopyTest.h
 //  sequel-pro

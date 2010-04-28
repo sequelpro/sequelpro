@@ -1,5 +1,5 @@
 //
-//  $Id: $
+//  $Id$
 //
 //  SPDatabaseRenameTest.h
 //  sequel-pro
