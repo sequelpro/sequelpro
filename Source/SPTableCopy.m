@@ -52,20 +52,21 @@
 																	   @"show create table error informative message"), 
 						   [connection getLastErrorMessage]]);
 	}
-	NSLog(@"%i", [theResult numOfRows]);
 	if ([theResult numOfRows] != 0) {
-		NSString *createTableStatment = [[theResult fetchRowAsArray] objectAtIndex:1];
-		return createTableStatment;
+		return [[theResult fetchRowAsArray] objectAtIndex:1];
 	}
+	return @"";
 }
 
 - (BOOL)copyTable:(NSString *)tableName from: (NSString *)sourceDB to: (NSString *)targetDB {
 
-	NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:[self getCreateTableStatementFor:tableName inDB:sourceDB]];
+	NSString *createTableResult = [self getCreateTableStatementFor:tableName inDB:sourceDB];
+	NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 	
 	// adding the target DB name and the separator dot after "CREATE TABLE ".
 	[createTableStatement insertString:@"." atIndex:13];
 	[createTableStatement insertString:[targetDB backtickQuotedString] atIndex:13];
+	NSLog(@"%@", createTableStatement);
 	/*	
 	// this only works with MySQL >= 4.1
 	NSString *copyStatement = [NSString stringWithFormat:@"CREATE TABLE %@.%@ LIKE %@.%@", 
@@ -106,7 +107,6 @@
 								   [sourceDB backtickQuotedString],
 								   [tableName backtickQuotedString]
 								   ];
-		DLog(@"Copying table data: %@", copyDataStatement);
 		[connection queryString:copyDataStatement];		
 
 		if ([connection queryErrored]) {

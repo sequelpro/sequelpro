@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  DatabaseCopyTest.h
+//  SPDatabaseCopyTest.h
 //  sequel-pro
 //
 //  Created by David Rekowski
@@ -30,7 +30,6 @@
 @interface SPDatabaseCopyTest : SenTestCase {
 }
 - (void) testCopyDatabase;
-- (void) testCopyDatabaseTables;
 - (void) testCreateDatabase;
 
 @end

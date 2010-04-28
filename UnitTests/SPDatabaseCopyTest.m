@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  DatabaseCopyTest.m
+//  SPDatabaseCopyTest.m
 //  sequel-pro
 //
 //  Created by David Rekowski
@@ -83,15 +83,6 @@
 	[target release];
 }
 
-- (void) testCopyDatabaseTables {
-	SPDatabaseCopy *dbCopy = [self getDatabaseCopyFixture];
-	SPTableCopy *tableCopy = [self getTableCopyFixture];
-	STAssertTrue([tableCopy copyTable:@"table_one" from: @"source_db" to: @"target_db"], 
-				 @"Should have copied database table table_one.");
-	STAssertTrue([tableCopy copyTable:@"table_two" from: @"source_db" to: @"target_db"], 
-				 @"Should have copied database table table_two.");
-}
-	 
 - (void) testCreateDatabase {
 	SPDatabaseCopy *dbCopy = [self getDatabaseCopyFixture];
 	// test missing :)
