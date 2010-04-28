@@ -288,7 +288,8 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)listDBsLike:(NSString *)dbsName;
 - (MCPResult *)listTables;
 - (MCPResult *)listTablesLike:(NSString *)tablesName;
-- (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
+- (NSArray *)listTablesFromDB:(NSString *)dbName;
+- (NSArray *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName;
 - (MCPResult *)listFieldsFromTable:(NSString *)tableName like:(NSString *)fieldsName;
 

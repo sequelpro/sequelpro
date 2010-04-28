@@ -57,10 +57,15 @@
 #import "SPConstants.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPLogger.h"
+#import "SPDatabaseCopy.h"
+#import "SPTableCopy.h"
+#import "SPDatabaseRename.h"
 
 @interface TableDocument (PrivateAPI)
 
 - (void)_addDatabase;
+- (void)_copyDatabase;
+- (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
@@ -755,6 +760,11 @@
 	}
 }
 
+- (MCPConnection *) getConnection {
+	return mySQLConnection;
+}
+
+
 /**
  * Set whether the connection controller should automatically start
  * connecting; called by maincontroller, but only for first window.
@@ -911,14 +921,47 @@
 - (IBAction)addDatabase:(id)sender
 {
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-
+	
 	[databaseNameField setStringValue:@""];
-
+	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"addDatabase"];
+}
+
+
+/**
+ * opens the copy database sheet and copies the databsae
+ */
+- (IBAction)copyDatabase:(id)sender
+{	
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
+	
+	[databaseCopyNameField setStringValue:@""];
+	
+	[NSApp beginSheet:databaseNewSheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"copyDatabase"];
+}
+
+/**
+ * opens the rename database sheet and renames the databsae
+ */
+- (IBAction)renameDatabase:(id)sender
+{	
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
+	
+	[databaseRenameNameField setStringValue:@""];
+	
+	[NSApp beginSheet:databaseRenameSheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"renameDatabase"];
 }
 
 /**
@@ -1035,6 +1078,12 @@
 			else
 				[chooseDatabaseButton selectItemAtIndex:0];
 		}
+	} 
+	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
+		[self _copyDatabase];		
+	}
+	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
+		[self _renameDatabase];		
 	}
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
@@ -4085,6 +4134,43 @@
 @end
 
 @implementation TableDocument (PrivateAPI)
+
+- (void)_copyDatabase {
+	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		return;
+	}
+	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
+	[dbActionCopy setConnection: [self getConnection]];
+	[dbActionCopy setParent: self];
+	
+	BOOL copyWithContent = [copyOnlyStructureButton state] == NSOffState;
+	
+	[dbActionCopy copyDatabaseFrom: [self database] 
+								to: [databaseCopyNameField stringValue]
+					   withContent: copyWithContent];
+	[dbActionCopy release];
+	[selectedDatabase release];
+	selectedDatabase = [[NSString alloc] initWithString:[databaseCopyNameField stringValue]];
+	[self setDatabases: self];
+}			 
+
+- (void)_renameDatabase {
+	if ([[databaseRenameNameField stringValue] isEqualToString:@""]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		return;
+	}
+	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
+	[dbActionRename setConnection: [self getConnection]];
+	[dbActionRename setParent: self];
+	
+	[dbActionRename renameDatabaseFrom: [self database] 
+								to: [databaseRenameNameField stringValue]];
+	[dbActionRename release];
+	[selectedDatabase release];
+	selectedDatabase = [[NSString alloc] initWithString:[databaseRenameNameField stringValue]];
+	[self setDatabases: self];
+}			 
 
 /**
  * Adds a new database.

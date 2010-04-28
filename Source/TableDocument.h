@@ -65,6 +65,8 @@
 	IBOutlet id titleStringView;
 	
 	IBOutlet id databaseSheet;
+	IBOutlet id databaseNewSheet;
+	IBOutlet id databaseRenameSheet;
 
 	IBOutlet id queryProgressBar;
 	IBOutlet NSBox *taskProgressLayer;
@@ -75,8 +77,13 @@
 	IBOutlet id favoritesButton;
 
 	IBOutlet id databaseNameField;
+	IBOutlet id databaseCopyNameField;
+	IBOutlet id databaseRenameNameField;
 	IBOutlet id databaseEncodingButton;
+	IBOutlet id copyOnlyStructureButton;
 	IBOutlet id addDatabaseButton;
+	IBOutlet id copyDatabaseButton;
+	IBOutlet id renameDatabaseButton;
 	IBOutlet id chooseDatabaseButton;
 	IBOutlet id historyControl;
 	IBOutlet NSTabView *tableTabView;
@@ -174,6 +181,7 @@
 - (void)initWithConnectionFile:(NSString *)path;
 // Connection callback and methods
 - (void)setConnection:(MCPConnection *)theConnection;
+- (MCPConnection *) getConnection;
 - (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
 - (BOOL)shouldAutomaticallyConnect;
 - (void)setKeychainID:(NSString *)theID;
@@ -184,6 +192,8 @@
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
+- (IBAction)copyDatabase:(id)sender;
+- (IBAction)renameDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;

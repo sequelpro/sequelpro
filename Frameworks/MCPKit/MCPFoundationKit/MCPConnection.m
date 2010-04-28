@@ -33,6 +33,7 @@
 #import "MCPStreamingResult.h"
 #import "MCPConnectionProxy.h"
 #import "MCPStringAdditions.h"
+#import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
 #include <unistd.h>
@@ -1847,26 +1848,41 @@ void performThreadedKeepAlive(void *ptr)
 	return theResult;
 }
 
+- (NSArray *)listTablesFromDB:(NSString *)dbName {
+	return [self listTablesFromDB:dbName like:nil];
+}
+
 /**
  * List tables in DB specified by dbName and corresponding to pattern.
  * This method indeed issues a !{SHOW TABLES FROM dbName LIKE ...} query to the server.
  * This is done this way to make sure the selected DB is not changed by this method.
  */
-- (MCPResult *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName
-{
+- (NSArray *)listTablesFromDB:(NSString *)dbName like:(NSString *)tablesName {
 	MCPResult *theResult;
-	
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
-		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@", dbName];
+		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@", 
+								 [dbName backtickQuotedString]];
 		theResult = [self queryString:theQuery];
-	}
-	else {
-		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@ LIKE '%@'", dbName, tablesName];
+	} else {
+		NSString	*theQuery = [NSString stringWithFormat:@"SHOW TABLES FROM %@ LIKE '%@'", 
+								 [dbName backtickQuotedString], 
+								 [tablesName backtickQuotedString]];
 		theResult = [self queryString:theQuery];
 	}
 	[theResult setReturnDataAsStrings:YES];
-	
-	return theResult;
+	NSString *theTableName;
+	NSMutableArray *theDBTables = [NSMutableArray array];
+		
+	// NSLog(@"num of fields: %@; num of rows: %@", [theResult numOfFields], [theResult numOfRows]);
+	if ([theResult numOfRows] > 0) {
+		int i;
+		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+			theTableName = [[theResult fetchRowAsArray] objectAtIndex:0];
+			[theDBTables addObject:theTableName];
+		}		
+	}	
+
+	return theDBTables;
 }
 
 /**
@@ -1887,11 +1903,14 @@ void performThreadedKeepAlive(void *ptr)
 	MCPResult *theResult;
 	
 	if ((fieldsName == nil) || ([fieldsName isEqualToString:@""])) {
-		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@", tableName];
+		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@", 
+								 [tableName backtickQuotedString]];
 		theResult = [self queryString:theQuery];
 	}
 	else {
-		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@ LIKE '%@'", tableName, fieldsName];
+		NSString	*theQuery = [NSString stringWithFormat:@"SHOW COLUMNS FROM %@ LIKE '%@'", 
+								 [tableName backtickQuotedString], 
+								 [fieldsName backtickQuotedString]];
 		theResult = [self queryString:theQuery];
 	}
 	[theResult setReturnDataAsStrings:YES];

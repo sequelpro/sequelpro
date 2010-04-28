@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		112730571180788A000737FD /* SPTableCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 112730551180788A000737FD /* SPTableCopyTest.m */; };
+		1127305B11807894000737FD /* SPDatabaseInfoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1127305911807894000737FD /* SPDatabaseInfoTest.m */; };
+		1141A389117BBFF200126A28 /* SPTableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1141A388117BBFF200126A28 /* SPTableCopy.m */; };
+		1141A38A117BBFF200126A28 /* SPTableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1141A388117BBFF200126A28 /* SPTableCopy.m */; };
+		115D63E2117CBC5900419057 /* SPDatabaseInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 115D63E1117CBC5900419057 /* SPDatabaseInfo.m */; };
+		115D63E3117CBC5900419057 /* SPDatabaseInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 115D63E1117CBC5900419057 /* SPDatabaseInfo.m */; };
+		1198F5B31174EDD500670590 /* SPDatabaseCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5B21174EDD500670590 /* SPDatabaseCopy.m */; };
+		1198F5C41174EF3F00670590 /* SPDatabaseCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */; };
+		1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5B21174EDD500670590 /* SPDatabaseCopy.m */; };
+		1198F873117510EE00670590 /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1198F872117510EE00670590 /* OCMock.framework */; };
+		11C211261180EBFF00758039 /* SPDatabaseRenameTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */; };
+		11C211271180EC0400758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
+		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
@@ -308,6 +321,23 @@
 
 /* Begin PBXFileReference section */
 		1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		112730541180788A000737FD /* SPTableCopyTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableCopyTest.h; sourceTree = "<group>"; };
+		112730551180788A000737FD /* SPTableCopyTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableCopyTest.m; sourceTree = "<group>"; };
+		1127305811807894000737FD /* SPDatabaseInfoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseInfoTest.h; sourceTree = "<group>"; };
+		1127305911807894000737FD /* SPDatabaseInfoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseInfoTest.m; sourceTree = "<group>"; };
+		1141A387117BBFF200126A28 /* SPTableCopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableCopy.h; sourceTree = "<group>"; };
+		1141A388117BBFF200126A28 /* SPTableCopy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableCopy.m; sourceTree = "<group>"; };
+		115D63E0117CBC5900419057 /* SPDatabaseInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseInfo.h; sourceTree = "<group>"; };
+		115D63E1117CBC5900419057 /* SPDatabaseInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseInfo.m; sourceTree = "<group>"; };
+		1198F5B11174EDD500670590 /* SPDatabaseCopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseCopy.h; sourceTree = "<group>"; };
+		1198F5B21174EDD500670590 /* SPDatabaseCopy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseCopy.m; sourceTree = "<group>"; };
+		1198F5C21174EF3F00670590 /* SPDatabaseCopyTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseCopyTest.h; sourceTree = "<group>"; };
+		1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseCopyTest.m; sourceTree = "<group>"; };
+		1198F872117510EE00670590 /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = Library/Frameworks/OCMock.framework; sourceTree = DEVELOPER_DIR; };
+		11C2109C1180E70800758039 /* SPDatabaseRename.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseRename.h; sourceTree = "<group>"; };
+		11C2109D1180E70800758039 /* SPDatabaseRename.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseRename.m; sourceTree = "<group>"; };
+		11C210DD1180E9B800758039 /* SPDatabaseRenameTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseRenameTest.h; sourceTree = "<group>"; };
+		11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseRenameTest.m; sourceTree = "<group>"; };
 		17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QLPreviewPanel.h; sourceTree = "<group>"; };
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
@@ -715,6 +745,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1198F873117510EE00670590 /* OCMock.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -772,6 +803,44 @@
 				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
 			);
 			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		1198F5B01174EDA700670590 /* DatabaseActions */ = {
+			isa = PBXGroup;
+			children = (
+				1198F5B11174EDD500670590 /* SPDatabaseCopy.h */,
+				1198F5B21174EDD500670590 /* SPDatabaseCopy.m */,
+				1141A387117BBFF200126A28 /* SPTableCopy.h */,
+				1141A388117BBFF200126A28 /* SPTableCopy.m */,
+				115D63E0117CBC5900419057 /* SPDatabaseInfo.h */,
+				115D63E1117CBC5900419057 /* SPDatabaseInfo.m */,
+				11C2109C1180E70800758039 /* SPDatabaseRename.h */,
+				11C2109D1180E70800758039 /* SPDatabaseRename.m */,
+			);
+			name = DatabaseActions;
+			sourceTree = "<group>";
+		};
+		1198F5B41174EDDE00670590 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				1198F5B51174EDE400670590 /* DatabaseActions */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
+		1198F5B51174EDE400670590 /* DatabaseActions */ = {
+			isa = PBXGroup;
+			children = (
+				1198F5C21174EF3F00670590 /* SPDatabaseCopyTest.h */,
+				1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */,
+				112730541180788A000737FD /* SPTableCopyTest.h */,
+				112730551180788A000737FD /* SPTableCopyTest.m */,
+				1127305811807894000737FD /* SPDatabaseInfoTest.h */,
+				1127305911807894000737FD /* SPDatabaseInfoTest.m */,
+				11C210DD1180E9B800758039 /* SPDatabaseRenameTest.h */,
+				11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */,
+			);
+			name = DatabaseActions;
 			sourceTree = "<group>";
 		};
 		17128B890FE6DFFA0035DD75 /* QuickLook */ = {
@@ -1185,6 +1254,7 @@
 		17E6416E0EF01F3B001BC333 /* Other */ = {
 			isa = PBXGroup;
 			children = (
+				1198F5B01174EDA700670590 /* DatabaseActions */,
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
 				17128B890FE6DFFA0035DD75 /* QuickLook */,
 				583CE39511722B70008F148E /* Compression */,
@@ -1428,6 +1498,7 @@
 			children = (
 				1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */,
 				1058C7A8FEA54F5311CA2CBB /* Other Frameworks */,
+				1198F872117510EE00670590 /* OCMock.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1435,6 +1506,7 @@
 		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
 			isa = PBXGroup;
 			children = (
+				1198F5B41174EDDE00670590 /* Other */,
 				380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */,
 				380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */,
 				380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */,
@@ -1809,8 +1881,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11C211271180EC0400758039 /* SPDatabaseRename.m in Sources */,
+				11C211261180EBFF00758039 /* SPDatabaseRenameTest.m in Sources */,
+				1141A38A117BBFF200126A28 /* SPTableCopy.m in Sources */,
+				115D63E3117CBC5900419057 /* SPDatabaseInfo.m in Sources */,
+				112730571180788A000737FD /* SPTableCopyTest.m in Sources */,
+				1127305B11807894000737FD /* SPDatabaseInfoTest.m in Sources */,
+				1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */,
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */,
 				380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */,
+				1198F5C41174EF3F00670590 /* SPDatabaseCopyTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1828,6 +1908,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */,
 				17E641460EF01EB5001BC333 /* main.m in Sources */,
 				17E641560EF01EF6001BC333 /* CustomQuery.m in Sources */,
 				17E641570EF01EF6001BC333 /* SPAppController.m in Sources */,
@@ -1911,6 +1992,9 @@
 				589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */,
 				BC4DF1981158FB280059FABD /* SPNavigatorOutlineView.m in Sources */,
 				5885CF4A116A63B200A85ACB /* SPFileHandle.m in Sources */,
+				1198F5B31174EDD500670590 /* SPDatabaseCopy.m in Sources */,
+				1141A389117BBFF200126A28 /* SPTableCopy.m in Sources */,
+				115D63E2117CBC5900419057 /* SPDatabaseInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
