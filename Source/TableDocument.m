@@ -3940,13 +3940,13 @@
 	id object = [notification object];
 
 	if (object == databaseNameField) {
-		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
+		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseNameField stringValue]])]; 
 	}
 	else if (object == databaseCopyNameField) {
-		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0)]; 
+		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseCopyNameField stringValue]])]; 
 	}
 	else if (object == databaseRenameNameField) {
-		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0)]; 
+		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseRenameNameField stringValue]])]; 
 	}
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
