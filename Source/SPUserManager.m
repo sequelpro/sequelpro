@@ -273,7 +273,7 @@
 		[results dataSeek:0];
 	}
 	
-	for (int i = 0; i < [results numOfRows]; i++) {
+	for (NSInteger i = 0; i < [results numOfRows]; i++) {
 		[schemas addObject:[results fetchRowAsDictionary]];
 	}
 	
@@ -339,7 +339,7 @@
 		[queryResults dataSeek:0];
 	}
 	
-	for (int i = 0; i < [queryResults numOfRows]; i++) {
+	for (NSInteger i = 0; i < [queryResults numOfRows]; i++) {
 		NSDictionary *rowDict = [queryResults fetchRowAsDictionary];
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
 																inManagedObjectContext:[self managedObjectContext]];
