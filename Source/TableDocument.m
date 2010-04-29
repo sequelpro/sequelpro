@@ -1047,6 +1047,8 @@
  *
  * if contextInfo == removeDatabase -> Remove the selected database
  * if contextInfo == addDatabase    -> Add a new database
+ * if contextInfo == copyDatabase   -> Duplicate the selected database
+ * if contextInfo == renameDatabase -> Rename the selected database
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
@@ -3935,6 +3937,12 @@
 
 	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
+	}
+	else if (object == databaseCopyNameField) {
+		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0)]; 
+	}
+	else if (object == databaseRenameNameField) {
+		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0)]; 
 	}
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
