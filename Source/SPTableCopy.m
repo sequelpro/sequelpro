@@ -27,10 +27,6 @@
 
 @implementation SPTableCopy
 
-- (NSObject *)getTableWindow {
-	return messageWindow;
-}
-
 - (NSString *)getCreateTableStatementFor: (NSString *)tableName inDB: (NSString *)sourceDB {
 	NSString *showCreateTableStatment = [NSString stringWithFormat:@"SHOW CREATE TABLE %@.%@",
 								[sourceDB backtickQuotedString],
@@ -40,7 +36,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to show create table statement", @"show create table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the create table statement for a table.\n\nMySQL said: %@", 
 																	   @"show create table error informative message"), 
 						   [connection getLastErrorMessage]]);
@@ -78,7 +74,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table", @"copy table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy a table.\n\nMySQL said: %@", 
 																	   @"copy table error informative message"), 
 						   [connection getLastErrorMessage]]);

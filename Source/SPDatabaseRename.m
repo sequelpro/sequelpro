@@ -42,10 +42,6 @@
 	return dbInfo;
 }
 
-- (NSObject *)getTableWindow {
-	return messageWindow;
-}
-
 - (BOOL)renameDatabaseFrom: (NSString *)sourceDatabaseName to: (NSString *)targetDatabaseName {
 	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
 
@@ -59,7 +55,7 @@
 		tables = [connection listTablesFromDB:sourceDatabaseName];
 	} else {
 		SPBeginAlertSheet(NSLocalizedString(@"Cannot create existing database", @"create database exists error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to create the target database.\n\nDatabase %@ already exists.", 
 																	   @"create database error informative message"), 
 						   targetDatabaseName]);
@@ -82,7 +78,7 @@
 		[self dropDatabase:sourceDatabaseName];
 	} else {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to delete database", @"delete database error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"Database %@ not empty, skipping drop database.", 
 																	   @"delete database not empty error informative message"), 
 						   sourceDatabaseName]);
@@ -95,7 +91,7 @@
 	[connection queryString:createStatement];	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to create database", @"create database error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to create a database.\n\nMySQL said: %@", 
 																	   @"create database error informative message"), 
 						   [connection getLastErrorMessage]]);
@@ -111,7 +107,7 @@
 	[connection queryString:dropStatement];	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to drop database", @"drop database error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to drop a database.\n\nMySQL said: %@", 
 																	   @"drop database error informative message"), 
 						   [connection getLastErrorMessage]]);
