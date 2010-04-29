@@ -409,8 +409,12 @@
 	// Check whether a save of the current fields row is required.
 	if (![self saveRowOnDeselect]) return;
 	
-	NSString *keyName    =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"];
-	NSString *columnName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Column_name"];
+	NSInteger index = [indexView selectedRow];
+	
+	if ((index == -1) || (index > ([indexes count] - 1))) return;
+	
+	NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
+	NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
 		
 	BOOL hasForeignKey = NO;
 	NSString *constraintName = @"";
