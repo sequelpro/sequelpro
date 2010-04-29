@@ -22,15 +22,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPAlertSheets.h"
+#import "SPDBActionCommons.h"
 #import "SPDatabaseInfo.h"
-#import "SPStringAdditions.h"
-#import "Sequel-Pro.pch"
 
 @implementation SPDatabaseInfo
-
-@synthesize connection;
-@synthesize parent;
 
 - (NSObject *)getTableWindow {
 	return [NSApp mainWindow];

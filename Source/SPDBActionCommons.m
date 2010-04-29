@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPDatabaseInfo.h
+//  SPDBActionCommons.m
 //  sequel-pro
 //
-//  Created by David Rekowski on Apr 13, 2010
+//  Created by David Rekowski on Apr 29, 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,34 +23,14 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDBActionCommons.h"
+#import "SPAlertSheets.h"
+#import "SPStringAdditions.h"
+#import "Sequel-Pro.pch"
 
-/*
- * The SPDatabaseInfo class provides means of retrieving a list of database names
- */
-@interface SPDatabaseInfo : SPDBActionCommons {
-}
+@implementation SPDBActionCommons
 
-/**
- * This method checks, whether a database exists.
- *
- * @param databaseName the name of the database to check
- * @result TRUE if it exists, otherwise FALSE
- */
--(BOOL)databaseExists:(NSString *)databaseName;
-
-/**
- * This method retrieves a list of all databases.
- *
- * @result NSArray databaseNames
- */
-- (NSArray *)listDBs;
-
-/**
- * This method retrieves a list of databases like the given string
- *
- * @param NSString dbsName name of the database substring to match
- * @result NSArray databaseNames
- */
-- (NSArray *)listDBsLike:(NSString *)dbsName;
+@synthesize connection;
+@synthesize parent;
+@synthesize messageDocument;
 
 @end

@@ -22,20 +22,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPConnection.h>
-#import <MCPKit/MCPResult.h>
-#import "SPAlertSheets.h"
-#import "SPStringAdditions.h"
+#import "SPDBActionCommons.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
-#import "SPDatabaseInfo.h"
-#import "Sequel-Pro.pch"
 
 @implementation SPDatabaseCopy
 
-@synthesize connection;
 @synthesize dbInfo;
-@synthesize parent;
 
 - (SPDatabaseInfo *)getDBInfoObject {
 	if (dbInfo != nil) {

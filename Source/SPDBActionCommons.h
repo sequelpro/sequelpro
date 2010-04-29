@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPDatabaseInfo.h
+//  SPDBActionCommons.h
 //  sequel-pro
 //
-//  Created by David Rekowski on Apr 13, 2010
+//  Created by David Rekowski on Apr 29, 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,35 +22,33 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPDBActionCommons.h"
+#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
+#import <MCPKit/MCPConnection.h>
+#import <MCPKit/MCPResult.h>
+#import "SPAlertSheets.h"
+#import "SPStringAdditions.h"
+#import "Sequel-Pro.pch"
 
-/*
- * The SPDatabaseInfo class provides means of retrieving a list of database names
- */
-@interface SPDatabaseInfo : SPDBActionCommons {
+@interface SPDBActionCommons : NSObject {
+	MCPConnection *connection;
+	NSObject *parent;
+	NSDocument *messageDocument;
 }
 
 /**
- * This method checks, whether a database exists.
- *
- * @param databaseName the name of the database to check
- * @result TRUE if it exists, otherwise FALSE
+ * @property MCPConnection references the MCPKit connection to MySQL; it has to be set.
  */
--(BOOL)databaseExists:(NSString *)databaseName;
+@property (retain) MCPConnection *connection;
 
 /**
- * This method retrieves a list of all databases.
- *
- * @result NSArray databaseNames
+ * @property the parent object that issues the action, needs to provide stuff like tableWindow for messages
  */
-- (NSArray *)listDBs;
+@property (retain) NSObject *parent;
 
 /**
- * This method retrieves a list of databases like the given string
- *
- * @param NSString dbsName name of the database substring to match
- * @result NSArray databaseNames
+ * @property the NSDocument instance to send message sheets to
  */
-- (NSArray *)listDBsLike:(NSString *)dbsName;
+@property (retain) NSDocument *messageDocument;
 
 @end

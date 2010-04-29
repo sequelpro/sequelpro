@@ -22,26 +22,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
-#import <MCPKit/MCPConnection.h>
+#import "SPDBActionCommons.h"
 
 /**
  * The SPTableCopy class povides functionality to copy tables between databases.
  */
-@interface SPTableCopy : NSObject {
-	MCPConnection *connection;
-	NSObject *parent;
+@interface SPTableCopy : SPDBActionCommons {
 }
-
-/**
- * @property MCPConnection references the MCPKit connection to MySQL; it has to be set.
- */
-@property (retain) MCPConnection *connection;
-
-/**
- * @property the parent object that issues the action, needs to provide stuff like tableWindow for messages
- */
-@property (retain) NSObject *parent;
 
 /**
  * This method copies a table structure from one db to another.

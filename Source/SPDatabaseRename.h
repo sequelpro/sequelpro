@@ -23,35 +23,20 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 
-#import <Foundation/Foundation.h>
-#import <MCPKit/MCPConnection.h>
+#import "SPDBActionCommons.h"
 #import "SPDatabaseInfo.h"
-#import "SPStringAdditions.h"
 
 /**
  * The SPDatabaseRename class povides functionality to rename a database.
  */
-@interface SPDatabaseRename : NSObject {
-	MCPConnection *connection;
+@interface SPDatabaseRename : SPDBActionCommons {
 	SPDatabaseInfo *dbInfo;
-	NSObject *parent;
 }
-
-/**
- * @property MCPConnection references the MCPKit connection to MySQL; it has to be set.
- */
-@property (retain) MCPConnection *connection;
 
 /**
  * @property SPDatabaseInfo an instance of the database info class
  */
 @property (retain) SPDatabaseInfo *dbInfo;
-
-/**
- * @property the parent object that issues the action, needs to provide stuff like tableWindow for messages
- */
-@property (retain) NSObject *parent;
-
 
 /**
  * This method retrieves the dbInfo object if it exists; otherwise it is generated and the

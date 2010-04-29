@@ -22,16 +22,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPConnection.h>
-#import "SPAlertSheets.h"
-#import "SPStringAdditions.h"
+#import "SPDBActionCommons.h"
 #import "SPTableCopy.h"
-#import "Sequel-Pro.pch"
 
 @implementation SPTableCopy
-
-@synthesize connection;
-@synthesize parent;
 
 - (NSObject *)getTableWindow {
 	return [NSApp mainWindow];
