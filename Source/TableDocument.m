@@ -3177,7 +3177,9 @@
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
-		[menuItem action] == @selector(removeDatabase:))
+		[menuItem action] == @selector(removeDatabase:) ||
+		[menuItem action] == @selector(copyDatabase:) ||
+		[menuItem action] == @selector(renameDatabase:))
 	{
 		return ([self database] != nil);
 	}
