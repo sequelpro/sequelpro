@@ -77,7 +77,7 @@
 	
 	NSString *source = [[NSString alloc] initWithString:@"source_name"];
 	NSString *target = [[NSString alloc] initWithString:@"target_name"];
-	[dbRename renameDatabaseFrom:source to:target];
+	STAssertTrue([dbRename renameDatabaseFrom:source to:target], @"method renameDatabaseFrom:to: is supposed to return YES");
 	
 	[mockConnection verify];
 	[source release];

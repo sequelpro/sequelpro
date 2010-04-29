@@ -76,7 +76,7 @@
 	
 	NSString *source = [[NSString alloc] initWithString:@"source_name"];
 	NSString *target = [[NSString alloc] initWithString:@"target_name"];
-	[dbCopy copyDatabaseFrom:source to:target withContent:YES];
+	STAssertTrue([dbCopy copyDatabaseFrom:source to:target withContent:YES], @"method renameDatabaseFrom:to: is supposed to return YES");
 	
 	[mockConnection verify];
 	[source release];

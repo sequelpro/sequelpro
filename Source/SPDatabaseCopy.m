@@ -63,7 +63,7 @@
 	}
 	DLog(@"list of found tables of source db: %@", tables);
 	
-	[self createDatabase:targetDatabaseName];
+	BOOL success = [self createDatabase:targetDatabaseName];
 	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
 	[dbActionTableCopy setConnection:connection];
 	
@@ -72,8 +72,11 @@
 									from:sourceDatabaseName
 									  to:targetDatabaseName
 							 withContent:copyWithContent]) {
+		} else {
+			success = NO;
 		}
 	}
+	return success;
 }
 
 - (BOOL) createDatabase: (NSString *)newDatabaseName {

@@ -4150,12 +4150,13 @@
 	
 	BOOL copyWithContent = [copyOnlyStructureButton state] == NSOffState;
 	
-	[dbActionCopy copyDatabaseFrom: [self database] 
-								to: [databaseCopyNameField stringValue]
-					   withContent: copyWithContent];
+	if ([dbActionCopy copyDatabaseFrom: [self database] 
+									to: [databaseCopyNameField stringValue]
+						   withContent: copyWithContent]) {
+		[selectedDatabase release];
+		selectedDatabase = [[NSString alloc] initWithString:[databaseCopyNameField stringValue]];
+	}
 	[dbActionCopy release];
-	[selectedDatabase release];
-	selectedDatabase = [[NSString alloc] initWithString:[databaseCopyNameField stringValue]];
 	[self setDatabases: self];
 }			 
 
@@ -4168,11 +4169,12 @@
 	[dbActionRename setConnection: [self getConnection]];
 	[dbActionRename setMessageWindow: tableWindow];
 	
-	[dbActionRename renameDatabaseFrom: [self database] 
-								to: [databaseRenameNameField stringValue]];
+	if ([dbActionRename renameDatabaseFrom: [self database] 
+										to: [databaseRenameNameField stringValue]]) {
+		[selectedDatabase release];
+		selectedDatabase = [[NSString alloc] initWithString:[databaseRenameNameField stringValue]];
+	}
 	[dbActionRename release];
-	[selectedDatabase release];
-	selectedDatabase = [[NSString alloc] initWithString:[databaseRenameNameField stringValue]];
 	[self setDatabases: self];
 }			 
 

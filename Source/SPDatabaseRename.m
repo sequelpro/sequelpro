@@ -63,7 +63,7 @@
 	}
 	DLog(@"list of found tables of source db: %@", tables);
 	
-	[self createDatabase:targetDatabaseName];
+	BOOL success = [self createDatabase:targetDatabaseName];
 	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
 	[dbActionTableCopy setConnection:connection];
 	
@@ -71,6 +71,8 @@
 		if ([dbActionTableCopy moveTable:currentTable 						
 									from:sourceDatabaseName
 									  to:targetDatabaseName]) {
+		} else {
+			success = FALSE;
 		}
 	}
 	tables = [connection listTablesFromDB:sourceDatabaseName];
@@ -83,6 +85,7 @@
 																	   @"delete database not empty error informative message"), 
 						   sourceDatabaseName]);
 	}
+	return success;
 }
 
 - (BOOL) createDatabase: (NSString *)newDatabaseName {
