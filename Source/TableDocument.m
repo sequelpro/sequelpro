@@ -940,8 +940,9 @@
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 	
 	[databaseCopyNameField setStringValue:@""];
+	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
 	
-	[NSApp beginSheet:databaseNewSheet
+	[NSApp beginSheet:databaseCopySheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
@@ -955,7 +956,8 @@
 {	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 	
-	[databaseRenameNameField setStringValue:@""];
+	[databaseRenameNameField setStringValue:selectedDatabase];
+	[renameDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename database '%@' to:", @"rename database message"), selectedDatabase]];
 	
 	[NSApp beginSheet:databaseRenameSheet
 	   modalForWindow:tableWindow
@@ -4158,7 +4160,7 @@
 	[dbActionCopy setConnection: [self getConnection]];
 	[dbActionCopy setMessageWindow: tableWindow];
 	
-	BOOL copyWithContent = [copyOnlyStructureButton state] == NSOffState;
+	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
 	
 	if ([dbActionCopy copyDatabaseFrom: [self database] 
 									to: [databaseCopyNameField stringValue]

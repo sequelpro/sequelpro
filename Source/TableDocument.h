@@ -65,7 +65,7 @@
 	IBOutlet id titleStringView;
 	
 	IBOutlet id databaseSheet;
-	IBOutlet id databaseNewSheet;
+	IBOutlet id databaseCopySheet;
 	IBOutlet id databaseRenameSheet;
 
 	IBOutlet id queryProgressBar;
@@ -77,13 +77,18 @@
 	IBOutlet id favoritesButton;
 
 	IBOutlet id databaseNameField;
-	IBOutlet id databaseCopyNameField;
-	IBOutlet id databaseRenameNameField;
 	IBOutlet id databaseEncodingButton;
-	IBOutlet id copyOnlyStructureButton;
 	IBOutlet id addDatabaseButton;
+
+	IBOutlet id databaseCopyNameField;
+	IBOutlet id copyDatabaseDataButton;
+	IBOutlet id copyDatabaseMessageField;
 	IBOutlet id copyDatabaseButton;
+
+	IBOutlet id databaseRenameNameField;
+	IBOutlet id renameDatabaseMessageField;
 	IBOutlet id renameDatabaseButton;
+
 	IBOutlet id chooseDatabaseButton;
 	IBOutlet id historyControl;
 	IBOutlet NSTabView *tableTabView;
