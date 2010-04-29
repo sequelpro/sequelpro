@@ -37,13 +37,13 @@
 	} else {
 		dbInfo = [[SPDatabaseInfo alloc] init];
 		[dbInfo setConnection:[self connection]];
-		[dbInfo setParent:[self parent]];
+		[dbInfo setMessageWindow:messageWindow];
 	}
 	return dbInfo;
 }
 
 - (NSObject *)getTableWindow {
-	return [NSApp mainWindow];
+	return messageWindow;
 }
 
 - (BOOL)renameDatabaseFrom: (NSString *)sourceDatabaseName to: (NSString *)targetDatabaseName {

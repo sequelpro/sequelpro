@@ -30,7 +30,6 @@
 @implementation SPDBActionCommons
 
 @synthesize connection;
-@synthesize parent;
-@synthesize messageDocument;
+@synthesize messageWindow;
 
 @end

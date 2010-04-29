@@ -28,7 +28,7 @@
 @implementation SPDatabaseInfo
 
 - (NSObject *)getTableWindow {
-	return [NSApp mainWindow];
+	return messageWindow;
 }
 
 -(BOOL)databaseExists:(NSString *)databaseName {

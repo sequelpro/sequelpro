@@ -28,7 +28,7 @@
 @implementation SPTableCopy
 
 - (NSObject *)getTableWindow {
-	return [NSApp mainWindow];
+	return messageWindow;
 }
 
 - (NSString *)getCreateTableStatementFor: (NSString *)tableName inDB: (NSString *)sourceDB {

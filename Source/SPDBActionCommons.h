@@ -32,8 +32,7 @@
 
 @interface SPDBActionCommons : NSObject {
 	MCPConnection *connection;
-	NSObject *parent;
-	NSDocument *messageDocument;
+	NSWindow *messageWindow;
 }
 
 /**
@@ -42,13 +41,8 @@
 @property (retain) MCPConnection *connection;
 
 /**
- * @property the parent object that issues the action, needs to provide stuff like tableWindow for messages
+ * @property the NSWindow instance to send message sheets to
  */
-@property (retain) NSObject *parent;
-
-/**
- * @property the NSDocument instance to send message sheets to
- */
-@property (retain) NSDocument *messageDocument;
+@property (assign) NSWindow *messageWindow;
 
 @end

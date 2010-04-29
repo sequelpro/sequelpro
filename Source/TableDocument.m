@@ -4146,7 +4146,7 @@
 	}
 	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
 	[dbActionCopy setConnection: [self getConnection]];
-	[dbActionCopy setParent: self];
+	[dbActionCopy setMessageWindow: tableWindow];
 	
 	BOOL copyWithContent = [copyOnlyStructureButton state] == NSOffState;
 	
@@ -4166,7 +4166,7 @@
 	}
 	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
 	[dbActionRename setConnection: [self getConnection]];
-	[dbActionRename setParent: self];
+	[dbActionRename setMessageWindow: tableWindow];
 	
 	[dbActionRename renameDatabaseFrom: [self database] 
 								to: [databaseRenameNameField stringValue]];
