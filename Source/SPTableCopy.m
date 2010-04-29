@@ -42,7 +42,6 @@
 								[sourceDB backtickQuotedString],
 								[tableName backtickQuotedString]
 							 ];
-	NSLog(showCreateTableStatment);
 	MCPResult *theResult = [connection queryString:showCreateTableStatment];
 	
 	if ([connection queryErrored]) {
@@ -66,7 +65,6 @@
 	// adding the target DB name and the separator dot after "CREATE TABLE ".
 	[createTableStatement insertString:@"." atIndex:13];
 	[createTableStatement insertString:[targetDB backtickQuotedString] atIndex:13];
-	NSLog(@"%@", createTableStatement);
 	/*	
 	// this only works with MySQL >= 4.1
 	NSString *copyStatement = [NSString stringWithFormat:@"CREATE TABLE %@.%@ LIKE %@.%@", 
