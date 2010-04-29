@@ -1080,10 +1080,14 @@
 		}
 	} 
 	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
-		[self _copyDatabase];		
+		if (returnCode == NSOKButton) {
+			[self _copyDatabase];		
+		}
 	}
 	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
-		[self _renameDatabase];		
+		if (returnCode == NSOKButton) {
+			[self _renameDatabase];		
+		}
 	}
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
