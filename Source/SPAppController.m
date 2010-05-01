@@ -441,6 +441,7 @@
 																@"queryHistory",
 																@"tableColumnWidths",
 																@"savePath",
+																@"NSRecentDocumentRecords",
 																nil]];
 
 	return preferences;

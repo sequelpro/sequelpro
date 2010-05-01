@@ -48,6 +48,7 @@
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id tableInfoInstance;
+	IBOutlet id tableTriggersInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id tableWindow;
@@ -102,7 +103,7 @@
 	BOOL tableListIsSelectable;
 	BOOL tableListContainsViews;
 
-	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
+	BOOL structureLoaded, contentLoaded, statusLoaded, triggersLoaded, alertSheetOpened;
 }
 
 // IBAction methods

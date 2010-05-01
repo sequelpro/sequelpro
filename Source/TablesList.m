@@ -693,40 +693,35 @@
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
 
+	structureLoaded = NO;
+	contentLoaded = NO;
+	statusLoaded = NO;
+	triggersLoaded = NO;
 	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;
-			contentLoaded = NO;
-			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
 			if(tableEncoding == nil) {
 				[tableContentInstance loadTable:nil];
 			} else {
 				[tableContentInstance loadTable:selectedTableName];
 			}
-			structureLoaded = NO;
 			contentLoaded = YES;
-			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
-			structureLoaded = NO;
-			contentLoaded = NO;
+			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 			statusLoaded = YES;
-		} else {
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = NO;
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5 ) {
+			[[tableTriggersInstance onMainThread] loadTriggers];
+			triggersLoaded = YES;
 		}
 	} else {
 
 		// if we are not looking at a table or view, clear these
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
-		structureLoaded = NO;
-		contentLoaded = NO;
-		statusLoaded = NO;
+		[[extendedTableInfoInstance onMainThread] loadTable:nil];
+		[[tableTriggersInstance onMainThread] loadTriggers];
 	}
 
 	// Update the "Show Create Syntax" window if it's already opened
@@ -769,10 +764,12 @@
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 		[extendedTableInfoInstance loadTable:nil];
+		[tableTriggersInstance loadTriggers];
 		
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
+		triggersLoaded = NO;
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
@@ -1358,24 +1355,27 @@
         // if the 'table' is a view or a table, reload the currently selected view 
         if (selectedTableType == SPTableTypeTable || selectedTableType == SPTableTypeView)
         {
+			statusLoaded = NO;
+			structureLoaded = NO;
+			contentLoaded = NO;
+			triggersLoaded = NO;
             switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
                 case 0:
                     [tableSourceInstance loadTable:newTableName];
                     structureLoaded = YES;
-                    contentLoaded = statusLoaded = NO;
                     break;
                 case 1:
                     [tableContentInstance loadTable:newTableName];
                     contentLoaded = YES;
-                    structureLoaded = statusLoaded = NO;
                     break;
                 case 3:
                     [extendedTableInfoInstance loadTable:newTableName];
                     statusLoaded = YES;
-                    structureLoaded = contentLoaded = NO;
                     break;
-                default:
-                    statusLoaded = structureLoaded = contentLoaded = NO;
+				case 5:
+					[tableTriggersInstance loadTriggers];
+					triggersLoaded = YES;
+					break;
             }
         }
     }
@@ -1560,8 +1560,9 @@
 {
 	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
 
-	if ( [tablesListView numberOfSelectedRows] == 1  && 
-		([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) ) {
+	if ([tablesListView numberOfSelectedRows] == 1
+		&& ([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) )
+	{
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
 			[tableSourceInstance loadTable:selectedTableName];
@@ -1574,8 +1575,13 @@
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
-			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
+			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 			statusLoaded = YES;
+		}
+
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5) && !triggersLoaded ) {
+			[[tableTriggersInstance onMainThread] loadTriggers];
+			triggersLoaded = YES;
 		}
 	}
 	else {
@@ -1805,6 +1811,7 @@
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
+		triggersLoaded = NO;
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
