@@ -20,7 +20,7 @@ CLEAN='NO'
 export CFLAGS='-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 -O3 -fno-omit-frame-pointer -mmacosx-version-min=10.5'
 export CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti -mmacosx-version-min=10.5'
 
-CONFIGURE_OPTIONS='--without-server --enable-thread-safe-client --disable-dependency-tracking'
+CONFIGURE_OPTIONS='--without-server --enable-thread-safe-client --disable-dependency-tracking --enable-local-infile'
 BINARY_DISTRIBUTION_SCRIPT='scripts/make_binary_distribution'
 
 usage() 

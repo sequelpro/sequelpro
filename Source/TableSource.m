@@ -346,6 +346,10 @@
 
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
+	
+	NSInteger index = [tableSourceView selectedRow];
+	
+	if ((index == -1) || (index > ([tableFields count] - 1))) return;
 
 	// Check if the user tries to delete the last defined field in table
 	// Note that because of better menu item validation, this check will now never evaluate to true.
@@ -362,7 +366,7 @@
 		
 	}
 	
-	NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"];
+	NSString *field = [[tableFields objectAtIndex:index] objectForKey:@"Field"];
 	
 	BOOL hasForeignKey = NO;
 	NSString *referencedTable = @"";
@@ -409,8 +413,12 @@
 	// Check whether a save of the current fields row is required.
 	if (![self saveRowOnDeselect]) return;
 	
-	NSString *keyName    =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"];
-	NSString *columnName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Column_name"];
+	NSInteger index = [indexView selectedRow];
+	
+	if ((index == -1) || (index > ([indexes count] - 1))) return;
+	
+	NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
+	NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
 		
 	BOOL hasForeignKey = NO;
 	NSString *constraintName = @"";

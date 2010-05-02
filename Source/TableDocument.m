@@ -57,10 +57,15 @@
 #import "SPConstants.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPLogger.h"
+#import "SPDatabaseCopy.h"
+#import "SPTableCopy.h"
+#import "SPDatabaseRename.h"
 
 @interface TableDocument (PrivateAPI)
 
 - (void)_addDatabase;
+- (void)_copyDatabase;
+- (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
@@ -755,6 +760,11 @@
 	}
 }
 
+- (MCPConnection *) getConnection {
+	return mySQLConnection;
+}
+
+
 /**
  * Set whether the connection controller should automatically start
  * connecting; called by maincontroller, but only for first window.
@@ -911,14 +921,49 @@
 - (IBAction)addDatabase:(id)sender
 {
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-
+	
 	[databaseNameField setStringValue:@""];
-
+	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"addDatabase"];
+}
+
+
+/**
+ * opens the copy database sheet and copies the databsae
+ */
+- (IBAction)copyDatabase:(id)sender
+{	
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
+	
+	[databaseCopyNameField setStringValue:@""];
+	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
+	
+	[NSApp beginSheet:databaseCopySheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"copyDatabase"];
+}
+
+/**
+ * opens the rename database sheet and renames the databsae
+ */
+- (IBAction)renameDatabase:(id)sender
+{	
+	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
+	
+	[databaseRenameNameField setStringValue:selectedDatabase];
+	[renameDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename database '%@' to:", @"rename database message"), selectedDatabase]];
+	
+	[NSApp beginSheet:databaseRenameSheet
+	   modalForWindow:tableWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"renameDatabase"];
 }
 
 /**
@@ -1004,6 +1049,8 @@
  *
  * if contextInfo == removeDatabase -> Remove the selected database
  * if contextInfo == addDatabase    -> Add a new database
+ * if contextInfo == copyDatabase   -> Duplicate the selected database
+ * if contextInfo == renameDatabase -> Rename the selected database
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
@@ -1034,6 +1081,16 @@
 				[chooseDatabaseButton selectItemWithTitle:[self database]];
 			else
 				[chooseDatabaseButton selectItemAtIndex:0];
+		}
+	} 
+	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
+		if (returnCode == NSOKButton) {
+			[self _copyDatabase];		
+		}
+	}
+	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
+		if (returnCode == NSOKButton) {
+			[self _renameDatabase];		
 		}
 	}
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
@@ -3139,7 +3196,9 @@
 
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
-		[menuItem action] == @selector(removeDatabase:))
+		[menuItem action] == @selector(removeDatabase:) ||
+		[menuItem action] == @selector(copyDatabase:) ||
+		[menuItem action] == @selector(renameDatabase:))
 	{
 		return ([self database] != nil);
 	}
@@ -3898,7 +3957,13 @@
 	id object = [notification object];
 
 	if (object == databaseNameField) {
-		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
+		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseNameField stringValue]])]; 
+	}
+	else if (object == databaseCopyNameField) {
+		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseCopyNameField stringValue]])]; 
+	}
+	else if (object == databaseRenameNameField) {
+		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseRenameNameField stringValue]])]; 
 	}
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
@@ -4102,6 +4167,45 @@
 @end
 
 @implementation TableDocument (PrivateAPI)
+
+- (void)_copyDatabase {
+	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		return;
+	}
+	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
+	[dbActionCopy setConnection: [self getConnection]];
+	[dbActionCopy setMessageWindow: tableWindow];
+	
+	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
+	
+	if ([dbActionCopy copyDatabaseFrom: [self database] 
+									to: [databaseCopyNameField stringValue]
+						   withContent: copyWithContent]) {
+		[selectedDatabase release];
+		selectedDatabase = [[NSString alloc] initWithString:[databaseCopyNameField stringValue]];
+	}
+	[dbActionCopy release];
+	[self setDatabases: self];
+}			 
+
+- (void)_renameDatabase {
+	if ([[databaseRenameNameField stringValue] isEqualToString:@""]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		return;
+	}
+	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
+	[dbActionRename setConnection: [self getConnection]];
+	[dbActionRename setMessageWindow: tableWindow];
+	
+	if ([dbActionRename renameDatabaseFrom: [self database] 
+										to: [databaseRenameNameField stringValue]]) {
+		[selectedDatabase release];
+		selectedDatabase = [[NSString alloc] initWithString:[databaseRenameNameField stringValue]];
+	}
+	[dbActionRename release];
+	[self setDatabases: self];
+}			 
 
 /**
  * Adds a new database.

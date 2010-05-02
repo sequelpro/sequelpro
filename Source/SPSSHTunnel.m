@@ -352,6 +352,10 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self 
 													name:@"NSFileHandleDataAvailableNotification"
 												  object:nil];
+
+	// Run the run loop for a short time to ensure all task/pipe callbacks are dealt with
+	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
+
 	[task release], task = nil;
 	[standardError release], standardError = nil;
 	[taskEnvironment release], taskEnvironment = nil;

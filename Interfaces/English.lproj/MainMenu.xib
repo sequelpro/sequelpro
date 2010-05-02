@@ -1081,13 +1081,38 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
-								<object class="NSMenuItem" id="788707136">
+								<object class="NSMenuItem" id="817548288">
 									<reference key="NSMenu" ref="172963563"/>
 									<bool key="NSIsDisabled">YES</bool>
 									<bool key="NSIsSeparator">YES</bool>
 									<string key="NSTitle"/>
 									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="820553150">
+									<reference key="NSMenu" ref="172963563"/>
+									<string key="NSTitle">Duplicate Database...</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="97991687">
+									<reference key="NSMenu" ref="172963563"/>
+									<string key="NSTitle">Rename Database...</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="93508151">
+									<reference key="NSMenu" ref="172963563"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -2698,6 +2723,22 @@
 					</object>
 					<int key="connectionID">1072</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">copyDatabase:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="820553150"/>
+					</object>
+					<int key="connectionID">1080</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">renameDatabase:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="97991687"/>
+					</object>
+					<int key="connectionID">1083</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3033,8 +3074,6 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="653250987"/>
-							<reference ref="602994413"/>
-							<reference ref="788707136"/>
 							<reference ref="265095049"/>
 							<reference ref="14535230"/>
 							<reference ref="197143231"/>
@@ -3044,6 +3083,11 @@
 							<reference ref="6656160"/>
 							<reference ref="806896137"/>
 							<reference ref="7204100"/>
+							<reference ref="93508151"/>
+							<reference ref="97991687"/>
+							<reference ref="817548288"/>
+							<reference ref="602994413"/>
+							<reference ref="820553150"/>
 						</object>
 						<reference key="parent" ref="693420496"/>
 					</object>
@@ -3055,11 +3099,6 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">631</int>
 						<reference key="object" ref="602994413"/>
-						<reference key="parent" ref="172963563"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">632</int>
-						<reference key="object" ref="788707136"/>
 						<reference key="parent" ref="172963563"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -3955,6 +3994,26 @@
 						<reference key="object" ref="853409386"/>
 						<reference key="parent" ref="709725194"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1077</int>
+						<reference key="object" ref="820553150"/>
+						<reference key="parent" ref="172963563"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1079</int>
+						<reference key="object" ref="93508151"/>
+						<reference key="parent" ref="172963563"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1081</int>
+						<reference key="object" ref="97991687"/>
+						<reference key="parent" ref="172963563"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1084</int>
+						<reference key="object" ref="817548288"/>
+						<reference key="parent" ref="172963563"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -3989,6 +4048,12 @@
 					<string>106.editorWindowContentRectSynchronizationRect</string>
 					<string>1061.IBPluginDependency</string>
 					<string>1071.IBPluginDependency</string>
+					<string>1077.IBPluginDependency</string>
+					<string>1077.ImportedFromIB2</string>
+					<string>1079.IBPluginDependency</string>
+					<string>1081.IBPluginDependency</string>
+					<string>1081.ImportedFromIB2</string>
+					<string>1084.IBPluginDependency</string>
 					<string>111.IBPluginDependency</string>
 					<string>111.ImportedFromIB2</string>
 					<string>129.IBPluginDependency</string>
@@ -4118,8 +4183,6 @@
 					<string>629.ImportedFromIB2</string>
 					<string>631.IBPluginDependency</string>
 					<string>631.ImportedFromIB2</string>
-					<string>632.IBPluginDependency</string>
-					<string>632.ImportedFromIB2</string>
 					<string>633.IBPluginDependency</string>
 					<string>633.ImportedFromIB2</string>
 					<string>634.IBPluginDependency</string>
@@ -4305,11 +4368,17 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{824, 199}, {204, 153}}</string>
+					<string>{{852, 432}, {204, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{561, 605}, {181, 43}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="1"/>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4358,7 +4427,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{470, 541}, {280, 283}}</string>
+					<string>{{604, 304}, {280, 283}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -4386,11 +4455,11 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{609, 401}, {194, 73}}</string>
+					<string>{{781, 512}, {194, 73}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{230, 474}, {511, 20}}</string>
+					<string>{{402, 585}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4406,7 +4475,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{422, 181}, {251, 293}}</string>
+					<string>{{648, 294}, {251, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4424,7 +4493,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{145, 483}, {229, 253}}</string>
+					<string>{{468, 334}, {229, 253}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{518, 583}, {218, 253}}</string>
@@ -4432,7 +4501,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{472, 271}, {255, 203}}</string>
+					<string>{{644, 332}, {255, 253}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{312, 683}, {231, 153}}</string>
@@ -4444,9 +4513,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<integer value="1"/>
-					<string>{{849, 130}, {276, 423}}</string>
+					<string>{{815, 44}, {276, 423}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{556, 185}, {279, 383}}</string>
@@ -4501,7 +4568,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{553, 241}, {292, 233}}</string>
+					<string>{{725, 352}, {292, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4528,7 +4595,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{336, 141}, {273, 333}}</string>
+					<string>{{508, 252}, {273, 333}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -4669,7 +4736,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1076</int>
+			<int key="maxID">1084</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5040,16 +5107,22 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeSheet:</string>
 							<string>copy:</string>
 							<string>killProcessConnection:</string>
 							<string>killProcessQuery:</string>
 							<string>refreshProcessList:</string>
 							<string>saveServerProcesses:</string>
-							<string>toggeleShowFullProcessList:</string>
+							<string>setAutoRefreshInterval:</string>
+							<string>setCustomAutoRefreshInterval:</string>
+							<string>toggleProcessListAutoRefresh:</string>
 							<string>toggleShowProcessID:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5063,6 +5136,11 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>autoRefreshButton</string>
+							<string>autoRefreshIntervalMenuItem</string>
+							<string>customIntervalButton</string>
+							<string>customIntervalTextField</string>
+							<string>customIntervalWindow</string>
 							<string>filterProcessesSearchField</string>
 							<string>processListTableView</string>
 							<string>processesCountTextField</string>
@@ -5072,6 +5150,11 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
+							<string>NSMenuItem</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSWindow</string>
 							<string>NSSearchField</string>
 							<string>NSTableView</string>
 							<string>NSTextField</string>
@@ -5368,6 +5451,7 @@
 							<string>copyChecksumFromSheet:</string>
 							<string>copyCreateTableSyntax:</string>
 							<string>copyCreateTableSyntaxFromSheet:</string>
+							<string>copyDatabase:</string>
 							<string>export:</string>
 							<string>exportMultipleTables:</string>
 							<string>exportSelectedTablesAs:</string>
@@ -5381,6 +5465,7 @@
 							<string>openCurrentConnectionInNewWindow:</string>
 							<string>optimizeTable:</string>
 							<string>removeDatabase:</string>
+							<string>renameDatabase:</string>
 							<string>repairTable:</string>
 							<string>saveConnectionSheet:</string>
 							<string>saveCreateSyntax:</string>
@@ -5450,6 +5535,8 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -5460,14 +5547,21 @@
 							<string>chooseDatabaseButton</string>
 							<string>connectionErrorDialog</string>
 							<string>contentViewSplitter</string>
+							<string>copyDatabaseButton</string>
+							<string>copyDatabaseDataButton</string>
+							<string>copyDatabaseMessageField</string>
 							<string>createTableSyntaxTextField</string>
 							<string>createTableSyntaxTextView</string>
 							<string>createTableSyntaxWindow</string>
 							<string>customQueryInstance</string>
 							<string>customQueryTextView</string>
+							<string>databaseCopyNameField</string>
+							<string>databaseCopySheet</string>
 							<string>databaseDataInstance</string>
 							<string>databaseEncodingButton</string>
 							<string>databaseNameField</string>
+							<string>databaseRenameNameField</string>
+							<string>databaseRenameSheet</string>
 							<string>databaseSheet</string>
 							<string>dbTablesTableView</string>
 							<string>encodingPopUp</string>
@@ -5481,6 +5575,8 @@
 							<string>inputTextWindowSecureTextField</string>
 							<string>listFilterField</string>
 							<string>queryProgressBar</string>
+							<string>renameDatabaseButton</string>
+							<string>renameDatabaseMessageField</string>
 							<string>saveConnectionAccessory</string>
 							<string>saveConnectionAutoConnect</string>
 							<string>saveConnectionEncrypt</string>
@@ -5523,11 +5619,18 @@
 							<string>id</string>
 							<string>NSWindow</string>
 							<string>NSSplitView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>NSTextField</string>
 							<string>NSTextView</string>
 							<string>NSWindow</string>
 							<string>id</string>
 							<string>NSTextView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5543,6 +5646,8 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSSearchField</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

@@ -51,6 +51,8 @@
 - (id) initWithFile:(void *)theFile fromPath:(const char *)path mode:(int)mode
 {
 	if (self = [super init]) {
+		dataWritten = NO;
+		allDataWritten = YES;
 		fileIsClosed = NO;
 
 		wrappedFile = theFile;
@@ -216,9 +218,12 @@
 	if (fileIsClosed) [NSException raise:NSInternalInconsistencyException format:@"Cannot write to a file handle after it has been closed"];
 
 	// Add the data to the buffer
-	pthread_mutex_lock(&bufferLock);
-	[buffer appendData:data];
-	bufferDataLength += [data length];
+	if ([data length]) {
+		pthread_mutex_lock(&bufferLock);
+		[buffer appendData:data];
+		allDataWritten = NO;
+		bufferDataLength += [data length];
+	}
 
 	// If the buffer is large, wait for some to be written out
 	while (bufferDataLength > SPFH_MAX_WRITE_BUFFER_SIZE) {
@@ -235,7 +240,7 @@
 - (void) synchronizeFile
 {
 	pthread_mutex_lock(&bufferLock);
-	while (bufferDataLength) {
+	while (!allDataWritten) {
 		pthread_mutex_unlock(&bufferLock);
 		usleep(100);
 		pthread_mutex_lock(&bufferLock);
@@ -302,17 +307,33 @@
 			continue;
 		}
 
+		// Copy the data into a local buffer
+		NSData *dataToBeWritten = [NSData dataWithData:buffer];
+		[buffer setLength:0];
+		bufferDataLength = 0;
+		pthread_mutex_unlock(&bufferLock);
+
 		// Write out the data
 		long bufferLengthWrittenOut;
 		if (useGzip) {
-			bufferLengthWrittenOut = gzwrite(wrappedFile, [buffer bytes], bufferDataLength);
+			bufferLengthWrittenOut = gzwrite(wrappedFile, [dataToBeWritten bytes], [dataToBeWritten length]);
 		} else {
-			bufferLengthWrittenOut = fwrite([buffer bytes], 1, bufferDataLength, wrappedFile);
+			bufferLengthWrittenOut = fwrite([dataToBeWritten bytes], 1, [dataToBeWritten length], wrappedFile);
 		}
 
-		// Update the buffer
-		CFDataDeleteBytes((CFMutableDataRef)buffer, CFRangeMake(0, bufferLengthWrittenOut));
-		bufferDataLength = 0;
+		// Restore data to the buffer if it wasn't written out
+		pthread_mutex_lock(&bufferLock);
+		if (bufferLengthWrittenOut < [dataToBeWritten length]) {
+			if ([buffer length]) {
+				long dataLengthToRestore = [dataToBeWritten length] - bufferLengthWrittenOut;
+				[buffer replaceBytesInRange:NSMakeRange(0, 0) withBytes:[[dataToBeWritten subdataWithRange:NSMakeRange(bufferLengthWrittenOut, dataLengthToRestore)] bytes] length:dataLengthToRestore];
+				bufferDataLength += dataLengthToRestore;
+			}
+
+		// Otherwise, mark all data as written if it has been - allows synching to hard disk.
+		} else if (![buffer length]) {
+			allDataWritten = YES;
+		}
 		pthread_mutex_unlock(&bufferLock);
 	}
 

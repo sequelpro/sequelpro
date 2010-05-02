@@ -265,13 +265,15 @@
 - (void)_initializeSchemaPrivs
 {
 	// Initialize Databases
+	[schemas removeAllObjects];
+	
 	MCPResult *results = [self.mySqlConnection listDBs];
 	
 	if ([results numOfRows]) {
 		[results dataSeek:0];
 	}
 	
-	for (int i = 0; i < [results numOfRows]; i++) {
+	for (NSInteger i = 0; i < [results numOfRows]; i++) {
 		[schemas addObject:[results fetchRowAsDictionary]];
 	}
 	
@@ -337,7 +339,7 @@
 		[queryResults dataSeek:0];
 	}
 	
-	for (int i = 0; i < [queryResults numOfRows]; i++) {
+	for (NSInteger i = 0; i < [queryResults numOfRows]; i++) {
 		NSDictionary *rowDict = [queryResults fetchRowAsDictionary];
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
 																inManagedObjectContext:[self managedObjectContext]];
@@ -1025,7 +1027,7 @@
 	{
 		NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
 									[[grantPrivileges componentsJoinedByCommas] uppercaseString],
-									dbName,
+									[dbName backtickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
 		DLog(@"%@", grantStatement);
@@ -1038,7 +1040,7 @@
 	{
 		NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
 									 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
-									 dbName,
+									 [dbName backtickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
 		DLog(@"%@", revokeStatement);
@@ -1302,6 +1304,16 @@
 		}
 
 	}		
+}
+
+#pragma mark -
+#pragma mark Tab view delegate methods
+
+- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+		[self _initializeSchemaPrivs];
+	}
 }
 
 #pragma mark -
