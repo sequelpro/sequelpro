@@ -436,9 +436,10 @@
 - (void)textDidEndEditing:(NSNotification *)notification
 {
 	id object = [notification object];
+	
 	if ((object == tableCommentsTextView) && ([object isEditable]) && ([selectedTable length] > 0)) {
 		
-		NSString *currentComment = [tableDataInstance statusValueForKey:@"Comment"];
+		NSString *currentComment = [[tableDataInstance statusValueForKey:@"Comment"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		NSString *newComment = [[tableCommentsTextView string] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
 		// Check that the user actually changed the tables comment
