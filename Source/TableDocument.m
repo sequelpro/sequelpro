@@ -939,7 +939,7 @@
 {	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 	
-	[databaseCopyNameField setStringValue:@""];
+	[databaseCopyNameField setStringValue:selectedDatabase];
 	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
 	
 	[NSApp beginSheet:databaseCopySheet
