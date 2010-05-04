@@ -1254,7 +1254,7 @@
         }
         if (retVal == NO) {
             NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
-                                             defaultButton:@"Add Host"
+                                             defaultButton:NSLocalizedString(@"Add Host", @"Add Host")
                                            alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
                                                otherButton:nil
                                  informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
