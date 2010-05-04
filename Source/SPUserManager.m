@@ -1232,7 +1232,41 @@
 
 #pragma mark -
 #pragma mark Tab View Delegate methods
+- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+    BOOL retVal = YES;
+    // If there aren't any selected objects, then can't change tab view item
+    if ([[treeController selectedObjects] count] == 0) return NO;
+    
+    // Currently selected object in tree
+    id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+    
+    // If we are selecting a tab view that requires there be a child,
+    // make sure there is a child to select.  If not, don't allow it.
+    if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
+        || [[tabViewItem identifier] isEqualToString:@"Resources"]
+        || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+        id parent = [selectedObject parent];
+        if (parent) {
+            retVal = ([[parent children] count] > 0);
+        } else {
+            retVal = ([[selectedObject children] count] > 0);
+        }
+        if (retVal == NO) {
+            NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
+                                             defaultButton:@"Add Host"
+                                           alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+                                               otherButton:nil
+                                 informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
+            NSInteger ret = [alert runModal];
+            if (ret == NSAlertDefaultReturn) {
+                [self addHost:nil];
+            }
+        }
 
+    }
+    return retVal;
+}
 -(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ([[treeController selectedObjects] count] == 0) return;
@@ -1252,6 +1286,13 @@
 		// if the tab is either Global Privs or Resources and we have a user 
 		// selected, then open tree and select first child node.
 		[self _selectFirstChildOfParentNode];
+	}
+}
+
+- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+		[self _initializeSchemaPrivs];
 	}
 }
 
@@ -1344,16 +1385,6 @@
 		}
 
 	}		
-}
-
-#pragma mark -
-#pragma mark Tab view delegate methods
-
-- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-		[self _initializeSchemaPrivs];
-	}
 }
 
 #pragma mark -
