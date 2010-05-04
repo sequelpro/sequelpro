@@ -2685,7 +2685,7 @@
 					maxNumRows = foundMaxRows;
 					maxNumRowsIsEstimate = NO;
 				}
-			} else if (!isInterruptedLoad && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
+			} else if (!isInterruptedLoad && !isFiltered && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
 				maxNumRows = foundMaxRows;
 				maxNumRowsIsEstimate = NO;
 			}
