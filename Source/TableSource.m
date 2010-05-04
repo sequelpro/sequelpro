@@ -577,8 +577,6 @@ closes the keySheet
 - (void)setAutoIncrementTo:(NSString*)valueAsString
 {
 
-	if(valueAsString == nil || ![valueAsString length]) return;
-
 	NSString *selTable = nil;
 
 	// if selectedTable is nil try to get the name from tablesList
@@ -590,7 +588,20 @@ closes the keySheet
 	if(selTable == nil || ![selTable length])
 		return;
 
-	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], valueAsString]];
+	if(valueAsString == nil || ![valueAsString length]) {
+		// reload data and bail
+		[tableDataInstance resetAllData];
+		[extendedTableInfoInstance loadTable:selTable];
+		[tableInfoInstance tableChanged:nil];
+		return;
+	}
+
+	NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+	[formatter setNumberStyle:NSNumberFormatterDecimalStyle];
+	NSNumber *autoIncValue = [formatter numberFromString:valueAsString];
+	[formatter release];
+
+	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], [autoIncValue stringValue]]];
 
 	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
@@ -598,14 +609,17 @@ closes the keySheet
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"), 
 								selTable, [mySQLConnection getLastErrorMessage]]);
-	} else {
-		[tableDataInstance resetStatusData];
-		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
-			[tableDataInstance resetAllData];
-			[extendedTableInfoInstance loadTable:selTable];
-		}
-		[tableInfoInstance tableChanged:nil];
 	}
+
+	// reload data
+	[tableDataInstance resetStatusData];
+	if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
+		[tableDataInstance resetAllData];
+		[extendedTableInfoInstance loadTable:selTable];
+	}
+
+	[tableInfoInstance tableChanged:nil];
+
 }
 
 /**
