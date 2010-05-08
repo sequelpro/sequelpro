@@ -210,10 +210,10 @@
 			
 			// We only care about setting the user and password keys on the parent, together with their
 			// original values for comparison purposes
-			[parent setValue:username forKey:@"user"];
-			[parent setValue:username forKey:@"originaluser"];
-			[parent setValue:[item objectForKey:@"Password"] forKey:@"password"];
-			[parent setValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
+			[parent setPrimitiveValue:username forKey:@"user"];
+			[parent setPrimitiveValue:username forKey:@"originaluser"];
+			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
+			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
 
 			[self _initializeChild:child withItem:item];
 			
@@ -1045,6 +1045,18 @@
 	
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
 	
+	NSString *statement = [NSString stringWithFormat:@"SELECT USER,HOST FROM `mysql`.`db` WHERE USER=%@ AND HOST=%@ AND DB=%@",
+									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
+									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
+									  [dbName tickQuotedString]];
+	MCPResult *result = [self.mySqlConnection queryString:statement];
+	NSUInteger rows = [result numOfRows];
+	BOOL userExists = YES;
+	if (rows == 0)
+	{
+		userExists = NO;
+	}
+	
 	for (NSString *key in self.privsSupportedByServer)
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
@@ -1055,7 +1067,10 @@
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
+				if (userExists || [grantPrivileges count] > 0) {
+					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
+				}
+				
 			}
 		}
 		@catch (NSException * e) {
