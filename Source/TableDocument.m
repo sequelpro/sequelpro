@@ -1272,7 +1272,6 @@
 	if (_isWorkingLevel == 1 || !taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = YES;
 		[taskProgressIndicator setIndeterminate:YES];
-		[taskProgressIndicator animate:self];
 		[taskProgressIndicator startAnimation:self];
 		taskDisplayLastValue = 0;
 	}
