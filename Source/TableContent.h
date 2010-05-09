@@ -146,7 +146,6 @@
 - (NSString *)argumentForRow:(NSInteger)row;
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
-- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)updateNumberOfRows;
 - (NSInteger)fetchNumberOfRows;
 - (BOOL)saveRowOnDeselect;

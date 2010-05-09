@@ -25,10 +25,13 @@
 #import "SPMainThreadTrampoline.h"
 
 /**
- * Provide a very simple alias of NSBeginAlertSheet with one difference:
- * printf-type format strings are no longer supported within the "msg"
- * message text argument, preventing access of random stack areas for
- * error text which contains inadvertant printf formatting.
+ * Provide a simple alias of NSBeginAlertSheet, with a few differences:
+ *  - printf-type format strings are no longer supported within the "msg"
+ *    message text argument, preventing access of random stack areas for
+ *    error text which contains inadvertant printf formatting.
+ *  - The didDismissSelector is no longer supported
+ *  - The sheet no longer needs to be orderOut:ed after use
+ *  - The alert is alays shown on the main thread.
  */
 void SPBeginAlertSheet(
 	NSString *title,
@@ -38,22 +41,33 @@ void SPBeginAlertSheet(
 	NSWindow *docWindow,
 		  id modalDelegate,
 		 SEL didEndSelector,
-		 SEL didDismissSelector,
 		void *contextInfo,
 	NSString *msg
 ) {
-	NSBeginAlertSheet(
-		title,
-		defaultButton,
-		alternateButton,
-		otherButton,
-		docWindow,
-		modalDelegate,
-		didEndSelector,
-		didDismissSelector,
-		contextInfo,
-		[msg stringByReplacingOccurrencesOfString:@"%" withString:@"%%"]
-	);
-	
+	NSButton *aButton;
+
+	// Set up an NSAlert with the supplied details
+	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	[alert setMessageText:title];
+	aButton = [alert addButtonWithTitle:defaultButton];
+	[aButton setTag:NSAlertDefaultReturn];
+
+	// Add 'alternate' and 'other' buttons as appropriate
+	if (alternateButton) {
+		aButton = [alert addButtonWithTitle:alternateButton];
+		[aButton setTag:NSAlertAlternateReturn];
+	}
+	if (otherButton) {
+		aButton = [alert addButtonWithTitle:otherButton];
+		[aButton setTag:NSAlertOtherReturn];
+	}
+
+	// Set the informative message if supplied
+	if (msg) [alert setInformativeText:msg];
+
+	// Run the alert on the main thread
+	[[alert onMainThread] beginSheetModalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
+
+	// Ensure the alerting window is frontmost
 	[[docWindow onMainThread] makeKeyWindow];
 }

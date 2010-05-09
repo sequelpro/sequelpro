@@ -50,7 +50,7 @@
 		
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to retrieve databases list", @"database list error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve a list of databases.\n\nMySQL said: %@", 
 																	   @"database list error informative message"), 
 						   [connection getLastErrorMessage]]);

@@ -1334,7 +1334,7 @@
 		// Table has invalid name
         // Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil,
                           [NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
         return;
     }
@@ -1380,7 +1380,7 @@
         }
     }
     @catch (NSException * myException) {
-        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [myException reason]);
+        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [myException reason]);
     }
     
     // Set window title to reflect the new table name
@@ -2094,7 +2094,7 @@
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"), 
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
+						  @selector(sheetDidEnd:returnCode:contextInfo:), @"addRow",
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
 		
 		[tablesListView reloadData];
@@ -2112,7 +2112,7 @@
 	NSString *tableType = @"";
 	
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 		return;
 	}
 	
@@ -2148,7 +2148,7 @@
 
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 		
     } else {
@@ -2194,7 +2194,7 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if ([mySQLConnection queryErrored]) {
 				if ([mySQLConnection isConnected]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
 				}
 				return;
@@ -2207,7 +2207,7 @@
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			
 			if ([mySQLConnection queryErrored]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 			
@@ -2215,7 +2215,7 @@
 		
         if ([mySQLConnection queryErrored]) {
 			//error while creating new table
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
@@ -2235,7 +2235,6 @@
 									  nil,
 									  tableWindow,
 									  self,
-									  nil,
 									  nil,
 									  nil,
 									  NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")

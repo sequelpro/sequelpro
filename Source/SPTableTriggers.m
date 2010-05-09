@@ -166,7 +166,7 @@
 	if (([connection queryErrored])) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"), [connection getLastErrorMessage]]);		
 	} 
 	else {
@@ -322,7 +322,7 @@
 					
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection getLastErrorMessage]]);	
 					
 					// Abort loop

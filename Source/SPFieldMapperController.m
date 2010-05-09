@@ -785,7 +785,7 @@
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	[sheet orderOut:self];
+	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
 	if (sheet == globalValuesSheet)
 		[self updateFieldMappingButtonCell];
 }

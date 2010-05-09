@@ -1440,10 +1440,13 @@ void performThreadedKeepAlive(void *ptr)
 			
 			// Notify that the query has been performed
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
+
 			// Show an error alert while resetting
-			NSBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-							  nil, nil, [delegate valueForKeyPath:@"tableWindow"], self, nil, nil, nil, errorMessage);
-			
+			if ([delegate respondsToSelector:@selector(showErrorWithTitle:message:)])
+				[delegate showErrorWithTitle:NSLocalizedString(@"Error", @"error") message:errorMessage];
+			else
+				NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), errorMessage, @"OK", nil, nil);
+
 			return nil;
 		}
 	}
@@ -2631,8 +2634,13 @@ void performThreadedKeepAlive(void *ptr)
 	MCPResult *r;
 	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding streamingResult:NO];
 	if (![[self getLastErrorMessage] isEqualToString:@""]) {
-		if ([self isConnected])
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]], @"OK", nil, nil);
+		if ([self isConnected]) {
+			NSString *errorMessage = [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]];
+			if ([delegate respondsToSelector:@selector(showErrorWithTitle:message:)]) 
+				[delegate showErrorWithTitle:NSLocalizedString(@"Error", @"error") message:errorMessage];
+			else
+				NSRunAlertPanel(@"Error", errorMessage, @"OK", nil, nil);
+		}
 		return -1;
 	}
 	NSArray *a = [r fetchRowAsArray];

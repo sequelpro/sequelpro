@@ -36,7 +36,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to show create table statement", @"show create table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the create table statement for a table.\n\nMySQL said: %@", 
 																	   @"show create table error informative message"), 
 						   [connection getLastErrorMessage]]);
@@ -74,7 +74,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table", @"copy table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy a table.\n\nMySQL said: %@", 
 																	   @"copy table error informative message"), 
 						   [connection getLastErrorMessage]]);
@@ -99,7 +99,7 @@
 
 		if ([connection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table data", @"copy table data error message"), 
-							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy a table's data.\n\nMySQL said: %@", 
 																		   @"copy table data error informative message"), 
 							   [connection getLastErrorMessage]]);
@@ -126,7 +126,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to move table", @"move table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to move a table.\n\nMySQL said: %@", 
 																	   @"move table error informative message"), 
 						   [connection getLastErrorMessage]]);
