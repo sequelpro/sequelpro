@@ -150,6 +150,10 @@
 	// and preserve the selection
 	[textView setSelectedRange:NSMakeRange(selectedRange.location, 0)];
 	[textView insertText:@""];
+
+	// Inserting empty text may have cancelled a partial accent - range check before
+	// restoring the selection.
+	if (selectedRange.location > [[textView string] length]) selectedRange.location = [[textView string] length];
 	[textView setSelectedRange:selectedRange];
 
 	reloadingExistingResult = NO;
