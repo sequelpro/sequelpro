@@ -1495,7 +1495,8 @@ void performThreadedKeepAlive(void *ptr)
 				
 				// Ensure no problem occurred during the result fetch
 				if (mysql_errno(mConnection) != 0) {
-					queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+					queryErrorMessage = [self stringWithCString:mysql_error(mConnection)];
+					if (queryErrorMessage) [queryErrorMessage retain];
 					queryErrorId = mysql_errno(mConnection);
 					break;
 				}
@@ -1521,7 +1522,8 @@ void performThreadedKeepAlive(void *ptr)
 				queryErrorId = 1317;
 			} else {			
 				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
-				queryErrorMessage = [[NSString alloc] initWithString:[self stringWithCString:mysql_error(mConnection)]];
+				queryErrorMessage = [self stringWithCString:mysql_error(mConnection)];
+				if (queryErrorMessage) [queryErrorMessage retain];
 				queryErrorId = mysql_errno(mConnection);
 
 				// If the error was a connection error, retry once
