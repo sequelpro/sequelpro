@@ -4164,8 +4164,7 @@
 	if ([dbActionCopy copyDatabaseFrom: [self database] 
 									to: [databaseCopyNameField stringValue]
 						   withContent: copyWithContent]) {
-		[selectedDatabase release];
-		selectedDatabase = [[NSString alloc] initWithString:[databaseCopyNameField stringValue]];
+		[self selectDatabase:[databaseCopyNameField stringValue] item:nil];
 	}
 	[dbActionCopy release];
 	[self setDatabases: self];
@@ -4182,8 +4181,7 @@
 	
 	if ([dbActionRename renameDatabaseFrom: [self database] 
 										to: [databaseRenameNameField stringValue]]) {
-		[selectedDatabase release];
-		selectedDatabase = [[NSString alloc] initWithString:[databaseRenameNameField stringValue]];
+		[self selectDatabase:[databaseRenameNameField stringValue] item:nil];
 	}
 	[dbActionRename release];
 	[self setDatabases: self];
