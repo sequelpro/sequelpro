@@ -159,7 +159,8 @@
 	NSString *contextInfo;
 	currentExportPanel = [NSSavePanel savePanel];
 	[currentExportPanel setAllowsOtherFileTypes:YES];
-	[currentExportPanel setExtensionHidden:NO];
+//	[currentExportPanel setExtensionHidden:YES];
+    [currentExportPanel setCanSelectHiddenExtension:YES];
 	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil];
 	
 	switch ( tag ) {
