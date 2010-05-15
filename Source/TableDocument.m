@@ -4355,9 +4355,6 @@
 		}
 	}
 
-	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
-
 	[self endTask];
 	[taskPool drain];
 }
