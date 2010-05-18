@@ -3094,8 +3094,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					NSAlert *alert = [[NSAlert alloc] init];
 					[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
 					[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
-					[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to proceed with %.1f MB of data?", @"message of panel asking for confirmation for inserting large text from dragging action"),
-						 [filesize unsignedLongValue]/1048576.0]];
+					[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to proceed with %@ of data?", @"message of panel asking for confirmation for inserting large text from dragging action"),
+						[NSString stringForByteSize:[filesize longLongValue]]]];
 					[alert setHelpAnchor:filepath];
 					[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
 					[alert setAlertStyle:NSWarningAlertStyle];

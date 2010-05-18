@@ -224,8 +224,8 @@
 							[alert addButtonWithTitle:NSLocalizedString(@"Import", @"import button")];
 
 
-						[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to load a SQL file with %.1f MB of data into the Query Editor?", @"message of panel asking for confirmation for loading large text into the query editor"),
-							 [filesize unsignedLongValue]/1048576.0]];
+						[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to load a SQL file with %@ of data into the Query Editor?", @"message of panel asking for confirmation for loading large text into the query editor"),
+							 [NSString stringForByteSize:[filesize longLongValue]]]];
 						[alert setHelpAnchor:filename];
 						[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
 						[alert setAlertStyle:NSWarningAlertStyle];
