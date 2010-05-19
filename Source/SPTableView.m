@@ -42,6 +42,11 @@
 		&& [[[self window] delegate] isWorking])
 		return nil;
 
+	// Check to see whether any edits-in-progress need to be saved before changing selections
+	if ([[[[[self window] delegate] class] description] isEqualToString:@"TableDocument"]
+		&& ![[[self window] delegate] couldCommitCurrentViewActions])
+		return nil;
+
 	// If more than one row is selected only returns the default contextual menu
 	if([self numberOfSelectedRows] > 1)
 		return [self menu];
