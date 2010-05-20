@@ -125,10 +125,8 @@
 	if ([sender isKindOfClass:[NSOpenPanel class]]) {
 		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
 			[encodingPopUp setEnabled:YES];
-			[sender setAllowsMultipleSelection:NO];
 		} else {
 			[encodingPopUp setEnabled:NO];
-			[sender setAllowsMultipleSelection:YES];
 		}
 	}
 }
@@ -145,14 +143,11 @@
 	}
 	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
-	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
+	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanChooseDirectories:NO];
-	[panel setAllowsMultipleSelection:YES];
-	// TODO: it seems that setting setResolvesAliases to YES causes some
-	// problems in dragging files to the panel and changing to directory could crash SP
-	// ask Hans for details
-	// [panel setResolvesAliases:YES];
+	[panel setAllowsMultipleSelection:NO];
+	[panel setResolvesAliases:YES];
 
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
 	if(![[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding]) {
@@ -229,8 +224,8 @@
 							[alert addButtonWithTitle:NSLocalizedString(@"Import", @"import button")];
 
 
-						[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to load a SQL file with %.1f MB of data into the Query Editor?", @"message of panel asking for confirmation for loading large text into the query editor"),
-							 [filesize unsignedLongValue]/1048576.0]];
+						[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to load a SQL file with %@ of data into the Query Editor?", @"message of panel asking for confirmation for loading large text into the query editor"),
+							 [NSString stringForByteSize:[filesize longLongValue]]]];
 						[alert setHelpAnchor:filename];
 						[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
 						[alert setAlertStyle:NSWarningAlertStyle];

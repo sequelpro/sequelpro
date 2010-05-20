@@ -54,7 +54,7 @@
 	size = (size / 1024);
 	
 	if (size < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 KB"];
+		[numberFormatter setFormat:@"#,##0.0 KiB"];
 		
 		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
@@ -62,7 +62,7 @@
 	size = (size / 1024);
 	
 	if (size < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 MB"];
+		[numberFormatter setFormat:@"#,##0.0 MiB"];
 		
 		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
@@ -70,14 +70,14 @@
 	size = (size / 1024);
 	
 	if (size < 1023) {
-		[numberFormatter setFormat:@"#,##0.0 GB"];
+		[numberFormatter setFormat:@"#,##0.0 GiB"];
 		
 		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
 
 	size = (size / 1024);
 	
-	[numberFormatter setFormat:@"#,##0.0 TB"];
+	[numberFormatter setFormat:@"#,##0.0 TiB"];
 	
 	return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 }

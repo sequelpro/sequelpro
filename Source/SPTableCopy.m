@@ -36,7 +36,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to show create table statement", @"show create table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the create table statement for a table.\n\nMySQL said: %@", 
 																	   @"show create table error informative message"), 
 						   [connection getLastErrorMessage]]);
@@ -52,35 +52,28 @@
 	NSString *createTableResult = [self getCreateTableStatementFor:tableName inDB:sourceDB];
 	NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 	
-	// adding the target DB name and the separator dot after "CREATE TABLE ".
-	[createTableStatement insertString:@"." atIndex:13];
-	[createTableStatement insertString:[targetDB backtickQuotedString] atIndex:13];
-	/*	
-	// this only works with MySQL >= 4.1
-	NSString *copyStatement = [NSString stringWithFormat:@"CREATE TABLE %@.%@ LIKE %@.%@", 
-									[targetDB backtickQuotedString],
-									[tableName backtickQuotedString],
-									[sourceDB backtickQuotedString],
-									[tableName backtickQuotedString]
-							   ];
-	DLog(@"Copying table %@ from %@ to %@", tableName, sourceDB, targetDB);
-	DLog(@"Copying table: %@", copyStatement);
-	[connection queryString:copyStatement];
-	 */
+	if ([[createTableStatement substringToIndex:12] isEqualToString:@"CREATE TABLE"]) {
+		// adding the target DB name and the separator dot after "CREATE TABLE ".
+		[createTableStatement insertString:@"." atIndex:13];
+		[createTableStatement insertString:[targetDB backtickQuotedString] atIndex:13];
 
-	[connection queryString:createTableStatement];	
-	[createTableStatement release];
+		[connection queryString:createTableStatement];	
+		[createTableStatement release];
 	
 	
-	if ([connection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table", @"copy table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy a table.\n\nMySQL said: %@", 
-																	   @"copy table error informative message"), 
-						   [connection getLastErrorMessage]]);
-		return NO;
+		if ([connection queryErrored]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table", @"copy table error message"), 
+							NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
+							[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy a table.\n\nMySQL said: %@", 
+																		 @"copy table error informative message"), 
+							[connection getLastErrorMessage]]);
+			return NO;
+		}
+		return YES;
+	} else {
+		NSLog(@"Could not copy non-table/view %@", tableName);
 	}
-	return YES;
+	return NO;
 }
 
 - (BOOL)copyTable:(NSString *)tableName from: (NSString *)sourceDB to: (NSString *)targetDB withContent:(BOOL)copyWithContent{
@@ -88,7 +81,7 @@
 	BOOL structureCopyResult = [self copyTable:tableName from:sourceDB to:targetDB];
 	
 	// optionally copy the table data using an insert select
-	if (copyWithContent == YES) {
+	if (structureCopyResult && copyWithContent) {
 		NSString *copyDataStatement = [NSString stringWithFormat:@"INSERT INTO %@.%@ SELECT * FROM %@.%@", 
 								   [targetDB backtickQuotedString],
 								   [tableName backtickQuotedString],
@@ -99,7 +92,7 @@
 
 		if ([connection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table data", @"copy table data error message"), 
-							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+							  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy a table's data.\n\nMySQL said: %@", 
 																		   @"copy table data error informative message"), 
 							   [connection getLastErrorMessage]]);
@@ -126,7 +119,7 @@
 	
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to move table", @"move table error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self getTableWindow], self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to move a table.\n\nMySQL said: %@", 
 																	   @"move table error informative message"), 
 						   [connection getLastErrorMessage]]);

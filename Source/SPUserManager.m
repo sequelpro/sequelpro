@@ -181,7 +181,7 @@
  * it's data from the SPUser Entity objects in the current managedObjectContext.
  */
 - (void)_initializeTree:(NSArray *)items
-{	
+{
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
 	for(NSInteger i = 0; i < [items count]; i++)
@@ -208,9 +208,12 @@
 			NSManagedObject *parent = [self _createNewSPUser];
 			NSManagedObject *child = [self _createNewSPUser];
 			
-			// We only care about setting the user and password keys on the parent
-			[parent setValue:username forKey:@"user"];
-			[parent setValue:[item objectForKey:@"Password"] forKey:@"password"];
+			// We only care about setting the user and password keys on the parent, together with their
+			// original values for comparison purposes
+			[parent setPrimitiveValue:username forKey:@"user"];
+			[parent setPrimitiveValue:username forKey:@"originaluser"];
+			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
+			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
 
 			[self _initializeChild:child withItem:item];
 			
@@ -330,8 +333,8 @@
 	// Assumes that the child has already been initialized with values from the
 	// global user table.
 	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user = '%@' and d.host = '%@'", 
-							 [[child parent] valueForKey:@"user"], [child valueForKey:@"host"]];
+	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user = %@ and d.host = %@", 
+							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
 	MCPResult *queryResults = [self.mySqlConnection queryString:queryString];
 	if ([queryResults numOfRows] > 0)
 	{
@@ -636,14 +639,20 @@
 - (IBAction)removeUser:(id)sender
 {
     NSString *username = [[[treeController selectedObjects] objectAtIndex:0]
-                          valueForKey:@"user"];
+                          valueForKey:@"originaluser"];
     NSArray *children = [[[treeController selectedObjects] objectAtIndex:0] 
                          valueForKey:@"children"];
+
+	// On all the children - host entries - set the username to be deleted,
+	// for later query contruction.
     for(NSManagedObject *child in children)
     {
         [child setPrimitiveValue:username forKey:@"user"];
     }
 	
+	// Unset the host on the user, so that only the host entries are dropped
+	[[[treeController selectedObjects] objectAtIndex:0] setPrimitiveValue:nil forKey:@"host"];
+
 	[treeController remove:sender];
 }
 
@@ -750,6 +759,19 @@
 	[grantedTableView reloadData];
 	[self _initializeAvailablePrivs];	
 	[treeController fetch:nil];
+
+	// After the reset, ensure all original password and user values are up-to-date.
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
+														 inManagedObjectContext:self.managedObjectContext];
+	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
+	[request setEntity:entityDescription];
+	NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
+	for (NSManagedObject *user in userArray) {
+		if (![user parent]) {
+			[user setValue:[user valueForKey:@"user"] forKey:@"originaluser"];
+			[user setValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
+		}
+	}
 }
 
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled
@@ -866,6 +888,7 @@
 - (void)contextDidSave:(NSNotification *)notification
 {	
 	NSManagedObjectContext *notificationContext = (NSManagedObjectContext *)[notification object];
+
 	// If there are multiple user manager windows open, it's possible to get this
 	// notification from foreign windows.  Ignore those notifications.
 	if (notificationContext != self.managedObjectContext) return;
@@ -907,22 +930,39 @@
 		if ([[[user entity] name] isEqualToString:@"Privileges"])
 		{
 			[self grantDbPrivilegesWithPrivilege:user];
+
+
+		// If the parent user has changed, either the username or password have been edited.
 		}
-		else if (![user host])
+		else if (![user parent])
 		{
-			// Just the user password was changed.
-			// Change password to be the same on all hosts.
 			NSArray *hosts = [user valueForKey:@"children"];
-			
-			for(NSManagedObject *child in hosts)
-			{
-				NSString *changePasswordStatement = [NSString stringWithFormat:
-													 @"SET PASSWORD FOR %@@%@ = PASSWORD('%@')",
-													 [[user valueForKey:@"user"] tickQuotedString],
-													 [[child host] tickQuotedString],
-													 [user valueForKey:@"password"]];
-				[self.mySqlConnection queryString:changePasswordStatement];	
-				[self checkAndDisplayMySqlError];
+
+			// If the user has been changed, update the username on all hosts.  Don't check for errors, as some
+			// hosts may be new.
+			if (![[user valueForKey:@"user"] isEqualToString:[user valueForKey:@"originaluser"]]) {
+				for (NSManagedObject *child in hosts) {
+					NSString *renameUserStatement = [NSString stringWithFormat:
+														@"RENAME USER %@@%@ TO %@@%@",
+														 [[user valueForKey:@"originaluser"] tickQuotedString],
+														 [[child host] tickQuotedString],
+														 [[user valueForKey:@"user"] tickQuotedString],
+														 [[child host] tickQuotedString]];
+					[self.mySqlConnection queryString:renameUserStatement];	
+				}
+			}
+
+			// If the password has been changed, use the same password on all hosts
+			if (![[user valueForKey:@"password"] isEqualToString:[user valueForKey:@"originalpassword"]]) {
+				for (NSManagedObject *child in hosts) {
+					NSString *changePasswordStatement = [NSString stringWithFormat:
+														 @"SET PASSWORD FOR %@@%@ = PASSWORD(%@)",
+														 [[user valueForKey:@"user"] tickQuotedString],
+														 [[child host] tickQuotedString],
+														 [[user valueForKey:@"password"] tickQuotedString]];
+					[self.mySqlConnection queryString:changePasswordStatement];	
+					[self checkAndDisplayMySqlError];
+				}
 			}
 		} else {
 			[self grantPrivilegesToUser:user];			
@@ -935,18 +975,18 @@
 - (BOOL)deleteUsers:(NSArray *)deletedUsers
 {
 	NSMutableString *droppedUsers = [NSMutableString string];
-	
+
 	for (NSManagedObject *user in deletedUsers)
 	{
         if (![[[user entity] name] isEqualToString:@"Privileges"] && [user valueForKey:@"host"] != nil)
 		{
 			[droppedUsers appendString:[NSString stringWithFormat:@"%@@%@, ", 
-										[[user valueForKey:@"user"] backtickQuotedString], 
-										[[user valueForKey:@"host"] backtickQuotedString]]];
+										[[user valueForKey:@"user"] tickQuotedString], 
+										[[user valueForKey:@"host"] tickQuotedString]]];
 		}
 		
 	}
-	
+
 	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
 	[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
 	[droppedUsers release];
@@ -1005,6 +1045,18 @@
 	
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
 	
+	NSString *statement = [NSString stringWithFormat:@"SELECT USER,HOST FROM `mysql`.`db` WHERE USER=%@ AND HOST=%@ AND DB=%@",
+									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
+									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
+									  [dbName tickQuotedString]];
+	MCPResult *result = [self.mySqlConnection queryString:statement];
+	NSUInteger rows = [result numOfRows];
+	BOOL userExists = YES;
+	if (rows == 0)
+	{
+		userExists = NO;
+	}
+	
 	for (NSString *key in self.privsSupportedByServer)
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
@@ -1015,7 +1067,10 @@
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
+				if (userExists || [grantPrivileges count] > 0) {
+					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
+				}
+				
 			}
 		}
 		@catch (NSException * e) {
@@ -1192,7 +1247,41 @@
 
 #pragma mark -
 #pragma mark Tab View Delegate methods
+- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+    BOOL retVal = YES;
+    // If there aren't any selected objects, then can't change tab view item
+    if ([[treeController selectedObjects] count] == 0) return NO;
+    
+    // Currently selected object in tree
+    id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+    
+    // If we are selecting a tab view that requires there be a child,
+    // make sure there is a child to select.  If not, don't allow it.
+    if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
+        || [[tabViewItem identifier] isEqualToString:@"Resources"]
+        || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+        id parent = [selectedObject parent];
+        if (parent) {
+            retVal = ([[parent children] count] > 0);
+        } else {
+            retVal = ([[selectedObject children] count] > 0);
+        }
+        if (retVal == NO) {
+            NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
+                                             defaultButton:NSLocalizedString(@"Add Host", @"Add Host")
+                                           alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+                                               otherButton:nil
+                                 informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
+            NSInteger ret = [alert runModal];
+            if (ret == NSAlertDefaultReturn) {
+                [self addHost:nil];
+            }
+        }
 
+    }
+    return retVal;
+}
 -(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ([[treeController selectedObjects] count] == 0) return;
@@ -1212,6 +1301,13 @@
 		// if the tab is either Global Privs or Resources and we have a user 
 		// selected, then open tree and select first child node.
 		[self _selectFirstChildOfParentNode];
+	}
+}
+
+- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+		[self _initializeSchemaPrivs];
 	}
 }
 
@@ -1304,16 +1400,6 @@
 		}
 
 	}		
-}
-
-#pragma mark -
-#pragma mark Tab view delegate methods
-
-- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-		[self _initializeSchemaPrivs];
-	}
 }
 
 #pragma mark -

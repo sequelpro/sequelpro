@@ -136,7 +136,7 @@
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  nil, nil, [NSApp mainWindow], nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
 	} 
 	else {
@@ -405,7 +405,7 @@
 					
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete relation", @"error deleting relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection getLastErrorMessage]]);	
 					
 					// Abort loop

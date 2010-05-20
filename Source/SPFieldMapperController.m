@@ -160,6 +160,7 @@
 	if (fieldMappingGlobalValues) [fieldMappingGlobalValues release];
 	if (fieldMappingGlobalValuesSQLMarked) [fieldMappingGlobalValuesSQLMarked release];
 	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
+	if (primaryKeyField) [primaryKeyField release];
 	[super dealloc];
 }
 
@@ -356,7 +357,8 @@
 					[fieldMappingTableDefaultValues addObject:@"0"];
 				}
 				targetTableHasPrimaryKey = YES;
-				primaryKeyField = [tableDetails objectForKey:@"primarykeyfield"];
+				if (primaryKeyField) [primaryKeyField release];
+				primaryKeyField = [[tableDetails objectForKey:@"primarykeyfield"] retain];
 			} else {
 				if([column objectForKey:@"unique"]) {
 					[type appendFormat:@",%@",@"UNIQUE"];
@@ -785,7 +787,7 @@
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	[sheet orderOut:self];
+	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
 	if (sheet == globalValuesSheet)
 		[self updateFieldMappingButtonCell];
 }

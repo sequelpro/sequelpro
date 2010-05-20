@@ -30,7 +30,6 @@ void SPBeginAlertSheet(
 	NSWindow *docWindow,
 		  id modalDelegate,
 		 SEL didEndSelector,
-		 SEL didDismissSelector,
 		void *contextInfo,
 	NSString *msg
 );

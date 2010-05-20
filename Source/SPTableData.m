@@ -352,7 +352,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
 			// If the current table doesn't exist anymore reload table list
@@ -702,7 +702,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -734,7 +734,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -832,7 +832,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -882,7 +882,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"), NSLocalizedString(@"OK", @"OK button"), 
-							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+							  nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							  [tableListInstance tableName], [mySQLConnection getLastErrorMessage]]);
 			if (triggers) [triggers release], triggers = nil;

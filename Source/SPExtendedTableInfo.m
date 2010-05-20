@@ -110,7 +110,7 @@
 		[sender selectItemWithTitle:currentType];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection getLastErrorMessage]]);
 	}
 }
@@ -137,7 +137,7 @@
 		[sender selectItemWithTitle:currentEncoding];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table encoding", @"error changing table encoding message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@", @"error changing table encoding informative message"), newEncoding, [connection getLastErrorMessage]]);
 	}
 }
@@ -164,7 +164,7 @@
 		[sender selectItemWithTitle:currentCollation];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table collation", @"error changing table collation message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@", @"error changing table collation informative message"), newCollation, [connection getLastErrorMessage]]);
 	}
 }
@@ -436,9 +436,10 @@
 - (void)textDidEndEditing:(NSNotification *)notification
 {
 	id object = [notification object];
+	
 	if ((object == tableCommentsTextView) && ([object isEditable]) && ([selectedTable length] > 0)) {
 		
-		NSString *currentComment = [tableDataInstance statusValueForKey:@"Comment"];
+		NSString *currentComment = [[tableDataInstance statusValueForKey:@"Comment"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		NSString *newComment = [[tableCommentsTextView string] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
 		// Check that the user actually changed the tables comment
@@ -453,7 +454,7 @@
 			}
 			else {
 				SPBeginAlertSheet(NSLocalizedString(@"Error changing table comment", @"error changing table comment message"), 
-								  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+								  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@", @"error changing table comment informative message"), newComment, [connection getLastErrorMessage]]);
 			}
 		}

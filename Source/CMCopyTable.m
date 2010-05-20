@@ -159,6 +159,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 					if (displayString) {
 						[result appendString:displayString];
 						[displayString release];
+						[result appendString:@"\t"];
 					}
 				} else
 					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
@@ -166,7 +167,8 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				[result appendString:@"\t"];
 			}
 		}
-		
+
+		// Remove the trailing tab and add the linebreak
 		if ([result length]){
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}

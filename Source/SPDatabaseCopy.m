@@ -54,7 +54,7 @@
 		tables = [connection listTablesFromDB:sourceDatabaseName];
 	} else {
 		SPBeginAlertSheet(NSLocalizedString(@"Cannot create existing database", @"create database exists error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to create the target database.\n\nDatabase %@ already exists.", 
 																	   @"create database error informative message"), 
 						   targetDatabaseName]);
@@ -86,7 +86,7 @@
 
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Failed to create database", @"create database error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, nil, 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to create the target database.\n\nMySQL said: %@", 
 																	   @"create database error informative message"), 
 						   [connection getLastErrorMessage]]);
