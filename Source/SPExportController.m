@@ -119,11 +119,13 @@
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format
 {
 	[self refreshTableList:self];
-	
+		
 	if (exportTables && format) {
+		
+		// Select the correct tab according to the supplied export type
 		[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:(format - 1)] itemIdentifier]];
 	
-		// Select the 'selected tables' option
+		// Select the 'selected tables' source option
 		[exportInputMatrix selectCellAtRow:2 column:0];
 		
 		// Disable all tables
@@ -318,8 +320,6 @@
 		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(disable) ? @"" : @"C"]; 
 		
 		[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
-		
-		[self refreshTableList:self];
 	}
 }
 
