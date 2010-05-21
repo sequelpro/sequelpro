@@ -753,7 +753,8 @@
 			return;			
 		}
 	}
-	
+    // Remove any selections.
+	[treeController removeSelectionIndexPaths:[treeController selectionIndexPaths]];
 	[self.managedObjectContext reset];
 	[grantedSchemaPrivs removeAllObjects];
 	[grantedTableView reloadData];
@@ -964,8 +965,12 @@
 					[self checkAndDisplayMySqlError];
 				}
 			}
+            
+            
 		} else {
-			[self grantPrivilegesToUser:user];			
+            [self updateResourcesForUser:user];
+			[self grantPrivilegesToUser:user];
+            
 		}
 	}
 	
@@ -1027,8 +1032,10 @@
             // Create user in database
             [self.mySqlConnection queryString:createStatement];
             
-            if ([self checkAndDisplayMySqlError]) 
-                [self grantPrivilegesToUser:user];
+            if ([self checkAndDisplayMySqlError]) {
+                [self updateResourcesForUser:user];
+                [self grantPrivilegesToUser:user];                
+            }
         }	
 	}
 	
@@ -1106,6 +1113,24 @@
 	return TRUE;
 }
 
+/**
+ * Update resource limites for given user
+ */
+- (BOOL)updateResourcesForUser:(NSManagedObject *)user
+{
+    if ([user valueForKey:@"parent"] != nil) {
+        NSString *updateResourcesStatement = [NSString stringWithFormat:
+                                              @"UPDATE mysql.user SET max_questions=%@,max_updates=%@,max_connections=%@ WHERE User=%@ AND Host=%@",
+                                              [user valueForKey:@"max_questions"],
+                                              [user valueForKey:@"max_updates"],
+                                              [user valueForKey:@"max_connections"],
+                                              [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
+                                              [[user valueForKey:@"host"] tickQuotedString]];
+        [self.mySqlConnection queryString:updateResourcesStatement];
+        [self checkAndDisplayMySqlError];
+                                              
+    }
+}
 /**
  * Grant or revoke privileges for the supplied user.
  */

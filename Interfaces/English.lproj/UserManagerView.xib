@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D2094</string>
+		<string key="IBDocument.SystemVersion">10D573</string>
 		<string key="IBDocument.InterfaceBuilderVersion">762</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">460.00</string>
@@ -21,6 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="288"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -58,7 +59,7 @@
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{752, 506}</string>
 				<object class="NSView" key="NSWindowView" id="846307432">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -203,6 +204,7 @@
 													</object>
 													<string key="NSFrame">{{0, 17}, {194, 467}}</string>
 													<reference key="NSSuperview" ref="848314643"/>
+													<reference key="NSNextKeyView" ref="265138544"/>
 													<reference key="NSDocView" ref="265138544"/>
 													<reference key="NSBGColor" ref="898983655"/>
 													<int key="NScvFlags">4</int>
@@ -236,6 +238,7 @@
 													</object>
 													<string key="NSFrameSize">{194, 17}</string>
 													<reference key="NSSuperview" ref="848314643"/>
+													<reference key="NSNextKeyView" ref="98886535"/>
 													<reference key="NSDocView" ref="98886535"/>
 													<reference key="NSBGColor" ref="898983655"/>
 													<int key="NScvFlags">4</int>
@@ -244,6 +247,7 @@
 											</object>
 											<string key="NSFrame">{{0, 22}, {194, 484}}</string>
 											<reference key="NSSuperview" ref="490248567"/>
+											<reference key="NSNextKeyView" ref="310332121"/>
 											<int key="NSsFlags">560</int>
 											<reference key="NSVScroller" ref="710626046"/>
 											<reference key="NSHScroller" ref="851800246"/>
@@ -396,7 +400,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">4</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1394,7 +1397,7 @@
 												<object class="NSTabViewItem" id="487249930">
 													<string key="NSIdentifier">Schema Privileges</string>
 													<object class="NSView" key="NSView" id="601698335">
-														<reference key="NSNextResponder" ref="716372522"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1476,6 +1479,7 @@
 																		</object>
 																		<string key="NSFrame">{{1, 17}, {130, 363}}</string>
 																		<reference key="NSSuperview" ref="307214944"/>
+																		<reference key="NSNextKeyView" ref="280739950"/>
 																		<reference key="NSDocView" ref="280739950"/>
 																		<reference key="NSBGColor" ref="898983655"/>
 																		<int key="NScvFlags">4</int>
@@ -1510,6 +1514,7 @@
 																		</object>
 																		<string key="NSFrame">{{1, 0}, {130, 17}}</string>
 																		<reference key="NSSuperview" ref="307214944"/>
+																		<reference key="NSNextKeyView" ref="406943647"/>
 																		<reference key="NSDocView" ref="406943647"/>
 																		<reference key="NSBGColor" ref="898983655"/>
 																		<int key="NScvFlags">4</int>
@@ -1518,6 +1523,7 @@
 																</object>
 																<string key="NSFrame">{{17, 17}, {132, 381}}</string>
 																<reference key="NSSuperview" ref="601698335"/>
+																<reference key="NSNextKeyView" ref="380397569"/>
 																<int key="NSsFlags">562</int>
 																<reference key="NSVScroller" ref="304497597"/>
 																<reference key="NSHScroller" ref="1067950228"/>
@@ -1604,6 +1610,7 @@
 																		</object>
 																		<string key="NSFrame">{{1, 17}, {130, 363}}</string>
 																		<reference key="NSSuperview" ref="728294866"/>
+																		<reference key="NSNextKeyView" ref="64638447"/>
 																		<reference key="NSDocView" ref="64638447"/>
 																		<reference key="NSBGColor" ref="898983655"/>
 																		<int key="NScvFlags">4</int>
@@ -1637,6 +1644,7 @@
 																		</object>
 																		<string key="NSFrame">{{1, 0}, {130, 17}}</string>
 																		<reference key="NSSuperview" ref="728294866"/>
+																		<reference key="NSNextKeyView" ref="599931188"/>
 																		<reference key="NSDocView" ref="599931188"/>
 																		<reference key="NSBGColor" ref="898983655"/>
 																		<int key="NScvFlags">4</int>
@@ -1645,6 +1653,7 @@
 																</object>
 																<string key="NSFrame">{{157, 17}, {132, 381}}</string>
 																<reference key="NSSuperview" ref="601698335"/>
+																<reference key="NSNextKeyView" ref="239762482"/>
 																<int key="NSsFlags">562</int>
 																<reference key="NSVScroller" ref="210192488"/>
 																<reference key="NSHScroller" ref="253008686"/>
@@ -1730,6 +1739,7 @@
 																		</object>
 																		<string key="NSFrame">{{1, 17}, {130, 363}}</string>
 																		<reference key="NSSuperview" ref="898351365"/>
+																		<reference key="NSNextKeyView" ref="443904239"/>
 																		<reference key="NSDocView" ref="443904239"/>
 																		<reference key="NSBGColor" ref="898983655"/>
 																		<int key="NScvFlags">4</int>
@@ -1764,6 +1774,7 @@
 																		</object>
 																		<string key="NSFrame">{{1, 0}, {130, 17}}</string>
 																		<reference key="NSSuperview" ref="898351365"/>
+																		<reference key="NSNextKeyView" ref="120612996"/>
 																		<reference key="NSDocView" ref="120612996"/>
 																		<reference key="NSBGColor" ref="898983655"/>
 																		<int key="NScvFlags">4</int>
@@ -1772,6 +1783,7 @@
 																</object>
 																<string key="NSFrame">{{362, 17}, {132, 381}}</string>
 																<reference key="NSSuperview" ref="601698335"/>
+																<reference key="NSNextKeyView" ref="728383964"/>
 																<int key="NSsFlags">562</int>
 																<reference key="NSVScroller" ref="939829514"/>
 																<reference key="NSHScroller" ref="1063461866"/>
@@ -1830,7 +1842,6 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {511, 414}}</string>
-														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Schema Privileges</string>
 													<reference key="NSColor" ref="409859189"/>
@@ -1839,7 +1850,7 @@
 												<object class="NSTabViewItem" id="285628164">
 													<string key="NSIdentifier">Resources</string>
 													<object class="NSView" key="NSView" id="169019919">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="716372522"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2101,19 +2112,20 @@
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {511, 414}}</string>
+														<reference key="NSSuperview" ref="716372522"/>
 													</object>
 													<string key="NSLabel">Resources</string>
 													<reference key="NSColor" ref="409859189"/>
 													<reference key="NSTabView" ref="716372522"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="487249930"/>
+											<reference key="NSSelectedTabViewItem" ref="285628164"/>
 											<reference key="NSFont" ref="746597359"/>
 											<int key="NSTvFlags">0</int>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="601698335"/>
+												<reference ref="169019919"/>
 											</object>
 										</object>
 										<object class="NSButton" id="445730006">
@@ -2171,6 +2183,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{752, 506}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{752, 528}</string>
@@ -2260,6 +2273,7 @@
 					<string>trigger_priv</string>
 					<string>event_priv</string>
 					<string>name</string>
+					<string>max_updates</string>
 				</object>
 				<string key="NSObjectClassName">SPUserItem</string>
 				<bool key="NSEditable">YES</bool>
@@ -2446,38 +2460,6 @@
 						<reference key="destination" ref="335568650"/>
 					</object>
 					<int key="connectionID">400</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.max_user_connections</string>
-						<reference key="source" ref="892380277"/>
-						<reference key="destination" ref="889422316"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="892380277"/>
-							<reference key="NSDestination" ref="889422316"/>
-							<string key="NSLabel">value: selection.max_user_connections</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.max_user_connections</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">434</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.max_connections</string>
-						<reference key="source" ref="62674029"/>
-						<reference key="destination" ref="889422316"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="62674029"/>
-							<reference key="NSDestination" ref="889422316"/>
-							<string key="NSLabel">value: selection.max_connections</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.max_connections</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">435</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -4066,6 +4048,38 @@
 					</object>
 					<int key="connectionID">925</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.max_updates</string>
+						<reference key="source" ref="892380277"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="892380277"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.max_updates</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.max_updates</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">926</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.max_connections</string>
+						<reference key="source" ref="62674029"/>
+						<reference key="destination" ref="889422316"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="62674029"/>
+							<reference key="NSDestination" ref="889422316"/>
+							<string key="NSLabel">value: selection.max_connections</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.max_connections</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">928</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5478,11 +5492,11 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{152, 121}, {752, 506}}</string>
+					<string>{{56, 342}, {752, 506}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
-					<string>{{152, 121}, {752, 506}}</string>
+					<string>{{56, 342}, {752, 506}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{752, 506}</string>
@@ -5661,7 +5675,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">925</int>
+			<int key="maxID">928</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
