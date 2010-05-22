@@ -2987,22 +2987,22 @@
 			[session setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
 
 		switch([spHistoryControllerInstance currentlySelectedView]){
-			case SPHistoryViewStructure:
+			case SPTableViewStructure:
 				aString = @"SP_VIEW_STRUCTURE";
 				break;
-			case SPHistoryViewContent:
+			case SPTableViewContent:
 				aString = @"SP_VIEW_CONTENT";
 				break;
-			case SPHistoryViewCustomQuery:
+			case SPTableViewCustomQuery:
 				aString = @"SP_VIEW_CUSTOMQUERY";
 				break;
-			case SPHistoryViewStatus:
+			case SPTableViewStatus:
 				aString = @"SP_VIEW_STATUS";
 				break;
-			case SPHistoryViewRelations:
+			case SPTableViewRelations:
 				aString = @"SP_VIEW_RELATIONS";
 				break;
-			case SPHistoryViewTriggers:
+			case SPTableViewTriggers:
 				aString = @"SP_VIEW_TRIGGERS";
 				break;
 			default:
