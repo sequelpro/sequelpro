@@ -332,9 +332,7 @@
 						
 						j++;
 						[sqlString setString:@""];
-						
-						NSLog(@"%d, %d, %d", j, [self exportMaxProgress], rowCount);
-						
+												
 						// Update the progress 
 						if ((j * ([self exportMaxProgress] / rowCount)) > lastProgressValue) {
 							
