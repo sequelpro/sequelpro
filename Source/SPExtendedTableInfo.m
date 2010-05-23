@@ -339,7 +339,7 @@
 	[tableRowNumber setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Number of rows: ", @"table info number of rows label"), [self _formatValueWithKey:@"Rows" inDictionary:statusFields]]];
 	[tableRowFormat setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Row format: ", @"table info row format label"), [self _formatValueWithKey:@"Row_format" inDictionary:statusFields]]];	
 	[tableRowAvgLength setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Avg. row length: ", @"table info average row length label"), [self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]]];
-	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]];
+	[tableRowAutoIncrement setStringValue:[NSString stringWithFormat:@" %@", [self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]]];
 	
 	// Set size values
 	[tableDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Data size: ", @"table info data size label"), [self _formatValueWithKey:@"Data_length" inDictionary:statusFields]]]; 
