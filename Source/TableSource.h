@@ -34,7 +34,6 @@
 	IBOutlet id tableInfoInstance;
 	IBOutlet id extendedTableInfoInstance;
 
-	IBOutlet id tableWindow;
 	IBOutlet id indexSheet;
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;

@@ -40,7 +40,6 @@
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 	
-	IBOutlet id tableWindow;
 	IBOutlet CMCopyTable *tableContentView;
 	IBOutlet NSPopUpButton *fieldField;
 	IBOutlet id compareField;
@@ -72,6 +71,7 @@
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
+	NSMutableArray *nibObjectsToRelease;
 
 	NSString *selectedTable, *usedQuery;
 	SPDataStorage *tableValues;

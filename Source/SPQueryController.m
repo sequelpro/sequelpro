@@ -594,7 +594,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	// Check for multiple instance of the same document.
 	// Remove it if only one instance was registerd.
-	NSArray *allDocs = [[NSDocumentController sharedDocumentController] documents];
+	NSArray *allDocs = [[NSApp delegate] orderedDocuments];
 	NSMutableArray *allURLs = [NSMutableArray array];
 	for(id doc in allDocs) {
 		if (![doc fileURL]) continue;
@@ -635,7 +635,7 @@ static SPQueryController *sharedQueryController = nil;
 		[historyContainer setObject:historyArray forKey:[fileURL absoluteString]];
 
 	// Inform all opened documents to update the history list
-	for(id doc in [[NSDocumentController sharedDocumentController] documents])
+	for(id doc in [[NSApp delegate] orderedDocuments])
 		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];
 

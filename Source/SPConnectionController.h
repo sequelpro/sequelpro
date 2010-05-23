@@ -50,8 +50,8 @@
 	id delegate;
 	
 	TableDocument *tableDocument;
-	NSWindow *documentWindow;
-	NSSplitView *contentView;
+	NSView *databaseConnectionSuperview;
+	NSSplitView *databaseConnectionView;
 	SPKeychain *keychain;
 	NSUserDefaults *prefs;
 	NSMutableArray *favorites;
@@ -78,6 +78,8 @@
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
 	NSString *connectionSSHKeychainItemAccount;
+
+	NSMutableArray *nibObjectsToRelease;
 
 	IBOutlet NSView *connectionView;
 	IBOutlet NSSplitView *connectionSplitView;

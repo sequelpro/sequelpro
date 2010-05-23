@@ -54,6 +54,7 @@
 		tables = [[NSMutableArray alloc] init];
 		operationQueue = [[NSOperationQueue alloc] init];
 		tableExportMapping = [NSMutableDictionary dictionary];
+		nibObjectsToRelease = [[NSMutableArray alloc] init];
 	}
 	
 	return self;
@@ -76,7 +77,16 @@
  */
 - (void)export
 {
-	if (!exportWindow) [NSBundle loadNibNamed:@"ExportDialog" owner:self];
+
+	// If the dialog hasn't been loaded yet, do so, retaining a reference to the top-level objects that need releasing.
+	if (!exportWindow)
+	{
+		NSArray *exportDialogTopLevelObjects = nil;
+		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ExportDialog" bundle:[NSBundle mainBundle]];
+		[nibLoader instantiateNibWithOwner:self topLevelObjects:&exportDialogTopLevelObjects];
+		[nibObjectsToRelease addObjectsFromArray:exportDialogTopLevelObjects];
+		[nibLoader release];
+	}
 	
 	NSUInteger i;
 	
@@ -99,7 +109,7 @@
 	[exportPathField setStringValue:NSHomeDirectory()];
 	
 	[NSApp beginSheet:exportWindow
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
@@ -277,6 +287,8 @@
 {	
     [tables release], tables = nil;
 	[operationQueue release], operationQueue = nil;
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	[nibObjectsToRelease release], nibObjectsToRelease = nil;
 	
 	[super dealloc];
 }
@@ -364,7 +376,7 @@
 	
 	// Open the progress sheet
 	[NSApp beginSheet:exportProgressWindow
-	   modalForWindow:tableWindow 
+	   modalForWindow:[tableDocumentInstance parentWindow] 
 		modalDelegate:self
 	   didEndSelector:nil 
 		  contextInfo:nil];

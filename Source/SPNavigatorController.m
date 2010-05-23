@@ -326,8 +326,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		// Detect if more than one connection windows with the connectionID are open.
 		// If so, don't remove it.
-		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
-			for(id doc in [[NSDocumentController sharedDocumentController] documents]) {
+		if ([[NSApp delegate] frontDocument]) {
+			for(id doc in [[NSApp delegate] orderedDocuments]) {
 				if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
 				if([[doc connectionID] isEqualToString:connectionID])
 					docCounter++;
@@ -384,7 +384,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		NSArray *pathArray = [[[parentKeys objectAtIndex:0] description] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([pathArray count] > 1) {
 
-			TableDocument *doc = [[NSDocumentController sharedDocumentController] currentDocument];
+			TableDocument *doc = [[NSApp delegate] frontDocument];
 			if([doc isWorking]) {
 				[SPTooltip showWithObject:NSLocalizedString(@"Active connection window is busy. Please wait and try again.", @"active connection window is busy. please wait and try again. tooltip") 
 						atLocation:pos 
@@ -432,7 +432,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 
 
-	if (doc && [doc isKindOfClass:[TableDocument class]] && [[[NSDocumentController sharedDocumentController] documents] count]) {
+	if (doc && [doc isKindOfClass:[TableDocument class]]) {
 
 		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
 
@@ -585,8 +585,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 {
 
 	// Reset everything for current active doc connection
-	if (![[[NSDocumentController sharedDocumentController] documents] count]) return;
-	id doc = [[NSDocumentController sharedDocumentController] currentDocument];
+	id doc = [[NSApp delegate] frontDocument];
 	if(!doc) return;
 	NSString *connectionID = [doc connectionID];
 	if(!connectionID || [connectionID length] < 2) return;
@@ -743,8 +742,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			[searchField setStringValue:@""];
 		}
 
-		if ([[[NSDocumentController sharedDocumentController] documents] count]) {
-			TableDocument *doc = [[NSDocumentController sharedDocumentController] currentDocument];
+		TableDocument *doc = [[NSApp delegate] frontDocument];
+		if (doc) {
 			NSMutableString *key = [NSMutableString string];
 			[key setString:[doc connectionID]];
 			if([doc database] && [(NSString*)[doc database] length]){

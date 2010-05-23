@@ -33,7 +33,6 @@
 	IBOutlet id tableDataInstance;
 	
 	IBOutlet id tableList;
-	IBOutlet id tableWindow;
 	
 	IBOutlet NSButton      *addTriggerButton;
 	IBOutlet NSButton      *removeTriggerButton;	

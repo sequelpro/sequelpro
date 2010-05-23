@@ -59,7 +59,8 @@
 			NSLog(@"Query Favorite Manger was called without a delegate.");
 			return nil;
 		}
-		delegatesFileURL = [[managerDelegate valueForKeyPath:@"tableDocumentInstance"] fileURL];
+		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
+		delegatesFileURL = [tableDocumentInstance fileURL];
 	}
 	
 	return self;
@@ -181,7 +182,7 @@
  */
 - (id)customQueryInstance
 {
-	return [[[NSApp mainWindow] delegate] valueForKey:@"customQueryInstance"];
+	return [tableDocumentInstance valueForKey:@"customQueryInstance"];
 }
 
 #pragma mark -
@@ -382,7 +383,7 @@
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSDocumentController sharedDocumentController] documents])
+		for(id doc in [[NSApp delegate] orderedDocuments])
 			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
 

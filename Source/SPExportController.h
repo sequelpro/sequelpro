@@ -52,7 +52,6 @@ typedef NSUInteger SPExportSource;
 {	
 	// Table document
 	IBOutlet id tableDocumentInstance;
-	IBOutlet id tableWindow;
 	
 	// Tables list
 	IBOutlet id tablesListInstance;
@@ -122,7 +121,9 @@ typedef NSUInteger SPExportSource;
 	
 	// Table/export operation mapping 
 	NSMutableDictionary *tableExportMapping;
-	
+
+	// Top-level nib objects that require releasing on dealloc
+	NSMutableArray *nibObjectsToRelease;
 }
 
 @property (readwrite, assign) BOOL exportCancelled;

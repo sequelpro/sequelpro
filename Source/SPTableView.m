@@ -37,14 +37,18 @@
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
 
+	// Try to retrieve a reference to the table document (assuming this is frontmost tab)
+	TableDocument *parentTableDocument = nil;
+	if ([[[[[self window] delegate] class] description] isEqualToString:@"SPWindowController"]) {
+		parentTableDocument = [[[self window] delegate] selectedTableDocument];
+	}
+
 	// If TableDocument is performing a task suppress any context menu
-	if ([[[[[self window] delegate] class] description] isEqualToString:@"TableDocument"]
-		&& [[[self window] delegate] isWorking])
+	if (parentTableDocument && [parentTableDocument isWorking])
 		return nil;
 
 	// Check to see whether any edits-in-progress need to be saved before changing selections
-	if ([[[[[self window] delegate] class] description] isEqualToString:@"TableDocument"]
-		&& ![[[self window] delegate] couldCommitCurrentViewActions])
+	if (parentTableDocument && ![parentTableDocument couldCommitCurrentViewActions])
 		return nil;
 
 	// If more than one row is selected only returns the default contextual menu

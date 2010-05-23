@@ -29,12 +29,12 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-@class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager;
+@class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController;
 
 /**
  * The TableDocument class controls the primary database view window.
  */
-@interface TableDocument : NSDocument
+@interface TableDocument : NSObject <NSUserInterfaceValidations>
 {
 	// IBOutlets
 	IBOutlet id tablesListInstance;
@@ -58,7 +58,7 @@
 	
 	IBOutlet NSSearchField *listFilterField;
 
-	IBOutlet NSWindow *tableWindow;
+	IBOutlet NSView *parentView;
 	
 	IBOutlet id titleAccessoryView;
 	IBOutlet id titleImageView;
@@ -135,12 +135,12 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
+	NSMutableArray *nibObjectsToRelease;
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	NSString *_encoding;
 	BOOL _encodingViaLatin1;
-	BOOL _shouldOpenConnectionAutomatically;
 	BOOL _isConnected;
 	NSInteger _isWorkingLevel;
 	BOOL _mainNibLoaded;
@@ -168,6 +168,7 @@
 	
 	NSString *queryEditorInitString;
 	
+	NSURL *spfFileURL;
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
@@ -177,7 +178,16 @@
 	NSThread *printThread;
 	
 	id statusValues;
+
+	// Properties
+	SPWindowController *parentWindowController;
+	NSWindow *parentWindow;
+	NSTabViewItem *parentTabViewItem;
+	BOOL isProcessing;
 }
+
+@property (readwrite, assign) SPWindowController *parentWindowController;
+@property (readwrite, assign) NSTabViewItem *parentTabViewItem;
 
 - (BOOL)isUntitled;
 - (BOOL)couldCommitCurrentViewActions;
@@ -187,8 +197,6 @@
 // Connection callback and methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (MCPConnection *) getConnection;
-- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect;
-- (BOOL)shouldAutomaticallyConnect;
 - (void)setKeychainID:(NSString *)theID;
 
 // Database methods
@@ -271,6 +279,7 @@
 - (IBAction)toggleNavigator:(id)sender;
 
 // Accessor methods
+- (NSView *)parentView;
 - (NSString *)host;
 - (NSString *)name;
 - (NSString *)database;
@@ -278,7 +287,6 @@
 - (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
-- (NSString *)displaySPName;
 - (NSString *)keyChainID;
 - (NSString *)connectionID;
 
@@ -288,7 +296,7 @@
 - (void)applicationWillTerminate:(NSNotification *)notification;
 
 // Menu methods
-- (BOOL)validateMenuItem:(NSMenuItem *)anItem;
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
 - (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)importFromClipboard:(id)sender;
@@ -309,9 +317,23 @@
 - (void)clearStatusIcon;
 
 // Toolbar methods
+- (void)updateWindowTitle:(id)sender;
 - (void)setupToolbar;
 - (NSString *)selectedToolbarItemIdentifier;
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
 - (void)updateChooseDatabaseToolbarItemWidth;
+
+// Tab methods
+- (void)makeKeyDocument;
+- (BOOL)parentTabShouldClose;
+- (void)parentTabDidClose;
+- (void)willResignActiveTabInWindow;
+- (void)didBecomeActiveTabInWindow;
+- (void)tabDidBecomeKey;
+- (void)tabDidResize;
+- (void)setIsProcessing:(BOOL)value;
+- (BOOL)isProcessing;
+- (void)setParentWindow:(NSWindow *)aWindow;
+- (NSWindow *)parentWindow;
 
 @end

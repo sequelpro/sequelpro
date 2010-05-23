@@ -58,7 +58,8 @@
 			NSLog(@"ContentFilterManager was called without a delegate.");
 			return nil;
 		}
-		delegatesFileURL = [[managerDelegate valueForKeyPath:@"tableDocumentInstance"] fileURL];
+		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
+		delegatesFileURL = [tableDocumentInstance fileURL];
 
 		filterType = [NSString stringWithString:compareType];
 
@@ -211,7 +212,7 @@
  */
 - (id)customQueryInstance
 {
-	return [[[NSApp mainWindow] delegate] valueForKey:@"customQueryInstance"];
+	return [tableDocumentInstance valueForKey:@"customQueryInstance"];
 }
 
 
@@ -371,7 +372,7 @@
 		[cf release];
 		
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSDocumentController sharedDocumentController] documents])
+		for(id doc in [[NSApp delegate] orderedDocuments])
 			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
 				[[doc valueForKeyPath:@"tableContentInstance"] setCompareTypes:nil];
 

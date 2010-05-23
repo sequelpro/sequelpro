@@ -38,8 +38,6 @@
 	IBOutlet id tableDataInstance;
 	IBOutlet id customQueryInstance;
 
-	IBOutlet id tableWindow;
-
 	IBOutlet id exportDumpView;
 	IBOutlet id exportCSVView;
 	IBOutlet id exportMultipleCSVView;
@@ -97,6 +95,7 @@
 	MCPConnection *mySQLConnection;
 
 	NSMutableArray *tables;
+	NSMutableArray *nibObjectsToRelease;
 
 	// Field Mapper Controller
 	SPFieldMapperController *fieldMapperController;
@@ -122,6 +121,7 @@
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
+	BOOL _mainNibLoaded;
 
 	NSSavePanel *currentExportPanel;
 }

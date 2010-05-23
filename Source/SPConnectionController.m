@@ -60,8 +60,8 @@
 {
 	if (self = [super init]) {
 		tableDocument = theTableDocument;
-		documentWindow = [tableDocument valueForKey:@"tableWindow"];
-		contentView = [tableDocument valueForKey:@"contentViewSplitter"];
+		databaseConnectionSuperview = [tableDocument parentView];
+		databaseConnectionView = [tableDocument valueForKey:@"contentViewSplitter"];
 		connectionKeychainItemName = nil;
 		connectionKeychainItemAccount = nil;
 		connectionSSHKeychainItemName = nil;
@@ -70,19 +70,20 @@
 		sshTunnel = nil;
 		cancellingConnection = NO;
 
-		// Load the connection nib
-		[NSBundle loadNibNamed:@"ConnectionView" owner:self];
+		// Load the connection nib, keeping references to the top-level objects for later release
+		nibObjectsToRelease = [[NSMutableArray alloc] init];
+		NSArray *connectionViewTopLevelObjects = nil;
+		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionView" bundle:[NSBundle mainBundle]];
+		[nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
+		[nibObjectsToRelease addObjectsFromArray:connectionViewTopLevelObjects];
+		[nibLoader release];
 		
 		// Hide the main view and position and display the connection view
-		[contentView setHidden:YES];
-		[connectionView setFrame:[contentView frame]];
-		[[documentWindow contentView] addSubview:connectionView];
+		[databaseConnectionView setHidden:YES];
+		[connectionView setFrame:[databaseConnectionView frame]];
+		[databaseConnectionSuperview addSubview:connectionView];
 		[connectionSplitView setPosition:[[tableDocument valueForKey:@"dbTablesTableView"] frame].size.width ofDividerAtIndex:0];
 		[connectionSplitViewButtonBar setSplitViewDelegate:self];
-		
-		// Disable the toolbar icons
-		NSArray *toolbarItems = [[documentWindow toolbar] items];
-		for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:NO];
 		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
 		keychain = [[SPKeychain alloc] init];
@@ -98,7 +99,7 @@
 		[favoritesTable setDoubleAction:@selector(initiateConnection:)];
 
 		// Set the focus to the favorites table and select the appropriate row
-		[documentWindow setInitialFirstResponder:favoritesTable];
+		[[tableDocument parentWindow] setInitialFirstResponder:favoritesTable];
 		NSInteger tableRow;
 		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
 			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
@@ -114,11 +115,6 @@
 			previousType = SPTCPIPConnection;
 			[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
 		}
-
-		// If the document is set to automatically connect, do so.
-		if ([tableDocument shouldAutomaticallyConnect]) {
-			[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.0];
-		}
 	}
 	
 	return self;
@@ -129,6 +125,10 @@
     [prefs removeObserver:self forKeyPath:SPFavorites];
     [keychain release];
     [prefs release];
+
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	[nibObjectsToRelease release];
+
 	if (favorites) [favorites release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
@@ -153,13 +153,13 @@
 {	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
+		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
 		return;
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
 	if ([self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
+		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
 		return;
 	}
 
@@ -185,9 +185,9 @@
 	if (connectionKeychainItemName) {
 		if ([[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount] isEqualToString:[self password]]) {
 			[self setPassword:[[NSString string] stringByPaddingToLength:[[self password] length] withString:@"sp" startingAtIndex:0]];
-			[[tableDocument undoManager] removeAllActionsWithTarget:standardPasswordField];
-			[[tableDocument undoManager] removeAllActionsWithTarget:socketPasswordField];
-			[[tableDocument undoManager] removeAllActionsWithTarget:sshPasswordField];
+			[[standardPasswordField undoManager] removeAllActionsWithTarget:standardPasswordField];
+			[[socketPasswordField undoManager] removeAllActionsWithTarget:socketPasswordField];
+			[[sshPasswordField undoManager] removeAllActionsWithTarget:sshPasswordField];
 		} else {
 			[connectionKeychainItemName release], connectionKeychainItemName = nil;
 			[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
@@ -196,7 +196,7 @@
 	if (connectionSSHKeychainItemName) {
 		if ([[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount] isEqualToString:[self sshPassword]]) {
 			[self setSshPassword:[[NSString string] stringByPaddingToLength:[[self sshPassword] length] withString:@"sp" startingAtIndex:0]];
-			[[tableDocument undoManager] removeAllActionsWithTarget:sshSSHPasswordField];
+			[[sshSSHPasswordField undoManager] removeAllActionsWithTarget:sshSSHPasswordField];
 		} else {
 			[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
 			[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
@@ -236,7 +236,7 @@
 
 	// Set up the tunnel details
 	sshTunnel = [[SPSSHTunnel alloc] initToHost:[self sshHost] port:([[self sshPort] length]?[[self sshPort] integerValue]:22) login:[self sshUser] tunnellingToPort:([[self port] length]?[[self port] integerValue]:3306) onHost:[self host]];
-	[sshTunnel setParentWindow:documentWindow];
+	[sshTunnel setParentWindow:[tableDocument parentWindow]];
 	
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
 	if (connectionSSHKeychainItemName) {
@@ -437,8 +437,8 @@
 	}
 
 	// Only display the connection error message if there is a window visible
-	if ([documentWindow isVisible]) {
-		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	if ([[tableDocument parentWindow] isVisible]) {
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, [tableDocument parentWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 	}
 }
 
@@ -491,10 +491,10 @@
 	
 	// Hide the connection view and restore the main view
 	[connectionView removeFromSuperviewWithoutNeedingDisplay];
-	[contentView setHidden:NO];
+	[databaseConnectionView setHidden:NO];
 
 	// Restore the toolbar icons
-	NSArray *toolbarItems = [[documentWindow toolbar] items];
+	NSArray *toolbarItems = [[[tableDocument parentWindow] toolbar] items];
 	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 
 	// Set keychain id for saving SPF files
@@ -628,7 +628,7 @@
 							NSLocalizedString(@"Use 127.0.0.1", @"Use 127.0.0.1 button"),	// Main button
 							NSLocalizedString(@"Connect via socket", @"Connect via socket button"),	// Alternate button
 							nil,	// Other button
-							documentWindow,	// Window to attach to
+							[tableDocument parentWindow],	// Window to attach to
 							self,	// Modal delegate
 							@selector(localhostErrorSheetDidEnd:returnCode:contextInfo:),	// Did end selector
 							nil,	// Contextual info for selectors
@@ -728,15 +728,15 @@
 	switch([self type]) {
 		case SPTCPIPConnection:
 		if(![[standardPasswordField stringValue] length])
-			[documentWindow makeFirstResponder:standardPasswordField];
+			[[tableDocument parentWindow] makeFirstResponder:standardPasswordField];
 		break;
 		case SPSocketConnection:
 		if(![[socketPasswordField stringValue] length])
-			[documentWindow makeFirstResponder:socketPasswordField];
+			[[tableDocument parentWindow] makeFirstResponder:socketPasswordField];
 		break;
 		case SPSSHTunnelConnection:
 		if(![[sshPasswordField stringValue] length])
-			[documentWindow makeFirstResponder:sshPasswordField];
+			[[tableDocument parentWindow] makeFirstResponder:sshPasswordField];
 		break;
 	}
 }
@@ -928,7 +928,7 @@
  */
 - (void) splitViewDidResizeSubviews:(NSNotification *)aNotification
 {
-	[contentView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
 }
 
 /**

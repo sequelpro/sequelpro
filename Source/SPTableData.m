@@ -293,14 +293,15 @@
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
 	
+	[columns removeAllObjects];
+	[columnNames removeAllObjects];
+	[constraints removeAllObjects];
+
 	if( [tableListInstance tableType] == SPTableTypeTable || [tableListInstance tableType] == SPTableTypeView ) {		
 		tableData = [self informationForTable:[tableListInstance tableName]];
 	}
 	
 	if (tableData == nil ) {
-		[columns removeAllObjects];
-		[columnNames removeAllObjects];
-		[constraints removeAllObjects];
 		return FALSE;
 	}
 

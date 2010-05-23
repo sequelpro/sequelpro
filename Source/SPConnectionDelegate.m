@@ -103,7 +103,7 @@
  */
 - (void)noConnectionAvailable:(id)connection
 {	
-	SPBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
+	SPBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
 }
 
 /**
@@ -114,10 +114,13 @@
 	NSInteger connectionErrorCode = MCPConnectionCheckDisconnect;
 	
 	// Only display the reconnect dialog if the window is visible
-	if ([tableWindow isVisible]) {
+	if ([self parentWindow] && [[self parentWindow] isVisible]) {
+
+		// Ensure the window and tab are frontmost
+		[self makeKeyDocument];
 		
 		// Display the connection error dialog and wait for the return code
-		[NSApp beginSheet:connectionErrorDialog modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp beginSheet:connectionErrorDialog modalForWindow:[self parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 		connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
 		
 		[NSApp endSheet:connectionErrorDialog];
@@ -125,7 +128,7 @@
 		
 		// If 'disconnect' was selected, trigger a window close.
 		if (connectionErrorCode == MCPConnectionCheckDisconnect) {
-			[self performSelectorOnMainThread:@selector(closeDocumentWindowAndDisconnect) withObject:nil waitUntilDone:YES];
+			[self performSelectorOnMainThread:@selector(closeAndDisconnect) withObject:nil waitUntilDone:YES];
 		}
 	}
 
@@ -137,8 +140,8 @@
  */
 - (void)showErrorWithTitle:(NSString *)theTitle message:(NSString *)theMessage
 {
-	if ([tableWindow isVisible]) {
-		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, theMessage);
+	if ([[self parentWindow] isVisible]) {
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil, theMessage);
 	}
 }
 
@@ -152,17 +155,20 @@
 
 /**
  * Close the connection - should be performed on the main thread.
- * First hides the window to give code a little bit of time to clean
- * everything up before it's all deallocated as a result of the close.
- * Also sets alpha to fully transparent so accidental dialogs are hidden!
  */
-- (void) closeDocumentWindowAndDisconnect
+- (void) closeAndDisconnect
 {
-		_isConnected = NO;
-		[self windowWillClose:nil];
-		[tableWindow orderOut:self];
-		[tableWindow setAlphaValue:0.0];
-		[tableWindow performSelector:@selector(close) withObject:nil afterDelay:1.0];
+	NSWindow *theParentWindow = [self parentWindow];
+	_isConnected = NO;
+	if ([[[self parentTabViewItem] tabView] numberOfTabViewItems] == 1) {
+		[theParentWindow orderOut:self];
+		[theParentWindow setAlphaValue:0.0];
+		[theParentWindow performSelector:@selector(close) withObject:nil afterDelay:1.0];
+	} else {
+		[[[self parentTabViewItem] tabView] performSelector:@selector(removeTabViewItem:) withObject:[self parentTabViewItem] afterDelay:0.5];
+		[theParentWindow performSelector:@selector(makeKeyAndOrderFront:) withObject:nil afterDelay:0.6];
+	}
+	[self parentTabDidClose];	
 }
 
 @end
