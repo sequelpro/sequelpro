@@ -101,6 +101,7 @@
 - (BOOL)insertUsers:(NSArray *)insertedUsers;
 - (BOOL)deleteUsers:(NSArray *)deletedUsers;
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
+- (BOOL)updateResourcesForUser:(NSManagedObject *)user;
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 - (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
 

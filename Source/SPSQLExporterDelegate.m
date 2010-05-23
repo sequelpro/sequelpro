@@ -69,6 +69,8 @@
  */
 - (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter
 {
+	//NSLog(@"updating: %f", [exporter exportProgressValue]);
+	
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 

@@ -333,6 +333,8 @@
 						j++;
 						[sqlString setString:@""];
 						
+						NSLog(@"%d, %d, %d", j, [self exportMaxProgress], rowCount);
+						
 						// Update the progress 
 						if ((j * ([self exportMaxProgress] / rowCount)) > lastProgressValue) {
 							
@@ -341,10 +343,10 @@
 							[self setExportProgressValue:progress];
 							
 							lastProgressValue = progress;
+							
+							// Inform the delegate that the export's progress has been updated
+							[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 						}
-						
-						// Inform the delegate that the export's progress has been updated
-						[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 						
 						for (t = 0; t < colCount; t++) 
 						{

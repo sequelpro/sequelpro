@@ -303,6 +303,9 @@
 		// Set the exporter's max progress
 		[sqlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
 		
+		// Set the progress bar's max value
+		[exportProgressIndicator setMaxValue:[sqlExporter exportMaxProgress]];
+		
 		[infoDict release];
 		[tableTypes release];
 		

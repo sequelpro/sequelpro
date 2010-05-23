@@ -99,13 +99,13 @@ typedef enum
 // History views
 typedef enum
 {
-	SPHistoryViewStructure   = 0,
-	SPHistoryViewContent     = 1,
-	SPHistoryViewCustomQuery = 2,
-	SPHistoryViewStatus      = 3,
-	SPHistoryViewRelations   = 4,
-	SPHistoryViewTriggers    = 5
-} SPHistoryViewType;
+	SPTableViewStructure   = 0,
+	SPTableViewContent     = 1,
+	SPTableViewCustomQuery = 2,
+	SPTableViewStatus      = 3,
+	SPTableViewRelations   = 4,
+	SPTableViewTriggers    = 5
+} SPTableViewType;
 
 // SSH tunnel password modes
 typedef enum

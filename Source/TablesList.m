@@ -698,20 +698,20 @@
 	statusLoaded = NO;
 	triggersLoaded = NO;
 	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
-		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
+		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStructure ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewContent ) {
 			if(tableEncoding == nil) {
 				[tableContentInstance loadTable:nil];
 			} else {
 				[tableContentInstance loadTable:selectedTableName];
 			}
 			contentLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStatus ) {
 			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 			statusLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5 ) {
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewTriggers ) {
 			[[tableTriggersInstance onMainThread] loadTriggers];
 			triggersLoaded = YES;
 		}
@@ -1360,19 +1360,19 @@
 			contentLoaded = NO;
 			triggersLoaded = NO;
             switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
-                case 0:
+                case SPTableViewStructure:
                     [tableSourceInstance loadTable:newTableName];
                     structureLoaded = YES;
                     break;
-                case 1:
+                case SPTableViewContent:
                     [tableContentInstance loadTable:newTableName];
                     contentLoaded = YES;
                     break;
-                case 3:
+                case SPTableViewStatus:
                     [extendedTableInfoInstance loadTable:newTableName];
                     statusLoaded = YES;
                     break;
-				case 5:
+				case SPTableViewTriggers:
 					[tableTriggersInstance loadTriggers];
 					triggersLoaded = YES;
 					break;
@@ -1564,22 +1564,22 @@
 		&& ([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) )
 	{
 		
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStructure) && !structureLoaded ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;
 		}
 		
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1) && !contentLoaded ) {
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewContent) && !contentLoaded ) {
 			[tableContentInstance loadTable:selectedTableName];
 			contentLoaded = YES;
 		}
 		
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStatus) && !statusLoaded ) {
 			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 			statusLoaded = YES;
 		}
 
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5) && !triggersLoaded ) {
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewTriggers) && !triggersLoaded ) {
 			[[tableTriggersInstance onMainThread] loadTriggers];
 			triggersLoaded = YES;
 		}
@@ -2010,10 +2010,14 @@
 		currentIndex = [indexes indexLessThanIndex:currentIndex];
 	}
 	
-	// Reload the table's content view to show that it has been truncated 
-	[tableContentInstance reloadTable:self];
-	[tableDataInstance resetStatusData];
+	// Ensure the the table's content view is updated to show that it has been truncated
+	if ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewContent) {
+		[tableContentInstance reloadTable:self];
+	} else {
+		[self setContentRequiresReload:YES];
+	}
 
+	[tableDataInstance resetStatusData];
 }
 
 /**

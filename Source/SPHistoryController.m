@@ -172,18 +172,18 @@
 	NSString *viewName = [[[theDocument valueForKey:@"tableTabView"] selectedTabViewItem] identifier];
 	
 	if ([viewName isEqualToString:@"source"]) {
-		theView = SPHistoryViewStructure;
+		theView = SPTableViewStructure;
 	} else if ([viewName isEqualToString:@"content"]) {
-		theView = SPHistoryViewContent;
+		theView = SPTableViewContent;
 	} else if ([viewName isEqualToString:@"customQuery"]) {
-		theView = SPHistoryViewCustomQuery;
+		theView = SPTableViewCustomQuery;
 	} else if ([viewName isEqualToString:@"status"]) {
-		theView = SPHistoryViewStatus;
+		theView = SPTableViewStatus;
 	} else if ([viewName isEqualToString:@"relations"]) {
-		theView = SPHistoryViewRelations;
+		theView = SPTableViewRelations;
 	}
 	else if ([viewName isEqualToString:@"triggers"]) {
-		theView = SPHistoryViewTriggers;
+		theView = SPTableViewTriggers;
 	}
 
 	return theView;
@@ -402,7 +402,7 @@
 	// If the database, table, and view are the same and content - just trigger a table reload (filters)
 	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
 		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SPHistoryViewContent)
+		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SPTableViewContent)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingState = NO;
@@ -433,22 +433,22 @@
 	// Check and set the view
 	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
 		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
-			case SPHistoryViewStructure:
+			case SPTableViewStructure:
 				[theDocument viewStructure:self];
 				break;
-			case SPHistoryViewContent:
+			case SPTableViewContent:
 				[theDocument viewContent:self];
 				break;
-			case SPHistoryViewCustomQuery:
+			case SPTableViewCustomQuery:
 				[theDocument viewQuery:self];
 				break;
-			case SPHistoryViewStatus:
+			case SPTableViewStatus:
 				[theDocument viewStatus:self];
 				break;
-			case SPHistoryViewRelations:
+			case SPTableViewRelations:
 				[theDocument viewRelations:self];
 				break;
-			case SPTriggersViewMode:
+			case SPTableViewTriggers:
 				[theDocument viewTriggers:self];
 				break;
 		}

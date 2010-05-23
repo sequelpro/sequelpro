@@ -1042,7 +1042,7 @@
 	[tableDataInstance resetColumnData];
 
 	// Load the table's data
-	[self loadTable:selectedTable];
+	[self loadTable:[tablesListInstance tableName]];
 
 	[tableDocumentInstance endTask];
 	
