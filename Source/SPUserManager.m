@@ -753,8 +753,12 @@
 			return;			
 		}
 	}
-    // Remove any selections.
-	[treeController removeSelectionIndexPaths:[treeController selectionIndexPaths]];
+    NSSet *registeredObjects = [managedObjectContext registeredObjects];
+    for (NSManagedObject *registeredObject in registeredObjects)
+    {
+        [self.managedObjectContext refreshObject:registeredObject mergeChanges:NO];
+    }
+    
 	[self.managedObjectContext reset];
 	[grantedSchemaPrivs removeAllObjects];
 	[grantedTableView reloadData];
@@ -1051,7 +1055,7 @@
 	NSMutableArray *revokePrivileges = [NSMutableArray array];
 	
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
-	
+    dbName = [dbName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"];
 	NSString *statement = [NSString stringWithFormat:@"SELECT USER,HOST FROM `mysql`.`db` WHERE USER=%@ AND HOST=%@ AND DB=%@",
 									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
