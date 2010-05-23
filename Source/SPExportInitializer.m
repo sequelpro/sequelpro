@@ -424,6 +424,9 @@
 		// Set the exporter's max progress
 		[dotExporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
 		
+		// Set the progress bar's max value
+		[exportProgressIndicator setMaxValue:[dotExporter exportMaxProgress]];
+		
 		NSString *filename = @"";
 		
 		// Create custom filename if required
@@ -504,6 +507,9 @@
 	[csvExporter setExportOutputEncoding:[connection encoding]];
 	[csvExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
 	[csvExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
+	
+	// Set the progress bar's max value
+	[exportProgressIndicator setMaxValue:[csvExporter exportMaxProgress]];
 
 	return [csvExporter autorelease];
 }
@@ -547,6 +553,9 @@
 	[xmlExporter setExportOutputEncoding:[connection encoding]];
 	[xmlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
 	[xmlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
+	
+	// Set the progress bar's max value
+	[exportProgressIndicator setMaxValue:[xmlExporter exportMaxProgress]];
 	
 	return [xmlExporter autorelease];
 }
