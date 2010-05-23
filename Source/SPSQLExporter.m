@@ -43,6 +43,7 @@
 @synthesize sqlExportCurrentTable;
 @synthesize sqlExportErrors;
 @synthesize sqlOutputIncludeUTF8BOM;
+@synthesize sqlOutputEncodeBLOBasHex;
 @synthesize sqlOutputIncludeErrors;
 @synthesize sqlOutputCompressFile;
 @synthesize sqlTableInformation;
@@ -362,10 +363,26 @@
 							} 
 							// Add data types directly as hex data
 							else if ([NSArrayObjectAtIndex(row, t) isKindOfClass:[NSData class]]) {
-								[sqlString appendString:@"X'"];
-								[sqlString appendString:[connection prepareBinaryData:NSArrayObjectAtIndex(row, t)]];
-								[sqlString appendString:@"'"];
 								
+								if ([self sqlOutputEncodeBLOBasHex]) {
+									[sqlString appendString:@"X'"];
+									[sqlString appendString:[connection prepareBinaryData:NSArrayObjectAtIndex(row, t)]];
+								}
+								else {
+									[sqlString appendString:@"'"];
+									
+									NSString *data = [[NSString alloc] initWithData:NSArrayObjectAtIndex(row, t) encoding:[self exportOutputEncoding]];
+									
+									if (data == nil) {
+										data = [[NSString alloc] initWithData:NSArrayObjectAtIndex(row, t) encoding:NSASCIIStringEncoding];
+									}
+									
+									[sqlString appendString:data];
+									
+									[data release];
+								}
+								
+								[sqlString appendString:@"'"];
 							} 
 							else {
 								[cellValue setString:[NSArrayObjectAtIndex(row, t) description]];

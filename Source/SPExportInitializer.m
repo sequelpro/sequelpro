@@ -274,6 +274,7 @@
 		[sqlExporter setSqlDatabaseVersion:[tableDocumentInstance mySQLVersion]];
 		
 		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
+		[sqlExporter setSqlOutputEncodeBLOBasHex:[exportSQLBLOBFieldsAsHexCheck state]];
 		[sqlExporter setSqlOutputCompressFile:[exportCompressOutputFile state]];
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
 		

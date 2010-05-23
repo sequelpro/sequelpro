@@ -75,6 +75,11 @@
 	BOOL sqlOutputIncludeUTF8BOM;
 	
 	/**
+	 * Encode BLOB fields as Hex data
+	 */
+	BOOL sqlOutputEncodeBLOBasHex;
+	
+	/**
 	 * Include export errors
 	 */
 	BOOL sqlOutputIncludeErrors;
@@ -102,6 +107,7 @@
 @property(readwrite, retain) NSString *sqlExportErrors;
 
 @property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
+@property(readwrite, assign) BOOL sqlOutputEncodeBLOBasHex;
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
 @property(readwrite, assign) BOOL sqlOutputCompressFile;
 
