@@ -306,8 +306,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
 
 		NSString* connectionID;
-		if([[[self window] delegate] respondsToSelector:@selector(connectionID)])
-			connectionID = [[[self window] delegate] connectionID];
+		if(tableDocumentInstance)
+			connectionID = [tableDocumentInstance connectionID];
 		else
 			connectionID = @"_";
 
@@ -325,14 +325,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSString *currentDb = nil;
 			NSString *currentTable = nil;
 
-			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]];
-			if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
-				currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+			if (tablesListInstance && [tablesListInstance selectedDatabase])
+				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [tablesListInstance selectedDatabase]];
+			if (tablesListInstance && [tablesListInstance tableName])
+				currentTable = [tablesListInstance tableName];
 
 			// Put current selected db at the top
-			if(aTableName == nil && aDbName == nil && [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]) {
-				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"]];
+			if(aTableName == nil && aDbName == nil && [tablesListInstance selectedDatabase]) {
+				currentDb = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [tablesListInstance selectedDatabase]];
 				[sortedDbs removeObject:currentDb];
 				[sortedDbs insertObject:currentDb atIndex:0];
 			}
@@ -481,34 +481,34 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// [possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"fetching table data…", @"fetching table data for completion in progress message"), @"path", @"", @"noCompletion", nil]];
 
 			// Add all database names to completions list
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allDatabaseNames"])
+			for (id obj in [tablesListInstance allDatabaseNames])
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 
 			// Add all system database names to completions list
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allSystemDatabaseNames"])
+			for (id obj in [tablesListInstance allSystemDatabaseNames])
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 
 			// Add table names to completions list
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allTableNames"])
+			for (id obj in [tablesListInstance allTableNames])
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
 
 			// Add view names to completions list
-			for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allViewNames"])
+			for (id obj in [tablesListInstance allViewNames])
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"table-view-small-square", @"image", @"", @"isRef", nil]];
 
 			// Add field names to completions list for currently selected table
-			if ([[[self window] delegate] table] != nil)
-				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
+			if ([tableDocumentInstance table] != nil)
+				for (id obj in [[tableDocumentInstance valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"])
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];
 
 			// Add proc/func only for MySQL version 5 or higher
 			if(mySQLmajorVersion > 4) {
 				// Add all procedures to completions list for currently selected table
-				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allProcedureNames"])
+				for (id obj in [tablesListInstance allProcedureNames])
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"proc-small", @"image", @"", @"isRef", nil]];
 
 				// Add all function to completions list for currently selected table
-				for (id obj in [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"allFunctionNames"])
+				for (id obj in [tablesListInstance allFunctionNames])
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:obj, @"display", @"func-small", @"image", @"", @"isRef", nil]];
 			}
 		}
@@ -620,8 +620,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Parse for leading db.table.field infos
 
-		if([[[self window] delegate] isKindOfClass:[TableDocument class]] && [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"])
-			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+		if(tablesListInstance && [tablesListInstance selectedDatabase])
+			currentDb = [tablesListInstance selectedDatabase];
 		else
 			currentDb = @"";
 		
@@ -947,7 +947,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
 {
-	[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] showHelpForCurrentWord:self];
+	[customQueryInstance showHelpForCurrentWord:self];
 }
 
 /*
@@ -1000,7 +1000,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void) selectCurrentQuery
 {
 	if([self isEditable])
-		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] selectCurrentQuery];
+		[customQueryInstance selectCurrentQuery];
 }
 
 /*
@@ -1191,8 +1191,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:0] autorelease];
 
 	NSString *connectionID;
-	if([[[self window] delegate] respondsToSelector:@selector(connectionID)])
-		connectionID = [[[self window] delegate] connectionID];
+	if(tableDocumentInstance)
+		connectionID = [tableDocumentInstance connectionID];
 	else
 		connectionID = @"_";
 
@@ -1200,8 +1200,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([kind isEqualToString:@"$SP_ASLIST_ALL_TABLES"]) {
 		NSString *currentDb = nil;
 
-		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+		if (tablesListInstance && [tablesListInstance selectedDatabase])
+			currentDb = [tablesListInstance selectedDatabase];
 
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
 
@@ -1250,10 +1250,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *currentDb = nil;
 		NSString *currentTable = nil;
 
-		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
-		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
-			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+		if (tablesListInstance && [tablesListInstance selectedDatabase])
+			currentDb = [tablesListInstance selectedDatabase];
+		if (tablesListInstance && [tablesListInstance tableName])
+			currentTable = [tablesListInstance tableName];
 
 		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
 		if(currentDb != nil && currentTable != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:currentTable]) {
@@ -1291,7 +1291,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 		} else {
-			arr = [NSArray arrayWithArray:[[[[self window] delegate] valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
+			arr = [NSArray arrayWithArray:[[tableDocumentInstance valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 			if(arr == nil) {
 				arr = [NSArray array];
 			}
@@ -1586,11 +1586,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_"]) {
 				NSRange r;
 				NSString *currentTable = nil;
-				if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
-					currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+				if (tablesListInstance && [tablesListInstance tableName])
+					currentTable = [tablesListInstance tableName];
 				NSString *currentDb = nil;
-				if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-					currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
+				if (tablesListInstance && [tablesListInstance selectedDatabase])
+					currentDb = [tablesListInstance selectedDatabase];
 
 				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) {
 					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"];
@@ -2075,8 +2075,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Check if tab trigger is defined; if so insert it, otherwise pass through event
-		if(snippetControlCounter < 0 && [[[self window] delegate] fileURL]) {
-			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[[[self window] delegate] fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
+		if(snippetControlCounter < 0 && [tableDocumentInstance fileURL]) {
+			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[tableDocumentInstance fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
 				[self insertAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
 				return;
@@ -2427,14 +2427,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// If selection show Help for it
 	if([self selectedRange].length)
 	{
-		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
+		[customQueryInstance performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
 		return;
 	}
 	// Otherwise show Help if caret is not inside quotes
 	NSUInteger cursorPosition = [self selectedRange].location;
 	if (cursorPosition >= [[self string] length]) cursorPosition--;
 	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
-		[[[[self window] delegate] valueForKeyPath:@"customQueryInstance"] performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
+		[customQueryInstance performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
 	
 }
 
@@ -2856,7 +2856,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Hide "Select Active Query" if self is not editable
 	[[menu itemAtIndex:4] setHidden:![self isEditable]];
 	
-	if([[[self window] delegate] valueForKeyPath:@"customQueryInstance"]) {
+	if(customQueryInstance) {
 		[[menu itemAtIndex:5] setHidden:NO];
 		[[menu itemAtIndex:6] setHidden:NO];
 	} else {
@@ -3129,10 +3129,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		NSString *currentDb = nil;
 		NSString *currentTable = nil;
 
-		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"selectedDatabase"] != nil)
-			currentDb = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"selectedDatabase"];
-		if ([[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKey:@"tableName"] != nil)
-			currentTable = [[[[self window] delegate] valueForKeyPath:@"tablesListInstance"] valueForKeyPath:@"tableName"];
+		if (tablesListInstance && [tablesListInstance selectedDatabase])
+			currentDb = [tablesListInstance selectedDatabase];
+		if (tablesListInstance && [tablesListInstance tableName])
+			currentTable = [tablesListInstance tableName];
 
 		if(!currentDb) currentDb = @"";
 		if(!currentTable) currentTable = @"";

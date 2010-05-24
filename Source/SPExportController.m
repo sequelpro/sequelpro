@@ -161,7 +161,7 @@
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	
 	[NSApp beginSheet:[self window]
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
@@ -176,7 +176,7 @@
 	[errorsTextView setString:errors];
 	
 	[NSApp beginSheet:errorsWindow 
-	   modalForWindow:tableWindow 
+	   modalForWindow:[tableDocumentInstance parentWindow] 
 		modalDelegate:self 
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 		  contextInfo:nil];
@@ -190,7 +190,7 @@
 	// Export finished Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
-														window:tableWindow
+														window:[tableDocumentInstance parentWindow]
 											  notificationName:@"Export Finished"];
 }
 

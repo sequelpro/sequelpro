@@ -271,7 +271,7 @@
 		return;
 	}
 
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	
 	// Populate the table type (engine) popup button
 	[tableTypeButton removeAllItems];
@@ -288,7 +288,7 @@
 	}
 	
 	[NSApp beginSheet:tableSheet
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"addTable"];
@@ -311,7 +311,7 @@
 	if (![tablesListView numberOfSelectedRows])
 		return;
 	
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	
 	NSAlert *alert = [NSAlert alertWithMessageText:@"" defaultButton:NSLocalizedString(@"Delete", @"delete button") alternateButton:NSLocalizedString(@"Cancel", @"cancel button") otherButton:nil informativeTextWithFormat:@""];
 
@@ -379,7 +379,7 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@? This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
 	}
 		
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
 }
 
 /**
@@ -392,7 +392,7 @@
 	if ([tablesListView numberOfSelectedRows] != 1) return;
 	if (![tableSourceInstance saveRowOnDeselect] || ![tableContentInstance saveRowOnDeselect]) return;
 	
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
 	// Detect table type: table or view
 	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
@@ -423,7 +423,7 @@
 	[copyTableContentSwitch setState:NSOffState];
 	
 	[NSApp beginSheet:copyTableSheet
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"copyTable"];
@@ -438,7 +438,7 @@
 		return;
 	}
 	
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	
     if ([tablesListView numberOfSelectedRows] != 1) return;
     if (![[self tableName] length]) return;
@@ -471,7 +471,7 @@
 	
     
 	[NSApp beginSheet:tableRenameSheet
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"renameTable"];
@@ -486,7 +486,7 @@
 	if (![tablesListView numberOfSelectedRows])
 		return;
 	
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	
 	NSAlert *alert = [NSAlert alertWithMessageText:@"" 
 									 defaultButton:NSLocalizedString(@"Truncate", @"truncate button") 
@@ -512,7 +512,7 @@
 		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL records in the selected tables? This operation cannot be undone.", @"truncate tables informative message")];
 	}
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
 }
 
 /**
@@ -862,7 +862,7 @@
 		[[tableSubMenu itemAtIndex:10] setHidden:NO];
 		
 		// set window title
-		[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+		[tableDocumentInstance updateWindowTitle:self];
 
 		return;
 	}
@@ -1035,7 +1035,7 @@
 	}
 
 	// set window title
-	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+	[tableDocumentInstance updateWindowTitle:self];
 }
 
 #pragma mark -
@@ -1333,7 +1333,7 @@
     if (![self isTableNameValid:newTableName forType:selectedTableType ignoringSelectedTable:YES]) {
 		// Table has invalid name
         // Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), nil,
                           [NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
         return;
@@ -1380,11 +1380,11 @@
         }
     }
     @catch (NSException * myException) {
-        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [myException reason]);
+        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, [myException reason]);
     }
     
     // Set window title to reflect the new table name
-    [tableWindow setTitle:[tableDocumentInstance displaySPName]];
+	[tableDocumentInstance updateWindowTitle:self];
     
     // Query the structure of all databases in the background (mainly for completion)
     [NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
@@ -1425,7 +1425,7 @@
 	if (!tableListIsSelectable) return NO;
 
 	// End editing (otherwise problems when user hits reload button)
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	
 	if ( alertSheetOpened ) {
 		return NO;
@@ -1651,10 +1651,10 @@
 - (void) makeTableListFilterHaveFocus
 {
 	if([tables count] > 20) {
-		[tableWindow makeFirstResponder:listFilterField];
+		[[tableDocumentInstance parentWindow] makeFirstResponder:listFilterField];
 	}
 	else if([tables count] > 2) {
-		[tableWindow makeFirstResponder:tablesListView];
+		[[tableDocumentInstance parentWindow] makeFirstResponder:tablesListView];
 		if([tablesListView numberOfSelectedRows] < 1)
 			[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
 		
@@ -1940,7 +1940,7 @@
 			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
 			[alert setAlertStyle:NSWarningAlertStyle];
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
-				[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+				[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 				currentIndex = NSNotFound;
 			} else {
 				NSInteger choice = [alert runModal];
@@ -1965,7 +1965,7 @@
 	[tablesListView reloadData];
 	
 	// set window title
-	[tableWindow setTitle:[tableDocumentInstance displaySPName]];
+	[tableDocumentInstance updateWindowTitle:self];
 
 	[tablesListView deselectAll:self];
 
@@ -2003,7 +2003,7 @@
 			// [[buttons objectAtIndex:0] setKeyEquivalent:@"t"];
 			// [[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 			// [[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-			[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
+			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
 		}
 		
 		// Get next index (beginning from the end)
@@ -2097,7 +2097,7 @@
 		alertSheetOpened = YES;
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), @"addRow",
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
 		
@@ -2116,7 +2116,7 @@
 	NSString *tableType = @"";
 	
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 		return;
 	}
 	
@@ -2152,7 +2152,7 @@
 
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 		
     } else {
@@ -2198,7 +2198,7 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if ([mySQLConnection queryErrored]) {
 				if ([mySQLConnection isConnected]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
 				}
 				return;
@@ -2211,7 +2211,7 @@
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			
 			if ([mySQLConnection queryErrored]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 			
@@ -2219,7 +2219,7 @@
 		
         if ([mySQLConnection queryErrored]) {
 			//error while creating new table
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
@@ -2237,7 +2237,7 @@
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil,
 									  nil,
-									  tableWindow,
+									  [tableDocumentInstance parentWindow],
 									  self,
 									  nil,
 									  nil,

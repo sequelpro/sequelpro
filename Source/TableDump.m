@@ -142,7 +142,7 @@
 - (void)export
 {
 	[self reloadTables:self];
-	[NSApp beginSheet:exportWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+	[NSApp beginSheet:exportWindow modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
 }
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
@@ -264,7 +264,7 @@
 
 	// Open the savePanel
 	[currentExportPanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
-										  file:file modalForWindow:tableWindow modalDelegate:self
+										  file:file modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 								didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 								
 
@@ -325,7 +325,7 @@
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:exportFile] ) {
 		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:exportFile]
 			|| !(fileHandle = [SPFileHandle fileHandleForWritingAtPath:exportFile]) ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			[pool release];
 			return;
@@ -334,7 +334,7 @@
 	// Otherwise attempt to create a file
 	} else {
 		if ( ![[NSFileManager defaultManager] createFileAtPath:exportFile contents:[NSData data] attributes:nil] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			[pool release];
 			return;
@@ -344,7 +344,7 @@
 		fileHandle = [SPFileHandle fileHandleForWritingAtPath:exportFile];
 		if ( !fileHandle ) {
 			[[NSFileManager defaultManager] removeFileAtPath:exportFile handler:nil];
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			[pool release];
 			return;
@@ -374,7 +374,7 @@
 		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
 		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
 		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 		[[singleProgressSheet onMainThread] makeKeyWindow];
 
 		[[singleProgressBar onMainThread] startAnimation:self];		
@@ -417,7 +417,7 @@
 		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
 		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
 		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 		[[singleProgressSheet onMainThread] makeKeyWindow];
 
 		[[singleProgressBar onMainThread] startAnimation:self];
@@ -475,14 +475,14 @@
 
 	// Display error message on problems
 	if ( !progressCancelled && !success ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 	}
 
     // Export finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@",@"description for finished exporting growl notification"), [exportFile lastPathComponent]] 
-														window:tableWindow
+													  document:tableDocumentInstance
                                               notificationName:@"Export Finished"];
 	[pool release];
 }
@@ -495,12 +495,6 @@
  invoked when user clicks on an ImportFromClipboard menuItem
  */
 {
-	// Load accessory nib each time
-	if(![NSBundle loadNibNamed:@"ImportAccessory" owner:self]) {
-		NSBeep();
-		NSLog(@"ImportAccessory accessory dialog could not be loaded.");
-		return;
-	}
 
 	// clipboard textview with no wrapping
 	const CGFloat LargeNumberForText = 1.0e7;
@@ -527,7 +521,7 @@
 	[importFromClipboardAccessoryView addSubview:importCSVView];
 
 	[NSApp beginSheet:importFromClipboardSheet
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"importFromClipboard"];
@@ -542,13 +536,6 @@
 {
 	// prepare open panel and accessory view
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-
-	// Load accessory nib each time
-	if(![NSBundle loadNibNamed:@"ImportAccessory" owner:self]) {
-		NSBeep();
-		NSLog(@"ImportAccessory accessory dialog could not be loaded.");
-		return;
-	}
 
 	// Preset the accessory view with prefs defaults
 	[importFieldsTerminatedField setStringValue:[prefs objectForKey:SPCSVImportFieldTerminator]];
@@ -567,7 +554,7 @@
 	// Show openPanel
 	[openPanel beginSheetForDirectory:[prefs objectForKey:@"openPath"]
 								 file:[lastFilename lastPathComponent]
-					   modalForWindow:tableWindow
+					   modalForWindow:[tableDocumentInstance parentWindow]
 						modalDelegate:self
 					   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
 						  contextInfo:nil];
@@ -624,7 +611,7 @@
 	if (!sqlFileHandle) {
 		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
-						  nil, nil, tableWindow, self, nil, nil,
+						  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  NSLocalizedString(@"SQL file open error", @"The SQL file you selected could not be found or read."));
 		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
@@ -646,7 +633,7 @@
 	[[singleProgressBar onMainThread] startAnimation:self];
 				
 	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
@@ -668,7 +655,7 @@
 			[self closeAndStopProgressSheet];
 			SPBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, tableWindow, self, nil, nil,
+							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"SQL read error", @"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)"), (long)queriesPerformed, [exception reason]]);
 			[sqlParser release];
 			[sqlDataBuffer release];
@@ -718,7 +705,7 @@
 						[self closeAndStopProgressSheet];
 						SPBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 										  NSLocalizedString(@"OK", @"OK button"),
-										  nil, nil, tableWindow, self, nil, nil,
+										  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 										  [NSString stringWithFormat:NSLocalizedString(@"SQL encoding read error", @"An error occurred when reading the file, as it could not be read in either UTF-8 or %@.\n\nOnly %ld queries were executed."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)queriesPerformed]);
 						[sqlParser release];
 						[sqlDataBuffer release];
@@ -842,7 +829,7 @@
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
-														window:tableWindow
+													  document:tableDocumentInstance
                                               notificationName:@"Import Finished"];
 }
 
@@ -887,7 +874,7 @@
 	if (!csvFileHandle) {
 		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
-						  nil, nil, tableWindow, self, nil, nil,
+						  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  NSLocalizedString(@"CSV file open error", @"The CSV file you selected could not be found or read."));
 		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
@@ -907,7 +894,7 @@
 	[[singleProgressBar onMainThread] startAnimation:self];
 				
 	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
@@ -947,7 +934,7 @@
 			[self closeAndStopProgressSheet];
 			SPBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, tableWindow, self, nil, nil,
+							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"CSV read error", @"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)"), (long)rowsImported, [exception reason]]);
 			[csvParser release];
 			[csvDataBuffer release];
@@ -996,7 +983,7 @@
 					[self closeAndStopProgressSheet];
 					SPBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, tableWindow, self, nil, nil,
+									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"CSV encoding read error", @"An error occurred when reading the file, as it could not be read using %@.\n\nOnly %ld rows were imported."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)rowsImported]);
 					[csvParser release];
 					[csvDataBuffer release];
@@ -1073,7 +1060,7 @@
 				[[singleProgressBar onMainThread] setIndeterminate:NO];
 				[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
 				[[singleProgressBar onMainThread] startAnimation:self];
-				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 				[[singleProgressSheet onMainThread] makeKeyWindow];
 
 				// Set up the field names import string for INSERT or REPLACE INTO
@@ -1277,7 +1264,7 @@
 	// Import finished Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
-														window:tableWindow
+													  document:tableDocumentInstance
                                               notificationName:@"Import Finished"];
 
 	// If the table selected for import is also selected in the content view,
@@ -1360,7 +1347,6 @@
 
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
-	if (!importFormatPopup) [NSBundle loadNibNamed:@"ImportAccessory" owner:self];
 	[importFormatPopup selectItemWithTitle:@"SQL"];
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:filename];
 }
@@ -1380,7 +1366,7 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
-						  tableWindow, self,
+						  [tableDocumentInstance parentWindow], self,
 						  nil, nil,
 						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
 						  );
@@ -1393,7 +1379,7 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
-						  tableWindow, self,
+						  [tableDocumentInstance parentWindow], self,
 						  nil, nil,
 						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
 						  );
@@ -1407,7 +1393,7 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
-						  tableWindow, self,
+						  [tableDocumentInstance parentWindow], self,
 						  nil, nil,
 						  NSLocalizedString(@"Can't import CSV data into a database without any tables!", @"error text when trying to import csv data, but we have no tables in the db")
 						  );
@@ -1430,7 +1416,7 @@
 
 	// Show field mapper sheet and set the focus to it
 	[[NSApp onMainThread] beginSheet:[fieldMapperController window]
-	   modalForWindow:tableWindow
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
 		  contextInfo:nil];
@@ -1655,7 +1641,7 @@
 	
 	// Open the progress sheet
 	[[NSApp onMainThread] beginSheet:singleProgressSheet
-	   modalForWindow:tableWindow modalDelegate:self
+	   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];
 
@@ -2162,7 +2148,7 @@
 	
 	// Open the progress sheet
 	[[NSApp onMainThread] beginSheet:singleProgressSheet
-	   modalForWindow:tableWindow modalDelegate:self
+	   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];
 		
@@ -2368,7 +2354,7 @@
 		
 		// Open progress sheet
 		[[NSApp onMainThread] beginSheet:singleProgressSheet
-		   modalForWindow:tableWindow modalDelegate:self
+		   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
 		[[singleProgressSheet onMainThread] makeKeyWindow];
 	}
@@ -2595,7 +2581,7 @@
 		
 		// Open progress sheet
 		[[NSApp onMainThread] beginSheet:singleProgressSheet
-		   modalForWindow:tableWindow modalDelegate:self
+		   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 		   didEndSelector:nil contextInfo:nil];
 		[[singleProgressSheet onMainThread] makeKeyWindow];
 	}
@@ -2762,7 +2748,7 @@
 	
 	// Open the progress sheet
 	[[NSApp onMainThread] beginSheet:singleProgressSheet
-	   modalForWindow:tableWindow modalDelegate:self
+	   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 	   didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];	
 
@@ -3190,8 +3176,18 @@
 
 - (void)awakeFromNib
 {
+	if (_mainNibLoaded) return;
+	_mainNibLoaded = YES;
+
 	[self switchTab:[[exportToolbar items] objectAtIndex:0]];
 	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+
+	// Load the import accessory view, retaining a reference to the top-level objects that need releasing.
+	NSArray *importAccessoryTopLevelObjects = nil;
+	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ImportAccessory" bundle:[NSBundle mainBundle]];
+	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
+	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
+	[nibLoader release];
 }
 
 - (id)init
@@ -3199,6 +3195,7 @@
 	self = [super init];
 	
 	tables = [[NSMutableArray alloc] init];
+	nibObjectsToRelease = [[NSMutableArray alloc] init];
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
 	fieldMappingTableColumnNames = nil;
@@ -3215,6 +3212,7 @@
 	
 	prefs = nil;
 	lastFilename = nil;
+	_mainNibLoaded = NO;
 	
 	return self;
 }
@@ -3225,6 +3223,8 @@
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	if (lastFilename) [lastFilename release];
 	if (prefs) [prefs release];
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	[nibObjectsToRelease release];
 	
 	[super dealloc];
 }
@@ -3256,7 +3256,7 @@
 
 	[errorsView setString:message];
 	[NSApp beginSheet:errorsSheet 
-	   modalForWindow:tableWindow 
+	   modalForWindow:[tableDocumentInstance parentWindow] 
 		modalDelegate:self 
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 		  contextInfo:nil];

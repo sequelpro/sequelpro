@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class BWAnchoredButtonBar;
+@class BWAnchoredButtonBar, TableDocument;
 
 @interface NSObject (SPContentFilterManagerDelegate)
 
@@ -37,6 +37,7 @@
 {
 	NSUserDefaults *prefs;
 	
+	TableDocument *tableDocumentInstance;
 	NSURL *delegatesFileURL;
 	IBOutlet id encodingPopUp;
 	IBOutlet id contentFilterTableView;

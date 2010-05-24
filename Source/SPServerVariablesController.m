@@ -165,7 +165,7 @@
 {
 	if (returnCode == NSOKButton) {
 		if ([variablesFiltered count] > 0) {
-			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [(TableDocument *)[[NSApp mainWindow] delegate] host]];
+			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[[NSApp delegate] frontDocument] host]];
 			
 			for (NSDictionary *variable in variablesFiltered) 
 			{

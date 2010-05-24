@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <FeedbackReporter/FRFeedbackReporter.h>
 
-@class SPPreferenceController, SPAboutController;
+@class SPPreferenceController, SPAboutController, TableDocument;
 
 @interface SPAppController : NSObject <FRFeedbackReporterDelegate>
 {
@@ -37,6 +37,11 @@
 
 	id encodingPopUp;
 }
+
+// Window management
+- (IBAction)newWindow:(id)sender;
+- (IBAction)newTab:(id)sender;
+- (NSWindow *) frontDocumentWindow;
 
 // IBAction methods
 - (IBAction)openAboutPanel:(id)sender;
@@ -56,6 +61,8 @@
 
 // Getters
 - (SPPreferenceController *)preferenceController;
+- (NSArray *) orderedDatabaseConnectionWindows;
+- (TableDocument *) frontDocument;
 
 // Feedback controller delegate methods
 - (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;

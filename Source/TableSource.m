@@ -362,7 +362,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
+		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
 		
 	}
 	
@@ -400,7 +400,7 @@
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
 }
 
 /**
@@ -477,7 +477,7 @@
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
 }
 
 /**
@@ -516,7 +516,7 @@
 
 		// Begin the sheet
 		[NSApp beginSheet:resetAutoIncrementSheet
-		   modalForWindow:tableWindow 
+		   modalForWindow:[tableDocumentInstance parentWindow] 
 			modalDelegate:self
 		   didEndSelector:@selector(resetAutoincrementSheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"resetAutoIncrement"];
@@ -577,7 +577,7 @@
 
 	// Begin the sheet
 	[NSApp beginSheet:indexSheet
-	   modalForWindow:tableWindow 
+	   modalForWindow:[tableDocumentInstance parentWindow] 
 		modalDelegate:self
 	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:) 
 		  contextInfo:@"addIndex"];
@@ -762,7 +762,7 @@ closes the keySheet
 	isSavingRow = YES;
 
 	// Save any edits which have been made but not saved to the table yet.
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
@@ -921,7 +921,7 @@ closes the keySheet
 		[chooseKeyButton selectItemAtIndex:0];
 		
 		[NSApp beginSheet:keySheet 
-		   modalForWindow:tableWindow modalDelegate:self 
+		   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self 
 		   didEndSelector:nil 
 			  contextInfo:nil];
 		
@@ -980,7 +980,7 @@ closes the keySheet
 		if([mySQLConnection getLastErrorID] == 1146) { // If the current table doesn't exist anymore
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 							  NSLocalizedString(@"OK", @"OK button"), 
-							  nil, nil, tableWindow, self, nil, nil, 
+							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"), 
 							  selectedTable, [mySQLConnection getLastErrorMessage]]);
 
@@ -1004,14 +1004,14 @@ closes the keySheet
 		if (isEditingNewRow) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
 							  NSLocalizedString(@"Edit row", @"Edit row button"), 
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil, 
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@'.\n\nMySQL said: %@", @"error adding field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		} 
 		else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"), 
 							  NSLocalizedString(@"Edit row", @"Edit row button"), 
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil, 
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@'.\n\nMySQL said: %@", @"error changing field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		}
@@ -1036,7 +1036,7 @@ closes the keySheet
 
 		// Problem: reentering edit mode for first cell doesn't function
 		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
-		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
+		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 	}
 
 	// Discard changes and cancel editing
@@ -1077,7 +1077,7 @@ closes the keySheet
 	
 	// Display the error sheet
 	SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, tableWindow, self, nil, nil,
+			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[errorDictionary objectForKey:@"message"]);
 }
 
@@ -1517,7 +1517,7 @@ would result in a position change.
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
 	} else {
 		[tableDataInstance resetAllData];
@@ -1774,7 +1774,7 @@ would result in a position change.
 		
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, 
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
 		}
 		else {

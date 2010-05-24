@@ -131,7 +131,7 @@
 }
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
-		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)tableWindow
+		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 {
 	// If required, use monospaced fonts
 	if (![prefs objectForKey:SPFieldEditorSheetFont]) {
@@ -192,7 +192,7 @@
 	[editTextView setEditable:isEditable];
 	[editImage setEditable:isEditable];
 	
-	[NSApp beginSheet:editSheet modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[NSApp beginSheet:editSheet modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	
 	[editSheetProgressBar startAnimation:self];
 	

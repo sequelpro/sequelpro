@@ -73,6 +73,10 @@
 
 @implementation TableDocument
 
+@synthesize parentWindowController;
+@synthesize parentTabViewItem;
+@synthesize isProcessing;
+
 - (id)init
 {
 	
@@ -92,6 +96,9 @@
 		mySQLVersion = nil;
 		allDatabases = nil;
 		allSystemDatabases = nil;
+		mainToolbar = nil;
+		parentWindow = nil;
+		isProcessing = NO;
 
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
@@ -99,10 +106,12 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		queryEditorInitString = nil;
 
+		spfFileURL = nil;
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
 
+		titleAccessoryView = nil;
 		taskProgressWindow = nil;
 		taskDisplayIsIndeterminate = YES;
 		taskDisplayLastValue = 0;
@@ -117,6 +126,15 @@
 		keyChainID = nil;
 		statusValues = nil;
 		printThread = nil;
+		nibObjectsToRelease = [[NSMutableArray alloc] init];
+
+		// As this object is not an NSWindowController subclass, top-level objects in loaded nibs aren't
+		// automatically released.  Keep track of the top-level objects for release on dealloc.
+		NSArray *dbViewTopLevelObjects = nil;
+		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"DBView" bundle:[NSBundle mainBundle]];
+		[nibLoader instantiateNibWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
+		[nibLoader release];
+		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
 	}
 	
 	return self;
@@ -126,48 +144,6 @@
 {
 	if (_mainNibLoaded) return;
 	_mainNibLoaded = YES;
-
-	// The first window should use autosaving; subsequent windows should cascade
-	BOOL usedAutosave = [tableWindow setFrameAutosaveName:[self windowNibName]];
-	if (!usedAutosave) {
-		[tableWindow setFrameUsingName:[self windowNibName]];
-		NSArray *documents = [[NSDocumentController sharedDocumentController] documents];
-		NSRect previousFrame = [[[documents objectAtIndex:(([documents count] > 1)?[documents count]-2:[documents count]-1)] valueForKey:@"tableWindow"] frame];
-		NSPoint topLeftPoint = previousFrame.origin;
-		topLeftPoint.y += previousFrame.size.height;
-		[tableWindow setFrameTopLeftPoint:[tableWindow cascadeTopLeftFromPoint:topLeftPoint]];
-
-		// Try to check if new frame fits into the screen
-		NSRect screenFrame = [[NSScreen mainScreen] frame];
-		NSScreen* candidate;
-		for(candidate in [NSScreen screens])
-			if(NSMinX([candidate frame]) < topLeftPoint.x && NSMinX([candidate frame]) > NSMinX(screenFrame))
-				screenFrame = [candidate visibleFrame];
-
-		previousFrame = [tableWindow frame];
-
-		// Determine if move/resize is required
-		if(previousFrame.origin.x - screenFrame.origin.x + previousFrame.size.width >= screenFrame.size.width
-			|| previousFrame.origin.y - screenFrame.origin.y + previousFrame.size.height >= screenFrame.size.height)
-		{
-
-			// First try to move the window back onto the screen if it will fit
-			if (previousFrame.size.width <= screenFrame.size.width && previousFrame.size.height <= screenFrame.size.height) {
-				previousFrame.origin.x -= (previousFrame.origin.x + previousFrame.size.width) - (screenFrame.origin.x + screenFrame.size.width);
-				previousFrame.origin.y -= (previousFrame.origin.y + previousFrame.size.height) - (screenFrame.origin.y + screenFrame.size.height);
-				[tableWindow setFrame:previousFrame display:YES];
-
-			// Otherwise, resize and de-cascade a little
-			} else {
-				previousFrame.size.width -= 50;
-				previousFrame.size.height -= 50;
-				previousFrame.origin.y += 50;
-				if(previousFrame.size.width >= [tableWindow minSize].width && previousFrame.size.height >= [tableWindow minSize].height)
-					[tableWindow setFrame:previousFrame display:YES];
-			}
-		}
-
-	}
 
 	// Set up the toolbar
 	[self setupToolbar];
@@ -200,22 +176,20 @@
 	// Register a second observer for when the logging preference changes so we can tell the current connection about it
 	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
 
+	// Register for notifications
+	//register for notifications
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed" object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
+												 name:@"SMySQLQueryHasBeenPerformed" object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
+												 name:@"NSApplicationWillTerminateNotification" object:nil];
+
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
-	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:1] submenu] itemWithTag:1] submenu];
+	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
 
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
-
-	// Add the icon accessory view to the title bar
-	NSView *windowFrame = [[tableWindow contentView] superview];
-	NSRect av = [titleAccessoryView frame];
-	NSRect initialAccessoryViewFrame = NSMakeRect(
-											[windowFrame frame].size.width - av.size.width - 30,
-											[windowFrame frame].size.height - av.size.height,
-											av.size.width,
-											av.size.height);
-	[titleAccessoryView setFrame:initialAccessoryViewFrame];
-	[windowFrame addSubview:titleAccessoryView];
 
 	// Bind the background color of the create syntax text view to the users preference
 	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
@@ -229,25 +203,35 @@
 						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
 							options:bindingOptions];
 
-	// Load additional nibs
-	if (![NSBundle loadNibNamed:@"ConnectionErrorDialog" owner:self]) {
+	// Load additional nibs, keeping track of the top-level objects to allow correct release
+	NSArray *connectionDialogTopLevelObjects = nil;
+	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
 		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
 	}
-	if (![NSBundle loadNibNamed:@"ProgressIndicatorLayer" owner:self]) {
+	[nibLoader release];
+	NSArray *progressIndicatorLayerTopLevelObjects = nil;
+	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
 		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
 	}
+	[nibLoader release];
 
-	// Set up the progress indicator child window and layer - add to main window, change indicator color and size
+	// Retain the icon accessory view to allow it to be added and removed from windows
+	[titleAccessoryView retain];
+
+	// Set up the progress indicator child window and layer - change indicator color and size
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+	[taskProgressWindow setReleasedWhenClosed:NO];
 	[taskProgressWindow setOpaque:NO];
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
 	[taskProgressWindow setAlphaValue:0.0];
-	[taskProgressWindow orderFront:self];
-	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
-	[taskProgressWindow setReleasedWhenClosed:YES];
 	[taskProgressWindow setContentView:taskProgressLayer];
-	[self centerTaskWindow];	
 }
 
 /**
@@ -266,8 +250,7 @@
 
 	NSInteger connectionType = -1;
 
-	// Inform about the data source in the window title bar
-	[tableWindow setTitle:[self displaySPName]];
+	[self updateWindowTitle:self];
 
 	// Clean fields
 	[connectionController setName:@""];
@@ -305,7 +288,7 @@
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		if (spf) [spf release];
-		[self close];
+		[self closeAndDisconnect];
 		return;
 	}
 
@@ -313,7 +296,7 @@
 	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
 		NSLog(@"SPF file format is not 'connection'.");
 		[spf release];
-		[self close];
+		[self closeAndDisconnect];
 		return;
 	}
 
@@ -327,7 +310,7 @@
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		[spf release];
-		[self close];
+		[self closeAndDisconnect];
 		return;
 	}
 
@@ -339,7 +322,7 @@
 		[inputTextWindowSecureTextField setStringValue:@""];
 		[inputTextWindowSecureTextField selectText:nil];
 
-		[NSApp beginSheet:inputTextWindow modalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp beginSheet:inputTextWindow modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 
 		// wait for encryption password
 		NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
@@ -366,7 +349,7 @@
 		if(passwordSheetReturnCode)
 			encryptpw = [inputTextWindowSecureTextField stringValue];
 		else {
-			[self close];
+			[self closeAndDisconnect];
 			[spf release];
 			return;
 		}
@@ -392,7 +375,7 @@
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
-			[self close];
+			[self closeAndDisconnect];
 			[spf release];
 			return;
 		}
@@ -407,7 +390,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
-		[self close];
+		[self closeAndDisconnect];
 		[spf release];
 		return;
 	}
@@ -422,7 +405,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
-		[self close];
+		[self closeAndDisconnect];
 		[spf release];
 		return;
 	}
@@ -545,7 +528,7 @@
 
 	// Restore toolbar setting
 	if([spfSession objectForKey:@"isToolbarVisible"])
-		[[tableWindow toolbar] setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
+		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
 
 	// TODO up to now it doesn't work
 	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
@@ -592,7 +575,7 @@
 
 	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
 
-	[tableWindow setTitle:[self displaySPName]];
+	[self updateWindowTitle:self];
 
 	// dealloc spfSession data
 	[spfSession release];
@@ -650,7 +633,7 @@
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
 	
 	// ...but hide the icon while the document is temporary
-	if ([self isUntitled]) [[tableWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
+	if ([self isUntitled]) [[parentWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
 
 	// Set the connection encoding
 	NSString *encodingName = [prefs objectForKey:SPDefaultEncoding];
@@ -672,6 +655,7 @@
 
 	// Update the database list
 	[self setDatabases:self];
+	[chooseDatabaseButton setEnabled:!_isWorkingLevel];
 
 	// For each of the main controllers, assign the current connection
 	[tablesListInstance setConnection:mySQLConnection];
@@ -690,12 +674,12 @@
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
-	[tableWindow setTitle:[self displaySPName]];
+	[self updateWindowTitle:self];
 	
 	// Connected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [tableWindow title]]
-														window:tableWindow
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [parentWindow title]]
+													  document:self
 											  notificationName:@"Connected"];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
@@ -722,9 +706,9 @@
 	// Set focus to table list filter field if visible
 	// otherwise set focus to Table List view
 	if ( [[tablesListInstance tables] count] > 20 )
-		[tableWindow makeFirstResponder:listFilterField];
+		[parentWindow makeFirstResponder:listFilterField];
 	else
-		[tableWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+		[parentWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
 	if(spfSession != nil) {
 
@@ -762,25 +746,6 @@
 
 - (MCPConnection *) getConnection {
 	return mySQLConnection;
-}
-
-
-/**
- * Set whether the connection controller should automatically start
- * connecting; called by maincontroller, but only for first window.
- */
-- (void)setShouldAutomaticallyConnect:(BOOL)shouldAutomaticallyConnect
-{
-	_shouldOpenConnectionAutomatically = shouldAutomaticallyConnect;
-}
-
-/**
- * Allow the connection controller to determine whether connection should
- * be automatically triggered.
- */
-- (BOOL)shouldAutomaticallyConnect
-{
-	return _shouldOpenConnectionAutomatically;
 }
 
 /**
@@ -925,7 +890,7 @@
 	[databaseNameField setStringValue:@""];
 	
 	[NSApp beginSheet:databaseSheet
-	   modalForWindow:tableWindow
+	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"addDatabase"];
@@ -943,7 +908,7 @@
 	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
 	
 	[NSApp beginSheet:databaseCopySheet
-	   modalForWindow:tableWindow
+	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"copyDatabase"];
@@ -960,7 +925,7 @@
 	[renameDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename database '%@' to:", @"rename database message"), selectedDatabase]];
 	
 	[NSApp beginSheet:databaseRenameSheet
-	   modalForWindow:tableWindow
+	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"renameDatabase"];
@@ -991,7 +956,7 @@
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
+	[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
 }
 
 /**
@@ -1008,7 +973,7 @@
 		[prefs addObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
-	[serverVariablesController displayServerVariablesSheetAttachedToWindow:tableWindow];
+	[serverVariablesController displayServerVariablesSheetAttachedToWindow:parentWindow];
 }
 
 /**
@@ -1108,7 +1073,7 @@
 {
 	// error := first object is the title , second the message, only one button OK
 	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, tableWindow, self, nil, nil,
+			nil, nil, parentWindow, self, nil, nil,
 			[error objectAtIndex:1]);
 }
 
@@ -1135,12 +1100,12 @@
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-				[tableWindow setTitle:[self displaySPName]];
+				[self updateWindowTitle:self];
 			}
 		} else {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
-			[tableWindow setTitle:[self displaySPName]];
+			[self updateWindowTitle:self];
 		}
 	}
 
@@ -1284,6 +1249,7 @@
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		[mainToolbar validateVisibleItems];
+		[chooseDatabaseButton setEnabled:NO];
 				
 		// Schedule appearance of the task window in the near future
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
@@ -1399,6 +1365,7 @@
 		databaseListIsSelectable = YES;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
 		[mainToolbar validateVisibleItems];
+		[chooseDatabaseButton setEnabled:_isConnected];
 	}
 }
 
@@ -1476,7 +1443,7 @@
 - (void) centerTaskWindow
 {
 	NSPoint newBottomLeftPoint;
-	NSRect mainWindowRect = [tableWindow frame];
+	NSRect mainWindowRect = [parentWindow frame];
 	NSRect taskWindowRect = [taskProgressWindow frame];
 
 	newBottomLeftPoint.x = round(mainWindowRect.origin.x + mainWindowRect.size.width/2 - taskWindowRect.size.width/2);
@@ -1737,7 +1704,7 @@
 						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
-			  beginSheetModalForWindow:tableWindow
+			  beginSheetModalForWindow:parentWindow
 						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
 		return;
 	}
@@ -1753,7 +1720,7 @@
 
 	// Show variables sheet
 	[NSApp beginSheet:createTableSyntaxWindow
-	   modalForWindow:tableWindow 
+	   modalForWindow:parentWindow 
 		modalDelegate:self
 	   didEndSelector:nil 
 		  contextInfo:nil];
@@ -1806,7 +1773,7 @@
 						 defaultButton:NSLocalizedString(@"OK", @"OK button")
 					   alternateButton:nil otherButton:nil
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
-			  beginSheetModalForWindow:tableWindow
+			  beginSheetModalForWindow:parentWindow
 						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
 		return;
 	}
@@ -1822,7 +1789,7 @@
 	// Table syntax copied Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
-														window:tableWindow
+													  document:self
 											  notificationName:@"Syntax Copied"];
 }
 
@@ -1851,7 +1818,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:tableWindow 
+				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -1886,7 +1853,7 @@
 					   alternateButton:nil 
 						   otherButton:nil 
 			 informativeTextWithFormat:message] 
-			  beginSheetModalForWindow:tableWindow 
+			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
 						   contextInfo:NULL];
@@ -1898,7 +1865,7 @@
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while checking selected items", @"error while checking selected items message")];
 		[alert setAccessoryView:statusTableAccessoryView];
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
 	}
 }
 
@@ -1927,7 +1894,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:tableWindow 
+				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -1962,7 +1929,7 @@
 					   alternateButton:nil 
 						   otherButton:nil 
 			 informativeTextWithFormat:message] 
-			  beginSheetModalForWindow:tableWindow 
+			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
 						   contextInfo:NULL];
@@ -1974,7 +1941,7 @@
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while analyzing selected items", @"error while analyzing selected items message")];
 		[alert setAccessoryView:statusTableAccessoryView];
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
 	}
 }
 
@@ -2003,7 +1970,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:tableWindow 
+				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -2038,7 +2005,7 @@
 					   alternateButton:nil 
 						   otherButton:nil 
 			 informativeTextWithFormat:message] 
-			  beginSheetModalForWindow:tableWindow 
+			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
 						   contextInfo:NULL];
@@ -2050,7 +2017,7 @@
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while optimizing selected items", @"error while optimizing selected items message")];
 		[alert setAccessoryView:statusTableAccessoryView];
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
 	}
 }
 
@@ -2078,7 +2045,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:tableWindow 
+				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -2113,7 +2080,7 @@
 					   alternateButton:nil 
 						   otherButton:nil 
 			 informativeTextWithFormat:message] 
-			  beginSheetModalForWindow:tableWindow 
+			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
 						   contextInfo:NULL];
@@ -2125,7 +2092,7 @@
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while repairing selected items", @"error while repairing selected items message")];
 		[alert setAccessoryView:statusTableAccessoryView];
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
 	}
 }
 
@@ -2153,7 +2120,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:tableWindow 
+				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -2188,7 +2155,7 @@
 					   alternateButton:nil 
 						   otherButton:nil 
 			 informativeTextWithFormat:message] 
-			  beginSheetModalForWindow:tableWindow 
+			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
 						   contextInfo:NULL];
@@ -2200,7 +2167,7 @@
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while flushing selected items", @"error while flushing selected items message")];
 		[alert setAccessoryView:statusTableAccessoryView];
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
 	}
 }
 
@@ -2227,7 +2194,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:tableWindow 
+				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -2244,7 +2211,7 @@
 					   alternateButton:nil 
 						   otherButton:nil 
 			 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Table checksum: %@",@"table checksum: %@"), message]] 
-			  beginSheetModalForWindow:tableWindow 
+			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
 						   contextInfo:NULL];
@@ -2256,7 +2223,7 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Checksums of %@",@"Checksums of %@ message"), what]];
 		[alert setMessageText:NSLocalizedString(@"Table checksum",@"table checksum message")];
 		[alert setAccessoryView:statusTableAccessoryView];
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"statusError"];
 	}
 }
 
@@ -2293,7 +2260,7 @@
 		// Table syntax copied Growl notification
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
 													   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied", @"description for table syntax copied growl notification"), [self table]]
-															window:tableWindow
+														  document:self
 												  notificationName:@"Syntax Copied"];
 	}
 }
@@ -2373,13 +2340,13 @@
 		
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		
-		[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
+		[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
 	
 		return;
 	}
 	
 	[NSApp beginSheet:[userManagerInstance window]
-	   modalForWindow:tableWindow 
+	   modalForWindow:parentWindow 
 		modalDelegate:userManagerInstance 
 	   didEndSelector:@selector(userManagerSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
@@ -2390,7 +2357,7 @@
  */
 - (void)doPerformQueryService:(NSString *)query
 {
-	[tableWindow makeKeyAndOrderFront:self];
+	[parentWindow makeKeyAndOrderFront:self];
 	[tablesListInstance doPerformQueryService:query];
 }
 
@@ -2412,26 +2379,29 @@
 
 	if (![mySQLConnection queryErrored]) {
 		//flushed privileges without errors
-		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
 																																					  [mySQLConnection getLastErrorMessage]]);
 	}
 }
 
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender
 {
-	TableDocument *newTableDocument;
+	[[NSApp delegate] newWindow:self];
+	TableDocument *newTableDocument = [[NSApp delegate] frontDocument];
+	[newTableDocument initWithConnectionFile:[[self fileURL] path]];
+}
 
-	// Manually open a new document, setting SPAppController as sender to trigger autoconnection
-	if (newTableDocument = [[NSDocumentController sharedDocumentController] makeUntitledDocumentOfType:@"Sequel Pro connection" error:nil]) {
-		[newTableDocument setShouldAutomaticallyConnect:NO];
-		[[NSDocumentController sharedDocumentController] addDocument:newTableDocument];
-		[newTableDocument makeWindowControllers];
-		[newTableDocument showWindows];
-		[newTableDocument initWithConnectionFile:[[self fileURL] path]];
-	}
+/**
+ * Ask the connection controller to initiate connection, if it hasn't
+ * already.  Used to support automatic connections on window open,
+ */
+- (void)connect
+{
+	if (mySQLVersion) return;
+	[connectionController initiateConnection:self];
 }
 
 - (void)closeConnection
@@ -2441,8 +2411,8 @@
 
 	// Disconnected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [tableWindow title]] 
-														window:tableWindow
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [parentTabViewItem label]]
+													  document:self
 											  notificationName:@"Disconnected"];
 }
 
@@ -2461,7 +2431,7 @@
  */
 - (BOOL)isUntitled
 {
-	return ([[self fileURL] isFileURL]) ? NO : YES;
+	return ([self fileURL] && [[self fileURL] isFileURL]) ? NO : YES;
 }
 
 /**
@@ -2471,7 +2441,7 @@
  */
 - (BOOL)couldCommitCurrentViewActions
 {
-	[tableWindow endEditingFor:nil];
+	[parentWindow endEditingFor:nil];
 	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
 
 		// Table structure view
@@ -2491,6 +2461,16 @@
 
 #pragma mark -
 #pragma mark Accessor methods
+
+
+/**
+ * Returns the parent view, which in its turn contains the database view for this
+ * connection.
+ */
+- (NSView *)parentView
+{
+	return parentView;
+}
 
 /**
  * Returns the host
@@ -2612,6 +2592,7 @@
  */
 - (void)willPerformQuery:(NSNotification *)notification
 {
+	[self setIsProcessing:YES];
 	[queryProgressBar startAnimation:self];
 }
 
@@ -2620,6 +2601,7 @@
  */
 - (void)hasPerformedQuery:(NSNotification *)notification
 {
+	[self setIsProcessing:NO];
 	[queryProgressBar stopAnimation:self];
 }
 
@@ -2694,7 +2676,8 @@
 			return;
 		}
 
-		// Load accessory nib each time
+		// Load accessory nib each time.
+		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
 		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
 			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
 			return;
@@ -2742,7 +2725,7 @@
 
 	[panel beginSheetForDirectory:nil 
 						   file:filename 
-				 modalForWindow:tableWindow 
+				 modalForWindow:parentWindow 
 				  modalDelegate:self 
 				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
 					contextInfo:contextInfo];
@@ -2771,7 +2754,6 @@
 
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-
 	if ( returnCode ) {
 
 		NSString *fileName = [panel filename];
@@ -2807,8 +2789,11 @@
 
 			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO];
 
+			// Manually loaded nibs don't have their top-level objects released automatically - do that here.
+			[saveConnectionAccessory release];
+
 			if(contextInfo == @"saveSPFfileAndClose")
-				[self close];
+				[self closeAndDisconnect];
 		}
 	}
 }
@@ -3018,7 +3003,7 @@
 		}
 		[session setObject:aString forKey:@"view"];
 
-		[session setObject:[NSNumber numberWithBool:[[tableWindow toolbar] isVisible]] forKey:@"isToolbarVisible"];
+		[session setObject:[NSNumber numberWithBool:[[parentWindow toolbar] isVisible]] forKey:@"isToolbarVisible"];
 		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
@@ -3098,7 +3083,7 @@
 	[self setFileURL:[NSURL fileURLWithPath:fileName]];
 	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
-	[tableWindow setTitle:[self displaySPName]];
+	[self updateWindowTitle:self];
 
 	// Store doc data permanently
 	[spfDocData removeAllObjects];
@@ -3169,7 +3154,7 @@
 	}
 
 	if (!_isConnected || _isWorkingLevel) {
-		return ([menuItem action] == @selector(newDocument:) || [menuItem action] == @selector(terminate:));
+		return ([menuItem action] == @selector(newWindow:) || [menuItem action] == @selector(terminate:) || [menuItem action] == @selector(closeTab:) || [menuItem action] == @selector(newTab:));
 	}
 
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
@@ -3308,7 +3293,8 @@
 		return NO;
 	}
 
-	return [super validateMenuItem:menuItem];
+	// Default to YES for unhandled menus
+	return YES;
 }
 
 - (IBAction)viewStructure:(id)sender
@@ -3356,7 +3342,7 @@
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	// Set the focus on the text field
-	[tableWindow makeFirstResponder:customQueryTextView];
+	[parentWindow makeFirstResponder:customQueryTextView];
 	
 	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
 }
@@ -3380,7 +3366,7 @@
 		[extendedTableInfoInstance loadTable:[self table]];
 	}
 	
-	[tableWindow makeFirstResponder:[extendedTableInfoInstance valueForKeyPath:@"tableCreateSyntaxTextView"]];
+	[parentWindow makeFirstResponder:[extendedTableInfoInstance valueForKeyPath:@"tableCreateSyntaxTextView"]];
 
 	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];
 }
@@ -3465,6 +3451,72 @@
 #pragma mark Titlebar Methods
 
 /**
+ * Update the window title.
+ */
+- (void) updateWindowTitle:(id)sender
+{
+	NSMutableString *tabTitle;
+	NSMutableString *windowTitle;
+	TableDocument *frontTableDocument = [parentWindowController selectedTableDocument];
+
+	// Determine name details
+	NSString *pathName = @"";
+	if ([[[self fileURL] path] length] && ![self isUntitled]) {
+		pathName = [NSString stringWithFormat:@"%@ — ", [[[self fileURL] path] lastPathComponent]];
+	}
+	if (!_isConnected) {
+		windowTitle = [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+		tabTitle = windowTitle;
+	} else {
+		windowTitle = [NSMutableString string];
+		tabTitle = [NSMutableString string];
+
+		// Add the path to the window title
+		[windowTitle appendString:pathName];
+
+		// Add the MySQL version to the window title if enabled in prefs
+		if ([prefs boolForKey:SPDisplayServerVersionInWindowTitle]) [windowTitle appendFormat:@"(MySQL %@) ", mySQLVersion];
+
+		// Add the name to the window
+		[windowTitle appendString:[self name]];
+
+		// Also add to the frontmost tab, and other tabs if the host is different, not connected, or no db is selected
+		if (frontTableDocument == self || [[frontTableDocument name] isNotEqualTo:[self name]] || ![frontTableDocument getConnection] || ![self database]) {
+			[tabTitle appendString:[self name]];
+		}
+
+		// If a database is selected, add to the window - and other tabs if host is the same but table is set
+		if ([self database]) {
+			[windowTitle appendFormat:@"/%@", [self database]];
+			if (frontTableDocument == self
+				|| [[frontTableDocument name] isNotEqualTo:[self name]]
+				|| ![[self table] length])
+			{
+				if ([tabTitle length]) [tabTitle appendString:@"/"];
+				[tabTitle appendString:[self database]];
+			}
+		}
+
+		// Add the table name if one is selected
+		if ([[self table] length]) {
+			[windowTitle appendFormat:@"/%@", [self table]];
+			if ([tabTitle length]) [tabTitle appendString:@"/"];
+			[tabTitle appendString:[self table]];
+		}
+	}
+
+	// Set the titles
+	[parentTabViewItem setLabel:tabTitle];
+	if ([parentWindowController selectedTableDocument] == self) {
+		[parentWindow setTitle:windowTitle];
+	}
+
+	// If the sender wasn't the window controller, update other tabs in this window
+	// for shared pathname updates
+	if ([sender class] != [SPWindowController class]) [parentWindowController updateAllTabTitles:self];
+}
+
+/**
  * Set the connection status icon in the titlebar
  */
 - (void)setStatusIconToImageWithName:(NSString *)imageName
@@ -3499,7 +3551,7 @@
 - (void)setupToolbar
 {
 	// create a new toolbar instance, and attach it to our document window 
-	mainToolbar = [[[NSToolbar alloc] initWithIdentifier:@"TableWindowToolbar"] autorelease];
+	mainToolbar = [[NSToolbar alloc] initWithIdentifier:@"TableWindowToolbar"];
 
 	// set up toolbar properties
 	[mainToolbar setAllowsUserCustomization:YES];
@@ -3508,9 +3560,6 @@
 
 	// set ourself as the delegate
 	[mainToolbar setDelegate:self];
-
-	// attach the toolbar to the document window
-	[tableWindow setToolbar:mainToolbar];
 
 	// update the toolbar item size
 	[self updateChooseDatabaseToolbarItemWidth];
@@ -3542,6 +3591,7 @@
 		[toolbarItem setMaxSize:NSMakeSize(200,32)];
 		[chooseDatabaseButton setTarget:self];
 		[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
+		[chooseDatabaseButton setEnabled:(_isConnected && !_isWorkingLevel)];
 
 		if (willBeInsertedIntoToolbar) {
 			chooseDatabaseToolbarItem = toolbarItem;
@@ -3715,7 +3765,7 @@
 /**
  * Validates the toolbar items
  */
-- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
+- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem
 {
 	if (!_isConnected || _isWorkingLevel) return NO;
 
@@ -3749,67 +3799,22 @@
 }
 
 #pragma mark -
-#pragma mark NSDocument methods
+#pragma mark Tab methods
 
 /**
- * Returns the name of the nib file
+ * Make this document's window frontmost in the application,
+ * and ensure this tab is selected.
  */
-- (NSString *)windowNibName
+- (void)makeKeyDocument
 {
-	return @"DBView";
+	[[[self parentWindow] onMainThread] makeKeyAndOrderFront:self];
+	[[[[self parentTabViewItem] onMainThread] tabView] selectTabViewItemWithIdentifier:self];
 }
 
 /**
- * Code that need to be executed once the windowController has loaded the document's window
- * sets upt the interface (small fonts).
+ * Invoked to determine whether the parent tab is allowed to close
  */
-- (void)windowControllerDidLoadNib:(NSWindowController *)aController
-{
-	[aController setShouldCascadeWindows:YES];
-	[super windowControllerDidLoadNib:aController];
-
-	//register for notifications
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
-												 name:@"SMySQLQueryHasBeenPerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
-												 name:@"NSApplicationWillTerminateNotification" object:nil];
-}
-
-// NSWindow delegate methods
-
-/**
- * Invoked when the document window is about to close
- */
-- (void)windowWillClose:(NSNotification *)aNotification
-{
-
-	// Cancel autocompletion trigger
-	if([prefs boolForKey:SPCustomQueryAutoComplete])
-		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
-								selector:@selector(doAutoCompletion) 
-								object:nil];
-	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
-		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
-									selector:@selector(autoHelp) 
-									object:nil];
-
-
-	[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
-
-	[mySQLConnection setDelegate:nil];
-	if (_isConnected) [self closeConnection];
-	else [connectionController cancelConnection];
-	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
-	[createTableSyntaxWindow orderOut:nil];
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-/**
- * Invoked when the document window should close
- */
-- (BOOL)windowShouldClose:(id)sender
+- (BOOL)parentTabShouldClose
 {
 
 	// If no connection is available, always return YES.  Covers initial setup and disconnections.
@@ -3834,7 +3839,89 @@
 	return YES;
 }
 
-- (void)windowDidBecomeKey:(NSNotification *)notification
+/**
+ * Invoked when the parent tab is about to close
+ */
+- (void)parentTabDidClose
+{
+
+	// Cancel autocompletion trigger
+	if([prefs boolForKey:SPCustomQueryAutoComplete])
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+								selector:@selector(doAutoCompletion) 
+								object:nil];
+	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+									selector:@selector(autoHelp) 
+									object:nil];
+
+
+	[[SPNavigatorController sharedNavigatorController] removeConnection:[self connectionID]];
+
+	[mySQLConnection setDelegate:nil];
+	if (_isConnected) [self closeConnection];
+	else [connectionController cancelConnection];
+	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
+	[createTableSyntaxWindow orderOut:nil];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[self setParentWindow:nil];
+}
+
+/**
+ * Invoked when the parent tab is currently the active tab in the
+ * window, but is being switched away from, to allow cleaning up
+ * details in the window.
+ */
+- (void)willResignActiveTabInWindow
+{
+
+	// Remove the icon accessory view from the title bar
+	[titleAccessoryView removeFromSuperview];
+
+	// Remove the task progress window
+	[parentWindow removeChildWindow:taskProgressWindow];
+	[taskProgressWindow orderOut:self];
+}
+
+/**
+ * Invoked when the parent tab became the active tab in the window,
+ * to allow the window to reflect the contents of this view.
+ */
+- (void)didBecomeActiveTabInWindow
+{
+
+	// Update the toolbar
+	[parentWindow setToolbar:mainToolbar];
+
+	// Update the window's title and represented document
+	[self updateWindowTitle:self];
+	if (spfFileURL && [spfFileURL isFileURL])
+		[parentWindow setRepresentedURL:spfFileURL];
+	else
+		[parentWindow setRepresentedURL:nil];
+
+	// Add the icon accessory view to the title bar
+	NSView *windowFrame = [[parentWindow contentView] superview];
+	NSRect av = [titleAccessoryView frame];
+	NSRect initialAccessoryViewFrame = NSMakeRect(
+											[windowFrame frame].size.width - av.size.width - 30,
+											[windowFrame frame].size.height - av.size.height,
+											av.size.width,
+											av.size.height);
+	[titleAccessoryView setFrame:initialAccessoryViewFrame];
+	[windowFrame addSubview:titleAccessoryView];
+
+	// Add the progress window to this window
+	[self centerTaskWindow];	
+	[taskProgressWindow orderFront:self];
+	[parentWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
+}
+
+/**
+ * Invoked when the parent tab became the key tab in the application;
+ * the selected tab in the frontmost window.
+ */
+- (void)tabDidBecomeKey
 {
 	// Synchronize Navigator with current active document if Navigator runs in syncMode
 	if([[SPNavigatorController sharedNavigatorController] syncMode] && [self connectionID] && ![[self connectionID] isEqualToString:@"_"]) {
@@ -3855,19 +3942,55 @@
 /**
  * Invoked when the document window is resized
  */
-- (void)windowDidResize:(NSNotification *)notification
+- (void)tabDidResize
 {
 
-	// If the task interface is visible, re-center the task child window
-	if (_isWorkingLevel) [self centerTaskWindow];
+	// If the task interface is visible, and this tab is frontmost, re-center the task child window
+	if (_isWorkingLevel && [parentWindowController selectedTableDocument] == self) [self centerTaskWindow];
 }
 
 /**
- * Invoked when the user command-clicks on the window title to see the document path
+ * Set the parent window
  */
-- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
+- (void)setParentWindow:(NSWindow *)aWindow
 {
-	return ![self isUntitled];
+	parentWindow = aWindow;
+	SPSSHTunnel *currentTunnel = [connectionController valueForKeyPath:@"sshTunnel"];
+	if (currentTunnel) [currentTunnel setParentWindow:parentWindow];
+}
+
+/**
+ * Return the parent window
+ */
+- (NSWindow *)parentWindow
+{
+	return parentWindow;
+}
+
+#pragma mark -
+#pragma mark NSDocument compatibility
+
+/**
+ * Set the NSURL for a .spf file for this connection instance.
+ */
+- (void)setFileURL:(NSURL *)theURL
+{
+	if (spfFileURL) [spfFileURL release], spfFileURL = nil;
+	spfFileURL  = [theURL retain];
+	if ([parentWindowController selectedTableDocument] == self) {
+		if (spfFileURL && [spfFileURL isFileURL])
+			[parentWindow setRepresentedURL:spfFileURL];
+		else
+			[parentWindow setRepresentedURL:nil];
+	}
+}
+
+/**
+ * Retrieve the NSURL for the .spf file for this connection instance (if any)
+ */
+- (NSURL *)fileURL
+{
+	return [[spfFileURL copy] autorelease];
 }
 
 /*
@@ -3900,27 +4023,13 @@
 /**
  * The window title for this document.
  */
-- (NSString *)displaySPName
+- (NSString *)displayName
 {
 	if (!_isConnected) {
 		return [NSString stringWithFormat:@"%@%@", 
 				([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[[[self fileURL] path] lastPathComponent]] : @"", @"Sequel Pro"];
 
 	} 
-		
-	return [NSString stringWithFormat:@"%@%@ %@%@%@", 
-		([[[self fileURL] path] length] && ![self isUntitled]) ? [NSString stringWithFormat:@"%@ — ",[self displayName]] : @"",
-		([prefs boolForKey:SPDisplayServerVersionInWindowTitle]) ? [NSString stringWithFormat:@"(MySQL %@)", mySQLVersion] : @"",
-		[self name],
-		([self database]?[NSString stringWithFormat:@"/%@",[self database]]:@""),
-		([[self table] length]?[NSString stringWithFormat:@"/%@",[self table]]:@"")];
-}
-/**
- * The window title for this document.
- */
-- (NSString *)displayName
-{
-	if(!_isConnected) return [self displaySPName];
 	return [[[self fileURL] path] lastPathComponent];
 }
 
@@ -3933,7 +4042,10 @@
 - (void)connectionControllerInitiatingConnection:(id)controller
 {
 	// Update the window title to indicate that we are try to establish a connection
-	[tableWindow setTitle:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
+	[parentTabViewItem setLabel:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
+	if ([parentWindowController selectedTableDocument] == self) {
+		[parentWindow setTitle:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
+	}
 }
 
 /**
@@ -3942,7 +4054,7 @@
 - (void)connectionControllerConnectAttemptFailed:(id)controller
 {
 	// Reset the window title
-	[tableWindow setTitle:[self displaySPName]];
+	[self updateWindowTitle:self];
 }
 
 #pragma mark -
@@ -4140,6 +4252,9 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	[nibObjectsToRelease release];
+
 	[_encoding release];
 	[allDatabases release];
 	[allSystemDatabases release];
@@ -4155,10 +4270,14 @@
 	if (taskDrawTimer) [taskDrawTimer release];
 	if (taskFadeAnimator) [taskFadeAnimator release];
 	if (queryEditorInitString) [queryEditorInitString release];
+	if (spfFileURL) [spfFileURL release];
 	if (spfPreferences) [spfPreferences release];
 	if (spfSession) [spfSession release];
 	if (spfDocData) [spfDocData release];
 	if (keyChainID) [keyChainID release];
+	if (mainToolbar) [mainToolbar release];
+	if (titleAccessoryView) [titleAccessoryView release];
+	if (taskProgressWindow) [taskProgressWindow release];
 	
 	[super dealloc];
 }
@@ -4169,12 +4288,12 @@
 
 - (void)_copyDatabase {
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
 	[dbActionCopy setConnection: [self getConnection]];
-	[dbActionCopy setMessageWindow: tableWindow];
+	[dbActionCopy setMessageWindow: parentWindow];
 	
 	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
 	
@@ -4189,12 +4308,12 @@
 
 - (void)_renameDatabase {
 	if ([[databaseRenameNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
 	[dbActionRename setConnection: [self getConnection]];
-	[dbActionRename setMessageWindow: tableWindow];
+	[dbActionRename setMessageWindow: parentWindow];
 	
 	if ([dbActionRename renameDatabaseFrom: [self database] 
 										to: [databaseRenameNameField stringValue]]) {
@@ -4212,7 +4331,7 @@
 	// This check is not necessary anymore as the add database button is now only enabled if the name field
 	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -4228,14 +4347,14 @@
 	
 	if ([mySQLConnection queryErrored]) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
 		
 		return;
 	}
 	
 	// Error while selecting the new database (is this even possible?)
 	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
 		
 		[self setDatabases:self];
 		
@@ -4252,7 +4371,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-	[tableWindow setTitle:[self displaySPName]];
+	[self updateWindowTitle:self];
 }
 
 /**
@@ -4291,8 +4410,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-	[tableWindow setTitle:[self displaySPName]];
-
+	[self updateWindowTitle:self];
 }
 
 /**
@@ -4318,7 +4436,7 @@
 			|| ![mySQLConnection selectDB:targetDatabaseName])
 		{
 			if ( [mySQLConnection isConnected] ) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 
 				// Update the database list
 				[self setDatabases:self];
@@ -4345,7 +4463,7 @@
 		[tableDumpInstance setConnection:mySQLConnection];
 
 		// Update the window title
-		[[tableWindow onMainThread] setTitle:[self displaySPName]];
+		[[self onMainThread] updateWindowTitle:self];
 
 		// Add a history entry
 		if (!historyStateChanging) {
@@ -4356,9 +4474,9 @@
 		// Set focus to table list filter field if visible
 		// otherwise set focus to Table List view
 		if ( [[tablesListInstance tables] count] > 20 )
-			[[tableWindow onMainThread] makeFirstResponder:listFilterField];
+			[[parentWindow onMainThread] makeFirstResponder:listFilterField];
 		else
-			[[tableWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 	}
 
 	// If a the table has changed, update the selection

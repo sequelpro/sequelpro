@@ -131,6 +131,19 @@ typedef enum
 	SPLinkDrawStateBackgroundHighlight = 2
 } SPTextAndLinkCellDrawState;
 
+// Menu tag constants
+typedef enum
+{
+	SPMainMenuSequelPro = 0,
+	SPMainMenuFile      = 1,
+	SPMainMenuEdit      = 2,
+	SPMainMenuView      = 3,
+	SPMainMenuDatabase  = 4,
+	SPMainMenuTable     = 5,
+	SPMainMenuWindow    = 6,
+	SPMainMenuHelp      = 7
+} SPMainMenuTags;
+
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;
 

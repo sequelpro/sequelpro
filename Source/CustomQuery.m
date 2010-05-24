@@ -172,14 +172,14 @@
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
 		// only be enabled if the query text view has at least one character present.
 		if ([[textView string] isEqualToString:@""]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
 			return;
 		}
 
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
 		[NSApp beginSheet:queryFavoritesSheet 
-		   modalForWindow:tableWindow 
+		   modalForWindow:[tableDocumentInstance parentWindow] 
 			modalDelegate:self 
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"addSelectionToNewQueryFavorite"];
@@ -190,14 +190,14 @@
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
 		// only be enabled if the query text view has at least one character present.
 		if ([[textView string] isEqualToString:@""]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
 			return;
 		}
 
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
 		[NSApp beginSheet:queryFavoritesSheet 
-		   modalForWindow:tableWindow 
+		   modalForWindow:[tableDocumentInstance parentWindow] 
 			modalDelegate:self 
 		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"addAllToNewQueryFavorite"];
@@ -211,7 +211,7 @@
 
 		// Open query favorite manager
 		[NSApp beginSheet:[favoritesManager window] 
-		   modalForWindow:tableWindow 
+		   modalForWindow:[tableDocumentInstance parentWindow] 
 			modalDelegate:favoritesManager
 		   didEndSelector:nil 
 			  contextInfo:nil];
@@ -396,7 +396,7 @@
 	
 	[encodingPopUp setEnabled:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"history" modalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveHistory"];
+	[panel beginSheetForDirectory:nil file:@"history" modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveHistory"];
 }
 
 - (IBAction)copyQueryHistory:(id)sender
@@ -435,7 +435,7 @@
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow 
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 					  modalDelegate:self 
 					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
 						contextInfo:@"clearHistory"];
@@ -652,14 +652,14 @@
 	// Reload table list if at least one query began with drop, alter, rename, or create
 	if(tableListNeedsReload || databaseWasChanged) {
 		// Build database pulldown menu
-		[[tableWindow delegate] setDatabases:self];
+		[tableDocumentInstance setDatabases:self];
 
 		if (databaseWasChanged)
 			// Reset the current database
-			[[tableWindow delegate] refreshCurrentDatabase];
+			[tableDocumentInstance refreshCurrentDatabase];
 
 		// Reload table list
-		[[[tableWindow delegate] valueForKeyPath:@"tablesListInstance"] updateTables:self];
+		[tablesListInstance updateTables:self];
 
 	}
 	
@@ -745,7 +745,7 @@
 		// Perform the Growl notification for query completion
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
-															window:tableWindow
+														  document:tableDocumentInstance
                                                   notificationName:@"Query Finished"];
 
 		// Set up the callback if present
@@ -799,7 +799,7 @@
 	// Query finished Growl notification    
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
-														window:tableWindow
+													  document:tableDocumentInstance
                                               notificationName:@"Query Finished"];
 
 	// Set up the callback if present
@@ -1677,7 +1677,7 @@
 
 			// Check for errors while UPDATE
 			if ([mySQLConnection queryErrored]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, tableWindow, self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
 
 				return;
@@ -1687,7 +1687,7 @@
 			// This shouldn't happen – for safety reasons
 			if ( ![mySQLConnection affectedRows] ) {
 				if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-					SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 									  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 				} else {
 					NSBeep();
@@ -1702,7 +1702,7 @@
 			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
 			
 		} else {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
 										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
 
@@ -2039,7 +2039,7 @@
 								usingEncoding:[mySQLConnection encoding] 
 								isObjectBlob:isBlob 
 								isEditable:isFieldEditable 
-								withWindow:tableWindow] retain];
+								withWindow:[tableDocumentInstance parentWindow]] retain];
 
 		if ( editData )
 			[self tableView:aTableView setObjectValue:[editData copy] forTableColumn:aTableColumn row:rowIndex];
@@ -3196,9 +3196,9 @@
 			// Send moveDown/Up to the popup menu
 			NSEvent *arrowEvent;
 			if(commandSelector == @selector(moveDown:))
-				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7D];
+				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7D];
 			else
-				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7E];
+				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7E];
 			[[NSApplication sharedApplication] postEvent:arrowEvent atStart:NO];
 			return YES;
 

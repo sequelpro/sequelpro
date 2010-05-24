@@ -45,9 +45,6 @@
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 	
-	// Connection window
-	IBOutlet NSWindow *tableWindow;
-	
 	// Export window
 	IBOutlet NSButton *exportButton;
 	IBOutlet NSToolbar *exportToolbar;

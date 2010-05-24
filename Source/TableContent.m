@@ -63,6 +63,7 @@
 		_mainNibLoaded = NO;
 		isWorking = NO;
 		pthread_mutex_init(&tableValuesLock, NULL);
+		nibObjectsToRelease = [[NSMutableArray alloc] init];
 
 		tableValues      = [[SPDataStorage alloc] init];
 		tableRowsCount = 0;
@@ -138,10 +139,17 @@
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
-	// Add the pagination view to the content area with ourselves as the owner
-	if (![NSBundle loadNibNamed:@"ContentPaginationView" owner:self]) {
+	// Load the pagination view, keeping references to the top-level objects for later release
+	NSArray *paginationViewTopLevelObjects = nil;
+	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ContentPaginationView" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&paginationViewTopLevelObjects]) {
 		NSLog(@"Content pagination nib could not be loaded; pagination will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:paginationViewTopLevelObjects];
 	}
+	[nibLoader release];
+
+	// Add the pagination view to the content area
 	NSRect paginationViewFrame = [paginationView frame];
 	NSRect paginationButtonFrame = [paginationButton frame];
 	paginationViewHeight = paginationViewFrame.size.height;
@@ -464,7 +472,7 @@
 	}
 
 	// Store the current first responder so filter field doesn't steal focus
-	id currentFirstResponder = [tableWindow firstResponder];
+	id currentFirstResponder = [[tableDocumentInstance parentWindow] firstResponder];
 	
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
@@ -505,7 +513,7 @@
 	if ([prefs boolForKey:SPLimitResults]) contentPage = pageToRestore;
 
 	// Restore first responder
-	[tableWindow makeFirstResponder:currentFirstResponder];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:currentFirstResponder];
 
 	// Set the state of the table buttons
 	[addButton setEnabled:enableInteraction];
@@ -1213,19 +1221,19 @@
 		paginationViewFrame.size.height = paginationViewHeight;
 		[paginationButton setState:NSOnState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_action"]];
-		[tableWindow makeFirstResponder:paginationPageField];
+		[[tableDocumentInstance parentWindow] makeFirstResponder:paginationPageField];
 	} else {
 		if (paginationViewFrame.size.height == 0) return;
 		paginationViewFrame.size.height = 0;	
 		[paginationButton setState:NSOffState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
-		if ([tableWindow firstResponder] == paginationPageField
-			|| ([[tableWindow firstResponder] respondsToSelector:@selector(superview)]
-				&& [(id)[tableWindow firstResponder] superview]
-				&& [[(id)[tableWindow firstResponder] superview] respondsToSelector:@selector(superview)]
-				&& [[(id)[tableWindow firstResponder] superview] superview] == paginationPageField))
+		if ([[tableDocumentInstance parentWindow] firstResponder] == paginationPageField
+			|| ([[[tableDocumentInstance parentWindow] firstResponder] respondsToSelector:@selector(superview)]
+				&& [(id)[[tableDocumentInstance parentWindow] firstResponder] superview]
+				&& [[(id)[[tableDocumentInstance parentWindow] firstResponder] superview] respondsToSelector:@selector(superview)]
+				&& [[(id)[[tableDocumentInstance parentWindow] firstResponder] superview] superview] == paginationPageField))
 		{
-			[tableWindow makeFirstResponder:nil];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:nil];
 		}
 	}
 
@@ -1321,7 +1329,7 @@
 	if ( [tableContentView numberOfSelectedRows] < 1 )
 		return;
 	if ( [tableContentView numberOfSelectedRows] > 1 ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
 		return;
 	}
 	
@@ -1376,7 +1384,7 @@
 	//	return;
 
 	// cancel editing (maybe this is not the ideal method -- see xcode docs for that method)
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
 	
 	if (![tableContentView numberOfSelectedRows])
@@ -1427,7 +1435,7 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.", @"delete rows informative message"), (long)[tableContentView numberOfSelectedRows]]];
 	}
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
 /**
@@ -2066,7 +2074,7 @@
 
 	// Open query favorite manager
 	[NSApp beginSheet:[contentFilterManager window] 
-	   modalForWindow:tableWindow 
+	   modalForWindow:[tableDocumentInstance parentWindow] 
 		modalDelegate:contentFilterManager
 	   didEndSelector:nil 
 		  contextInfo:nil];
@@ -2201,7 +2209,7 @@
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
 		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 		} else {
 			NSBeep();
@@ -2220,7 +2228,7 @@
 		// New row created successfully
 		if ( isEditingNewRow ) {
 			if ( [prefs boolForKey:SPReloadAfterAddingRow] ) {
-				[tableWindow endEditingFor:nil];
+				[[tableDocumentInstance parentWindow] endEditingFor:nil];
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			} else {
@@ -2239,7 +2247,7 @@
 
 			// Reload table if set to - otherwise no action required.
 			if ( [prefs boolForKey:SPReloadAfterEditingRow] ) {
-				[tableWindow endEditingFor:nil];
+				[[tableDocumentInstance parentWindow] endEditingFor:nil];
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			}
@@ -2250,7 +2258,7 @@
 
 	// Report errors which have occurred
 	} else {
-		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
@@ -2267,7 +2275,7 @@
 	// Edit row selected - reselect the row, and start editing.
 	if ( returnCode == NSAlertDefaultReturn ) {
 		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
-		[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
+		[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 
 	// Discard changes selected
 	} else {
@@ -2294,7 +2302,7 @@
 - (BOOL)saveRowOnDeselect
 {
 	// Save any edits which have been made but not saved to the table yet.
-	[tableWindow endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
@@ -2357,7 +2365,7 @@
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
 		if ( [prefs boolForKey:SPLoadBlobsAsNeeded] && [self tableContainsBlobOrTextColumns] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"You can't hide blob and text fields when working with tables without index.", @"message of panel when trying to edit tables without index and with hidden blob/text fields"));
 			[keys removeAllObjects];
 			[tableContentView deselectAll:self];
@@ -2465,7 +2473,7 @@
 {
 	// error := first object is the title , second the message, only one button OK
 	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, tableWindow, self, nil, nil,
+			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[error objectAtIndex:1]);
 }
 
@@ -2942,7 +2950,7 @@
 	[self loadTableValues];
 
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
 		[tableDocumentInstance endTask];
 		[sortPool drain];
@@ -3037,7 +3045,7 @@
 
 		MCPResult *tempResult = [mySQLConnection queryString:query];
 		if (![tempResult numOfRows]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 			return NO;
 		}
@@ -3064,7 +3072,7 @@
 								 usingEncoding:[mySQLConnection encoding] 
 								  isObjectBlob:isBlob 
 									isEditable:YES 
-									withWindow:tableWindow] retain];
+									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 		if (editData) {
 			if (!isEditingRow) {
@@ -3363,13 +3371,13 @@
 		NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] integerValue];
 		switch(numOfArgs) {
 			case 2:
-			[tableWindow makeFirstResponder:firstBetweenField];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:firstBetweenField];
 			break;
 			case 1:
-			[tableWindow makeFirstResponder:argumentField];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:argumentField];
 			break;
 			default:
-			[tableWindow makeFirstResponder:compareField];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:compareField];
 		}
 	}
 }

@@ -26,6 +26,8 @@
 #import <Cocoa/Cocoa.h>
 #import <Growl/Growl.h>
 
+@class TableDocument;
+
 @interface SPGrowlController : NSObject <GrowlApplicationBridgeDelegate>
 {
 	NSString *timingNotificationName;
@@ -38,14 +40,14 @@
 // Post notification
 - (void)notifyWithTitle:(NSString *)title 
 			description:(NSString *)description
-				 window:(NSWindow *)window
+			   document:(TableDocument *)document
 	   notificationName:(NSString *)name;
 
 - (void)notifyWithObject:(NSDictionary *)notificationDictionary;
 
 - (void)notifyWithTitle:(NSString *)title 
 			description:(NSString *)description 
-				 window:(NSWindow *)window
+			   document:(TableDocument *)document
 	   notificationName:(NSString *)name 
 			   iconData:(NSData *)data 
 			   priority:(NSInteger)priority 

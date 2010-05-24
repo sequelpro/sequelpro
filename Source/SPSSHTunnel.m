@@ -72,6 +72,8 @@
 	}
 
 	parentWindow = nil;
+	sshQuestionDialog = nil;
+	sshPasswordDialog = nil;
 	password = nil;
 	keychainName = nil;
 	keychainAccount = nil;
@@ -102,6 +104,11 @@
  */
 - (void)setParentWindow:(NSWindow *)theWindow
 {
+
+	// As this object is not a NSWindowController, use manual top-level nib item management
+	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;
+	if (sshPasswordDialog) [sshPasswordDialog release], sshPasswordDialog = nil;
+
 	parentWindow = theWindow;
 	if (![NSBundle loadNibNamed:@"SSHQuestionDialog" owner:self]) {
 		NSLog(@"SSH query dialog could not be loaded; SSH tunnels will not function correctly.");
@@ -646,6 +653,10 @@
 	if (password) [password release];
 	if (keychainName) [keychainName release];
 	if (keychainAccount) [keychainAccount release];
+
+	// As this object is not a NSWindowController, use manual top-level nib item management
+	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;
+	if (sshPasswordDialog) [sshPasswordDialog release], sshPasswordDialog = nil;
 	
 	[super dealloc];
 }

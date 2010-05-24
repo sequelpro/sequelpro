@@ -51,7 +51,6 @@
 	IBOutlet id tableTriggersInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
-	IBOutlet id tableWindow;
 	IBOutlet id copyTableSheet;
 	IBOutlet id tablesListView;
 	IBOutlet id copyTableButton;

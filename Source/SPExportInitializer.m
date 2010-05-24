@@ -159,7 +159,7 @@
 	
 	// Open the progress sheet
 	[NSApp beginSheet:exportProgressWindow
-	   modalForWindow:tableWindow 
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:nil 
 		  contextInfo:nil];
@@ -595,7 +595,7 @@
 	
 	if ([fileManager fileExistsAtPath:filePath]) {
 		if ((![fileManager isWritableFileAtPath:filePath]) || (!(fileHandle = [SPFileHandle fileHandleForWritingAtPath:filePath]))) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			return nil;
 		}
@@ -603,7 +603,7 @@
 	// Otherwise attempt to create a file
 	else {
 		if (![fileManager createFileAtPath:filePath contents:[NSData data] attributes:nil]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			return nil;
 		}
@@ -614,7 +614,7 @@
 		if (!fileHandle) {
 			[[NSFileManager defaultManager] removeFileAtPath:filePath handler:nil];
 			
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			return nil;
 		}

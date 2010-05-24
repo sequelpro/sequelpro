@@ -74,7 +74,7 @@
  */
 - (void)awakeFromNib
 {	
-	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[[NSDocumentController sharedDocumentController] currentDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
+	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[[NSApp delegate] frontDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
 	
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	
@@ -367,7 +367,7 @@
 {
 	if (returnCode == NSOKButton) {
 		if ([processesFiltered count] > 0) {
-			NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [(TableDocument *)[[NSApp mainWindow] delegate] host]];
+			NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
 			
 			for (NSDictionary *process in processesFiltered)
 			{

@@ -53,7 +53,6 @@
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
-	IBOutlet id tableWindow;
 
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;

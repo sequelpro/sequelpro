@@ -22,7 +22,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
-			<string>TableDocument</string>
+			<string>SPDocumentController</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -40,7 +40,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
-			<string>TableDocument</string>
+			<string>SPDocumentController</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -63,20 +63,20 @@
 	<string>0.9.8</string>
 	<key>CFBundleVersion</key>
 	<string></string>
-	<key>FRFeedbackReporter.targetURL</key>
-	<string>http://log.sequelpro.com/submit</string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
+	<key>FRFeedbackReporter.targetURL</key>
+	<string>http://log.sequelpro.com/submit</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>i386</key>
 		<string>10.5.0</string>
-		<key>x86_64</key>
-		<string>10.6.0</string>
 		<key>ppc</key>
 		<string>10.5.0</string>
+		<key>x86_64</key>
+		<string>10.6.0</string>
 	</dict>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
@@ -110,11 +110,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>SUEnableSystemProfiling</key>
+	<true/>
 	<key>SUFeedURL</key>
 	<string>http://www.sequelpro.com/appcast/app-releases.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle-public-key.pem</string>
-	<key>SUEnableSystemProfiling</key>
-	<true/>
 </dict>
 </plist>
