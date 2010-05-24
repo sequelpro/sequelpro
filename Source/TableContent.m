@@ -3386,7 +3386,7 @@
 
 // Last but not least
 - (void)dealloc
-{NSLog(@"content is deallocd");
+{
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	[tableValues release];

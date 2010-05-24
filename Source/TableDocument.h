@@ -188,6 +188,7 @@
 
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
+@property (readwrite, assign) BOOL isProcessing;
 
 - (BOOL)isUntitled;
 - (BOOL)couldCommitCurrentViewActions;

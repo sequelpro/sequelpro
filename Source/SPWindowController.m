@@ -28,6 +28,12 @@
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
 
+@interface SPWindowController (PrivateAPI)
+
+- (void) _updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
+
+@end
+
 @implementation SPWindowController
 
 /**
@@ -97,7 +103,10 @@
 	// Tell the new database connection view to set up the window and update titles
 	[newTableDocument didBecomeActiveTabInWindow];
 	[newTableDocument updateWindowTitle:self];
-	
+
+	// Bind the tab bar's progress display to the document
+	[self _updateProgressIndicatorForItem:newItem];
+
 	[newTableDocument release];
 }
 
@@ -193,6 +202,7 @@
 - (void)tabView:(NSTabView *)aTabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	TableDocument *theDocument = [tabViewItem identifier];
+	[theDocument removeObserver:self forKeyPath:@"isProcessing"];
 	[theDocument parentTabDidClose];
 }
 
@@ -224,6 +234,10 @@
 		[draggedDocument willResignActiveTabInWindow];
 		[draggedDocument setParentWindow:[tabBarControl window]];
 		[draggedDocument didBecomeActiveTabInWindow];
+
+		// Update isProcessing observation
+		[draggedDocument removeObserver:[draggedFromWindow windowController] forKeyPath:@"isProcessing"];
+		[[[tabBarControl window] windowController] _updateProgressIndicatorForItem:tabViewItem];
 	}
 }
 
@@ -367,6 +381,37 @@
 	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
 
 	return [frontDocument performSelector:theSelector withObject:theObject];
+}
+
+@end
+
+@implementation SPWindowController (PrivateAPI)
+
+/**
+ * Binds a tab bar item's progress indicator to the represented
+ * tableDocument.
+ */
+- (void) _updateProgressIndicatorForItem:(NSTabViewItem *)theItem
+{
+	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:theItem]];
+	[[theCell indicator] setControlSize:NSSmallControlSize];
+	TableDocument *theDocument = [theItem identifier];
+
+	[[theCell indicator] setHidden:NO];
+	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
+	[bindingOptions setObject:NSNegateBooleanTransformerName forKey:@"NSValueTransformerName"];
+	[[theCell indicator] bind:@"animate" toObject:theDocument withKeyPath:@"isProcessing" options:nil];
+	[[theCell indicator] bind:@"hidden" toObject:theDocument withKeyPath:@"isProcessing" options:bindingOptions];
+	[theDocument addObserver:self forKeyPath:@"isProcessing" options:nil context:nil];
+}
+
+/**
+ * When receiving an update for a bound value - an observed value on the
+ * document - ask the tab bar control to redraw as appropriate.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    [tabBar update];
 }
 
 @end

@@ -75,6 +75,7 @@
 
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
+@synthesize isProcessing;
 
 - (id)init
 {
@@ -2583,7 +2584,7 @@
  */
 - (void)willPerformQuery:(NSNotification *)notification
 {
-	isProcessing = YES;
+	[self setIsProcessing:YES];
 	[queryProgressBar startAnimation:self];
 }
 
@@ -2592,7 +2593,7 @@
  */
 - (void)hasPerformedQuery:(NSNotification *)notification
 {
-	isProcessing = NO;
+	[self setIsProcessing:NO];
 	[queryProgressBar stopAnimation:self];
 }
 
@@ -3932,18 +3933,6 @@
 }
 
 /**
- * Support the tab's progress spinner
- */
-- (BOOL)isProcessing
-{
-	return (isProcessing || (_isWorkingLevel > 0));
-}
-- (void)setIsProcessing:(BOOL)value
-{
-	isProcessing = value;
-}
-
-/**
  * Set the parent window
  */
 - (void)setParentWindow:(NSWindow *)aWindow
@@ -4228,7 +4217,6 @@
  */
 - (void)dealloc
 {
-NSLog(@"is dealloc'd");
 
 	// Unregister observers
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];

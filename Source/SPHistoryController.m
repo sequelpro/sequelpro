@@ -65,7 +65,6 @@
 
 - (void) dealloc
 {
-NSLog(@"history is dealloc'd");
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[tableContentStates release];
 	[history release];
