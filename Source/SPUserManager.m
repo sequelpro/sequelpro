@@ -357,7 +357,10 @@
 					key = [privColumnToGrantMap objectForKey:key];
 				}
 				[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:key];
-			} else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
+			} else if ([key isEqualToString:@"Db"]) {
+                [dbPriv setValue:[[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"]
+                          forKey:key];
+            } else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
 				[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
 			}
 		}
@@ -760,7 +763,8 @@
     }
     
 	[self.managedObjectContext reset];
-	[grantedSchemaPrivs removeAllObjects];
+    [grantedSchemaPrivs removeAllObjects];
+    //[grantedController fetch:nil];
 	[grantedTableView reloadData];
 	[self _initializeAvailablePrivs];	
 	[treeController fetch:nil];
@@ -773,8 +777,8 @@
 	NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
 	for (NSManagedObject *user in userArray) {
 		if (![user parent]) {
-			[user setValue:[user valueForKey:@"user"] forKey:@"originaluser"];
-			[user setValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
+			[user setPrimitiveValue:[user valueForKey:@"user"] forKey:@"originaluser"];
+			[user setPrimitiveValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
 		}
 	}
 }
@@ -786,11 +790,12 @@
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
 	NSString *selectedDb = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
-												schema:selectedDb 
+												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 												  host:[selectedHost valueForKey:@"host"]];
 	NSManagedObject *priv = nil;
 	BOOL isNew = FALSE;
 	
+    
 	if ([selectedPrivs count] > 0)
 	{
 		priv = [selectedPrivs objectAtIndex:0];
@@ -1377,8 +1382,9 @@
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
 				NSString *selectedSchema = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
-                selectedSchema = [selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\\\_"];
-				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] schema:selectedSchema host:[user valueForKey:@"host"]];
+				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
+                                                      schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
+                                                        host:[user valueForKey:@"host"]];
 				
 				if ([results count] > 0) {
 					NSManagedObject *priv = [results objectAtIndex:0];
