@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPExportInitializer.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on March 31, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -25,46 +25,27 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
+#import "SPExportController.h"
+
+@class SPCSVExporter, SPSQLExporter, SPXMLExporter, SPFileHandle;
 
 /**
- * @class SPXMLExporter SPXMLExporter.m
+ * @category SPExportInitializer SPExportInitializer.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * XML exporter class.
+ * Export initializer category.
  */
-@interface SPXMLExporter : SPExporter 
-{
-	/**
-	 * Exporter delegate
-	 */
-	NSObject <SPXMLExporterProtocol> *delegate;
-	
-	/**
-	 * Data array
-	 */
-	NSArray *xmlDataArray;
-	
-	/**
-	 * Table name
-	 */
-	NSString *xmlTableName;
-}
+@interface SPExportController (SPExportInitializer)
 
-@property(readwrite, assign) NSObject *delegate;
+- (void)initializeExportUsingSelectedOptions;
 
-@property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
+- (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
 
-/**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
- */
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+- (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
+- (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
+
+- (void)writeXMLHeaderToFileHandle:(SPFileHandle *)fileHandle;
+- (SPFileHandle *)getFileHandleForFilePath:(NSString *)filePath;
 
 @end

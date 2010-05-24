@@ -25,9 +25,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "SPExporterDataAccess.h"
-
 /**
+ * @class SPExporter SPExporter.m
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
  * This class is designed to be the base class of all data exporters and provide basic functionality
  * common to each of them. Each data exporter (i.e. CSV, SQL, XML, etc.) should be implemented as a subclass
  * of this class, with the end result being a modular export architecture separated by export type. All exporters
@@ -47,28 +49,35 @@
  * once the exporter instance is placed on the operation queue once its ready to be run.
  */
 
+@class MCPConnection, SPFileHandle;
+
 @interface SPExporter : NSOperation
-{
-	id <SPExporterDataAccess> delegate;
-	SEL didEndSelector;
+{	
+	MCPConnection *connection;
 		
 	double exportProgressValue;
 	
 	BOOL exportProcessIsRunning;
+	BOOL exportUsingLowMemoryBlockingStreaming;
 	
 	NSString *exportData;
+	SPFileHandle *exportOutputFileHandle;
 	NSStringEncoding exportOutputEncoding;
+
+	NSInteger exportMaxProgress;
 }
 
-@property (readwrite, assign) id delegate;
-@property (readwrite, assign) SEL didEndSelector;
-@property (readwrite, assign) double exportProgressValue;
+@property(readwrite, retain) MCPConnection *connection;
 
-@property (readwrite, assign) BOOL exportProcessIsRunning;
+@property(readwrite, assign) double exportProgressValue;
 
-@property (readwrite, retain) NSString *exportData;
-@property (readwrite, assign) NSStringEncoding exportOutputEncoding;
+@property(readwrite, assign) BOOL exportProcessIsRunning;
+@property(readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
 
-- (id)initWithDelegate:(id)exportDelegate;
+@property(readwrite, retain) NSString *exportData;
+@property(readwrite, retain) SPFileHandle *exportOutputFileHandle;
+@property(readwrite, assign) NSStringEncoding exportOutputEncoding;
+
+@property(readwrite, assign) NSInteger exportMaxProgress;
 
 @end

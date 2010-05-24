@@ -59,14 +59,15 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 + (NSString *)stringForByteSize:(long long)byteSize;
 + (NSString *)stringForTimeInterval:(CGFloat)timeInterval;
 
+- (NSString *)HTMLEscapeString;
 - (NSString *)backtickQuotedString;
 - (NSString *)tickQuotedString;
 - (NSString *)replaceUnderscoreWithSpace;
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet options:(NSUInteger) mask;
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*) charSet;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet options:(NSUInteger)mask;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet;
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
 

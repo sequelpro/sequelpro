@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPPDFExporter.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on April 24, 2010
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,48 +23,39 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
+#import "SPPDFExporter.h"
+#import "SPExportUtilities.h"
 
-#import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
+@implementation SPPDFExporter
+
+@synthesize delegate;
 
 /**
- * @class SPXMLExporter SPXMLExporter.m
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * XML exporter class.
+ * Initialise an instance of SPPDFExporter using the supplied delegate.
  */
-@interface SPXMLExporter : SPExporter 
+- (id)initWithDelegate:(NSObject *)exportDelegate
 {
-	/**
-	 * Exporter delegate
-	 */
-	NSObject <SPXMLExporterProtocol> *delegate;
+	if ((self = [super init])) {
+		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPPDFExporterProtocol));
+		
+		[self setDelegate:exportDelegate];
+	}
 	
-	/**
-	 * Data array
-	 */
-	NSArray *xmlDataArray;
-	
-	/**
-	 * Table name
-	 */
-	NSString *xmlTableName;
+	return self;
 }
 
-@property(readwrite, assign) NSObject *delegate;
-
-@property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
-
 /**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
+ * Start the PDF export process. This method is automatically called when an instance of this class
+ * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
  */
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+- (void)main
+{
+	@try {
+		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		
+		[pool release];
+	}
+	@catch (NSException *e) { }
+}
 
 @end

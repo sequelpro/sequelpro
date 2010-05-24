@@ -26,7 +26,107 @@
 #import <Cocoa/Cocoa.h>
 
 #import "SPExporter.h"
+#import "SPSQLExporterProtocol.h"
 
+/**
+ * @class SPSQLExporter SPSQLExporter.m
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * SQL exporter class.
+ */
 @interface SPSQLExporter : SPExporter
+{
+	NSObject <SPSQLExporterProtocol> *delegate;
+	
+	/**
+	 * Tables
+	 */
+	NSArray *sqlExportTables;
+	
+	/**
+	 * Database host
+	 */
+	NSString *sqlDatabaseHost;
+	
+	/**
+	 * Database name
+	 */
+	NSString *sqlDatabaseName;
+	
+	/**
+	 * Database version
+	 */
+	NSString *sqlDatabaseVersion;
+	
+	/**
+	 * Current table
+	 */
+	NSString *sqlExportCurrentTable;
+	
+	/**
+	 * Export errors
+	 */
+	NSString *sqlExportErrors;
+	
+	/**
+	 * Include UTF-8 BOM
+	 */
+	BOOL sqlOutputIncludeUTF8BOM;
+	
+	/**
+	 * Encode BLOB fields as Hex data
+	 */
+	BOOL sqlOutputEncodeBLOBasHex;
+	
+	/**
+	 * Include export errors
+	 */
+	BOOL sqlOutputIncludeErrors;
+	
+	/**
+	 * Compress output
+	 */
+	BOOL sqlOutputCompressFile;
+	
+	/**
+	 * Table information
+	 */
+	NSDictionary *sqlTableInformation;
+}
+
+@property(readwrite, assign) NSObject *delegate;
+
+@property(readwrite, retain) NSArray *sqlExportTables;
+
+@property(readwrite, retain) NSString *sqlDatabaseHost;
+@property(readwrite, retain) NSString *sqlDatabaseName;
+@property(readwrite, retain) NSString *sqlDatabaseVersion;
+
+@property(readwrite, retain) NSString *sqlExportCurrentTable;
+@property(readwrite, retain) NSString *sqlExportErrors;
+
+@property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
+@property(readwrite, assign) BOOL sqlOutputEncodeBLOBasHex;
+@property(readwrite, assign) BOOL sqlOutputIncludeErrors;
+@property(readwrite, assign) BOOL sqlOutputCompressFile;
+
+@property (readwrite, retain) NSDictionary *sqlTableInformation;
+
+/**
+ * Initialise an instance of SPSQLExporter using the supplied delegate.
+ *
+ * @param exportDelegate The exporter delegate
+ *
+ * @return The initialised instance
+ */
+- (id)initWithDelegate:(NSObject *)exportDelegate;
+
+/**
+ * Returns whether or not any export errors occurred.
+ *
+ * @return A BOOL indicating the occurrence of errors
+ */
+- (BOOL)didExportErrorsOccur;
 
 @end

@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPDotExporter.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,9 @@
 #import <Cocoa/Cocoa.h>
 
 #import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
+#import "SPDotExporterProtocol.h"
+
+@class SPTableData;
 
 /**
  * @class SPXMLExporter SPXMLExporter.m
@@ -35,31 +37,55 @@
  *
  * XML exporter class.
  */
-@interface SPXMLExporter : SPExporter 
+@interface SPDotExporter : SPExporter 
 {
 	/**
 	 * Exporter delegate
 	 */
-	NSObject <SPXMLExporterProtocol> *delegate;
+	NSObject <SPDotExporterProtocol> *delegate;
 	
 	/**
-	 * Data array
+	 * Table information
 	 */
-	NSArray *xmlDataArray;
+	NSArray *dotExportTables;
 	
 	/**
-	 * Table name
+	 * Current table
 	 */
-	NSString *xmlTableName;
+	NSString *dotExportCurrentTable;
+	
+	/**
+	 * Table data
+	 */
+	SPTableData *dotTableData;
+	
+	/**
+	 * Database host
+	 */
+	NSString *dotDatabaseHost;
+	
+	/**
+	 * Database name
+	 */
+	NSString *dotDatabaseName;
+	
+	/**
+	 * Database version
+	 */
+	NSString *dotDatabaseVersion;
 }
 
 @property(readwrite, assign) NSObject *delegate;
+@property(readwrite, retain) NSArray *dotExportTables;
+@property(readwrite, retain) NSString *dotExportCurrentTable;
+@property(readwrite, retain) SPTableData *dotTableData;
 
-@property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
+@property(readwrite, retain) NSString *dotDatabaseHost;
+@property(readwrite, retain) NSString *dotDatabaseName;
+@property(readwrite, retain) NSString *dotDatabaseVersion;
 
 /**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
+ * Initialise an instance of SPDotExporter using the supplied delegate.
  *
  * @param exportDelegate The exporter delegate
  *

@@ -27,21 +27,21 @@
 
 @implementation SPExporter
 
-@synthesize delegate;
-@synthesize didEndSelector;
+@synthesize connection;
 @synthesize exportProgressValue;
 @synthesize exportProcessIsRunning;
+@synthesize exportUsingLowMemoryBlockingStreaming;
 @synthesize exportData;
+@synthesize exportOutputFileHandle;
 @synthesize exportOutputEncoding;
+@synthesize exportMaxProgress;
 
 /**
- * Initialise an instance of SPCSVExporter using the supplied delegate and set some default values.
+ * Initialise an instance of SPExporter, while setting some default values.
  */
-- (id)initWithDelegate:(id)exportDelegate
+- (id)init
 {
-	if ((self = [super init])) {
-		[self setDelegate:exportDelegate];
-		
+	if ((self = [super init])) {		
 		[self setExportProgressValue:0];
 		[self setExportProcessIsRunning:NO];
 		
@@ -50,8 +50,6 @@
 		
 		// Default the output encoding to UTF-8
 		[self setExportOutputEncoding:NSUTF8StringEncoding];
-		
-		[self setDidEndSelector:@selector(exporterDataConversionProcessComplete:)];
 	}
 	
 	return self;
@@ -62,7 +60,9 @@
  */
 - (void)main
 {
-	@throw [NSException exceptionWithName:@"NSOperation main() call" reason:@"Can't call NSOperation's main() method in SPExpoter, must be overriden in subclass." userInfo:nil];
+	@throw [NSException exceptionWithName:@"NSOperation main() Call" 
+								   reason:@"Can't call NSOperation's main() method in SPExpoter, must be overriden in subclass." 
+								 userInfo:nil];
 }
 
 /**
@@ -70,7 +70,9 @@
  */
 - (void)dealloc
 {
-	[exportData release], exportData = nil;
+	if (exportData) [exportData release], exportData = nil;
+	if (connection) [connection release], connection = nil;
+	if (exportOutputFileHandle) [exportOutputFileHandle release], exportOutputFileHandle = nil;
 	
 	[super dealloc];
 }

@@ -256,6 +256,7 @@
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
 - (IBAction)focusOnTableContentFilter:(id)sender;
 - (IBAction)focusOnTableListFilter:(id)sender;
+- (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
 - (void) setQueryMode:(NSInteger)theQueryMode;

@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPXMLExporterDelegate.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on April 6, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,48 +23,16 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
-#import "SPExporter.h"
+#import "SPExportController.h"
 #import "SPXMLExporterProtocol.h"
 
 /**
- * @class SPXMLExporter SPXMLExporter.m
+ * @category SPXMLExporterDelegate SPXMLExporterDelegate.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * XML exporter class.
+ * XML exporter delegate category.
  */
-@interface SPXMLExporter : SPExporter 
-{
-	/**
-	 * Exporter delegate
-	 */
-	NSObject <SPXMLExporterProtocol> *delegate;
-	
-	/**
-	 * Data array
-	 */
-	NSArray *xmlDataArray;
-	
-	/**
-	 * Table name
-	 */
-	NSString *xmlTableName;
-}
-
-@property(readwrite, assign) NSObject *delegate;
-
-@property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
-
-/**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
- */
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+@interface SPExportController (SPXMLExporterDelegate) <SPXMLExporterProtocol>
 
 @end

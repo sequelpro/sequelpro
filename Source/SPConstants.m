@@ -147,6 +147,7 @@ NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
 NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
 NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
+NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
@@ -154,7 +155,6 @@ NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
 NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
 NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
-NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
 NSString *SPPrintBackground                      = @"PrintBackground";
 NSString *SPPrintImagePreviews                   = @"PrintImagePreviews";
 NSString *SPQueryFavorites                       = @"queryFavorites";
@@ -174,6 +174,7 @@ NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/do
 NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
 NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
 NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@";
+NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
 NSString *SPGettingConnectedDocURL               = @"http://www.sequelpro.com/docs/Getting_Connected";
 
 // Toolbar constants

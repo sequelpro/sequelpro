@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPPDFExporterProtocol.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on April 24, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -25,46 +25,36 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
+@class SPPDFExporter;
 
 /**
- * @class SPXMLExporter SPXMLExporter.m
+ * @protocol SPPDFExporterProtocol SPPDFExporterProtocol.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * XML exporter class.
+ * PDF exporter delegate protocol.
  */
-@interface SPXMLExporter : SPExporter 
-{
-	/**
-	 * Exporter delegate
-	 */
-	NSObject <SPXMLExporterProtocol> *delegate;
-	
-	/**
-	 * Data array
-	 */
-	NSArray *xmlDataArray;
-	
-	/**
-	 * Table name
-	 */
-	NSString *xmlTableName;
-}
-
-@property(readwrite, assign) NSObject *delegate;
-
-@property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
+@protocol SPPDFExporterProtocol
 
 /**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
+ * Called when the PDF export process is about to begin. 
  *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
+ * @param SPHTMLExporter The expoter calling the method.
  */
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+- (void)pdfExportProcessWillBegin:(SPPDFExporter *)exporter;
+
+/**
+ * Called when the PDF export process is complete.
+ *
+ * @param SPHTMLExporter The expoter calling the method.
+ */
+- (void)pdfExportProcessComplete:(SPPDFExporter *)exporter;
+
+/**
+ * Called when the PDF export process is about to begin writing data to disk.
+ *
+ * @param SPHTMLExporter The expoter calling the method.
+ */
+- (void)pdfExportProcessWillBeginWritingData:(SPPDFExporter *)exporter;
 
 @end

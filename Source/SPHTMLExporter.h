@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPSXMLExporter.h
+//  SPHTMLExporter.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 6, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on April 24, 2010
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -26,40 +26,27 @@
 #import <Cocoa/Cocoa.h>
 
 #import "SPExporter.h"
-#import "SPXMLExporterProtocol.h"
+#import "SPHTMLExporterProtocol.h"
 
 /**
- * @class SPXMLExporter SPXMLExporter.m
+ * @class SPHTMLExporter SPHTMLExporter.m
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * XML exporter class.
+ * HTML exporter class.
  */
-@interface SPXMLExporter : SPExporter 
+@interface SPHTMLExporter : SPExporter 
 {
 	/**
 	 * Exporter delegate
 	 */
-	NSObject <SPXMLExporterProtocol> *delegate;
-	
-	/**
-	 * Data array
-	 */
-	NSArray *xmlDataArray;
-	
-	/**
-	 * Table name
-	 */
-	NSString *xmlTableName;
+	NSObject <SPHTMLExporterProtocol> *delegate;
 }
 
 @property(readwrite, assign) NSObject *delegate;
 
-@property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
-
 /**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
+ * Initialise an instance of SPHTMLExporter using the supplied delegate.
  *
  * @param exportDelegate The exporter delegate
  *

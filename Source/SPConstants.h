@@ -36,24 +36,46 @@ typedef enum {
 } SPViewMode;
 
 // Query modes
-typedef enum {
+enum {
 	SPInterfaceQueryMode    = 0,
 	SPCustomQueryQueryMode  = 1,
 	SPImportExportQueryMode = 2
-} SPQueryMode;
+};
+typedef NSUInteger SPQueryMode;
 
 // Connection types
-typedef enum {
+enum {
 	SPTCPIPConnection     = 0,
 	SPSocketConnection    = 1,
 	SPSSHTunnelConnection = 2
-} SPConnectionType;
+}; 
+typedef NSUInteger SPConnectionType;
+
+// Export type constants
+enum {
+	SPSQLExport   = 1,
+	SPCSVExport   = 2,
+	SPXMLExport   = 3,
+	SPPDFExport   = 4,
+	SPHTMLExport  = 5,
+	SPExcelExport = 6,
+	SPDotExport   = 7
+};
+typedef NSUInteger SPExportType;
+
+// Export source constants
+enum {
+	SPFilteredExport = 1,
+	SPQueryExport    = 2,
+	SPTableExport    = 3
+};
+typedef NSUInteger SPExportSource;
 
 // Table row count query usage levels
 typedef enum {
-	SPRowCountFetchNever	= 0,
-	SPRowCountFetchIfCheap	= 1,
-	SPRowCountFetchAlways	= 2
+	SPRowCountFetchNever   = 0,
+	SPRowCountFetchIfCheap = 1,
+	SPRowCountFetchAlways  = 2
 } SPRowCountQueryUsageLevels;
 
 // Export type
@@ -246,6 +268,7 @@ extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
 extern NSString *SPSQLExportUseCompression;
+extern NSString *SPNoBOMforSQLdumpFile;
 
 // Misc
 extern NSString *SPContentFilters;
@@ -253,7 +276,6 @@ extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDocumentTaskStartNotification;
 extern NSString *SPFieldEditorSheetFont;
 extern NSString *SPLastSQLFileEncoding;
-extern NSString *SPNoBOMforSQLdumpFile;
 extern NSString *SPPrintBackground;
 extern NSString *SPPrintImagePreviews;
 extern NSString *SPQueryFavorites;
@@ -273,6 +295,7 @@ extern NSString *SPDocumentationURL;
 extern NSString *SPContactURL;
 extern NSString *SPKeyboardShortcutsURL;
 extern NSString *SPMySQLSearchURL;
+extern NSString *SPDevURL;
 extern NSString *SPGettingConnectedDocURL;
 
 // Toolbar constants
