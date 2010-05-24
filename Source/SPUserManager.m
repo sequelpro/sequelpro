@@ -1226,7 +1226,8 @@
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+	NSPredicate *predicate = 
+        [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
 	NSEntityDescription *privEntity = [NSEntityDescription entityForName:@"Privileges"
 														 inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
@@ -1376,6 +1377,7 @@
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
 				NSString *selectedSchema = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
+                selectedSchema = [selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\\\_"];
 				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] schema:selectedSchema host:[user valueForKey:@"host"]];
 				
 				if ([results count] > 0) {
