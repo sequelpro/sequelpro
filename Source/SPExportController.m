@@ -190,7 +190,7 @@
 	// Export finished Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
-														window:[tableDocumentInstance parentWindow]
+													  document:[tableDocumentInstance parentWindow]
 											  notificationName:@"Export Finished"];
 }
 
