@@ -82,7 +82,7 @@
 		[databaseConnectionView setHidden:YES];
 		[connectionView setFrame:[databaseConnectionView frame]];
 		[databaseConnectionSuperview addSubview:connectionView];
-		[connectionSplitView setPosition:[[tableDocument valueForKey:@"dbTablesTableView"] frame].size.width ofDividerAtIndex:0];
+		[connectionSplitView setPosition:[[tableDocument valueForKey:@"dbTablesTableView"] frame].size.width-6 ofDividerAtIndex:0];
 		[connectionSplitViewButtonBar setSplitViewDelegate:self];
 		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
@@ -925,10 +925,13 @@
 /**
  * When the split view is resized, trigger a resize in the hidden table
  * width as well, to keep the connection view and connected view in synch.
+ * Use this rather than splitViewDidResizeSubviews: as the latter is not
+ * forwarded by the BWAnchoredButtonBar.
  */
-- (void) splitViewDidResizeSubviews:(NSNotification *)aNotification
+- (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex
 {
 	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	return proposedPosition;
 }
 
 /**
