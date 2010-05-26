@@ -60,7 +60,6 @@
 {
 	@try {
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		NSAutoreleasePool *xmlExportPool = [[NSAutoreleasePool alloc] init];
 		
 		NSArray *xmlRow = nil;
 		NSString *dataConversionString = nil;
@@ -121,7 +120,7 @@
 		if ([self xmlDataArray]) currentRowIndex++;
 		
 		// Drop into the processing loop
-		xmlExportPool = [[NSAutoreleasePool alloc] init];
+		NSAutoreleasePool *xmlExportPool = [[NSAutoreleasePool alloc] init];
 		
 		currentPoolDataLength = 0;
 		
@@ -217,14 +216,14 @@
 			// Inform the delegate that the export's progress has been updated
 			[delegate performSelectorOnMainThread:@selector(xmlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 			
-			// If an array was supplied and we've processed all rows, break
-			if ([self xmlDataArray] && totalRows == currentRowIndex) break;
-			
 			// Drain the autorelease pool as required to keep memory usage low
 			if (currentPoolDataLength > 250000) {
 				[xmlExportPool release];
 				xmlExportPool = [[NSAutoreleasePool alloc] init];
 			}
+			
+			// If an array was supplied and we've processed all rows, break
+			if ([self xmlDataArray] && totalRows == currentRowIndex) break;
 		}
 		
 		// Write the closing tag for the table
@@ -239,6 +238,7 @@
 		// Inform the delegate that the export process is complete
 		[delegate performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:NO];
 		
+		[xmlExportPool release];
 		[pool release];
 	}
 	@catch (NSException *e) { }

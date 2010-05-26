@@ -355,9 +355,6 @@
 			}
 			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:@"xml"]]];
-			
-			// Write the file header
-			[self writeXMLHeaderToFileHandle:singleFileHandle];
 		}
 		
 		// Start the export process depending on the data source
@@ -541,7 +538,7 @@
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		filename = [[exportPathField stringValue] stringByAppendingPathComponent:table];
 		
-		fileHandle = [self getFileHandleForFilePath:filename];
+		fileHandle = [self getFileHandleForFilePath:[filename stringByAppendingPathExtension:@"xml"]];
 						
 		// Write the file header
 		[self writeXMLHeaderToFileHandle:fileHandle];
