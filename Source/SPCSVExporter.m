@@ -179,7 +179,7 @@
 		
 		if ([self csvTableName] && (![self csvDataArray])) {
 			
-			NSDictionary *tableDetails = [[NSDictionary alloc] init];
+			NSDictionary *tableDetails;
 			
 			// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
 			MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
@@ -187,9 +187,9 @@
 			[queryResult setReturnDataAsStrings:YES];
 			
 			if ([queryResult numOfRows]) {
-				tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
+				tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 				
-				tableDetails = [NSDictionary dictionaryWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
+				tableDetails = [[NSDictionary alloc] initWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
 			}
 			
 			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
@@ -316,7 +316,7 @@
 						 ([csvCellString length] > 1 && 
 						  [csvCellString characterAtIndex:1] == '.'));
 					}
-					
+										
 					// Escape any occurrences of the escaping character
 					[csvCellString replaceOccurrencesOfString:[self csvEscapeString]
 												   withString:escapedEscapeString
@@ -381,14 +381,14 @@
 			// Inform the delegate that the export's progress has been updated
 			[delegate performSelectorOnMainThread:@selector(csvExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 			
-			// If an array was supplied and we've processed all rows, break
-			if ([self csvDataArray] && (totalRows == currentRowIndex)) break;
-			
 			// Drain the autorelease pool as required to keep memory usage low
 			if (currentPoolDataLength > 250000) {
 				[csvExportPool release];
 				csvExportPool = [[NSAutoreleasePool alloc] init];
 			}
+			
+			// If an array was supplied and we've processed all rows, break
+			if ([self csvDataArray] && (totalRows == currentRowIndex)) break;
 		}
 		
 		// Write data to disk
@@ -400,6 +400,7 @@
 		// Inform the delegate that the export process is complete
 		[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
 		
+		[csvExportPool release];
 		[pool release];
 	}
 	@catch(NSException *e) {}
