@@ -98,7 +98,7 @@
 		17E641590EF01EF6001BC333 /* TableContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414F0EF01EF6001BC333 /* TableContent.m */; };
 		17E6415A0EF01EF6001BC333 /* TableDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641510EF01EF6001BC333 /* TableDocument.m */; };
 		17E6415B0EF01EF6001BC333 /* TableDump.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641530EF01EF6001BC333 /* TableDump.m */; };
-		17E6415C0EF01EF6001BC333 /* TableSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641550EF01EF6001BC333 /* TableSource.m */; };
+		17E6415C0EF01EF6001BC333 /* SPTableStructure.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641550EF01EF6001BC333 /* SPTableStructure.m */; };
 		17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6415F0EF01F15001BC333 /* SPTableInfo.m */; };
 		17E641650EF01F15001BC333 /* SPTablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* SPTablesList.m */; };
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
@@ -525,8 +525,8 @@
 		17E641510EF01EF6001BC333 /* TableDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDocument.m; sourceTree = "<group>"; };
 		17E641520EF01EF6001BC333 /* TableDump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDump.h; sourceTree = "<group>"; };
 		17E641530EF01EF6001BC333 /* TableDump.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDump.m; sourceTree = "<group>"; };
-		17E641540EF01EF6001BC333 /* TableSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableSource.h; sourceTree = "<group>"; };
-		17E641550EF01EF6001BC333 /* TableSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableSource.m; sourceTree = "<group>"; };
+		17E641540EF01EF6001BC333 /* SPTableStructure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableStructure.h; sourceTree = "<group>"; };
+		17E641550EF01EF6001BC333 /* SPTableStructure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructure.m; sourceTree = "<group>"; };
 		17E6415E0EF01F15001BC333 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableInfo.h; sourceTree = "<group>"; };
 		17E6415F0EF01F15001BC333 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
 		17E641600EF01F15001BC333 /* SPTablesList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTablesList.h; sourceTree = "<group>"; };
@@ -1017,8 +1017,8 @@
 				17E641510EF01EF6001BC333 /* TableDocument.m */,
 				17E641520EF01EF6001BC333 /* TableDump.h */,
 				17E641530EF01EF6001BC333 /* TableDump.m */,
-				17E641540EF01EF6001BC333 /* TableSource.h */,
-				17E641550EF01EF6001BC333 /* TableSource.m */,
+				17E641540EF01EF6001BC333 /* SPTableStructure.h */,
+				17E641550EF01EF6001BC333 /* SPTableStructure.m */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
 			name = "Main View Controllers";
@@ -2034,7 +2034,7 @@
 				17E641590EF01EF6001BC333 /* TableContent.m in Sources */,
 				17E6415A0EF01EF6001BC333 /* TableDocument.m in Sources */,
 				17E6415B0EF01EF6001BC333 /* TableDump.m in Sources */,
-				17E6415C0EF01EF6001BC333 /* TableSource.m in Sources */,
+				17E6415C0EF01EF6001BC333 /* SPTableStructure.m in Sources */,
 				17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */,
 				17E641650EF01F15001BC333 /* SPTablesList.m in Sources */,
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,

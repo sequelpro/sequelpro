@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableSource.h
+//  SPTableStructure.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@interface TableSource : NSObject 
+@interface SPTableStructure : NSObject 
 {
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;

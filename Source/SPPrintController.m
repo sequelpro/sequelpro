@@ -25,7 +25,7 @@
 
 #import "SPPrintController.h"
 #import "TableContent.h"
-#import "TableSource.h"
+#import "SPTableStructure.h"
 #import "CustomQuery.h"
 #import "SPConstants.h"
 #import "SPTableRelations.h"

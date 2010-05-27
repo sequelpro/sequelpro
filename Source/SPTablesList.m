@@ -25,7 +25,7 @@
 
 #import "SPTablesList.h"
 #import "TableDocument.h"
-#import "TableSource.h"
+#import "SPTableStructure.h"
 #import "TableContent.h"
 #import "SPTableData.h"
 #import "SPTableInfo.h"

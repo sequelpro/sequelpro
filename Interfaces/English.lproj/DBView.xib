@@ -12120,7 +12120,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				<string key="NSClassName">SPTablesList</string>
 			</object>
 			<object class="NSCustomObject" id="103234030">
-				<string key="NSClassName">TableSource</string>
+				<string key="NSClassName">SPTableStructure</string>
 			</object>
 			<object class="NSCustomObject" id="936957743">
 				<string key="NSClassName">SPExtendedTableInfo</string>
@@ -28304,6 +28304,102 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">SPTableStructure</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addField:</string>
+							<string>chooseIndexType:</string>
+							<string>closeKeySheet:</string>
+							<string>closeSheet:</string>
+							<string>copyField:</string>
+							<string>openIndexSheet:</string>
+							<string>reloadTable:</string>
+							<string>removeField:</string>
+							<string>removeIndex:</string>
+							<string>resetAutoIncrement:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addFieldButton</string>
+							<string>addIndexButton</string>
+							<string>chooseKeyButton</string>
+							<string>copyFieldButton</string>
+							<string>editTableButton</string>
+							<string>extendedTableInfoInstance</string>
+							<string>indexNameField</string>
+							<string>indexSheet</string>
+							<string>indexTypeField</string>
+							<string>indexView</string>
+							<string>indexedColumnsField</string>
+							<string>keySheet</string>
+							<string>reloadFieldsButton</string>
+							<string>reloadIndexesButton</string>
+							<string>removeFieldButton</string>
+							<string>removeIndexButton</string>
+							<string>resetAutoIncrementLine</string>
+							<string>resetAutoIncrementSheet</string>
+							<string>resetAutoIncrementValue</string>
+							<string>structureGrabber</string>
+							<string>tableDataInstance</string>
+							<string>tableDocumentInstance</string>
+							<string>tableInfoInstance</string>
+							<string>tableSourceView</string>
+							<string>tablesListInstance</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBUserSource</string>
+						<string key="minorKey"/>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">SPTableTextFieldCell</string>
 					<string key="superclassName">ImageAndTextCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -29178,110 +29274,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">TableDump</string>
-					<string key="superclassName">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBUserSource</string>
-						<string key="minorKey"/>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">TableSource</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addField:</string>
-							<string>chooseIndexType:</string>
-							<string>closeKeySheet:</string>
-							<string>closeSheet:</string>
-							<string>copyField:</string>
-							<string>openIndexSheet:</string>
-							<string>reloadTable:</string>
-							<string>removeField:</string>
-							<string>removeIndex:</string>
-							<string>resetAutoIncrement:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFieldButton</string>
-							<string>addIndexButton</string>
-							<string>chooseKeyButton</string>
-							<string>copyFieldButton</string>
-							<string>editTableButton</string>
-							<string>extendedTableInfoInstance</string>
-							<string>indexNameField</string>
-							<string>indexSheet</string>
-							<string>indexTypeField</string>
-							<string>indexView</string>
-							<string>indexedColumnsField</string>
-							<string>keySheet</string>
-							<string>reloadFieldsButton</string>
-							<string>reloadIndexesButton</string>
-							<string>removeFieldButton</string>
-							<string>removeIndexButton</string>
-							<string>resetAutoIncrementLine</string>
-							<string>resetAutoIncrementSheet</string>
-							<string>resetAutoIncrementValue</string>
-							<string>structureGrabber</string>
-							<string>tableDataInstance</string>
-							<string>tableDocumentInstance</string>
-							<string>tableInfoInstance</string>
-							<string>tableSourceView</string>
-							<string>tablesListInstance</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/TableSource.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">TableSource</string>
 					<string key="superclassName">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>

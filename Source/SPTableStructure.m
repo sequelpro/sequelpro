@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableSource.m
+//  SPTableStructure.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "TableSource.h"
+#import "SPTableStructure.h"
 #import "TableDocument.h"
 #import "SPTableInfo.h"
 #import "SPTablesList.h"
@@ -35,7 +35,7 @@
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
 
-@interface TableSource (PrivateAPI)
+@interface SPTableStructure (PrivateAPI)
 
 - (void)_addIndex;
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
@@ -43,7 +43,7 @@
 
 @end
 
-@implementation TableSource
+@implementation SPTableStructure
 
 /**
  * Loads aTable, put it in an array, update the tableViewColumns and reload the tableView
@@ -1735,7 +1735,7 @@ would result in a position change.
 
 @end
 
-@implementation TableSource (PrivateAPI)
+@implementation SPTableStructure (PrivateAPI)
 
 /**
  * Adds an index to the current table.

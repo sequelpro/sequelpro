@@ -32,7 +32,7 @@
 #import "TableDocument.h"
 #import "SPTablesList.h"
 #import "SPAlertSheets.h"
-#import "TableSource.h"
+#import "SPTableStructure.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
