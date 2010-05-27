@@ -30,7 +30,7 @@
 #import "TableSource.h"
 #import "SPTableInfo.h"
 #import "TablesList.h"
-#import "CMImageView.h"
+#import "SPImageView.h"
 #import "CMCopyTable.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"

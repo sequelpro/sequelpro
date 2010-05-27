@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CMImageView.h
+//  SPImageView.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Sat Sep 06 2003.
@@ -25,14 +25,14 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface NSObject (CMImageViewDelegate)
+@interface NSObject (SPImageViewDelegate)
 
 - (void)processUpdatedImageData:(NSData *)data;
 - (void)processPasteImageData;
 
 @end
 
-@interface CMImageView : NSImageView 
+@interface SPImageView : NSImageView 
 {
 	IBOutlet id delegate;
 }

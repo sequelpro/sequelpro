@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CMImageView.m
+//  SPImageView.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Sat Sep 06 2003.
@@ -23,9 +23,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "CMImageView.h"
+#import "SPImageView.h"
 
-@implementation CMImageView
+@implementation SPImageView
 
 /*
  * On a drag and drop, read in dragged files and convert dragged images before passing

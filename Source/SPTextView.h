@@ -1,5 +1,5 @@
 //
-//  $Id: CMTextView.h 2240 2010-05-23 21:44:59Z rowanb $
+//  $Id$
 //
 //  SPTextView.h
 //  sequel-pro
