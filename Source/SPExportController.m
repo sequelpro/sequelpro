@@ -37,7 +37,9 @@
 
 @interface SPExportController (PrivateAPI)
 
-- (void)_toggleExportButton;
+- (void)_toggleExportButton:(id)uiStateDict;
+- (void)_toggleExportButtonOnBackgroundThread;
+- (void)_toggleExportButtonWithBool:(NSNumber *)enable;
 - (void)_resizeWindowByHeightDelta:(NSInteger)delta;
 
 @end
@@ -95,8 +97,11 @@
  */
 - (void)awakeFromNib
 {	
+	// Set the current toolbar item
+	currentToolbarItem = [[exportToolbar items] objectAtIndex:0];
+	
 	// Upon awakening select the SQL tab
-	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
+	[exportToolbar setSelectedItemIdentifier:[currentToolbarItem itemIdentifier]];
 	
 	// Select the 'selected tables' option
 	[exportInputMatrix selectCellAtRow:2 column:0];
@@ -280,16 +285,16 @@
 				
 		currentToolbarItem = sender;
 		
-		NSString *label = [[currentToolbarItem label] lowercaseString];
+		NSString *label = [[currentToolbarItem label] uppercaseString];
 		
-		[exportTabBar selectTabViewItemWithIdentifier:label];
+		[exportTabBar selectTabViewItemWithIdentifier:[label lowercaseString]];
 				
-		BOOL isSQL  = [label isEqualToString:@"sql"];
-		BOOL isCSV  = [label isEqualToString:@"csv"];
-		BOOL isXML  = [label isEqualToString:@"xml"];
-		BOOL isHTML = [label isEqualToString:@"html"];
-		BOOL isPDF  = [label isEqualToString:@"pdf"];
-		BOOL isDot  = [label isEqualToString:@"dot"];
+		BOOL isSQL  = [label isEqualToString:@"SQL"];
+		BOOL isCSV  = [label isEqualToString:@"CSV"];
+		BOOL isXML  = [label isEqualToString:@"XML"];
+		BOOL isHTML = [label isEqualToString:@"HTML"];
+		BOOL isPDF  = [label isEqualToString:@"PDF"];
+		BOOL isDot  = [label isEqualToString:@"DOT"];
 		
 		BOOL disable = (isCSV || isXML || isHTML || isPDF || isDot);
 		
@@ -453,7 +458,7 @@
 	
 	[exportTableList reloadData];
 	
-	[self _toggleExportButton];
+	[self _toggleExportButtonOnBackgroundThread];
 }
 
 /**
@@ -491,7 +496,7 @@
 {
 	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(![sender state])];
 	
-	[self _toggleExportButton];
+	[self _toggleExportButtonOnBackgroundThread];
 }
 
 /**
@@ -503,7 +508,7 @@
 	
 	[self selectDeselectAllTables:sender];
 	
-	[self _toggleExportButton];
+	[self _toggleExportButtonOnBackgroundThread];
 }
 
 /**
@@ -513,7 +518,7 @@
 {
 	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(![sender state])];
 	
-	[self _toggleExportButton];
+	[self _toggleExportButtonOnBackgroundThread];
 }
 
 #pragma mark -
@@ -533,7 +538,7 @@
 {	
 	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
 
-	[self _toggleExportButton];
+	[self _toggleExportButtonOnBackgroundThread];
 }
 
 #pragma mark -
@@ -629,48 +634,81 @@
 #pragma mark Private API
 
 /**
- * Enables or disables the export button based on the state of various interface controls.
+ * Enables or disables the export button based on the state of various interface controls. 
  */
-- (void)_toggleExportButton
+- (void)_toggleExportButton:(id)uiStateDict
 {
-	NSString *label = [[currentToolbarItem label] lowercaseString];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		
+	BOOL enable;
+	NSString *format = [uiStateDict objectForKey:@"ExportFormat"];
 	
-	BOOL isSQL  = [label isEqualToString:@"sql"];
-	BOOL isCSV  = [label isEqualToString:@"csv"];
-	BOOL isXML  = [label isEqualToString:@"xml"];
-	BOOL isHTML = [label isEqualToString:@"html"];
-	BOOL isPDF  = [label isEqualToString:@"pdf"];
+	BOOL isSQL  = [format isEqualToString:@"SQL"];
+	BOOL isCSV  = [format isEqualToString:@"CSV"];
+	BOOL isXML  = [format isEqualToString:@"XML"];
+	BOOL isHTML = [format isEqualToString:@"HTML"];
+	BOOL isPDF  = [format isEqualToString:@"PDF"];
 		
 	if (isCSV || isXML || isHTML || isPDF) {
-		[exportButton setEnabled:NO];
+		enable = NO;
 		
 		// Only enable the button if at least one table is selected
 		for (NSArray *table in tables)
 		{
 			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
-				[exportButton setEnabled:YES];
+				enable = YES;
 				break;
 			}
 		}
 	}
 	else if (isSQL) {
-		BOOL structureEnabled = [exportSQLIncludeStructureCheck state];
-		BOOL contentEnabled   = [exportSQLIncludeContentCheck state];
-		BOOL dropEnabled      = [exportSQLIncludeDropSyntaxCheck state];
+		BOOL structureEnabled = [uiStateDict objectForKey:@"SQLExportStructureEnabled"];
+		BOOL contentEnabled   = [uiStateDict objectForKey:@"SQLExportContentEnabled"];
+		BOOL dropEnabled      = [uiStateDict objectForKey:@"SQLExportDropEnabled"];
 		
 		// Disable if all are unchecked
 		if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
-			[exportButton setEnabled:NO];
+			enable = NO;
 		}
 		// Disable if structure is unchecked, but content and drop are as dropping a table then trying to insert
 		// into it is obviously an error
 		else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
-			[exportButton setEnabled:NO];
+			enable = NO;
 		}
 		else {
-			[exportButton setEnabled:(contentEnabled || (structureEnabled || dropEnabled))];
+			enable = (contentEnabled || (structureEnabled || dropEnabled));
 		}
 	}
+	
+	[self performSelectorOnMainThread:@selector(_toggleExportButtonWithBool:) withObject:[NSNumber numberWithBool:enable] waitUntilDone:NO];
+		
+	[pool release];
+}
+
+/**
+ *
+ */
+- (void)_toggleExportButtonOnBackgroundThread
+{
+	NSMutableDictionary *uiStateDict = [[NSMutableDictionary alloc] init];
+	
+	[uiStateDict setObject:[[currentToolbarItem label] uppercaseString] forKey:@"ExportFormat"];
+	
+	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeStructureCheck state]] forKey:@"SQLExportStructureEnabled"];
+	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeContentCheck state]] forKey:@"SQLExportContentEnabled"];
+	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeDropSyntaxCheck state]] forKey:@"SQLExportDropEnabled"];
+	
+	[NSThread detachNewThreadSelector:@selector(_toggleExportButton:) toTarget:self withObject:uiStateDict];
+	
+	[uiStateDict release];
+}
+
+/**
+ * Enables or disables the export button based on the supplied number (boolean).
+ */
+- (void)_toggleExportButtonWithBool:(NSNumber *)enable
+{
+	[exportButton setEnabled:[enable boolValue]];
 }
 
 /**
