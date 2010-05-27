@@ -64,7 +64,7 @@
 	SPFileHandle *exportOutputFileHandle;
 	NSStringEncoding exportOutputEncoding;
 
-	NSInteger exportMaxProgress;
+	double exportMaxProgress;
 }
 
 @property(readwrite, retain) MCPConnection *connection;
@@ -78,6 +78,6 @@
 @property(readwrite, retain) SPFileHandle *exportOutputFileHandle;
 @property(readwrite, assign) NSStringEncoding exportOutputEncoding;
 
-@property(readwrite, assign) NSInteger exportMaxProgress;
+@property(readwrite, assign) double exportMaxProgress;
 
 @end

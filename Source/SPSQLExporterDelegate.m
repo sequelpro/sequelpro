@@ -47,6 +47,7 @@
  */
 - (void)sqlExportProcessComplete:(SPSQLExporter *)exporter
 {
+	[exportProgressIndicator stopAnimation:self];
 	[NSApp endSheet:exportProgressWindow returnCode:0];
 	[exportProgressWindow orderOut:self];
 		
@@ -69,8 +70,10 @@
  */
 - (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter
 {
-	//NSLog(@"updating: %f", [exporter exportProgressValue]);
-	
+	if ([exportProgressIndicator doubleValue] == 0) {
+		[exportProgressIndicator stopAnimation:self];
+		[exportProgressIndicator setIndeterminate:NO];
+	}
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
@@ -79,17 +82,12 @@
  */
 - (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter
 {
-	// Update the current table export index
-	currentTableExportIndex = (exportTableCount - [exporters count]);
+	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];
 	
-	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter sqlExportCurrentTable]]];
-		
-	[[exportProgressText onMainThread] displayIfNeeded];
-	
-	[[exportProgressIndicator onMainThread] stopAnimation:self];
-	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
-	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
-	[[exportProgressIndicator onMainThread] setDoubleValue:0];
+	[exportProgressIndicator startAnimation:self];
+	[exportProgressIndicator setUsesThreadedAnimation:YES];
+	[exportProgressIndicator setIndeterminate:YES];
+	[exportProgressIndicator setDoubleValue:0];
 }
 
 /**
@@ -97,9 +95,7 @@
  */
 - (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter
 {
-	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter sqlExportCurrentTable]]];
-	
-	[[exportProgressText onMainThread] displayIfNeeded];
+	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];
 }
 
 @end

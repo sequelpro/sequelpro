@@ -149,13 +149,10 @@
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
 	
-	// Reset the interface
-	[[exportProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
-	[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-	
-	[[exportProgressText onMainThread] displayIfNeeded];
-	[[exportProgressIndicator onMainThread] setDoubleValue:0];
-	[[exportProgressIndicator onMainThread] displayIfNeeded];
+	// Reset the progress interface
+	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
+	[exportProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+	[exportProgressIndicator setDoubleValue:0];
 	
 	// Open the progress sheet
 	[NSApp beginSheet:exportProgressWindow
@@ -303,7 +300,7 @@
 		
 		// Set the exporter's max progress
 		[sqlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
-		
+
 		// Set the progress bar's max value
 		[exportProgressIndicator setMaxValue:[sqlExporter exportMaxProgress]];
 		
@@ -315,7 +312,7 @@
 		// Create custom filename if required
 		filename = (createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
 				
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"gz" : @"sql"]]];
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"sql.gz" : @"sql"]]];
 				
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		

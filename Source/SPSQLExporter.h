@@ -88,7 +88,12 @@
 	 * Compress output
 	 */
 	BOOL sqlOutputCompressFile;
-	
+
+	/**
+	 * Number of tables processed by exporter
+	 */
+	NSUInteger sqlCurrentTableExportIndex;
+
 	/**
 	 * Table information
 	 */
@@ -111,7 +116,9 @@
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
 @property(readwrite, assign) BOOL sqlOutputCompressFile;
 
-@property (readwrite, retain) NSDictionary *sqlTableInformation;
+@property(readwrite, assign) NSUInteger sqlCurrentTableExportIndex;
+
+@property(readwrite, retain) NSDictionary *sqlTableInformation;
 
 /**
  * Initialise an instance of SPSQLExporter using the supplied delegate.
