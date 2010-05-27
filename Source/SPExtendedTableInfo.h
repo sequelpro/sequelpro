@@ -26,12 +26,12 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class SPTableData, SPDatabaseData, TablesList;
+@class SPTableData, SPDatabaseData, SPTablesList;
 
 @interface SPExtendedTableInfo : NSObject
 {
 	IBOutlet id tableDocumentInstance;
-	IBOutlet TablesList *tablesListInstance;
+	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet SPDatabaseData *databaseDataInstance;
 	IBOutlet id tableSourceInstance;

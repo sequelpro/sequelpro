@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TablesList.h
+//  SPTablesList.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -37,7 +37,7 @@
 
 @end
 
-@interface TablesList : NSObject 
+@interface SPTablesList : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableSourceInstance;

@@ -26,7 +26,7 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPSQLExporter.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPConstants.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"

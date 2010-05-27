@@ -32,7 +32,7 @@
 #import "SPConstants.h"
 #import "SPQueryController.h"
 #import "SPTooltip.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
 
@@ -303,7 +303,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if(!isDictMode && [mySQLConnection isConnected])
 	{
-		// Add structural db/table/field data to completions list or fallback to gathering TablesList data
+		// Add structural db/table/field data to completions list or fallback to gathering SPTablesList data
 
 		NSString* connectionID;
 		if(tableDocumentInstance)

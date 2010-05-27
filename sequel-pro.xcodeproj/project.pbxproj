@@ -100,7 +100,7 @@
 		17E6415B0EF01EF6001BC333 /* TableDump.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641530EF01EF6001BC333 /* TableDump.m */; };
 		17E6415C0EF01EF6001BC333 /* TableSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641550EF01EF6001BC333 /* TableSource.m */; };
 		17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6415F0EF01F15001BC333 /* SPTableInfo.m */; };
-		17E641650EF01F15001BC333 /* TablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* TablesList.m */; };
+		17E641650EF01F15001BC333 /* SPTablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* SPTablesList.m */; };
 		17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641690EF01F37001BC333 /* ImageAndTextCell.m */; };
 		17E641750EF01F80001BC333 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417D0EF01FA8001BC333 /* CMCopyTable.m */; };
@@ -529,8 +529,8 @@
 		17E641550EF01EF6001BC333 /* TableSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableSource.m; sourceTree = "<group>"; };
 		17E6415E0EF01F15001BC333 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableInfo.h; sourceTree = "<group>"; };
 		17E6415F0EF01F15001BC333 /* SPTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableInfo.m; sourceTree = "<group>"; };
-		17E641600EF01F15001BC333 /* TablesList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TablesList.h; sourceTree = "<group>"; };
-		17E641610EF01F15001BC333 /* TablesList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TablesList.m; sourceTree = "<group>"; };
+		17E641600EF01F15001BC333 /* SPTablesList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTablesList.h; sourceTree = "<group>"; };
+		17E641610EF01F15001BC333 /* SPTablesList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTablesList.m; sourceTree = "<group>"; };
 		17E641680EF01F37001BC333 /* ImageAndTextCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageAndTextCell.h; sourceTree = "<group>"; };
 		17E641690EF01F37001BC333 /* ImageAndTextCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageAndTextCell.m; sourceTree = "<group>"; };
 		17E641730EF01F80001BC333 /* SPKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPKeychain.h; sourceTree = "<group>"; };
@@ -1045,8 +1045,8 @@
 				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
 				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
 				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
-				17E641600EF01F15001BC333 /* TablesList.h */,
-				17E641610EF01F15001BC333 /* TablesList.m */,
+				17E641600EF01F15001BC333 /* SPTablesList.h */,
+				17E641610EF01F15001BC333 /* SPTablesList.m */,
 				BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */,
 				BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */,
 				BC27779E11514B940034DF6A /* SPNavigatorController.h */,
@@ -2036,7 +2036,7 @@
 				17E6415B0EF01EF6001BC333 /* TableDump.m in Sources */,
 				17E6415C0EF01EF6001BC333 /* TableSource.m in Sources */,
 				17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */,
-				17E641650EF01F15001BC333 /* TablesList.m in Sources */,
+				17E641650EF01F15001BC333 /* SPTablesList.m in Sources */,
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
 				17E641750EF01F80001BC333 /* SPKeychain.m in Sources */,
 				17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */,

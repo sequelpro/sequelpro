@@ -27,7 +27,7 @@
 
 #import "SPExportController.h"
 #import "SPExportInitializer.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPTableData.h"
 #import "TableContent.h"
 #import "SPArrayAdditions.h"

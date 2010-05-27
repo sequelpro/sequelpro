@@ -29,7 +29,7 @@
 #import "SPStringAdditions.h"
 #import "SPTableData.h"
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPGrowlController.h"
 #import "SPMainThreadTrampoline.h"
 #import "TableDocument.h"

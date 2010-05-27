@@ -24,7 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class TableDocument, TableContent, TablesList;
+@class TableDocument, TableContent, SPTablesList;
 
 @interface SPHistoryController : NSObject 
 {
@@ -32,7 +32,7 @@
 	IBOutlet NSSegmentedControl *historyControl;
 
 	TableContent *tableContentInstance;
-	TablesList *tablesListInstance;
+	SPTablesList *tablesListInstance;
 	NSMutableArray *history;
 	NSMutableDictionary *tableContentStates;
 	NSUInteger historyPosition;

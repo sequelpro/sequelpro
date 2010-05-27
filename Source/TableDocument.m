@@ -26,7 +26,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "TableSource.h"
 #import "TableContent.h"
 #import "CustomQuery.h"
@@ -2544,7 +2544,7 @@
 }
 
 /**
- * Returns the currently selected table (passing the request to TablesList)
+ * Returns the currently selected table (passing the request to SPTablesList)
  */
 - (NSString *)table
 {
@@ -4458,7 +4458,7 @@
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
 		
-		// Set the connection of TablesList and TablesDump to reload tables in db
+		// Set the connection of SPTablesList and TablesDump to reload tables in db
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
 

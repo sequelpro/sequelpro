@@ -30,7 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPAlertSheets.h"
 #import "TableSource.h"
 

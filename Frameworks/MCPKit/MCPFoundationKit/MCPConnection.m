@@ -2035,7 +2035,7 @@ void performThreadedKeepAlive(void *ptr)
 		return;
 	}
 
-	// Retrieve the tables and views for this database from tablesList (TODO: split out of MCPKit)
+	// Retrieve the tables and views for this database from SPTablesList (TODO: split out of MCPKit)
 	NSMutableArray *tablesAndViews = [NSMutableArray array];
 	for (id aTable in [[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableNames]) {
 		NSDictionary *aTableDict = [NSDictionary dictionaryWithObjectsAndKeys:

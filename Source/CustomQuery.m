@@ -32,7 +32,7 @@
 #import "SPDataAdditions.h"
 #import "SPDataCellFormatter.h"
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "RegexKitLite.h"
 #import "SPFieldEditorController.h"
 #import "SPTextAndLinkCell.h"

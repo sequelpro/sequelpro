@@ -24,7 +24,7 @@
 
 #import "TableDocument.h"
 #import "TableContent.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPConstants.h"
 #import "SPHistoryController.h"
 #import "SPStringAdditions.h"

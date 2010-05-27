@@ -5163,7 +5163,7 @@
 						<string key="NS.key.0">toggleCollapse:</string>
 						<string key="NS.object.0">id</string>
 					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="97037241">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/TablesList.h</string>
 					</object>
@@ -5602,6 +5602,138 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">SPTablesList</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addTable:</string>
+							<string>closeSheet:</string>
+							<string>copyTable:</string>
+							<string>removeTable:</string>
+							<string>renameTable:</string>
+							<string>togglePaneCollapse:</string>
+							<string>truncateTable:</string>
+							<string>updateFilter:</string>
+							<string>updateTables:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addTableButton</string>
+							<string>copyTableButton</string>
+							<string>copyTableContentSwitch</string>
+							<string>copyTableMessageField</string>
+							<string>copyTableNameField</string>
+							<string>copyTableSheet</string>
+							<string>customQueryInstance</string>
+							<string>databaseDataInstance</string>
+							<string>duplicateTableContextMenuItem</string>
+							<string>duplicateTableMenuItem</string>
+							<string>extendedTableInfoInstance</string>
+							<string>listFilterField</string>
+							<string>removeTableContextMenuItem</string>
+							<string>removeTableMenuItem</string>
+							<string>renameTableContextMenuItem</string>
+							<string>renameTableMenuItem</string>
+							<string>separatorTableContextMenuItem</string>
+							<string>separatorTableContextMenuItem2</string>
+							<string>separatorTableMenuItem</string>
+							<string>separatorTableMenuItem2</string>
+							<string>showCreateSyntaxContextMenuItem</string>
+							<string>showCreateSyntaxMenuItem</string>
+							<string>spHistoryControllerInstance</string>
+							<string>tabView</string>
+							<string>tableContentInstance</string>
+							<string>tableDataInstance</string>
+							<string>tableDocumentInstance</string>
+							<string>tableDumpInstance</string>
+							<string>tableEncodingButton</string>
+							<string>tableInfoCollapseButton</string>
+							<string>tableInfoInstance</string>
+							<string>tableListFilterSplitView</string>
+							<string>tableListSplitView</string>
+							<string>tableNameField</string>
+							<string>tableSheet</string>
+							<string>tableSourceInstance</string>
+							<string>tableTriggersInstance</string>
+							<string>tableTypeButton</string>
+							<string>tablesListView</string>
+							<string>toolbarActionsButton</string>
+							<string>toolbarAddButton</string>
+							<string>toolbarReloadButton</string>
+							<string>truncateTableButton</string>
+							<string>truncateTableContextButton</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>id</string>
+							<string>NSSearchField</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
+							<string>SPHistoryController</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSButton</string>
+							<string>id</string>
+							<string>NSSplitView</string>
+							<string>NSSplitView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBUserSource</string>
+						<string key="minorKey"/>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">SPTextView</string>
 					<string key="superclassName">NSTextView</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -5622,7 +5754,7 @@
 							<string>CustomQuery</string>
 							<string>NSScrollView</string>
 							<string>TableDocument</string>
-							<string>TablesList</string>
+							<string>SPTablesList</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -6019,135 +6151,6 @@
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/TableDocument.h</string>
 					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">TablesList</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addTable:</string>
-							<string>closeSheet:</string>
-							<string>copyTable:</string>
-							<string>removeTable:</string>
-							<string>renameTable:</string>
-							<string>togglePaneCollapse:</string>
-							<string>truncateTable:</string>
-							<string>updateFilter:</string>
-							<string>updateTables:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addTableButton</string>
-							<string>copyTableButton</string>
-							<string>copyTableContentSwitch</string>
-							<string>copyTableMessageField</string>
-							<string>copyTableNameField</string>
-							<string>copyTableSheet</string>
-							<string>customQueryInstance</string>
-							<string>databaseDataInstance</string>
-							<string>duplicateTableContextMenuItem</string>
-							<string>duplicateTableMenuItem</string>
-							<string>extendedTableInfoInstance</string>
-							<string>listFilterField</string>
-							<string>removeTableContextMenuItem</string>
-							<string>removeTableMenuItem</string>
-							<string>renameTableContextMenuItem</string>
-							<string>renameTableMenuItem</string>
-							<string>separatorTableContextMenuItem</string>
-							<string>separatorTableContextMenuItem2</string>
-							<string>separatorTableMenuItem</string>
-							<string>separatorTableMenuItem2</string>
-							<string>showCreateSyntaxContextMenuItem</string>
-							<string>showCreateSyntaxMenuItem</string>
-							<string>spHistoryControllerInstance</string>
-							<string>tabView</string>
-							<string>tableContentInstance</string>
-							<string>tableDataInstance</string>
-							<string>tableDocumentInstance</string>
-							<string>tableDumpInstance</string>
-							<string>tableEncodingButton</string>
-							<string>tableInfoCollapseButton</string>
-							<string>tableInfoInstance</string>
-							<string>tableListFilterSplitView</string>
-							<string>tableListSplitView</string>
-							<string>tableNameField</string>
-							<string>tableSheet</string>
-							<string>tableSourceInstance</string>
-							<string>tableTriggersInstance</string>
-							<string>tableTypeButton</string>
-							<string>tablesListView</string>
-							<string>toolbarActionsButton</string>
-							<string>toolbarAddButton</string>
-							<string>toolbarReloadButton</string>
-							<string>truncateTableButton</string>
-							<string>truncateTableContextButton</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>NSSearchField</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>NSMenuItem</string>
-							<string>SPHistoryController</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSButton</string>
-							<string>id</string>
-							<string>NSSplitView</string>
-							<string>NSSplitView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<reference key="sourceIdentifier" ref="97037241"/>
 				</object>
 			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">

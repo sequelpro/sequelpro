@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TablesList.m
+//  SPTablesList.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "TableDocument.h"
 #import "TableSource.h"
 #import "TableContent.h"
@@ -43,7 +43,7 @@
 #import "SPMainThreadTrampoline.h"
 #import "SPHistoryController.h"
 
-@interface TablesList (PrivateAPI)
+@interface SPTablesList (PrivateAPI)
 
 - (void)removeTable;
 - (void)truncateTable;
@@ -55,7 +55,7 @@
 
 @end
 
-@implementation TablesList
+@implementation SPTablesList
 
 #pragma mark -
 #pragma mark IBAction methods
@@ -1879,7 +1879,7 @@
 
 @end
 
-@implementation TablesList (PrivateAPI)
+@implementation SPTablesList (PrivateAPI)
 
 /**
  * Removes the selected object (table, view, procedure, function, etc.) from the database and tableView.

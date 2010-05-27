@@ -59,8 +59,8 @@
 	NSInteger row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
 	if(row >= 0 && row < [self numberOfRows]) {
 		
-		// Check for TablesList if right-click on header, then suppress context menu
-		if([[[[self delegate] class] description] isEqualToString:@"TablesList"]) {
+		// Check for SPTablesList if right-click on header, then suppress context menu
+		if([[[[self delegate] class] description] isEqualToString:@"SPTablesList"]) {
 			if([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) integerValue] == -1)
 				return nil;
 		}

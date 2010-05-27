@@ -25,7 +25,7 @@
 
 #import "SPTableTriggers.h"
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"

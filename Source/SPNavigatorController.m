@@ -28,7 +28,7 @@
 #import "SPConstants.h"
 #import "ImageAndTextCell.h"
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPArrayAdditions.h"
 #import "SPLogger.h"
 #import "SPTooltip.h"

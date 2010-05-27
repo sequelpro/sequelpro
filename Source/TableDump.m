@@ -25,7 +25,7 @@
 
 #import "TableDump.h"
 #import "TableDocument.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "TableSource.h"
 #import "TableContent.h"
 #import "CustomQuery.h"
@@ -50,7 +50,7 @@
 
 /**
  * Update the table lists with the list of tables, retrieved from the
- * tablesList.  If the user has pressed the reload button, trigger a reload
+ * SPTablesList.  If the user has pressed the reload button, trigger a reload
  * from the server; otherwise used the cached lists.
  * Retrieve only tables for all modes except SQL.
  */

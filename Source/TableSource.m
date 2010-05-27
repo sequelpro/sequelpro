@@ -26,7 +26,7 @@
 #import "TableSource.h"
 #import "TableDocument.h"
 #import "SPTableInfo.h"
-#import "TablesList.h"
+#import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPSQLParser.h"
 #import "SPStringAdditions.h"
@@ -664,7 +664,7 @@ closes the keySheet
 
 	NSString *selTable = nil;
 
-	// if selectedTable is nil try to get the name from tablesList
+	// if selectedTable is nil try to get the name from SPTablesList
 	if(selectedTable == nil || ![selectedTable length])
 		selTable = [tablesListInstance tableName];
 	else
