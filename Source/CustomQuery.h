@@ -28,7 +28,7 @@
 #import <WebKit/WebKit.h>
 
 #import "CMCopyTable.h"
-#import "CMTextView.h"
+#import "SPTextView.h"
 #import "RegexKitLite.h"
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
@@ -75,7 +75,7 @@
 	IBOutlet NSMenuItem *copyHistoryMenuItem;
 	IBOutlet NSPopUpButton *encodingPopUp;
 	
-	IBOutlet CMTextView *textView;
+	IBOutlet SPTextView *textView;
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;

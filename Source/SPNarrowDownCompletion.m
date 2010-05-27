@@ -36,7 +36,7 @@
 #import "SPConstants.h"
 #import "SPQueryController.h"
 #import "RegexKitLite.h"
-#import "CMTextView.h"
+#import "SPTextView.h"
 #import "SPConstants.h"
 
 

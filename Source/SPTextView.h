@@ -1,7 +1,7 @@
 //
-//  $Id$
+//  $Id: CMTextView.h 2240 2010-05-23 21:44:59Z rowanb $
 //
-//  CMTextView.h
+//  SPTextView.h
 //  sequel-pro
 //
 //  Created by Carsten Blüm.
@@ -27,13 +27,12 @@
 
 #import "NoodleLineNumberView.h"
 #import "CMCopyTable.h"
-#import "CMTextView.h"
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
 @class SPNarrowDownCompletion, TableDocument, TablesList, CustomQuery;
 
-@interface CMTextView : NSTextView 
+@interface SPTextView : NSTextView 
 {
 	IBOutlet TableDocument *tableDocumentInstance;
 	IBOutlet TablesList *tablesListInstance;

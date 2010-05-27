@@ -30,7 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
 #import "SPNotLoaded.h"
-#import "CMTextView.h"
+#import "SPTextView.h"
 
 @implementation SPFieldMapperController
 

@@ -25,7 +25,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class BWAnchoredButtonBar, CMTextView, TableDocument;
+@class BWAnchoredButtonBar, SPTextView, TableDocument;
 
 @interface NSObject (SPQueryFavoriteManagerDelegate)
 
@@ -43,7 +43,7 @@
 	IBOutlet NSTableView *favoritesTableView;
 	IBOutlet NSTextField *favoriteNameTextField;
 	IBOutlet NSTextField *favoriteTabTriggerTextField;
-	IBOutlet CMTextView  *favoriteQueryTextView;
+	IBOutlet SPTextView  *favoriteQueryTextView;
 	IBOutlet NSButton *removeButton;
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 

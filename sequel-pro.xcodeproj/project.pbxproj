@@ -105,7 +105,7 @@
 		17E641750EF01F80001BC333 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417D0EF01FA8001BC333 /* CMCopyTable.m */; };
 		17E641830EF01FA8001BC333 /* CMImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6417F0EF01FA8001BC333 /* CMImageView.m */; };
-		17E641840EF01FA8001BC333 /* CMTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641810EF01FA8001BC333 /* CMTextView.m */; };
+		17E641840EF01FA8001BC333 /* SPTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641810EF01FA8001BC333 /* SPTextView.m */; };
 		17E641C00EF02036001BC333 /* appicon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 17E6418C0EF02036001BC333 /* appicon.icns */; };
 		17E641C10EF02036001BC333 /* clearconsole.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 17E6418D0EF02036001BC333 /* clearconsole.tiff */; };
 		17E641D10EF02036001BC333 /* grabber-horizontal.png in Resources */ = {isa = PBXBuildFile; fileRef = 17E6419D0EF02036001BC333 /* grabber-horizontal.png */; };
@@ -539,8 +539,8 @@
 		17E6417D0EF01FA8001BC333 /* CMCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMCopyTable.m; sourceTree = "<group>"; };
 		17E6417E0EF01FA8001BC333 /* CMImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMImageView.h; sourceTree = "<group>"; };
 		17E6417F0EF01FA8001BC333 /* CMImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMImageView.m; sourceTree = "<group>"; };
-		17E641800EF01FA8001BC333 /* CMTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMTextView.h; sourceTree = "<group>"; };
-		17E641810EF01FA8001BC333 /* CMTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMTextView.m; sourceTree = "<group>"; };
+		17E641800EF01FA8001BC333 /* SPTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextView.h; sourceTree = "<group>"; };
+		17E641810EF01FA8001BC333 /* SPTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextView.m; sourceTree = "<group>"; };
 		17E6418C0EF02036001BC333 /* appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = appicon.icns; sourceTree = "<group>"; };
 		17E6418D0EF02036001BC333 /* clearconsole.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = clearconsole.tiff; sourceTree = "<group>"; };
 		17E6419D0EF02036001BC333 /* grabber-horizontal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "grabber-horizontal.png"; sourceTree = "<group>"; };
@@ -1402,8 +1402,8 @@
 				17E6417D0EF01FA8001BC333 /* CMCopyTable.m */,
 				17E6417E0EF01FA8001BC333 /* CMImageView.h */,
 				17E6417F0EF01FA8001BC333 /* CMImageView.m */,
-				17E641800EF01FA8001BC333 /* CMTextView.h */,
-				17E641810EF01FA8001BC333 /* CMTextView.m */,
+				17E641800EF01FA8001BC333 /* SPTextView.h */,
+				17E641810EF01FA8001BC333 /* SPTextView.m */,
 				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
@@ -2041,7 +2041,7 @@
 				17E641750EF01F80001BC333 /* SPKeychain.m in Sources */,
 				17E641820EF01FA8001BC333 /* CMCopyTable.m in Sources */,
 				17E641830EF01FA8001BC333 /* CMImageView.m in Sources */,
-				17E641840EF01FA8001BC333 /* CMTextView.m in Sources */,
+				17E641840EF01FA8001BC333 /* SPTextView.m in Sources */,
 				58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */,
 				1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */,
 				58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */,

@@ -208,7 +208,7 @@
 }
 
 /**
- * This method is only implemented to be compatible with CMTextView.
+ * This method is only implemented to be compatible with SPTextView.
  */
 - (id)customQueryInstance
 {

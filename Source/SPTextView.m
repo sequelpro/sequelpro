@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CMTextView.m
+//  SPTextView.m
 //  sequel-pro
 //
 //  Created by Carsten Blüm.
@@ -22,7 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "CMTextView.h"
+#import "SPTextView.h"
 #import "CustomQuery.h"
 #import "TableDocument.h"
 #import "SPStringAdditions.h"
@@ -86,7 +86,7 @@ static inline CGFloat SPRectRight(NSRect rectangle) { return rectangle.origin.x+
 static inline CGFloat SPPointDistance(NSPoint a, NSPoint b) { return sqrt( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y) ); }
 static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NSMakePoint(a.x*(1.-t) + b.x*t, a.y*(1.-t) + b.y*t); }
 
-@implementation CMTextView
+@implementation SPTextView
 
 @synthesize queryHiliteColor;
 @synthesize queryEditorBackgroundColor;
@@ -802,7 +802,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 
 /*
- * Returns the associated line number for a character position inside of the CMTextView
+ * Returns the associated line number for a character position inside of the SPTextView
  */
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex
 {
@@ -2028,7 +2028,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
-	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if CMTextView belongs to CustomQuery
+	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to CustomQuery
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[CustomQuery class]]){
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
