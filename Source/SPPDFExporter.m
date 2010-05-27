@@ -50,12 +50,9 @@
  */
 - (void)main
 {
-	@try {
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		
-		[pool release];
-	}
-	@catch (NSException *e) { }
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
+	[pool release];
 }
 
 @end

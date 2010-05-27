@@ -65,345 +65,342 @@
  */
 - (void)main
 {		
-	@try {
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		
-		NSMutableString *csvString     = [NSMutableString string];
-		NSMutableString *csvCellString = [NSMutableString string];
-		
-		NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
-
-		NSArray *csvRow = nil;
-		NSScanner *csvNumericTester = nil;
-		MCPStreamingResult *streamingResult = nil;
-		NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString, *dataConversionString;
-
-		id csvCell;
-		BOOL csvCellIsNumeric;
-		BOOL quoteFieldSeparators = [[self csvEnclosingCharacterString] isEqualToString:@""];
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-		NSUInteger i, totalRows, lastProgressValue, csvCellCount = 0;
-		
-		// Check to see if we have at least a table name or data array
-		if ((![self csvTableName]) && (![self csvDataArray]) ||
-			([[self csvTableName] isEqualToString:@""]) && ([[self csvDataArray] count] == 0))
-		{
-			[pool release];
-			return;
-		}
-		
-		// Check that we have all the required info before starting the export
-		if ((![self csvOutputFieldNames]) ||
-			(![self csvFieldSeparatorString]) ||
-			(![self csvEscapeString]) ||
-			(![self csvLineEndingString]))
-		{
-			[pool release];
-			return;
-		}
-			 
-		// Check that the CSV output options are not just empty strings
-		if (([[self csvFieldSeparatorString] isEqualToString:@""]) ||
-			([[self csvEscapeString] isEqualToString:@""]) ||
-			([[self csvLineEndingString] isEqualToString:@""])) 
-		{
-			[pool release];
-			return;
-		}
-						
-		// Inform the delegate that the export process is about to begin
-		[delegate performSelectorOnMainThread:@selector(csvExportProcessWillBegin:) withObject:self waitUntilDone:NO];
+	NSMutableString *csvString     = [NSMutableString string];
+	NSMutableString *csvCellString = [NSMutableString string];
+	
+	NSMutableArray *tableColumnNumericStatus = [NSMutableArray array];
+
+	NSArray *csvRow = nil;
+	NSScanner *csvNumericTester = nil;
+	MCPStreamingResult *streamingResult = nil;
+	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString, *dataConversionString;
+
+	id csvCell;
+	BOOL csvCellIsNumeric;
+	BOOL quoteFieldSeparators = [[self csvEnclosingCharacterString] isEqualToString:@""];
+
+	NSUInteger i, totalRows, lastProgressValue, csvCellCount = 0;
+	
+	// Check to see if we have at least a table name or data array
+	if ((![self csvTableName]) && (![self csvDataArray]) ||
+		([[self csvTableName] isEqualToString:@""]) && ([[self csvDataArray] count] == 0))
+	{
+		[pool release];
+		return;
+	}
+	
+	// Check that we have all the required info before starting the export
+	if ((![self csvOutputFieldNames]) ||
+		(![self csvFieldSeparatorString]) ||
+		(![self csvEscapeString]) ||
+		(![self csvLineEndingString]))
+	{
+		[pool release];
+		return;
+	}
+		 
+	// Check that the CSV output options are not just empty strings
+	if (([[self csvFieldSeparatorString] isEqualToString:@""]) ||
+		([[self csvEscapeString] isEqualToString:@""]) ||
+		([[self csvLineEndingString] isEqualToString:@""])) 
+	{
+		[pool release];
+		return;
+	}
 					
-		// Mark the process as running
-		[self setExportProcessIsRunning:YES];
+	// Inform the delegate that the export process is about to begin
+	[delegate performSelectorOnMainThread:@selector(csvExportProcessWillBegin:) withObject:self waitUntilDone:NO];
+				
+	// Mark the process as running
+	[self setExportProcessIsRunning:YES];
+	
+	lastProgressValue = 0;
+	
+	// Make a streaming request for the data if the data array isn't set
+	if ((![self csvDataArray]) && [self csvTableName]) {
+		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
+	}
+	
+	// Detect and restore special characters being used as terminating or line end strings
+	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:[self csvFieldSeparatorString]];
+	
+	// Escape tabs, line endings and carriage returns
+	[tempSeparatorString replaceOccurrencesOfString:@"\\t" withString:@"\t"
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempSeparatorString length])];
+	
+	[tempSeparatorString replaceOccurrencesOfString:@"\\n" withString:@"\n"
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempSeparatorString length])];
+	
+	[tempSeparatorString replaceOccurrencesOfString:@"\\r" withString:@"\r"
+											options:NSLiteralSearch
+											  range:NSMakeRange(0, [tempSeparatorString length])];
+	
+	// Set the new field separator string
+	[self setCsvFieldSeparatorString:[NSString stringWithString:tempSeparatorString]];
+	
+	NSMutableString *tempLineEndString = [NSMutableString stringWithString:[self csvLineEndingString]];
+	
+	// Escape tabs, line endings and carriage returns
+	[tempLineEndString replaceOccurrencesOfString:@"\\t" withString:@"\t"
+										  options:NSLiteralSearch
+											range:NSMakeRange(0, [tempLineEndString length])];
+	
+	
+	[tempLineEndString replaceOccurrencesOfString:@"\\n" withString:@"\n"
+										  options:NSLiteralSearch
+											range:NSMakeRange(0, [tempLineEndString length])];
+	
+	[tempLineEndString replaceOccurrencesOfString:@"\\r" withString:@"\r"
+										  options:NSLiteralSearch
+											range:NSMakeRange(0, [tempLineEndString length])];
+	
+	// Set the new line ending string
+	[self setCsvLineEndingString:[NSString stringWithString:tempLineEndString]];
+	
+	// Set up escaped versions of strings for substitution within the loop
+	escapedEscapeString         = [[self csvEscapeString] stringByAppendingString:[self csvEscapeString]];
+	escapedFieldSeparatorString = [[self csvEscapeString] stringByAppendingString:[self csvFieldSeparatorString]];
+	escapedEnclosingString      = [[self csvEscapeString] stringByAppendingString:[self csvEnclosingCharacterString]];
+	escapedLineEndString        = [[self csvEscapeString] stringByAppendingString:[self csvLineEndingString]];
+	
+	// Set up the starting row; for supplied arrays, which include the column
+	// headers as the first row, decide whether to skip the first row.
+	NSUInteger currentRowIndex = 0;
+	
+	[csvString setString:@""];
+	
+	if ([self csvDataArray]) totalRows = [[self csvDataArray] count];
+	if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
+	
+	if ([self csvTableName] && (![self csvDataArray])) {
 		
-		lastProgressValue = 0;
+		NSDictionary *tableDetails;
 		
-		// Make a streaming request for the data if the data array isn't set
-		if ((![self csvDataArray]) && [self csvTableName]) {
-			streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
+		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
+		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
+		
+		[queryResult setReturnDataAsStrings:YES];
+		
+		if ([queryResult numOfRows]) {
+			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+			
+			tableDetails = [[NSDictionary alloc] initWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
 		}
 		
-		// Detect and restore special characters being used as terminating or line end strings
-		NSMutableString *tempSeparatorString = [NSMutableString stringWithString:[self csvFieldSeparatorString]];
+		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+		{
+			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
+			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
+																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
+																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
+		}
 		
-		// Escape tabs, line endings and carriage returns
-		[tempSeparatorString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-												options:NSLiteralSearch
-												  range:NSMakeRange(0, [tempSeparatorString length])];
+		[tableDetails release];
+	}
+	
+	// Drop into the processing loop
+	NSAutoreleasePool *csvExportPool = [[NSAutoreleasePool alloc] init];
+	
+	NSUInteger currentPoolDataLength = 0;
+	
+	// Inform the delegate that we are about to start writing the data to disk
+	[delegate performSelectorOnMainThread:@selector(csvExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
+	
+	while (1) 
+	{
+		// Check for cancellation flag
+		if ([self isCancelled]) {
+			if (streamingResult) {
+				[connection cancelCurrentQuery];
+				[streamingResult cancelResultLoad];
+			}
+			
+			[csvExportPool release];
+			[pool release];
+			
+			return;
+		}
 		
-		[tempSeparatorString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-												options:NSLiteralSearch
-												  range:NSMakeRange(0, [tempSeparatorString length])];
+		// Retrieve the next row from the supplied data, either directly from the array...
+		if ([self csvDataArray]) {
+			csvRow = NSArrayObjectAtIndex([self csvDataArray], currentRowIndex);
+		} 
+		// Or by reading an appropriate row from the streaming result
+		else {
+			// If still requested to read the field names, get the field names
+			if ([self csvOutputFieldNames]) {
+				csvRow = [streamingResult fetchFieldNames];
+				[self setCsvOutputFieldNames:NO];
+			} 
+			else {
+				csvRow = [streamingResult fetchNextRowAsArray];
+				
+				if (!csvRow) break;
+			}
+		}
 		
-		[tempSeparatorString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-												options:NSLiteralSearch
-												  range:NSMakeRange(0, [tempSeparatorString length])];
-		
-		// Set the new field separator string
-		[self setCsvFieldSeparatorString:[NSString stringWithString:tempSeparatorString]];
-		
-		NSMutableString *tempLineEndString = [NSMutableString stringWithString:[self csvLineEndingString]];
-		
-		// Escape tabs, line endings and carriage returns
-		[tempLineEndString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-											  options:NSLiteralSearch
-												range:NSMakeRange(0, [tempLineEndString length])];
-		
-		
-		[tempLineEndString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-											  options:NSLiteralSearch
-												range:NSMakeRange(0, [tempLineEndString length])];
-		
-		[tempLineEndString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-											  options:NSLiteralSearch
-												range:NSMakeRange(0, [tempLineEndString length])];
-		
-		// Set the new line ending string
-		[self setCsvLineEndingString:[NSString stringWithString:tempLineEndString]];
-		
-		// Set up escaped versions of strings for substitution within the loop
-		escapedEscapeString         = [[self csvEscapeString] stringByAppendingString:[self csvEscapeString]];
-		escapedFieldSeparatorString = [[self csvEscapeString] stringByAppendingString:[self csvFieldSeparatorString]];
-		escapedEnclosingString      = [[self csvEscapeString] stringByAppendingString:[self csvEnclosingCharacterString]];
-		escapedLineEndString        = [[self csvEscapeString] stringByAppendingString:[self csvLineEndingString]];
-		
-		// Set up the starting row; for supplied arrays, which include the column
-		// headers as the first row, decide whether to skip the first row.
-		NSUInteger currentRowIndex = 0;
-		
+		// Get the cell count if we don't already have it stored
+		if (!csvCellCount) csvCellCount = [csvRow count];
+					
 		[csvString setString:@""];
 		
-		if ([self csvDataArray]) totalRows = [[self csvDataArray] count];
-		if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
-		
-		if ([self csvTableName] && (![self csvDataArray])) {
-			
-			NSDictionary *tableDetails;
-			
-			// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-			MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
-			
-			[queryResult setReturnDataAsStrings:YES];
-			
-			if ([queryResult numOfRows]) {
-				tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-				
-				tableDetails = [[NSDictionary alloc] initWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
-			}
-			
-			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-			for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
-			{
-				NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-				
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-																			  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
-																			  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
-			}
-			
-			[tableDetails release];
-		}
-		
-		// Drop into the processing loop
-		NSAutoreleasePool *csvExportPool = [[NSAutoreleasePool alloc] init];
-		
-		NSUInteger currentPoolDataLength = 0;
-		
-		// Inform the delegate that we are about to start writing the data to disk
-		[delegate performSelectorOnMainThread:@selector(csvExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
-		
-		while (1) 
+		for (i = 0 ; i < csvCellCount; i++) 
 		{
 			// Check for cancellation flag
 			if ([self isCancelled]) {
-				if (streamingResult) {
-					[connection cancelCurrentQuery];
-					[streamingResult cancelResultLoad];
-				}
-				
 				[csvExportPool release];
 				[pool release];
 				
 				return;
 			}
 			
-			// Retrieve the next row from the supplied data, either directly from the array...
-			if ([self csvDataArray]) {
-				csvRow = NSArrayObjectAtIndex([self csvDataArray], currentRowIndex);
+			csvCell = NSArrayObjectAtIndex(csvRow, i);
+							
+			// For NULL objects supplied from a queryResult, add an unenclosed null string as per prefs
+			if ([csvCell isKindOfClass:[NSNull class]]) {
+				[csvString appendString:[self csvNULLString]];
+				
+				if (i < (csvCellCount - 1)) [csvString appendString:[self csvFieldSeparatorString]];
+				
+				continue;
+			}
+			
+			// Retrieve the contents of this cell
+			if ([csvCell isKindOfClass:[NSData class]]) {
+				dataConversionString = [[NSString alloc] initWithData:csvCell encoding:[self exportOutputEncoding]];
+				
+				if (dataConversionString == nil) {
+					dataConversionString = [[NSString alloc] initWithData:csvCell encoding:NSASCIIStringEncoding];
+				}
+				
+				[csvCellString setString:[NSString stringWithString:dataConversionString]];
+				[dataConversionString release];
 			} 
-			// Or by reading an appropriate row from the streaming result
 			else {
-				// If still requested to read the field names, get the field names
-				if ([self csvOutputFieldNames]) {
-					csvRow = [streamingResult fetchFieldNames];
-					[self setCsvOutputFieldNames:NO];
-				} 
-				else {
-					csvRow = [streamingResult fetchNextRowAsArray];
-					
-					if (!csvRow) break;
-				}
+				[csvCellString setString:[csvCell description]];
 			}
 			
-			// Get the cell count if we don't already have it stored
-			if (!csvCellCount) csvCellCount = [csvRow count];
-						
-			[csvString setString:@""];
-			
-			for (i = 0 ; i < csvCellCount; i++) 
-			{
-				// Check for cancellation flag
-				if ([self isCancelled]) {
-					[csvExportPool release];
-					[pool release];
-					
-					return;
-				}
-				
-				csvCell = NSArrayObjectAtIndex(csvRow, i);
-								
-				// For NULL objects supplied from a queryResult, add an unenclosed null string as per prefs
-				if ([csvCell isKindOfClass:[NSNull class]]) {
-					[csvString appendString:[self csvNULLString]];
-					
-					if (i < (csvCellCount - 1)) [csvString appendString:[self csvFieldSeparatorString]];
-					
-					continue;
-				}
-				
-				// Retrieve the contents of this cell
-				if ([csvCell isKindOfClass:[NSData class]]) {
-					dataConversionString = [[NSString alloc] initWithData:csvCell encoding:[self exportOutputEncoding]];
-					
-					if (dataConversionString == nil) {
-						dataConversionString = [[NSString alloc] initWithData:csvCell encoding:NSASCIIStringEncoding];
-					}
-					
-					[csvCellString setString:[NSString stringWithString:dataConversionString]];
-					[dataConversionString release];
+			// For NULL values supplied via an array add the unenclosed null string as set in preferences
+			if ([csvCellString isEqualToString:[self csvNULLString]]) {
+				[csvString appendString:[self csvNULLString]];
+			} 
+			// Add empty strings as a pair of enclosing characters.
+			else if ([csvCellString length] == 0) {
+				[csvString appendString:[self csvEnclosingCharacterString]];
+				[csvString appendString:[self csvEnclosingCharacterString]];
+			}
+			else {
+				// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
+				if ([tableColumnNumericStatus count] > 0) {
+					csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, i) boolValue];
 				} 
-				else {
-					[csvCellString setString:[csvCell description]];
-				}
-				
-				// For NULL values supplied via an array add the unenclosed null string as set in preferences
-				if ([csvCellString isEqualToString:[self csvNULLString]]) {
-					[csvString appendString:[self csvNULLString]];
+				// Otherwise, first test whether this cell contains data
+				else if ([NSArrayObjectAtIndex(csvRow, i) isKindOfClass:[NSData class]]) {
+					csvCellIsNumeric = NO;
 				} 
-				// Add empty strings as a pair of enclosing characters.
-				else if ([csvCellString length] == 0) {
-					[csvString appendString:[self csvEnclosingCharacterString]];
-					[csvString appendString:[self csvEnclosingCharacterString]];
-				}
+				// Or fall back to testing numeric content via an NSScanner.
 				else {
-					// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
-					if ([tableColumnNumericStatus count] > 0) {
-						csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, i) boolValue];
-					} 
-					// Otherwise, first test whether this cell contains data
-					else if ([NSArrayObjectAtIndex(csvRow, i) isKindOfClass:[NSData class]]) {
-						csvCellIsNumeric = NO;
-					} 
-					// Or fall back to testing numeric content via an NSScanner.
-					else {
-						csvNumericTester = [NSScanner scannerWithString:csvCellString];
-						
-						csvCellIsNumeric = [csvNumericTester scanFloat:nil] && 
-						[csvNumericTester isAtEnd] && 
-						([csvCellString characterAtIndex:0] != '0' || 
-						 [csvCellString length] == 1 || 
-						 ([csvCellString length] > 1 && 
-						  [csvCellString characterAtIndex:1] == '.'));
-					}
-										
-					// Escape any occurrences of the escaping character
-					[csvCellString replaceOccurrencesOfString:[self csvEscapeString]
-												   withString:escapedEscapeString
+					csvNumericTester = [NSScanner scannerWithString:csvCellString];
+					
+					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && 
+					[csvNumericTester isAtEnd] && 
+					([csvCellString characterAtIndex:0] != '0' || 
+					 [csvCellString length] == 1 || 
+					 ([csvCellString length] > 1 && 
+					  [csvCellString characterAtIndex:1] == '.'));
+				}
+									
+				// Escape any occurrences of the escaping character
+				[csvCellString replaceOccurrencesOfString:[self csvEscapeString]
+											   withString:escapedEscapeString
+												  options:NSLiteralSearch
+													range:NSMakeRange(0, [csvCellString length])];
+				
+				// Escape any occurrences of the enclosure string
+				if (![[self csvEscapeString] isEqualToString:[self csvEnclosingCharacterString]]) {
+					[csvCellString replaceOccurrencesOfString:[self csvEnclosingCharacterString]
+												   withString:escapedEnclosingString
 													  options:NSLiteralSearch
 														range:NSMakeRange(0, [csvCellString length])];
-					
-					// Escape any occurrences of the enclosure string
-					if (![[self csvEscapeString] isEqualToString:[self csvEnclosingCharacterString]]) {
-						[csvCellString replaceOccurrencesOfString:[self csvEnclosingCharacterString]
-													   withString:escapedEnclosingString
-														  options:NSLiteralSearch
-															range:NSMakeRange(0, [csvCellString length])];
-					}
-					
-					// Escape occurrences of the line end character
-					[csvCellString replaceOccurrencesOfString:[self csvLineEndingString]
-												   withString:escapedLineEndString
-													  options:NSLiteralSearch
-														range:NSMakeRange(0, [csvCellString length])];
-					
-					// If the string isn't quoted or otherwise enclosed, escape occurrences of the field separators
-					if (quoteFieldSeparators || csvCellIsNumeric) {
-						[csvCellString replaceOccurrencesOfString:[self csvFieldSeparatorString]
-													   withString:escapedFieldSeparatorString
-														  options:NSLiteralSearch
-															range:NSMakeRange(0, [csvCellString length])];
-					}
-					
-					// Write out the cell data by appending strings - this is significantly faster than stringWithFormat.
-					if (csvCellIsNumeric) {
-						[csvString appendString:csvCellString];
-					} 
-					else {
-						[csvString appendString:[self csvEnclosingCharacterString]];
-						[csvString appendString:csvCellString];
-						[csvString appendString:[self csvEnclosingCharacterString]];
-					}
 				}
 				
-				if (i < ([csvRow count] - 1)) [csvString appendString:[self csvFieldSeparatorString]];
+				// Escape occurrences of the line end character
+				[csvCellString replaceOccurrencesOfString:[self csvLineEndingString]
+											   withString:escapedLineEndString
+												  options:NSLiteralSearch
+													range:NSMakeRange(0, [csvCellString length])];
+				
+				// If the string isn't quoted or otherwise enclosed, escape occurrences of the field separators
+				if (quoteFieldSeparators || csvCellIsNumeric) {
+					[csvCellString replaceOccurrencesOfString:[self csvFieldSeparatorString]
+												   withString:escapedFieldSeparatorString
+													  options:NSLiteralSearch
+														range:NSMakeRange(0, [csvCellString length])];
+				}
+				
+				// Write out the cell data by appending strings - this is significantly faster than stringWithFormat.
+				if (csvCellIsNumeric) {
+					[csvString appendString:csvCellString];
+				} 
+				else {
+					[csvString appendString:[self csvEnclosingCharacterString]];
+					[csvString appendString:csvCellString];
+					[csvString appendString:[self csvEnclosingCharacterString]];
+				}
 			}
 			
-			// Append the line ending to the string for this row, and record the length processed for pool flushing
-			[csvString appendString:[self csvLineEndingString]];						
-			currentPoolDataLength += [csvString length];
-			
-			// Write it to the fileHandle
-			[[self exportOutputFileHandle] writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
-			
-			currentRowIndex++;
-			
-			// Update the progress
-			if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
-				
-				NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
-				
-				[self setExportProgressValue:progress];
-				
-				lastProgressValue = progress;
-			}
-			
-			// Inform the delegate that the export's progress has been updated
-			[delegate performSelectorOnMainThread:@selector(csvExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
-			
-			// Drain the autorelease pool as required to keep memory usage low
-			if (currentPoolDataLength > 250000) {
-				[csvExportPool release];
-				csvExportPool = [[NSAutoreleasePool alloc] init];
-			}
-			
-			// If an array was supplied and we've processed all rows, break
-			if ([self csvDataArray] && (totalRows == currentRowIndex)) break;
+			if (i < ([csvRow count] - 1)) [csvString appendString:[self csvFieldSeparatorString]];
 		}
 		
-		// Write data to disk
-		[[self exportOutputFileHandle] synchronizeFile];
+		// Append the line ending to the string for this row, and record the length processed for pool flushing
+		[csvString appendString:[self csvLineEndingString]];						
+		currentPoolDataLength += [csvString length];
 		
-		// Mark the process as not running
-		[self setExportProcessIsRunning:NO];
+		// Write it to the fileHandle
+		[[self exportOutputFileHandle] writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
 		
-		// Inform the delegate that the export process is complete
-		[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
+		currentRowIndex++;
 		
-		[csvExportPool release];
-		[pool release];
+		// Update the progress
+		if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
+			
+			NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
+			
+			[self setExportProgressValue:progress];
+			
+			lastProgressValue = progress;
+		}
+		
+		// Inform the delegate that the export's progress has been updated
+		[delegate performSelectorOnMainThread:@selector(csvExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
+		
+		// Drain the autorelease pool as required to keep memory usage low
+		if (currentPoolDataLength > 250000) {
+			[csvExportPool release];
+			csvExportPool = [[NSAutoreleasePool alloc] init];
+		}
+		
+		// If an array was supplied and we've processed all rows, break
+		if ([self csvDataArray] && (totalRows == currentRowIndex)) break;
 	}
-	@catch(NSException *e) {}
+	
+	// Write data to disk
+	[[self exportOutputFileHandle] synchronizeFile];
+	
+	// Mark the process as not running
+	[self setExportProcessIsRunning:NO];
+	
+	// Inform the delegate that the export process is complete
+	[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
+	
+	[csvExportPool release];
+	[pool release];
 }
 
 /**
