@@ -355,24 +355,26 @@
 							return;
 						}
 						
+						id object = NSArrayObjectAtIndex(row, t);
+						
 						// Add NULL values directly to the output row
-						if ([NSArrayObjectAtIndex(row, t) isMemberOfClass:[NSNull class]]) {
+						if ([object isMemberOfClass:[NSNull class]]) {
 							[sqlString appendString:@"NULL"];
 						} 
 						// Add data types directly as hex data
-						else if ([NSArrayObjectAtIndex(row, t) isKindOfClass:[NSData class]]) {
+						else if ([object isKindOfClass:[NSData class]]) {
 							
 							if ([self sqlOutputEncodeBLOBasHex]) {
 								[sqlString appendString:@"X'"];
-								[sqlString appendString:[connection prepareBinaryData:NSArrayObjectAtIndex(row, t)]];
+								[sqlString appendString:[connection prepareBinaryData:object]];
 							}
 							else {
 								[sqlString appendString:@"'"];
 								
-								NSString *data = [[NSString alloc] initWithData:NSArrayObjectAtIndex(row, t) encoding:[self exportOutputEncoding]];
+								NSString *data = [[NSString alloc] initWithData:object encoding:[self exportOutputEncoding]];
 								
 								if (data == nil) {
-									data = [[NSString alloc] initWithData:NSArrayObjectAtIndex(row, t) encoding:NSASCIIStringEncoding];
+									data = [[NSString alloc] initWithData:object encoding:NSASCIIStringEncoding];
 								}
 								
 								[sqlString appendString:data];
@@ -383,7 +385,7 @@
 							[sqlString appendString:@"'"];
 						} 
 						else {
-							[cellValue setString:[NSArrayObjectAtIndex(row, t) description]];
+							[cellValue setString:[object description]];
 							
 							// Add empty strings as a pair of quotes
 							if ([cellValue length] == 0) {
