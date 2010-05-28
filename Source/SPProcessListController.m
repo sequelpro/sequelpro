@@ -61,6 +61,8 @@
 	if ((self = [super initWithWindowNibName:@"DatabaseProcessList"])) {
 		
 		autoRefreshTimer = nil;
+		processListThreadRunning = NO;
+		
 		processes = [[NSMutableArray alloc] init];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
@@ -185,6 +187,9 @@
 	// allow a refresh to prevent connection lock errors.
 	if ([(SPDatabaseDocument *)[connection delegate] isWorking]) return;
 	
+	// Also, only proceed if there is not already a background thread running.
+	if (processListThreadRunning) return;
+	
 	// Start progress Indicator
 	[refreshProgressIndicator startAnimation:self];
 	[refreshProgressIndicator setHidden:NO];
@@ -193,6 +198,8 @@
 	[refreshProcessesButton setEnabled:NO];
 	[saveProcessesButton setEnabled:NO];
 	[filterProcessesSearchField setEnabled:NO];
+	
+	processListThreadRunning = YES;
 		
 	// Get the processes list on a background thread
 	[NSThread detachNewThreadSelector:@selector(_getDatabaseProcessListInBackground:) toTarget:self withObject:nil];
@@ -508,6 +515,8 @@
 {
 	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
+	processListThreadRunning = NO;
+	
 	[processes release], processes = nil;
 	
 	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
@@ -523,6 +532,8 @@
  */
 - (void)_processListRefreshed
 {
+	processListThreadRunning = NO;
+	
 	// Reapply any filters is required
 	if ([[filterProcessesSearchField stringValue] length] > 0) {
 		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];

@@ -30,7 +30,7 @@
 {
 	MCPConnection *connection;
 	
-	BOOL showFullProcessList;
+	BOOL showFullProcessList, processListThreadRunning;
 	
 	NSTimer *autoRefreshTimer;
 	
