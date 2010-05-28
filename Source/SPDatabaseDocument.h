@@ -54,7 +54,7 @@
 	IBOutlet id statusTableView;
 	IBOutlet id statusTableCopyChecksum;
 	
-	IBOutlet SPUserManager *userManagerInstance;
+    SPUserManager *userManagerInstance;
 	
 	IBOutlet NSSearchField *listFilterField;
 

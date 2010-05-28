@@ -669,7 +669,7 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
-	userManagerInstance.mySqlConnection = mySQLConnection;
+//	userManagerInstance.mySqlConnection = mySQLConnection;
 
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
@@ -2327,6 +2327,12 @@
  */
 - (IBAction)showUserManager:(id)sender
 {	
+    if (!userManagerInstance)
+    {
+        userManagerInstance = [[SPUserManager alloc] init];
+        userManagerInstance.mySqlConnection = mySQLConnection;
+    }
+    
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
 	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	
@@ -2347,9 +2353,14 @@
 	
 	[NSApp beginSheet:[userManagerInstance window]
 	   modalForWindow:parentWindow 
-		modalDelegate:userManagerInstance 
+		modalDelegate:self 
 	   didEndSelector:@selector(userManagerSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
+}
+
+- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
+{
+    [userManagerInstance release], userManagerInstance = nil;
 }
 
 /**
