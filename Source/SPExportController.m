@@ -29,7 +29,7 @@
 #import "SPExportInitializer.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
-#import "TableContent.h"
+#import "SPTableContent.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"

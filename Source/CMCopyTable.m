@@ -27,7 +27,7 @@
 #import "CMCopyTable.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
-#import "TableContent.h"
+#import "SPTableContent.h"
 #import "SPTableTriggers.h"
 #import "SPTableRelations.h"
 #import "CustomQuery.h"
@@ -254,10 +254,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// If the data is not loaded, attempt to fetch the value
-			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:[TableContent class]]) {
+			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:[SPTableContent class]]) {
 
 				// Abort if no table name given, not table content, or if there are no indices on this table
-				if (!selectedTable || ![[self delegate] isKindOfClass:[TableContent class]] || ![[tableInstance argumentForRow:rowIndex] length]) {
+				if (!selectedTable || ![[self delegate] isKindOfClass:[SPTableContent class]] || ![[tableInstance argumentForRow:rowIndex] length]) {
 					NSBeep();
 					free(columnMappings);
 					free(columnTypes);
@@ -451,7 +451,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 {
 	// RETURN or ENTER invoke editing mode for selected row
 	// by calling tableView:shouldEditTableColumn: to validate
-	if([[[[self delegate] class] description] isEqualToString:@"TableContent"]) {
+	if([[[[self delegate] class] description] isEqualToString:@"SPTableContent"]) {
 
 		id tableContentView = [[self delegate] valueForKeyPath:@"tableContentView"];
 		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {

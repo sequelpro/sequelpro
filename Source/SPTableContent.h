@@ -30,7 +30,7 @@
 
 @class CMCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage;
 
-@interface TableContent : NSObject 
+@interface SPTableContent : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;

@@ -25,7 +25,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "TableContent.h"
+#import "SPTableContent.h"
 #import "TableDocument.h"
 #import "SPTableStructure.h"
 #import "SPTableInfo.h"
@@ -52,7 +52,7 @@
 #import "SPMainThreadTrampoline.h"
 #import "SPHistoryController.h"
 
-@implementation TableContent
+@implementation SPTableContent
 
 /**
  * Standard init method. Initialize various ivars.

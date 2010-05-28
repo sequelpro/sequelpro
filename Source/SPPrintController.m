@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPPrintController.h"
-#import "TableContent.h"
+#import "SPTableContent.h"
 #import "SPTableStructure.h"
 #import "CustomQuery.h"
 #import "SPConstants.h"

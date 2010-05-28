@@ -27,7 +27,7 @@
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
-#import "TableContent.h"
+#import "SPTableContent.h"
 #import "SPConstants.h"
 #import "SPConnectionController.h"
 

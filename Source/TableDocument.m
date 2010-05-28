@@ -28,7 +28,7 @@
 #import "TableDocument.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
-#import "TableContent.h"
+#import "SPTableContent.h"
 #import "CustomQuery.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
