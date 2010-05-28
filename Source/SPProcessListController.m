@@ -25,7 +25,7 @@
 
 #import "SPProcessListController.h"
 #import "SPArrayAdditions.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 
@@ -183,7 +183,7 @@
 {
 	// If the document is currently performing a task (most likely threaded) on the current connection, don't
 	// allow a refresh to prevent connection lock errors.
-	if ([(TableDocument *)[connection delegate] isWorking]) return;
+	if ([(SPDatabaseDocument *)[connection delegate] isWorking]) return;
 	
 	// Start progress Indicator
 	[refreshProgressIndicator startAnimation:self];

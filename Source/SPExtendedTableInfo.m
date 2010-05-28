@@ -29,7 +29,7 @@
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPAlertSheets.h"
 #import "SPTableStructure.h"

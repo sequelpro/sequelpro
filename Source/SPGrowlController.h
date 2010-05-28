@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <Growl/Growl.h>
 
-@class TableDocument;
+@class SPDatabaseDocument;
 
 @interface SPGrowlController : NSObject <GrowlApplicationBridgeDelegate>
 {
@@ -40,14 +40,14 @@
 // Post notification
 - (void)notifyWithTitle:(NSString *)title 
 			description:(NSString *)description
-			   document:(TableDocument *)document
+			   document:(SPDatabaseDocument *)document
 	   notificationName:(NSString *)name;
 
 - (void)notifyWithObject:(NSDictionary *)notificationDictionary;
 
 - (void)notifyWithTitle:(NSString *)title 
 			description:(NSString *)description 
-			   document:(TableDocument *)document
+			   document:(SPDatabaseDocument *)document
 	   notificationName:(NSString *)name 
 			   iconData:(NSData *)data 
 			   priority:(NSInteger)priority 

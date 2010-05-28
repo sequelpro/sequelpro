@@ -23,7 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-@class PSMTabBarControl, TableDocument;
+@class PSMTabBarControl, SPDatabaseDocument;
 
 @interface SPWindowController : NSWindowController <NSUserInterfaceValidations>
 {
@@ -38,7 +38,7 @@
 
 // Database connection management
 - (IBAction) addNewConnection:(id)sender;
-- (TableDocument *) selectedTableDocument;
+- (SPDatabaseDocument *) selectedTableDocument;
 - (void) updateAllTabTitles:(id)sender;
 - (IBAction)closeTab:(id)sender;
 - (NSArray *)documents;

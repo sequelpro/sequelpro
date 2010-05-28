@@ -36,7 +36,7 @@
 #import "SPExtendedTableInfo.h"
 #import "SPTableTriggers.h"
 
-@implementation TableDocument (SPPrintController)
+@implementation SPDatabaseDocument (SPPrintController)
 
 /**
  * WebView delegate method.

@@ -56,7 +56,7 @@
  * Initialise the connection controller, linking it to the
  * parent document and setting up the parent window.
  */
-- (id) initWithDocument:(TableDocument *)theTableDocument
+- (id) initWithDocument:(SPDatabaseDocument *)theTableDocument
 {
 	if (self = [super init]) {
 		tableDocument = theTableDocument;

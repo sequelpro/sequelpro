@@ -27,7 +27,7 @@
 #import "SPNavigatorOutlineView.h"
 #import "SPConstants.h"
 #import "ImageAndTextCell.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPArrayAdditions.h"
 #import "SPLogger.h"
@@ -384,7 +384,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		NSArray *pathArray = [[[parentKeys objectAtIndex:0] description] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([pathArray count] > 1) {
 
-			TableDocument *doc = [[NSApp delegate] frontDocument];
+			SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
 			if([doc isWorking]) {
 				[SPTooltip showWithObject:NSLocalizedString(@"Active connection window is busy. Please wait and try again.", @"active connection window is busy. please wait and try again. tooltip") 
 						atLocation:pos 
@@ -412,7 +412,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 	id object = [aNotification object];
 
-	if([object isKindOfClass:[TableDocument class]])
+	if([object isKindOfClass:[SPDatabaseDocument class]])
 		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:object waitUntilDone:NO];
 	else
 		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:NO];
@@ -432,7 +432,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 
 
-	if (doc && [doc isKindOfClass:[TableDocument class]]) {
+	if (doc && [doc isKindOfClass:[SPDatabaseDocument class]]) {
 
 		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
 
@@ -742,7 +742,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 			[searchField setStringValue:@""];
 		}
 
-		TableDocument *doc = [[NSApp delegate] frontDocument];
+		SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
 		if (doc) {
 			NSMutableString *key = [NSMutableString string];
 			[key setString:[doc connectionID]];

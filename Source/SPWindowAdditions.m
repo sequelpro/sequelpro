@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindowAdditions.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 
 @implementation NSWindow (SPWindowAdditions)
 
@@ -81,7 +81,7 @@
 // -------------------------------------------------------------------------------
 - (void)swipeWithEvent:(NSEvent *)anEvent
 {
-	if([[self delegate] isKindOfClass:[TableDocument class]] 
+	if([[self delegate] isKindOfClass:[SPDatabaseDocument class]] 
 		&& [[self delegate] valueForKeyPath:@"spHistoryControllerInstance"]
 		&& ![[self delegate] isWorking])
 		if([anEvent deltaX] == -1.0f)

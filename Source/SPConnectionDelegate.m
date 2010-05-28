@@ -30,7 +30,7 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 
-@implementation TableDocument (SPConnectionDelegate)
+@implementation SPDatabaseDocument (SPConnectionDelegate)
 
 #pragma mark -
 #pragma mark MCPKit connection delegate methods

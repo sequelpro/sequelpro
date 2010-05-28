@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableDocument.h
+//  SPDatabaseDocument.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -32,9 +32,9 @@
 @class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController;
 
 /**
- * The TableDocument class controls the primary database view window.
+ * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface TableDocument : NSObject <NSUserInterfaceValidations>
+@interface SPDatabaseDocument : NSObject <NSUserInterfaceValidations>
 {
 	// IBOutlets
 	IBOutlet id tablesListInstance;

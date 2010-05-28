@@ -24,7 +24,7 @@
 
 #import "SPWindowController.h"
 #import "SPConstants.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
 
@@ -89,7 +89,7 @@
 {
 
 	// Create a new database connection view
-	TableDocument *newTableDocument = [[TableDocument alloc] init];
+	SPDatabaseDocument *newTableDocument = [[SPDatabaseDocument alloc] init];
 	[newTableDocument setParentWindowController:self];
 	[newTableDocument setParentWindow:[self window]];
 
@@ -113,7 +113,7 @@
 /**
  * Retrieve the currently connection view in the window.
  */
-- (TableDocument *) selectedTableDocument
+- (SPDatabaseDocument *) selectedTableDocument
 {
 	return [[tabView selectedTabViewItem] identifier];
 }
@@ -127,7 +127,7 @@
 - (void) updateAllTabTitles:(id)sender
 {
 	for (NSTabViewItem *eachItem in [tabView tabViewItems]) {
-		TableDocument *eachDocument = [eachItem identifier];
+		SPDatabaseDocument *eachDocument = [eachItem identifier];
 		if (eachDocument != sender) [eachDocument updateWindowTitle:self];
 	}
 }
@@ -140,7 +140,7 @@
 {
 
 	// Return if the frontmost tab shouldn't be closed
-	TableDocument *frontDocument = [[tabView selectedTabViewItem] identifier];
+	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier];
 	if (![frontDocument parentTabShouldClose]) return NO;
 
 	// If there are multiple tabs, close the front tab.
@@ -171,7 +171,7 @@
  */
 - (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	TableDocument *currentlySelectedDocument = [[tabView selectedTabViewItem] identifier];
+	SPDatabaseDocument *currentlySelectedDocument = [[tabView selectedTabViewItem] identifier];
 	[currentlySelectedDocument willResignActiveTabInWindow];
 }
 
@@ -180,7 +180,7 @@
  */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	TableDocument *theDocument = [tabViewItem identifier];
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
 	[theDocument didBecomeActiveTabInWindow];
 	if ([[self window] isKeyWindow]) [theDocument tabDidBecomeKey];
 	[self updateAllTabTitles:self];
@@ -191,7 +191,7 @@
  */
 - (BOOL)tabView:(NSTabView *)aTabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	TableDocument *theDocument = [tabViewItem identifier];
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
 	if (![theDocument parentTabShouldClose]) return NO;
 	return YES;
 }
@@ -201,7 +201,7 @@
  */
 - (void)tabView:(NSTabView *)aTabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	TableDocument *theDocument = [tabViewItem identifier];
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
 	[theDocument removeObserver:self forKeyPath:@"isProcessing"];
 	[theDocument parentTabDidClose];
 }
@@ -219,7 +219,7 @@
  */
 - (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl
 {
-	TableDocument *draggedDocument = [tabViewItem identifier];
+	SPDatabaseDocument *draggedDocument = [tabViewItem identifier];
 
 	// Grab a reference to the old window
 	NSWindow *draggedFromWindow = [draggedDocument parentWindow];
@@ -257,7 +257,7 @@
 - (BOOL)windowShouldClose:(id)sender
 {
 	for (NSTabViewItem *eachItem in [tabView tabViewItems]) {
-		TableDocument *eachDocument = [eachItem identifier];
+		SPDatabaseDocument *eachDocument = [eachItem identifier];
 		if (![eachDocument parentTabShouldClose]) return NO;
 	}
 
@@ -282,7 +282,7 @@
  */
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
-	TableDocument *selectedTab = [[tabView selectedTabViewItem] identifier];
+	SPDatabaseDocument *selectedTab = [[tabView selectedTabViewItem] identifier];
 	[selectedTab tabDidBecomeKey];
 
 	// Update the "Close window" item
@@ -315,7 +315,7 @@
 - (void)windowDidResize:(NSNotification *)notification
 {
 	for (NSTabViewItem *eachItem in [tabView tabViewItems]) {
-		TableDocument *eachDocument = [eachItem identifier];
+		SPDatabaseDocument *eachDocument = [eachItem identifier];
 		[eachDocument tabDidResize];
 	}
 }
@@ -330,7 +330,7 @@
  */
 - (void) forwardInvocation:(NSInvocation *)theInvocation
 {
-	TableDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
+	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
 	SEL theSelector = [theInvocation selector];
 	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
 	[theInvocation invokeWithTarget:frontDocument];
@@ -365,7 +365,7 @@
 {
 	if ([super respondsToSelector:theSelector]) return [super performSelector:theSelector];
 
-	TableDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
+	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
 	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
 	return [frontDocument performSelector:theSelector];
 }
@@ -377,7 +377,7 @@
 {
 	if ([super respondsToSelector:theSelector]) return [super performSelector:theSelector withObject:theObject];
 
-	TableDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
+	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
 	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
 
 	return [frontDocument performSelector:theSelector withObject:theObject];
@@ -395,7 +395,7 @@
 {
 	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:theItem]];
 	[[theCell indicator] setControlSize:NSSmallControlSize];
-	TableDocument *theDocument = [theItem identifier];
+	SPDatabaseDocument *theDocument = [theItem identifier];
 
 	[[theCell indicator] setHidden:NO];
 	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];

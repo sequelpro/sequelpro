@@ -25,7 +25,7 @@
 
 #import "SPKeychain.h"
 #import "SPAppController.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPPreferenceController.h"
 #import "SPAboutController.h"
 #import "TableDump.h"
@@ -275,7 +275,7 @@
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
 
-			TableDocument *newTableDocument;
+			SPDatabaseDocument *newTableDocument;
 
 			// If the frontmost document isn't connected and hasn't been, open the connection file with it.
 			// Otherwise, manually open a new document, setting SPAppController as sender to trigger autoconnection
@@ -413,7 +413,7 @@
 /**
  * Retrieve the frontmost document; returns nil if not found.
  */
-- (TableDocument *) frontDocument
+- (SPDatabaseDocument *) frontDocument
 {
 	for (NSWindow *aWindow in [self orderedWindows]) {
 		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
@@ -711,7 +711,7 @@
  * Support for 'make new document'.
  * TODO: following tab support this has been disabled - need to discuss reimplmenting vs syntax.
  */
-- (void)insertInOrderedDocuments:(TableDocument *)doc 
+- (void)insertInOrderedDocuments:(SPDatabaseDocument *)doc 
 {
 	[self newWindow:self];
 /*	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault])

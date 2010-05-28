@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableDocument.m
+//  SPDatabaseDocument.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -25,7 +25,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
@@ -61,7 +61,7 @@
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
 
-@interface TableDocument (PrivateAPI)
+@interface SPDatabaseDocument (PrivateAPI)
 
 - (void)_addDatabase;
 - (void)_copyDatabase;
@@ -71,7 +71,7 @@
 
 @end
 
-@implementation TableDocument
+@implementation SPDatabaseDocument
 
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
@@ -2390,7 +2390,7 @@
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender
 {
 	[[NSApp delegate] newWindow:self];
-	TableDocument *newTableDocument = [[NSApp delegate] frontDocument];
+	SPDatabaseDocument *newTableDocument = [[NSApp delegate] frontDocument];
 	[newTableDocument initWithConnectionFile:[[self fileURL] path]];
 }
 
@@ -3457,7 +3457,7 @@
 {
 	NSMutableString *tabTitle;
 	NSMutableString *windowTitle;
-	TableDocument *frontTableDocument = [parentWindowController selectedTableDocument];
+	SPDatabaseDocument *frontTableDocument = [parentWindowController selectedTableDocument];
 
 	// Determine name details
 	NSString *pathName = @"";
@@ -4284,7 +4284,7 @@
 
 @end
 
-@implementation TableDocument (PrivateAPI)
+@implementation SPDatabaseDocument (PrivateAPI)
 
 - (void)_copyDatabase {
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {

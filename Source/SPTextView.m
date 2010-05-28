@@ -24,7 +24,7 @@
 
 #import "SPTextView.h"
 #import "CustomQuery.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"

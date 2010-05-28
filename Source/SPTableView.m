@@ -25,7 +25,7 @@
 #import "SPTableView.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPArrayAdditions.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPConstants.h"
 
 @implementation SPTableView
@@ -38,12 +38,12 @@
 {
 
 	// Try to retrieve a reference to the table document (assuming this is frontmost tab)
-	TableDocument *parentTableDocument = nil;
+	SPDatabaseDocument *parentTableDocument = nil;
 	if ([[[[[self window] delegate] class] description] isEqualToString:@"SPWindowController"]) {
 		parentTableDocument = [[[self window] delegate] selectedTableDocument];
 	}
 
-	// If TableDocument is performing a task suppress any context menu
+	// If SPDatabaseDocument is performing a task suppress any context menu
 	if (parentTableDocument && [parentTableDocument isWorking])
 		return nil;
 

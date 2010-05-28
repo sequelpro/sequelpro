@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableDocument.h
+//  SPDatabaseDocument.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -26,7 +26,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableContent.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPTableInfo.h"
 #import "SPTablesList.h"
@@ -1834,7 +1834,7 @@
 // Additional methods
 
 /**
- * Sets the connection (received from TableDocument) and makes things that have to be done only once 
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
  */
 - (void)setConnection:(MCPConnection *)theConnection
 {

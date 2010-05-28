@@ -86,7 +86,7 @@ static SPGrowlController *sharedGrowlController = nil;
  * Calls the notification after a tiny delay to allow isKeyWindow to have updated
  * after tasks.
  */
-- (void)notifyWithTitle:(NSString *)title description:(NSString *)description document:(TableDocument *)document notificationName:(NSString *)name
+- (void)notifyWithTitle:(NSString *)title description:(NSString *)description document:(SPDatabaseDocument *)document notificationName:(NSString *)name
 {
 
 	// Ensure that the delayed notification call is made on the main thread
@@ -125,7 +125,7 @@ static SPGrowlController *sharedGrowlController = nil;
 /**
  * Posts a Growl notification using the supplied details and effectively ignoring the default values.
  */
-- (void)notifyWithTitle:(NSString *)title description:(NSString *)description document:(TableDocument *)document notificationName:(NSString *)name iconData:(NSData *)data priority:(NSInteger)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
+- (void)notifyWithTitle:(NSString *)title description:(NSString *)description document:(SPDatabaseDocument *)document notificationName:(NSString *)name iconData:(NSData *)data priority:(NSInteger)priority isSticky:(BOOL)sticky clickContext:(id)clickContext
 {
 	BOOL postNotification = YES;
 
@@ -170,7 +170,7 @@ static SPGrowlController *sharedGrowlController = nil;
 		// Loop through the windows, looking for the document
 		for (NSWindow *eachWindow in [NSApp orderedWindows]) {
 			if ([[eachWindow windowController] isKindOfClass:[SPWindowController class]]) {
-				for (TableDocument *eachDocument in [[eachWindow windowController] documents]) {
+				for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents]) {
 					if ([eachDocument hash] == documentHash) {
 						[NSApp activateIgnoringOtherApps:YES];
 						[eachDocument makeKeyDocument];

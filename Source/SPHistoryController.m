@@ -22,7 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTableContent.h"
 #import "SPTablesList.h"
 #import "SPConstants.h"

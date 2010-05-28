@@ -27,7 +27,7 @@
 
 #import "SPCSVExporter.h"
 #import "SPCSVExporterDelegate.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPFileHandle.h"
 

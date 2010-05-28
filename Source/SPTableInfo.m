@@ -24,7 +24,7 @@
 
 #import "SPTableInfo.h"
 #import "ImageAndTextCell.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPConstants.h"

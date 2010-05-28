@@ -27,7 +27,7 @@
 #import "SPWindowAdditions.h"
 #import "SPFavoriteTextFieldCell.h"
 #import "SPKeychain.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 
 @interface SPPreferenceController (PrivateAPI)

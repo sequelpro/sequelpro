@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <FeedbackReporter/FRFeedbackReporter.h>
 
-@class SPPreferenceController, SPAboutController, TableDocument;
+@class SPPreferenceController, SPAboutController, SPDatabaseDocument;
 
 @interface SPAppController : NSObject <FRFeedbackReporterDelegate>
 {
@@ -62,7 +62,7 @@
 // Getters
 - (SPPreferenceController *)preferenceController;
 - (NSArray *) orderedDatabaseConnectionWindows;
-- (TableDocument *) frontDocument;
+- (SPDatabaseDocument *) frontDocument;
 
 // Feedback controller delegate methods
 - (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;

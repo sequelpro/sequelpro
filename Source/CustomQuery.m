@@ -31,7 +31,7 @@
 #import "SPArrayAdditions.h"
 #import "SPDataAdditions.h"
 #import "SPDataCellFormatter.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
 #import "SPFieldEditorController.h"
@@ -1283,7 +1283,7 @@
 #pragma mark Additional methods
 
 /*
- * Sets the connection (received from TableDocument) and makes things that have to be done only once 
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
  */
 - (void)setConnection:(MCPConnection *)theConnection
 {

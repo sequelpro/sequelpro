@@ -26,7 +26,7 @@
 #import "SPXMLExporterDelegate.h"
 #import "SPXMLExporter.h"
 #import "SPMainThreadTrampoline.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPFileHandle.h"
 #import "SPStringAdditions.h"
 

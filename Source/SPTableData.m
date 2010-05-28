@@ -25,7 +25,7 @@
 
 #import "SPTableData.h"
 #import "SPSQLParser.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"

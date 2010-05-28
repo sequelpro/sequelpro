@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableDocument.h
+//  SPDatabaseDocument.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.

@@ -26,7 +26,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
 
@@ -49,7 +49,7 @@
 {
 	id delegate;
 	
-	TableDocument *tableDocument;
+	SPDatabaseDocument *tableDocument;
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
 	SPKeychain *keychain;
@@ -127,7 +127,7 @@
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
 
-- (id)initWithDocument:(TableDocument *)theTableDocument;
+- (id)initWithDocument:(SPDatabaseDocument *)theTableDocument;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;

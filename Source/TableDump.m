@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "TableDump.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
@@ -3021,7 +3021,7 @@
 //additional methods
 - (void)setConnection:(MCPConnection *)theConnection
 /*
- sets the connection (received from TableDocument) and makes things that have to be done only once 
+ sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
  */
 {
 	NSButtonCell *switchButton = [[NSButtonCell alloc] init];

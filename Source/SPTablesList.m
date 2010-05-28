@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTablesList.h"
-#import "TableDocument.h"
+#import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
@@ -568,7 +568,7 @@
 #pragma mark Additional methods
 
 /**
- * Sets the connection (received from TableDocument) and makes things that have to be done only once 
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
  */
 - (void)setConnection:(MCPConnection *)theConnection
 {
