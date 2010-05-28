@@ -756,18 +756,28 @@
 			return;			
 		}
 	}
-    NSSet *registeredObjects = [managedObjectContext registeredObjects];
-    for (NSManagedObject *registeredObject in registeredObjects)
-    {
-        [self.managedObjectContext refreshObject:registeredObject mergeChanges:NO];
-    }
     
 	[self.managedObjectContext reset];
     [grantedSchemaPrivs removeAllObjects];
-    //[grantedController fetch:nil];
 	[grantedTableView reloadData];
 	[self _initializeAvailablePrivs];	
-	[treeController fetch:nil];
+    [outlineView reloadData];
+	[treeController rearrangeObjects];
+    
+    // Get all the stores on the current MOC and remove them.
+    NSArray *stores = [[self.managedObjectContext persistentStoreCoordinator] persistentStores];
+    for(NSPersistentStore* store in stores)
+    {
+        NSError *error = nil;
+        [[self.managedObjectContext persistentStoreCoordinator] removePersistentStore:store error:error];
+    }
+    // Add a new store
+    NSError *error = nil;
+    [[self.managedObjectContext persistentStoreCoordinator] 
+     addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error];
+    
+    // Reinitialize the tree with values from the database.
+    [self _initializeUsers];
 
 	// After the reset, ensure all original password and user values are up-to-date.
 	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
@@ -926,11 +936,6 @@
 - (void)contextDidChange:(NSNotification *)notification
 {	
 	if (!isInitializing) [outlineView reloadData];
-}
-
-- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
-{
-	[self refresh:nil];
 }
 
 - (BOOL)updateUsers:(NSArray *)updatedUsers
