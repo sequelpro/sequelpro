@@ -349,9 +349,7 @@
 
 	if (returnCode == NSAlertDefaultReturn) {
 		
-		if (sheet == customIntervalWindow) {
-			NSLog(@"Set custom value to: %d", [customIntervalTextField integerValue]);
-			
+		if (sheet == customIntervalWindow) {			
 			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
 		}
 		else {
