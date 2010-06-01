@@ -499,6 +499,14 @@
 }
 
 /**
+ * Opens the 'Translation Feedback' page in the default browser.
+ */
+- (IBAction)provideTranslationFeedback:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPTranslationFeedbackURL]];
+}
+
+/**
  * Opens the 'Keyboard Shortcuts' page in the default browser.
  */
 - (IBAction)viewKeyboardShortcuts:(id)sender

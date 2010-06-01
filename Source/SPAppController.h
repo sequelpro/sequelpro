@@ -57,6 +57,7 @@
 - (IBAction)visitHelpWebsite:(id)sender;
 - (IBAction)visitFAQWebsite:(id)sender;
 - (IBAction)provideFeedback:(id)sender;
+- (IBAction)provideTranslationFeedback:(id)sender;
 - (IBAction)viewKeyboardShortcuts:(id)sender;
 
 // Getters
