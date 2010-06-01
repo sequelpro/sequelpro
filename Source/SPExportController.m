@@ -318,9 +318,9 @@
 			[[exportInputMatrix cellAtRow:0 column:0] setEnabled:((disable) && ([[tableContentInstance currentResult] count] > 1))];
 			[[exportInputMatrix cellAtRow:1 column:0] setEnabled:((disable) && ([[customQueryInstance currentResult] count] > 1))];			
 		}
-		
-		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:disable];
-		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:disable];
+				
+		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : disable];
+		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : disable];
 		
 		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(disable) ? @"" : @"C"]; 
 		
