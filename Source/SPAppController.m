@@ -279,7 +279,7 @@
 
 			// If the frontmost document isn't connected and hasn't been, open the connection file with it.
 			// Otherwise, manually open a new document, setting SPAppController as sender to trigger autoconnection
-			if ([[self frontDocument] mySQLVersion]) {
+			if (![self frontDocument] || [[self frontDocument] mySQLVersion]) {
 				[self newWindow:self];
 			}
 			[[self frontDocument] initWithConnectionFile:filename];			
