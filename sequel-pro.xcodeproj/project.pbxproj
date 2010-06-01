@@ -169,6 +169,8 @@
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */ = {isa = PBXBuildFile; fileRef = 584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
+		58587B5A11B4437C00D129ED /* NSNotificationAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58587B5811B4437C00D129ED /* NSNotificationAdditions.h */; };
+		58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58587B5911B4437C00D129ED /* NSNotificationAdditions.m */; };
 		586EBD2411418D7C00B3DE45 /* FeedbackReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */; };
 		586EBD5D11418D9400B3DE45 /* FeedbackReporter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */; };
 		586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
@@ -635,6 +637,8 @@
 		5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray-MultipleSort.h"; sourceTree = "<group>"; };
 		584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray-MultipleSort.m"; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
+		58587B5811B4437C00D129ED /* NSNotificationAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSNotificationAdditions.h; path = "Support files/NSNotificationAdditions.h"; sourceTree = "<group>"; };
+		58587B5911B4437C00D129ED /* NSNotificationAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSNotificationAdditions.m; path = "Support files/NSNotificationAdditions.m"; sourceTree = "<group>"; };
 		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		586F432A0FD74CFC00B428D7 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SSHQuestionDialog.xib; sourceTree = "<group>"; };
 		5870868210FA3E9C00D58E1C /* SPDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataStorage.h; sourceTree = "<group>"; };
@@ -1144,6 +1148,7 @@
 				17B7B5561016003F00F057DE /* MySQL */,
 				17B7B5581016005700F057DE /* MCPEntrepriseKit */,
 				17B7B5571016004500F057DE /* MCPFoundationKit */,
+				58587B4E11B4433B00D129ED /* Support files */,
 			);
 			name = MCPKit;
 			path = ../Frameworks/MCPKit;
@@ -1642,6 +1647,15 @@
 			name = Compression;
 			sourceTree = "<group>";
 		};
+		58587B4E11B4433B00D129ED /* Support files */ = {
+			isa = PBXGroup;
+			children = (
+				58587B5811B4437C00D129ED /* NSNotificationAdditions.h */,
+				58587B5911B4437C00D129ED /* NSNotificationAdditions.m */,
+			);
+			name = "Support files";
+			sourceTree = "<group>";
+		};
 		58DA884E103E1597000B98DF /* Debugging & Support */ = {
 			isa = PBXGroup;
 			children = (
@@ -1719,6 +1733,7 @@
 				17B7B5F0101603D200F057DE /* mysql_version.h in Headers */,
 				17B7B5F1101603D200F057DE /* typelib.h in Headers */,
 				17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */,
+				58587B5A11B4437C00D129ED /* NSNotificationAdditions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1991,6 +2006,7 @@
 				17B7B5DF101603B200F057DE /* MCPResult.m in Sources */,
 				17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */,
 				583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */,
+				58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

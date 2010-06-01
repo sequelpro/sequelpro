@@ -1085,7 +1085,7 @@
 	NSString *dbName = nil;
 
 	// Notify listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if (![mySQLConnection queryErrored]) {
@@ -1110,7 +1110,7 @@
 	}
 
 	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
 - (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname

@@ -35,6 +35,7 @@
 #import "MCPStringAdditions.h"
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
+#import "NSNotificationAdditions.h"
 
 #include <unistd.h>
 #include <mach/mach_time.h>
@@ -1388,7 +1389,7 @@ void performThreadedKeepAlive(void *ptr)
 		if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:@"No connection available!" connection:self];
 		
 		// Notify that the query has been performed
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:delegate];
 		
 		// Inform the delegate that there is no connection available
 		if (delegate && [delegate respondsToSelector:@selector(noConnectionAvailable:)]) {
@@ -1439,7 +1440,7 @@ void performThreadedKeepAlive(void *ptr)
 			[self setLastErrorMessage:errorMessage];
 			
 			// Notify that the query has been performed
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
+			[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:delegate];
 
 			// Show an error alert while resetting
 			if ([delegate respondsToSelector:@selector(showErrorWithTitle:message:)])
@@ -1460,7 +1461,7 @@ void performThreadedKeepAlive(void *ptr)
 				if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 
 				// Notify that the query has been performed
-				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:delegate];
+				[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:delegate];
 				return nil;
 			}
 		}

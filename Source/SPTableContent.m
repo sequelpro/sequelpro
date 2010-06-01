@@ -198,7 +198,7 @@
 	}
 
 	// Post a notification that a query will be performed
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// Set up the table details for the new table, and trigger an interface update
 	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -234,7 +234,7 @@
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 	// Post the notification that the query is finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 	// Clear any details to restore now that they have been restored
 	[self clearDetailsToRestore];
@@ -566,7 +566,7 @@
 	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 
 	// Notify any listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 	
 	// Start construction of the query string
 	queryString = [NSMutableString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
@@ -673,7 +673,7 @@
 	[self updatePaginationState];
 
 	// Notify listenters that the query has finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 	// Trigger a full reload if required
 	if (fullTableReloadRequired) [self reloadTable:self];
@@ -2098,13 +2098,13 @@
 		return YES;
 	}
 
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
 	if (!isEditingNewRow && [oldRow isEqualToArray:[tableValues rowContentsAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		return YES;
 	}
 
@@ -2204,7 +2204,7 @@
 	}
 		
 	[fieldValues release];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {

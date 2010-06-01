@@ -90,7 +90,7 @@
 	if ([tableDocumentInstance database]) {
 
 		// Notify listeners that a query has started
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
@@ -208,7 +208,7 @@
 		}
 		*/		
 		// Notify listeners that the query has finished
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	}
 
 	// Add the table headers even if no tables were found

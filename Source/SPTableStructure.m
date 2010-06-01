@@ -67,7 +67,7 @@
 	}
 	
 	// Send the query started/working notification
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
   
 	// Retrieve the column information for this table.
 	// TODO: update this and indexes to use TableData at some point - tiny bit more parsing required...
@@ -75,7 +75,7 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
@@ -97,7 +97,7 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
@@ -192,7 +192,7 @@
 	[[self onMainThread] setTableDetails:tableDetails];
 
 	// Send the query finished/work complete notification
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
 }
 
