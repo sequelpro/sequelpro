@@ -29,6 +29,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
+#import "SPConstants.h"
 
 @class BWAnchoredButtonBar;
 
@@ -73,6 +74,7 @@
 	NSString *sshUser;
 	NSString *sshPassword;
 	NSString *sshPort;
+@private NSString *favoritesPBoardType;
 
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
@@ -106,6 +108,10 @@
 	IBOutlet NSButton *helpButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
+    
+    BOOL reverseFavoritesSort;
+    SPFavoritesSortItem previousSortItem, currentSortItem;
+
 }
 
 @property (readwrite, assign) id delegate;
@@ -126,6 +132,7 @@
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+@property (readonly, assign) NSString *favoritesPBoardType;
 
 - (id)initWithDocument:(SPDatabaseDocument *)theTableDocument;
 
@@ -142,6 +149,8 @@
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
+- (IBAction)sortFavorites:(id)sender;
+- (IBAction)reverseSortFavorites:(id)sender;
 
 // Connection details interaction
 - (BOOL)checkHost;

@@ -31,6 +31,12 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 
+@interface SPConnectionController (PrivateAPI)
+
+- (void)_sortFavorites;
+
+@end
+
 @implementation SPConnectionController
 
 @synthesize delegate;
@@ -69,6 +75,7 @@
 		mySQLConnection = nil;
 		sshTunnel = nil;
 		cancellingConnection = NO;
+        favoritesPBoardType = @"FavoritesPBoardType";
 
 		// Load the connection nib, keeping references to the top-level objects for later release
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
@@ -90,14 +97,19 @@
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
 		favorites = nil;
 		[self updateFavorites];
-
+        
 		// Register an observer for changes within the favorites
 		[prefs addObserver:self forKeyPath:SPFavorites options:NSKeyValueObservingOptionNew context:NULL];
 
+        // Set sort items
+        currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
+        reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
+        
 		// Register double click for the favorites view (double click favorite to connect)
 		[favoritesTable setTarget:self];
 		[favoritesTable setDoubleAction:@selector(initiateConnection:)];
-
+        [favoritesTable registerForDraggedTypes:[NSArray arrayWithObject:favoritesPBoardType]];
+        [favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 		// Set the focus to the favorites table and select the appropriate row
 		[[tableDocument parentWindow] setInitialFirstResponder:favoritesTable];
 		NSInteger tableRow;
@@ -116,7 +128,7 @@
 			[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
 		}
 	}
-	
+	[self _sortFavorites];
 	return self;
 }
 
@@ -655,6 +667,69 @@
 #pragma mark -
 #pragma mark Favorites interaction
 
+- (void)sortFavorites:(id)sender
+{
+    previousSortItem = currentSortItem;
+	currentSortItem  = [[sender menu] indexOfItem:sender];
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	
+	// Perform sorting
+	[self _sortFavorites];
+	
+	[[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
+    
+}
+
+- (void)reverseSortFavorites:(id)sender
+{
+    reverseFavoritesSort = (![sender state]);
+    
+	[prefs setBool:reverseFavoritesSort forKey:SPFavoritesSortedInReverse];
+	
+	// Perform re-sorting
+	[self _sortFavorites];
+	
+	[sender setState:reverseFavoritesSort]; 
+}
+
+- (void)_sortFavorites
+{
+    NSString *sortKey = @"";
+	
+	switch (currentSortItem)
+	{
+		case SPFavoritesSortNameItem:
+			sortKey = @"name";
+			break;
+		case SPFavoritesSortHostItem:
+			sortKey = @"host";
+			break;
+		case SPFavoritesSortTypeItem:
+			sortKey = @"type";
+			break;
+		default:
+			sortKey = @"name";
+			break;
+	}
+	
+	NSSortDescriptor *sortDescriptor = nil;
+	
+	if (currentSortItem == SPFavoritesSortTypeItem) {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort)] autorelease];
+	}
+	else {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
+	}
+	NSDictionary *first = [[favorites objectAtIndex:0] retain];
+    [favorites removeObjectAtIndex:0];
+	[favorites sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+	[favorites insertObject:first atIndex:0];
+	[favoritesTable reloadData];
+    [first release];
+    
+}
 /**
  * Updates the local favorites array from the user defaults
  */
@@ -865,6 +940,62 @@
 	return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
 }
 
+- (BOOL)tableView:(NSTableView *)aTableView acceptDrop:(id < NSDraggingInfo >)info 
+              row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
+{
+    BOOL acceptedDrop = NO;
+    if ((row == 0) || ([info draggingSource] != aTableView))  return acceptedDrop;
+    NSPasteboard* pboard = [info draggingPasteboard];
+    NSData* rowData = [pboard dataForType:favoritesPBoardType];
+    NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+    NSInteger dragRow = [rowIndexes firstIndex];
+    NSInteger defaultConnectionRow = [prefs integerForKey:SPLastFavoriteIndex];
+    if (defaultConnectionRow == dragRow)
+    {
+        [prefs setInteger:row forKey:SPLastFavoriteIndex];
+    }
+    NSMutableDictionary *draggedFavorite = [favorites objectAtIndex:dragRow];
+    [favorites removeObjectAtIndex:dragRow];
+    if (row > [favorites count])
+    {
+        row--;
+    }
+    [favorites insertObject:draggedFavorite atIndex:row];
+    [aTableView reloadData];
+    [aTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+    // reset the prefs with the new order
+    NSMutableArray *reorderedFavorites = [[NSMutableArray alloc] initWithArray:favorites];
+    [reorderedFavorites removeObjectAtIndex:0];
+    [prefs setObject:reorderedFavorites forKey:SPFavorites];
+	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
+    [reorderedFavorites release];
+    [self updateFavorites];
+    acceptedDrop = YES;
+    return acceptedDrop;
+
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes 
+     toPasteboard:(NSPasteboard *)pboard
+{
+    NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+    [pboard declareTypes:[NSArray arrayWithObject:favoritesPBoardType] owner:self];
+    [pboard setData:archivedData forType:favoritesPBoardType];
+    return YES;
+}
+
+- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id < NSDraggingInfo >)info 
+                 proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
+{
+    if (row == 0) return NSDragOperationNone;
+    if ([info draggingSource] == aTableView)
+    {
+        [aTableView setDropRow:row dropOperation:NSTableViewDropAbove];
+        return NSDragOperationMove;
+    }
+    return NSDragOperationNone;
+}
+
 /**
  * Loads a favorite, if any are selected.
  */
@@ -919,6 +1050,7 @@
 		[(ImageAndTextCell *)aCell setTextColor:[NSColor grayColor]];
 }
 
+
 #pragma mark -
 #pragma mark NSSplitView delegate methods
 
@@ -950,6 +1082,27 @@
 	return (proposedMin + 80);
 }
 
+#pragma mark -
+#pragma mark Menu Validation
+-(BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    SEL action = [menuItem action];
+    if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
+		
+		// Loop all the items in the sort by menu only checking the currently selected one
+		for (NSMenuItem *item in [[menuItem menu] itemArray])
+		{
+			[item setState:([[menuItem menu] indexOfItem:item] == currentSortItem) ? NSOnState : NSOffState];
+		}
+		
+		// Check or uncheck the reverse sort item
+		if (action == @selector(reverseFavoritesSortOrder:)) {
+			[menuItem setState:reverseFavoritesSort];
+		}
+    }
+    return YES;
+    
+}
 @end
 
 #pragma mark -
@@ -964,5 +1117,7 @@
 {
     return YES;
 }
+
+
 
 @end
