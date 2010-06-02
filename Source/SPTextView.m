@@ -1537,7 +1537,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
 
 	@try{
-		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
+		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^\\{\\}]*?[^\\\\])\\}";
 		NSString *mirror_re = @"(?<!\\\\)\\$(1?\\d)(?=\\D)";
 
 		if(targetRange.length)
