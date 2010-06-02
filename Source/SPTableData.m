@@ -850,6 +850,12 @@
 			[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
 		}
 
+		// If the "Engine" key is NULL, a problem occurred when retrieving the table information.
+		if ([[status objectForKey:@"Engine"] isNSNull]) {
+			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:@"An error occurred retrieving table information.  MySQL said: %@", [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
+			return FALSE;
+		}
+
 		// Add a note for whether the row count is accurate or not - only for MyISAM
 		if ([[status objectForKey:@"Engine"] isEqualToString:@"MyISAM"]) {
 			[status setObject:@"y" forKey:@"RowsCountAccurate"];

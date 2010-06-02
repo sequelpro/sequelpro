@@ -360,7 +360,9 @@
 	[tableCreateSyntaxTextView setString:@""];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:[tableDataInstance tableCreateSyntax]];
-	[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] stringByAppendingString:@";"]];
+	if ([tableDataInstance tableCreateSyntax]) {
+		[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] stringByAppendingString:@";"]];
+	}
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
 	
