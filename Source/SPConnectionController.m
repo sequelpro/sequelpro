@@ -1096,7 +1096,7 @@
 		}
 		
 		// Check or uncheck the reverse sort item
-		if (action == @selector(reverseFavoritesSortOrder:)) {
+		if (action == @selector(reverseSortFavorites:)) {
 			[menuItem setState:reverseFavoritesSort];
 		}
     }
