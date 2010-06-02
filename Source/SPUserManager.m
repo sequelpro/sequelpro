@@ -1006,9 +1006,11 @@
 		
 	}
 
-	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
-	[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
-	[droppedUsers release];
+    if ([droppedUsers length] > 2) {
+        droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
+        [self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+        [droppedUsers release];        
+    }
 	
 	return TRUE;
 }
