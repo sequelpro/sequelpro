@@ -1785,7 +1785,7 @@
 								<object class="NSMenuItem" id="192476353">
 									<reference key="NSMenu" ref="1021151289"/>
 									<bool key="NSIsHidden">YES</bool>
-									<string key="NSTitle">Translation Feedback</string>
+									<string key="NSTitle">Provide Translation Feedback</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
@@ -4467,7 +4467,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{558, 204}, {216, 173}}</string>
+					<string>{{558, 204}, {271, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{561, 605}, {181, 43}}</string>
