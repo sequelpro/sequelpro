@@ -2667,8 +2667,8 @@
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
-		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
+		[[tableInfoInstance onMainThread] tableChanged:nil];
+		[[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] onMainThread] loadTable:selectedTable];
 
 	// Otherwise, if the table status value is accurate, use it
 	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
@@ -2686,8 +2686,8 @@
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
-		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
+		[[tableInfoInstance onMainThread] tableChanged:nil];
+		[[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] onMainThread] loadTable:selectedTable];
 
 	// Use the estimate count
 	} else {
@@ -2719,7 +2719,7 @@
 		}
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:maxNumRowsIsEstimate?@"n":@"y" forKey:@"RowsCountAccurate"];
-		[tableInfoInstance tableChanged:nil];
+		[[tableInfoInstance onMainThread] tableChanged:nil];
 	}
 }
 
