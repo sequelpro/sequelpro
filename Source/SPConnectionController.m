@@ -110,8 +110,9 @@
 		[favoritesTable setDoubleAction:@selector(initiateConnection:)];
         [favoritesTable registerForDraggedTypes:[NSArray arrayWithObject:favoritesPBoardType]];
         [favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
-		// Set the focus to the favorites table and select the appropriate row
-		[[tableDocument parentWindow] setInitialFirstResponder:favoritesTable];
+
+		// Sort the favourites to match prefs and select the appropriate row
+		[self _sortFavorites];
 		NSInteger tableRow;
 		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
 			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
@@ -128,7 +129,6 @@
 			[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
 		}
 	}
-	[self _sortFavorites];
 	return self;
 }
 

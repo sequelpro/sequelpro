@@ -3972,6 +3972,12 @@
  */
 - (void)setParentWindow:(NSWindow *)aWindow
 {
+	// If the window is being set for the first time - connection controller is visible - update focus
+	if (!parentWindow && !mySQLConnection) {
+		[aWindow makeFirstResponder:[connectionController valueForKey:@"favoritesTable"]];
+		[connectionController performSelector:@selector(updateFavoriteSelection:) withObject:self afterDelay:0.0];
+	}
+
 	parentWindow = aWindow;
 	SPSSHTunnel *currentTunnel = [connectionController valueForKeyPath:@"sshTunnel"];
 	if (currentTunnel) [currentTunnel setParentWindow:parentWindow];
