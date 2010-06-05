@@ -47,6 +47,7 @@
 - (void)setIndeterminate:(BOOL)isIndeterminate;
 - (double)doubleValue;
 - (void)setDoubleValue:(double)doubleValue;
+- (void)setNumberValue:(NSNumber *)numberValue;
 - (double)maxValue;
 - (void)setMaxValue:(double)maxValue;
 

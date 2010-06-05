@@ -340,6 +340,10 @@
 	[self setNeedsDisplay:YES];
 }
 
+- (void)setNumberValue:(NSNumber *)numberValue
+{
+	[self setDoubleValue:[numberValue doubleValue]];
+}
 - (double)maxValue
 {
 	return _maxValue;

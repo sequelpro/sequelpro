@@ -1219,6 +1219,8 @@
  */
 - (void) startTaskWithDescription:(NSString *)description
 {
+	// Ensure a call on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] startTaskWithDescription:description];
 
 	// Set the task text.  If a nil string was supplied, a generic query notification is occurring -
 	// if a task is not already active, use default text.
@@ -1286,20 +1288,27 @@
 /**
  * Sets the task percentage progress - the first call to this automatically
  * switches the progress display to determinate.
+ * Can be called from background threads - forwards to main thread as appropriate.
  */
 - (void) setTaskPercentage:(CGFloat)taskPercentage
 {
+
+	// If the task display is currently indeterminate, set it to determinate on the main thread.
 	if (taskDisplayIsIndeterminate) {
+		if (![NSThread isMainThread]) return [[self onMainThread] setTaskPercentage:taskPercentage];
+
 		taskDisplayIsIndeterminate = NO;
 		[taskProgressIndicator stopAnimation:self];
 		[taskProgressIndicator setDoubleValue:0.5];
 	}
 
+	// Check the supplied progress.  Compare it to the display interval - how often
+	// the interface is updated - and update the interface if the value has changed enough.
 	taskProgressValue = taskPercentage;
 	if (taskProgressValue > taskDisplayLastValue + taskProgressValueDisplayInterval
 		|| taskProgressValue < taskDisplayLastValue - taskProgressValueDisplayInterval)
 	{
-		[taskProgressIndicator setDoubleValue:taskProgressValue];
+		[taskProgressIndicator performSelectorOnMainThread:@selector(setNumberValue:) withObject:[NSNumber numberWithDouble:taskProgressValue] waitUntilDone:NO];
 		taskDisplayLastValue = taskProgressValue;
 	}
 }
@@ -1319,6 +1328,7 @@
 	}
 
 	if (taskDisplayIsIndeterminate) return;
+	[NSObject cancelPreviousPerformRequestsWithTarget:taskProgressIndicator];
 	taskDisplayIsIndeterminate = YES;
 	[taskProgressIndicator setIndeterminate:YES];
 	[taskProgressIndicator startAnimation:self];
@@ -1332,10 +1342,7 @@
 {
 
 	// Ensure a call on the main thread
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
-		return;
-	}
+	if (![NSThread isMainThread]) return [[self onMainThread] endTask];
 
 	// Decrement the working level
 	_isWorkingLevel--;
