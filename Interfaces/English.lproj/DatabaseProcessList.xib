@@ -12,8 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="134"/>
-			<integer value="69"/>
+			<integer value="4"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -555,13 +554,13 @@
 								</object>
 								<reference key="NSControlView" ref="457818722"/>
 								<int key="NSButtonFlags">-2042347265</int>
-								<int key="NSButtonFlags2">163</int>
+								<int key="NSButtonFlags2">268435619</int>
 								<object class="NSCustomResource" key="NSNormalImage">
 									<string key="NSClassName">NSImage</string>
 									<string key="NSResourceName">button_refresh</string>
 								</object>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent"/>
+								<string key="NSKeyEquivalent">r</string>
 								<int key="NSPeriodicDelay">400</int>
 								<int key="NSPeriodicInterval">75</int>
 							</object>
@@ -726,7 +725,7 @@
 										</object>
 									</object>
 								</object>
-								<int key="NSSelectedIndex">3</int>
+								<int key="NSSelectedIndex">1</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -854,6 +853,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{17, 56}, {48, 14}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="582871149">
 								<int key="NSCellFlags">68288064</int>
@@ -870,6 +870,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{124, 56}, {48, 14}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="514749158">
 								<int key="NSCellFlags">68288064</int>
@@ -886,6 +887,7 @@
 							<int key="NSvFlags">259</int>
 							<string key="NSFrame">{{94, 13}, {70, 28}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
+							<reference key="NSWindow"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="255352692">
@@ -913,6 +915,7 @@
 							<int key="NSvFlags">259</int>
 							<string key="NSFrame">{{26, 13}, {70, 28}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="857419907">
 								<int key="NSCellFlags">67239424</int>
@@ -934,6 +937,7 @@
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{70, 52}, {49, 22}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="437242737">
 								<int key="NSCellFlags">-1804468671</int>
@@ -1022,6 +1026,7 @@
 					</object>
 					<string key="NSFrameSize">{189, 93}</string>
 					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{189, 115}</string>
@@ -2068,9 +2073,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{406, 682}, {575, 203}}</string>
+					<string>{{396, 222}, {575, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{406, 682}, {575, 203}}</string>
+					<string>{{396, 222}, {575, 203}}</string>
 					<integer value="1"/>
 					<string>{{321, 508}, {411, 341}}</string>
 					<integer value="0"/>
@@ -2105,7 +2110,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="457818722"/>
-							<string key="toolTip">Clear Console</string>
+							<string key="toolTip">Refresh process list (⌘R)</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2171,13 +2176,6 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/CMImageView.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPConnectionController.h</string>
 					</object>
 				</object>
@@ -2186,6 +2184,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPContentFilterManager.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPImageView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2217,7 +2222,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/TablesList.h</string>
+						<string key="minorKey">Source/SPTablesList.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2701,6 +2706,20 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Growl.framework/Headers/GrowlApplicationBridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">PSMTabBar.framework/Headers/PSMTabBarCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">PSMTabBar.framework/Headers/PSMTabBarControl.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
