@@ -448,12 +448,27 @@
  * Selects or de-selects all tables.
  */
 - (IBAction)selectDeselectAllTables:(id)sender
-{	
+{
+	BOOL toggleStructure = NO;
+	BOOL toggleDropTable = NO;
+
 	[self refreshTableList:self];
-	
+
+	// Determine whether the structure and drop items should also be toggled
+	for (NSToolbarItem *item in [exportToolbar items])
+	{
+		if ([[item itemIdentifier] isEqualToString:[exportToolbar selectedItemIdentifier]] && [item tag] == SPSQLExport) {
+			if ([exportSQLIncludeStructureCheck state] == NSOnState) toggleStructure = YES;
+			if ([exportSQLIncludeDropSyntaxCheck state] == NSOnState) toggleDropTable = YES;
+			break;
+		}
+	}
+
 	for (NSMutableArray *table in tables)
 	{
+		if (toggleStructure) [table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:[sender tag]]];
 		[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:[sender tag]]];
+		if (toggleDropTable) [table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:[sender tag]]];
 	}
 	
 	[exportTableList reloadData];

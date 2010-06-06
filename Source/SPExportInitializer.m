@@ -88,6 +88,15 @@
 			{
 				if (exportType == SPSQLExport) {
 					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
+
+						// Check the overall export settings
+						if ([[table objectAtIndex:1] boolValue] && [exportSQLIncludeStructureCheck state] == NSOffState)
+							[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:NO]];
+						if ([[table objectAtIndex:2] boolValue] && [exportSQLIncludeContentCheck state] == NSOffState)
+							[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:NO]];
+						if ([[table objectAtIndex:3] boolValue] && [exportSQLIncludeDropSyntaxCheck state] == NSOffState)
+							[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:NO]];
+
 						[exportTables addObject:table];
 					}
 				}
