@@ -540,6 +540,8 @@
 	// of table and table content exports.
 	[xmlExporter setXmlTableName:[tablesListInstance tableName]];
 	
+	[xmlExporter setXmlNULLString:[exportXMLNULLValuesAsTextField stringValue]];
+	
 	// If required create separate files
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		filename = [[exportPathField stringValue] stringByAppendingPathComponent:table];

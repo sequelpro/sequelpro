@@ -51,12 +51,19 @@
 	 * Table name
 	 */
 	NSString *xmlTableName;
+	
+	/**
+	 * XML NULL string
+	 */
+	NSString *xmlNULLString;
 }
 
 @property(readwrite, assign) NSObject *delegate;
 
 @property(readwrite, retain) NSArray *xmlDataArray;
 @property(readwrite, retain) NSString *xmlTableName;
+
+@property(readwrite, retain) NSString *xmlNULLString;
 
 /**
  * Initialise an instance of SPXMLExporter using the supplied delegate.

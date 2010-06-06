@@ -37,6 +37,7 @@
 @synthesize delegate;
 @synthesize xmlDataArray;
 @synthesize xmlTableName;
+@synthesize xmlNULLString;
 
 /**
  * Initialise an instance of SPXMLExporter using the supplied delegate.
@@ -73,7 +74,8 @@
 	
 	// Check to see if we have at least a table name or data array
 	if ((![self xmlTableName]) && (![self xmlDataArray]) ||
-		([[self xmlTableName] isEqualToString:@""]) && ([[self xmlDataArray] count] == 0))
+		([[self xmlTableName] length] == 0) && ([[self xmlDataArray] count] == 0) ||
+		(![self xmlNULLString]))
 	{
 		[pool release];
 		return;
@@ -170,19 +172,24 @@
 				return;
 			}
 			
+			id data = NSArrayObjectAtIndex(xmlRow, i);
+			
 			// Retrieve the contents of this tag
-			if ([NSArrayObjectAtIndex(xmlRow, i) isKindOfClass:[NSData class]]) {
-				dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(xmlRow, i) encoding:[self exportOutputEncoding]];
+			if ([data isKindOfClass:[NSData class]]) {
+				dataConversionString = [[NSString alloc] initWithData:data encoding:[self exportOutputEncoding]];
 				
 				if (dataConversionString == nil) {
-					dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(xmlRow, i) encoding:NSASCIIStringEncoding];
+					dataConversionString = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
 				}
 				
 				[xmlItem setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
 			} 
+			else if ([data isKindOfClass:[NSNull class]]) {
+				[xmlItem setString:[self xmlNULLString]];
+			}
 			else {
-				[xmlItem setString:[NSArrayObjectAtIndex(xmlRow, i) description]];
+				[xmlItem setString:[data description]];
 			}
 			
 			// Add the opening and closing tag and the contents to the XML string
@@ -248,6 +255,8 @@
 {
 	if (xmlDataArray) [xmlDataArray release], xmlDataArray = nil;
 	if (xmlTableName) [xmlTableName release], xmlTableName = nil;
+	
+	[xmlNULLString release], xmlNULLString = nil;
 	
 	[super dealloc];
 }

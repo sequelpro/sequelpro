@@ -325,6 +325,7 @@
 		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(disable) ? @"" : @"C"]; 
 		
 		[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
+		[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	}
 }
 

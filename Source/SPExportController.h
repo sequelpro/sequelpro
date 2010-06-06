@@ -70,7 +70,6 @@
 	IBOutlet NSButton *exportUseUTF8BOMButton;
 	IBOutlet NSButton *exportCompressOutputFile;
 	IBOutlet NSButton *exportProcessLowMemoryButton;
-	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
 	
 	IBOutlet BWAnchoredButtonBar *exportTableListButtonBar;
 	
@@ -103,6 +102,10 @@
 	IBOutlet NSComboBox *exportCSVFieldsWrappedField;
 	IBOutlet NSComboBox *exportCSVFieldsEscapedField;
 	IBOutlet NSComboBox *exportCSVLinesTerminatedField;
+	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
+	
+	// XML
+	IBOutlet NSTextField *exportXMLNULLValuesAsTextField;
 	
 	// HTML
 	IBOutlet NSButton *exportHTMLIncludeStructureCheck;
