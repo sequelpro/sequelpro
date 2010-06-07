@@ -781,7 +781,8 @@
 	// The character set has to be guessed at via the database encoding.
 	// Add the details to the data object.
 	viewData = [NSMutableDictionary dictionary];
-	[viewData setObject:[NSString stringWithString:[tableDocumentInstance databaseEncoding]] forKey:@"encoding"];
+	if (tableDocumentInstance)
+		[viewData setObject:[NSString stringWithString:[tableDocumentInstance databaseEncoding]] forKey:@"encoding"];
 	[viewData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 
 	[tableColumns release];

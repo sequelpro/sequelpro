@@ -67,7 +67,7 @@
 		exportTableCount = 0;
 		currentTableExportIndex = 0;
 		
-		exportFilename = @"";
+		exportFilename = [[NSMutableString alloc] init];
 		exportTypeLabel = @"";
 		
 		createCustomFilename = NO;
@@ -520,9 +520,7 @@
  */
 - (IBAction)toggleSQLIncludeContent:(id)sender
 {
-	[sender setTag:[sender state]];
-	
-	[self selectDeselectAllTables:sender];
+	[[exportTableList tableColumnWithIdentifier:@"content"] setHidden:(![sender state])];
 	
 	[self _toggleExportButtonOnBackgroundThread];
 }
@@ -640,6 +638,7 @@
     [tables release], tables = nil;
 	[exporters release], exporters = nil;
 	[operationQueue release], operationQueue = nil;
+	[exportFilename release], exportFilename = nil;
 	
 	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
 	
@@ -678,9 +677,9 @@
 		}
 	}
 	else if (isSQL) {
-		BOOL structureEnabled = [uiStateDict objectForKey:@"SQLExportStructureEnabled"];
-		BOOL contentEnabled   = [uiStateDict objectForKey:@"SQLExportContentEnabled"];
-		BOOL dropEnabled      = [uiStateDict objectForKey:@"SQLExportDropEnabled"];
+		BOOL structureEnabled = [[uiStateDict objectForKey:@"SQLExportStructureEnabled"] integerValue];
+		BOOL contentEnabled   = [[uiStateDict objectForKey:@"SQLExportContentEnabled"] integerValue];
+		BOOL dropEnabled      = [[uiStateDict objectForKey:@"SQLExportDropEnabled"] integerValue];
 		
 		// Disable if all are unchecked
 		if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {

@@ -131,7 +131,7 @@
 	/**
 	 * Number of tables being exported
 	 */
-	 NSUInteger exportTableCount;
+	NSUInteger exportTableCount;
 	
 	/** 
 	 * Index of the current table being exported
@@ -146,7 +146,7 @@
 	/** 
 	 * Export filename
 	 */
-	NSString *exportFilename;
+	NSMutableString *exportFilename;
 	
 	/**
 	 * Current database's tables

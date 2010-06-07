@@ -28,6 +28,8 @@
 #import "SPExporter.h"
 #import "SPSQLExporterProtocol.h"
 
+@class SPTableData;
+
 /**
  * @class SPSQLExporter SPSQLExporter.m
  *
@@ -95,9 +97,9 @@
 	NSUInteger sqlCurrentTableExportIndex;
 
 	/**
-	 * Table information
+	 * Table information fetcher and parser
 	 */
-	NSDictionary *sqlTableInformation;
+	SPTableData *sqlTableDataInstance;
 }
 
 @property(readwrite, assign) NSObject *delegate;
@@ -117,8 +119,6 @@
 @property(readwrite, assign) BOOL sqlOutputCompressFile;
 
 @property(readwrite, assign) NSUInteger sqlCurrentTableExportIndex;
-
-@property(readwrite, retain) NSDictionary *sqlTableInformation;
 
 /**
  * Initialise an instance of SPSQLExporter using the supplied delegate.

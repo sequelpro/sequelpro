@@ -178,30 +178,28 @@
 		// If the user has selected to only export to a single file or this is a filtered or custom query 
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
-			
-			NSString *filename = @"";
-			
+
 			// Create custom filename if required
 			if (createCustomFilename) {
-				filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
+				[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
 			}
 			else {
 				// Determine what the file name should be
 				switch (exportSource) 
 				{
 					case SPFilteredExport:
-						filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
+						[exportFilename setString:[NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]]];
 						break;
 					case SPQueryExport:
-						filename = @"query_result";
+						[exportFilename setString:@"query_result"];
 						break;
 					case SPTableExport:
-						filename = [tableDocumentInstance database];
+						[exportFilename setString:[tableDocumentInstance database]];
 						break;
 				}
 			}
 			
-			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:filename]];
+			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
 		// Start the export process depending on the data source
@@ -294,17 +292,7 @@
 		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
 				
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
-		
-		NSMutableArray *tableTypes = [[NSMutableArray alloc] init];
-		NSMutableDictionary *infoDict = [[NSMutableDictionary alloc] init];
-		
-		// Build the table information dictionary as well as the table array with item type
-		for (NSArray *table in exportTables)
-		{
-			[infoDict setObject:[tableDataInstance informationForTable:[table objectAtIndex:0]] forKey:[table objectAtIndex:0]];
-		}
-		
-		[sqlExporter setSqlTableInformation:infoDict];
+				
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Set the exporter's max progress
@@ -313,15 +301,11 @@
 		// Set the progress bar's max value
 		[exportProgressIndicator setMaxValue:[sqlExporter exportMaxProgress]];
 		
-		[infoDict release];
-		[tableTypes release];
-		
-		NSString *filename = @"";
-		
 		// Create custom filename if required
-		filename = (createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
+		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"sql.gz" : @"sql"]];
 				
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"sql.gz" : @"sql"]]];
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 				
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		
@@ -338,29 +322,28 @@
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
 			
-			NSString *filename = @"";
-			
 			// Create custom filename if required
 			if (createCustomFilename) {
-				filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
+				[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
 			}
 			else {
 				// Determine what the file name should be
 				switch (exportSource) 
 				{
 					case SPFilteredExport:
-						filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
+						[exportFilename setString:[NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]]];
 						break;
 					case SPQueryExport:
-						filename = @"query_result";
+						[exportFilename setString:@"query_result"];
 						break;
 					case SPTableExport:
-						filename = [tableDocumentInstance database];
+						[exportFilename setString:[tableDocumentInstance database]];
 						break;
 				}
 			}
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"xml"]];
 			
-			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:@"xml"]]];
+			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
 		// Start the export process depending on the data source
@@ -431,17 +414,16 @@
 		// Set the progress bar's max value
 		[exportProgressIndicator setMaxValue:[dotExporter exportMaxProgress]];
 		
-		NSString *filename = @"";
-		
 		// Create custom filename if required
 		if (createCustomFilename) {
-			filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil];
+			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
 		}
 		else {
-			filename = [tableDocumentInstance database];
+			[exportFilename setString:[tableDocumentInstance database]];
 		}
-		
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:[filename stringByAppendingPathExtension:@"dot"]]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"dot"]];
+
+		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[dotExporter setExportOutputFileHandle:fileHandle];
 		
@@ -463,7 +445,6 @@
  */
 - (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
 {
-	NSString *filename = @"";
 	SPFileHandle *fileHandle = nil;
 	
 	SPCSVExporter *csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
@@ -491,17 +472,17 @@
 		if (createCustomFilename) {
 			
 			// Create custom filename based on the selected format
-			filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:table];
+			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:table]];
 			
 			// If the user chose to use a custom filename format and we exporting to multiple files, make
 			// sure the table name is included to ensure the output files are unique.
-			filename = ([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [filename stringByAppendingFormat:@"_%@", table] : filename;
+			[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
 		}
 		else {
-			filename = table;
+			[exportFilename setString:table];
 		}
 				
-		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:filename]];
+		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[csvExporter setExportOutputFileHandle:fileHandle];
 	}
@@ -523,7 +504,6 @@
  */
 - (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
 {
-	NSString *filename = @"";
 	SPFileHandle *fileHandle = nil;
 	
 	SPXMLExporter *xmlExporter = [[SPXMLExporter alloc] initWithDelegate:self];
@@ -544,9 +524,10 @@
 	
 	// If required create separate files
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
-		filename = [[exportPathField stringValue] stringByAppendingPathComponent:table];
+		[exportFilename setString:[[exportPathField stringValue] stringByAppendingPathComponent:table]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"xml"]];
 		
-		fileHandle = [self getFileHandleForFilePath:[filename stringByAppendingPathExtension:@"xml"]];
+		fileHandle = [self getFileHandleForFilePath:exportFilename];
 						
 		// Write the file header
 		[self writeXMLHeaderToFileHandle:fileHandle];
