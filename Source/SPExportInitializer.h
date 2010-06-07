@@ -46,6 +46,6 @@
 - (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
 
 - (void)writeXMLHeaderToFileHandle:(SPFileHandle *)fileHandle;
-- (SPFileHandle *)getFileHandleForFilePath:(NSString *)filePath;
+- (SPFileHandle *)getFileHandleForFilePath:(NSString *)path;
 
 @end

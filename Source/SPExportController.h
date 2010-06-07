@@ -212,6 +212,11 @@
 	 * Previous connection encoding was via Latin1
 	 */
 	BOOL sqlPreviousConnectionEncodingViaLatin1;
+	
+	/**
+	 * Array of export file paths.
+	 */
+	NSMutableArray *exportFiles;
 
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;

@@ -75,6 +75,7 @@
 		
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
+		exportFiles = [[NSMutableArray alloc] init];
 		operationQueue = [[NSOperationQueue alloc] init];
 		
 		showAdvancedView = NO;
@@ -124,7 +125,9 @@
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format
 {
 	[self refreshTableList:self];
-		
+	
+	if ([exportFiles count] > 0) [exportFiles removeAllObjects];
+	
 	if (exportTables && format) {
 		
 		// Select the correct tab according to the supplied export type
@@ -358,12 +361,31 @@
 {
 	[self setExportCancelled:YES];
 	
+	[exportProgressTitle setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling export message")];
+	[exportProgressText setStringValue:NSLocalizedString(@"Cleaning up...", @"cancelling export cleaning up message")];
+	
+	// Disable the cancel button
+	[sender setEnabled:NO];
+	
 	// Cancel all of the currently running operations
 	[operationQueue cancelAllOperations];
 	
 	// Close the progress sheet
 	[NSApp endSheet:exportProgressWindow returnCode:0];
 	[exportProgressWindow orderOut:self];
+	
+	// Loop the cached export file paths and remove them from disk if they exist
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	for (NSString *filePath in exportFiles)
+	{
+		if ([fileManager fileExistsAtPath:filePath]) {
+			[[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+		}
+	}
+	
+	// Re-enable the cancel button for future exports
+	[sender setEnabled:YES];
 }
 
 /**
@@ -637,6 +659,7 @@
 {	
     [tables release], tables = nil;
 	[exporters release], exporters = nil;
+	[exportFiles release], exportFiles = nil;
 	[operationQueue release], operationQueue = nil;
 	[exportFilename release], exportFilename = nil;
 	

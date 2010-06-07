@@ -574,13 +574,13 @@
 /**
  * Returns a file handle for writing at the supplied path.
  */
-- (SPFileHandle *)getFileHandleForFilePath:(NSString *)filePath
+- (SPFileHandle *)getFileHandleForFilePath:(NSString *)path
 {
 	SPFileHandle *fileHandle = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
-	if ([fileManager fileExistsAtPath:filePath]) {
-		if ((![fileManager isWritableFileAtPath:filePath]) || (!(fileHandle = [SPFileHandle fileHandleForWritingAtPath:filePath]))) {
+	if ([fileManager fileExistsAtPath:path]) {
+		if ((![fileManager isWritableFileAtPath:path]) || (!(fileHandle = [SPFileHandle fileHandleForWritingAtPath:path]))) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			return nil;
@@ -588,23 +588,27 @@
 	} 
 	// Otherwise attempt to create a file
 	else {
-		if (![fileManager createFileAtPath:filePath contents:[NSData data] attributes:nil]) {
+		if (![fileManager createFileAtPath:path contents:[NSData data] attributes:nil]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			return nil;
 		}
 		
 		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [SPFileHandle fileHandleForWritingAtPath:filePath];
+		fileHandle = [SPFileHandle fileHandleForWritingAtPath:path];
 		
 		if (!fileHandle) {
-			[[NSFileManager defaultManager] removeFileAtPath:filePath handler:nil];
+			[[NSFileManager defaultManager] removeFileAtPath:path handler:nil];
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			return nil;
 		}
 	}
+	
+	// Keep a record of the file handle's path in case the user cancels the export then we need to remove
+	// it from disk.
+	[exportFiles addObject:path];
 	
 	return fileHandle;
 }
