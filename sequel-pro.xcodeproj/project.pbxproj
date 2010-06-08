@@ -358,7 +358,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 58B906E511BD989A000826E5 /* PSMTabBar */;
+			remoteGlobalIDString = 58B906E511BD989A000826E5;
 			remoteInfo = PSMTabBar;
 		};
 		58CDB34A0FCE144000F8ACA3 /* PBXContainerItemProxy */ = {
@@ -2971,7 +2971,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/PSMTabBar-Info.plist";
-				INSTALL_PATH = "$(HOME)/Library/Frameworks";
+				INSTALL_PATH = "@executable_path/../Frameworks";
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = PSMTabBar;
