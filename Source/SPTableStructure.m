@@ -818,7 +818,11 @@ closes the keySheet
 			([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) 
 		{
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
-			if ([oldRow isEqualToDictionary:theRow]) return YES;
+			if ([oldRow isEqualToDictionary:theRow]) {
+				isEditingRow = NO;
+				currentlyEditingRow = -1;
+				return YES;
+			}
 			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
 															[selectedTable backtickQuotedString], 
@@ -828,7 +832,11 @@ closes the keySheet
 		} 
 		else {
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
-			if ([oldRow isEqualToDictionary:theRow]) return YES;
+			if ([oldRow isEqualToDictionary:theRow]) {
+				isEditingRow = NO;
+				currentlyEditingRow = -1;
+				return YES;
+			}
 			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@(%@)",
 															[selectedTable backtickQuotedString], 
