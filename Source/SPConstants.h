@@ -65,9 +65,9 @@ typedef NSUInteger SPExportType;
 
 // Export source constants
 enum {
-	SPFilteredExport = 1,
-	SPQueryExport    = 2,
-	SPTableExport    = 3
+	SPFilteredExport = 0,
+	SPQueryExport    = 1,
+	SPTableExport    = 2
 };
 typedef NSUInteger SPExportSource;
 

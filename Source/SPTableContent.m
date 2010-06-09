@@ -1828,6 +1828,7 @@
 		}
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 	}
+		
 	return currentResult;
 }
 

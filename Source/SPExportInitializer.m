@@ -54,19 +54,7 @@
 	// Get rid of the cached connection encoding
 	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
 	
-	createCustomFilename = ([exportCustomFilenameButton state] && (![[exportCustomFilenameTokenField stringValue] isEqualToString:@""]));
-	
-	// First determine what type of export the user selected
-	for (NSToolbarItem *item in [exportToolbar items])
-	{
-		if ([[item itemIdentifier] isEqualToString:[exportToolbar selectedItemIdentifier]]) {
-			exportType = [item tag];
-			break;
-		}
-	}
-	
-	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-	exportSource = (exportType == SPDotExport) ? SPTableExport : ([exportInputMatrix selectedRow] + 1);
+	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
 	
 	NSMutableArray *exportTables = [NSMutableArray array];
 	
@@ -421,6 +409,7 @@
 		else {
 			[exportFilename setString:[tableDocumentInstance database]];
 		}
+		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"dot"]];
 
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];

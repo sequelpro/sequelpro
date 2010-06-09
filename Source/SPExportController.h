@@ -51,13 +51,13 @@
 	IBOutlet NSTextField *exportPathField;
 	IBOutlet NSTableView *exportTableList;
 	IBOutlet NSTabView *exportTabBar;	
-	IBOutlet NSMatrix *exportInputMatrix;
+	IBOutlet NSPopUpButton *exportInputPopUpButton;
 	IBOutlet NSButton *exportFilePerTableCheck;
-	IBOutlet NSTextField *exportFilePerTableNote;
 	IBOutlet NSButton *exportSelectAllTablesButton;
 	IBOutlet NSButton *exportDeselectAllTablesButton;
 	IBOutlet NSButton *exportRefreshTablesButton;
 	IBOutlet NSScrollView *exportTablelistScrollView;
+	IBOutlet NSBox *exportFilenameDividerBox;
 	
 	// Errors sheet
 	IBOutlet NSWindow *errorsWindow;
@@ -80,11 +80,11 @@
 	IBOutlet NSProgressIndicator *exportProgressIndicator;
 	
 	// Custom filename view
+	IBOutlet NSButton *exportCustomFilenameViewButton;
+	IBOutlet NSButton *exportCustomFilenameViewLabelButton;
 	IBOutlet NSView *exportCustomFilenameView;
-	IBOutlet NSButton *exportCustomFilenameButton;
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
 	IBOutlet NSTokenField *exportCustomFilenameTokensField;
-	IBOutlet NSTextField *exportCustomFilenameExampleTextField;
 	
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
@@ -194,6 +194,11 @@
 	BOOL showAdvancedView;
 	
 	/**
+	 * Display custom filename view flag.
+	 */
+	BOOL showCustomFilenameView;
+	
+	/**
 	 * User defaults
 	 */
 	NSUserDefaults *prefs;
@@ -252,7 +257,7 @@
 - (IBAction)changeExportOutputPath:(id)sender;
 - (IBAction)refreshTableList:(id)sender;
 - (IBAction)selectDeselectAllTables:(id)sender;
-- (IBAction)toggleCustomFilenameFormat:(id)sender;
+- (IBAction)toggleCustomFilenameFormatView:(id)sender;
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
 
 - (IBAction)toggleSQLIncludeStructure:(id)sender;
