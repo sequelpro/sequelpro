@@ -25,6 +25,7 @@
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
+		1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
 		173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C44D71044A6B0001F3A30 /* SPOutlineView.m */; };
@@ -184,7 +185,6 @@
 		589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */; };
 		58A8A72711A0149100B95749 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58A8A72611A0149100B95749 /* MainWindow.xib */; };
 		58A8A79111A036C000B95749 /* SPWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 58A8A79011A036C000B95749 /* SPWindowController.m */; };
-		58B906EE11BD9AAF000826E5 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58B906ED11BD9AAF000826E5 /* Cocoa.framework */; };
 		58B9074A11BD9B34000826E5 /* overflowImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070A11BD9B34000826E5 /* overflowImage.png */; };
 		58B9074B11BD9B34000826E5 /* overflowImagePressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070B11BD9B34000826E5 /* overflowImagePressed.png */; };
 		58B9074C11BD9B34000826E5 /* pi.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070C11BD9B34000826E5 /* pi.png */; };
@@ -705,7 +705,6 @@
 		58A8A78F11A036C000B95749 /* SPWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowController.h; sourceTree = "<group>"; };
 		58A8A79011A036C000B95749 /* SPWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowController.m; sourceTree = "<group>"; };
 		58B906E611BD989A000826E5 /* PSMTabBar.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PSMTabBar.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		58B906ED11BD9AAF000826E5 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		58B906FA11BD9B34000826E5 /* AdiumGradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AdiumGradient.png; sourceTree = "<group>"; };
 		58B906FB11BD9B34000826E5 /* AquaTabClose_Front.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AquaTabClose_Front.png; sourceTree = "<group>"; };
 		58B906FC11BD9B34000826E5 /* AquaTabClose_Front_Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AquaTabClose_Front_Pressed.png; sourceTree = "<group>"; };
@@ -926,8 +925,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				58B906EE11BD9AAF000826E5 /* Cocoa.framework in Frameworks */,
 				58B9077E11BD9B64000826E5 /* Carbon.framework in Frameworks */,
+				1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -964,6 +963,7 @@
 		1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				58B9077D11BD9B64000826E5 /* Carbon.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
 				4DECC3340EC2A170008D359E /* Growl.framework */,
 				B52ECDDB10DDACE9009DC3E8 /* BWToolkitFramework.framework */,
@@ -1736,8 +1736,6 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
-				58B906ED11BD9AAF000826E5 /* Cocoa.framework */,
-				58B9077D11BD9B64000826E5 /* Carbon.framework */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";

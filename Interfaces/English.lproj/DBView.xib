@@ -16980,19 +16980,19 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<int key="objectID">67</int>
 						<reference key="object" ref="392169872"/>
 						<reference key="parent" ref="0"/>
-						<string key="objectName">TableContent</string>
+						<string key="objectName">SPTableContent</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">68</int>
 						<reference key="object" ref="438574515"/>
 						<reference key="parent" ref="0"/>
-						<string key="objectName">TablesList</string>
+						<string key="objectName">SPTablesList</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">69</int>
 						<reference key="object" ref="103234030"/>
 						<reference key="parent" ref="0"/>
-						<string key="objectName">TableSource</string>
+						<string key="objectName">SPTableSructure</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">134</int>
