@@ -467,9 +467,6 @@
 			// sure the table name is included to ensure the output files are unique.
 			[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
 		}
-		else {
-			[exportFilename setString:table];
-		}
 				
 		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		

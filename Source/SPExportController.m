@@ -307,7 +307,7 @@
 		
 		// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
 		exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-		
+				
 		// Determine the export type
 		exportType = [sender tag];
 		
@@ -322,7 +322,7 @@
 		BOOL isPDF  = (exportType == SPPDFExport);
 		BOOL isDot  = (exportType == SPDotExport);
 				
-		BOOL disable = (isCSV || isXML || isHTML || isPDF || isDot);
+		BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
 		
 		[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
 		[exportTableList setEnabled:(!isDot)];
@@ -336,13 +336,13 @@
 				
 		// Enable/disable the 'filtered result' and 'query result' options
 		// Note that the result count check is always greater than one as the first row is always the field names
-		[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((!disable) && ([[tableContentInstance currentResult] count] > 1))];
-		[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((!disable) && ([[customQueryInstance currentResult] count] > 1))];			
+		[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
+		[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];			
 				
-		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : disable];
-		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : disable];
+		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
+		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
 		
-		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(disable) ? @"" : @"C"]; 
+		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
 		
 		[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 		[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
@@ -357,6 +357,9 @@
 - (IBAction)switchInput:(id)sender
 {
 	if ([sender isKindOfClass:[NSPopUpButton class]]) {
+		
+		// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
+		exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
 		
 		BOOL isSelectedTables = ([sender indexOfSelectedItem] == SPTableExport);
 				
