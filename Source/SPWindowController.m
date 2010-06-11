@@ -152,6 +152,40 @@
 }
 
 /**
+ * Select next tab.
+ */
+- (IBAction)selectNextDocumentTab:(id)sender
+{
+	[tabView selectNextTabViewItem:nil];
+}
+
+/**
+ * Select previous tab.
+ */
+- (IBAction)selectPreviousDocumentTab:(id)sender
+{
+	[tabView selectPreviousTabViewItem:nil];
+}
+
+/**
+ * Menu validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	// Select Previous Tab
+	if ([menuItem action] == @selector(selectPreviousDocumentTab:)) {
+		return ([tabView numberOfTabViewItems] && [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
+	}
+	
+	// Select Next Tab
+	if ([menuItem action] == @selector(selectNextDocumentTab:)) {
+		return ([tabView numberOfTabViewItems] && [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]<[tabView numberOfTabViewItems]-1);
+	}
+	
+	return YES;
+}
+
+/**
  * Retrieve the documents associated with this window.
  */
 - (NSArray *)documents
@@ -239,6 +273,15 @@
 		[draggedDocument removeObserver:[draggedFromWindow windowController] forKeyPath:@"isProcessing"];
 		[[[tabBarControl window] windowController] _updateProgressIndicatorForItem:tabViewItem];
 	}
+}
+
+/**
+ * Show tooltip for a tab view item.
+ */
+- (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	// Not yet implemented
+	return @"";
 }
 
 - (void)tabView:(NSTabView *)aTabView closeWindowForLastTabViewItem:(NSTabViewItem *)tabViewItem

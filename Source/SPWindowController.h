@@ -41,6 +41,8 @@
 - (SPDatabaseDocument *) selectedTableDocument;
 - (void) updateAllTabTitles:(id)sender;
 - (IBAction)closeTab:(id)sender;
+- (IBAction)selectNextDocumentTab:(id)sender;
+- (IBAction)selectPreviousDocumentTab:(id)sender;
 - (NSArray *)documents;
 
 @end
