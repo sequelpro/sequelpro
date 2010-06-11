@@ -152,19 +152,25 @@
 }
 
 /**
- * Select next tab.
+ * Select next tab; if last select first one.
  */
 - (IBAction)selectNextDocumentTab:(id)sender
 {
-	[tabView selectNextTabViewItem:nil];
+	if([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == [tabView numberOfTabViewItems] - 1)
+		[tabView selectFirstTabViewItem:nil];
+	else
+		[tabView selectNextTabViewItem:nil];
 }
 
 /**
- * Select previous tab.
+ * Select previous tab; if first select last one.
  */
 - (IBAction)selectPreviousDocumentTab:(id)sender
 {
-	[tabView selectPreviousTabViewItem:nil];
+	if([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0)
+		[tabView selectLastTabViewItem:nil];
+	else
+		[tabView selectPreviousTabViewItem:nil];
 }
 
 /**
@@ -172,16 +178,11 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	// Select Previous Tab
-	if ([menuItem action] == @selector(selectPreviousDocumentTab:)) {
-		return ([tabView numberOfTabViewItems] && [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
+	// Select Next/Previous Tab
+	if ([menuItem action] == @selector(selectPreviousDocumentTab:) || [menuItem action] == @selector(selectNextDocumentTab:)) {
+		return ([tabView numberOfTabViewItems] != 1);
 	}
-	
-	// Select Next Tab
-	if ([menuItem action] == @selector(selectNextDocumentTab:)) {
-		return ([tabView numberOfTabViewItems] && [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]<[tabView numberOfTabViewItems]-1);
-	}
-	
+
 	return YES;
 }
 
