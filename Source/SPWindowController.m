@@ -281,7 +281,49 @@
  */
 - (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	// Not yet implemented
+	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:tabViewItem]];
+
+	// If cell is selected show tooltip if truncated only
+	if([theCell tabState] & PSMTab_SelectedMask) {
+
+		CGFloat cellWidth = [theCell width];
+		CGFloat titleWidth = [theCell stringSize].width;
+		CGFloat closeButtonWidth = 0;
+
+		if([theCell hasCloseButton])
+			closeButtonWidth = [theCell closeButtonRectForFrame:[theCell frame]].size.width;
+
+		if(titleWidth > cellWidth - closeButtonWidth)
+			return [theCell title];
+
+		return @"";
+
+	// if cell is not selected show full title as tooltip
+	} else {
+		SPDatabaseDocument *doc = [tabViewItem identifier];
+		NSMutableString *tabTitle;
+
+		// Determine name details
+		NSString *pathName = @"";
+		if ([[[doc fileURL] path] length] && ![doc isUntitled])
+			pathName = [NSString stringWithFormat:@"%@ — ", [[[doc fileURL] path] lastPathComponent]];
+
+		if ([doc getConnection] == nil)
+			return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+
+		tabTitle = [NSMutableString string];
+		[tabTitle appendString:[doc name]];
+		if ([doc database]) {
+			if ([tabTitle length]) [tabTitle appendString:@"/"];
+			[tabTitle appendString:[doc database]];
+		}
+		if ([[doc table] length]) {
+			if ([tabTitle length]) [tabTitle appendString:@"/"];
+			[tabTitle appendString:[doc table]];
+		}
+		return tabTitle;
+	}
+
 	return @"";
 }
 
