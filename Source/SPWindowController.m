@@ -281,7 +281,12 @@
  */
 - (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:tabViewItem]];
+
+	NSInteger tabIndex = [tabView indexOfTabViewItem:tabViewItem];
+
+	if([[tabBar cells] count] < tabIndex) return @"";
+
+	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:tabIndex];
 
 	// If cell is selected show tooltip if truncated only
 	if([theCell tabState] & PSMTab_SelectedMask) {
