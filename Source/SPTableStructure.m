@@ -1595,9 +1595,9 @@ would result in a position change.
 	row = [tableSourceView editedRow];
 	column = [tableSourceView editedColumn];
 
-	 if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ||
-				[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) //trap enter and tab
-	 {
+	// Trap the tab key, selecting the next item in the line
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	{
 		//save current line
 		[[control window] makeFirstResponder:control];
 		if ( column == 9 ) {
@@ -1618,10 +1618,20 @@ would result in a position change.
 			}
 		}
 		return TRUE;
+	
+	// Trap the enter key, triggering a save
+	}
+	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+	{
+		[[control window] makeFirstResponder:control];
+		[self addRowToDB];
+		return TRUE;
 		 
-	 } else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
-					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
-		//abort editing
+	// Trap escape, aborting the edit and reverting the row
+	}
+	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
+					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
+	{
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
 			isEditingRow = NO;
