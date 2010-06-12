@@ -41,6 +41,7 @@
  */
 - (void) awakeFromNib
 {
+	selectedTableDocument = nil;
 
 	// Disable automatic cascading - this occurs before the size is set, so let the app
 	// controller apply cascading after frame autosaving.
@@ -115,7 +116,17 @@
  */
 - (SPDatabaseDocument *) selectedTableDocument
 {
-	return [[tabView selectedTabViewItem] identifier];
+	return selectedTableDocument;
+}
+
+/**
+ * Update the currently selected connection view
+ */
+- (void) updateSelectedTableDocument
+{
+	SPDatabaseDocument *previouslySelectedTableDocument = selectedTableDocument;
+	selectedTableDocument = [[tabView selectedTabViewItem] identifier];
+	if ([previouslySelectedTableDocument isNotEqualTo:selectedTableDocument]) [selectedTableDocument didBecomeActiveTabInWindow];
 }
 
 /**
@@ -139,9 +150,8 @@
 - (IBAction)closeTab:(id)sender
 {
 
-	// Return if the frontmost tab shouldn't be closed
-	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier];
-	if (![frontDocument parentTabShouldClose]) return NO;
+	// Return if the selected tab shouldn't be closed
+	if (![selectedTableDocument parentTabShouldClose]) return NO;
 
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {
@@ -182,6 +192,9 @@
 	if ([menuItem action] == @selector(selectPreviousDocumentTab:) || [menuItem action] == @selector(selectNextDocumentTab:)) {
 		return ([tabView numberOfTabViewItems] != 1);
 	}
+	
+	// See if the front document blocks validation of this item
+	if (![selectedTableDocument validateMenuItem:menuItem]) return NO;
 
 	return YES;
 }
@@ -206,8 +219,7 @@
  */
 - (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	SPDatabaseDocument *currentlySelectedDocument = [[tabView selectedTabViewItem] identifier];
-	[currentlySelectedDocument willResignActiveTabInWindow];
+	[selectedTableDocument willResignActiveTabInWindow];
 }
 
 /**
@@ -215,9 +227,9 @@
  */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	SPDatabaseDocument *theDocument = [tabViewItem identifier];
-	[theDocument didBecomeActiveTabInWindow];
-	if ([[self window] isKeyWindow]) [theDocument tabDidBecomeKey];
+	selectedTableDocument = [tabViewItem identifier];
+	[selectedTableDocument didBecomeActiveTabInWindow];
+	if ([[self window] isKeyWindow]) [selectedTableDocument tabDidBecomeKey];
 	[self updateAllTabTitles:self];
 }
 
@@ -263,7 +275,7 @@
 	if (draggedFromWindow != [tabBarControl window]) {
 		
 		// Update the old window
-		[[[draggedFromWindow windowController] selectedTableDocument] didBecomeActiveTabInWindow];
+		[[draggedFromWindow windowController] updateSelectedTableDocument];
 
 		// Update the item's document's window
 		[draggedDocument willResignActiveTabInWindow];
@@ -373,8 +385,7 @@
  */
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
-	SPDatabaseDocument *selectedTab = [[tabView selectedTabViewItem] identifier];
-	[selectedTab tabDidBecomeKey];
+	[selectedTableDocument tabDidBecomeKey];
 
 	// Update the "Close window" item
 	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close Window", @"Close Window menu item")];
@@ -421,10 +432,9 @@
  */
 - (void) forwardInvocation:(NSInvocation *)theInvocation
 {
-	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
 	SEL theSelector = [theInvocation selector];
-	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
-	[theInvocation invokeWithTarget:frontDocument];
+	if (![selectedTableDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
+	[theInvocation invokeWithTarget:selectedTableDocument];
 }
 
 /**
@@ -436,7 +446,7 @@
 	NSMethodSignature *defaultSignature = [super methodSignatureForSelector:theSelector];
 	if (defaultSignature) return defaultSignature;
 
-	return [[[tabView selectedTabViewItem] identifier] methodSignatureForSelector:theSelector];
+	return [selectedTableDocument methodSignatureForSelector:theSelector];
 }
 
 /**
@@ -445,7 +455,7 @@
  */
 - (BOOL) respondsToSelector:(SEL)theSelector
 {	
-	return ([super respondsToSelector:theSelector] || [[[tabView selectedTabViewItem] identifier] respondsToSelector:theSelector]);
+	return ([super respondsToSelector:theSelector] || [selectedTableDocument respondsToSelector:theSelector]);
 }
 
 /**
@@ -456,9 +466,8 @@
 {
 	if ([super respondsToSelector:theSelector]) return [super performSelector:theSelector];
 
-	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
-	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
-	return [frontDocument performSelector:theSelector];
+	if (![selectedTableDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
+	return [selectedTableDocument performSelector:theSelector];
 }
 
 /**
@@ -468,10 +477,8 @@
 {
 	if ([super respondsToSelector:theSelector]) return [super performSelector:theSelector withObject:theObject];
 
-	SPDatabaseDocument *frontDocument = [[tabView selectedTabViewItem] identifier]; 
-	if (![frontDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
-
-	return [frontDocument performSelector:theSelector withObject:theObject];
+	if (![selectedTableDocument respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
+	return [selectedTableDocument performSelector:theSelector withObject:theObject];
 }
 
 @end

@@ -34,11 +34,13 @@
 	NSMenuItem *closeTabMenuItem;
 
 	NSMutableArray *managedDatabaseConnections;
+	SPDatabaseDocument *selectedTableDocument;
 }
 
 // Database connection management
 - (IBAction) addNewConnection:(id)sender;
 - (SPDatabaseDocument *) selectedTableDocument;
+- (void) updateSelectedTableDocument;
 - (void) updateAllTabTitles:(id)sender;
 - (IBAction)closeTab:(id)sender;
 - (IBAction)selectNextDocumentTab:(id)sender;
