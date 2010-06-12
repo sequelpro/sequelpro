@@ -1,0 +1,114 @@
+/* Class = "NSWindow"; title = "Content Filter Manager"; ObjectID = "1"; */
+"Content Filter Manager" = "Content Filter Manager";
+
+/* Class = "NSButton"; gToolTip = "Delete selected filter (⌫)"; ObjectID = "17"; */
+"Delete selected filter (⌫)" = "Delete selected filter (⌫)";
+
+/* Class = "NSButton"; gToolTip = "Add filter (⌥⌘A)"; ObjectID = "18"; */
+"Add filter (⌥⌘A)" = "Add filter (⌥⌘A)";
+
+/* Class = "NSTableColumn"; headerCell.title = "Content Filters"; ObjectID = "26"; */
+"Content Filters" = "Content Filters";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "27"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Name:"; ObjectID = "122"; */
+"Name:" = "Name:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "[no selection]"; ObjectID = "124"; */
+"[no selection]" = "[no selection]";
+
+/* Class = "NSButtonCell"; title = "Save"; ObjectID = "132"; */
+"Save" = "Save";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "142"; */
+"Box" = "Box";
+
+/* Class = "NSMenuItem"; title = "Remove"; ObjectID = "206"; */
+"Remove" = "Remove";
+
+/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "212"; */
+"Duplicate" = "Duplicate";
+
+/* Class = "BWAnchoredPopUpButton"; gToolTip = "(⌥⎋)"; ObjectID = "238"; */
+"(⌥⎋)" = "(⌥⎋)";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "240"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "252"; */
+"Duplicate" = "Duplicate";
+
+/* Class = "NSMenuItem"; gToolTip = "Export selected favorites as SPF file"; ObjectID = "254"; */
+"Export selected favorites as SPF file" = "Export selected favorites as SPF file";
+
+/* Class = "NSMenuItem"; title = "Export Selected Filters…"; ObjectID = "254"; */
+"Export Selected Filters…" = "Export Selected Filters…";
+
+/* Class = "NSMenuItem"; gToolTip = "Import query favorites from SPF file and append them to the favorite list"; ObjectID = "255"; */
+"Import query favorites from SPF file and append them to the favorite list" = "Import query favorites from SPF file and append them to the favorite list";
+
+/* Class = "NSMenuItem"; title = "Import Filters…"; ObjectID = "255"; */
+"Import Filters…" = "Import Filters…";
+
+/* Class = "NSMenuItem"; gToolTip = "Import query favorites from SPF file and replace the current favorites"; ObjectID = "260"; */
+"Import query favorites from SPF file and replace the current favorites" = "Import query favorites from SPF file and replace the current favorites";
+
+/* Class = "NSMenuItem"; title = "Import Filter by Replacing…"; ObjectID = "260"; */
+"Import Filter by Replacing…" = "Import Filter by Replacing…";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "272"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSTextFieldCell"; title = "Clause:"; ObjectID = "304"; */
+"Clause:" = "Clause:";
+
+/* Class = "NSTextField"; gToolTip = "Label which appears between the argument input fields (as short as possible)"; ObjectID = "321"; */
+"Label which appears between the argument input fields (as short as possible)" = "Label which appears between the argument input fields (as short as possible)";
+
+/* Class = "NSTextFieldCell"; title = "Conjunction Label:"; ObjectID = "322"; */
+"Conjunction Label:" = "Conjunction Label:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "342"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; gToolTip = "${} – Argument placeholder."; ObjectID = "343"; */
+"${} – Argument placeholder." = "${} – Argument placeholder.";
+
+/* Class = "NSMenuItem"; title = "Argument"; ObjectID = "343"; */
+"Argument" = "Argument";
+
+/* Class = "NSMenuItem"; gToolTip = "$CURRENT_FIELD – placeholder. That placeholder will be replaced by the current field name."; ObjectID = "344"; */
+"$CURRENT_FIELD – placeholder. That placeholder will be replaced by the current field name." = "$CURRENT_FIELD – placeholder. That placeholder will be replaced by the current field name.";
+
+/* Class = "NSMenuItem"; title = "Current Field"; ObjectID = "344"; */
+"Current Field" = "Current Field";
+
+/* Class = "NSMenuItem"; gToolTip = "$BINARY – placeholder. The keyword BINARY will be inserted if ⇧ is pressed while invoking “Filter”."; ObjectID = "345"; */
+"$BINARY – placeholder. The keyword BINARY will be inserted if ⇧ is pressed while invoking “Filter”." = "$BINARY – placeholder. The keyword BINARY will be inserted if ⇧ is pressed while invoking “Filter”.";
+
+/* Class = "NSMenuItem"; title = "BINARY"; ObjectID = "345"; */
+"BINARY" = "BINARY";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "351"; */
+"Label" = "Label";
+
+/* Class = "NSTextFieldCell"; title = "Multiline Label"; ObjectID = "353"; */
+"Multiline Label" = "Multiline Label";
+
+/* Class = "NSMenuItem"; gToolTip = "'${}' – quoted argument placeholder."; ObjectID = "357"; */
+"'${}' – quoted argument placeholder." = "'${}' – quoted argument placeholder.";
+
+/* Class = "NSMenuItem"; title = "Quoted Argument"; ObjectID = "357"; */
+"Quoted Argument" = "Quoted Argument";
+
+/* Class = "NSMenuItem"; title = "Insert Placeholder"; ObjectID = "358"; */
+"Insert Placeholder" = "Insert Placeholder";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "362"; */
+"Label" = "Label";
+
+/* Class = "NSButtonCell"; title = "Suppress leading <field> placeholder"; ObjectID = "370"; */
+"Suppress leading <field> placeholder" = "Suppress leading <field> placeholder";
+

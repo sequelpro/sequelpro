@@ -1,0 +1,186 @@
+/* Class = "NSWindow"; title = "CSV Field Mapping"; ObjectID = "11"; */
+"CSV Field Mapping" = "CSV Field Mapping";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "14"; */
+"Box" = "Box";
+
+/* Class = "NSButton"; gToolTip = "Import (↩)"; ObjectID = "15"; */
+"Import (↩)" = "Import (↩)";
+
+/* Class = "NSButton"; gToolTip = "Cancel Import (⎋)"; ObjectID = "16"; */
+"Cancel Import (⎋)" = "Cancel Import (⎋)";
+
+/* Class = "NSButton"; gToolTip = "Show previous source row (⌘←)"; ObjectID = "17"; */
+"Show previous source row (⌘←)" = "Show previous source row (⌘←)";
+
+/* Class = "NSButton"; gToolTip = "Show next source row (⌘→)"; ObjectID = "18"; */
+"Show next source row (⌘→)" = "Show next source row (⌘→)";
+
+/* Class = "NSPopUpButton"; gToolTip = "Choose database table in which the data will be inserted"; ObjectID = "20"; */
+"Choose database table in which the data will be inserted" = "Choose database table in which the data will be inserted";
+
+/* Class = "NSPathControl"; gToolTip = "Source file path. Double-click to go back to file chooser."; ObjectID = "25"; */
+"Source file path. Double-click to go back to file chooser." = "Source file path. Double-click to go back to file chooser.";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "28"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "INSERT"; ObjectID = "29"; */
+"INSERT" = "INSERT";
+
+/* Class = "NSMenuItem"; title = "REPLACE"; ObjectID = "30"; */
+"REPLACE" = "REPLACE";
+
+/* Class = "NSMenuItem"; title = "UPDATE"; ObjectID = "31"; */
+"UPDATE" = "UPDATE";
+
+/* Class = "NSTextFieldCell"; title = "Import Method:"; ObjectID = "34"; */
+"Import Method:" = "Import Method:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "36"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSTextFieldCell"; title = "x of y records"; ObjectID = "37"; */
+"x of y records" = "x of y records";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "40"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSButtonCell"; title = "Import"; ObjectID = "41"; */
+"Import" = "Import";
+
+/* Class = "NSTableColumn"; headerCell.title = "CSV Fields"; ObjectID = "47"; */
+"CSV Fields" = "CSV Fields";
+
+/* Class = "NSTableColumn"; headerCell.title = "Table Target Fields"; ObjectID = "48"; */
+"Table Target Fields" = "Table Target Fields";
+
+/* Class = "NSTextFieldCell"; title = "CSV Import Field Mapping"; ObjectID = "57"; */
+"CSV Import Field Mapping" = "CSV Import Field Mapping";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "90"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Pop Up"; ObjectID = "91"; */
+"Pop Up" = "Pop Up";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "93"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Pop Up"; ObjectID = "94"; */
+"Pop Up" = "Pop Up";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "96"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Pop Up"; ObjectID = "97"; */
+"Pop Up" = "Pop Up";
+
+/* Class = "NSButtonCell"; title = "First line contains fields names"; ObjectID = "112"; */
+"First line contains fields names" = "First line contains fields names";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "133"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Matching names"; ObjectID = "134"; */
+"Matching names" = "Matching names";
+
+/* Class = "NSMenuItem"; title = "File order"; ObjectID = "135"; */
+"File order" = "File order";
+
+/* Class = "NSTextFieldCell"; title = "Align field names by:"; ObjectID = "138"; */
+"Align field names by:" = "Align field names by:";
+
+/* Class = "NSButton"; gToolTip = "Advanced settings for import methods (⌥⌘A)"; ObjectID = "139"; */
+"Advanced settings for import methods (⌥⌘A)" = "Advanced settings for import methods (⌥⌘A)";
+
+/* Class = "NSMenuItem"; title = "Reversed file order"; ObjectID = "141"; */
+"Reversed file order" = "Reversed file order";
+
+/* Class = "NSTextFieldCell"; title = "Text"; ObjectID = "149"; */
+"Text" = "Text";
+
+/* Class = "NSButton"; gToolTip = "Go back to file chooser (⇧⌥⌘←)"; ObjectID = "157"; */
+"Go back to file chooser (⇧⌥⌘←)" = "Go back to file chooser (⇧⌥⌘←)";
+
+/* Class = "NSButtonCell"; title = "Go Back"; ObjectID = "158"; */
+"Go Back" = "Go Back";
+
+/* Class = "NSWindow"; title = "Window"; ObjectID = "160"; */
+"Window" = "Window";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "170"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "176"; */
+"OK" = "OK";
+
+/* Class = "NSTableColumn"; headerCell.title = "Global Source Values or SQL Expressions"; ObjectID = "190"; */
+"Global Source Values or SQL Expressions" = "Global Source Values or SQL Expressions";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "191"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSButton"; gToolTip = "Insert NULL into current selected row (⌥⇧N)"; ObjectID = "192"; */
+"Insert NULL into current selected row (⌥⇧N)" = "Insert NULL into current selected row (⌥⇧N)";
+
+/* Class = "NSButtonCell"; title = "NULL"; ObjectID = "193"; */
+"NULL" = "NULL";
+
+/* Class = "NSButton"; gToolTip = "Use current selected global value after saving as source for selected mapping pair "; ObjectID = "221"; */
+"Use current selected global value after saving as source for selected mapping pair " = "Use current selected global value after saving as source for selected mapping pair ";
+
+/* Class = "NSButtonCell"; title = "Use current value"; ObjectID = "222"; */
+"Use current value" = "Use current value";
+
+/* Class = "NSMenuItem"; title = "Custom order"; ObjectID = "224"; */
+"Custom order" = "Custom order";
+
+/* Class = "NSButton"; gToolTip = "All rows which doesn't match the WHERE clause in the UPDATE statement will be inserted via INSERT INTO…"; ObjectID = "257"; */
+"All rows which doesn't match the WHERE clause in the UPDATE statement will be inserted via INSERT INTO…" = "All rows which doesn't match the WHERE clause in the UPDATE statement will be inserted via INSERT INTO…";
+
+/* Class = "NSButtonCell"; title = "Insert remaining rows"; ObjectID = "258"; */
+"Insert remaining rows" = "Insert remaining rows";
+
+/* Class = "NSButtonCell"; title = "HIGH_PRIORITY"; ObjectID = "301"; */
+"HIGH_PRIORITY" = "HIGH_PRIORITY";
+
+/* Class = "NSButtonCell"; title = "LOW_PRIORITY"; ObjectID = "302"; */
+"LOW_PRIORITY" = "LOW_PRIORITY";
+
+/* Class = "NSButtonCell"; title = "ON DUPLICATE KEY UPDATE:"; ObjectID = "306"; */
+"ON DUPLICATE KEY UPDATE:" = "ON DUPLICATE KEY UPDATE:";
+
+/* Class = "NSButtonCell"; title = "DELAYED"; ObjectID = "307"; */
+"DELAYED" = "DELAYED";
+
+/* Class = "NSButtonCell"; title = "IGNORE"; ObjectID = "308"; */
+"IGNORE" = "IGNORE";
+
+/* Class = "NSButtonCell"; title = "DELAYED"; ObjectID = "321"; */
+"DELAYED" = "DELAYED";
+
+/* Class = "NSButtonCell"; title = "LOW_PRIORITY"; ObjectID = "327"; */
+"LOW_PRIORITY" = "LOW_PRIORITY";
+
+/* Class = "NSButtonCell"; title = "IGNORE"; ObjectID = "339"; */
+"IGNORE" = "IGNORE";
+
+/* Class = "NSButtonCell"; title = "LOW_PRIORITY"; ObjectID = "346"; */
+"LOW_PRIORITY" = "LOW_PRIORITY";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "371"; */
+"Box" = "Box";
+
+/* Class = "NSButtonCell"; title = "Advanced"; ObjectID = "393"; */
+"Advanced" = "Advanced";
+
+/* Class = "NSButton"; gToolTip = "Do not import existing rows identified by the PRIMARY KEY"; ObjectID = "396"; */
+"Do not import existing rows identified by the PRIMARY KEY" = "Do not import existing rows identified by the PRIMARY KEY";
+
+/* Class = "NSButtonCell"; title = "Skip existing rows"; ObjectID = "397"; */
+"Skip existing rows" = "Skip existing rows";
+
+/* Class = "NSTableColumn"; headerCell.title = "SQL"; ObjectID = "400"; */
+"SQL" = "SQL";
+

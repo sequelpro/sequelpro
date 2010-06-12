@@ -1,0 +1,27 @@
+/* Class = "NSButton"; gToolTip = "Encrypt all connection and window state data with a password."; ObjectID = "3"; */
+"Encrypt all connection and window state data with a password." = "Encrypt all connection and window state data with a password.";
+
+/* Class = "NSButton"; gToolTip = "Remember selected table, view status, filter settings, etc."; ObjectID = "4"; */
+"Remember selected table, view status, filter settings, etc." = "Remember selected table, view status, filter settings, etc.";
+
+/* Class = "NSButton"; gToolTip = "ATTENTION: If enabled all passwords will be saved in the file! It is highly recommended to encrypt the entire data!"; ObjectID = "5"; */
+"ATTENTION: If enabled all passwords will be saved in the file! It is highly recommended to encrypt the entire data!" = "ATTENTION: If enabled all passwords will be saved in the file! It is highly recommended to encrypt the entire data!";
+
+/* Class = "NSButtonCell"; title = "Include passwords"; ObjectID = "6"; */
+"Include passwords" = "Include passwords";
+
+/* Class = "NSButtonCell"; title = "Remember window state"; ObjectID = "7"; */
+"Remember window state" = "Remember window state";
+
+/* Class = "NSButtonCell"; title = "Encrypt with password:"; ObjectID = "8"; */
+"Encrypt with password:" = "Encrypt with password:";
+
+/* Class = "NSButtonCell"; title = "Auto connect when opening"; ObjectID = "14"; */
+"Auto connect when opening" = "Auto connect when opening";
+
+/* Class = "NSButtonCell"; title = "Remember Query Editor content"; ObjectID = "16"; */
+"Remember Query Editor content" = "Remember Query Editor content";
+
+/* Class = "NSTextFieldCell"; title = "It is highly recommended to encrypt the entire data!"; ObjectID = "36"; */
+"It is highly recommended to encrypt the entire data!" = "It is highly recommended to encrypt the entire data!";
+

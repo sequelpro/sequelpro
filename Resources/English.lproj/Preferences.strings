@@ -1,0 +1,588 @@
+/* Class = "NSWindow"; title = "Preferences"; ObjectID = "1"; */
+"Preferences" = "Preferences";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "26"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "ISO Hebrew (hebrew)"; ObjectID = "28"; */
+"ISO Hebrew (hebrew)" = "ISO Hebrew (hebrew)";
+
+/* Class = "NSMenuItem"; title = "Big5 Traditional Chinese (big5)"; ObjectID = "30"; */
+"Big5 Traditional Chinese (big5)" = "Big5 Traditional Chinese (big5)";
+
+/* Class = "NSMenuItem"; title = "Windows Arabic (cp1256)"; ObjectID = "31"; */
+"Windows Arabic (cp1256)" = "Windows Arabic (cp1256)";
+
+/* Class = "NSMenuItem"; title = "ISO Greek (greek)"; ObjectID = "32"; */
+"ISO Greek (greek)" = "ISO Greek (greek)";
+
+/* Class = "NSMenuItem"; title = "UCS-2 Unicode (ucs2)"; ObjectID = "33"; */
+"UCS-2 Unicode (ucs2)" = "UCS-2 Unicode (ucs2)";
+
+/* Class = "NSMenuItem"; title = "UTF-8 Unicode (utf8)"; ObjectID = "34"; */
+"UTF-8 Unicode (utf8)" = "UTF-8 Unicode (utf8)";
+
+/* Class = "NSMenuItem"; title = "Windows Latin 2 (cp1250)"; ObjectID = "36"; */
+"Windows Latin 2 (cp1250)" = "Windows Latin 2 (cp1250)";
+
+/* Class = "NSMenuItem"; title = "ISO Latin 2 (latin2)"; ObjectID = "37"; */
+"ISO Latin 2 (latin2)" = "ISO Latin 2 (latin2)";
+
+/* Class = "NSMenuItem"; title = "Windows Baltic (cp1257)"; ObjectID = "39"; */
+"Windows Baltic (cp1257)" = "Windows Baltic (cp1257)";
+
+/* Class = "NSMenuItem"; title = "US ASCII (ascii)"; ObjectID = "40"; */
+"US ASCII (ascii)" = "US ASCII (ascii)";
+
+/* Class = "NSMenuItem"; title = "ISO Turkish (latin5)"; ObjectID = "41"; */
+"ISO Turkish (latin5)" = "ISO Turkish (latin5)";
+
+/* Class = "NSMenuItem"; title = "ISO Latin 1 (latin1)"; ObjectID = "42"; */
+"ISO Latin 1 (latin1)" = "ISO Latin 1 (latin1)";
+
+/* Class = "NSMenuItem"; title = "Windows Cyrillic (cp1251)"; ObjectID = "43"; */
+"Windows Cyrillic (cp1251)" = "Windows Cyrillic (cp1251)";
+
+/* Class = "NSMenuItem"; title = "Mac Roman (macroman)"; ObjectID = "45"; */
+"Mac Roman (macroman)" = "Mac Roman (macroman)";
+
+/* Class = "NSMenuItem"; title = "Shift-JIS Japanese (sjis)"; ObjectID = "46"; */
+"Shift-JIS Japanese (sjis)" = "Shift-JIS Japanese (sjis)";
+
+/* Class = "NSMenuItem"; title = "EUC-JP Japanese (ujis)"; ObjectID = "47"; */
+"EUC-JP Japanese (ujis)" = "EUC-JP Japanese (ujis)";
+
+/* Class = "NSMenuItem"; title = "Autodetect"; ObjectID = "50"; */
+"Autodetect" = "Autodetect";
+
+/* Class = "NSButtonCell"; title = "Automatically check for updates"; ObjectID = "95"; */
+"Automatically check for updates" = "Automatically check for updates";
+
+/* Class = "NSButtonCell"; title = "Check Now"; ObjectID = "97"; */
+"Check Now" = "Check Now";
+
+/* Class = "NSTextFieldCell"; title = "Last check:"; ObjectID = "99"; */
+"Last check:" = "Last check:";
+
+/* Class = "NSTextFieldCell"; title = "Tue, January 16, 2007 16:31:40"; ObjectID = "101"; */
+"Tue, January 16, 2007 16:31:40" = "Tue, January 16, 2007 16:31:40";
+
+/* Class = "NSDateFormatter"; realDateFormat = "%a, %B %e, %Y %H:%M:%S"; ObjectID = "102"; */
+"%a, %B %e, %Y %H:%M:%S" = "%a, %B %e, %Y %H:%M:%S";
+
+/* Class = "NSButtonCell"; title = "Enable Growl notifications"; ObjectID = "111"; */
+"Enable Growl notifications" = "Enable Growl notifications";
+
+/* Class = "NSButtonCell"; title = "Show error when no rows are affected"; ObjectID = "346"; */
+"Show error when no rows are affected" = "Show error when no rows are affected";
+
+/* Class = "NSTableColumn"; headerCell.title = "Favorites"; ObjectID = "410"; */
+"Favorites" = "Favorites";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "411"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "SSH Port:"; ObjectID = "447"; */
+"SSH Port:" = "SSH Port:";
+
+/* Class = "NSTextFieldCell"; title = "SSH Host:"; ObjectID = "448"; */
+"SSH Host:" = "SSH Host:";
+
+/* Class = "NSTextFieldCell"; title = "SSH Password:"; ObjectID = "449"; */
+"SSH Password:" = "SSH Password:";
+
+/* Class = "NSTextFieldCell"; title = "SSH User:"; ObjectID = "450"; */
+"SSH User:" = "SSH User:";
+
+/* Class = "NSTextFieldCell"; title = "Name:"; ObjectID = "452"; */
+"Name:" = "Name:";
+
+/* Class = "NSTextFieldCell"; title = "Port:"; ObjectID = "453"; */
+"Port:" = "Port:";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "454"; */
+"Password:" = "Password:";
+
+/* Class = "NSTextFieldCell"; title = "Database:"; ObjectID = "455"; */
+"Database:" = "Database:";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "456"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextFieldCell"; title = "Host:"; ObjectID = "457"; */
+"Host:" = "Host:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "22"; ObjectID = "458"; */
+"22" = "22";
+
+/* Class = "NSTextFieldCell"; placeholderString = "3306"; ObjectID = "466"; */
+"3306" = "3306";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "469"; */
+"optional" = "optional";
+
+/* Class = "NSTextFieldCell"; placeholderString = "100"; ObjectID = "521"; */
+"100" = "100";
+
+/* Class = "NSTextFieldCell"; title = "100"; ObjectID = "521"; */
+"100" = "100";
+
+/* Class = "NSButtonCell"; title = "Editing a row"; ObjectID = "524"; */
+"Editing a row" = "Editing a row";
+
+/* Class = "NSButtonCell"; title = "Limit result to:"; ObjectID = "525"; */
+"Limit result to:" = "Limit result to:";
+
+/* Class = "NSButtonCell"; title = "Adding a row"; ObjectID = "526"; */
+"Adding a row" = "Adding a row";
+
+/* Class = "NSTextFieldCell"; title = "rows"; ObjectID = "527"; */
+"rows" = "rows";
+
+/* Class = "NSTextFieldCell"; title = "Reload Table After:"; ObjectID = "528"; */
+"Reload Table After:" = "Reload Table After:";
+
+/* Class = "NSButtonCell"; title = "Removing a row"; ObjectID = "529"; */
+"Removing a row" = "Removing a row";
+
+/* Class = "NSTextFieldCell"; placeholderString = "NULL"; ObjectID = "533"; */
+"NULL" = "NULL";
+
+/* Class = "NSTextFieldCell"; title = "Show NULL values as:"; ObjectID = "534"; */
+"Show NULL values as:" = "Show NULL values as:";
+
+/* Class = "NSButtonCell"; title = "Don't load blob and text fields until needed"; ObjectID = "538"; */
+"Don't load blob and text fields until needed" = "Don't load blob and text fields until needed";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "552"; */
+"Box" = "Box";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "553"; */
+"Box" = "Box";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "554"; */
+"Box" = "Box";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "571"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSTextFieldCell"; title = "Default Favorite:"; ObjectID = "575"; */
+"Default Favorite:" = "Default Favorite:";
+
+/* Class = "NSButtonCell"; title = "Connect to default on startup"; ObjectID = "576"; */
+"Connect to default on startup" = "Connect to default on startup";
+
+/* Class = "NSTextFieldCell"; title = "Default Encoding:"; ObjectID = "578"; */
+"Default Encoding:" = "Default Encoding:";
+
+/* Class = "NSButtonCell"; title = "Use monospaced fonts"; ObjectID = "580"; */
+"Use monospaced fonts" = "Use monospaced fonts";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "581"; */
+"Box" = "Box";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "582"; */
+"Box" = "Box";
+
+/* Class = "NSButton"; gToolTip = "Enable to send a MySQL ping to ensure the connection is kept alive if it has not been used for a while"; ObjectID = "652"; */
+"Enable to send a MySQL ping to ensure the connection is kept alive if it has not been used for a while" = "Enable to send a MySQL ping to ensure the connection is kept alive if it has not been used for a while";
+
+/* Class = "NSButtonCell"; title = "Keep connections alive"; ObjectID = "661"; */
+"Keep connections alive" = "Keep connections alive";
+
+/* Class = "NSTextFieldCell"; title = "Connection Timeout:"; ObjectID = "669"; */
+"Connection Timeout:" = "Connection Timeout:";
+
+/* Class = "NSTextField"; gToolTip = "Enter how long to attempt to connect or send queries for; set a value of 0 to disable the timeout"; ObjectID = "674"; */
+"Enter how long to attempt to connect or send queries for; set a value of 0 to disable the timeout" = "Enter how long to attempt to connect or send queries for; set a value of 0 to disable the timeout";
+
+/* Class = "NSTextFieldCell"; placeholderString = "60"; ObjectID = "675"; */
+"60" = "60";
+
+/* Class = "NSTextFieldCell"; title = "seconds"; ObjectID = "677"; */
+"seconds" = "seconds";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "681"; */
+"Box" = "Box";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "784"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Remember Last:"; ObjectID = "786"; */
+"Remember Last:" = "Remember Last:";
+
+/* Class = "NSTextField"; gToolTip = "Enter the maximum number of entries to remember in the Custom Query query history, from 0 to 99"; ObjectID = "787"; */
+"Enter the maximum number of entries to remember in the Custom Query query history, from 0 to 99" = "Enter the maximum number of entries to remember in the Custom Query query history, from 0 to 99";
+
+/* Class = "NSTextFieldCell"; title = "20"; ObjectID = "788"; */
+"20" = "20";
+
+/* Class = "NSTextFieldCell"; title = "queries"; ObjectID = "791"; */
+"queries" = "queries";
+
+/* Class = "NSButtonCell"; title = "New fields should allow nulls"; ObjectID = "951"; */
+"New fields should allow nulls" = "New fields should allow nulls";
+
+/* Class = "NSButtonCell"; title = "Display vertical grid lines"; ObjectID = "958"; */
+"Display vertical grid lines" = "Display vertical grid lines";
+
+/* Class = "NSTextFieldCell"; title = "Delay by:"; ObjectID = "1048"; */
+"Delay by:" = "Delay by:";
+
+/* Class = "NSTextFieldCell"; title = "0.1"; ObjectID = "1049"; */
+"0.1" = "0.1";
+
+/* Class = "NSButtonCell"; title = "Balanced brace highlighting"; ObjectID = "1051"; */
+"Balanced brace highlighting" = "Balanced brace highlighting";
+
+/* Class = "NSButtonCell"; title = "Auto uppercase keywords"; ObjectID = "1052"; */
+"Auto uppercase keywords" = "Auto uppercase keywords";
+
+/* Class = "NSButtonCell"; title = "Update help while typing"; ObjectID = "1053"; */
+"Update help while typing" = "Update help while typing";
+
+/* Class = "NSButtonCell"; title = "Auto pair characters"; ObjectID = "1054"; */
+"Auto pair characters" = "Auto pair characters";
+
+/* Class = "NSButtonCell"; title = "Indent new lines"; ObjectID = "1055"; */
+"Indent new lines" = "Indent new lines";
+
+/* Class = "NSTextFieldCell"; title = "Caret:"; ObjectID = "1056"; */
+"Caret:" = "Caret:";
+
+/* Class = "NSButtonCell"; title = "Select…"; ObjectID = "1058"; */
+"Select…" = "Select…";
+
+/* Class = "NSButtonCell"; title = "Default Colors"; ObjectID = "1059"; */
+"Default Colors" = "Default Colors";
+
+/* Class = "NSTextFieldCell"; title = "Font:"; ObjectID = "1060"; */
+"Font:" = "Font:";
+
+/* Class = "NSTextFieldCell"; title = "Background:"; ObjectID = "1061"; */
+"Background:" = "Background:";
+
+/* Class = "NSTextFieldCell"; title = "Backtick Quote:"; ObjectID = "1062"; */
+"Backtick Quote:" = "Backtick Quote:";
+
+/* Class = "NSTextFieldCell"; title = "Text:"; ObjectID = "1063"; */
+"Text:" = "Text:";
+
+/* Class = "NSTextFieldCell"; title = "Quote:"; ObjectID = "1064"; */
+"Quote:" = "Quote:";
+
+/* Class = "NSTextFieldCell"; title = "Variable:"; ObjectID = "1065"; */
+"Variable:" = "Variable:";
+
+/* Class = "NSTextFieldCell"; title = "Comment:"; ObjectID = "1066"; */
+"Comment:" = "Comment:";
+
+/* Class = "NSTextFieldCell"; title = "Numeric:"; ObjectID = "1067"; */
+"Numeric:" = "Numeric:";
+
+/* Class = "NSTextFieldCell"; title = "Keyword:"; ObjectID = "1068"; */
+"Keyword:" = "Keyword:";
+
+/* Class = "NSTextFieldCell"; title = "secs"; ObjectID = "1084"; */
+"secs" = "secs";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1085"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Query Background:"; ObjectID = "1127"; */
+"Query Background:" = "Query Background:";
+
+/* Class = "NSButtonCell"; title = "Highlight current query"; ObjectID = "1129"; */
+"Highlight current query" = "Highlight current query";
+
+/* Class = "NSButtonCell"; title = "Enable logging for queries"; ObjectID = "1144"; */
+"Enable logging for queries" = "Enable logging for queries";
+
+/* Class = "NSButtonCell"; title = "Interface"; ObjectID = "1149"; */
+"Interface" = "Interface";
+
+/* Class = "NSButtonCell"; title = "Import & Export"; ObjectID = "1151"; */
+"Import & Export" = "Import & Export";
+
+/* Class = "NSButtonCell"; title = "Custom Query Editor"; ObjectID = "1153"; */
+"Custom Query Editor" = "Custom Query Editor";
+
+/* Class = "NSButtonCell"; title = "Errors"; ObjectID = "1155"; */
+"Errors" = "Errors";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1156"; */
+"Box" = "Box";
+
+/* Class = "NSTabViewItem"; label = "Standard"; ObjectID = "1171"; */
+"Standard" = "Standard";
+
+/* Class = "NSTabViewItem"; label = "Socket"; ObjectID = "1172"; */
+"Socket" = "Socket";
+
+/* Class = "NSTabViewItem"; label = "SSH"; ObjectID = "1175"; */
+"SSH" = "SSH";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "1182"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Standard"; ObjectID = "1183"; */
+"Standard" = "Standard";
+
+/* Class = "NSMenuItem"; title = "Socket"; ObjectID = "1184"; */
+"Socket" = "Socket";
+
+/* Class = "NSMenuItem"; title = "SSH"; ObjectID = "1185"; */
+"SSH" = "SSH";
+
+/* Class = "NSTextFieldCell"; title = "Type:"; ObjectID = "1187"; */
+"Type:" = "Type:";
+
+/* Class = "NSTextFieldCell"; title = "Socket:"; ObjectID = "1210"; */
+"Socket:" = "Socket:";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "1211"; */
+"Password:" = "Password:";
+
+/* Class = "NSTextFieldCell"; title = "Database:"; ObjectID = "1212"; */
+"Database:" = "Database:";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "1214"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "1216"; */
+"optional" = "optional";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "1219"; */
+"optional" = "optional";
+
+/* Class = "NSTextFieldCell"; title = "Port:"; ObjectID = "1256"; */
+"Port:" = "Port:";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "1257"; */
+"Password:" = "Password:";
+
+/* Class = "NSTextFieldCell"; title = "Database:"; ObjectID = "1258"; */
+"Database:" = "Database:";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "1259"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextFieldCell"; title = "MySQL Host:"; ObjectID = "1260"; */
+"MySQL Host:" = "MySQL Host:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "3306"; ObjectID = "1262"; */
+"3306" = "3306";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "1265"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1330"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1331"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "1332"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1332"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "3306"; ObjectID = "1333"; */
+"3306" = "3306";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1333"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1334"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "1335"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1335"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "1336"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1336"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1337"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1338"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1339"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "1340"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1340"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "3306"; ObjectID = "1341"; */
+"3306" = "3306";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1341"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1342"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1343"; */
+"no selection" = "no selection";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "22"; ObjectID = "1344"; */
+"22" = "22";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "no selection"; ObjectID = "1344"; */
+"no selection" = "no selection";
+
+/* Class = "NSTextFieldCell"; title = "Frequency:"; ObjectID = "1352"; */
+"Frequency:" = "Frequency:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "1355"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Hourly"; ObjectID = "1356"; */
+"Hourly" = "Hourly";
+
+/* Class = "NSMenuItem"; title = "Daily"; ObjectID = "1357"; */
+"Daily" = "Daily";
+
+/* Class = "NSMenuItem"; title = "Weekly"; ObjectID = "1358"; */
+"Weekly" = "Weekly";
+
+/* Class = "NSMenuItem"; title = "EUC-KR Korean (euckr)"; ObjectID = "1385"; */
+"EUC-KR Korean (euckr)" = "EUC-KR Korean (euckr)";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1420"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Default View:"; ObjectID = "1421"; */
+"Default View:" = "Default View:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "1423"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Last Used"; ObjectID = "1449"; */
+"Last Used" = "Last Used";
+
+/* Class = "NSMenuItem"; title = "Structure"; ObjectID = "1451"; */
+"Structure" = "Structure";
+
+/* Class = "NSMenuItem"; title = "Content"; ObjectID = "1452"; */
+"Content" = "Content";
+
+/* Class = "NSMenuItem"; title = "Relations"; ObjectID = "1453"; */
+"Relations" = "Relations";
+
+/* Class = "NSMenuItem"; title = "Query Editor"; ObjectID = "1454"; */
+"Query Editor" = "Query Editor";
+
+/* Class = "NSMenuItem"; title = "Table Info"; ObjectID = "1455"; */
+"Table Info" = "Table Info";
+
+/* Class = "NSTextFieldCell"; title = "Table Views:"; ObjectID = "1466"; */
+"Table Views:" = "Table Views:";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1467"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Table row counts:"; ObjectID = "1469"; */
+"Table row counts:" = "Table row counts:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "1472"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Never use additional queries for table row counts"; ObjectID = "1473"; */
+"Never use additional queries for table row counts" = "Never use additional queries for table row counts";
+
+/* Class = "NSMenuItem"; title = "Only use additional queries for small tables"; ObjectID = "1474"; */
+"Only use additional queries for small tables" = "Only use additional queries for small tables";
+
+/* Class = "NSMenuItem"; title = "Always get accurate row counts (slow for InnoDB)"; ObjectID = "1475"; */
+"Always get accurate row counts (slow for InnoDB)" = "Always get accurate row counts (slow for InnoDB)";
+
+/* Class = "NSTextFieldCell"; title = "MySQL content font:"; ObjectID = "1486"; */
+"MySQL content font:" = "MySQL content font:";
+
+/* Class = "NSButtonCell"; title = "Select…"; ObjectID = "1489"; */
+"Select…" = "Select…";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1492"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Tab Stop Width:"; ObjectID = "1500"; */
+"Tab Stop Width:" = "Tab Stop Width:";
+
+/* Class = "NSButtonCell"; title = "Auto-Completion"; ObjectID = "1522"; */
+"Auto-Completion" = "Auto-Completion";
+
+/* Class = "NSTextFieldCell"; title = ".5"; ObjectID = "1523"; */
+".5" = ".5";
+
+/* Class = "NSTextFieldCell"; title = "Delay by:"; ObjectID = "1525"; */
+"Delay by:" = "Delay by:";
+
+/* Class = "NSTextFieldCell"; title = "secs"; ObjectID = "1527"; */
+"secs" = "secs";
+
+/* Class = "NSButtonCell"; title = "Insert function arguments"; ObjectID = "1543"; */
+"Insert function arguments" = "Insert function arguments";
+
+/* Class = "NSMenuItem"; title = "Triggers"; ObjectID = "1546"; */
+"Triggers" = "Triggers";
+
+/* Class = "NSMenuItem"; title = "Remove"; ObjectID = "1548"; */
+"Remove" = "Remove";
+
+/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "1549"; */
+"Duplicate" = "Duplicate";
+
+/* Class = "BWAnchoredPopUpButton"; gToolTip = "(⌥⎋)"; ObjectID = "1584"; */
+"(⌥⎋)" = "(⌥⎋)";
+
+/* Class = "NSButton"; gToolTip = "Add Favorite (⌥⌘A)"; ObjectID = "1586"; */
+"Add Favorite (⌥⌘A)" = "Add Favorite (⌥⌘A)";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "1590"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "1592"; */
+"Duplicate" = "Duplicate";
+
+/* Class = "NSMenuItem"; title = "Remove"; ObjectID = "1597"; */
+"Remove" = "Remove";
+
+/* Class = "NSMenuItem"; title = "Sort By"; ObjectID = "1598"; */
+"Sort By" = "Sort By";
+
+/* Class = "NSMenu"; title = "Sort By"; ObjectID = "1599"; */
+"Sort By" = "Sort By";
+
+/* Class = "NSMenuItem"; title = "Name"; ObjectID = "1600"; */
+"Name" = "Name";
+
+/* Class = "NSMenuItem"; title = "Host"; ObjectID = "1601"; */
+"Host" = "Host";
+
+/* Class = "NSMenuItem"; title = "Type"; ObjectID = "1602"; */
+"Type" = "Type";
+
+/* Class = "NSMenuItem"; title = "Reverse Sort Order"; ObjectID = "1604"; */
+"Reverse Sort Order" = "Reverse Sort Order";
+
+/* Class = "NSButtonCell"; title = "Send anonymous system information"; ObjectID = "1616"; */
+"Send anonymous system information" = "Send anonymous system information";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1618"; */
+"Box" = "Box";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "1620"; */
+"Box" = "Box";
+

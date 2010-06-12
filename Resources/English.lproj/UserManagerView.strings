@@ -1,0 +1,216 @@
+/* Class = "NSWindow"; title = "User Managment"; ObjectID = "3"; */
+"User Managment" = "User Managment";
+
+/* Class = "NSTableColumn"; headerCell.title = "Accounts"; ObjectID = "33"; */
+"Accounts" = "Accounts";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "36"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTabViewItem"; label = "General"; ObjectID = "38"; */
+"General" = "General";
+
+/* Class = "NSTabViewItem"; label = "Resources"; ObjectID = "42"; */
+"Resources" = "Resources";
+
+/* Class = "NSBox"; title = "Login Information"; ObjectID = "44"; */
+"Login Information" = "Login Information";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "111"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "115"; */
+"Password:" = "Password:";
+
+/* Class = "NSButtonCell"; title = "Apply"; ObjectID = "123"; */
+"Apply" = "Apply";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "125"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSTabViewItem"; label = "Global Privileges"; ObjectID = "189"; */
+"Global Privileges" = "Global Privileges";
+
+/* Class = "NSFormCell"; title = "Max Updates:"; ObjectID = "289"; */
+"Max Updates:" = "Max Updates:";
+
+/* Class = "NSFormCell"; title = "Max Connections:"; ObjectID = "290"; */
+"Max Connections:" = "Max Connections:";
+
+/* Class = "NSFormCell"; title = "Field:"; ObjectID = "291"; */
+"Field:" = "Field:";
+
+/* Class = "NSFormCell"; title = "Max Questions:"; ObjectID = "292"; */
+"Max Questions:" = "Max Questions:";
+
+/* Class = "NSBox"; title = "Database and Tables"; ObjectID = "451"; */
+"Database and Tables" = "Database and Tables";
+
+/* Class = "NSBox"; title = "Views and Procedures"; ObjectID = "452"; */
+"Views and Procedures" = "Views and Procedures";
+
+/* Class = "NSBox"; title = "Administration"; ObjectID = "453"; */
+"Administration" = "Administration";
+
+/* Class = "NSBox"; title = "Replication"; ObjectID = "454"; */
+"Replication" = "Replication";
+
+/* Class = "NSButtonCell"; title = "Select"; ObjectID = "456"; */
+"Select" = "Select";
+
+/* Class = "NSButtonCell"; title = "Insert"; ObjectID = "458"; */
+"Insert" = "Insert";
+
+/* Class = "NSButtonCell"; title = "Update"; ObjectID = "460"; */
+"Update" = "Update";
+
+/* Class = "NSButtonCell"; title = "Delete"; ObjectID = "462"; */
+"Delete" = "Delete";
+
+/* Class = "NSButtonCell"; title = "References"; ObjectID = "464"; */
+"References" = "References";
+
+/* Class = "NSButtonCell"; title = "Create"; ObjectID = "466"; */
+"Create" = "Create";
+
+/* Class = "NSButtonCell"; title = "Drop"; ObjectID = "468"; */
+"Drop" = "Drop";
+
+/* Class = "NSButtonCell"; title = "Alter"; ObjectID = "470"; */
+"Alter" = "Alter";
+
+/* Class = "NSButtonCell"; title = "Index"; ObjectID = "472"; */
+"Index" = "Index";
+
+/* Class = "NSButtonCell"; title = "Create View"; ObjectID = "474"; */
+"Create View" = "Create View";
+
+/* Class = "NSButtonCell"; title = "Show View"; ObjectID = "476"; */
+"Show View" = "Show View";
+
+/* Class = "NSButtonCell"; title = "Create Routine"; ObjectID = "478"; */
+"Create Routine" = "Create Routine";
+
+/* Class = "NSButtonCell"; title = "Alter Routine"; ObjectID = "480"; */
+"Alter Routine" = "Alter Routine";
+
+/* Class = "NSButtonCell"; title = "Execute"; ObjectID = "482"; */
+"Execute" = "Execute";
+
+/* Class = "NSButtonCell"; title = "Replication Client"; ObjectID = "484"; */
+"Replication Client" = "Replication Client";
+
+/* Class = "NSButtonCell"; title = "Replication Slave"; ObjectID = "486"; */
+"Replication Slave" = "Replication Slave";
+
+/* Class = "NSButtonCell"; title = "Reload"; ObjectID = "488"; */
+"Reload" = "Reload";
+
+/* Class = "NSButtonCell"; title = "Shutdown"; ObjectID = "490"; */
+"Shutdown" = "Shutdown";
+
+/* Class = "NSButtonCell"; title = "File"; ObjectID = "492"; */
+"File" = "File";
+
+/* Class = "NSButtonCell"; title = "Process"; ObjectID = "494"; */
+"Process" = "Process";
+
+/* Class = "NSButtonCell"; title = "Super"; ObjectID = "496"; */
+"Super" = "Super";
+
+/* Class = "NSButtonCell"; title = "Create Temp Table"; ObjectID = "498"; */
+"Create Temp Table" = "Create Temp Table";
+
+/* Class = "NSButtonCell"; title = "Lock Tables"; ObjectID = "500"; */
+"Lock Tables" = "Lock Tables";
+
+/* Class = "NSButtonCell"; title = "Show Databases"; ObjectID = "502"; */
+"Show Databases" = "Show Databases";
+
+/* Class = "NSButtonCell"; title = "Create User"; ObjectID = "504"; */
+"Create User" = "Create User";
+
+/* Class = "NSButtonCell"; title = "Grant"; ObjectID = "506"; */
+"Grant" = "Grant";
+
+/* Class = "NSButtonCell"; title = "Check All"; ObjectID = "510"; */
+"Check All" = "Check All";
+
+/* Class = "NSButtonCell"; title = "Uncheck All"; ObjectID = "512"; */
+"Uncheck All" = "Uncheck All";
+
+/* Class = "BWAnchoredButton"; gToolTip = "Add User"; ObjectID = "580"; */
+"Add User" = "Add User";
+
+/* Class = "BWAnchoredButton"; gToolTip = "Remove User"; ObjectID = "582"; */
+"Remove User" = "Remove User";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "586"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Add Host"; ObjectID = "588"; */
+"Add Host" = "Add Host";
+
+/* Class = "NSMenuItem"; title = "Remove Host"; ObjectID = "589"; */
+"Remove Host" = "Remove Host";
+
+/* Class = "NSBox"; title = "Resource Limits"; ObjectID = "593"; */
+"Resource Limits" = "Resource Limits";
+
+/* Class = "NSButtonCell"; title = "Trigger"; ObjectID = "720"; */
+"Trigger" = "Trigger";
+
+/* Class = "NSButtonCell"; title = "Event"; ObjectID = "726"; */
+"Event" = "Event";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "Empty Password"; ObjectID = "736"; */
+"Empty Password" = "Empty Password";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "No Selection"; ObjectID = "736"; */
+"No Selection" = "No Selection";
+
+/* Class = "NSTabViewItem"; label = "Schema Privileges"; ObjectID = "743"; */
+"Schema Privileges" = "Schema Privileges";
+
+/* Class = "NSTableColumn"; headerCell.title = "Schemas"; ObjectID = "750"; */
+"Schemas" = "Schemas";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "753"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Granted Privileges"; ObjectID = "773"; */
+"Granted Privileges" = "Granted Privileges";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "774"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Available Privileges"; ObjectID = "780"; */
+"Available Privileges" = "Available Privileges";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "781"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "Anonymous"; ObjectID = "887"; */
+"Anonymous" = "Anonymous";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "Anonymous"; ObjectID = "892"; */
+"Anonymous" = "Anonymous";
+
+/* Class = "IBBindingConnection"; designableNoSelectionPlaceholder = "No Selection"; ObjectID = "892"; */
+"No Selection" = "No Selection";
+
+/* Class = "IBBindingConnection"; designableNotApplicablePlaceholder = "User Not Selected"; ObjectID = "892"; */
+"User Not Selected" = "User Not Selected";
+
+/* Class = "NSMenuItem"; title = "Remove User"; ObjectID = "896"; */
+"Remove User" = "Remove User";
+
+/* Class = "NSMenuItem"; title = "Remove Host"; ObjectID = "899"; */
+"Remove Host" = "Remove Host";
+
+/* Class = "NSMenuItem"; title = "Refresh"; ObjectID = "901"; */
+"Refresh" = "Refresh";
+
+/* Class = "NSMenuItem"; title = "Refresh"; ObjectID = "916"; */
+"Refresh" = "Refresh";
+

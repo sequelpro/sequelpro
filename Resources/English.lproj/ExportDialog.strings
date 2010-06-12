@@ -1,0 +1,297 @@
+/* Class = "NSWindow"; title = "Export"; ObjectID = "1"; */
+"Export" = "Export";
+
+/* Class = "NSToolbarItem"; label = "SQL"; ObjectID = "4"; */
+"SQL" = "SQL";
+
+/* Class = "NSToolbarItem"; paletteLabel = "SQL"; ObjectID = "4"; */
+"SQL" = "SQL";
+
+/* Class = "NSToolbarItem"; label = "CSV"; ObjectID = "6"; */
+"CSV" = "CSV";
+
+/* Class = "NSToolbarItem"; paletteLabel = "CSV"; ObjectID = "6"; */
+"CSV" = "CSV";
+
+/* Class = "NSToolbarItem"; label = "XML"; ObjectID = "8"; */
+"XML" = "XML";
+
+/* Class = "NSToolbarItem"; paletteLabel = "XML"; ObjectID = "8"; */
+"XML" = "XML";
+
+/* Class = "NSButtonCell"; title = "New file per table"; ObjectID = "22"; */
+"New file per table" = "New file per table";
+
+/* Class = "NSTabViewItem"; label = "SQL"; ObjectID = "23"; */
+"SQL" = "SQL";
+
+/* Class = "NSTabViewItem"; label = "Excel"; ObjectID = "24"; */
+"Excel" = "Excel";
+
+/* Class = "NSTabViewItem"; label = "CSV"; ObjectID = "25"; */
+"CSV" = "CSV";
+
+/* Class = "NSTabViewItem"; label = "HTML"; ObjectID = "26"; */
+"HTML" = "HTML";
+
+/* Class = "NSTabViewItem"; label = "XML"; ObjectID = "27"; */
+"XML" = "XML";
+
+/* Class = "NSTabViewItem"; label = "PDF"; ObjectID = "28"; */
+"PDF" = "PDF";
+
+/* Class = "NSTextFieldCell"; title = "Include:"; ObjectID = "32"; */
+"Include:" = "Include:";
+
+/* Class = "NSButtonCell"; title = "Structure"; ObjectID = "33"; */
+"Structure" = "Structure";
+
+/* Class = "NSTextFieldCell"; title = "Include:"; ObjectID = "44"; */
+"Include:" = "Include:";
+
+/* Class = "NSButtonCell"; title = "Structure"; ObjectID = "45"; */
+"Structure" = "Structure";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to terminate lines"; ObjectID = "49"; */
+"Character used to terminate lines" = "Character used to terminate lines";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to separate fields"; ObjectID = "54"; */
+"Character used to separate fields" = "Character used to separate fields";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to enclose fields"; ObjectID = "55"; */
+"Character used to enclose fields" = "Character used to enclose fields";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to escape special characters"; ObjectID = "56"; */
+"Character used to escape special characters" = "Character used to escape special characters";
+
+/* Class = "NSTextFieldCell"; title = "Escape"; ObjectID = "58"; */
+"Escape" = "Escape";
+
+/* Class = "NSComboBoxCell"; title = "\\"; ObjectID = "59"; */
+"\\" = "\\";
+
+/* Class = "NSComboBoxCell"; 59.objectValuesCopy[0] = "\\"; ObjectID = "59"; */
+"\\" = "\\";
+
+/* Class = "NSComboBoxCell"; 59.objectValuesCopy[1] = "\""; ObjectID = "59"; */
+"\"" = "\"";
+
+/* Class = "NSComboBoxCell"; title = "\""; ObjectID = "60"; */
+"\"" = "\"";
+
+/* Class = "NSComboBoxCell"; 60.objectValuesCopy[0] = "\""; ObjectID = "60"; */
+"\"" = "\"";
+
+/* Class = "NSComboBoxCell"; title = ","; ObjectID = "61"; */
+"," = ",";
+
+/* Class = "NSComboBoxCell"; 61.objectValuesCopy[0] = ","; ObjectID = "61"; */
+"," = ",";
+
+/* Class = "NSComboBoxCell"; 61.objectValuesCopy[1] = ";"; ObjectID = "61"; */
+";" = ";";
+
+/* Class = "NSComboBoxCell"; 61.objectValuesCopy[2] = "\\t"; ObjectID = "61"; */
+"\\t" = "\\t";
+
+/* Class = "NSTextFieldCell"; title = "Terminate"; ObjectID = "62"; */
+"Terminate" = "Terminate";
+
+/* Class = "NSTextFieldCell"; title = "Wrap"; ObjectID = "63"; */
+"Wrap" = "Wrap";
+
+/* Class = "NSTextFieldCell"; title = "Fields:"; ObjectID = "64"; */
+"Fields:" = "Fields:";
+
+/* Class = "NSTextFieldCell"; title = "Terminate"; ObjectID = "65"; */
+"Terminate" = "Terminate";
+
+/* Class = "NSComboBoxCell"; title = "\\n"; ObjectID = "66"; */
+"\\n" = "\\n";
+
+/* Class = "NSComboBoxCell"; 66.objectValuesCopy[0] = "\\n"; ObjectID = "66"; */
+"\\n" = "\\n";
+
+/* Class = "NSComboBoxCell"; 66.objectValuesCopy[1] = "\\r\\n"; ObjectID = "66"; */
+"\\r\\n" = "\\r\\n";
+
+/* Class = "NSComboBoxCell"; 66.objectValuesCopy[2] = "\\r"; ObjectID = "66"; */
+"\\r" = "\\r";
+
+/* Class = "NSTextFieldCell"; title = "Lines:"; ObjectID = "67"; */
+"Lines:" = "Lines:";
+
+/* Class = "NSButtonCell"; title = "Put fields names at first row"; ObjectID = "68"; */
+"Put fields names at first row" = "Put fields names at first row";
+
+/* Class = "NSTextFieldCell"; title = "This creates a new file for each table. The file names match the table names."; ObjectID = "73"; */
+"This creates a new file for each table. The file names match the table names." = "This creates a new file for each table. The file names match the table names.";
+
+/* Class = "NSTextFieldCell"; title = "This creates a sheet for each table. The sheet names match the table names."; ObjectID = "74"; */
+"This creates a sheet for each table. The sheet names match the table names." = "This creates a sheet for each table. The sheet names match the table names.";
+
+/* Class = "NSButtonCell"; title = "Sheet per table"; ObjectID = "75"; */
+"Sheet per table" = "Sheet per table";
+
+/* Class = "NSButtonCell"; title = "File per table"; ObjectID = "76"; */
+"File per table" = "File per table";
+
+/* Class = "NSButtonCell"; title = "Radio"; ObjectID = "77"; */
+"Radio" = "Radio";
+
+/* Class = "NSButtonCell"; title = "Errors"; ObjectID = "83"; */
+"Errors" = "Errors";
+
+/* Class = "NSButtonCell"; title = "DROP TABLE syntax"; ObjectID = "84"; */
+"DROP TABLE syntax" = "DROP TABLE syntax";
+
+/* Class = "NSTextFieldCell"; title = "Include:"; ObjectID = "85"; */
+"Include:" = "Include:";
+
+/* Class = "NSButtonCell"; title = "Structure"; ObjectID = "86"; */
+"Structure" = "Structure";
+
+/* Class = "NSButtonCell"; title = "Export"; ObjectID = "87"; */
+"Export" = "Export";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "88"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSTableColumn"; headerCell.title = "Table"; ObjectID = "93"; */
+"Table" = "Table";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "94"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Path:"; ObjectID = "286"; */
+"Path:" = "Path:";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "289"; */
+"Box" = "Box";
+
+/* Class = "NSButtonCell"; title = "Change..."; ObjectID = "291"; */
+"Change..." = "Change...";
+
+/* Class = "NSPanel"; title = "Export Progress"; ObjectID = "294"; */
+"Export Progress" = "Export Progress";
+
+/* Class = "NSTextFieldCell"; title = "Exporting…"; ObjectID = "302"; */
+"Exporting…" = "Exporting…";
+
+/* Class = "NSTextFieldCell"; title = "Doing Stuff…"; ObjectID = "303"; */
+"Doing Stuff…" = "Doing Stuff…";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "304"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSButtonCell"; title = "Content"; ObjectID = "318"; */
+"Content" = "Content";
+
+/* Class = "BWAnchoredButton"; gToolTip = "Refresh table list"; ObjectID = "329"; */
+"Refresh table list" = "Refresh table list";
+
+/* Class = "BWAnchoredButton"; gToolTip = "Unmark all tables"; ObjectID = "331"; */
+"Unmark all tables" = "Unmark all tables";
+
+/* Class = "BWAnchoredButton"; gToolTip = "Mark all tables"; ObjectID = "343"; */
+"Mark all tables" = "Mark all tables";
+
+/* Class = "NSTableColumn"; headerCell.title = "S"; ObjectID = "351"; */
+"S" = "S";
+
+/* Class = "NSTableColumn"; headerCell.title = "C"; ObjectID = "353"; */
+"C" = "C";
+
+/* Class = "NSButtonCell"; title = "Check"; ObjectID = "356"; */
+"Check" = "Check";
+
+/* Class = "NSButtonCell"; title = "Check"; ObjectID = "357"; */
+"Check" = "Check";
+
+/* Class = "NSTableColumn"; headerCell.title = "D"; ObjectID = "358"; */
+"D" = "D";
+
+/* Class = "NSButtonCell"; title = "Check"; ObjectID = "360"; */
+"Check" = "Check";
+
+/* Class = "NSButton"; gToolTip = "Advanced export settings"; ObjectID = "382"; */
+"Advanced export settings" = "Advanced export settings";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "404"; */
+"Box" = "Box";
+
+/* Class = "NSButtonCell"; title = "Low memory export (may block server)"; ObjectID = "408"; */
+"Low memory export (may block server)" = "Low memory export (may block server)";
+
+/* Class = "NSButtonCell"; title = "Advanced"; ObjectID = "431"; */
+"Advanced" = "Advanced";
+
+/* Class = "NSWindow"; title = "Error"; ObjectID = "441"; */
+"Error" = "Error";
+
+/* Class = "NSTextFieldCell"; title = "The following export errors occurred:"; ObjectID = "447"; */
+"The following export errors occurred:" = "The following export errors occurred:";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "448"; */
+"Close" = "Close";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "452"; */
+"Close" = "Close";
+
+/* Class = "NSToolbarItem"; label = "Dot"; ObjectID = "458"; */
+"Dot" = "Dot";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Dot"; ObjectID = "458"; */
+"Dot" = "Dot";
+
+/* Class = "NSTabViewItem"; label = "Dot"; ObjectID = "459"; */
+"Dot" = "Dot";
+
+/* Class = "NSTextFieldCell"; title = "Advanced:"; ObjectID = "473"; */
+"Advanced:" = "Advanced:";
+
+/* Class = "NSButtonCell"; title = "Add UTF-8 BOM to output"; ObjectID = "475"; */
+"Add UTF-8 BOM to output" = "Add UTF-8 BOM to output";
+
+/* Class = "NSButtonCell"; title = "Compress output (gzip)"; ObjectID = "477"; */
+"Compress output (gzip)" = "Compress output (gzip)";
+
+/* Class = "NSButtonCell"; title = "Output BLOB fields as hex"; ObjectID = "479"; */
+"Output BLOB fields as hex" = "Output BLOB fields as hex";
+
+/* Class = "NSTextFieldCell"; title = "NULL values:"; ObjectID = "481"; */
+"NULL values:" = "NULL values:";
+
+/* Class = "NSTextFieldCell"; title = "NULL values:"; ObjectID = "495"; */
+"NULL values:" = "NULL values:";
+
+/* Class = "NSButton"; gToolTip = "Customize filename"; ObjectID = "500"; */
+"Customize filename" = "Customize filename";
+
+/* Class = "NSButtonCell"; title = "Customize Filename"; ObjectID = "502"; */
+"Customize Filename" = "Customize Filename";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "525"; */
+"Box" = "Box";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "528"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "host,database,table,date,time"; ObjectID = "532"; */
+"host,database,table,date,time" = "host,database,table,date,time";
+
+/* Class = "NSTextFieldCell"; title = "Type or drag the tokens to customize the filename format."; ObjectID = "534"; */
+"Type or drag the tokens to customize the filename format." = "Type or drag the tokens to customize the filename format.";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "548"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Filtered Results"; ObjectID = "549"; */
+"Filtered Results" = "Filtered Results";
+
+/* Class = "NSMenuItem"; title = "Query Results"; ObjectID = "550"; */
+"Query Results" = "Query Results";
+
+/* Class = "NSMenuItem"; title = "Selected Tables"; ObjectID = "551"; */
+"Selected Tables" = "Selected Tables";
+

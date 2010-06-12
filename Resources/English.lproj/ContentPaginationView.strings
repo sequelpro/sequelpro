@@ -1,0 +1,21 @@
+/* Class = "NSTextFieldCell"; title = "1"; ObjectID = "4"; */
+"1" = "1";
+
+/* Class = "NSTextFieldCell"; title = "Jump to page:"; ObjectID = "8"; */
+"Jump to page:" = "Jump to page:";
+
+/* Class = "NSButtonCell"; title = "Go"; ObjectID = "10"; */
+"Go" = "Go";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "11"; */
+"Box" = "Box";
+
+/* Class = "NSButtonCell"; title = "Limit result to:"; ObjectID = "13"; */
+"Limit result to:" = "Limit result to:";
+
+/* Class = "NSTextFieldCell"; title = "rows"; ObjectID = "19"; */
+"rows" = "rows";
+
+/* Class = "NSButtonCell"; title = "Defer loading of blobs and texts"; ObjectID = "23"; */
+"Defer loading of blobs and texts" = "Defer loading of blobs and texts";
+

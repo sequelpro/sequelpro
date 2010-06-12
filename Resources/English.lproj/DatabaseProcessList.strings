@@ -1,0 +1,129 @@
+/* Class = "NSWindow"; title = "Processes"; ObjectID = "3"; */
+"Processes" = "Processes";
+
+/* Class = "NSTableColumn"; headerCell.title = "User"; ObjectID = "18"; */
+"User" = "User";
+
+/* Class = "NSTableColumn"; headerCell.title = "ID"; ObjectID = "19"; */
+"ID" = "ID";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "20"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "21"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSSearchFieldCell"; placeholderString = "Filter"; ObjectID = "22"; */
+"Filter" = "Filter";
+
+/* Class = "NSTableColumn"; headerCell.title = "Host"; ObjectID = "28"; */
+"Host" = "Host";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "29"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Database"; ObjectID = "30"; */
+"Database" = "Database";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "31"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Command"; ObjectID = "32"; */
+"Command" = "Command";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "33"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Time"; ObjectID = "34"; */
+"Time" = "Time";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "35"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "State"; ObjectID = "36"; */
+"State" = "State";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "37"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Info"; ObjectID = "38"; */
+"Info" = "Info";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "39"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "55"; */
+"Copy" = "Copy";
+
+/* Class = "NSMenuItem"; title = "Kill Query"; ObjectID = "56"; */
+"Kill Query" = "Kill Query";
+
+/* Class = "NSMenuItem"; title = "Kill Connection"; ObjectID = "57"; */
+"Kill Connection" = "Kill Connection";
+
+/* Class = "NSButton"; gToolTip = "Refresh process list (⌘R)"; ObjectID = "75"; */
+"Refresh process list (⌘R)" = "Refresh process list (⌘R)";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "78"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; gToolTip = "Duplicate the selected table"; ObjectID = "84"; */
+"Duplicate the selected table" = "Duplicate the selected table";
+
+/* Class = "NSMenuItem"; title = "Show Process ID"; ObjectID = "84"; */
+"Show Process ID" = "Show Process ID";
+
+/* Class = "NSButtonCell"; title = "Clear"; ObjectID = "85"; */
+"Clear" = "Clear";
+
+/* Class = "NSButtonCell"; title = "Save As..."; ObjectID = "88"; */
+"Save As..." = "Save As...";
+
+/* Class = "NSTextFieldCell"; title = "0 of 0"; ObjectID = "94"; */
+"0 of 0" = "0 of 0";
+
+/* Class = "NSButtonCell"; title = "Auto refresh"; ObjectID = "106"; */
+"Auto refresh" = "Auto refresh";
+
+/* Class = "NSMenuItem"; title = "Auto Refresh Interval"; ObjectID = "113"; */
+"Auto Refresh Interval" = "Auto Refresh Interval";
+
+/* Class = "NSMenu"; title = "Auto Refresh Interval"; ObjectID = "114"; */
+"Auto Refresh Interval" = "Auto Refresh Interval";
+
+/* Class = "NSMenuItem"; title = "2 Seconds"; ObjectID = "115"; */
+"2 Seconds" = "2 Seconds";
+
+/* Class = "NSMenuItem"; title = "5 Seconds"; ObjectID = "116"; */
+"5 Seconds" = "5 Seconds";
+
+/* Class = "NSMenuItem"; title = "10 Seconds"; ObjectID = "117"; */
+"10 Seconds" = "10 Seconds";
+
+/* Class = "NSMenuItem"; title = "30 Seconds"; ObjectID = "118"; */
+"30 Seconds" = "30 Seconds";
+
+/* Class = "NSMenuItem"; title = "60 Seconds"; ObjectID = "119"; */
+"60 Seconds" = "60 Seconds";
+
+/* Class = "NSMenuItem"; title = "Custom..."; ObjectID = "121"; */
+"Custom..." = "Custom...";
+
+/* Class = "NSWindow"; title = "Custom Interval"; ObjectID = "133"; */
+"Custom Interval" = "Custom Interval";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "141"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSTextFieldCell"; title = "Interval:"; ObjectID = "143"; */
+"Interval:" = "Interval:";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "172"; */
+"OK" = "OK";
+
+/* Class = "NSTextFieldCell"; title = "seconds"; ObjectID = "174"; */
+"seconds" = "seconds";
+
+/* Class = "NSTextField"; gToolTip = "Custom refresh interval. Must be greater than 0."; ObjectID = "176"; */
+"Custom refresh interval. Must be greater than 0." = "Custom refresh interval. Must be greater than 0.";
+

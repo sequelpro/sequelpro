@@ -13,21 +13,54 @@
 
 BUILD_PRODUCT="${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}"
 
-echo "Running genstrings to update 'Localizable.strings'..."
-
-# Update 'Localizable.strings' by running genstrings(1)
-GENSTRINGS_ERRORS=$(genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROOT}/Source/*.m")
-
-# Check for genstrings errors
-if [ $? -ne 0 ]
-then
-	echo "error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
-fi
 
 echo 'Updating build version...'
 
 # Add the build/bundle version
 "${SRCROOT}/Scripts/build-version.pl"
+
+# Perform localisation updates for 'Release' or 'Distribution' builds
+if [[ "$CONFIGURATION" == 'Release' || "$CONFIGURATION" == 'Distribution' ]]
+then
+
+	echo "Running genstrings to update 'Localizable.strings'..."
+
+	# Update 'Localizable.strings' by running genstrings(1)
+	GENSTRINGS_ERRORS=$(genstrings -o "${SRCROOT}/Resources/English.lproj" "${SRCROOT}/Source/"*.m)
+
+	# Check for genstrings errors
+	if [[ ${GENSTRINGS_ERRORS} -ne 0 ]]
+	then
+		echo "error: genstrings exited with error: ${GENSTRINGS_ERRORS}"
+	fi
+
+	echo "Updating nib and xib localisations..."
+
+	# Generate up-to-date nib .strings files for localisation
+	find "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"/**/*.nib | while read nibFile
+	do
+		stringsFilePath="${SOURCE_ROOT}/Resources/English.lproj/`basename "${nibFile}" .nib`.strings"
+		xibFile=`basename "${nibFile}" .nib`.xib
+		xibFilePath=`echo "${SOURCE_ROOT}"/Interfaces/**/"${xibFile}"`
+		if [[ -e ${xibFilePath} ]]
+		then
+			xibfileModDate=`stat -f "%m" "${xibFilePath}"`
+			if [[ -e ${stringsFilePath} ]]
+			then
+				stringsFileModDate=`stat -f "%m" "${stringsFilePath}"`
+			else
+				stringsFileModDate=0
+			fi
+			if [[ ${xibfileModDate} -gt ${stringsFileModDate} ]]
+			then
+				printf "\tLocalising ${xibFile}...\n";
+				ibtool --generate-stringsfile "${stringsFilePath}~" "${xibFilePath}"
+				"${BUILT_PRODUCTS_DIR}"/xibLocalizationPostprocessor "${stringsFilePath}~" "${stringsFilePath}"
+				rm "${stringsFilePath}~"
+			fi
+		fi
+	done
+fi
 
 # Trim the application if this is a 'Release' or 'Distribution' build
 if [[ "$CONFIGURATION" == 'Release' || "$CONFIGURATION" == 'Distribution' ]]

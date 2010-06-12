@@ -1,0 +1,36 @@
+/* Class = "NSPanel"; title = "Navigator"; ObjectID = "3"; */
+"Navigator" = "Navigator";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "29"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "30"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "47"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "48"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSButton"; gToolTip = "Reload all (⌘R)"; ObjectID = "66"; */
+"Reload all (⌘R)" = "Reload all (⌘R)";
+
+/* Class = "NSTableColumn"; headerCell.title = "Quick Access"; ObjectID = "76"; */
+"Quick Access" = "Quick Access";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "79"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTableColumn"; headerCell.title = "Information"; ObjectID = "94"; */
+"Information" = "Information";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "97"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSButton"; gToolTip = "Synchronize connection window selection with Navigator (⌥⌘S)"; ObjectID = "108"; */
+"Synchronize connection window selection with Navigator (⌥⌘S)" = "Synchronize connection window selection with Navigator (⌥⌘S)";
+
+/* Class = "NSButtonCell"; title = "sync"; ObjectID = "109"; */
+"sync" = "sync";
+

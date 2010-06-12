@@ -1,0 +1,24 @@
+/* Class = "NSWindow"; title = "SSH Tunnel Query"; ObjectID = "367"; */
+"SSH Tunnel Query" = "SSH Tunnel Query";
+
+/* Class = "NSButtonCell"; title = "Yes"; ObjectID = "459"; */
+"Yes" = "Yes";
+
+/* Class = "NSButtonCell"; title = "No"; ObjectID = "461"; */
+"No" = "No";
+
+/* Class = "NSWindow"; title = "SSH Tunnel Password Query"; ObjectID = "468"; */
+"SSH Tunnel Password Query" = "SSH Tunnel Password Query";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "478"; */
+"OK" = "OK";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "479"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "490"; */
+"Password:" = "Password:";
+
+/* Class = "NSButtonCell"; title = "Remember password in my keychain"; ObjectID = "492"; */
+"Remember password in my keychain" = "Remember password in my keychain";
+

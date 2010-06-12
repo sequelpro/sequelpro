@@ -1,0 +1,51 @@
+/* Class = "NSPanel"; title = "Field Editor"; ObjectID = "1"; */
+"Field Editor" = "Field Editor";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "3"; */
+"Box" = "Box";
+
+/* Class = "NSPopUpButton"; gToolTip = "Choose a data format to display the current data by using QuickLook"; ObjectID = "8"; */
+"Choose a data format to display the current data by using QuickLook" = "Choose a data format to display the current data by using QuickLook";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "14"; */
+"Box" = "Box";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "15"; */
+"OK" = "OK";
+
+/* Class = "NSButtonCell"; title = "Open..."; ObjectID = "16"; */
+"Open..." = "Open...";
+
+/* Class = "NSButtonCell"; title = "Save..."; ObjectID = "17"; */
+"Save..." = "Save...";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "18"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSSegmentedCell"; 19.labels[0] = "Text"; ObjectID = "19"; */
+"Text" = "Text";
+
+/* Class = "NSSegmentedCell"; 19.labels[1] = "Image"; ObjectID = "19"; */
+"Image" = "Image";
+
+/* Class = "NSSegmentedCell"; 19.labels[2] = "Hex"; ObjectID = "19"; */
+"Hex" = "Hex";
+
+/* Class = "NSSegmentedCell"; 19.toolTips[0] = "Show data as text"; ObjectID = "19"; */
+"Show data as text" = "Show data as text";
+
+/* Class = "NSSegmentedCell"; 19.toolTips[1] = "Try to show data as image"; ObjectID = "19"; */
+"Try to show data as image" = "Try to show data as image";
+
+/* Class = "NSSegmentedCell"; 19.toolTips[2] = "Show data hexadecimal"; ObjectID = "19"; */
+"Show data hexadecimal" = "Show data hexadecimal";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "21"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSTextFieldCell"; title = "Label"; ObjectID = "74"; */
+"Label" = "Label";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "77"; */
+"Close" = "Close";
+

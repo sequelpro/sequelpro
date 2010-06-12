@@ -1,0 +1,63 @@
+/* Class = "NSPanel"; title = "Console"; ObjectID = "3"; */
+"Console" = "Console";
+
+/* Class = "NSButtonCell"; title = "Save As..."; ObjectID = "12"; */
+"Save As..." = "Save As...";
+
+/* Class = "NSSearchFieldCell"; placeholderString = "Filter"; ObjectID = "13"; */
+"Filter" = "Filter";
+
+/* Class = "NSTableColumn"; headerCell.title = "Query"; ObjectID = "17"; */
+"Query" = "Query";
+
+/* Class = "NSTableColumn"; headerCell.title = "Time"; ObjectID = "18"; */
+"Time" = "Time";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "19"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "20"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Include Time Stamps"; ObjectID = "51"; */
+"Include Time Stamps" = "Include Time Stamps";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "65"; */
+"Copy" = "Copy";
+
+/* Class = "NSButton"; gToolTip = "Clear Console"; ObjectID = "73"; */
+"Clear Console" = "Clear Console";
+
+/* Class = "NSButtonCell"; title = "Clear"; ObjectID = "74"; */
+"Clear" = "Clear";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "79"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; gToolTip = "Duplicate the selected table"; ObjectID = "80"; */
+"Duplicate the selected table" = "Duplicate the selected table";
+
+/* Class = "NSMenuItem"; title = "Show Time Stamps"; ObjectID = "80"; */
+"Show Time Stamps" = "Show Time Stamps";
+
+/* Class = "NSMenuItem"; gToolTip = "Remove the selected table(s)"; ObjectID = "82"; */
+"Remove the selected table(s)" = "Remove the selected table(s)";
+
+/* Class = "NSMenuItem"; title = "Show SELECT/SHOW Statements"; ObjectID = "82"; */
+"Show SELECT/SHOW Statements" = "Show SELECT/SHOW Statements";
+
+/* Class = "NSMenuItem"; title = "Show HELP Statements"; ObjectID = "103"; */
+"Show HELP Statements" = "Show HELP Statements";
+
+/* Class = "NSTableColumn"; headerCell.title = "Connection"; ObjectID = "113"; */
+"Connection" = "Connection";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "114"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Include Connections"; ObjectID = "116"; */
+"Include Connections" = "Include Connections";
+
+/* Class = "NSMenuItem"; title = "Show Connections"; ObjectID = "118"; */
+"Show Connections" = "Show Connections";
+

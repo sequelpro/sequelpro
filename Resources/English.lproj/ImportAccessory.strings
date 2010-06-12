@@ -1,0 +1,96 @@
+/* Class = "NSComboBox"; gToolTip = "Character used to separate fields"; ObjectID = "6"; */
+"Character used to separate fields" = "Character used to separate fields";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to terminate line"; ObjectID = "8"; */
+"Character used to terminate line" = "Character used to terminate line";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to escape special characters"; ObjectID = "9"; */
+"Character used to escape special characters" = "Character used to escape special characters";
+
+/* Class = "NSComboBox"; gToolTip = "Character used to enclose fields"; ObjectID = "11"; */
+"Character used to enclose fields" = "Character used to enclose fields";
+
+/* Class = "NSTextFieldCell"; title = "Fields escaped by:"; ObjectID = "14"; */
+"Fields escaped by:" = "Fields escaped by:";
+
+/* Class = "NSButtonCell"; title = "First line contains fields names"; ObjectID = "15"; */
+"First line contains fields names" = "First line contains fields names";
+
+/* Class = "NSComboBoxCell"; title = "\""; ObjectID = "16"; */
+"\"" = "\"";
+
+/* Class = "NSComboBoxCell"; 16.objectValuesCopy[0] = "\""; ObjectID = "16"; */
+"\"" = "\"";
+
+/* Class = "NSTextFieldCell"; title = "Fields enclosed by:"; ObjectID = "17"; */
+"Fields enclosed by:" = "Fields enclosed by:";
+
+/* Class = "NSComboBoxCell"; title = "\\"; ObjectID = "18"; */
+"\\" = "\\";
+
+/* Class = "NSComboBoxCell"; 18.objectValuesCopy[0] = "\\"; ObjectID = "18"; */
+"\\" = "\\";
+
+/* Class = "NSComboBoxCell"; 18.objectValuesCopy[1] = "\""; ObjectID = "18"; */
+"\"" = "\"";
+
+/* Class = "NSComboBoxCell"; title = "\\n"; ObjectID = "19"; */
+"\\n" = "\\n";
+
+/* Class = "NSComboBoxCell"; 19.objectValuesCopy[0] = "\\n"; ObjectID = "19"; */
+"\\n" = "\\n";
+
+/* Class = "NSComboBoxCell"; 19.objectValuesCopy[1] = "\\r\\n"; ObjectID = "19"; */
+"\\r\\n" = "\\r\\n";
+
+/* Class = "NSComboBoxCell"; 19.objectValuesCopy[2] = "\\r"; ObjectID = "19"; */
+"\\r" = "\\r";
+
+/* Class = "NSTextFieldCell"; title = "Lines terminated by:"; ObjectID = "20"; */
+"Lines terminated by:" = "Lines terminated by:";
+
+/* Class = "NSComboBoxCell"; title = ","; ObjectID = "21"; */
+"," = ",";
+
+/* Class = "NSComboBoxCell"; 21.objectValuesCopy[0] = ","; ObjectID = "21"; */
+"," = ",";
+
+/* Class = "NSComboBoxCell"; 21.objectValuesCopy[1] = ";"; ObjectID = "21"; */
+";" = ";";
+
+/* Class = "NSComboBoxCell"; 21.objectValuesCopy[2] = "\\t"; ObjectID = "21"; */
+"\\t" = "\\t";
+
+/* Class = "NSComboBoxCell"; 21.objectValuesCopy[3] = "|"; ObjectID = "21"; */
+"|" = "|";
+
+/* Class = "NSTextFieldCell"; title = "Fields terminated by:"; ObjectID = "22"; */
+"Fields terminated by:" = "Fields terminated by:";
+
+/* Class = "NSTextFieldCell"; title = "Format:"; ObjectID = "23"; */
+"Format:" = "Format:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "25"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "CSV"; ObjectID = "26"; */
+"CSV" = "CSV";
+
+/* Class = "NSMenuItem"; title = "SQL"; ObjectID = "27"; */
+"SQL" = "SQL";
+
+/* Class = "NSWindow"; title = "Window"; ObjectID = "85"; */
+"Window" = "Window";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "89"; */
+"Box" = "Box";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "95"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSButtonCell"; title = "Next"; ObjectID = "97"; */
+"Next" = "Next";
+
+/* Class = "NSTextFieldCell"; title = "Import from Clipboard"; ObjectID = "104"; */
+"Import from Clipboard" = "Import from Clipboard";
+

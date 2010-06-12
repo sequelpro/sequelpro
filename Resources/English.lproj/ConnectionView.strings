@@ -1,0 +1,252 @@
+/* Class = "NSTableColumn"; headerCell.title = "Favorites"; ObjectID = "4915"; */
+"Favorites" = "Favorites";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "4918"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTabViewItem"; label = "Standard"; ObjectID = "4981"; */
+"Standard" = "Standard";
+
+/* Class = "NSTabViewItem"; label = "Socket"; ObjectID = "4982"; */
+"Socket" = "Socket";
+
+/* Class = "NSTabViewItem"; label = "SSH"; ObjectID = "4985"; */
+"SSH" = "SSH";
+
+/* Class = "NSTextFieldCell"; title = "Enter connection details below, or choose a favorite"; ObjectID = "5155"; */
+"Enter connection details below, or choose a favorite" = "Enter connection details below, or choose a favorite";
+
+/* Class = "NSButtonCell"; title = "Connect"; ObjectID = "5158"; */
+"Connect" = "Connect";
+
+/* Class = "NSButton"; gToolTip = "Add to Favorites (⌥⌘A)"; ObjectID = "5159"; */
+"Add to Favorites (⌥⌘A)" = "Add to Favorites (⌥⌘A)";
+
+/* Class = "NSButtonCell"; title = "Add to Favorites"; ObjectID = "5160"; */
+"Add to Favorites" = "Add to Favorites";
+
+/* Class = "NSTextField"; gToolTip = "Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server on this computer"; ObjectID = "5171"; */
+"Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server on this computer" = "Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server on this computer";
+
+/* Class = "NSTextFieldCell"; title = "Host:"; ObjectID = "5174"; */
+"Host:" = "Host:";
+
+/* Class = "NSTextField"; gToolTip = "Enter the MySQL username to connect with"; ObjectID = "5175"; */
+"Enter the MySQL username to connect with" = "Enter the MySQL username to connect with";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "5177"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextField"; gToolTip = "Enter the password to use when connecting to the MySQL server"; ObjectID = "5179"; */
+"Enter the password to use when connecting to the MySQL server" = "Enter the password to use when connecting to the MySQL server";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "5181"; */
+"Password:" = "Password:";
+
+/* Class = "NSTextField"; gToolTip = "Optionally enter a database to select after successfully connecting to the MySQL server"; ObjectID = "5183"; */
+"Optionally enter a database to select after successfully connecting to the MySQL server" = "Optionally enter a database to select after successfully connecting to the MySQL server";
+
+/* Class = "NSTextFieldCell"; title = "Database:"; ObjectID = "5185"; */
+"Database:" = "Database:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5186"; */
+"optional" = "optional";
+
+/* Class = "NSTextField"; gToolTip = "Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306"; ObjectID = "5187"; */
+"Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306" = "Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306";
+
+/* Class = "NSTextFieldCell"; title = "Port:"; ObjectID = "5189"; */
+"Port:" = "Port:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "3306"; ObjectID = "5190"; */
+"3306" = "3306";
+
+/* Class = "NSTextField"; gToolTip = "Enter the MySQL username to connect with"; ObjectID = "5212"; */
+"Enter the MySQL username to connect with" = "Enter the MySQL username to connect with";
+
+/* Class = "NSTextField"; gToolTip = "Enter the password to use when connecting to the MySQL server"; ObjectID = "5214"; */
+"Enter the password to use when connecting to the MySQL server" = "Enter the password to use when connecting to the MySQL server";
+
+/* Class = "NSTextField"; gToolTip = "Optionally enter a database to select after successfully connecting to the MySQL server"; ObjectID = "5216"; */
+"Optionally enter a database to select after successfully connecting to the MySQL server" = "Optionally enter a database to select after successfully connecting to the MySQL server";
+
+/* Class = "NSTextField"; gToolTip = "Enter the path to the socket file to use when connecting to MySQL.  Leave this field blank to use the default socket location"; ObjectID = "5218"; */
+"Enter the path to the socket file to use when connecting to MySQL.  Leave this field blank to use the default socket location" = "Enter the path to the socket file to use when connecting to MySQL.  Leave this field blank to use the default socket location";
+
+/* Class = "NSTextFieldCell"; title = "Socket:"; ObjectID = "5220"; */
+"Socket:" = "Socket:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5221"; */
+"optional" = "optional";
+
+/* Class = "NSTextFieldCell"; title = "Database:"; ObjectID = "5222"; */
+"Database:" = "Database:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5223"; */
+"optional" = "optional";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "5224"; */
+"Password:" = "Password:";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "5226"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextField"; gToolTip = "Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server running on the machine you are tunnelling to"; ObjectID = "5264"; */
+"Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server running on the machine you are tunnelling to" = "Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server running on the machine you are tunnelling to";
+
+/* Class = "NSTextField"; gToolTip = "Enter the MySQL username to connect with"; ObjectID = "5266"; */
+"Enter the MySQL username to connect with" = "Enter the MySQL username to connect with";
+
+/* Class = "NSTextField"; gToolTip = "Enter the password to use when connecting to the MySQL server"; ObjectID = "5268"; */
+"Enter the password to use when connecting to the MySQL server" = "Enter the password to use when connecting to the MySQL server";
+
+/* Class = "NSTextField"; gToolTip = "Optionally enter a database to select after successfully connecting to the MySQL server"; ObjectID = "5270"; */
+"Optionally enter a database to select after successfully connecting to the MySQL server" = "Optionally enter a database to select after successfully connecting to the MySQL server";
+
+/* Class = "NSTextField"; gToolTip = "Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306"; ObjectID = "5272"; */
+"Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306" = "Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306";
+
+/* Class = "NSTextFieldCell"; title = "Port:"; ObjectID = "5274"; */
+"Port:" = "Port:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "3306"; ObjectID = "5275"; */
+"3306" = "3306";
+
+/* Class = "NSTextFieldCell"; title = "Database:"; ObjectID = "5276"; */
+"Database:" = "Database:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5277"; */
+"optional" = "optional";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "5278"; */
+"Password:" = "Password:";
+
+/* Class = "NSTextFieldCell"; title = "Username:"; ObjectID = "5280"; */
+"Username:" = "Username:";
+
+/* Class = "NSTextFieldCell"; title = "MySQL Host:"; ObjectID = "5282"; */
+"MySQL Host:" = "MySQL Host:";
+
+/* Class = "NSTextField"; gToolTip = "Enter the hostname of the SSH server to tunnel via when connecting to the MySQL server"; ObjectID = "5284"; */
+"Enter the hostname of the SSH server to tunnel via when connecting to the MySQL server" = "Enter the hostname of the SSH server to tunnel via when connecting to the MySQL server";
+
+/* Class = "NSTextField"; gToolTip = "Enter the SSH username to connect with"; ObjectID = "5286"; */
+"Enter the SSH username to connect with" = "Enter the SSH username to connect with";
+
+/* Class = "NSTextField"; gToolTip = "Enter the password to use when connecting to the SSH server. NB: your SSH configuration is used, and public/private key pairs and other authentication methods will be used if available"; ObjectID = "5288"; */
+"Enter the password to use when connecting to the SSH server. NB: your SSH configuration is used, and public/private key pairs and other authentication methods will be used if available" = "Enter the password to use when connecting to the SSH server. NB: your SSH configuration is used, and public/private key pairs and other authentication methods will be used if available";
+
+/* Class = "NSTextField"; gToolTip = "Enter the port to use when connecting to the SSH server.  The default SSH port is 22"; ObjectID = "5290"; */
+"Enter the port to use when connecting to the SSH server.  The default SSH port is 22" = "Enter the port to use when connecting to the SSH server.  The default SSH port is 22";
+
+/* Class = "NSTextFieldCell"; title = "SSH Port:"; ObjectID = "5292"; */
+"SSH Port:" = "SSH Port:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "22"; ObjectID = "5293"; */
+"22" = "22";
+
+/* Class = "NSTextFieldCell"; title = "SSH Password:"; ObjectID = "5294"; */
+"SSH Password:" = "SSH Password:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional if public key is available"; ObjectID = "5295"; */
+"optional if public key is available" = "optional if public key is available";
+
+/* Class = "NSTextFieldCell"; title = "SSH User:"; ObjectID = "5296"; */
+"SSH User:" = "SSH User:";
+
+/* Class = "NSTextFieldCell"; title = "SSH Host:"; ObjectID = "5298"; */
+"SSH Host:" = "SSH Host:";
+
+/* Class = "BWAnchoredButton"; gToolTip = "Edit Favorites in Preferences (⌥⌘E)"; ObjectID = "5346"; */
+"Edit Favorites in Preferences (⌥⌘E)" = "Edit Favorites in Preferences (⌥⌘E)";
+
+/* Class = "NSTextField"; gToolTip = "Enter a nickname to use if adding to favorites. Optional."; ObjectID = "5376"; */
+"Enter a nickname to use if adding to favorites. Optional." = "Enter a nickname to use if adding to favorites. Optional.";
+
+/* Class = "NSTextFieldCell"; title = "Name:"; ObjectID = "5378"; */
+"Name:" = "Name:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5379"; */
+"optional" = "optional";
+
+/* Class = "NSTextField"; gToolTip = "Enter a nickname to use if adding to favorites. Optional."; ObjectID = "5385"; */
+"Enter a nickname to use if adding to favorites. Optional." = "Enter a nickname to use if adding to favorites. Optional.";
+
+/* Class = "NSTextFieldCell"; title = "Name:"; ObjectID = "5387"; */
+"Name:" = "Name:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5388"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5400"; */
+"optional" = "optional";
+
+/* Class = "NSTextField"; gToolTip = "Enter a nickname to use if adding to favorites. Optional."; ObjectID = "5403"; */
+"Enter a nickname to use if adding to favorites. Optional." = "Enter a nickname to use if adding to favorites. Optional.";
+
+/* Class = "NSTextFieldCell"; title = "Name:"; ObjectID = "5405"; */
+"Name:" = "Name:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "optional"; ObjectID = "5406"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5411"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5412"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5413"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5415"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5416"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional"; ObjectID = "5417"; */
+"optional" = "optional";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "3306"; ObjectID = "5418"; */
+"3306" = "3306";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "3306"; ObjectID = "5419"; */
+"3306" = "3306";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "22"; ObjectID = "5420"; */
+"22" = "22";
+
+/* Class = "NSTextFieldCell"; title = "Connecting..."; ObjectID = "5424"; */
+"Connecting..." = "Connecting...";
+
+/* Class = "NSPanel"; title = "Error Detail"; ObjectID = "5431"; */
+"Error Detail" = "Error Detail";
+
+/* Class = "IBBindingConnection"; designableIsNilPlaceholder = "optional if public key is available"; ObjectID = "5450"; */
+"optional if public key is available" = "optional if public key is available";
+
+/* Class = "NSMenuItem"; title = "Edit Favorite..."; ObjectID = "5469"; */
+"Edit Favorite..." = "Edit Favorite...";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "5477"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Sort By"; ObjectID = "5479"; */
+"Sort By" = "Sort By";
+
+/* Class = "NSMenu"; title = "Sort By"; ObjectID = "5481"; */
+"Sort By" = "Sort By";
+
+/* Class = "NSMenuItem"; title = "Name"; ObjectID = "5482"; */
+"Name" = "Name";
+
+/* Class = "NSMenuItem"; title = "Host"; ObjectID = "5483"; */
+"Host" = "Host";
+
+/* Class = "NSMenuItem"; title = "Type"; ObjectID = "5484"; */
+"Type" = "Type";
+
+/* Class = "NSMenuItem"; title = "Reverse Sort Order"; ObjectID = "5486"; */
+"Reverse Sort Order" = "Reverse Sort Order";
+

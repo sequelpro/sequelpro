@@ -1,0 +1,198 @@
+/* Class = "NSWindow"; title = "Query Favorite Manager"; ObjectID = "1"; */
+"Query Favorite Manager" = "Query Favorite Manager";
+
+/* Class = "NSButton"; gToolTip = "Delete selected favorite (⌫)"; ObjectID = "17"; */
+"Delete selected favorite (⌫)" = "Delete selected favorite (⌫)";
+
+/* Class = "NSButton"; gToolTip = "Add favorite (⌥⌘A)"; ObjectID = "18"; */
+"Add favorite (⌥⌘A)" = "Add favorite (⌥⌘A)";
+
+/* Class = "NSTableColumn"; headerCell.title = "Favorites"; ObjectID = "26"; */
+"Favorites" = "Favorites";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "27"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Name:"; ObjectID = "122"; */
+"Name:" = "Name:";
+
+/* Class = "NSTextFieldCell"; placeholderString = "[no selection]"; ObjectID = "124"; */
+"[no selection]" = "[no selection]";
+
+/* Class = "NSButtonCell"; title = "Save"; ObjectID = "132"; */
+"Save" = "Save";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "142"; */
+"Box" = "Box";
+
+/* Class = "NSMenuItem"; title = "Remove"; ObjectID = "206"; */
+"Remove" = "Remove";
+
+/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "212"; */
+"Duplicate" = "Duplicate";
+
+/* Class = "BWAnchoredPopUpButton"; gToolTip = "(⌥⎋)"; ObjectID = "238"; */
+"(⌥⎋)" = "(⌥⎋)";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "240"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; gToolTip = "Save query of selected favorite to file"; ObjectID = "243"; */
+"Save query of selected favorite to file" = "Save query of selected favorite to file";
+
+/* Class = "NSMenuItem"; title = "Save Query to File..."; ObjectID = "243"; */
+"Save Query to File..." = "Save Query to File...";
+
+/* Class = "NSMenuItem"; gToolTip = "Remove all favorites"; ObjectID = "246"; */
+"Remove all favorites" = "Remove all favorites";
+
+/* Class = "NSMenuItem"; title = "Remove All..."; ObjectID = "246"; */
+"Remove All..." = "Remove All...";
+
+/* Class = "NSMenuItem"; title = "Save to File..."; ObjectID = "248"; */
+"Save to File..." = "Save to File...";
+
+/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "252"; */
+"Duplicate" = "Duplicate";
+
+/* Class = "NSMenuItem"; gToolTip = "Export selected favorites as SPF file"; ObjectID = "254"; */
+"Export selected favorites as SPF file" = "Export selected favorites as SPF file";
+
+/* Class = "NSMenuItem"; title = "Export Selected Favorites…"; ObjectID = "254"; */
+"Export Selected Favorites…" = "Export Selected Favorites…";
+
+/* Class = "NSMenuItem"; gToolTip = "Import query favorites from SPF file and append them to the favorite list"; ObjectID = "255"; */
+"Import query favorites from SPF file and append them to the favorite list" = "Import query favorites from SPF file and append them to the favorite list";
+
+/* Class = "NSMenuItem"; title = "Import Favorites…"; ObjectID = "255"; */
+"Import Favorites…" = "Import Favorites…";
+
+/* Class = "NSMenuItem"; gToolTip = "Import query favorites from SPF file and replace the current favorites"; ObjectID = "260"; */
+"Import query favorites from SPF file and replace the current favorites" = "Import query favorites from SPF file and replace the current favorites";
+
+/* Class = "NSMenuItem"; title = "Import Favorites by Replacing…"; ObjectID = "260"; */
+"Import Favorites by Replacing…" = "Import Favorites by Replacing…";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "272"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "303"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextField"; gToolTip = "Alphanumeric charater string which inserts the favorite query string after expansion by pressing the ⇥ key."; ObjectID = "306"; */
+"Alphanumeric charater string which inserts the favorite query string after expansion by pressing the ⇥ key." = "Alphanumeric charater string which inserts the favorite query string after expansion by pressing the ⇥ key.";
+
+/* Class = "NSTextFieldCell"; title = "Tab Trigger:"; ObjectID = "307"; */
+"Tab Trigger:" = "Tab Trigger:";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "316"; */
+"OtherViews" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "Insert Placeholder"; ObjectID = "317"; */
+"Insert Placeholder" = "Insert Placeholder";
+
+/* Class = "NSMenuItem"; gToolTip = "${1:default_value} – tab key snippet with a definable default value which will be selected\n\n[“1” can be a number from 0 to 18 and defines the order of tab key down events] "; ObjectID = "318"; */
+"${1:default_value} – tab key snippet with a definable default value which will be selected\n\n[“1” can be a number from 0 to 18 and defines the order of tab key down events] " = "${1:default_value} – tab key snippet with a definable default value which will be selected\n\n[“1” can be a number from 0 to 18 and defines the order of tab key down events] ";
+
+/* Class = "NSMenuItem"; title = "Tab Snippet"; ObjectID = "318"; */
+"Tab Snippet" = "Tab Snippet";
+
+/* Class = "NSMenuItem"; gToolTip = "$(shell_command) – shell_command will be executed and inserts its result\n\n[press ⌘. to cancel the execution of “shell_command”]\n [only available inside of tab snippets] "; ObjectID = "319"; */
+"$(shell_command) – shell_command will be executed and inserts its result\n\n[press ⌘. to cancel the execution of “shell_command”]\n [only available inside of tab snippets] " = "$(shell_command) – shell_command will be executed and inserts its result\n\n[press ⌘. to cancel the execution of “shell_command”]\n [only available inside of tab snippets] ";
+
+/* Class = "NSMenuItem"; title = "Tab Snippet and Shell Command"; ObjectID = "319"; */
+"Tab Snippet and Shell Command" = "Tab Snippet and Shell Command";
+
+/* Class = "NSMenuItem"; gToolTip = "$SP_SELECTED_TABLE – will be replaced by the selected table name\n\n[only available inside of tab snippets]"; ObjectID = "321"; */
+"$SP_SELECTED_TABLE – will be replaced by the selected table name\n\n[only available inside of tab snippets]" = "$SP_SELECTED_TABLE – will be replaced by the selected table name\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Name Of Selected Table"; ObjectID = "321"; */
+"Name Of Selected Table" = "Name Of Selected Table";
+
+/* Class = "NSMenuItem"; gToolTip = "$SP_SELECTED_TABLES – will be replaced by a comma separated list of all selected table names\n\n[only available inside of tab snippets]"; ObjectID = "322"; */
+"$SP_SELECTED_TABLES – will be replaced by a comma separated list of all selected table names\n\n[only available inside of tab snippets]" = "$SP_SELECTED_TABLES – will be replaced by a comma separated list of all selected table names\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Name Of Selected Tables"; ObjectID = "322"; */
+"Name Of Selected Tables" = "Name Of Selected Tables";
+
+/* Class = "NSMenuItem"; gToolTip = "$SP_SELECTED_DATABASE – will be replaced by the selected database name\n\n[only available inside of tab snippets]"; ObjectID = "323"; */
+"$SP_SELECTED_DATABASE – will be replaced by the selected database name\n\n[only available inside of tab snippets]" = "$SP_SELECTED_DATABASE – will be replaced by the selected database name\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Name Of Selected Database"; ObjectID = "323"; */
+"Name Of Selected Database" = "Name Of Selected Database";
+
+/* Class = "NSMenuItem"; gToolTip = "¦a¦b¦ – such a snippet will be shown as completion list with the items “a” and “b”\n\n[only available inside of tab snippets]"; ObjectID = "326"; */
+"¦a¦b¦ – such a snippet will be shown as completion list with the items “a” and “b”\n\n[only available inside of tab snippets]" = "¦a¦b¦ – such a snippet will be shown as completion list with the items “a” and “b”\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "List Template"; ObjectID = "326"; */
+"List Template" = "List Template";
+
+/* Class = "NSMenuItem"; gToolTip = "¦¦a¦b¦¦ – such a snippet will be shown as completion list with the items “a” and “b” in fuzzy search mode\n\n[only available inside of tab snippets]"; ObjectID = "327"; */
+"¦¦a¦b¦¦ – such a snippet will be shown as completion list with the items “a” and “b” in fuzzy search mode\n\n[only available inside of tab snippets]" = "¦¦a¦b¦¦ – such a snippet will be shown as completion list with the items “a” and “b” in fuzzy search mode\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "List Template (Fuzzy Search)"; ObjectID = "327"; */
+"List Template (Fuzzy Search)" = "List Template (Fuzzy Search)";
+
+/* Class = "NSMenuItem"; gToolTip = "¦ – list separator\n\n[only available inside of tab snippets]"; ObjectID = "328"; */
+"¦ – list separator\n\n[only available inside of tab snippets]" = "¦ – list separator\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "List Separator"; ObjectID = "328"; */
+"List Separator" = "List Separator";
+
+/* Class = "NSMenuItem"; gToolTip = "¦$SP_ASLIST_ALL_DATABASES¦ – such a snippet will be shown as completion list with all database names from the current connection\n\n[only available inside of tab snippets]"; ObjectID = "329"; */
+"¦$SP_ASLIST_ALL_DATABASES¦ – such a snippet will be shown as completion list with all database names from the current connection\n\n[only available inside of tab snippets]" = "¦$SP_ASLIST_ALL_DATABASES¦ – such a snippet will be shown as completion list with all database names from the current connection\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Database Names As List"; ObjectID = "329"; */
+"Database Names As List" = "Database Names As List";
+
+/* Class = "NSMenuItem"; gToolTip = "¦¦$SP_ASLIST_ALL_DATABASES¦¦ – such a snippet will be shown as completion list with all database names from the current connection in fuzzy search mode\n\n[only available inside of tab snippets]"; ObjectID = "330"; */
+"¦¦$SP_ASLIST_ALL_DATABASES¦¦ – such a snippet will be shown as completion list with all database names from the current connection in fuzzy search mode\n\n[only available inside of tab snippets]" = "¦¦$SP_ASLIST_ALL_DATABASES¦¦ – such a snippet will be shown as completion list with all database names from the current connection in fuzzy search mode\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Database Names As List (Fuzzy Search)"; ObjectID = "330"; */
+"Database Names As List (Fuzzy Search)" = "Database Names As List (Fuzzy Search)";
+
+/* Class = "NSMenuItem"; gToolTip = "¦$SP_ASLIST_ALL_TABLES¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database\n\n[only available inside of tab snippets]"; ObjectID = "332"; */
+"¦$SP_ASLIST_ALL_TABLES¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database\n\n[only available inside of tab snippets]" = "¦$SP_ASLIST_ALL_TABLES¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Table Names As List"; ObjectID = "332"; */
+"Table Names As List" = "Table Names As List";
+
+/* Class = "NSMenuItem"; gToolTip = "¦¦$SP_ASLIST_ALL_TABLES¦¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database in fuzzy search mode\n\n[only available inside of tab snippets]"; ObjectID = "333"; */
+"¦¦$SP_ASLIST_ALL_TABLES¦¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database in fuzzy search mode\n\n[only available inside of tab snippets]" = "¦¦$SP_ASLIST_ALL_TABLES¦¦ – such a snippet will be shown as completion list with all table names (incl. views) from the current selected database in fuzzy search mode\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Table Names As List (Fuzzy Search)"; ObjectID = "333"; */
+"Table Names As List (Fuzzy Search)" = "Table Names As List (Fuzzy Search)";
+
+/* Class = "NSMenuItem"; gToolTip = "¦$SP_ASLIST_ALL_FIELDS¦ – such a snippet will be shown as completion list with all field names from the current selected table\n\n[only available inside of tab snippets]"; ObjectID = "334"; */
+"¦$SP_ASLIST_ALL_FIELDS¦ – such a snippet will be shown as completion list with all field names from the current selected table\n\n[only available inside of tab snippets]" = "¦$SP_ASLIST_ALL_FIELDS¦ – such a snippet will be shown as completion list with all field names from the current selected table\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Field Names As List of Current Table"; ObjectID = "334"; */
+"Field Names As List of Current Table" = "Field Names As List of Current Table";
+
+/* Class = "NSMenuItem"; gToolTip = "¦¦$SP_ASLIST_ALL_FIELDS¦¦ – such a snippet will be shown as completion list with all field names from the current selected table\n\n[only available inside of tab snippets]"; ObjectID = "335"; */
+"¦¦$SP_ASLIST_ALL_FIELDS¦¦ – such a snippet will be shown as completion list with all field names from the current selected table\n\n[only available inside of tab snippets]" = "¦¦$SP_ASLIST_ALL_FIELDS¦¦ – such a snippet will be shown as completion list with all field names from the current selected table\n\n[only available inside of tab snippets]";
+
+/* Class = "NSMenuItem"; title = "Field Names As List of Current Table (Fuzzy Search)"; ObjectID = "335"; */
+"Field Names As List of Current Table (Fuzzy Search)" = "Field Names As List of Current Table (Fuzzy Search)";
+
+/* Class = "NSMenuItem"; title = "Completion Lists:"; ObjectID = "336"; */
+"Completion Lists:" = "Completion Lists:";
+
+/* Class = "NSMenuItem"; title = "⇥ Snippet:"; ObjectID = "337"; */
+"⇥ Snippet:" = "⇥ Snippet:";
+
+/* Class = "NSMenuItem"; title = "Completion List:"; ObjectID = "338"; */
+"Completion List:" = "Completion List:";
+
+/* Class = "NSMenuItem"; title = "Selection:"; ObjectID = "339"; */
+"Selection:" = "Selection:";
+
+/* Class = "NSMenuItem"; gToolTip = "$1 – mirrored tab snippet which is a placeholder for the content of tab snippet “1”\n\n[“1” can be a number from 0 to 18 and defines the order of tab key down events]\n\n[may not be used inside of a tab snippet] "; ObjectID = "340"; */
+"$1 – mirrored tab snippet which is a placeholder for the content of tab snippet “1”\n\n[“1” can be a number from 0 to 18 and defines the order of tab key down events]\n\n[may not be used inside of a tab snippet] " = "$1 – mirrored tab snippet which is a placeholder for the content of tab snippet “1”\n\n[“1” can be a number from 0 to 18 and defines the order of tab key down events]\n\n[may not be used inside of a tab snippet] ";
+
+/* Class = "NSMenuItem"; title = "Mirrored Tab Snippet"; ObjectID = "340"; */
+"Mirrored Tab Snippet" = "Mirrored Tab Snippet";
+
+/* Class = "NSMenuItem"; title = "Placeholder"; ObjectID = "341"; */
+"Placeholder" = "Placeholder";
+

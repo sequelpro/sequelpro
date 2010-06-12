@@ -1,0 +1,39 @@
+/* Class = "NSWindow"; title = "Variables"; ObjectID = "1"; */
+"Variables" = "Variables";
+
+/* Class = "NSButtonCell"; title = "Close"; ObjectID = "9"; */
+"Close" = "Close";
+
+/* Class = "NSButtonCell"; title = "Save As..."; ObjectID = "10"; */
+"Save As..." = "Save As...";
+
+/* Class = "NSTextFieldCell"; title = "Server Variables"; ObjectID = "11"; */
+"Server Variables" = "Server Variables";
+
+/* Class = "NSTableColumn"; headerCell.title = "Value"; ObjectID = "16"; */
+"Value" = "Value";
+
+/* Class = "NSTableColumn"; headerCell.title = "Variable Name"; ObjectID = "17"; */
+"Variable Name" = "Variable Name";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "18"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "19"; */
+"Text Cell" = "Text Cell";
+
+/* Class = "NSSearchFieldCell"; placeholderString = "Filter"; ObjectID = "20"; */
+"Filter" = "Filter";
+
+/* Class = "NSTextFieldCell"; title = "0 of 0"; ObjectID = "21"; */
+"0 of 0" = "0 of 0";
+
+/* Class = "NSMenuItem"; title = "Copy Variable Value"; ObjectID = "35"; */
+"Copy Variable Value" = "Copy Variable Value";
+
+/* Class = "NSMenuItem"; title = "Copy Variable Name"; ObjectID = "36"; */
+"Copy Variable Name" = "Copy Variable Name";
+
+/* Class = "NSMenuItem"; title = "Copy"; ObjectID = "37"; */
+"Copy" = "Copy";
+

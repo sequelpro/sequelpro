@@ -1,0 +1,18 @@
+/* Class = "NSWindow"; title = "Connection Error"; ObjectID = "1"; */
+"Connection Error" = "Connection Error";
+
+/* Class = "NSTextFieldCell"; title = "Sequel Pro appears to have lost the connection to the server, or the server has stopped responding."; ObjectID = "8"; */
+"Sequel Pro appears to have lost the connection to the server, or the server has stopped responding." = "Sequel Pro appears to have lost the connection to the server, or the server has stopped responding.";
+
+/* Class = "NSButtonCell"; title = "Retry"; ObjectID = "10"; */
+"Retry" = "Retry";
+
+/* Class = "NSButtonCell"; title = "Reconnect"; ObjectID = "12"; */
+"Reconnect" = "Reconnect";
+
+/* Class = "NSButtonCell"; title = "Close connection"; ObjectID = "14"; */
+"Close connection" = "Close connection";
+
+/* Class = "NSTextFieldCell"; title = "Connection Lost"; ObjectID = "34"; */
+"Connection Lost" = "Connection Lost";
+

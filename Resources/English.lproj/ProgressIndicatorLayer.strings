@@ -1,0 +1,12 @@
+/* Class = "NSBox"; title = "Box"; ObjectID = "10"; */
+"Box" = "Box";
+
+/* Class = "NSTextFieldCell"; title = "Multiline Label"; ObjectID = "16"; */
+"Multiline Label" = "Multiline Label";
+
+/* Class = "BWTransparentButtonCell"; title = "Cancel"; ObjectID = "18"; */
+"Cancel" = "Cancel";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "38"; */
+"Box" = "Box";
+
