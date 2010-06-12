@@ -124,9 +124,8 @@
  */
 - (void) updateSelectedTableDocument
 {
-	SPDatabaseDocument *previouslySelectedTableDocument = selectedTableDocument;
 	selectedTableDocument = [[tabView selectedTabViewItem] identifier];
-	if ([previouslySelectedTableDocument isNotEqualTo:selectedTableDocument]) [selectedTableDocument didBecomeActiveTabInWindow];
+	[selectedTableDocument didBecomeActiveTabInWindow];
 }
 
 /**
