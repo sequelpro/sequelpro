@@ -59,6 +59,7 @@
 	[tabBar setCellMinWidth:100];
 	[tabBar setCellMaxWidth:250];
 	[tabBar setCellOptimumWidth:250];
+	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
 
     // hook up add tab button
     [[tabBar addTabButton] setTarget:self];
@@ -67,9 +68,6 @@
 	// Retrieve references to the 'Close Window' and 'Close Tab' menus.  These are updated as window focus changes.
 	closeWindowMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1003];
 	closeTabMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1103];
-
-	// Add a new connection to the new window
-	[self addNewConnection:self];
 }
 
 /**
@@ -78,6 +76,8 @@
 - (void) dealloc
 {
 	[managedDatabaseConnections release];
+
+	[super dealloc];
 }
 
 #pragma mark -
@@ -285,6 +285,9 @@
 		[draggedDocument removeObserver:[draggedFromWindow windowController] forKeyPath:@"isProcessing"];
 		[[[tabBarControl window] windowController] _updateProgressIndicatorForItem:tabViewItem];
 	}
+
+	// Check the window and move it to front if it's key (eg for new window creation)
+	if ([[tabBarControl window] isKeyWindow]) [[tabBarControl window] orderFront:self];
 }
 
 /**
@@ -346,6 +349,55 @@
 - (void)tabView:(NSTabView *)aTabView closeWindowForLastTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	[[aTabView window] close];
+}
+
+- (BOOL)tabView:(NSTabView*)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl
+{
+        return YES;
+}
+
+- (PSMTabBarControl *)tabView:(NSTabView *)aTabView newTabBarForDraggedTabViewItem:(NSTabViewItem *)tabViewItem atPoint:(NSPoint)point
+{
+
+	// Create the new window controller, with no tabs
+	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
+	NSWindow *newWindow = [newWindowController window];
+
+	// Tweak window positioning according to the style and toolbar
+	point.x -= [[tabBar style] leftMarginForTabBarControl];
+	point.y += 21;
+
+	// Set the new window position and size
+	[newWindow setFrame:[[self window] frame] display:NO];
+	[newWindow setFrameTopLeftPoint:point];
+
+	// Set the window controller as the window's delegate
+	[newWindow setDelegate:newWindowController];
+
+	// Return the window's tab bar
+	return [newWindowController valueForKey:@"tabBar"];
+
+}
+
+- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask
+{
+	NSImage *viewImage = [[NSImage alloc] init];
+
+	// Capture an image of the entire window
+	[[[self window] contentView] lockFocus];
+	NSBitmapImageRep *viewRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:[[[self window] contentView] frame]] autorelease];
+	[viewImage addRepresentation:viewRep];
+	[[[self window] contentView] unlockFocus];
+
+	// Draw over the tab bar area
+	[viewImage lockFocus];
+	[[NSColor windowBackgroundColor] set];
+	NSRectFill([tabBar frame]);
+	[viewImage unlockFocus];
+	
+	offset->height = 21;
+
+	return [viewImage autorelease];
 }
 
 #pragma mark -

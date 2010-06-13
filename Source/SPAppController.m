@@ -302,8 +302,8 @@
 
 	// Create a new window controller, and set up a new connection view within it.
 	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
+	[newWindowController addNewConnection:self];
 	NSWindow *newWindow = [newWindowController window];
-	[newWindow setReleasedWhenClosed:YES];
 
 	// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
 	// and convert to a top left point.
