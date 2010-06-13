@@ -23,6 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="7052"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -12221,7 +12222,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="450876295"/>
 									<reference key="NSMixedImage" ref="414351669"/>
-									<int key="NSTag">1</int>
 								</object>
 								<object class="NSMenuItem" id="407752940">
 									<reference key="NSMenu" ref="563848996"/>
@@ -12230,7 +12230,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="450876295"/>
 									<reference key="NSMixedImage" ref="414351669"/>
-									<int key="NSTag">2</int>
+									<int key="NSTag">1</int>
 								</object>
 								<object class="NSMenuItem" id="980906208">
 									<reference key="NSMenu" ref="563848996"/>
@@ -12239,7 +12239,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="450876295"/>
 									<reference key="NSMixedImage" ref="414351669"/>
-									<int key="NSTag">3</int>
+									<int key="NSTag">2</int>
 								</object>
 							</object>
 						</object>
@@ -28256,6 +28256,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportFilenameDividerBox</string>
 							<string>exportHTMLIncludeStructureCheck</string>
 							<string>exportInputPopUpButton</string>
+							<string>exportOptionsTabBar</string>
 							<string>exportPDFIncludeStructureCheck</string>
 							<string>exportPathField</string>
 							<string>exportProcessLowMemoryButton</string>
@@ -28269,14 +28270,16 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportSQLIncludeDropSyntaxCheck</string>
 							<string>exportSQLIncludeErrorsCheck</string>
 							<string>exportSQLIncludeStructureCheck</string>
+							<string>exportSQLInsertDividerPopUpButton</string>
+							<string>exportSQLInsertNValueTextField</string>
 							<string>exportSelectAllTablesButton</string>
-							<string>exportTabBar</string>
 							<string>exportTableList</string>
 							<string>exportTableListButtonBar</string>
 							<string>exportTablelistScrollView</string>
-							<string>exportToolbar</string>
+							<string>exportTypeTabBar</string>
 							<string>exportUseUTF8BOMButton</string>
 							<string>exportXMLNULLValuesAsTextField</string>
+							<string>exporterView</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
 							<string>tableDocumentInstance</string>
@@ -28309,6 +28312,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>NSBox</string>
 							<string>NSButton</string>
 							<string>NSPopUpButton</string>
+							<string>NSTabView</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
@@ -28322,14 +28326,16 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
+							<string>NSPopUpButton</string>
+							<string>NSTextField</string>
 							<string>NSButton</string>
-							<string>NSTabView</string>
 							<string>NSTableView</string>
 							<string>BWAnchoredButtonBar</string>
 							<string>NSScrollView</string>
-							<string>NSToolbar</string>
+							<string>NSTabView</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
+							<string>NSView</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -30043,14 +30049,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSTokenField.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSToolbar</string>
-					<string key="superclassName">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSToolbar.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

@@ -54,6 +54,8 @@
 @synthesize sqlOutputIncludeErrors;
 @synthesize sqlOutputCompressFile;
 @synthesize sqlCurrentTableExportIndex;
+@synthesize sqlInsertAfterNValue;
+@synthesize sqlInsertDivider;
 
 /**
  * Initialise an instance of SPSQLExporter using the supplied delegate.
@@ -65,6 +67,9 @@
 		
 		[self setDelegate:exportDelegate];
 		[self setSqlExportCurrentTable:nil];
+		
+		[self setSqlInsertDivider:SPSQLInsertEveryNDataBytes];
+		[self setSqlInsertAfterNValue:250000];
 	}
 	
 	return self;
@@ -92,7 +97,7 @@
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger i, j, t, s, rowCount, queryLength, lastProgressValue;
+	NSUInteger i, j, k, t, s, rowCount, queryLength, lastProgressValue;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;
@@ -311,11 +316,10 @@
 				[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 				
 				// Construct the start of the insertion command
-				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(",
-														   [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
-				j = 0;
+				j, k = 0;
 				
 				sqlExportPool = [[NSAutoreleasePool alloc] init];
 				
@@ -335,10 +339,13 @@
 					}
 					
 					j++;
+					k++;
+					
 					[sqlString setString:@""];
 											
 					// Update the progress 
 					NSUInteger progress = (j * ([self exportMaxProgress] / rowCount));
+					
 					if (progress > lastProgressValue) {
 						[self setExportProgressValue:progress];
 						lastProgressValue = progress;
@@ -393,7 +400,7 @@
 							if ([cellValue length] == 0) {
 								[sqlString appendString:@"''"];
 							} 
-							else {
+							else {								
 								// If this is a numeric column type, add the number directly.
 								if ([NSArrayObjectAtIndex(tableColumnNumericStatus, t) boolValue]) {
 									[sqlString appendString:cellValue];
@@ -415,12 +422,14 @@
 					
 					// Close this VALUES group and set up the next one if appropriate
 					if (j != rowCount) {
-						
-						// Add a new INSERT starter command every ~250k of data
-						if (queryLength > 250000) {
-							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(",
-													 [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
-							queryLength = 0;
+							
+						// If required start a new INSERT statment
+						if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
+							(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
+						{
+							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
+							
+							queryLength, k = 0;
 							
 							// Use the opportunity to drain and reset the autorelease pool
 							[sqlExportPool release];
@@ -433,7 +442,7 @@
 					else {
 						[sqlString appendString:@")"];
 					}
-					
+										
 					// Write this row to the file
 					[[self exportOutputFileHandle] writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
 				}

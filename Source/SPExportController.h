@@ -27,6 +27,7 @@
 
 #import "SPConstants.h"
 
+@protocol NSTabViewDelegate;
 @class MCPConnection, BWAnchoredButtonBar;
 
 /**
@@ -36,7 +37,7 @@
  *
  * Export controller.
  */
-@interface SPExportController : NSWindowController
+@interface SPExportController : NSWindowController <NSTabViewDelegate>
 {	
 	// Controllers
 	IBOutlet id tableDocumentInstance;
@@ -46,11 +47,12 @@
 	IBOutlet id tableDataInstance;
 	
 	// Export window
+	IBOutlet NSView *exporterView;
 	IBOutlet NSButton *exportButton;
-	IBOutlet NSToolbar *exportToolbar;
 	IBOutlet NSTextField *exportPathField;
 	IBOutlet NSTableView *exportTableList;
-	IBOutlet NSTabView *exportTabBar;	
+	IBOutlet NSTabView *exportTypeTabBar;
+	IBOutlet NSTabView *exportOptionsTabBar;	
 	IBOutlet NSPopUpButton *exportInputPopUpButton;
 	IBOutlet NSButton *exportFilePerTableCheck;
 	IBOutlet NSButton *exportSelectAllTablesButton;
@@ -92,6 +94,8 @@
 	IBOutlet NSButton *exportSQLIncludeContentCheck;
 	IBOutlet NSButton *exportSQLIncludeErrorsCheck;
 	IBOutlet NSButton *exportSQLBLOBFieldsAsHexCheck;
+	IBOutlet NSTextField *exportSQLInsertNValueTextField;
+	IBOutlet NSPopUpButton *exportSQLInsertDividerPopUpButton;
 	
 	// Excel
 	IBOutlet NSMatrix *exportExcelSheetOrFilePerTableMatrix;
@@ -202,11 +206,6 @@
 	 * User defaults
 	 */
 	NSUserDefaults *prefs;
-	
-	/**
-	 * Current toolbar item
-	 */
-	NSToolbarItem *currentToolbarItem;
 	
 	/**
 	 * Previous connection encoding

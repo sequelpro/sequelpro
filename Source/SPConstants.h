@@ -53,13 +53,13 @@ typedef NSUInteger SPConnectionType;
 
 // Export type constants
 enum {
-	SPSQLExport   = 1,
-	SPCSVExport   = 2,
-	SPXMLExport   = 3,
+	SPSQLExport   = 0,
+	SPCSVExport   = 1,
+	SPXMLExport   = 2,
+	SPDotExport   = 3,
 	SPPDFExport   = 4,
 	SPHTMLExport  = 5,
-	SPExcelExport = 6,
-	SPDotExport   = 7
+	SPExcelExport = 6
 };
 typedef NSUInteger SPExportType;
 
@@ -70,6 +70,13 @@ enum {
 	SPTableExport    = 2
 };
 typedef NSUInteger SPExportSource;
+
+// SQL export INSERT statment divider constants
+enum {
+	SPSQLInsertEveryNDataBytes = 0,
+	SPSQLInsertEveryNRows      = 1
+};
+typedef NSUInteger SPSQLExportInsertDivider;
 
 // Table row count query usage levels
 typedef enum {

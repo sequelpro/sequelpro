@@ -270,6 +270,9 @@
 		[sqlExporter setSqlOutputCompressFile:[exportCompressOutputFile state]];
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
 		
+		[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
+		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
+		
 		// Set generic properties
 		[sqlExporter setConnection:connection];
 		[sqlExporter setExportOutputEncoding:[connection encoding]];

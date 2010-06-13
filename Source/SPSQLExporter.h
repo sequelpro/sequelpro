@@ -26,6 +26,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "SPExporter.h"
+#import "SPConstants.h"
 #import "SPSQLExporterProtocol.h"
 
 @class SPTableData;
@@ -90,12 +91,22 @@
 	 * Compress output
 	 */
 	BOOL sqlOutputCompressFile;
+	
+	/**
+	 * New INSERT statement divider
+	 */
+	SPSQLExportInsertDivider sqlInsertDivider;
 
 	/**
 	 * Number of tables processed by exporter
 	 */
 	NSUInteger sqlCurrentTableExportIndex;
-
+	
+	/**
+	 * The value after which a new INSERT statement should be created.
+	 */
+	NSUInteger sqlInsertAfterNValue;
+	
 	/**
 	 * Table information fetcher and parser
 	 */
@@ -119,6 +130,9 @@
 @property(readwrite, assign) BOOL sqlOutputCompressFile;
 
 @property(readwrite, assign) NSUInteger sqlCurrentTableExportIndex;
+@property(readwrite, assign) NSUInteger sqlInsertAfterNValue;
+
+@property(readwrite, assign) SPSQLExportInsertDivider sqlInsertDivider;
 
 /**
  * Initialise an instance of SPSQLExporter using the supplied delegate.

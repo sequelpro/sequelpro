@@ -105,14 +105,13 @@
  */
 - (void)awakeFromNib
 {	
-	// Set the current toolbar item
-	currentToolbarItem = [[exportToolbar items] objectAtIndex:0];
-	
-	// Upon awakening select the SQL tab
-	[exportToolbar setSelectedItemIdentifier:[currentToolbarItem itemIdentifier]];
-	
 	// Select the 'selected tables' option
 	[exportInputPopUpButton selectItemAtIndex:SPTableExport];
+	
+	// Select the SQL tab
+	[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
+		
+	[exportSQLInsertNValueTextField setIntegerValue:250];
 }
 
 #pragma mark -
@@ -131,6 +130,11 @@
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format
 {
+	NSLog(@"%d", format);
+	
+	// Select the correct tab
+	[exportTypeTabBar selectTabViewItemAtIndex:format];
+	
 	// Set the default export filename
 	[self _updateDisplayedExportFilename];
 	
@@ -138,9 +142,6 @@
 	
 	if ([exportFiles count] > 0) [exportFiles removeAllObjects];
 			
-	// Select the correct tab according to the supplied export type
-	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:(format - 1)] itemIdentifier]];
-
 	// Select the 'selected tables' source option
 	[exportInputPopUpButton selectItemAtIndex:SPTableExport];
 	
@@ -172,7 +173,7 @@
 	}
 	
 	// Ensure interface validation
-	[self switchTab:[[exportToolbar items] objectAtIndex:(format - 1)]];
+	[self switchTab:self];
 	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
 	
@@ -300,55 +301,51 @@
  * Change the selected toolbar item.
  */
 - (IBAction)switchTab:(id)sender
-{	
-	if ([sender isKindOfClass:[NSToolbarItem class]]) {
+{		
+	// Selected export format
+	NSString *type = [[[exportTypeTabBar selectedTabViewItem] identifier] lowercaseString];
+			
+	// Determine the export type
+	exportType = [exportTypeTabBar indexOfTabViewItemWithIdentifier:type];
+		
+	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
+	exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
+	
+	[exportOptionsTabBar selectTabViewItemWithIdentifier:type];
 				
-		currentToolbarItem = sender;
-		
-		// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-		exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-				
-		// Determine the export type
-		exportType = [sender tag];
-		
-		NSString *label = [[currentToolbarItem label] uppercaseString];
-		
-		[exportTabBar selectTabViewItemWithIdentifier:[label lowercaseString]];
-				
-		BOOL isSQL  = (exportType == SPSQLExport);
-		BOOL isCSV  = (exportType == SPCSVExport);
-		BOOL isXML  = (exportType == SPXMLExport);
-		BOOL isHTML = (exportType == SPHTMLExport);
-		BOOL isPDF  = (exportType == SPPDFExport);
-		BOOL isDot  = (exportType == SPDotExport);
-				
-		BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
-		
-		[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
-		[exportTableList setEnabled:(!isDot)];
-		[exportSelectAllTablesButton setEnabled:(!isDot)];
-		[exportDeselectAllTablesButton setEnabled:(!isDot)];
-		[exportRefreshTablesButton setEnabled:(!isDot)];
-		
-		[[[exportInputPopUpButton menu] itemAtIndex:SPTableExport] setEnabled:(!isDot)];
-		
-		[exportInputPopUpButton setEnabled:(!isDot)];
-				
-		// Enable/disable the 'filtered result' and 'query result' options
-		// Note that the result count check is always greater than one as the first row is always the field names
-		[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
-		[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];			
-				
-		[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
-		[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
-		
-		[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
-		
-		[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
-		[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
-		
-		if (!showCustomFilenameView) [self _updateDisplayedExportFilename];
-	}
+	BOOL isSQL  = (exportType == SPSQLExport);
+	BOOL isCSV  = (exportType == SPCSVExport);
+	BOOL isXML  = (exportType == SPXMLExport);
+	BOOL isHTML = (exportType == SPHTMLExport);
+	BOOL isPDF  = (exportType == SPPDFExport);
+	BOOL isDot  = (exportType == SPDotExport);
+			
+	BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
+	
+	[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
+	[exportTableList setEnabled:(!isDot)];
+	[exportSelectAllTablesButton setEnabled:(!isDot)];
+	[exportDeselectAllTablesButton setEnabled:(!isDot)];
+	[exportRefreshTablesButton setEnabled:(!isDot)];
+	
+	[[[exportInputPopUpButton menu] itemAtIndex:SPTableExport] setEnabled:(!isDot)];
+	
+	[exportInputPopUpButton setEnabled:(!isDot)];
+			
+	// Enable/disable the 'filtered result' and 'query result' options
+	// Note that the result count check is always greater than one as the first row is always the field names
+	[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
+	[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];			
+			
+	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
+	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
+	
+	[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
+	
+	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
+	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
+	
+	if (!showCustomFilenameView) [self _updateDisplayedExportFilename];
 }
 
 /**
@@ -457,7 +454,7 @@
 	}
 		
 	// For SQL only, add procedures and functions
-	if ([[[currentToolbarItem label] lowercaseString] isEqualToString:@"sql"]) {
+	if ([[[[exportTypeTabBar selectedTabViewItem] identifier] lowercaseString] isEqualToString:@"sql"]) {
 		NSArray *procedures = [tablesListInstance allProcedureNames];
 		
 		for (id procName in procedures) 
@@ -499,14 +496,9 @@
 	[self refreshTableList:self];
 
 	// Determine whether the structure and drop items should also be toggled
-	for (NSToolbarItem *item in [exportToolbar items])
-	{
-		if ([[item itemIdentifier] isEqualToString:[exportToolbar selectedItemIdentifier]] && [item tag] == SPSQLExport) {
-			if ([exportSQLIncludeStructureCheck state]) toggleStructure = YES;
-			if ([exportSQLIncludeDropSyntaxCheck state]) toggleDropTable = YES;
-			
-			break;
-		}
+	if (exportType == SPSQLExport) {
+		if ([exportSQLIncludeStructureCheck state]) toggleStructure = YES;
+		if ([exportSQLIncludeDropSyntaxCheck state]) toggleDropTable = YES;
 	}
 
 	for (NSMutableArray *table in tables)
@@ -627,18 +619,13 @@
 }
 
 #pragma mark -
-#pragma mark Toolbar delegate methods
+#pragma mark Tabview delegate methods
 
-- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	NSMutableArray *items = [NSMutableArray array];
+	[tabViewItem setView:exporterView];
 	
-	for (NSToolbarItem *item in [toolbar items])
-	{	
-		[items addObject:[item itemIdentifier]];
-	}
-	
-    return items;
+	[self switchTab:self];
 }
 
 #pragma mark -
@@ -773,6 +760,21 @@
 		if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
 			enable = NO;
 		}
+		// If they are all checked, check to see if any of the tables are checked
+		else if (contentEnabled && structureEnabled && dropEnabled) {
+			
+			// Only enable the button if at least one table is selected
+			for (NSArray *table in tables)
+			{
+				if ([NSArrayObjectAtIndex(table, 1) boolValue] || 
+					[NSArrayObjectAtIndex(table, 2) boolValue] ||
+					[NSArrayObjectAtIndex(table, 3) boolValue]) 
+				{
+					enable = YES;
+					break;
+				}
+			}
+		}
 		// Disable if structure is unchecked, but content and drop are as dropping a table then trying to insert
 		// into it is obviously an error.
 		else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
@@ -825,7 +827,7 @@
 	NSUInteger buttonMask             = [exportCustomFilenameViewButton autoresizingMask];
 	NSUInteger textFieldMask          = [exportCustomFilenameViewLabelButton autoresizingMask];
 	NSUInteger customFilenameViewMask = [exportCustomFilenameView autoresizingMask];
-	NSUInteger tabBarMask             = [exportTabBar autoresizingMask];
+	NSUInteger tabBarMask             = [exportOptionsTabBar autoresizingMask];
 	
 	NSRect frame = [[self window] frame];
 	
@@ -833,7 +835,7 @@
 	[exportFilePerTableCheck setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportTabBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
+	[exportOptionsTabBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportCustomFilenameViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportCustomFilenameViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportCustomFilenameView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
@@ -859,7 +861,7 @@
 	[exportCustomFilenameViewButton setAutoresizingMask:buttonMask];
 	[exportCustomFilenameViewLabelButton setAutoresizingMask:textFieldMask];
 	[exportCustomFilenameView setAutoresizingMask:customFilenameViewMask];
-	[exportTabBar setAutoresizingMask:tabBarMask];
+	[exportOptionsTabBar setAutoresizingMask:tabBarMask];
 }
 
 /**
@@ -868,18 +870,20 @@
  */
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta
 {
-	NSUInteger scrollMask       = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask    = [exportTableListButtonBar autoresizingMask];
-	NSUInteger tabBarMask       = [exportTabBar autoresizingMask];
-	NSUInteger buttonMask       = [exportAdvancedOptionsViewButton autoresizingMask];
-	NSUInteger textFieldMask    = [exportAdvancedOptionsViewLabelButton autoresizingMask];
-	NSUInteger advancedViewMask = [exportAdvancedOptionsView autoresizingMask];
+	NSUInteger scrollMask        = [exportTablelistScrollView autoresizingMask];
+	NSUInteger buttonBarMask     = [exportTableListButtonBar autoresizingMask];
+	NSUInteger tabBarMask        = [exportTypeTabBar autoresizingMask];
+	NSUInteger optionsTabBarMask = [exportOptionsTabBar autoresizingMask];
+	NSUInteger buttonMask        = [exportAdvancedOptionsViewButton autoresizingMask];
+	NSUInteger textFieldMask     = [exportAdvancedOptionsViewLabelButton autoresizingMask];
+	NSUInteger advancedViewMask  = [exportAdvancedOptionsView autoresizingMask];
 	
 	NSRect frame = [[self window] frame];
 	
 	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportTypeTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[exportOptionsTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
@@ -900,7 +904,8 @@
 	
 	[exportTablelistScrollView setAutoresizingMask:scrollMask];
 	[exportTableListButtonBar setAutoresizingMask:buttonBarMask];
-	[exportTabBar setAutoresizingMask:tabBarMask];
+	[exportTypeTabBar setAutoresizingMask:tabBarMask];
+	[exportOptionsTabBar setAutoresizingMask:optionsTabBarMask];
 	[exportAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
 	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:textFieldMask];
 	[exportAdvancedOptionsView setAutoresizingMask:advancedViewMask];
