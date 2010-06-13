@@ -27,7 +27,6 @@
 
 #import "SPConstants.h"
 
-@protocol NSTabViewDelegate;
 @class MCPConnection, BWAnchoredButtonBar;
 
 /**
@@ -37,7 +36,7 @@
  *
  * Export controller.
  */
-@interface SPExportController : NSWindowController <NSTabViewDelegate>
+@interface SPExportController : NSWindowController
 {	
 	// Controllers
 	IBOutlet id tableDocumentInstance;

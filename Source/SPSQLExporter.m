@@ -319,7 +319,7 @@
 				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
-				j, k = 0;
+				j = 0, k = 0;
 				
 				sqlExportPool = [[NSAutoreleasePool alloc] init];
 				
@@ -429,7 +429,7 @@
 						{
 							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
 							
-							queryLength, k = 0;
+							queryLength = 0, k = 0;
 							
 							// Use the opportunity to drain and reset the autorelease pool
 							[sqlExportPool release];
