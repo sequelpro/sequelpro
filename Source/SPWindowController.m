@@ -59,6 +59,7 @@
 	[tabBar setCellMinWidth:100];
 	[tabBar setCellMaxWidth:250];
 	[tabBar setCellOptimumWidth:250];
+	[tabBar setSelectsTabsOnMouseDown:YES];
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
 
     // hook up add tab button
@@ -68,6 +69,10 @@
 	// Retrieve references to the 'Close Window' and 'Close Tab' menus.  These are updated as window focus changes.
 	closeWindowMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1003];
 	closeTabMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1103];
+
+	// Register for drag start and stop notifications - used to show/hide tab bars
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:@"SPTabDragStart" object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:@"SPTabDragStop" object:nil];
 }
 
 /**
@@ -75,6 +80,8 @@
  */
 - (void) dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[managedDatabaseConnections release];
 
 	[super dealloc];
@@ -257,6 +264,7 @@
  */
 - (BOOL)tabView:(NSTabView *)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl
 {
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPTabDragStart" object:self];
 	return YES;
 }
 
@@ -288,6 +296,8 @@
 
 	// Check the window and move it to front if it's key (eg for new window creation)
 	if ([[tabBarControl window] isKeyWindow]) [[tabBarControl window] orderFront:self];
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPTabDragStop" object:self];
 }
 
 /**
@@ -346,16 +356,27 @@
 	return @"";
 }
 
+/**
+ * Allow window closing of the last tab item.
+ */
 - (void)tabView:(NSTabView *)aTabView closeWindowForLastTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	[[aTabView window] close];
 }
 
+/**
+ * Allow dragging and dropping of tabs to any position, including out of a tab bar
+ * to create a new window.
+ */
 - (BOOL)tabView:(NSTabView*)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl
 {
-        return YES;
+	return YES;
 }
 
+/**
+ * When a tab is dragged off a tab bar, create a new window containing a new
+ * (empty) tab bar to hold it.
+ */
 - (PSMTabBarControl *)tabView:(NSTabView *)aTabView newTabBarForDraggedTabViewItem:(NSTabViewItem *)tabViewItem atPoint:(NSPoint)point
 {
 
@@ -363,12 +384,20 @@
 	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
 	NSWindow *newWindow = [newWindowController window];
 
+	CGFloat toolbarHeight = 0;
+	if ([[[self window] toolbar] isVisible]) {
+		NSRect innerFrame = [NSWindow contentRectForFrameRect:[[self window] frame] styleMask:[[self window] styleMask]];
+		toolbarHeight = innerFrame.size.height - [[[self window] contentView] frame].size.height;
+	}
+
 	// Tweak window positioning according to the style and toolbar
 	point.x -= [[tabBar style] leftMarginForTabBarControl];
-	point.y += 21;
+	point.y += 21 + toolbarHeight - kPSMTabBarControlHeight;
 
 	// Set the new window position and size
-	[newWindow setFrame:[[self window] frame] display:NO];
+	NSRect targetWindowFrame = [[self window] frame];
+	targetWindowFrame.size.height -= toolbarHeight;
+	[newWindow setFrame:targetWindowFrame display:NO];
 	[newWindow setFrameTopLeftPoint:point];
 
 	// Set the window controller as the window's delegate
@@ -376,9 +405,12 @@
 
 	// Return the window's tab bar
 	return [newWindowController valueForKey:@"tabBar"];
-
 }
 
+/**
+ * When dragging a tab off the tab bar, return an image so that a
+ * drag placeholder can be displayed.
+ */
 - (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask
 {
 	NSImage *viewImage = [[NSImage alloc] init];
@@ -394,10 +426,44 @@
 	[[NSColor windowBackgroundColor] set];
 	NSRectFill([tabBar frame]);
 	[viewImage unlockFocus];
-	
+
+	// Draw the tab bar background in the tab bar area
+	[viewImage lockFocus];
+	NSRect tabFrame = [tabBar frame];
+	[[NSColor windowBackgroundColor] set];
+	NSRectFill(tabFrame);
+
+	// Draw the background flipped, which is actually the right way up
+	NSAffineTransform *transform = [NSAffineTransform transform];
+	[transform scaleXBy:1.0 yBy:-1.0];
+	[transform concat];
+	tabFrame.origin.y = -tabFrame.origin.y - tabFrame.size.height;
+	[(id <PSMTabStyle>)[[aTabView delegate] style] drawBackgroundInRect:tabFrame];
+	[transform invert];
+	[transform concat];
+	[viewImage unlockFocus];
+
 	offset->height = 21;
+	*styleMask = NSTitledWindowMask | NSUnifiedTitleAndToolbarWindowMask;
 
 	return [viewImage autorelease];
+}
+
+/**
+ * When tab drags start, show all the tab bars.  This allows adding tabs to windows
+ * containing only one tab - where the bar is normally hidden.
+ */
+- (void)tabDragStarted:(id)sender
+{
+	[tabBar setHideForSingleTab:NO];
+}
+
+/**
+ * When tab drags stop, set tab bars to automatically hide again for only one tab.
+ */
+- (void)tabDragStopped:(id)sender
+{
+	[tabBar setHideForSingleTab:YES];
 }
 
 #pragma mark -
