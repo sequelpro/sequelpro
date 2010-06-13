@@ -129,9 +129,7 @@
  * Displays the export window with the supplied tables and export type/format selected.
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format
-{
-	NSLog(@"%d", format);
-	
+{	
 	// Select the correct tab
 	[exportTypeTabBar selectTabViewItemAtIndex:format];
 	
