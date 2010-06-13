@@ -21,8 +21,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1086"/>
 			<integer value="1"/>
+			<integer value="1086"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -58,7 +58,7 @@
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
-				<string key="NSWindowContentMinSize">{451, 494}</string>
+				<string key="NSWindowContentMinSize">{454, 494}</string>
 				<object class="NSView" key="NSWindowView" id="13817034">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -336,7 +336,7 @@
 					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
-				<string key="NSMinSize">{451, 516}</string>
+				<string key="NSMinSize">{454, 516}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">SPExportWindow</string>
 			</object>
@@ -4951,14 +4951,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{467, 89}, {451, 494}}</string>
+					<string>{{476, 171}, {451, 494}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
-					<string>{{467, 89}, {451, 494}}</string>
+					<string>{{476, 171}, {451, 494}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
-					<string>{451, 494}</string>
+					<string>{454, 494}</string>
 					<string>{{470, 304}, {450, 377}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
