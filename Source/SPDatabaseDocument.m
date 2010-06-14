@@ -3574,6 +3574,7 @@
 	// set up toolbar properties
 	[mainToolbar setAllowsUserCustomization:YES];
 	[mainToolbar setAutosavesConfiguration:YES];
+	[mainToolbar setShowsBaselineSeparator:NO];
 	[mainToolbar setDisplayMode:NSToolbarDisplayModeIconAndLabel];
 
 	// set ourself as the delegate

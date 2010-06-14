@@ -267,6 +267,11 @@
 		B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */; };
 		B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */; };
 		B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */; };
+		B55F8E5F11C67CA0006A3386 /* PSMSequelProTabStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */; };
+		B55F8E6211C67D53006A3386 /* PSMSequelProTabStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */; };
+		B55F8E6611C67D8A006A3386 /* AddTabButton.png in Resources */ = {isa = PBXBuildFile; fileRef = B55F8E6311C67D8A006A3386 /* AddTabButton.png */; };
+		B55F8E6711C67D8A006A3386 /* AddTabButtonPushed.png in Resources */ = {isa = PBXBuildFile; fileRef = B55F8E6411C67D8A006A3386 /* AddTabButtonPushed.png */; };
+		B55F8E6811C67D8A006A3386 /* AddTabButtonRollover.png in Resources */ = {isa = PBXBuildFile; fileRef = B55F8E6511C67D8A006A3386 /* AddTabButtonRollover.png */; };
 		B57747D20F7A891A003B34F9 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = B57747D00F7A891A003B34F9 /* Preferences.xib */; };
 		B57747D40F7A8974003B34F9 /* SPPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D30F7A8974003B34F9 /* SPPreferenceController.m */; };
 		B57747D90F7A8990003B34F9 /* SPWindowAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */; };
@@ -826,6 +831,11 @@
 		B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-relations.png"; sourceTree = "<group>"; };
 		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
 		B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show_icon.tif; sourceTree = "<group>"; };
+		B55F8E5D11C67CA0006A3386 /* PSMSequelProTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMSequelProTabStyle.h; sourceTree = "<group>"; };
+		B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMSequelProTabStyle.m; sourceTree = "<group>"; };
+		B55F8E6311C67D8A006A3386 /* AddTabButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AddTabButton.png; sourceTree = "<group>"; };
+		B55F8E6411C67D8A006A3386 /* AddTabButtonPushed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AddTabButtonPushed.png; sourceTree = "<group>"; };
+		B55F8E6511C67D8A006A3386 /* AddTabButtonRollover.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AddTabButtonRollover.png; sourceTree = "<group>"; };
 		B57747D10F7A891A003B34F9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		B57747D30F7A8974003B34F9 /* SPPreferenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceController.m; sourceTree = "<group>"; };
 		B57747D50F7A8978003B34F9 /* SPPreferenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceController.h; sourceTree = "<group>"; };
@@ -1849,6 +1859,9 @@
 			isa = PBXGroup;
 			children = (
 				58B906FA11BD9B34000826E5 /* AdiumGradient.png */,
+				B55F8E6311C67D8A006A3386 /* AddTabButton.png */,
+				B55F8E6411C67D8A006A3386 /* AddTabButtonPushed.png */,
+				B55F8E6511C67D8A006A3386 /* AddTabButtonRollover.png */,
 				58B906FB11BD9B34000826E5 /* AquaTabClose_Front.png */,
 				58B906FC11BD9B34000826E5 /* AquaTabClose_Front_Pressed.png */,
 				58B906FD11BD9B34000826E5 /* AquaTabClose_Front_Rollover.png */,
@@ -1891,6 +1904,8 @@
 				58B9073511BD9B34000826E5 /* PSMCardTabStyle.m */,
 				58B9073611BD9B34000826E5 /* PSMMetalTabStyle.h */,
 				58B9073711BD9B34000826E5 /* PSMMetalTabStyle.m */,
+				B55F8E5D11C67CA0006A3386 /* PSMSequelProTabStyle.h */,
+				B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */,
 				58B9073811BD9B34000826E5 /* PSMUnifiedTabStyle.h */,
 				58B9073911BD9B34000826E5 /* PSMUnifiedTabStyle.m */,
 			);
@@ -2159,6 +2174,9 @@
 				58B9075311BD9B34000826E5 /* TabNewMetal.png in Resources */,
 				58B9075411BD9B34000826E5 /* TabNewMetalPressed.png in Resources */,
 				58B9075511BD9B34000826E5 /* TabNewMetalRollover.png in Resources */,
+				B55F8E6611C67D8A006A3386 /* AddTabButton.png in Resources */,
+				B55F8E6711C67D8A006A3386 /* AddTabButtonPushed.png in Resources */,
+				B55F8E6811C67D8A006A3386 /* AddTabButtonRollover.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2373,6 +2391,7 @@
 				58B9076B11BD9B34000826E5 /* PSMTabDragWindow.m in Sources */,
 				58B9076D11BD9B34000826E5 /* PSMTabDragWindowController.m in Sources */,
 				58B9077611BD9B34000826E5 /* PSMMetalTabStyle.m in Sources */,
+				B55F8E6211C67D53006A3386 /* PSMSequelProTabStyle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2502,6 +2521,7 @@
 				173C839511AAD32A00B8B084 /* SPXMLExporterDelegate.m in Sources */,
 				58B909A511C3B919000826E5 /* DMLocalizedNibBundle.m in Sources */,
 				17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */,
+				B55F8E5F11C67CA0006A3386 /* PSMSequelProTabStyle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

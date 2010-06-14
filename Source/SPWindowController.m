@@ -51,7 +51,7 @@
 	managedDatabaseConnections = [[NSMutableArray alloc] init];
 
 	// Set up the tab bar
-	[tabBar setStyleNamed:@"Metal"];
+	[tabBar setStyleNamed:@"SequelPro"];
 	[tabBar setCanCloseOnlyTab:NO];
 	[tabBar setHideForSingleTab:YES];
 	[tabBar setShowAddTabButton:YES];

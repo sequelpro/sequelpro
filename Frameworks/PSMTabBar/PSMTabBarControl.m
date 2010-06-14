@@ -16,6 +16,7 @@
 #import "PSMUnifiedTabStyle.h"
 #import "PSMCardTabStyle.h"
 #import "PSMAdiumTabStyle.h"
+#import "PSMSequelProTabStyle.h"
 #import "PSMTabDragAssistant.h"
 #import "PSMTabBarController.h"
 
@@ -367,22 +368,32 @@
 - (void)setStyleNamed:(NSString *)name
 {
     id <PSMTabStyle> newStyle;
-/*
-    if ([name isEqualToString:@"Aqua"]) {
-        newStyle = [[PSMAquaTabStyle alloc] init];
-    } else if ([name isEqualToString:@"Unified"]) {
-        newStyle = [[PSMUnifiedTabStyle alloc] init];
-    } else if ([name isEqualToString:@"Adium"]) {
-        newStyle = [[PSMAdiumTabStyle alloc] init];
+	
+	// Hardcode style to Metal
+	name = @"Metal";
+	
+	if ([name isEqualToString:@"Aqua"]) {
+		//newStyle = [[PSMAquaTabStyle alloc] init];
+		
+	} else if ([name isEqualToString:@"Unified"]) {
+		//newStyle = [[PSMUnifiedTabStyle alloc] init];
+		
+	} else if ([name isEqualToString:@"Adium"]) {
+		//newStyle = [[PSMAdiumTabStyle alloc] init];
+	
 	} else if ([name isEqualToString:@"Card"]) {
-        newStyle = [[PSMCardTabStyle alloc] init]; 
-    } else {
-*/
-        newStyle = [[PSMMetalTabStyle alloc] init];
-/*
-    }
-*/
-   
+		//newStyle = [[PSMCardTabStyle alloc] init]; 
+	
+	} else if ([name isEqualToString:@"Metal"]) {
+		newStyle = [[PSMMetalTabStyle alloc] init];
+
+	} else if ([name isEqualToString:@"SequelPro"]) {
+		newStyle = [[PSMSequelProTabStyle alloc] init];
+
+	} else {
+		newStyle = [[PSMMetalTabStyle alloc] init];
+	}
+
     [self setStyle:newStyle];
     [newStyle release];
 }
