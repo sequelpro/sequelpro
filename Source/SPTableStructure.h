@@ -33,34 +33,31 @@
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tableInfoInstance;
 	IBOutlet id extendedTableInfoInstance;
+	IBOutlet id indexesController;
 
-	IBOutlet id indexSheet;
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
 	IBOutlet id resetAutoIncrementValue;
 	IBOutlet id resetAutoIncrementLine;
 	IBOutlet id tableSourceView;
-	IBOutlet id indexView;
 	IBOutlet id addFieldButton;
 	IBOutlet id copyFieldButton;
 	IBOutlet id removeFieldButton;
 	IBOutlet id reloadFieldsButton;
-	IBOutlet id addIndexButton;
-	IBOutlet id removeIndexButton;
-	IBOutlet id reloadIndexesButton;
-	IBOutlet id indexTypeField;
-	IBOutlet id indexNameField;
-	IBOutlet id indexedColumnsField;
 	IBOutlet id chooseKeyButton;
 	IBOutlet id structureGrabber;
 	IBOutlet id editTableButton;
-
+	IBOutlet id addIndexButton;
+	IBOutlet id removeIndexButton;
+	IBOutlet id refreshIndexesButton;
+	IBOutlet id indexesTableView;
+	
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
 	MCPResult *indexResult;
 
 	NSString *selectedTable;
-	NSMutableArray *tableFields, *indexes;
+	NSMutableArray *tableFields;
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
@@ -77,14 +74,10 @@
 - (IBAction)addField:(id)sender;
 - (IBAction)copyField:(id)sender;
 - (IBAction)removeField:(id)sender;
-- (IBAction)removeIndex:(id)sender;
 - (IBAction)resetAutoIncrement:(id)sender;
 
 // Index sheet methods
-- (IBAction)openIndexSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
-- (IBAction)chooseIndexType:(id)sender;
-- (void)closeAlertSheet;
 
 // Key sheet methods
 - (IBAction)closeKeySheet:(id)sender;

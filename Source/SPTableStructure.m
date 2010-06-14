@@ -34,16 +34,66 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPIndexesController.h"
 
 @interface SPTableStructure (PrivateAPI)
 
-- (void)_addIndex;
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
-- (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey;
 
 @end
 
 @implementation SPTableStructure
+
+#pragma mark -
+
+/**
+ * Init.
+ */
+- (id)init
+{
+	if ((self = [super init])) {
+		tableFields = [[NSMutableArray alloc] init];
+		oldRow      = [[NSMutableDictionary alloc] init];
+		enumFields  = [[NSMutableDictionary alloc] init];
+		
+		currentlyEditingRow = -1;
+		defaultValues = nil;
+		selectedTable = nil;
+		
+		prefs = [NSUserDefaults standardUserDefaults];
+	}
+	
+	return self;
+}
+
+/**
+ * Nib awakening.
+ */
+- (void)awakeFromNib
+{
+	// Set the structure and index view's vertical gridlines if required
+	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	
+	// Set the strutcture and index view's font
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	
+	for (NSTableColumn *fieldColumn in [tableSourceView tableColumns])
+	{
+		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
+	
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:tableDocumentInstance];
+}
+
+#pragma mark -
 
 /**
  * Loads aTable, put it in an array, update the tableViewColumns and reload the tableView
@@ -224,13 +274,14 @@
 	// Update the selected table name
 	if (selectedTable) [selectedTable release], selectedTable = nil;
 	if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
+	
+	[indexesController setTable:selectedTable];
 
 	// Reset the table store and display
 	[enumFields removeAllObjects];
 	[tableSourceView deselectAll:self];
-	[indexView deselectAll:self];
+	[indexesTableView deselectAll:self];
 	[tableFields removeAllObjects];
-	[indexes removeAllObjects];
 	[addFieldButton setEnabled:NO];
 	[copyFieldButton setEnabled:NO];
 	[removeFieldButton setEnabled:NO];
@@ -241,41 +292,38 @@
 	// If no table is selected, refresh the table display to blank and return
 	if (!selectedTable) {
 		[tableSourceView reloadData];
-		[indexView reloadData];
+		[indexesTableView reloadData];
 		return;
 	}
 
 	// Update the fields and indexes stores
 	[tableFields setArray:[tableDetails objectForKey:@"tableFields"]];
-	[indexes setArray:[tableDetails objectForKey:@"tableIndexes"]];
-
-	// Update the default values array and the indexed column fields control
-	[indexedColumnsField removeAllItems];
+	
+	[indexesController setFields:tableFields];
+	[indexesController setIndexes:[tableDetails objectForKey:@"tableIndexes"]];
+	
 	if (defaultValues) [defaultValues release], defaultValues = nil;
+	
 	newDefaultValues = [NSMutableDictionary dictionaryWithCapacity:[tableFields count]];
-	for (id theField in tableFields) {
+	
+	for (id theField in tableFields) 
+	{
 		[newDefaultValues setObject:[theField objectForKey:@"Default"] forKey:[theField objectForKey:@"Field"]];
-		[indexedColumnsField addItemWithObjectValue:[theField objectForKey:@"Field"]];
 	}
+	
 	defaultValues = [[NSDictionary dictionaryWithDictionary:newDefaultValues] retain];
-
-	// Only show up to ten items in the indexed column fields control
-	if ([tableFields count] < 10) {
-		[indexedColumnsField setNumberOfVisibleItems:[tableFields count]];
-	} else {
-		[indexedColumnsField setNumberOfVisibleItems:10];
-	}
-
+	
 	// Enable the edit table button
 	[editTableButton setEnabled:enableInteraction];
 
 	// If a view is selected, disable the buttons; otherwise enable.
 	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable) && enableInteraction;
+	
 	[addFieldButton setEnabled:editingEnabled];
 	[addIndexButton setEnabled:editingEnabled];
 
 	// Reload the views
-	[indexView reloadData];
+	[indexesTableView reloadData];
 	[tableSourceView reloadData];
 }
 
@@ -404,6 +452,45 @@
 }
 
 /**
+ *
+ */
+- (IBAction)resetAutoIncrement:(id)sender
+{
+	if ([sender tag] == 1) {
+		
+		[resetAutoIncrementLine setHidden:YES];
+		
+		if ([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 0)
+			[resetAutoIncrementLine setHidden:NO];
+		
+		// Begin the sheet
+		[NSApp beginSheet:resetAutoIncrementSheet
+		   modalForWindow:[tableDocumentInstance parentWindow] 
+			modalDelegate:self
+		   didEndSelector:@selector(resetAutoincrementSheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:nil];
+		
+		[resetAutoIncrementValue setStringValue:@"1"];
+	}
+	else if ([sender tag] == 2) {
+		[self setAutoIncrementTo:@"1"];
+	}
+}
+
+/**
+ * Process the autoincrement sheet closing, resetting if the user confirmed the action.
+ */
+- (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Order out current sheet to suppress overlapping of sheets
+	[theSheet orderOut:nil];
+	
+	if (returnCode == NSAlertDefaultReturn) {
+		[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+	}
+}
+
+/**
  * Process the remove field sheet closing, performing the delete if the user
  * confirmed the action.
  */
@@ -428,181 +515,8 @@
 	}
 }
 
-/**
- * Ask the user to confirm that they really want to remove the selected index.
- */
-- (IBAction)removeIndex:(id)sender
-{
-	if (![indexView numberOfSelectedRows]) return;
-
-	// Check whether a save of the current fields row is required.
-	if (![self saveRowOnDeselect]) return;
-	
-	NSInteger index = [indexView selectedRow];
-	
-	if ((index == -1) || (index > ([indexes count] - 1))) return;
-	
-	NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
-	NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
-		
-	BOOL hasForeignKey = NO;
-	NSString *constraintName = @"";
-	
-	// Check to see whether the user is attempting to remove an index that a foreign key constraint depends on
-	// thus would result in an error if not dropped before removing the index.
-	for (NSDictionary *constraint in [tableDataInstance getConstraints])
-	{
-		for (NSString *column in [constraint objectForKey:@"columns"])
-		{
-			if ([column isEqualToString:columnName]) {
-				hasForeignKey = YES;
-				constraintName = [constraint objectForKey:@"name"];
-				break;
-			}
-		}
-	}
-	
-	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete index '%@'?", @"delete index message"), keyName]
-									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
-								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
-									   otherButton:nil 
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
-	
-	[alert setAlertStyle:NSCriticalAlertStyle];
-	
-	NSArray *buttons = [alert buttons];
-	
-	// Change the alert's cancel button to have the key equivalent of return
-	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
-	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
-}
-
-/**
- * Process the remove index sheet closing, performing the delete if the user
- * confirmed the action.
- */
-- (void)removeIndexSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	// Order out current sheet to suppress overlapping of sheets
-	[[alert window] orderOut:nil];
-
-	if (returnCode == NSAlertDefaultReturn) {
-		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing index...", @"removing index task status message")];
-		
-		NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
-		
-		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
-			
-			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
-		} 
-		else {
-			[self _removeIndexAndForeignKey:removeKey];
-		}
-	}
-}
-
-- (IBAction)resetAutoIncrement:(id)sender
-{
-
-	if([sender tag] == 1) {
-		
-		[resetAutoIncrementLine setHidden:YES];
-		if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 0)
-			[resetAutoIncrementLine setHidden:NO];
-
-		// Begin the sheet
-		[NSApp beginSheet:resetAutoIncrementSheet
-		   modalForWindow:[tableDocumentInstance parentWindow] 
-			modalDelegate:self
-		   didEndSelector:@selector(resetAutoincrementSheetDidEnd:returnCode:contextInfo:) 
-			  contextInfo:@"resetAutoIncrement"];
-
-		[resetAutoIncrementValue setStringValue:@"1"];
-	}
-	else if([sender tag] == 2) {
-		[self setAutoIncrementTo:@"1"];
-	}
-
-}
-
-/**
- * Process the autoincrement sheet closing, resetting if the user
- * confirmed the action.
- */
-- (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	// Order out current sheet to suppress overlapping of sheets
-	[theSheet orderOut:nil];
-
-	if (returnCode == NSAlertDefaultReturn) {
-		[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-	}
-}
-
 #pragma mark -
 #pragma mark Index sheet methods
-
-/**
- * Opens the add new index sheet.
- */
-- (IBAction)openIndexSheet:(id)sender
-{
-	NSInteger i;
-
-	// Check whether a save of the current field row is required.
-	if (![self saveRowOnDeselect]) return;
-
-	// Set sheet defaults - key type PRIMARY, key name PRIMARY and disabled, and blank indexed columns
-	[indexTypeField selectItemAtIndex:0];
-	[indexNameField setEnabled:NO];
-	[indexNameField setStringValue:@"PRIMARY"];
-	[indexedColumnsField setStringValue:@""];
-	[indexSheet makeFirstResponder:indexedColumnsField];
-	
-	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
-	for (i = 0; i < [tableFields count]; i++) 
-	{
-		if ([[[tableFields objectAtIndex:i] objectForKey:@"Key"] isEqualToString:@"PRI"]) {
-			[indexTypeField selectItemAtIndex:1];
-			[indexNameField setEnabled:YES];
-			[indexNameField setStringValue:@""];
-			[indexSheet makeFirstResponder:indexNameField];
-			break;
-		}
-	}
-
-	// Begin the sheet
-	[NSApp beginSheet:indexSheet
-	   modalForWindow:[tableDocumentInstance parentWindow] 
-		modalDelegate:self
-	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:) 
-		  contextInfo:@"addIndex"];
-}
-
-/**
- * Process the new index sheet closing, adding the index if appropriate
- */
-- (void)addIndexSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	[theSheet orderOut:nil];
-
-	if (returnCode == NSOKButton) {
-		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
-		
-		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_addIndex) toTarget:self withObject:nil];
-			
-			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
-		} 
-		else {
-			[self _addIndex];
-		}
-	}
-}
 
 /**
  * Closes the current sheet and stops the modal session
@@ -611,29 +525,6 @@
 {
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
-}
-
-/*
-invoked when user chooses an index type
-*/
-- (IBAction)chooseIndexType:(id)sender
-{
-	if ( [[indexTypeField titleOfSelectedItem] isEqualToString:@"PRIMARY KEY"] ) {
-		[indexNameField setEnabled:NO];
-		[indexNameField setStringValue:@"PRIMARY"];
-	} else {
-		[indexNameField setEnabled:YES];
-		if ( [[indexNameField stringValue] isEqualToString:@"PRIMARY"] )
-			[indexNameField setStringValue:@""];
-	}
-}
-
-/*
-reopens indexSheet after errorSheet (no columns specified)
-*/
-- (void)closeAlertSheet
-{
-	[self openIndexSheet:self];
 }
 
 /*
@@ -654,6 +545,9 @@ closes the keySheet
 - (void)setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
+	
+	// Set the indexes controller connection
+	[indexesController setConnection:mySQLConnection];
 
 	// Set up tableView
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
@@ -996,9 +890,9 @@ closes the keySheet
 			isEditingNewRow = NO;
 			currentlyEditingRow = -1;
 			[tableFields removeAllObjects];
-			[indexes removeAllObjects];
+			//[indexes removeAllObjects];
 			[tableSourceView reloadData];
-			[indexView reloadData];
+			[indexesTableView reloadData];
 			[addFieldButton setEnabled:NO];
 			[copyFieldButton setEnabled:NO];
 			[removeFieldButton setEnabled:NO];
@@ -1097,17 +991,11 @@ closes the keySheet
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-		[indexView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 	// Use monospaced fonts preference changed
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 		
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
-		for (NSTableColumn *indexColumn in [indexView tableColumns])
-		{
-			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		}
 		
 		for (NSTableColumn *fieldColumn in [tableSourceView tableColumns])
 		{
@@ -1115,12 +1003,11 @@ closes the keySheet
 		}
 		
 		[tableSourceView reloadData];
-		[indexView reloadData];
 	}
 }
 
 /**
- * Menu validation
+ * Menu validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
@@ -1134,16 +1021,9 @@ closes the keySheet
 		return ([tableSourceView numberOfSelectedRows] == 1);
 	}
 	
-	// Remove index
-	if ([menuItem action] == @selector(removeIndex:)) {
-		return ([indexView numberOfSelectedRows] == 1);
-	}
-	
 	// Reset AUTO_INCREMENT
 	if ([menuItem action] == @selector(resetAutoIncrement:)) {
-		return ([indexView numberOfSelectedRows] == 1 
-			&& [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] 
-			&& [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]);
+		return [indexesController validateMenuItem:menuItem];
 	}
 	
 	return YES;
@@ -1295,9 +1175,8 @@ returns a dictionary containing enum/set field names as key and possible values 
 /**
  * Disable all content interactive elements during an ongoing task.
  */
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
-
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
@@ -1307,64 +1186,57 @@ returns a dictionary containing enum/set field names as key and possible values 
 	[copyFieldButton setEnabled:NO];
 	[reloadFieldsButton setEnabled:NO];
 	[editTableButton setEnabled:NO];
-
-	[indexView setEnabled:NO];
+	
+	[indexesTableView setEnabled:NO];
 	[addIndexButton setEnabled:NO];
 	[removeIndexButton setEnabled:NO];
-	[reloadIndexesButton setEnabled:NO];
+	[refreshIndexesButton setEnabled:NO];
 }
 
 /**
  * Enable all content interactive elements after an ongoing task.
  */
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
-
 	// Only re-enable elements if the current tab is the structure view
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable);
+	
 	[tableSourceView setEnabled:YES];
 	[tableSourceView displayIfNeeded];
 	[addFieldButton setEnabled:editingEnabled];
+	
 	if (editingEnabled && [tableSourceView numberOfSelectedRows] > 0) {
 		[removeFieldButton setEnabled:YES];
 		[copyFieldButton setEnabled:YES];
 	}
+	
 	[reloadFieldsButton setEnabled:YES];
 	[editTableButton setEnabled:YES];
-
-	[indexView setEnabled:YES];
-	[indexView displayIfNeeded];
+	
+	[indexesTableView setEnabled:YES];
+	[indexesTableView displayIfNeeded];
+	
 	[addIndexButton setEnabled:editingEnabled];
-	if (editingEnabled && [indexView numberOfSelectedRows] > 0)
-		[removeIndexButton setEnabled:YES];
-	[reloadIndexesButton setEnabled:YES];
+	[removeIndexButton setEnabled:(editingEnabled && ([indexesTableView numberOfSelectedRows] > 0))];
+	[refreshIndexesButton setEnabled:YES];
 }
 
 #pragma mark -
 #pragma mark TableView datasource methods
 
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-	return (aTableView == tableSourceView) ? [tableFields count] : [indexes count];
+	return [tableFields count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	NSDictionary *theRow;
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{		
+	// Return a placeholder if the table is reloading
+	if (rowIndex >= [tableFields count]) return @"...";
 
-	if (aTableView == tableSourceView) {
-		
-		// Return a placeholder if the table is reloading
-		if (rowIndex >= [tableFields count]) return @"...";
-
-		theRow = [tableFields objectAtIndex:rowIndex];
-	} else {
-		theRow = [indexes objectAtIndex:rowIndex];
-	}
-
-	return [theRow objectForKey:[aTableColumn identifier]];
+	return [[tableFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -1560,6 +1432,7 @@ would result in a position change.
 	
 	// Check for which table view the selection changed
 	if (object == tableSourceView) {
+		
 		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
 		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
 		
@@ -1579,9 +1452,10 @@ would result in a position change.
 			[removeFieldButton setEnabled:NO];
 		}
 	}
-	else if (object == indexView) {
+	if (object == indexesTableView) {
+		
 		// Check if there is currently an index selected and change button state accordingly
-		[removeIndexButton setEnabled:([indexView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable)];
+		[removeIndexButton setEnabled:([indexesTableView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable)];
 	}
 }
 
@@ -1686,128 +1560,7 @@ would result in a position change.
 }
 
 #pragma mark -
-#pragma mark Other
-
-// Last but not least
-- (id)init
-{
-	if ((self = [super init])) {
-		tableFields = [[NSMutableArray alloc] init];
-		indexes     = [[NSMutableArray alloc] init];
-		oldRow      = [[NSMutableDictionary alloc] init];
-		enumFields  = [[NSMutableDictionary alloc] init];
-		
-		currentlyEditingRow = -1;
-		defaultValues = nil;
-		selectedTable = nil;
-		
-		prefs = [NSUserDefaults standardUserDefaults];
-	}
-
-	return self;
-}
-
-- (void)awakeFromNib
-{
-	// Set the structure and index view's vertical gridlines if required
-	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	[indexView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-		
-	// Set the strutcture and index view's font
-	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-	
-	for (NSTableColumn *indexColumn in [indexView tableColumns])
-	{
-		[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
-	
-	for (NSTableColumn *fieldColumn in [tableSourceView tableColumns])
-	{
-		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
-	
-	// Add observers for document task activity
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(startDocumentTaskForTab:)
-												 name:SPDocumentTaskStartNotification
-											   object:tableDocumentInstance];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(endDocumentTaskForTab:)
-												 name:SPDocumentTaskEndNotification
-											   object:tableDocumentInstance];
-}
-
-- (void)dealloc
-{	
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[tableFields release];
-	[indexes release];
-	[oldRow release];
-	[enumFields release];
-	if (defaultValues) [defaultValues release];
-	if (selectedTable) [selectedTable release];
-	
-	[super dealloc];
-}
-
-@end
-
-@implementation SPTableStructure (PrivateAPI)
-
-/**
- * Adds an index to the current table.
- */
-- (void)_addIndex;
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	// Check whether a save of the current fields row is required.
-	if (![[self onMainThread] saveRowOnDeselect]) return;
-	
-	if (![[indexedColumnsField stringValue] isEqualToString:@""]) {
-		
-		NSString *indexName = @"";
-		NSMutableArray *tempIndexedColumns = [[NSMutableArray alloc] init];
-		
-		if ([[indexNameField stringValue] isEqualToString:@"PRIMARY"]) {
-			indexName = @"";
-		} 
-		else {
-			indexName = ([[indexNameField stringValue] isEqualToString:@""]) ? @"" : [[indexNameField stringValue] backtickQuotedString];
-		}
-		
-		NSArray *indexedColumns = [[indexedColumnsField stringValue] componentsSeparatedByString:@","];
-		
-		// For each column strip leading and trailing whitespace and add it to the temp array
-		for (NSString *column in indexedColumns)
-		{			
-			[tempIndexedColumns addObject:[column stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
-		}
-		
-		// Execute the query
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@ (%@)",
-									  [selectedTable backtickQuotedString], [indexTypeField titleOfSelectedItem], indexName,
-									  [tempIndexedColumns componentsJoinedAndBacktickQuoted]]];
-		
-		// Check for errors, but only if the query wasn't cancelled
-		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
-		}
-		else {
-			[tableDataInstance resetAllData];
-			[tablesListInstance setStatusRequiresReload:YES];
-			[self loadTable:selectedTable];
-		}
-		
-		[tempIndexedColumns release];
-	}
-	
-	[tableDocumentInstance endTask];
-	
-	[pool drain];
-}
+#pragma mark Private API methods
 
 /**
  * Removes a field from the current table and the dependent foreign key if specified. 
@@ -1872,68 +1625,23 @@ would result in a position change.
 	[pool drain];
 }
 
+#pragma mark -
+
 /**
- * Removes an index from the current table and the dependent foreign key if specified.
+ * Dealloc.
  */
-- (void)_removeIndexAndForeignKey:(NSNumber *)removeForeignKey
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+- (void)dealloc
+{	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	// Remove the foreign key dependency before the index if required
-	if ([removeForeignKey boolValue]) {
-		
-		NSString *columnName =  [[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Column_name"];
-		
-		NSString *constraintName = @"";
-		
-		// Check to see whether the user is attempting to remove an index that a foreign key constraint depends on
-		// thus would result in an error if not dropped before removing the index.
-		for (NSDictionary *constraint in [tableDataInstance getConstraints])
-		{
-			for (NSString *column in [constraint objectForKey:@"columns"])
-			{
-				if ([column isEqualToString:columnName]) {
-					constraintName = [constraint objectForKey:@"name"];
-					break;
-				}
-			}
-		}
-		
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [constraintName backtickQuotedString]]];
-		
-		// Check for errors, but only if the query wasn't cancelled
-		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
-			[[self onMainThread] showErrorSheetWith:errorDictionary];
-		} 
-	}
+	[tableFields release];
+	[oldRow release];
+	[enumFields release];
 	
-	if ([[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [selectedTable backtickQuotedString]]];
-	}
-	else {
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
-									  [selectedTable backtickQuotedString], [[[indexes objectAtIndex:[indexView selectedRow]] objectForKey:@"Key_name"] backtickQuotedString]]];
-	}
+	if (defaultValues) [defaultValues release];
+	if (selectedTable) [selectedTable release];
 	
-	// Check for errors, but only if the query wasn't cancelled
-	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [mySQLConnection getLastErrorMessage]] forKey:@"message"];
-		[[self onMainThread] showErrorSheetWith:errorDictionary];
-	} 
-	else {
-		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-	}
-	
-	[tableDocumentInstance endTask];
-	
-	[pool drain];
+	[super dealloc];
 }
 
 @end

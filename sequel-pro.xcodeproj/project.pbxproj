@@ -53,6 +53,8 @@
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
+		17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A7773311C52D8E001E27B4 /* SPIndexesController.m */; };
+		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
 		17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B576101601C300F057DE /* libmysqlclient.a */; };
 		17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
 		17B7B592101602AE00F057DE /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B591101602AE00F057DE /* libssl.dylib */; };
@@ -484,6 +486,9 @@
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
 		17A66F6A10B1ED59004C9B12 /* old-appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "old-appicon.icns"; sourceTree = "<group>"; };
+		17A7773211C52D8E001E27B4 /* SPIndexesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIndexesController.h; sourceTree = "<group>"; };
+		17A7773311C52D8E001E27B4 /* SPIndexesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexesController.m; sourceTree = "<group>"; };
+		17A7773711C52E61001E27B4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/IndexesView.xib; sourceTree = "<group>"; };
 		17B7B5621016012700F057DE /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17B7B576101601C300F057DE /* libmysqlclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient.a; sourceTree = "<group>"; };
 		17B7B577101601C300F057DE /* libmysqlclient_r.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient_r.a; sourceTree = "<group>"; };
@@ -1196,6 +1201,8 @@
 				BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */,
 				BC27779E11514B940034DF6A /* SPNavigatorController.h */,
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
+				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
+				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -1690,6 +1697,7 @@
 				174CE11C10AB80B5008F892B /* DatabaseProcessList.xib */,
 				1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */,
 				58C3507310B9ADEA00D37E14 /* ContentPaginationView.xib */,
+				17A7773611C52E61001E27B4 /* IndexesView.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -2279,6 +2287,7 @@
 				BCCDED6C115940CB00285E65 /* sync_arrows_05.tiff in Resources */,
 				BCCDED6D115940CB00285E65 /* sync_arrows_06.tiff in Resources */,
 				58A8A72711A0149100B95749 /* MainWindow.xib in Resources */,
+				17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2492,6 +2501,7 @@
 				173C839411AAD32A00B8B084 /* SPSQLExporterDelegate.m in Sources */,
 				173C839511AAD32A00B8B084 /* SPXMLExporterDelegate.m in Sources */,
 				58B909A511C3B919000826E5 /* DMLocalizedNibBundle.m in Sources */,
+				17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2557,6 +2567,15 @@
 				1792C13110AD752100ABE758 /* English */,
 			);
 			name = DatabaseServerVariables.xib;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		17A7773611C52E61001E27B4 /* IndexesView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				17A7773711C52E61001E27B4 /* English */,
+			);
+			name = IndexesView.xib;
 			path = ..;
 			sourceTree = "<group>";
 		};
