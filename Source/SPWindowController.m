@@ -284,8 +284,9 @@
 		// Update the old window
 		[[draggedFromWindow windowController] updateSelectedTableDocument];
 
-		// Update the item's document's window
+		// Update the item's document's window and controller
 		[draggedDocument willResignActiveTabInWindow];
+		[draggedDocument setParentWindowController:[[tabBarControl window] windowController]];
 		[draggedDocument setParentWindow:[tabBarControl window]];
 		[draggedDocument didBecomeActiveTabInWindow];
 
