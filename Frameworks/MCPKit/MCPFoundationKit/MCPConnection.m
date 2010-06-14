@@ -2191,7 +2191,12 @@ void performThreadedKeepAlive(void *ptr)
 					NSString *def = [self stringWithCString:row[5] usingEncoding:theConnectionEncoding] ;
 					NSString *extra = [self stringWithCString:row[6] usingEncoding:theConnectionEncoding] ;
 					NSString *priv = [self stringWithCString:row[7] usingEncoding:theConnectionEncoding] ;
-					NSString *comment = [self stringWithCString:row[8] usingEncoding:theConnectionEncoding] ;
+					NSString *comment;
+					if (sizeof(row) > 8) {
+						comment = [self stringWithCString:row[8] usingEncoding:theConnectionEncoding] ;
+					} else {
+						comment = @"";
+					}
 					NSArray *a = [coll componentsSeparatedByString:@"_"];
 					charset = ([a count]) ? [a objectAtIndex:0] : @"";
 
