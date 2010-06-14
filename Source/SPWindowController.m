@@ -329,31 +329,9 @@
 
 	// if cell is not selected show full title as tooltip
 	} else {
-		SPDatabaseDocument *doc = [tabViewItem identifier];
-		NSMutableString *tabTitle;
-
-		// Determine name details
-		NSString *pathName = @"";
-		if ([[[doc fileURL] path] length] && ![doc isUntitled])
-			pathName = [NSString stringWithFormat:@"%@ — ", [[[doc fileURL] path] lastPathComponent]];
-
-		if ([doc getConnection] == nil)
-			return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
-
-		tabTitle = [NSMutableString string];
-		[tabTitle appendString:[doc name]];
-		if ([doc database]) {
-			if ([tabTitle length]) [tabTitle appendString:@"/"];
-			[tabTitle appendString:[doc database]];
-		}
-		if ([[doc table] length]) {
-			if ([tabTitle length]) [tabTitle appendString:@"/"];
-			[tabTitle appendString:[doc table]];
-		}
-		return tabTitle;
+		return [[[tabViewItem identifier] parentWindow] title];
 	}
 
-	return @"";
 }
 
 /**
@@ -467,6 +445,11 @@
 - (void)tabDragStopped:(id)sender
 {
 	[tabBar setHideForSingleTab:YES];
+}
+
+- (IBAction) openSelectedTabInNewWindow:(id)sender
+{
+	// not yet implemented
 }
 
 #pragma mark -

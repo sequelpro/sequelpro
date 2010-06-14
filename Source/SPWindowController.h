@@ -39,6 +39,7 @@
 
 // Database connection management
 - (IBAction) addNewConnection:(id)sender;
+- (IBAction) openSelectedTabInNewWindow:(id)sender;
 - (SPDatabaseDocument *) selectedTableDocument;
 - (void) updateSelectedTableDocument;
 - (void) updateAllTabTitles:(id)sender;

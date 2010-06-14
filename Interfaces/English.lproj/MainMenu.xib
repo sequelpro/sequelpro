@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="24"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1701,6 +1701,43 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
+								<object class="NSMenuItem" id="952513030">
+									<reference key="NSMenu" ref="850647710"/>
+									<string key="NSTitle">Select Next Tab</string>
+									<string type="base64-UTF8" key="NSKeyEquiv">CQ</string>
+									<int key="NSKeyEquivModMask">262144</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="591568093">
+									<reference key="NSMenu" ref="850647710"/>
+									<string key="NSTitle">Select Previous Tab</string>
+									<string type="base64-UTF8" key="NSKeyEquiv">CQ</string>
+									<int key="NSKeyEquivModMask">393216</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="875212976">
+									<reference key="NSMenu" ref="850647710"/>
+									<bool key="NSIsHidden">YES</bool>
+									<string key="NSTitle">Move Tab to New Window</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="1058401788">
+									<reference key="NSMenu" ref="850647710"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
 								<object class="NSMenuItem" id="751336988">
 									<reference key="NSMenu" ref="850647710"/>
 									<string key="NSTitle">Bring All to Front</string>
@@ -2851,6 +2888,30 @@
 					</object>
 					<int key="connectionID">1100</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">selectPreviousDocumentTab:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="591568093"/>
+					</object>
+					<int key="connectionID">1105</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">selectNextDocumentTab:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="952513030"/>
+					</object>
+					<int key="connectionID">1106</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openSelectedTabInNewWindow:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="875212976"/>
+					</object>
+					<int key="connectionID">1110</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2914,6 +2975,10 @@
 							<reference ref="324106717"/>
 							<reference ref="73952783"/>
 							<reference ref="744950758"/>
+							<reference ref="1058401788"/>
+							<reference ref="952513030"/>
+							<reference ref="591568093"/>
+							<reference ref="875212976"/>
 						</object>
 						<reference key="parent" ref="232591944"/>
 					</object>
@@ -4168,6 +4233,26 @@
 						<reference key="object" ref="789392667"/>
 						<reference key="parent" ref="466354362"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1101</int>
+						<reference key="object" ref="1058401788"/>
+						<reference key="parent" ref="850647710"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1102</int>
+						<reference key="object" ref="875212976"/>
+						<reference key="parent" ref="850647710"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1103</int>
+						<reference key="object" ref="952513030"/>
+						<reference key="parent" ref="850647710"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1104</int>
+						<reference key="object" ref="591568093"/>
+						<reference key="parent" ref="850647710"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4217,6 +4302,10 @@
 					<string>1095.IBPluginDependency</string>
 					<string>1096.IBPluginDependency</string>
 					<string>1099.IBPluginDependency</string>
+					<string>1101.IBPluginDependency</string>
+					<string>1102.IBPluginDependency</string>
+					<string>1103.IBPluginDependency</string>
+					<string>1104.IBPluginDependency</string>
 					<string>111.IBPluginDependency</string>
 					<string>111.ImportedFromIB2</string>
 					<string>129.IBPluginDependency</string>
@@ -4553,6 +4642,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4627,11 +4720,11 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{695, 305}, {194, 73}}</string>
+					<string>{{528, 322}, {269, 143}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{299, 717}, {511, 20}}</string>
+					<string>{{149, 465}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4647,7 +4740,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{491, 374}, {251, 343}}</string>
+					<string>{{341, 122}, {251, 343}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4908,7 +5001,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1100</int>
+			<int key="maxID">1110</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6293,12 +6386,14 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addNewConnection:</string>
 							<string>closeTab:</string>
+							<string>openSelectedTabInNewWindow:</string>
 							<string>selectNextDocumentTab:</string>
 							<string>selectPreviousDocumentTab:</string>
 							<string>updateAllTabTitles:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
