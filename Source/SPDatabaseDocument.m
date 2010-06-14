@@ -636,11 +636,11 @@
 	if ([self isUntitled]) [[parentWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
 
 	// Set the connection encoding
-	NSString *encodingName = [prefs objectForKey:SPDefaultEncoding];
-	if ( [encodingName isEqualToString:@"Autodetect"] ) {
+	NSNumber *encodingType = [prefs objectForKey:SPDefaultEncoding];
+	if ( [encodingType intValue] == SPEncodingAutodetect ) {
 		[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
 	} else {
-		[self setConnectionEncoding:[self mysqlEncodingFromDisplayEncoding:encodingName] reloadingViews:NO];
+		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
 	}
 
 	// Get the mysql version
@@ -888,6 +888,36 @@
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 	
 	[databaseNameField setStringValue:@""];
+
+	// Populate the database encoding popup button with a default menu item
+	[databaseEncodingButton removeAllItems];
+	[databaseEncodingButton addItemWithTitle:@"Default"];
+
+	// Retrieve the server-supported encodings and add them to the menu
+	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	NSString *utf8MenuItemTitle = nil;
+	if ([encodings count] > 0
+		&& ([mySQLConnection serverMajorVersion] > 4
+			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
+	{
+		[[databaseEncodingButton menu] addItem:[NSMenuItem separatorItem]];
+		for (NSDictionary *encoding in encodings) {
+			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
+			[databaseEncodingButton addItemWithTitle:menuItemTitle];
+
+			// If the UTF8 entry has been encountered, store the title
+			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:@"utf8"]) {
+				utf8MenuItemTitle = [NSString stringWithString:menuItemTitle];
+			}
+		}
+
+		// If a UTF8 entry was found, promote it to the top of the list
+		if (utf8MenuItemTitle) {
+			[[databaseEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
+			[databaseEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
+		}
+	}
+
 	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:parentWindow
@@ -1495,9 +1525,9 @@
 
 	// update the selected menu item
 	if (_encodingViaLatin1) {
-		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
+		[self updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
 	} else {
-		[self updateEncodingMenuWithSelectedEncoding:[self encodingNameFromMySQLEncoding:mysqlEncoding]];
+		[self updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:mysqlEncoding]];
 	}
 
 	// Reload stuff as appropriate
@@ -1531,80 +1561,80 @@
  * 
  * @param NSString *encoding - the title of the menu item which will be selected
  */
-- (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding
+- (void)updateEncodingMenuWithSelectedEncoding:(NSNumber *)encodingTag
 {
-	NSEnumerator *dbEncodingMenuEn = [[selectEncodingMenu itemArray] objectEnumerator];
-	id menuItem;
+	NSInteger itemToSelect = [encodingTag integerValue];
 	NSInteger correctStateForMenuItem;
-	while (menuItem = [dbEncodingMenuEn nextObject]) {
-		correctStateForMenuItem = [[menuItem title] isEqualToString:encoding] ? NSOnState : NSOffState;
 
-		if ([menuItem state] == correctStateForMenuItem) // don't re-apply state incase it causes performance issues
+	for (NSMenuItem *aMenuItem in [selectEncodingMenu itemArray]) {
+		correctStateForMenuItem = ([aMenuItem tag] == itemToSelect) ? NSOnState : NSOffState;
+
+		if ([aMenuItem state] == correctStateForMenuItem) // don't re-apply state incase it causes performance issues
 			continue;
 
-		[menuItem setState:correctStateForMenuItem];
+		[aMenuItem setState:correctStateForMenuItem];
 	}
 }
 
 /**
  * Returns the display name for a mysql encoding
  */
-- (NSString *)encodingNameFromMySQLEncoding:(NSString *)mysqlEncoding
+- (NSNumber *)encodingTagFromMySQLEncoding:(NSString *)mysqlEncoding
 {
 	NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
-									@"UCS-2 Unicode (ucs2)", @"ucs2",
-									@"UTF-8 Unicode (utf8)", @"utf8",
-									@"UTF-8 Unicode via Latin 1", @"utf8-",
-									@"US ASCII (ascii)", @"ascii",
-									@"ISO Latin 1 (latin1)", @"latin1",
-									@"Mac Roman (macroman)", @"macroman",
-									@"Windows Latin 2 (cp1250)", @"cp1250",
-									@"ISO Latin 2 (latin2)", @"latin2",
-									@"Windows Arabic (cp1256)", @"cp1256",
-									@"ISO Greek (greek)", @"greek",
-									@"ISO Hebrew (hebrew)", @"hebrew",
-									@"ISO Turkish (latin5)", @"latin5",
-									@"Windows Baltic (cp1257)", @"cp1257",
-									@"Windows Cyrillic (cp1251)", @"cp1251",
-									@"Big5 Traditional Chinese (big5)", @"big5",
-									@"Shift-JIS Japanese (sjis)", @"sjis",
-									@"EUC-JP Japanese (ujis)", @"ujis",
-									@"EUC-KR Korean (euckr)", @"euckr",
+									[NSNumber numberWithInt:SPEncodingUCS2], @"ucs2",
+									[NSNumber numberWithInt:SPEncodingUTF8], @"utf8",
+									[NSNumber numberWithInt:SPEncodingUTF8viaLatin1], @"utf8-",
+									[NSNumber numberWithInt:SPEncodingASCII], @"ascii",
+									[NSNumber numberWithInt:SPEncodingLatin1], @"latin1",
+									[NSNumber numberWithInt:SPEncodingMacRoman], @"macroman",
+									[NSNumber numberWithInt:SPEncodingCP1250Latin2], @"cp1250",
+									[NSNumber numberWithInt:SPEncodingISOLatin2], @"latin2",
+									[NSNumber numberWithInt:SPEncodingCP1256Arabic], @"cp1256",
+									[NSNumber numberWithInt:SPEncodingGreek], @"greek",
+									[NSNumber numberWithInt:SPEncodingHebrew], @"hebrew",
+									[NSNumber numberWithInt:SPEncodingLatin5Turkish], @"latin5",
+									[NSNumber numberWithInt:SPEncodingCP1257WinBaltic], @"cp1257",
+									[NSNumber numberWithInt:SPEncodingCP1251WinCyrillic], @"cp1251",
+									[NSNumber numberWithInt:SPEncodingBig5Chinese], @"big5",
+									[NSNumber numberWithInt:SPEncodingShiftJISJapanese], @"sjis",
+									[NSNumber numberWithInt:SPEncodingEUCJPJapanese], @"ujis",
+									[NSNumber numberWithInt:SPEncodingEUCKRKorean], @"euckr",
 									nil];
-	NSString *encodingName = [translationMap valueForKey:mysqlEncoding];
+	NSNumber *encodingTag = [translationMap valueForKey:mysqlEncoding];
 
-	if (!encodingName)
-		return [NSString stringWithFormat:@"Unknown Encoding (%@)", mysqlEncoding, nil];
+	if (!encodingTag)
+		return [NSNumber numberWithInt:SPEncodingAutodetect];
 
-	return encodingName;
+	return encodingTag;
 }
 
 /**
  * Returns the mysql encoding for an encoding string that is displayed to the user
  */
-- (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName
+- (NSString *)mysqlEncodingFromEncodingTag:(NSNumber *)encodingTag
 {
 	NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
-									@"ucs2", @"UCS-2 Unicode (ucs2)",
-									@"utf8", @"UTF-8 Unicode (utf8)",
-									@"utf8-", @"UTF-8 Unicode via Latin 1",
-									@"ascii", @"US ASCII (ascii)",
-									@"latin1", @"ISO Latin 1 (latin1)",
-									@"macroman", @"Mac Roman (macroman)",
-									@"cp1250", @"Windows Latin 2 (cp1250)",
-									@"latin2", @"ISO Latin 2 (latin2)",
-									@"cp1256", @"Windows Arabic (cp1256)",
-									@"greek", @"ISO Greek (greek)",
-									@"hebrew", @"ISO Hebrew (hebrew)",
-									@"latin5", @"ISO Turkish (latin5)",
-									@"cp1257", @"Windows Baltic (cp1257)",
-									@"cp1251", @"Windows Cyrillic (cp1251)",
-									@"big5", @"Big5 Traditional Chinese (big5)",
-									@"sjis", @"Shift-JIS Japanese (sjis)",
-									@"ujis", @"EUC-JP Japanese (ujis)",
-									@"euckr", @"EUC-KR Korean (euckr)",
+									@"ucs2", [NSString stringWithFormat:@"%i", SPEncodingUCS2],
+									@"utf8", [NSString stringWithFormat:@"%i", SPEncodingUTF8],
+									@"utf8-", [NSString stringWithFormat:@"%i", SPEncodingUTF8viaLatin1],
+									@"ascii", [NSString stringWithFormat:@"%i", SPEncodingASCII],
+									@"latin1", [NSString stringWithFormat:@"%i", SPEncodingLatin1],
+									@"macroman", [NSString stringWithFormat:@"%i", SPEncodingMacRoman],
+									@"cp1250", [NSString stringWithFormat:@"%i", SPEncodingCP1250Latin2],
+									@"latin2", [NSString stringWithFormat:@"%i", SPEncodingISOLatin2],
+									@"cp1256", [NSString stringWithFormat:@"%i", SPEncodingCP1256Arabic],
+									@"greek", [NSString stringWithFormat:@"%i", SPEncodingGreek],
+									@"hebrew", [NSString stringWithFormat:@"%i", SPEncodingHebrew],
+									@"latin5", [NSString stringWithFormat:@"%i", SPEncodingLatin5Turkish],
+									@"cp1257", [NSString stringWithFormat:@"%i", SPEncodingCP1257WinBaltic],
+									@"cp1251", [NSString stringWithFormat:@"%i", SPEncodingCP1251WinCyrillic],
+									@"big5", [NSString stringWithFormat:@"%i", SPEncodingBig5Chinese],
+									@"sjis", [NSString stringWithFormat:@"%i", SPEncodingShiftJISJapanese],
+									@"ujis", [NSString stringWithFormat:@"%i", SPEncodingEUCJPJapanese],
+									@"euckr", [NSString stringWithFormat:@"%i", SPEncodingEUCKRKorean],
 									nil];
-	NSString *mysqlEncoding = [translationMap valueForKey:encodingName];
+	NSString *mysqlEncoding = [translationMap valueForKey:[NSString stringWithFormat:@"%i", [encodingTag intValue]]];
 
 	if (!mysqlEncoding)
 		return @"utf8";
@@ -1646,7 +1676,7 @@
  */
 - (IBAction)chooseEncoding:(id)sender
 {
-	[self setConnectionEncoding:[self mysqlEncodingFromDisplayEncoding:[(NSMenuItem *)sender title]] reloadingViews:YES];
+	[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:[NSNumber numberWithInt:[(NSMenuItem *)sender tag]]] reloadingViews:YES];
 }
 
 /**
@@ -4366,7 +4396,7 @@
 	
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
 	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromDisplayEncoding:[databaseEncodingButton title]] backtickQuotedString]];
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromEncodingTag:[databaseEncodingButton tag]] backtickQuotedString]];
 	}
 	
 	// Create the database

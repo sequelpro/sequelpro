@@ -309,6 +309,34 @@
 		[prefs removeObjectForKey:@"SUSendProfileInfo"];
 	}
 
+	// For versions prior to 2325 (<0.9.9), convert the old encoding pref string into the new localizable constant
+	if  (recordedVersionNumber < 2325 && [prefs objectForKey:@"DefaultEncoding"] && [[prefs objectForKey:@"DefaultEncoding"] isKindOfClass:[NSString class]]) {
+		NSDictionary *encodingMap = [NSDictionary dictionaryWithObjectsAndKeys:
+											[NSNumber numberWithInt:SPEncodingAutodetect], @"Autodetect",
+											[NSNumber numberWithInt:SPEncodingUCS2], @"UCS-2 Unicode (ucs2)",
+											[NSNumber numberWithInt:SPEncodingUTF8], @"UTF-8 Unicode (utf8)",
+											[NSNumber numberWithInt:SPEncodingUTF8viaLatin1], @"UTF-8 Unicode via Latin 1",
+											[NSNumber numberWithInt:SPEncodingASCII], @"US ASCII (ascii)",
+											[NSNumber numberWithInt:SPEncodingLatin1], @"ISO Latin 1 (latin1)",
+											[NSNumber numberWithInt:SPEncodingMacRoman], @"Mac Roman (macroman)",
+											[NSNumber numberWithInt:SPEncodingCP1250Latin2], @"Windows Latin 2 (cp1250)",
+											[NSNumber numberWithInt:SPEncodingISOLatin2], @"ISO Latin 2 (latin2)",
+											[NSNumber numberWithInt:SPEncodingCP1256Arabic], @"Windows Arabic (cp1256)",
+											[NSNumber numberWithInt:SPEncodingGreek], @"ISO Greek (greek)",
+											[NSNumber numberWithInt:SPEncodingHebrew], @"ISO Hebrew (hebrew)",
+											[NSNumber numberWithInt:SPEncodingLatin5Turkish], @"ISO Turkish (latin5)",
+											[NSNumber numberWithInt:SPEncodingCP1257WinBaltic], @"Windows Baltic (cp1257)",
+											[NSNumber numberWithInt:SPEncodingCP1251WinCyrillic], @"Windows Cyrillic (cp1251)",
+											[NSNumber numberWithInt:SPEncodingBig5Chinese], @"Big5 Traditional Chinese (big5)",
+											[NSNumber numberWithInt:SPEncodingShiftJISJapanese], @"Shift-JIS Japanese (sjis)",
+											[NSNumber numberWithInt:SPEncodingEUCJPJapanese], @"EUC-JP Japanese (ujis)",
+											[NSNumber numberWithInt:SPEncodingEUCKRKorean], @"EUC-KR Korean (euckr)",
+											nil];
+		NSNumber *newMappedValue = [encodingMap valueForKey:[prefs objectForKey:@"DefaultEncoding"]];
+		if (newMappedValue == nil) newMappedValue = [NSNumber numberWithInt:0];
+		[prefs setObject:newMappedValue forKey:@"DefaultEncodingTag"];
+	}
+
 	// Update the prefs revision
 	[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];	
 }
@@ -987,6 +1015,19 @@
 	// Mark the currently selected field in the window as having finished editing, to trigger saves.
 	if ([preferencesWindow firstResponder])
 		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
+}
+
+// -------------------------------------------------------------------------------
+// windowWillResize:toSize:
+// Trap window resize notifications and use them to disable resizing on most tabs
+// - except for the favourites tab.
+// -------------------------------------------------------------------------------
+- (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize
+{
+	if ([sender showsResizeIndicator])
+		return frameSize;
+	else
+		return [sender frame].size;
 }
 
 #pragma mark -

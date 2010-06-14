@@ -287,6 +287,35 @@
 		[tableTypeButton addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
 	
+	// Populate the table encoding popup button with a default menu item
+	[tableEncodingButton removeAllItems];
+	[tableEncodingButton addItemWithTitle:@"Default"];
+
+	// Retrieve the server-supported encodings and add them to the menu
+	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	NSString *utf8MenuItemTitle = nil;
+	if ([encodings count] > 0
+		&& ([mySQLConnection serverMajorVersion] > 4
+			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
+	{
+		[[tableEncodingButton menu] addItem:[NSMenuItem separatorItem]];
+		for (NSDictionary *encoding in encodings) {
+			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
+			[tableEncodingButton addItemWithTitle:menuItemTitle];
+
+			// If the UTF8 entry has been encountered, store the menu title
+			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:@"utf8"]) {
+				utf8MenuItemTitle = [NSString stringWithString:menuItemTitle];
+			}
+		}
+
+		// If a UTF8 entry was found, promote it to the top of the list
+		if (utf8MenuItemTitle) {
+			[[tableEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
+			[tableEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
+		}
+	}
+	
 	[NSApp beginSheet:tableSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
@@ -675,7 +704,7 @@
 
 		// If encoding is set to Autodetect, update the connection character set encoding
 		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] isEqualToString:@"Autodetect"]) {
+		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] intValue] == SPEncodingAutodetect) {
 			if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
 				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
 				[tableDataInstance resetAllData];
@@ -2033,7 +2062,7 @@
 		
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableEncodingButton indexOfSelectedItem] > 0) {
-		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [[tableDocumentInstance mysqlEncodingFromDisplayEncoding:[tableEncodingButton title]] backtickQuotedString]];
+		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [[tableDocumentInstance mysqlEncodingFromEncodingTag:[tableEncodingButton tag]] backtickQuotedString]];
 	}
 	
 	// If there is a type selected other than the default we must specify it in CREATE TABLE statement

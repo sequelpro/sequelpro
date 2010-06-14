@@ -239,9 +239,9 @@
 - (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
-- (void)updateEncodingMenuWithSelectedEncoding:(NSString *)encoding;
-- (NSString *)encodingNameFromMySQLEncoding:(NSString *)mysqlEncoding;
-- (NSString *)mysqlEncodingFromDisplayEncoding:(NSString *)encodingName;
+- (void)updateEncodingMenuWithSelectedEncoding:(NSNumber *)encodingTag;
+- (NSNumber *)encodingTagFromMySQLEncoding:(NSString *)mysqlEncoding;
+- (NSString *)mysqlEncodingFromEncodingTag:(NSNumber *)encodingTag;
 
 // Table methods
 - (IBAction)showCreateTableSyntax:(id)sender;

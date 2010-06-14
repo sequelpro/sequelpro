@@ -151,6 +151,30 @@ typedef enum
 	SPMainMenuHelp      = 7
 } SPMainMenuTags;
 
+// Encoding constants
+typedef enum
+{
+	SPEncodingAutodetect		= 0,
+	SPEncodingUCS2				= 10,
+	SPEncodingUTF8				= 20,
+	SPEncodingUTF8viaLatin1		= 30,
+	SPEncodingASCII				= 40,
+	SPEncodingLatin1			= 50,
+	SPEncodingMacRoman			= 60,
+	SPEncodingCP1250Latin2		= 70,
+	SPEncodingISOLatin2			= 80,
+	SPEncodingCP1256Arabic		= 90,
+	SPEncodingGreek				= 100,
+	SPEncodingHebrew			= 110,
+	SPEncodingLatin5Turkish		= 120,
+	SPEncodingCP1257WinBaltic	= 130,
+	SPEncodingCP1251WinCyrillic = 140,
+	SPEncodingBig5Chinese		= 150,
+	SPEncodingShiftJISJapanese	= 160,
+	SPEncodingEUCJPJapanese		= 170,
+	SPEncodingEUCKRKorean		= 180
+} SPEncodingTypes;
+
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;
 

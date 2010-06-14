@@ -29,6 +29,7 @@
 @interface SPDatabaseData (PrivateAPI)
 
 - (NSMutableArray *)_getDatabaseDataForQuery:(NSString *)query;
+NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 
 @end
 
@@ -392,8 +393,21 @@ const SPDatabaseCharSets charsets[] =
 		
 		// Try to retrieve the available character set encodings from the database
 		// Check the information_schema.character_sets table is accessible
-		if (serverMajorVersion >= 5)
-			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];	
+		if (serverMajorVersion >= 5) {
+			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];
+		} else if (serverMajorVersion == 4 && serverMinorVersion >= 1) {
+			NSArray *supportedEncodings = [self _getDatabaseDataForQuery:@"SHOW CHARACTER SET"];
+			supportedEncodings = [supportedEncodings sortedArrayUsingFunction:_sortMySQL4CharsetEntry context:nil];
+			for (NSDictionary *anEncoding in supportedEncodings) {
+				NSDictionary *convertedEncoding = [NSDictionary dictionaryWithObjectsAndKeys:
+													[anEncoding objectForKey:@"Charset"], @"CHARACTER_SET_NAME",
+													[anEncoding objectForKey:@"Description"], @"DESCRIPTION",
+													[anEncoding objectForKey:@"Default collation"], @"DEFAULT_COLLATE_NAME",
+													[anEncoding objectForKey:@"Maxlen"], @"MAXLEN",
+													nil];
+				[characterSetEncodings addObject:convertedEncoding];
+			}
+		}
 
 		// If that failed, get the list of character set encodings from the hard-coded list
 		if (![characterSetEncodings count]) {
@@ -451,6 +465,14 @@ const SPDatabaseCharSets charsets[] =
 	}
 
 	return array;
+}
+
+/**
+ * Sorts a 4.1-style SHOW CHARACTER SET result by the Charset key.
+ */
+NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context)
+{
+	return [[itemOne objectForKey:@"Charset"] compare:[itemTwo objectForKey:@"Charset"]];
 }
 
 @end
