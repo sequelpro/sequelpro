@@ -403,6 +403,9 @@
 	// Set the window controller as the window's delegate
 	[newWindow setDelegate:newWindowController];
 
+	// Set window title
+	[newWindow setTitle:[[[tabViewItem identifier] parentWindow] title]];
+
 	// Return the window's tab bar
 	return [newWindowController valueForKey:@"tabBar"];
 }
