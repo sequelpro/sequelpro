@@ -231,11 +231,9 @@
 /**
  * Performs various interface validation
  */
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
-	id object = [aNotification object];
-
-	if (object == indexesTableView) {
+	if ([notification object] == indexesTableView) {
 		
 		// Check if there is currently an index selected and change button state accordingly
 		[removeIndexButton setEnabled:([indexesTableView numberOfSelectedRows] > 0 && [tablesList tableType] == SPTableTypeTable)];
@@ -247,30 +245,12 @@
 #pragma mark Text field delegate methods
 
 /**
- * When an index other than a primary key is being added ensure there is a name specified.
+ * Only enable the add button if there is at least one indexed column.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
-{	
-	// Only proceed if we are not adding a primary key
-	if ([indexTypePopUpButton indexOfSelectedItem] == 0) return;
-	
-	if ([notification object] == indexNameTextField) {
-		[addIndexButton setEnabled:(([[[indexNameTextField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0) && 
-									([[[indexedColumnsComboBox stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0))]; 
-	}
-}
-
-#pragma mark -
-#pragma mark Combo box delegate methods
-
-/**
- * Only enable the add button if there is an index name and at least one indexed column.
- */
-- (void)comboBoxSelectionDidChange:(NSNotification *)notification
-{	
-	if ([notification object] == indexedColumnsComboBox) {		
-		[addIndexButton setEnabled:(([[[indexNameTextField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0) && 
-									([[[indexedColumnsComboBox stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0))]; 
+{		
+	if ([notification object] == indexedColumnsComboBox) {
+		[addIndexButton setEnabled:([[[indexedColumnsComboBox stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0)]; 
 	}
 }
 

@@ -343,7 +343,7 @@
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="289434200">
-								<int key="NSCellFlags">604110336</int>
+								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">138018816</int>
 								<string key="NSContents">Add</string>
 								<reference key="NSSupport" ref="26"/>
@@ -792,9 +792,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{568, 540}, {267, 139}}</string>
+					<string>{{644, 219}, {267, 139}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{568, 540}, {267, 139}}</string>
+					<string>{{644, 219}, {267, 139}}</string>
 					<integer value="1"/>
 					<integer value="0"/>
 					<integer value="1"/>
@@ -1303,6 +1303,7 @@
 							<string>indexTypePopUpButton</string>
 							<string>indexedColumnsComboBox</string>
 							<string>indexesTableView</string>
+							<string>removeIndexButton</string>
 							<string>tableData</string>
 							<string>tableStructure</string>
 							<string>tablesList</string>
@@ -1315,6 +1316,7 @@
 							<string>NSPopUpButton</string>
 							<string>NSComboBox</string>
 							<string>NSTableView</string>
+							<string>NSButton</string>
 							<string>SPTableData</string>
 							<string>SPTableStructure</string>
 							<string>SPTablesList</string>
