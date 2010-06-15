@@ -289,9 +289,12 @@
 	[removeIndexButton setEnabled:NO];
 	[editTableButton setEnabled:NO];
 
-	// If no table is selected, refresh the table display to blank and return
+	// If no table is selected, refresh the table/index display to blank and return
 	if (!selectedTable) {
 		[tableSourceView reloadData];
+		// Empty indexesController's fields and indices explicitly before reloading
+		[indexesController setFields:[NSArray array]];
+		[indexesController setIndexes:[NSArray array]];
 		[indexesTableView reloadData];
 		return;
 	}
@@ -1451,11 +1454,6 @@ would result in a position change.
 		if ([tableSourceView numberOfRows] == 1) {
 			[removeFieldButton setEnabled:NO];
 		}
-	}
-	if (object == indexesTableView) {
-		
-		// Check if there is currently an index selected and change button state accordingly
-		[removeIndexButton setEnabled:([indexesTableView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable)];
 	}
 }
 

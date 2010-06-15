@@ -226,6 +226,24 @@
 }
 
 #pragma mark -
+#pragma mark TableView delegate methods
+
+/**
+ * Performs various interface validation
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+	id object = [aNotification object];
+
+	if (object == indexesTableView) {
+		
+		// Check if there is currently an index selected and change button state accordingly
+		[removeIndexButton setEnabled:([indexesTableView numberOfSelectedRows] > 0 && [tablesList tableType] == SPTableTypeTable)];
+	}
+	
+}
+
+#pragma mark -
 #pragma mark Text field delegate methods
 
 /**

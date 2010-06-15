@@ -36,6 +36,7 @@
 	// Index table view
 	IBOutlet NSTableView *indexesTableView;
 	IBOutlet NSButton *addIndexButton;
+	IBOutlet NSButton *removeIndexButton;
 	
 	// New index sheet
 	IBOutlet NSPopUpButton *indexTypePopUpButton;
