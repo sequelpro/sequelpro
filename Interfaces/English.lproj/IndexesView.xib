@@ -157,6 +157,7 @@
 								<int key="NSCellFlags2">4326400</int>
 								<string key="NSContents">PRIMARY</string>
 								<reference key="NSSupport" ref="26"/>
+								<string key="NSPlaceholderString">optional</string>
 								<reference key="NSControlView" ref="978293712"/>
 								<bool key="NSDrawsBackground">YES</bool>
 								<object class="NSColor" key="NSBackgroundColor" id="253907032">
