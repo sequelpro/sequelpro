@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5345"/>
+			<integer value="5343"/>
 			<integer value="5468"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -77,7 +77,7 @@
 													<object class="NSTableView" id="1012579052">
 														<reference key="NSNextResponder" ref="233523429"/>
 														<int key="NSvFlags">4352</int>
-														<string key="NSFrameSize">{202, 541}</string>
+														<string key="NSFrameSize">{202, 538}</string>
 														<reference key="NSSuperview" ref="233523429"/>
 														<bool key="NSEnabled">YES</bool>
 														<object class="_NSCornerView" key="NSCornerView">
@@ -171,7 +171,7 @@
 														<int key="NSTableViewDraggingDestinationStyle">1</int>
 													</object>
 												</object>
-												<string key="NSFrameSize">{202, 541}</string>
+												<string key="NSFrameSize">{202, 538}</string>
 												<reference key="NSSuperview" ref="524598165"/>
 												<reference key="NSNextKeyView" ref="1012579052"/>
 												<reference key="NSDocView" ref="1012579052"/>
@@ -201,7 +201,7 @@
 												<double key="NSPercent">0.99590158462524414</double>
 											</object>
 										</object>
-										<string key="NSFrame">{{0, 22}, {202, 541}}</string>
+										<string key="NSFrame">{{0, 24}, {202, 538}}</string>
 										<reference key="NSSuperview" ref="720852944"/>
 										<reference key="NSNextKeyView" ref="233523429"/>
 										<int key="NSsFlags">560</int>
@@ -360,7 +360,6 @@
 															</object>
 														</object>
 													</object>
-													<int key="NSSelectedIndex">1</int>
 													<bool key="NSPullDown">YES</bool>
 													<int key="NSPreferredEdge">1</int>
 													<bool key="NSUsesItemFromMenu">YES</bool>
@@ -369,7 +368,7 @@
 												</object>
 											</object>
 										</object>
-										<string key="NSFrameSize">{202, 23}</string>
+										<string key="NSFrame">{{0, 1}, {202, 23}}</string>
 										<reference key="NSSuperview" ref="720852944"/>
 										<bool key="BWABBIsResizable">YES</bool>
 										<bool key="BWABBIsAtBottom">YES</bool>
