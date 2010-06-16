@@ -1613,55 +1613,58 @@ void performThreadedKeepAlive(void *ptr)
 	// Set queryCancelled to prevent query retries
 	queryCancelled = YES;
 
-	// For MySQL server versions >=5, try to kill the connection.  This requires
-	// setting up a new connection, and running a KILL QUERY via it.
-	if ([self serverMajorVersion] >= 5) {
+	// Set up a new connection, and running a KILL QUERY via it.
+	MYSQL *killerConnection = mysql_init(NULL);
+	if (killerConnection) {
+		const char *theLogin = [self cStringFromString:connectionLogin];
+		const char *theHost;
+		const char *thePass = NULL;
+		const char *theSocket;
+		void *connectionSetupStatus;
 
-		MYSQL *killerConnection = mysql_init(NULL);
-		if (killerConnection) {
-			const char *theLogin = [self cStringFromString:connectionLogin];
-			const char *theHost;
-			const char *thePass = NULL;
-			const char *theSocket;
-			void *connectionSetupStatus;
+		mysql_options(killerConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 
-			mysql_options(killerConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
-
-			// Set up the host, socket and password as per the connect method
-			if (!connectionHost || ![connectionHost length]) {
-				theHost = NULL;
+		// Set up the host, socket and password as per the connect method
+		if (!connectionHost || ![connectionHost length]) {
+			theHost = NULL;
+		} else {
+			theHost = [self cStringFromString:connectionHost];
+		}
+		if (connectionSocket == nil || ![connectionSocket length]) {
+			theSocket = kMCPConnectionDefaultSocket;
+		} else {
+			theSocket = [self cStringFromString:connectionSocket];
+		}
+		if (!connectionPassword) {
+			if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+				thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+			}
+		} else {		
+			thePass = [self cStringFromString:connectionPassword];
+		}
+		
+		// Connect
+		connectionSetupStatus = mysql_real_connect(killerConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+		thePass = NULL;
+		if (connectionSetupStatus) {
+		
+			// Set up a KILL query.  For MySQL 5+, kill just the query; otherwise, kill the thread.
+			NSStringEncoding killerConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(killerConnection)];
+			NSString *killQueryString;
+			if ([self serverMajorVersion] >= 5) {
+				killQueryString = [NSString stringWithFormat:@"KILL QUERY %lu", mConnection->thread_id];
 			} else {
-				theHost = [self cStringFromString:connectionHost];
+				killQueryString = [NSString stringWithFormat:@"KILL %lu", mConnection->thread_id];
 			}
-			if (connectionSocket == nil || ![connectionSocket length]) {
-				theSocket = kMCPConnectionDefaultSocket;
-			} else {
-				theSocket = [self cStringFromString:connectionSocket];
-			}
-			if (!connectionPassword) {
-				if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-					thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
-				}
-			} else {		
-				thePass = [self cStringFromString:connectionPassword];
-			}
-			
-			// Connect
-			connectionSetupStatus = mysql_real_connect(killerConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
-			thePass = NULL;
-			if (connectionSetupStatus) {
-				NSStringEncoding killerConnectionEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(killerConnection)];
-				NSString *killerQueryString = [NSString stringWithFormat:@"KILL QUERY %lu", mConnection->thread_id];
-				NSData *encodedKillerQueryData = NSStringDataUsingLossyEncoding(killerQueryString, killerConnectionEncoding, 1);
-				const char *killerQueryCString = [encodedKillerQueryData bytes];
-				unsigned long killerQueryCStringLength = [encodedKillerQueryData length];
-				if (mysql_real_query(killerConnection, killerQueryCString, killerQueryCStringLength) == 0) {
-					mysql_close(killerConnection);
-					queryCancelUsedReconnect = NO;
-					return;
-				}
+			NSData *encodedKillQueryData = NSStringDataUsingLossyEncoding(killQueryString, killerConnectionEncoding, 1);
+			const char *killQueryCString = [encodedKillQueryData bytes];
+			unsigned long killQueryCStringLength = [encodedKillQueryData length];
+			if (mysql_real_query(killerConnection, killQueryCString, killQueryCStringLength) == 0) {
 				mysql_close(killerConnection);
+				queryCancelUsedReconnect = NO;
+				return;
 			}
+			mysql_close(killerConnection);
 		}
 	}
 
