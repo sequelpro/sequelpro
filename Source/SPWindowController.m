@@ -153,7 +153,7 @@
 /**
  * Close the current tab, or if it's the last in the window, the window.
  */
-- (IBAction)closeTab:(id)sender
+- (IBAction) closeTab:(id)sender
 {
 
 	// Return if the selected tab shouldn't be closed
@@ -170,7 +170,7 @@
 /**
  * Select next tab; if last select first one.
  */
-- (IBAction)selectNextDocumentTab:(id)sender
+- (IBAction) selectNextDocumentTab:(id)sender
 {
 	if([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == [tabView numberOfTabViewItems] - 1)
 		[tabView selectFirstTabViewItem:nil];
@@ -181,7 +181,7 @@
 /**
  * Select previous tab; if first select last one.
  */
-- (IBAction)selectPreviousDocumentTab:(id)sender
+- (IBAction) selectPreviousDocumentTab:(id)sender
 {
 	if([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0)
 		[tabView selectLastTabViewItem:nil];
@@ -190,17 +190,91 @@
 }
 
 /**
- * Menu validation
+ * Move the currently selected tab to a new window.
  */
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+- (IBAction) moveSelectedTabInNewWindow:(id)sender
 {
-	// Select Next/Previous Tab
-	if ([menuItem action] == @selector(selectPreviousDocumentTab:) || [menuItem action] == @selector(selectNextDocumentTab:)) {
-		return ([tabView numberOfTabViewItems] != 1);
+
+	static NSPoint cascadeLocation = {.x = 0, .y = 0};
+
+	SPDatabaseDocument *selectedDocument = [[tabView selectedTabViewItem] identifier];
+	NSTabViewItem *selectedTabViewItem = [tabView selectedTabViewItem];
+	PSMTabBarCell *selectedCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:selectedTabViewItem]];
+
+	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
+	NSWindow *newWindow = [newWindowController window];
+
+	CGFloat toolbarHeight = 0;
+	if ([[[self window] toolbar] isVisible]) {
+		NSRect innerFrame = [NSWindow contentRectForFrameRect:[[self window] frame] styleMask:[[self window] styleMask]];
+		toolbarHeight = innerFrame.size.height - [[[self window] contentView] frame].size.height;
 	}
 	
+	// Set the new window position and size
+	NSRect targetWindowFrame = [[self window] frame];
+	targetWindowFrame.size.height -= toolbarHeight;
+	[newWindow setFrame:targetWindowFrame display:NO];
+
+	// Cascade according to the statically stored cascade location.
+	cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
+
+	// Set the window controller as the window's delegate
+	[newWindow setDelegate:newWindowController];
+
+	// Set window title
+	[newWindow setTitle:[[[[tabView selectedTabViewItem] identifier] parentWindow] title]];
+
+	// New window's tabBar control
+	PSMTabBarControl *control = [newWindowController valueForKey:@"tabBar"];
+
+	// Add the selected tab to the new window
+	[[control cells] insertObject:selectedCell atIndex:0];
+
+	// Remove 'isProcessing' observer from old windowController
+	[selectedDocument removeObserver:self forKeyPath:@"isProcessing"];
+
+	// Update new 'isProcessing' observer and bind the new tab bar's progress display to the document
+	[self _updateProgressIndicatorForItem:selectedTabViewItem];
+
+	//remove the tracking rects and bindings registered on the old tab
+	[tabBar removeTrackingRect:[selectedCell closeButtonTrackingTag]];
+	[tabBar removeTrackingRect:[selectedCell cellTrackingTag]];
+	[tabBar removeTabForCell:selectedCell];
+
+	//rebind the selected cell to the new control
+	[control bindPropertiesForCell:selectedCell andTabViewItem:selectedTabViewItem];
+	
+	[selectedCell setControlView:control];
+	
+	[[tabBar tabView] removeTabViewItem:[selectedCell representedObject]];
+
+	[[control tabView] addTabViewItem:selectedTabViewItem];
+
+	[control update:NO]; //make sure the new tab is set in the correct position
+
+	// Update tabBar of the new window
+	[newWindowController tabView:[tabBar tabView] didDropTabViewItem:[selectedCell representedObject] inTabBar:control];
+
+	[newWindow makeKeyAndOrderFront:nil];
+
+}
+
+/**
+ * Menu validation
+ */
+- (BOOL) validateMenuItem:(NSMenuItem *)menuItem
+{
+
 	// See if the front document blocks validation of this item
 	if (![selectedTableDocument validateMenuItem:menuItem]) return NO;
+
+	// Select Next/Previous/Move Tab
+	if (   [menuItem action] == @selector(selectPreviousDocumentTab:) 
+		|| [menuItem action] == @selector(selectNextDocumentTab:)
+		|| [menuItem action] == @selector(moveSelectedTabInNewWindow:))
+	{
+		return ([tabView numberOfTabViewItems] != 1);
+	}
 
 	return YES;
 }
@@ -473,11 +547,6 @@
 - (void)tabDragStopped:(id)sender
 {
 	[tabBar setHideForSingleTab:YES];
-}
-
-- (IBAction) openSelectedTabInNewWindow:(id)sender
-{
-	// not yet implemented
 }
 
 #pragma mark -
