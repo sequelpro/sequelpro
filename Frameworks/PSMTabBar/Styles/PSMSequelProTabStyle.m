@@ -86,7 +86,7 @@
 
 - (CGFloat)leftMarginForTabBarControl
 {
-    return 0.0f;
+    return 5.0f;
 }
 
 - (CGFloat)rightMarginForTabBarControl
@@ -384,13 +384,11 @@
     // draw cells
     NSEnumerator *e = [[bar cells] objectEnumerator];
     PSMTabBarCell *cell;
-	_tabIsRightOfSelectedTab = NO;
     while ( (cell = [e nextObject]) ) {
         if ([bar isAnimating] || (![cell isInOverflowMenu] && NSIntersectsRect([cell frame], rect))) {
             [cell drawWithFrame:[cell frame] inView:bar];
         }
     }
-	_tabIsRightOfSelectedTab = NO;
 }
 
 
@@ -418,13 +416,21 @@
 	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0] set];
 	NSRectFillUsingOperation(rect, NSCompositeSourceAtop);
 
-	// Draw horizontal line across bottom edge
+	// Draw horizontal line across bottom edge, with a slight bottom glow
 	[[NSColor colorWithCalibratedWhite:lineCalibratedWhite alpha:1.0] set];
+	[NSGraphicsContext saveGraphicsState];
+	NSShadow *shadow = [[NSShadow alloc] init];
+	[shadow setShadowBlurRadius:1];
+	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.2]];
+	[shadow setShadowOffset:NSMakeSize(0,1)];
+	[shadow set];
 	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + rect.size.height - 0.5) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height - 0.5)];
+	[shadow release];
+	[NSGraphicsContext restoreGraphicsState];
 
 	// Add a shadow before drawing the top edge
 	[NSGraphicsContext saveGraphicsState];
-	NSShadow *shadow = [[NSShadow alloc] init];
+	shadow = [[NSShadow alloc] init];
 	[shadow setShadowBlurRadius:4];
 	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:shadowAlpha]];
 	[shadow setShadowOffset:NSMakeSize(0,0)];
@@ -446,6 +452,16 @@
     NSBezierPath *outlineBezier = [NSBezierPath bezierPath];
     NSBezierPath *fillBezier = [NSBezierPath bezierPath];
 	NSPoint center = NSZeroPoint;
+	BOOL tabBarIsRightOfSelectedTab = NO;
+	
+	// Determine if the selected tab is right of this tab
+	for (PSMTabBarCell *aCell in [tabBar cells]) {
+		if (aCell == cell) break;
+		if ([aCell state] == NSOnState) {
+			tabBarIsRightOfSelectedTab = YES;
+			break;
+		}
+	}
 	
 	if ([[tabBar window] isKeyWindow]) {
 		lineColor = [NSColor darkGrayColor];
@@ -464,19 +480,19 @@
     if ([cell state] == NSOnState) {
 
 		// draw top left arc
-		center = NSMakePoint(aRect.origin.x, aRect.origin.y + kPSMMetalTabCornerRadius);
+		center = NSMakePoint(aRect.origin.x - kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
 		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
 	
 		// draw bottom left arc
-		center = NSMakePoint(aRect.origin.x + (2 * kPSMMetalTabCornerRadius), aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
+		center = NSMakePoint(aRect.origin.x + kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
 		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];		
 
 		// draw bottom right arc
-		center = NSMakePoint(aRect.origin.x + aRect.size.width - (2 * kPSMMetalTabCornerRadius), aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius );
+		center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius );
 		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];		
 		
 		// draw top right arc
-		center = NSMakePoint(aRect.origin.x + aRect.size.width, aRect.origin.y + kPSMMetalTabCornerRadius);
+		center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
 		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];		
 
 		// Set up a fill bezier with the pieced-together path
@@ -516,9 +532,6 @@
 		[shadow set];
 		[outlineBezier stroke];
 
-		// Yeah..um..right right?
-		_tabIsRightOfSelectedTab = YES;
-
 	// unselected tab		
     } else {
         
@@ -528,26 +541,27 @@
 //            NSRectFillUsingOperation(aRect, NSCompositeSourceAtop);
 //        }
         
-		if (_tabIsRightOfSelectedTab) {
+		if (tabBarIsRightOfSelectedTab) {
 			//lineColor = [NSColor greenColor];
 			
 			// draw bottom right arc
-			center = NSMakePoint(aRect.origin.x + aRect.size.width - (2 * kPSMMetalTabCornerRadius), aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
+			center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
 			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
 			
 			// draw top right arc
-			center = NSMakePoint(aRect.origin.x + aRect.size.width, aRect.origin.y + kPSMMetalTabCornerRadius);
+			center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
 			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];
-			
-		} else {
+
+		// Don't draw the left edge for the leftmost tab
+		} else if ([[tabBar cells] objectAtIndex:0] != cell) {
 			//lineColor = [NSColor redColor];
 			
 			// draw top left arc
-			center = NSMakePoint(aRect.origin.x, aRect.origin.y + kPSMMetalTabCornerRadius);
+			center = NSMakePoint(aRect.origin.x - kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
 			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
 			
 			// draw bottom left arc
-			center = NSMakePoint(aRect.origin.x + (2 * kPSMMetalTabCornerRadius), aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
+			center = NSMakePoint(aRect.origin.x + kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
 			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
 		}
 
@@ -565,7 +579,17 @@
 - (void)drawInteriorWithTabCell:(PSMTabBarCell *)cell inView:(NSView*)controlView
 {
     NSRect cellFrame = [cell frame];
-    CGFloat labelPosition = cellFrame.origin.x + MARGIN_X;
+	CGFloat insetLabelWidth = 0;
+	BOOL tabBarIsRightOfSelectedTab = NO;
+	
+	// Determine if the selected tab is right of this tab
+	for (PSMTabBarCell *aCell in [tabBar cells]) {
+		if (aCell == cell) break;
+		if ([aCell state] == NSOnState) {
+			tabBarIsRightOfSelectedTab = YES;
+			break;
+		}
+	}
     
     // close button
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed] && [cell isHighlighted]) {
@@ -573,11 +597,7 @@
         NSSize closeButtonSize = NSZeroSize;
         NSRect closeButtonRect = [cell closeButtonRectForFrame:cellFrame];
         NSImage * closeButton = nil;
-		
-		if ([cell state] != NSOnState & _tabIsRightOfSelectedTab) {
-			closeButtonRect.origin.x -= MARGIN_X;
-		}
-        
+
         closeButton = [cell isEdited] ? metalCloseDirtyButton : metalCloseButton;
 		
         if ([cell closeButtonOver]) closeButton = [cell isEdited] ? metalCloseDirtyButtonOver : metalCloseButtonOver;
@@ -590,10 +610,8 @@
         }
         
         [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0];
-        
-        // scoot label over
-        //labelPosition += closeButtonSize.width + kPSMTabBarCellPadding;
     }
+	insetLabelWidth += [metalCloseButton size].width + kPSMTabBarCellPadding;
     
     // icon
     if ([cell hasIcon]) {
@@ -615,13 +633,13 @@
 		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0];
         
         // scoot label over
-        labelPosition += iconRect.size.width + kPSMTabBarCellPadding;
+        insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
     }
     
     // label rect
     NSRect labelRect;
-    labelRect.origin.x = labelPosition;
-    labelRect.size.width = cellFrame.size.width - (labelRect.origin.x - cellFrame.origin.x) - kPSMTabBarCellPadding;
+    labelRect.origin.x = cellFrame.origin.x + MARGIN_X + insetLabelWidth;
+    labelRect.size.width = cellFrame.size.width - (labelRect.origin.x - cellFrame.origin.x) - insetLabelWidth;
     labelRect.size.height = cellFrame.size.height;
     labelRect.origin.y = cellFrame.origin.y + MARGIN_Y;
     

@@ -40,8 +40,6 @@
 	
 	PSMTabBarOrientation orientation;
 	PSMTabBarControl *tabBar;
-	
-	BOOL _tabIsRightOfSelectedTab;
 }
 
 - (void)drawInteriorWithTabCell:(PSMTabBarCell *)cell inView:(NSView*)controlView;

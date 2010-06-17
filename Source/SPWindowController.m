@@ -265,9 +265,6 @@
 - (BOOL) validateMenuItem:(NSMenuItem *)menuItem
 {
 
-	// See if the front document blocks validation of this item
-	if (![selectedTableDocument validateMenuItem:menuItem]) return NO;
-
 	// Select Next/Previous/Move Tab
 	if (   [menuItem action] == @selector(selectPreviousDocumentTab:) 
 		|| [menuItem action] == @selector(selectNextDocumentTab:)
@@ -275,6 +272,9 @@
 	{
 		return ([tabView numberOfTabViewItems] != 1);
 	}
+
+	// See if the front document blocks validation of this item
+	if (![selectedTableDocument validateMenuItem:menuItem]) return NO;
 
 	return YES;
 }
