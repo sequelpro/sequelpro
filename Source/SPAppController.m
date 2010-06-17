@@ -275,14 +275,25 @@
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
 
-			SPDatabaseDocument *newTableDocument;
+			SPWindowController *frontController = nil;
 
-			// If the frontmost document isn't connected and hasn't been, open the connection file with it.
-			// Otherwise, manually open a new document, setting SPAppController as sender to trigger autoconnection
-			if (![self frontDocument] || [[self frontDocument] mySQLVersion]) {
-				[self newWindow:self];
+			for (NSWindow *aWindow in [self orderedWindows]) {
+				if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+					frontController = [aWindow windowController];
+					break;
+				}
 			}
-			[[self frontDocument] initWithConnectionFile:filename];			
+
+			// If no window was found or the front most window has no tabs, create a new one
+			if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
+				[self newWindow:self];
+			// Open the spf file in a new tab if the tab bar is visible
+			} else if ([[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] != 1) {
+				if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
+				[frontController addNewConnection:self];
+			}
+
+			[[self frontDocument] initWithConnectionFile:filename];
 		}
 		else {
 			NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
