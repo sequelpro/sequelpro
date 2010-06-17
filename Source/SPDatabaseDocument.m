@@ -3469,6 +3469,14 @@
 }
 
 /**
+ * Return YES if Custom Query is active.
+ */
+- (BOOL)isCustomQuerySelected
+{
+	return [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery];
+}
+
+/**
  * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo

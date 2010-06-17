@@ -305,7 +305,7 @@
 {
     delegate = object;
 	
-	NSMutableArray *types = [NSMutableArray arrayWithObject:@"PSMTabBarControlItemPBType"];
+	NSMutableArray *types = [NSMutableArray arrayWithObjects:@"PSMTabBarControlItemPBType", NSStringPboardType,nil];
 	
 	//Update the allowed drag types
 	if ([self delegate] && [[self delegate] respondsToSelector:@selector(allowedDraggedTypesForTabView:)]) {
@@ -1498,6 +1498,12 @@
 															   selector:@selector(fireSpring:)
 															   userInfo:sender
 																repeats:NO] retain];
+			}
+			//If user drags a text string to a tab switch to Custom Query Editor
+			if (![[[cell representedObject] identifier] isCustomQuerySelected] 
+				&& [[[sender draggingPasteboard] types] indexOfObject:NSStringPboardType] != NSNotFound) {
+				[[[cell representedObject] identifier] performSelector:@selector(viewQuery:) withObject:nil];
+				NSLog(@"A");
 			}
 		}
 		return NSDragOperationCopy;

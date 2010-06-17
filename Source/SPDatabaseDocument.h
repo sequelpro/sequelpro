@@ -312,6 +312,7 @@
 - (IBAction)viewRelations:(id)sender;
 - (IBAction)viewTriggers:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
+- (BOOL)isCustomQuerySelected;
 
 // Titlebar methods
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
