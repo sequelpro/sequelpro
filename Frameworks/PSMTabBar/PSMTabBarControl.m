@@ -1503,7 +1503,6 @@
 			if (![[[cell representedObject] identifier] isCustomQuerySelected] 
 				&& [[[sender draggingPasteboard] types] indexOfObject:NSStringPboardType] != NSNotFound) {
 				[[[cell representedObject] identifier] performSelector:@selector(viewQuery:) withObject:nil];
-				NSLog(@"A");
 			}
 		}
 		return NSDragOperationCopy;
