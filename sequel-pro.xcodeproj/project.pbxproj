@@ -265,7 +265,6 @@
 		B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */; };
 		B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */; };
 		B5538AB00FF251EE00219803 /* button_pane_show_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */; };
-		B55F8E5F11C67CA0006A3386 /* PSMSequelProTabStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */; };
 		B55F8E6211C67D53006A3386 /* PSMSequelProTabStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */; };
 		B55F8E6611C67D8A006A3386 /* AddTabButton.png in Resources */ = {isa = PBXBuildFile; fileRef = B55F8E6311C67D8A006A3386 /* AddTabButton.png */; };
 		B55F8E6711C67D8A006A3386 /* AddTabButtonPushed.png in Resources */ = {isa = PBXBuildFile; fileRef = B55F8E6411C67D8A006A3386 /* AddTabButtonPushed.png */; };
@@ -2517,7 +2516,6 @@
 				173C839511AAD32A00B8B084 /* SPXMLExporterDelegate.m in Sources */,
 				58B909A511C3B919000826E5 /* DMLocalizedNibBundle.m in Sources */,
 				17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */,
-				B55F8E5F11C67CA0006A3386 /* PSMSequelProTabStyle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
