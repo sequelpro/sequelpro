@@ -82,11 +82,7 @@
 {
 
 	// Set source path
-	if([sourcePath hasPrefix:SPImportClipboardTempFileNamePrefix]) {
-		[fileSourcePath setURL:[NSURL fileURLWithPath:NSLocalizedString(@"Clipboard", @"Clipboard")]];
-	} else {
-		[fileSourcePath setURL:[NSURL fileURLWithPath:sourcePath]];
-	}
+	[fileSourcePath setURL:[NSURL fileURLWithPath:sourcePath]];
 	[fileSourcePath setDoubleAction:@selector(goBackToFileChooser:)];
 
 	[onupdateTextView setDelegate:theDelegate];
