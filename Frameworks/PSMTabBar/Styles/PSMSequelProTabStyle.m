@@ -27,10 +27,10 @@
 #import "PSMTabBarControl.h"
 #import "NSBezierPath_AMShading.h"
 
-#define kPSMMetalObjectCounterRadius 7.0
-#define kPSMMetalCounterMinWidth 20
-#define kPSMMetalTabCornerRadius 4.5
-#define MARGIN_X 10
+#define kPSMSequelProObjectCounterRadius 7.0
+#define kPSMSequelProCounterMinWidth 20
+#define kPSMSequelProTabCornerRadius 4.5
+#define MARGIN_X 7
 
 @implementation PSMSequelProTabStyle
 
@@ -91,7 +91,7 @@
 
 - (CGFloat)rightMarginForTabBarControl
 {
-    return 0.0f;
+    return 24.0f;
 }
 
 - (CGFloat)topMarginForTabBarControl
@@ -206,13 +206,13 @@
     }
     
     CGFloat countWidth = [[self attributedObjectCountValueForTabCell:cell] size].width;
-    countWidth += (2 * kPSMMetalObjectCounterRadius - 6.0);
-    if (countWidth < kPSMMetalCounterMinWidth) {
-        countWidth = kPSMMetalCounterMinWidth;
+    countWidth += (2 * kPSMSequelProObjectCounterRadius - 6.0);
+    if (countWidth < kPSMSequelProCounterMinWidth) {
+        countWidth = kPSMSequelProCounterMinWidth;
     }
     
     NSRect result;
-    result.size = NSMakeSize(countWidth, 2 * kPSMMetalObjectCounterRadius); // temp
+    result.size = NSMakeSize(countWidth, 2 * kPSMSequelProObjectCounterRadius); // temp
     result.origin.x = cellFrame.origin.x + cellFrame.size.width - MARGIN_X - result.size.width;
     result.origin.y = cellFrame.origin.y + MARGIN_Y + 1.0;
     
@@ -480,20 +480,20 @@
     if ([cell state] == NSOnState) {
 
 		// draw top left arc
-		center = NSMakePoint(aRect.origin.x - kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
+		center = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
+		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
 	
 		// draw bottom left arc
-		center = NSMakePoint(aRect.origin.x + kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];		
+		center = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];		
 
 		// draw bottom right arc
-		center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius );
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];		
+		center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius );
+		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];		
 		
 		// draw top right arc
-		center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];		
+		center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
+		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];		
 
 		// Set up a fill bezier with the pieced-together path
 		[fillBezier appendBezierPath:outlineBezier];
@@ -523,8 +523,8 @@
 
 		// Add a bottom line to the tab, with a slight inner glow
 		outlineBezier = [NSBezierPath bezierPath];
-		[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x + (2 * kPSMMetalTabCornerRadius), aRect.origin.y + aRect.size.height - 0.5)];
-		[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - (2 * kPSMMetalTabCornerRadius), aRect.origin.y + aRect.size.height - 0.5)];
+		[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x + (2 * kPSMSequelProTabCornerRadius), aRect.origin.y + aRect.size.height - 0.5)];
+		[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - (2 * kPSMSequelProTabCornerRadius), aRect.origin.y + aRect.size.height - 0.5)];
 		shadow = [[NSShadow alloc] init];
 		[shadow setShadowBlurRadius:1];
 		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.3]];
@@ -545,24 +545,24 @@
 			//lineColor = [NSColor greenColor];
 			
 			// draw bottom right arc
-			center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
+			center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
 			
 			// draw top right arc
-			center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMMetalTabCornerRadius - 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];
+			center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
+			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];
 
 		// Don't draw the left edge for the leftmost tab
 		} else if ([[tabBar cells] objectAtIndex:0] != cell) {
 			//lineColor = [NSColor redColor];
 			
 			// draw top left arc
-			center = NSMakePoint(aRect.origin.x - kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + kPSMMetalTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
+			center = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
+			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
 			
 			// draw bottom left arc
-			center = NSMakePoint(aRect.origin.x + kPSMMetalTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMMetalTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMMetalTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
+			center = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
 		}
 
 		[lineColor set];
@@ -639,7 +639,7 @@
     // label rect
     NSRect labelRect;
     labelRect.origin.x = cellFrame.origin.x + MARGIN_X + insetLabelWidth;
-    labelRect.size.width = cellFrame.size.width - (labelRect.origin.x - cellFrame.origin.x) - insetLabelWidth;
+    labelRect.size.width = cellFrame.size.width - (labelRect.origin.x - cellFrame.origin.x) - insetLabelWidth - MARGIN_X;
     labelRect.size.height = cellFrame.size.height;
     labelRect.origin.y = cellFrame.origin.y + MARGIN_Y;
     
@@ -659,11 +659,11 @@
         if ([cell state] == NSOnState) {
             //myRect.origin.y -= 1.0;
         }
-        [path moveToPoint:NSMakePoint(myRect.origin.x + kPSMMetalObjectCounterRadius, myRect.origin.y)];
-        [path lineToPoint:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMMetalObjectCounterRadius, myRect.origin.y)];
-        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMMetalObjectCounterRadius, myRect.origin.y + kPSMMetalObjectCounterRadius) radius:kPSMMetalObjectCounterRadius startAngle:270.0 endAngle:90.0];
-        [path lineToPoint:NSMakePoint(myRect.origin.x + kPSMMetalObjectCounterRadius, myRect.origin.y + myRect.size.height)];
-        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + kPSMMetalObjectCounterRadius, myRect.origin.y + kPSMMetalObjectCounterRadius) radius:kPSMMetalObjectCounterRadius startAngle:90.0 endAngle:270.0];
+        [path moveToPoint:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y)];
+        [path lineToPoint:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMSequelProObjectCounterRadius, myRect.origin.y)];
+        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMSequelProObjectCounterRadius, myRect.origin.y + kPSMSequelProObjectCounterRadius) radius:kPSMSequelProObjectCounterRadius startAngle:270.0 endAngle:90.0];
+        [path lineToPoint:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y + myRect.size.height)];
+        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y + kPSMSequelProObjectCounterRadius) radius:kPSMSequelProObjectCounterRadius startAngle:90.0 endAngle:270.0];
         [path fill];
         
         // draw attributed string centered in area

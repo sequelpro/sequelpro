@@ -3541,11 +3541,13 @@
 			[tabTitle appendString:[self name]];
 		}
 
-		// If a database is selected, add to the window - and other tabs if host is the same but table is set
+		// If a database is selected, add to the window - and other tabs if host is the same but db different or table is not set
 		if ([self database]) {
 			[windowTitle appendFormat:@"/%@", [self database]];
 			if (frontTableDocument == self
+				|| ![frontTableDocument getConnection]
 				|| [[frontTableDocument name] isNotEqualTo:[self name]]
+				|| [[frontTableDocument database] isNotEqualTo:[self database]]
 				|| ![[self table] length])
 			{
 				if ([tabTitle length]) [tabTitle appendString:@"/"];

@@ -224,8 +224,6 @@
 		58B9076C11BD9B34000826E5 /* PSMTabDragWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = 58B9072C11BD9B34000826E5 /* PSMTabDragWindowController.h */; };
 		58B9076D11BD9B34000826E5 /* PSMTabDragWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B9072D11BD9B34000826E5 /* PSMTabDragWindowController.m */; };
 		58B9076E11BD9B34000826E5 /* PSMTabStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 58B9072E11BD9B34000826E5 /* PSMTabStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		58B9077511BD9B34000826E5 /* PSMMetalTabStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 58B9073611BD9B34000826E5 /* PSMMetalTabStyle.h */; };
-		58B9077611BD9B34000826E5 /* PSMMetalTabStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B9073711BD9B34000826E5 /* PSMMetalTabStyle.m */; };
 		58B9077E11BD9B64000826E5 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58B9077D11BD9B64000826E5 /* Carbon.framework */; };
 		58B907CA11BDA541000826E5 /* PSMTabBar.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58B906E611BD989A000826E5 /* PSMTabBar.framework */; };
 		58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 58B906E611BD989A000826E5 /* PSMTabBar.framework */; };
@@ -2019,7 +2017,6 @@
 				58B9076A11BD9B34000826E5 /* PSMTabDragWindow.h in Headers */,
 				58B9076C11BD9B34000826E5 /* PSMTabDragWindowController.h in Headers */,
 				58B9076E11BD9B34000826E5 /* PSMTabStyle.h in Headers */,
-				58B9077511BD9B34000826E5 /* PSMMetalTabStyle.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2390,7 +2387,6 @@
 				58B9076911BD9B34000826E5 /* PSMTabDragView.m in Sources */,
 				58B9076B11BD9B34000826E5 /* PSMTabDragWindow.m in Sources */,
 				58B9076D11BD9B34000826E5 /* PSMTabDragWindowController.m in Sources */,
-				58B9077611BD9B34000826E5 /* PSMMetalTabStyle.m in Sources */,
 				B55F8E6211C67D53006A3386 /* PSMSequelProTabStyle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

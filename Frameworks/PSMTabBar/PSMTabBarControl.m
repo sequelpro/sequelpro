@@ -141,7 +141,7 @@
     _cellMaxWidth = 280;
     _cellOptimumWidth = 130;
 	_tearOffStyle = PSMTabBarTearOffAlphaWindow;
-	style = [[PSMMetalTabStyle alloc] init];
+	style = [[PSMSequelProTabStyle alloc] init];
     
     // the overflow button/menu
     NSRect overflowButtonRect = NSMakeRect([self frame].size.width - [style rightMarginForTabBarControl] + 1, 0, [style rightMarginForTabBarControl] - 1, [self frame].size.height);
@@ -369,9 +369,6 @@
 {
     id <PSMTabStyle> newStyle;
 	
-	// Hardcode style to Metal
-	name = @"Metal";
-	
 	if ([name isEqualToString:@"Aqua"]) {
 		//newStyle = [[PSMAquaTabStyle alloc] init];
 		
@@ -385,13 +382,13 @@
 		//newStyle = [[PSMCardTabStyle alloc] init]; 
 	
 	} else if ([name isEqualToString:@"Metal"]) {
-		newStyle = [[PSMMetalTabStyle alloc] init];
+		//newStyle = [[PSMMetalTabStyle alloc] init];
 
 	} else if ([name isEqualToString:@"SequelPro"]) {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
 
 	} else {
-		newStyle = [[PSMMetalTabStyle alloc] init];
+		newStyle = [[PSMSequelProTabStyle alloc] init];
 	}
 
     [self setStyle:newStyle];
