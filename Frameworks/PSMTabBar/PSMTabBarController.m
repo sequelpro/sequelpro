@@ -613,7 +613,8 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 										 keyEquivalent:@""];
             [menuItem setTarget:_control];
             [menuItem setRepresentedObject:[cell representedObject]];
-
+			if([[[cell representedObject] identifier] respondsToSelector:@selector(tabTitleForTooltip)])
+				[menuItem setToolTip:[[[cell representedObject] identifier] tabTitleForTooltip]];
             if ([cell count] > 0) {
                 [menuItem setTitle:[[menuItem title] stringByAppendingFormat:@" (%lu)", (unsigned long)[cell count]]];
 			}

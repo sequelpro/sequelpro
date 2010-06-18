@@ -2584,6 +2584,37 @@
 }
 
 /**
+ * Returns the full window title which is mainly used for tab tooltips
+ */
+- (NSString *)tabTitleForTooltip
+{
+	NSMutableString *tabTitle;
+
+	// Determine name details
+	NSString *pathName = @"";
+	if ([[[self fileURL] path] length] && ![self isUntitled])
+		pathName = [NSString stringWithFormat:@"%@ — ", [[[self fileURL] path] lastPathComponent]];
+
+	if ([self getConnection] == nil)
+		return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+
+	tabTitle = [NSMutableString string];
+
+	// Add the MySQL version to the window title if enabled in prefs
+	if ([prefs boolForKey:SPDisplayServerVersionInWindowTitle]) [tabTitle appendFormat:@"(MySQL %@)\n", [self mySQLVersion]];
+
+	[tabTitle appendString:[self name]];
+	if ([self database]) {
+		if ([tabTitle length]) [tabTitle appendString:@"/"];
+		[tabTitle appendString:[self database]];
+	}
+	if ([[self table] length]) {
+		if ([tabTitle length]) [tabTitle appendString:@"/"];
+		[tabTitle appendString:[self table]];
+	}
+	return tabTitle;
+}
+/**
  * Returns the currently selected database
  */
 - (NSString *)database

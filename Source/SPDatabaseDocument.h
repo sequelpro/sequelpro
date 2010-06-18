@@ -291,6 +291,7 @@
 - (NSString *)user;
 - (NSString *)keyChainID;
 - (NSString *)connectionID;
+- (NSString *)tabTitleForTooltip;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
