@@ -332,6 +332,7 @@
 						break;
 				}
 			}
+			
 			[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"xml"]];
 			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
@@ -470,7 +471,10 @@
 			// sure the table name is included to ensure the output files are unique.
 			[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
 		}
-				
+		else {
+			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
+		}
+						
 		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[csvExporter setExportOutputFileHandle:fileHandle];
@@ -484,7 +488,7 @@
 	
 	// Set the progress bar's max value
 	[exportProgressIndicator setMaxValue:[csvExporter exportMaxProgress]];
-
+	
 	return [csvExporter autorelease];
 }
 
