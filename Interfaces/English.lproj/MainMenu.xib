@@ -12,6 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="81"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -361,6 +362,26 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 									<int key="NSTag">1005</int>
+								</object>
+								<object class="NSMenuItem" id="943842666">
+									<reference key="NSMenu" ref="709725194"/>
+									<bool key="NSIsHidden">YES</bool>
+									<string key="NSTitle">Save Session</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+									<int key="NSTag">1020</int>
+								</object>
+								<object class="NSMenuItem" id="473804195">
+									<reference key="NSMenu" ref="709725194"/>
+									<bool key="NSIsHidden">YES</bool>
+									<string key="NSTitle">Save Session As…</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+									<int key="NSTag">1021</int>
 								</object>
 								<object class="NSMenuItem" id="256715652">
 									<reference key="NSMenu" ref="709725194"/>
@@ -2707,14 +2728,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">saveConnectionSheet:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="643339783"/>
-					</object>
-					<int key="connectionID">966</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">clearRecentDocuments:</string>
 						<reference key="source" ref="63651044"/>
 						<reference key="destination" ref="781874380"/>
@@ -2961,6 +2974,30 @@
 					</object>
 					<int key="connectionID">1115</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">saveConnectionSheet:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="643339783"/>
+					</object>
+					<int key="connectionID">1120</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">saveConnectionSheet:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="943842666"/>
+					</object>
+					<int key="connectionID">1121</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">saveConnectionSheet:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="473804195"/>
+					</object>
+					<int key="connectionID">1122</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3188,6 +3225,8 @@
 							<reference ref="284533429"/>
 							<reference ref="1070661135"/>
 							<reference ref="363260437"/>
+							<reference ref="943842666"/>
+							<reference ref="473804195"/>
 						</object>
 						<reference key="parent" ref="86447006"/>
 					</object>
@@ -4314,6 +4353,16 @@
 						<reference key="object" ref="330165099"/>
 						<reference key="parent" ref="1934"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1116</int>
+						<reference key="object" ref="943842666"/>
+						<reference key="parent" ref="709725194"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1118</int>
+						<reference key="object" ref="473804195"/>
+						<reference key="parent" ref="709725194"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4371,6 +4420,8 @@
 					<string>111.ImportedFromIB2</string>
 					<string>1111.IBPluginDependency</string>
 					<string>1112.IBPluginDependency</string>
+					<string>1116.IBPluginDependency</string>
+					<string>1118.IBPluginDependency</string>
 					<string>129.IBPluginDependency</string>
 					<string>129.ImportedFromIB2</string>
 					<string>130.IBPluginDependency</string>
@@ -4713,6 +4764,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4789,7 +4842,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{106, 685}, {511, 20}}</string>
+					<string>{{228, 546}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4925,7 +4978,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{214, 180}, {287, 383}}</string>
+					<string>{{334, 123}, {287, 423}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -5066,7 +5119,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1115</int>
+			<int key="maxID">1122</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6511,6 +6564,51 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="939419192">
 						<string key="majorKey">IBDocumentRelativeSource</string>
 						<string key="minorKey">../../Frameworks/Sparkle.framework/Versions/A/Headers/SUUpdater.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPAppController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>donate:</string>
+							<string>newTab:</string>
+							<string>newWindow:</string>
+							<string>openAboutPanel:</string>
+							<string>openConnectionSheet:</string>
+							<string>openPreferences:</string>
+							<string>provideFeedback:</string>
+							<string>provideTranslationFeedback:</string>
+							<string>viewKeyboardShortcuts:</string>
+							<string>visitFAQWebsite:</string>
+							<string>visitHelpWebsite:</string>
+							<string>visitWebsite:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">encodingPopUp</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/SPAppController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

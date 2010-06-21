@@ -2706,7 +2706,6 @@
 #pragma mark -
 #pragma mark Menu methods
 
-
 /**
  * Saves SP session or if Custom Query tab is active the editor's content as SQL file
  * If sender == nil then the call came from [self writeSafelyToURL:ofType:forSaveOperation:error]
@@ -2797,8 +2796,36 @@
 			contextInfo = @"saveSPFfileAndClose";
 		else
 			contextInfo = @"saveSPFfile";
+	}
+	// Save Session or Save Session As…
+	else if (sender == nil || [sender tag] == 1020 || [sender tag] == 1021)
+	{
+		// Load accessory nib each time.
+		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
+		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
+			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
+			return;
+		}
 
-	} else {
+		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spfs", nil]];
+
+		// Update accessory button states
+		[self validateSaveConnectionAccessory:nil];
+
+		// TODO note: it seems that one has problems with a NSSecureTextField
+		// inside an accessory view - ask HansJB
+		[[saveConnectionEncryptString cell] setControlView:saveConnectionAccessory];
+		[panel setAccessoryView:saveConnectionAccessory];
+
+		// Set file name
+		if([[NSApp delegate] sessionURL])
+			filename = [[[NSApp delegate] sessionURL] description];
+		else
+			filename = [NSString stringWithFormat:@"%@", @"session"];
+
+		contextInfo = @"saveSession";
+	}
+	else {
 		return;
 	}
 
@@ -2874,6 +2901,47 @@
 			if(contextInfo == @"saveSPFfileAndClose")
 				[self closeAndDisconnect];
 		}
+
+		// Save all open windows including all tabs as session
+		else if(contextInfo == @"saveSession") {
+
+			// Sub-folder 'Contents' will contain all untitled connection as single window or tab.
+			// info.plist will contain the opened structure (windows and tabs for each window). Each connection
+			// is linked to a saved spf file either in 'Contents' for unTitled ones or already saved spf files.
+
+			NSFileManager *fileManager = [NSFileManager defaultManager];
+
+			[fileManager createDirectoryAtPath:fileName withIntermediateDirectories:TRUE attributes:nil error:&error];
+
+			if(error != nil) {
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+				return;
+			}
+
+			[fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@/Contents", fileName] withIntermediateDirectories:TRUE attributes:nil error:&error];
+
+			if(error != nil) {
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+				return;
+			}
+
+			NSString *content = @"HALLO";
+			[content writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName]
+					  atomically:YES
+						encoding:NSUTF8StringEncoding
+						   error:&error];
+
+			if(error != nil) {
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+				return;
+			}
+
+			[[NSApp delegate] setSessionURL:fileName];
+
+		}
 	}
 }
 
@@ -2886,7 +2954,7 @@
 	NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
 
 	if(fileName == nil)
-		fileName = [[self fileURL] path]; //[[[self fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		fileName = [[self fileURL] path];
 
 	// Store save panel settings or take them from spfDocData
 	if(!saveInBackground) {
@@ -3004,7 +3072,6 @@
 
 	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 
-	// if([[spfDocData_temp objectForKey:@"save_password"] boolValue])
 	[spfdata setObject:[spfDocData_temp objectForKey:@"auto_connect"] forKey:@"auto_connect"];
 
 	if([[self keyChainID] length])
@@ -3032,7 +3099,6 @@
 		aString = @"SPTCPIPConnection";
 	}
 	[connection setObject:aString forKey:@"type"];
-
 
 	if([[spfDocData_temp objectForKey:@"save_password"] boolValue]) {
 		NSString *pw = [self keychainPasswordForConnection:nil];

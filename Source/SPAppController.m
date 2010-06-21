@@ -43,6 +43,7 @@
 - (id)init
 {
 	if ((self = [super init])) {
+		_sessionURL = nil;
 		[NSApp setDelegate:self];
 	}
 
@@ -295,6 +296,9 @@
 
 			[[self frontDocument] initWithConnectionFile:filename];
 		}
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spfs"]) {
+			
+		}
 		else {
 			NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
 		}
@@ -433,6 +437,23 @@
 	}
 
 	return nil;
+}
+
+/**
+ * Retrieve the session URL. Return nil if no session is opened
+ */
+- (NSURL *)sessionURL
+{
+	return _sessionURL;
+}
+
+/**
+ * Set the global session URL used for Save (As) Session.
+ */
+- (void)setSessionURL:(NSString *)urlString
+{
+	if(_sessionURL) [_sessionURL release], _sessionURL = nil;
+	_sessionURL = [[NSURL fileURLWithPath:urlString] retain];
 }
 
 #pragma mark -
@@ -768,7 +789,7 @@
 {
 	[prefsController release], prefsController = nil;
 	[aboutController release], aboutController = nil;
-	
+	if(_sessionURL) [_sessionURL release], _sessionURL = nil;
 	[super dealloc];
 }
 

@@ -36,6 +36,8 @@
 	SPPreferenceController *prefsController;
 
 	id encodingPopUp;
+
+	NSURL *_sessionURL;
 }
 
 // Window management
@@ -62,8 +64,11 @@
 
 // Getters
 - (SPPreferenceController *)preferenceController;
-- (NSArray *) orderedDatabaseConnectionWindows;
-- (SPDatabaseDocument *) frontDocument;
+- (NSArray *)orderedDatabaseConnectionWindows;
+- (SPDatabaseDocument *)frontDocument;
+- (NSURL *)sessionURL;
+
+- (void)setSessionURL:(NSString *)urlString;
 
 // Feedback controller delegate methods
 - (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;

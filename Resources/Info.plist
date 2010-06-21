@@ -27,6 +27,26 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>spfs</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>spficon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Sequel Pro Connection Bundle</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>connection</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
+			<key>LSTypeIsPackage</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>sql</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
