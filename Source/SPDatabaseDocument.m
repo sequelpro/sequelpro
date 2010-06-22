@@ -294,9 +294,16 @@
 
 	// For dispatching later
 	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
-		NSLog(@"SPF file format is not 'connection'.");
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Warning", @"warning")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]]];
+
+		[alert setAlertStyle:NSWarningAlertStyle];
 		[spf release];
 		[self closeAndDisconnect];
+		[alert runModal];
 		return;
 	}
 
