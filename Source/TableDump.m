@@ -170,9 +170,9 @@
 			[self reloadTables:self];
 			[sqlCompressionSwitch setState:[prefs boolForKey:SPSQLExportUseCompression]?NSOnState:NSOffState];
 			if ([prefs boolForKey:SPSQLExportUseCompression]) {
-				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
+				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:[NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL], @"gz", nil]];
 			} else {
-				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
+				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionSQL, nil]];
 			}
 			file = [NSString stringWithFormat:@"%@_%@.%@", [tableDocumentInstance database], currentDate, [currentExportPanel requiredFileType]];
 			[currentExportPanel setAccessoryView:exportDumpView];
@@ -3151,12 +3151,12 @@
 {
 	if (exportMode == SPExportingSQL) {
 		if ([sender state] == NSOnState) {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
+			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:[NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL], @"gz", nil]];
 
 			// if file name text view is the first responder re-select the path name only without '.sql.gz'
 			if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
 				NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
-				if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:@".sql.gz"]) {
+				if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:[NSString stringWithFormat:@".%@.gz", SPFileExtensionSQL]]) {
 					NSRange selRange = [filenameTextView selectedRange];
 					selRange.length -= 4;
 					[filenameTextView setSelectedRange:selRange];
@@ -3164,7 +3164,7 @@
 			}
 
 		} else {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:@"sql"]];
+			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 		}
 		[prefs setBool:([sender state] == NSOnState) forKey:SPSQLExportUseCompression];
 	}

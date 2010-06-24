@@ -146,6 +146,7 @@
 	BOOL _mainNibLoaded;
 	BOOL databaseListIsSelectable;
 	NSInteger _queryMode;
+	BOOL _isSavedInBundle;
 
 	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
@@ -275,6 +276,7 @@
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
 - (IBAction)copyChecksumFromSheet:(id)sender;
+- (void)setIsSavedInBundle:(BOOL)savedInBundle;
 
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
@@ -292,6 +294,7 @@
 - (NSString *)keyChainID;
 - (NSString *)connectionID;
 - (NSString *)tabTitleForTooltip;
+- (BOOL)isSaveInBundle;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;

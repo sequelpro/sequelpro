@@ -25,6 +25,7 @@
 #import "SPEditSheetTextView.h"
 #import "SPTextViewAdditions.h"
 #import "SPFieldEditorController.h"
+#import "SPConstants.h"
 
 @implementation SPEditSheetTextView
 
@@ -259,7 +260,7 @@
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
 	if( [result hasPrefix:@"text/plain"] 
-		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"] 
+		|| [[[aPath pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL] 
 		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"txt"]
 		|| [result hasPrefix:@"audio/mpeg"] 
 		|| [result hasPrefix:@"application/octet-stream"]

@@ -329,7 +329,7 @@
 	
 	[panel beginSheetForDirectory:nil 
 						   file:@"" 
-						  types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
+						  types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil] 
 				 modalForWindow:[self window]
 				  modalDelegate:self 
 				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
@@ -748,7 +748,7 @@
 
 		NSDictionary *spf = nil;
 
-		if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
+		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
 			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
 
 			spf = [[NSPropertyListSerialization propertyListFromData:pData 

@@ -767,7 +767,7 @@
 
 		NSDictionary *spf = nil;
 
-		if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
+		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
 			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
 
 			spf = [[NSPropertyListSerialization propertyListFromData:pData 

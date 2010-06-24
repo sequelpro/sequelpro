@@ -44,6 +44,8 @@
 {
 	if ((self = [super init])) {
 		_sessionURL = nil;
+		_spfSessionDocData = [[NSMutableDictionary alloc] init];
+		
 		[NSApp setDelegate:self];
 	}
 
@@ -117,7 +119,7 @@
 - (void)panelSelectionDidChange:(id)sender
 {
 	if ([sender isKindOfClass:[NSOpenPanel class]]) {
-		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL]) {
 			[encodingPopUp setEnabled:YES];
 		} else {
 			[encodingPopUp setEnabled:NO];
@@ -159,14 +161,14 @@
 	if ([self frontDocumentWindow]) {
 		[panel beginSheetForDirectory:nil 
 								 file:@"" 
-								types:[NSArray arrayWithObjects:@"spf", @"sql", nil] 
+								types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil] 
 					   modalForWindow:[self frontDocumentWindow]
 						modalDelegate:self 
 					   didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
 						  contextInfo:NULL];
 	} 
 	else {
-		NSInteger returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:@"spf", @"sql", nil]];
+		NSInteger returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil]];
 
 		if (returnCode) [self application:nil openFiles:[panel filenames]];
 
@@ -196,7 +198,7 @@
 	for (NSString *filename in filenames) 
 	{
 		// Opens a sql file and insert its content into the Custom Query editor
-		if([[[filename pathExtension] lowercaseString] isEqualToString:@"sql"]) {
+		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL]) {
 
 			// Check size and NSFileType
 			NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES];
@@ -274,7 +276,7 @@
 			break; // open only the first SQL file
 
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spf"]) {
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
 
 			SPWindowController *frontController = nil;
 
@@ -453,7 +455,20 @@
 - (void)setSessionURL:(NSString *)urlString
 {
 	if(_sessionURL) [_sessionURL release], _sessionURL = nil;
-	_sessionURL = [[NSURL fileURLWithPath:urlString] retain];
+	if(urlString)
+		_sessionURL = [[NSURL fileURLWithPath:urlString] retain];
+}
+
+- (NSDictionary *)spfSessionDocData
+{
+	return _spfSessionDocData;
+}
+
+- (void)setSpfSessionDocData:(NSDictionary *)data
+{
+	[_spfSessionDocData removeAllObjects];
+	if(data)
+		[_spfSessionDocData addEntriesFromDictionary:data];
 }
 
 #pragma mark -
@@ -636,7 +651,7 @@
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
 	if( [result hasPrefix:@"text/plain"] 
-		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"sql"] 
+		|| [[[aPath pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL] 
 		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"txt"]
 		|| [result hasPrefix:@"audio/mpeg"] 
 		|| [result hasPrefix:@"application/octet-stream"]
@@ -783,10 +798,11 @@
 #pragma mark -
 
 /**
- * Deallocate prefs controller
+ * Deallocate
  */
 - (void)dealloc
 {
+	if(_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
 	[prefsController release], prefsController = nil;
 	[aboutController release], aboutController = nil;
 	if(_sessionURL) [_sessionURL release], _sessionURL = nil;

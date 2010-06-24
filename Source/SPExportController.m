@@ -707,7 +707,7 @@
 	
 	switch (exportType) {
 		case SPSQLExport:
-			extension = ([exportCompressOutputFile state]) ? @"sql.gz" : @"sql";
+			extension = ([exportCompressOutputFile state]) ? [NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL] : SPFileExtensionSQL;
 			break;
 		case SPXMLExport:
 			extension = @"xml";

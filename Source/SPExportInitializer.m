@@ -294,7 +294,7 @@
 		
 		// Create custom filename if required
 		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]];
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? @"sql.gz" : @"sql"]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? [NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL] : SPFileExtensionSQL]];
 				
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 				

@@ -86,6 +86,7 @@
 		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
 		_isWorkingLevel = 0;
+		_isSavedInBundle = NO;
 		databaseListIsSelectable = YES;
 		_queryMode = SPInterfaceQueryMode;
 		chooseDatabaseButton = nil;
@@ -2278,7 +2279,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setRequiredFileType:@"sql"];
+	[panel setRequiredFileType:SPFileExtensionSQL];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -2486,7 +2487,7 @@
  */
 - (BOOL)isUntitled
 {
-	return ([self fileURL] && [[self fileURL] isFileURL]) ? NO : YES;
+	return (!_isSavedInBundle && [self fileURL] && [[self fileURL] isFileURL]) ? NO : YES;
 }
 
 /**
@@ -2670,6 +2671,11 @@
 	return keyChainID;
 }
 
+- (BOOL)isSaveInBundle
+{
+	return _isSavedInBundle;
+}
+
 #pragma mark -
 #pragma mark Notification center methods
 
@@ -2734,7 +2740,7 @@
 		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] 
 				includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 		// [panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
-		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
+		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionSQL, nil]];
 		if(![prefs stringForKey:@"lastSqlFileName"]) {
 			[prefs setObject:@"" forKey:@"lastSqlFileName"];
 			[prefs synchronize];
@@ -2769,7 +2775,7 @@
 		}
 
 		// Save current session (open connection windows as SPF file)
-		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spf", nil]];
+		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionDefault, nil]];
 
 		//Restore accessory view settings if possible
 		if([spfDocData objectForKey:@"save_password"])
@@ -2807,6 +2813,13 @@
 	// Save Session or Save Session As…
 	else if (sender == nil || [sender tag] == 1020 || [sender tag] == 1021)
 	{
+
+		// Save As Session
+		if([sender tag] == 1020 && [[NSApp delegate] sessionURL]) {
+			[self saveConnectionPanelDidEnd:panel returnCode:1 contextInfo:@"saveAsSession"];
+			return;
+		}
+
 		// Load accessory nib each time.
 		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
 		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
@@ -2910,11 +2923,16 @@
 		}
 
 		// Save all open windows including all tabs as session
-		else if(contextInfo == @"saveSession") {
+		else if(contextInfo == @"saveSession" || contextInfo == @"saveAsSession") {
 
 			// Sub-folder 'Contents' will contain all untitled connection as single window or tab.
 			// info.plist will contain the opened structure (windows and tabs for each window). Each connection
 			// is linked to a saved spf file either in 'Contents' for unTitled ones or already saved spf files.
+
+			if(contextInfo == @"saveAsSession" && [[NSApp delegate] sessionURL])
+				fileName = [[[NSApp delegate] sessionURL] path];
+
+			if(!fileName || ![fileName length]) return;
 
 			NSFileManager *fileManager = [NSFileManager defaultManager];
 
@@ -2949,32 +2967,45 @@
 
 			// retrieve save panel data for passing them to each doc
 			NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
-			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
-			if([[spfDocData_temp objectForKey:@"encrypted"] boolValue])
-				[spfDocData_temp setObject:[saveConnectionEncryptString stringValue] forKey:@"e_string"];
-			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionAutoConnect state]==NSOnState) ? YES : NO ] forKey:@"auto_connect"];
-			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionSavePassword state]==NSOnState) ? YES : NO ] forKey:@"save_password"];
-			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeData state]==NSOnState) ? YES : NO ] forKey:@"include_session"];
-			[spfDocData_temp setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
-			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
-				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
+			if(contextInfo == @"saveAsSession") {
+				[spfDocData_temp addEntriesFromDictionary:[[NSApp delegate] spfSessionDocData]];
+			} else {
+				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
+				if([[spfDocData_temp objectForKey:@"encrypted"] boolValue])
+					[spfDocData_temp setObject:[saveConnectionEncryptString stringValue] forKey:@"e_string"];
+				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionAutoConnect state]==NSOnState) ? YES : NO ] forKey:@"auto_connect"];
+				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionSavePassword state]==NSOnState) ? YES : NO ] forKey:@"save_password"];
+				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeData state]==NSOnState) ? YES : NO ] forKey:@"include_session"];
+				[spfDocData_temp setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
+				if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
+					[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
+
+				// Save the session's accessory view settings
+				[[NSApp delegate] setSpfSessionDocData:spfDocData_temp];
+
+			}
 
 			// Loop through all windows
 			for(NSWindow *window in [[NSApp delegate] orderedDatabaseConnectionWindows]) {
+
+				// First window is always the currently key window
 
 				NSMutableArray *tabs = [NSMutableArray array];
 				NSMutableDictionary *win = [NSMutableDictionary dictionary];
 				
 				// Loop through all tabs of a given window
+				NSInteger tabCount = 0;
+				NSInteger selectedTabItem = 0;
 				for(SPDatabaseDocument *doc in [[window windowController] documents]) {
 					NSMutableDictionary *tabData = [NSMutableDictionary dictionary];
 					if([doc isUntitled]) {
 						// new bundle file name for untitled docs
-						NSString *newName = [NSString stringWithFormat:@"%@.spf", [NSString stringWithNewUUID]];
+						NSString *newName = [NSString stringWithFormat:@"%@.%@", [NSString stringWithNewUUID], SPFileExtensionDefault];
 						// internal bundle path to store the doc
 						NSString *filePath = [NSString stringWithFormat:@"%@/Contents/%@", fileName, newName];
 						// save it as temporary spf file inside the bundle with save panel options spfDocData_temp
 						[doc saveDocumentWithFilePath:filePath inBackground:NO onlyPreferences:NO contextInfo:[NSDictionary dictionaryWithDictionary:spfDocData_temp]];
+						[doc setIsSavedInBundle:YES];
 						[tabData setObject:[NSNumber numberWithBool:NO] forKey:@"isAbsolutePath"];
 						[tabData setObject:newName forKey:@"path"];
 					} else {
@@ -2984,8 +3015,12 @@
 						[tabData setObject:[[doc fileURL] path] forKey:@"path"];
 					}
 					[tabs addObject:tabData];
+					if([[window windowController] selectedTableDocument] == doc)
+						selectedTabItem = tabCount;
+					tabCount++;
 				}
 				[win setObject:tabs forKey:@"tabs"];
+				[win setObject:[NSNumber numberWithInteger:selectedTabItem] forKey:@"selectedTabIndex"];
 				[windows addObject:win];
 			}
 			[info setObject:windows forKey:@"windows"];
@@ -3016,6 +3051,10 @@
 			}
 
 			[[NSApp delegate] setSessionURL:fileName];
+
+			// Register spfs bundle in Recent Files
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
+			
 
 		}
 	}
@@ -3075,14 +3114,16 @@
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-										   alternateButton:nil 
+										   alternateButton:NSLocalizedString(@"Ignore", @"ignore button") 
 											  otherButton:nil 
-								informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name")];
+								informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
-			[alert runModal];
+			NSInteger returnCode = [alert runModal];
 			if (spf) [spf release];
-			// [self close];
+			if(returnCode == NSAlertAlternateReturn)
+				return YES;
+
 			return NO;
 		}
 
@@ -4471,6 +4512,11 @@
 		[pb setString:tmp forType:NSStringPboardType];
 		[pb setString:tmp forType:NSTabularTextPboardType];
 	}
+}
+
+- (void)setIsSavedInBundle:(BOOL)savedInBundle
+{
+	_isSavedInBundle = savedInBundle;
 }
 
 #pragma mark -

@@ -38,6 +38,8 @@
 	id encodingPopUp;
 
 	NSURL *_sessionURL;
+	NSMutableDictionary *_spfSessionDocData;
+
 }
 
 // Window management
@@ -67,8 +69,10 @@
 - (NSArray *)orderedDatabaseConnectionWindows;
 - (SPDatabaseDocument *)frontDocument;
 - (NSURL *)sessionURL;
+- (NSDictionary *)spfSessionDocData;
 
 - (void)setSessionURL:(NSString *)urlString;
+- (void)setSpfSessionDocData:(NSDictionary *)data;
 
 // Feedback controller delegate methods
 - (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;

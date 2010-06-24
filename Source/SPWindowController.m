@@ -541,6 +541,12 @@
 		if (![eachDocument parentTabShouldClose]) return NO;
 	}
 
+	// Remove global session data if the last window of a session will be closed
+	if([[NSApp delegate] sessionURL] && [[[NSApp delegate] orderedDatabaseConnectionWindows] count] == 1) {
+		[[NSApp delegate] setSessionURL:nil];
+		[[NSApp delegate] setSpfSessionDocData:nil];
+	}
+
 	return YES;
 }
 
