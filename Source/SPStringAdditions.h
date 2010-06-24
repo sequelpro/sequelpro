@@ -58,6 +58,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 
 + (NSString *)stringForByteSize:(long long)byteSize;
 + (NSString *)stringForTimeInterval:(CGFloat)timeInterval;
++ (NSString*)stringWithNewUUID;
 
 - (NSString *)HTMLEscapeString;
 - (NSString *)backtickQuotedString;

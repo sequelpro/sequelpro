@@ -270,7 +270,7 @@
 - (void)refreshCurrentDatabase;
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)validateSaveConnectionAccessory:(id)sender;
-- (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences;
+- (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences contextInfo:(NSDictionary*)contextInfo;
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;

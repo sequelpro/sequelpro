@@ -2698,7 +2698,7 @@
 {
 	// Auto-save preferences to spf file based connection
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled])
-		if(_isConnected && ![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES]) {
+		if(_isConnected && ![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES contextInfo:nil]) {
 			NSLog(@"Preference data for file ‘%@’ could not be saved.", [[self fileURL] path]);
 			NSBeep();
 		}
@@ -2757,7 +2757,7 @@
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
 		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
-			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO];
+			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO contextInfo:nil];
 			return;
 		}
 
@@ -2826,7 +2826,7 @@
 
 		// Set file name
 		if([[NSApp delegate] sessionURL])
-			filename = [[[NSApp delegate] sessionURL] description];
+			filename = [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent];
 		else
 			filename = [NSString stringWithFormat:@"%@", @"session"];
 
@@ -2900,7 +2900,7 @@
 			// Save changes of saveConnectionEncryptString
 			[[saveConnectionEncryptString window] makeFirstResponder:[[saveConnectionEncryptString window] initialFirstResponder]];
 
-			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO];
+			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO contextInfo:nil];
 
 			// Manually loaded nibs don't have their top-level objects released automatically - do that here.
 			[saveConnectionAccessory release];
@@ -2918,6 +2918,16 @@
 
 			NSFileManager *fileManager = [NSFileManager defaultManager];
 
+			// If bundle exists remove it
+			if([fileManager fileExistsAtPath:fileName]) {
+				[fileManager removeItemAtPath:fileName error:&error];
+				if(error != nil) {
+					NSAlert *errorAlert = [NSAlert alertWithError:error];
+					[errorAlert runModal];
+					return;
+				}
+			}
+
 			[fileManager createDirectoryAtPath:fileName withIntermediateDirectories:TRUE attributes:nil error:&error];
 
 			if(error != nil) {
@@ -2934,16 +2944,75 @@
 				return;
 			}
 
-			NSString *content = @"HALLO";
-			[content writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName]
-					  atomically:YES
-						encoding:NSUTF8StringEncoding
-						   error:&error];
+			NSMutableDictionary *info = [NSMutableDictionary dictionary];
+			NSMutableArray *windows = [NSMutableArray array];
 
-			if(error != nil) {
+			// retrieve save panel data for passing them to each doc
+			NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
+			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
+			if([[spfDocData_temp objectForKey:@"encrypted"] boolValue])
+				[spfDocData_temp setObject:[saveConnectionEncryptString stringValue] forKey:@"e_string"];
+			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionAutoConnect state]==NSOnState) ? YES : NO ] forKey:@"auto_connect"];
+			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionSavePassword state]==NSOnState) ? YES : NO ] forKey:@"save_password"];
+			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeData state]==NSOnState) ? YES : NO ] forKey:@"include_session"];
+			[spfDocData_temp setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
+			if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
+				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
+
+			// Loop through all windows
+			for(NSWindow *window in [[NSApp delegate] orderedDatabaseConnectionWindows]) {
+
+				NSMutableArray *tabs = [NSMutableArray array];
+				NSMutableDictionary *win = [NSMutableDictionary dictionary];
+				
+				// Loop through all tabs of a given window
+				for(SPDatabaseDocument *doc in [[window windowController] documents]) {
+					NSMutableDictionary *tabData = [NSMutableDictionary dictionary];
+					if([doc isUntitled]) {
+						// new bundle file name for untitled docs
+						NSString *newName = [NSString stringWithFormat:@"%@.spf", [NSString stringWithNewUUID]];
+						// internal bundle path to store the doc
+						NSString *filePath = [NSString stringWithFormat:@"%@/Contents/%@", fileName, newName];
+						// save it as temporary spf file inside the bundle with save panel options spfDocData_temp
+						[doc saveDocumentWithFilePath:filePath inBackground:NO onlyPreferences:NO contextInfo:[NSDictionary dictionaryWithDictionary:spfDocData_temp]];
+						[tabData setObject:[NSNumber numberWithBool:NO] forKey:@"isAbsolutePath"];
+						[tabData setObject:newName forKey:@"path"];
+					} else {
+						// save it to the original location and take the file's spfDocData
+						[doc saveDocumentWithFilePath:[[doc fileURL] path] inBackground:YES onlyPreferences:NO contextInfo:nil];
+						[tabData setObject:[NSNumber numberWithBool:YES] forKey:@"isAbsolutePath"];
+						[tabData setObject:[[doc fileURL] path] forKey:@"path"];
+					}
+					[tabs addObject:tabData];
+				}
+				[win setObject:tabs forKey:@"tabs"];
+				[windows addObject:win];
+			}
+			[info setObject:windows forKey:@"windows"];
+			
+			NSString *err = nil;
+			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:info
+													  format:NSPropertyListXMLFormat_v1_0
+											errorDescription:&err];
+
+			if(err != nil) {
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting session data", @"error while converting session data")]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:err];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				return NO;
+			}
+
+			NSError *error = nil;
+			[plist writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName] options:NSAtomicWrite error:&error];
+			if(error != nil){
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
-				return;
+				return NO;
 			}
 
 			[[NSApp delegate] setSessionURL:fileName];
@@ -2952,7 +3021,7 @@
 	}
 }
 
-- (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences
+- (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences contextInfo:(NSDictionary*)contextInfo
 {
 	// Do not save if no connection is/was available
 	if(saveInBackground && ([self mySQLVersion] == nil || ![[self mySQLVersion] length]))
@@ -2964,7 +3033,7 @@
 		fileName = [[self fileURL] path];
 
 	// Store save panel settings or take them from spfDocData
-	if(!saveInBackground) {
+	if(!saveInBackground && contextInfo == nil) {
 		[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
 		if([[spfDocData_temp objectForKey:@"encrypted"] boolValue])
 			[spfDocData_temp setObject:[saveConnectionEncryptString stringValue] forKey:@"e_string"];
@@ -2976,7 +3045,11 @@
 			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
 
 	} else {
-		[spfDocData_temp addEntriesFromDictionary:spfDocData];
+		// If contextInfo != nil call came from other SPDatabaseDocument while saving it as bundle
+		if(contextInfo == nil)
+			[spfDocData_temp addEntriesFromDictionary:spfDocData];
+		else
+			[spfDocData_temp addEntriesFromDictionary:contextInfo];
 	}
 
 	// Update only query favourites, history, etc. by reading the file again
@@ -3225,23 +3298,25 @@
 		return NO;
 	}
 
-	// Register and update query favorites, content filter, and history for the (new) file URL
-	NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-	[preferences setObject:[spfdata objectForKey:SPQueryHistory] forKey:SPQueryHistory];
-	[preferences setObject:[spfdata objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
-	[preferences setObject:[spfdata objectForKey:SPContentFilters] forKey:SPContentFilters];
-	[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL fileURLWithPath:fileName] andContextInfo:preferences];
+	if(contextInfo == nil) {
+		// Register and update query favorites, content filter, and history for the (new) file URL
+		NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
+		[preferences setObject:[spfdata objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+		[preferences setObject:[spfdata objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+		[preferences setObject:[spfdata objectForKey:SPContentFilters] forKey:SPContentFilters];
+		[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL fileURLWithPath:fileName] andContextInfo:preferences];
 
-	[self setFileURL:[NSURL fileURLWithPath:fileName]];
-	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
+		[self setFileURL:[NSURL fileURLWithPath:fileName]];
+		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
-	[self updateWindowTitle:self];
+		[self updateWindowTitle:self];
 
-	// Store doc data permanently
-	[spfDocData removeAllObjects];
-	[spfDocData addEntriesFromDictionary:spfDocData_temp];
+		// Store doc data permanently
+		[spfDocData removeAllObjects];
+		[spfDocData addEntriesFromDictionary:spfDocData_temp];
 
-	[preferences release];
+		[preferences release];
+	}
 
 	return YES;
 
@@ -3992,7 +4067,7 @@
 
 	// Auto-save spf file based connection and return whether the save was successful
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled]) {
-		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES];
+		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES contextInfo:nil];
 		if(isSaved)
 			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
 		return isSaved;
