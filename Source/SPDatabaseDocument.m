@@ -3222,11 +3222,27 @@
 	[connection setObject:aString forKey:@"type"];
 
 	if([[spfDocData_temp objectForKey:@"save_password"] boolValue]) {
+
 		NSString *pw = [self keychainPasswordForConnection:nil];
 		if(![pw length]) pw = [connectionController password];
-		if (pw) [connection setObject:pw forKey:@"password"];
-		if([connectionController type] == SPSSHTunnelConnection && [connectionController sshPassword])
-			[connection setObject:[connectionController sshPassword] forKey:@"ssh_password"];
+		if (pw) 
+			[connection setObject:pw forKey:@"password"];
+		else
+			[connection setObject:@"" forKey:@"password"];
+
+		if([connectionController type] == SPSSHTunnelConnection) {
+			SPKeychain *keychain = [[SPKeychain alloc] init];
+			NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
+			NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
+			NSString *sshpw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
+			if (sshpw && [sshpw length])
+				[connection setObject:sshpw forKey:@"ssh_password"];
+			else
+				[connection setObject:@"" forKey:@"ssh_password"];
+			if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
+			if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+			[keychain release];
+		}
 	}
 
 	if([connectionController port] && [[connectionController port] length])
