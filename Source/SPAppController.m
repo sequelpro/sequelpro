@@ -298,8 +298,102 @@
 
 			[[self frontDocument] initWithConnectionFile:filename];
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:@"spfs"]) {
-			
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:SPBundleFileExtension]) {
+
+			NSError *readError = nil;
+			NSString *convError = nil;
+			NSPropertyListFormat format;
+			NSDictionary *spfs = nil;
+			NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/info.plist", filename] options:NSUncachedRead error:&readError];
+
+			spfs = [[NSPropertyListSerialization propertyListFromData:pData 
+					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+			if(!spfs || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				if (spfs) [spfs release];
+				return;
+			}
+
+
+			if([spfs objectForKey:@"windows"] && [[spfs objectForKey:@"windows"] isKindOfClass:[NSArray class]]) {
+
+				NSFileManager *fileManager = [NSFileManager defaultManager];
+
+				for(NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects]) {
+
+					static NSPoint cascadeLocation = {.x = 0, .y = 0};
+
+					// Create a new window controller, and set up a new connection view within it.
+					SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
+					NSWindow *newWindow = [newWindowController window];
+
+					// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
+					// and convert to a top left point.
+					NSPoint topLeftPoint = [newWindow frame].origin;
+					topLeftPoint.y += [newWindow frame].size.height;
+
+					// The first window should use autosaving; subsequent windows should cascade.
+					// So attempt to set the frame autosave name; this will succeed for the very
+					// first window, and fail for others.
+					BOOL usedAutosave = [newWindow setFrameAutosaveName:@"DBView"];
+					if (!usedAutosave) {
+						[newWindow setFrameUsingName:@"DBView"];
+					}
+
+					// Cascade according to the statically stored cascade location.
+					cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
+
+					// Set the window controller as the window's delegate
+					[newWindow setDelegate:newWindowController];
+
+					usleep(1000);
+
+					// Show the window
+					[newWindowController showWindow:self];
+
+					for(NSDictionary *tab in [window objectForKey:@"tabs"]) {
+
+						NSString *fileName = nil;
+						BOOL isBundleFile = NO;
+
+						if([[tab objectForKey:@"isAbsolutePath"] boolValue])
+							fileName = [tab objectForKey:@"path"];
+						else {
+							fileName = [NSString stringWithFormat:@"%@/Contents/%@", filename, [tab objectForKey:@"path"]];
+							isBundleFile = YES;
+						}
+
+						if([fileManager fileExistsAtPath:fileName]) {
+
+							if(newWindowController) {
+
+								if ([[newWindowController window] isMiniaturized]) [[newWindowController window] deminiaturize:self];
+								[newWindowController addNewConnection:self];
+
+								[[self frontDocument] initWithConnectionFile:fileName];
+								[[self frontDocument] setIsSavedInBundle:isBundleFile];
+							}
+
+						} else {
+							NSLog(@"Bundle file “%@” does not exists", fileName);
+							NSBeep();
+						}
+					}
+
+					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
+					[[NSApp delegate] setSessionURL:filename];
+
+				}
+			}
+			[spfs release];
 		}
 		else {
 			NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");

@@ -2827,7 +2827,7 @@
 			return;
 		}
 
-		[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"spfs", nil]];
+		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPBundleFileExtension, nil]];
 
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];

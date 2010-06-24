@@ -196,6 +196,7 @@ extern NSString *SPQueryFavortiesPasteboardDragType;
 // File extensions
 extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
+extern NSString *SPBundleFileExtension;
 
 // Filenames
 extern NSString *SPHTMLPrintTemplate;

@@ -44,6 +44,7 @@ NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 
 // File extensions
 NSString *SPFileExtensionDefault                 = @"spf";
+NSString *SPBundleFileExtension                  = @"spfs";
 NSString *SPFileExtensionSQL                     = @"sql";
 
 // Filenames

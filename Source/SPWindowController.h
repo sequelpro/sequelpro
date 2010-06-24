@@ -47,5 +47,6 @@
 - (IBAction)selectNextDocumentTab:(id)sender;
 - (IBAction)selectPreviousDocumentTab:(id)sender;
 - (NSArray *)documents;
+- (void)selectTabAtIndex:(NSInteger)index;
 
 @end

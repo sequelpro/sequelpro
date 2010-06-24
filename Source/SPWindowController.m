@@ -291,6 +291,19 @@
 	return documentsArray;
 }
 
+/**
+ * Select tab at index.
+ */
+- (void)selectTabAtIndex:(NSInteger)index
+{
+	if([[tabBar cells] count] > 0 && [[tabBar cells] count] > index) {
+		[tabView selectTabViewItemAtIndex:index];
+	} else if([[tabBar cells] count]) {
+		[tabView selectTabViewItemAtIndex:0];
+	}
+
+}
+
 #pragma mark -
 #pragma mark Tab view delegate methods
 
