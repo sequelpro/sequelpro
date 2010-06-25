@@ -326,7 +326,7 @@
 	if([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
 
 		[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
-		[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Enter password for ‘%@’:",@"Please enter the password"), [path lastPathComponent]]];
+		[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), [path lastPathComponent]]];
 		[inputTextWindowSecureTextField setStringValue:@""];
 		[inputTextWindowSecureTextField selectText:nil];
 

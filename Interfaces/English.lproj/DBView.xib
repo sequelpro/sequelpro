@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D573</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
 		<string key="IBDocument.InterfaceBuilderVersion">762</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">460.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
@@ -24,6 +24,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="7168"/>
+			<integer value="6493"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -8972,14 +8973,14 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 			<object class="NSWindowTemplate" id="658757235">
 				<int key="NSWindowStyleMask">17</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 372}, {338, 138}}</string>
+				<string key="NSWindowRect">{{196, 360}, {338, 150}}</string>
 				<int key="NSWTFlags">-1543502848</int>
 				<string key="NSWindowTitle">Secure Text Input Sheet</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="978976687">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -9027,7 +9028,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSSecureTextField" id="590177457">
 							<reference key="NSNextResponder" ref="978976687"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{20, 48}, {298, 22}}</string>
+							<string key="NSFrame">{{20, 60}, {298, 22}}</string>
 							<reference key="NSSuperview" ref="978976687"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSecureTextFieldCell" key="NSCell" id="973880651">
@@ -9048,7 +9049,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSTextField" id="735306820">
 							<reference key="NSNextResponder" ref="978976687"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{17, 101}, {304, 17}}</string>
+							<string key="NSFrame">{{17, 113}, {304, 17}}</string>
 							<reference key="NSSuperview" ref="978976687"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="696861397">
@@ -9064,7 +9065,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSTextField" id="945407144">
 							<reference key="NSNextResponder" ref="978976687"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{17, 78}, {304, 14}}</string>
+							<string key="NSFrame">{{17, 90}, {304, 14}}</string>
 							<reference key="NSSuperview" ref="978976687"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="332003389">
@@ -9078,7 +9079,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							</object>
 						</object>
 					</object>
-					<string key="NSFrameSize">{338, 138}</string>
+					<string key="NSFrameSize">{338, 150}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -25342,9 +25344,9 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{370, 428}, {338, 138}}</string>
+					<string>{{615, 509}, {338, 150}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{370, 428}, {338, 138}}</string>
+					<string>{{615, 509}, {338, 150}}</string>
 					<boolean value="NO"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -26022,9 +26024,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>showCompletionList:</string>
 							<string>showHelpForCurrentWord:</string>
 							<string>showHelpForSearchString:</string>
+							<string>toggleQueryInfoPaneCollapse:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -26089,6 +26093,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>queryHistorySearchField</string>
 							<string>queryHistorySearchFieldView</string>
 							<string>queryHistorySearchMenuItem</string>
+							<string>queryInfoPaneSplitView</string>
 							<string>runAllButton</string>
 							<string>runAllMenuItem</string>
 							<string>runSelectionButton</string>
@@ -26142,6 +26147,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>NSSearchField</string>
 							<string>id</string>
 							<string>NSMenuItem</string>
+							<string>BWSplitView</string>
 							<string>id</string>
 							<string>NSMenuItem</string>
 							<string>id</string>
