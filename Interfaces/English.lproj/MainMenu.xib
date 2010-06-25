@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="81"/>
+			<integer value="24"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1032,35 +1032,6 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 									<int key="NSTag">1</int>
-								</object>
-								<object class="NSMenuItem" id="510805568">
-									<reference key="NSMenu" ref="466354362"/>
-									<bool key="NSIsDisabled">YES</bool>
-									<bool key="NSIsSeparator">YES</bool>
-									<string key="NSTitle"/>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-								<object class="NSMenuItem" id="1043808318">
-									<reference key="NSMenu" ref="466354362"/>
-									<string key="NSTitle">Select Next Tab</string>
-									<string type="base64-UTF8" key="NSKeyEquiv">CQ</string>
-									<int key="NSKeyEquivModMask">262144</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-								<object class="NSMenuItem" id="789392667">
-									<reference key="NSMenu" ref="466354362"/>
-									<string key="NSTitle">Select Previous Tab</string>
-									<string type="base64-UTF8" key="NSKeyEquiv">CQ</string>
-									<int key="NSKeyEquivModMask">393216</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
 								<object class="NSMenuItem" id="330038521">
 									<reference key="NSMenu" ref="466354362"/>
@@ -2920,22 +2891,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">selectNextDocumentTab:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="1043808318"/>
-					</object>
-					<int key="connectionID">1098</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">selectPreviousDocumentTab:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="789392667"/>
-					</object>
-					<int key="connectionID">1100</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">selectPreviousDocumentTab:</string>
 						<reference key="source" ref="63651044"/>
 						<reference key="destination" ref="591568093"/>
@@ -4172,14 +4127,11 @@
 							<reference ref="173454563"/>
 							<reference ref="924530602"/>
 							<reference ref="551338335"/>
-							<reference ref="510805568"/>
 							<reference ref="438779812"/>
 							<reference ref="388367969"/>
 							<reference ref="417888240"/>
 							<reference ref="486174990"/>
 							<reference ref="330038521"/>
-							<reference ref="1043808318"/>
-							<reference ref="789392667"/>
 						</object>
 						<reference key="parent" ref="401969940"/>
 					</object>
@@ -4236,11 +4188,6 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">790</int>
 						<reference key="object" ref="551338335"/>
-						<reference key="parent" ref="466354362"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">789</int>
-						<reference key="object" ref="510805568"/>
 						<reference key="parent" ref="466354362"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -4311,16 +4258,6 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">1095</int>
 						<reference key="object" ref="330038521"/>
-						<reference key="parent" ref="466354362"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1096</int>
-						<reference key="object" ref="1043808318"/>
-						<reference key="parent" ref="466354362"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1099</int>
-						<reference key="object" ref="789392667"/>
 						<reference key="parent" ref="466354362"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -4410,8 +4347,6 @@
 					<string>1092.IBPluginDependency</string>
 					<string>1093.IBPluginDependency</string>
 					<string>1095.IBPluginDependency</string>
-					<string>1096.IBPluginDependency</string>
-					<string>1099.IBPluginDependency</string>
 					<string>1101.IBPluginDependency</string>
 					<string>1102.IBPluginDependency</string>
 					<string>1103.IBPluginDependency</string>
@@ -4626,7 +4561,6 @@
 					<string>782.IBPluginDependency</string>
 					<string>783.IBPluginDependency</string>
 					<string>785.IBPluginDependency</string>
-					<string>789.IBPluginDependency</string>
 					<string>79.IBPluginDependency</string>
 					<string>79.ImportedFromIB2</string>
 					<string>790.IBPluginDependency</string>
@@ -4758,8 +4692,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4838,7 +4770,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{485, 542}, {269, 143}}</string>
+					<string>{{607, 403}, {269, 143}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
@@ -4858,7 +4790,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{341, 122}, {251, 343}}</string>
+					<string>{{420, 253}, {251, 293}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -4966,7 +4898,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5119,7 +5050,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1122</int>
+			<int key="maxID">1123</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5178,9 +5109,11 @@
 							<string>showCompletionList:</string>
 							<string>showHelpForCurrentWord:</string>
 							<string>showHelpForSearchString:</string>
+							<string>toggleQueryInfoPaneCollapse:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5245,6 +5178,7 @@
 							<string>queryHistorySearchField</string>
 							<string>queryHistorySearchFieldView</string>
 							<string>queryHistorySearchMenuItem</string>
+							<string>queryInfoPaneSplitView</string>
 							<string>runAllButton</string>
 							<string>runAllMenuItem</string>
 							<string>runSelectionButton</string>
@@ -5298,6 +5232,7 @@
 							<string>NSSearchField</string>
 							<string>id</string>
 							<string>NSMenuItem</string>
+							<string>BWSplitView</string>
 							<string>id</string>
 							<string>NSMenuItem</string>
 							<string>id</string>
@@ -6523,7 +6458,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addNewConnection:</string>
 							<string>closeTab:</string>
-							<string>openSelectedTabInNewWindow:</string>
+							<string>moveSelectedTabInNewWindow:</string>
 							<string>selectNextDocumentTab:</string>
 							<string>selectPreviousDocumentTab:</string>
 							<string>updateAllTabTitles:</string>
@@ -6567,93 +6502,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">SPAppController</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>donate:</string>
-							<string>newTab:</string>
-							<string>newWindow:</string>
-							<string>openAboutPanel:</string>
-							<string>openConnectionSheet:</string>
-							<string>openPreferences:</string>
-							<string>provideFeedback:</string>
-							<string>provideTranslationFeedback:</string>
-							<string>viewKeyboardShortcuts:</string>
-							<string>visitFAQWebsite:</string>
-							<string>visitHelpWebsite:</string>
-							<string>visitWebsite:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">encodingPopUp</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPAppController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPWindowController</string>
-					<string key="superclassName">NSWindowController</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addNewConnection:</string>
-							<string>closeTab:</string>
-							<string>moveSelectedTabInNewWindow:</string>
-							<string>selectNextDocumentTab:</string>
-							<string>selectPreviousDocumentTab:</string>
-							<string>updateAllTabTitles:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>tabBar</string>
-							<string>tabView</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>PSMTabBarControl</string>
-							<string>NSTabView</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPWindowController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">SUUpdater</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -6675,6 +6523,18 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButtonBar.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BWSplitView</string>
+					<string key="superclassName">NSSplitView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">toggleCollapse:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">BWToolkitFramework.framework/Headers/BWSplitView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
