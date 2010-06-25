@@ -2985,6 +2985,14 @@
 
 			}
 
+			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"encrypted"] boolValue]] forKey:@"encrypted"];
+			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"auto_connect"] boolValue]] forKey:@"auto_connect"];
+			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
+			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
+			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
+			[info setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+			[info setObject:@"connection bundle" forKey:@"format"];
+
 			// Loop through all windows
 			for(NSWindow *window in [[NSApp delegate] orderedDatabaseConnectionWindows]) {
 
@@ -3021,6 +3029,7 @@
 				}
 				[win setObject:tabs forKey:@"tabs"];
 				[win setObject:[NSNumber numberWithInteger:selectedTabItem] forKey:@"selectedTabIndex"];
+				[win setObject:NSStringFromRect([window frame]) forKey:@"frame"];
 				[windows addObject:win];
 			}
 			[info setObject:windows forKey:@"windows"];

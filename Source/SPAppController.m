@@ -329,16 +329,9 @@
 
 				for(NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects]) {
 
-					static NSPoint cascadeLocation = {.x = 0, .y = 0};
-
 					// Create a new window controller, and set up a new connection view within it.
 					SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
 					NSWindow *newWindow = [newWindowController window];
-
-					// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
-					// and convert to a top left point.
-					NSPoint topLeftPoint = [newWindow frame].origin;
-					topLeftPoint.y += [newWindow frame].size.height;
 
 					// The first window should use autosaving; subsequent windows should cascade.
 					// So attempt to set the frame autosave name; this will succeed for the very
@@ -348,8 +341,8 @@
 						[newWindow setFrameUsingName:@"DBView"];
 					}
 
-					// Cascade according to the statically stored cascade location.
-					cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
+					if([window objectForKey:@"frame"])
+						[newWindow setFrame:NSRectFromString([window objectForKey:@"frame"]) display:NO];
 
 					// Set the window controller as the window's delegate
 					[newWindow setDelegate:newWindowController];
@@ -389,10 +382,21 @@
 					}
 
 					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
-					[[NSApp delegate] setSessionURL:filename];
 
 				}
+
+				NSMutableDictionary *spfsDocData = [NSMutableDictionary dictionary];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"encrypted"] boolValue]] forKey:@"encrypted"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"auto_connect"] boolValue]] forKey:@"auto_connect"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
+
+				[[NSApp delegate] spfSessionDocData:spfsDocData];
+				[[NSApp delegate] setSessionURL:filename];
+
 			}
+
 			[spfs release];
 		}
 		else {
