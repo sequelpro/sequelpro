@@ -472,7 +472,7 @@
 			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
 			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [connection getLastErrorMessage]] forKey:@"message"];
 			
-			[[self onMainThread] showErrorSheetWith:errorDictionary];
+			[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
 		} 
 	}
 	
@@ -491,7 +491,7 @@
 		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
 		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection getLastErrorMessage]] forKey:@"message"];
 		
-		[[self onMainThread] showErrorSheetWith:errorDictionary];
+		[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
 	} 
 	else {
 		[tableData resetAllData];
