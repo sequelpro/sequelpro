@@ -325,43 +325,52 @@
 	// Ask for a password if SPF file passwords were encrypted as sheet
 	if([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
 
-		[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
-		[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), [path lastPathComponent]]];
-		[inputTextWindowSecureTextField setStringValue:@""];
-		[inputTextWindowSecureTextField selectText:nil];
+		if([self isSaveInBundle] && [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"]) {
+			encryptpw = [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"];
+		} else {
+			[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
+			[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), ([self isSaveInBundle]) ? [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent] : [path lastPathComponent]]];
+			[inputTextWindowSecureTextField setStringValue:@""];
+			[inputTextWindowSecureTextField selectText:nil];
 
-		[NSApp beginSheet:inputTextWindow modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+			[NSApp beginSheet:inputTextWindow modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 
-		// wait for encryption password
-		NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
-		for (;;) {
+			// wait for encryption password
+			NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
+			for (;;) {
 
-			// Execute code on DefaultRunLoop
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
-									 beforeDate:[NSDate distantFuture]];
+				// Execute code on DefaultRunLoop
+				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
+										 beforeDate:[NSDate distantFuture]];
 
-			// Break the run loop if editSheet was closed
-			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
-				|| ![inputTextWindow isVisible]) 
-				break;
+				// Break the run loop if editSheet was closed
+				if ([NSApp runModalSession:session] != NSRunContinuesResponse 
+					|| ![inputTextWindow isVisible]) 
+					break;
 
-			// Execute code on DefaultRunLoop
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
-									 beforeDate:[NSDate distantFuture]];
+				// Execute code on DefaultRunLoop
+				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
+										 beforeDate:[NSDate distantFuture]];
 
+			}
+			[NSApp endModalSession:session];
+			[inputTextWindow orderOut:nil];
+			[NSApp endSheet:inputTextWindow];
+
+			if(passwordSheetReturnCode) {
+				encryptpw = [inputTextWindowSecureTextField stringValue];
+				if([self isSaveInBundle]) {
+					NSMutableDictionary *spfSessionData = [NSMutableDictionary dictionary];
+					[spfSessionData addEntriesFromDictionary:[[NSApp delegate] spfSessionDocData]];
+					[spfSessionData setObject:encryptpw forKey:@"e_string"];
+					[[NSApp delegate] setSpfSessionDocData:spfSessionData];
+				}
+			} else {
+				[self closeAndDisconnect];
+				[spf release];
+				return;
+			}
 		}
-		[NSApp endModalSession:session];
-		[inputTextWindow orderOut:nil];
-		[NSApp endSheet:inputTextWindow];
-
-		if(passwordSheetReturnCode)
-			encryptpw = [inputTextWindowSecureTextField stringValue];
-		else {
-			[self closeAndDisconnect];
-			[spf release];
-			return;
-		}
-
 	}
 
 	if([[spf objectForKey:@"data"] isKindOfClass:[NSDictionary class]])
@@ -2786,7 +2795,7 @@
 			[saveConnectionEncrypt setState:[[spfDocData objectForKey:@"encrypted"] boolValue]];
 		if([spfDocData objectForKey:@"include_session"])
 			[saveConnectionIncludeData setState:[[spfDocData objectForKey:@"include_session"] boolValue]];
-		if([spfDocData objectForKey:@"include_session"])
+		if([spfDocData objectForKey:@"save_editor_content"])
 			[saveConnectionIncludeQuery setState:[[spfDocData objectForKey:@"save_editor_content"] boolValue]];
 
 		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
@@ -2829,8 +2838,23 @@
 
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPBundleFileExtension, nil]];
 
+		NSDictionary *spfSessionData = [[NSApp delegate] spfSessionDocData];
+
+		//Restore accessory view settings if possible
+		if([spfSessionData objectForKey:@"save_password"])
+			[saveConnectionSavePassword setState:[[spfSessionData objectForKey:@"save_password"] boolValue]];
+		if([spfSessionData objectForKey:@"auto_connect"])
+			[saveConnectionAutoConnect setState:[[spfSessionData objectForKey:@"auto_connect"] boolValue]];
+		if([spfSessionData objectForKey:@"encrypted"])
+			[saveConnectionEncrypt setState:[[spfSessionData objectForKey:@"encrypted"] boolValue]];
+		if([spfSessionData objectForKey:@"include_session"])
+			[saveConnectionIncludeData setState:[[spfSessionData objectForKey:@"include_session"] boolValue]];
+		if([spfSessionData objectForKey:@"save_editor_content"])
+			[saveConnectionIncludeQuery setState:[[spfSessionData objectForKey:@"save_editor_content"] boolValue]];
+
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];
+		[saveConnectionIncludeQuery setEnabled:YES];
 
 		// TODO note: it seems that one has problems with a NSSecureTextField
 		// inside an accessory view - ask HansJB
@@ -2976,9 +3000,7 @@
 				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionAutoConnect state]==NSOnState) ? YES : NO ] forKey:@"auto_connect"];
 				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionSavePassword state]==NSOnState) ? YES : NO ] forKey:@"save_password"];
 				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeData state]==NSOnState) ? YES : NO ] forKey:@"include_session"];
-				[spfDocData_temp setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
-				if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
-					[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
+				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
 
 				// Save the session's accessory view settings
 				[[NSApp delegate] setSpfSessionDocData:spfDocData_temp];

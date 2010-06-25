@@ -327,6 +327,16 @@
 
 				NSFileManager *fileManager = [NSFileManager defaultManager];
 
+				NSMutableDictionary *spfsDocData = [NSMutableDictionary dictionary];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"encrypted"] boolValue]] forKey:@"encrypted"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"auto_connect"] boolValue]] forKey:@"auto_connect"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
+				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
+
+				[[NSApp delegate] setSpfSessionDocData:spfsDocData];
+				[[NSApp delegate] setSessionURL:filename];
+
 				for(NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects]) {
 
 					// Create a new window controller, and set up a new connection view within it.
@@ -371,8 +381,8 @@
 								if ([[newWindowController window] isMiniaturized]) [[newWindowController window] deminiaturize:self];
 								[newWindowController addNewConnection:self];
 
-								[[self frontDocument] initWithConnectionFile:fileName];
 								[[self frontDocument] setIsSavedInBundle:isBundleFile];
+								[[self frontDocument] initWithConnectionFile:fileName];
 							}
 
 						} else {
@@ -384,16 +394,6 @@
 					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
 
 				}
-
-				NSMutableDictionary *spfsDocData = [NSMutableDictionary dictionary];
-				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"encrypted"] boolValue]] forKey:@"encrypted"];
-				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"auto_connect"] boolValue]] forKey:@"auto_connect"];
-				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
-				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
-				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
-
-				[[NSApp delegate] spfSessionDocData:spfsDocData];
-				[[NSApp delegate] setSessionURL:filename];
 
 			}
 
