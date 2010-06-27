@@ -161,14 +161,14 @@
 	if ([self frontDocumentWindow]) {
 		[panel beginSheetForDirectory:nil 
 								 file:@"" 
-								types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil] 
+								types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, SPBundleFileExtension, nil] 
 					   modalForWindow:[self frontDocumentWindow]
 						modalDelegate:self 
 					   didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
 						  contextInfo:NULL];
 	} 
 	else {
-		NSInteger returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil]];
+		NSInteger returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, SPBundleFileExtension, nil]];
 
 		if (returnCode) [self application:nil openFiles:[panel filenames]];
 

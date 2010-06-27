@@ -506,8 +506,10 @@
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"include_session"];
 	}
 
-	[self setFileURL:[NSURL fileURLWithPath:path]];
-	[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
+	if(![self isSaveInBundle]) {
+		[self setFileURL:[NSURL fileURLWithPath:path]];
+		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
+	}
 
 	if([spf objectForKey:SPQueryFavorites])
 		[spfPreferences setObject:[spf objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
