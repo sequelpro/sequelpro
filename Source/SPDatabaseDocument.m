@@ -466,7 +466,7 @@
 		[connectionController setPassword:[connection objectForKey:@"password"]];
 	else {
 		NSString *pw = [self keychainPasswordForConnection:nil];
-		if([pw length])
+		if(pw)
 			[connectionController setPassword:pw];
 	}
 
@@ -485,15 +485,9 @@
 		if([connection objectForKey:@"ssh_password"])
 			[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
 		else {
-			SPKeychain *keychain = [[SPKeychain alloc] init];
-			NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
-			NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
-			NSString *pw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-			if ([pw length])
-				[connectionController setSshPassword:pw];
-			if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
-			if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
-			[keychain release];
+			NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
+			if(sshpw)
+				[connectionController setSshPassword:sshpw];
 		}
 
 	}
@@ -549,17 +543,6 @@
 	if([spfSession objectForKey:@"isToolbarVisible"])
 		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
 
-	// TODO up to now it doesn't work
-	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
-		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-		NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-		NSUInteger i;
-		for(i=0; i<[items count]; i++)
-			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
-
-		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
-	}
-
 	// Set table content details for restore
 	if([spfSession objectForKey:@"contentSortCol"])
 		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
@@ -570,13 +553,23 @@
 	if([spfSession objectForKey:@"contentFilter"])
 		[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
 
-
 	// Select table
 	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
 
 	// Reset database view encoding if differs from default
 	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
 		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
+
+	// TODO up to now it doesn't work
+	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
+		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
+		NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
+		NSUInteger i;
+		for(i=0; i<[items count]; i++)
+			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
+
+		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+	}
 
 	// Select view
 	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
@@ -3264,17 +3257,12 @@
 			[connection setObject:@"" forKey:@"password"];
 
 		if([connectionController type] == SPSSHTunnelConnection) {
-			SPKeychain *keychain = [[SPKeychain alloc] init];
-			NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
-			NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
-			NSString *sshpw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-			if (sshpw && [sshpw length])
+			NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
+			if(![sshpw length]) sshpw = [connectionController sshPassword];
+			if (sshpw)
 				[connection setObject:sshpw forKey:@"ssh_password"];
 			else
 				[connection setObject:@"" forKey:@"ssh_password"];
-			if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
-			if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
-			[keychain release];
 		}
 	}
 

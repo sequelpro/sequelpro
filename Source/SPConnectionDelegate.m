@@ -98,6 +98,30 @@
 }
 
 /**
+ * Invoked when the current connection needs a ssh password from the Keychain.
+ */
+- (NSString *)keychainPasswordForSSHConnection:(MCPConnection *)connection
+{
+
+	// If no keychain item is available, return an empty password
+	if (![connectionController connectionKeychainItemName]) return @"";
+
+	// Otherwise, pull the password from the keychain using the details from this connection
+	SPKeychain *keychain = [[SPKeychain alloc] init];
+	NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
+	NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
+	NSString *sshpw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
+	if (!sshpw || ![sshpw length])
+		sshpw = @"";
+
+	if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
+	if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+	[keychain release];
+	
+	return sshpw;
+}
+
+/**
  * Invoked when an attempt was made to execute a query on the current connection, but the connection is not
  * actually active.
  */
