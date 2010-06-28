@@ -533,42 +533,48 @@
 	// Check and set the table
 	NSArray *tables = [tablesListInstance tables];
 
+	BOOL isSelectedTableDefined = YES;
+
 	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
-		[self endTask];
-		[taskPool drain];
-		return;
+		isSelectedTableDefined = NO;
 	}
 
 	// Restore toolbar setting
 	if([spfSession objectForKey:@"isToolbarVisible"])
 		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
 
-	// Set table content details for restore
-	if([spfSession objectForKey:@"contentSortCol"])
-		[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
-	if([spfSession objectForKey:@"contentPageNumber"])
-		[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
-	if([spfSession objectForKey:@"contentViewport"])
-		[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
-	if([spfSession objectForKey:@"contentFilter"])
-		[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
-
-	// Select table
-	[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
-
 	// Reset database view encoding if differs from default
 	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
 		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
 
-	// TODO up to now it doesn't work
-	if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
-		NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-		NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-		NSUInteger i;
-		for(i=0; i<[items count]; i++)
-			[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
 
-		[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+	if(isSelectedTableDefined) {
+		// Set table content details for restore
+		if([spfSession objectForKey:@"contentSortCol"])
+			[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
+		if([spfSession objectForKey:@"contentPageNumber"])
+			[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
+		if([spfSession objectForKey:@"contentViewport"])
+			[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
+		if([spfSession objectForKey:@"contentFilter"])
+			[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
+
+		// Select table
+		[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+
+		// TODO up to now it doesn't work
+		if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
+			NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
+			NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
+			NSUInteger i;
+			for(i=0; i<[items count]; i++)
+				[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
+
+			[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+		}
+
+		[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
+
 	}
 
 	// Select view
@@ -584,8 +590,6 @@
 		[self viewRelations:self];
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
 		[self viewTriggers:self];
-
-	[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
 
 	[self updateWindowTitle:self];
 
