@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="24"/>
+			<integer value="81"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -367,7 +367,8 @@
 									<reference key="NSMenu" ref="709725194"/>
 									<bool key="NSIsHidden">YES</bool>
 									<string key="NSTitle">Save Session</string>
-									<string key="NSKeyEquiv"/>
+									<string key="NSKeyEquiv">s</string>
+									<int key="NSKeyEquivModMask">1835008</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -377,7 +378,8 @@
 									<reference key="NSMenu" ref="709725194"/>
 									<bool key="NSIsHidden">YES</bool>
 									<string key="NSTitle">Save Session As…</string>
-									<string key="NSKeyEquiv"/>
+									<string key="NSKeyEquiv">S</string>
+									<int key="NSKeyEquivModMask">1835008</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -4774,7 +4776,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{228, 546}, {511, 20}}</string>
+					<string>{{154, 639}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -4909,7 +4911,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{334, 123}, {287, 423}}</string>
+					<string>{{260, 216}, {301, 423}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>

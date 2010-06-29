@@ -178,7 +178,6 @@
 	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Register for notifications
-	//register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
 												 name:@"SMySQLQueryWillBePerformed" object:self];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)

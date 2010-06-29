@@ -48,5 +48,6 @@
 - (IBAction)selectPreviousDocumentTab:(id)sender;
 - (NSArray *)documents;
 - (void)selectTabAtIndex:(NSInteger)index;
+- (void)setHideForSingleTab:(BOOL)hide;
 
 @end

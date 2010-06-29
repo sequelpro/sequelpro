@@ -303,6 +303,10 @@
 	}
 
 }
+- (void)setHideForSingleTab:(BOOL)hide
+{
+	[tabBar setHideForSingleTab:hide];
+}
 
 #pragma mark -
 #pragma mark Tab view delegate methods

@@ -343,6 +343,9 @@
 					SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
 					NSWindow *newWindow = [newWindowController window];
 
+					if([[window objectForKey:@"tabs"] count] > 1)
+						[newWindowController setHideForSingleTab:NO];
+
 					// The first window should use autosaving; subsequent windows should cascade.
 					// So attempt to set the frame autosave name; this will succeed for the very
 					// first window, and fail for others.
