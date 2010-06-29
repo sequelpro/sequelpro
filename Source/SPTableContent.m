@@ -2520,7 +2520,17 @@
  */
 - (NSRect) viewport
 {
+	NSLog(@"t %@", NSStringFromRect([[tablesListInstance valueForKeyPath:@"tablesListView"] frame]));
+	NSLog(@"c %@", NSStringFromRect([tableContentView visibleRect]));
 	return [tableContentView visibleRect];
+}
+
+/**
+ * Provide a getter for the table's list view width
+ */
+- (CGFloat) tablesListWidth
+{
+	return [[[[tableDocumentInstance valueForKeyPath:@"contentViewSplitter"] subviews] objectAtIndex:0] frame].size.width;
 }
 
 /**

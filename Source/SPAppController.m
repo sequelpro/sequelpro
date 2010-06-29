@@ -327,6 +327,7 @@
 
 				NSFileManager *fileManager = [NSFileManager defaultManager];
 
+				// Retrieve Save Panel accessory view data for remembering them globally
 				NSMutableDictionary *spfsDocData = [NSMutableDictionary dictionary];
 				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"encrypted"] boolValue]] forKey:@"encrypted"];
 				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"auto_connect"] boolValue]] forKey:@"auto_connect"];
@@ -334,15 +335,19 @@
 				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
 				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
 
+				// Set global session properties
 				[[NSApp delegate] setSpfSessionDocData:spfsDocData];
 				[[NSApp delegate] setSessionURL:filename];
 
+				// Loop through each defined window in reversed order to reconstruct the last active window
 				for(NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects]) {
 
 					// Create a new window controller, and set up a new connection view within it.
 					SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
 					NSWindow *newWindow = [newWindowController window];
 
+					// If window has more than 1 tab then set setHideForSingleTab to NO
+					// in order to avoid animation problems while opening tabs
 					if([[window objectForKey:@"tabs"] count] > 1)
 						[newWindowController setHideForSingleTab:NO];
 
@@ -365,11 +370,14 @@
 					// Show the window
 					[newWindowController showWindow:self];
 
+					// Loop through all defined tabs for each window
 					for(NSDictionary *tab in [window objectForKey:@"tabs"]) {
 
 						NSString *fileName = nil;
 						BOOL isBundleFile = NO;
 
+						// If isAbsolutePath then take this path directly
+						// otherwise construct the releative path for the passed spfs file
 						if([[tab objectForKey:@"isAbsolutePath"] boolValue])
 							fileName = [tab objectForKey:@"path"];
 						else {
@@ -377,8 +385,10 @@
 							isBundleFile = YES;
 						}
 
+						// Security check if file really exists
 						if([fileManager fileExistsAtPath:fileName]) {
 
+							// Add new the tab
 							if(newWindowController) {
 
 								if ([[newWindowController window] isMiniaturized]) [[newWindowController window] deminiaturize:self];
@@ -394,7 +404,9 @@
 						}
 					}
 
+					// Select active tab
 					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
+					// Reset setHideForSingleTab
 					[newWindowController setHideForSingleTab:YES];
 
 				}

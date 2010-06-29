@@ -157,6 +157,7 @@
 - (NSUInteger) pageNumber;
 - (NSIndexSet *) selectedRowIndexes;
 - (NSRect) viewport;
+- (CGFloat) tablesListWidth;
 - (NSDictionary *) filterSettings;
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
 - (void) setPageToRestore:(NSUInteger)thePage;

@@ -546,7 +546,6 @@
 	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
 		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
 
-
 	if(isSelectedTableDefined) {
 		// Set table content details for restore
 		if([spfSession objectForKey:@"contentSortCol"])
@@ -727,13 +726,17 @@
 
 	if(spfSession != nil) {
 
+		// Restore vertical split view divider for tables' list and right view (Structure, Content, etc.)
+		if([spfSession objectForKey:@"windowVerticalDividerPosition"])
+			[contentViewSplitter setPosition:[[spfSession objectForKey:@"windowVerticalDividerPosition"] floatValue] ofDividerAtIndex:0];
+
 		// Start a task to restore the session details
 		[self startTaskWithDescription:NSLocalizedString(@"Restoring session...", @"Restoring session task description")];
-		if ([NSThread isMainThread]) {
+		if ([NSThread isMainThread])
 			[NSThread detachNewThreadSelector:@selector(restoreSession) toTarget:self withObject:nil];
-		} else {
+		else
 			[self restoreSession];
-		}
+
 	} else {
 		switch ([prefs integerForKey:SPDefaultViewMode] > 0 ? [prefs integerForKey:SPDefaultViewMode] : [prefs integerForKey:SPLastViewMode]) {
 			default:
@@ -3025,6 +3028,10 @@
 				NSInteger tabCount = 0;
 				NSInteger selectedTabItem = 0;
 				for(SPDatabaseDocument *doc in [[window windowController] documents]) {
+
+					// Skip not connected docs eg if connection controller is displayed (TODO maybe to be improved)
+					if(![doc mySQLVersion]) continue;
+
 					NSMutableDictionary *tabData = [NSMutableDictionary dictionary];
 					if([doc isUntitled]) {
 						// new bundle file name for untitled docs
@@ -3047,6 +3054,7 @@
 						selectedTabItem = tabCount;
 					tabCount++;
 				}
+				if(![tabs count]) continue;
 				[win setObject:tabs forKey:@"tabs"];
 				[win setObject:[NSNumber numberWithInteger:selectedTabItem] forKey:@"selectedTabIndex"];
 				[win setObject:NSStringFromRect([window frame]) forKey:@"frame"];
@@ -3213,7 +3221,8 @@
 	[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 	[spfdata setObject:@"connection" forKey:@"format"];
 	[spfdata setObject:@"mysql" forKey:@"rdbms_type"];
-	[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
+	if([self mySQLVersion])
+		[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
 
 	// Store the preferences - take them from the current document URL to catch renaming
 	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:SPQueryFavorites];
@@ -3314,6 +3323,7 @@
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
 		[session setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
+		[session setObject:[NSNumber numberWithFloat:[tableContentInstance tablesListWidth]] forKey:@"windowVerticalDividerPosition"];
 		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 		if([tableContentInstance filterSettings])
 			[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
