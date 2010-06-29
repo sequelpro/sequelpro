@@ -2520,8 +2520,6 @@
  */
 - (NSRect) viewport
 {
-	NSLog(@"t %@", NSStringFromRect([[tablesListInstance valueForKeyPath:@"tablesListView"] frame]));
-	NSLog(@"c %@", NSStringFromRect([tableContentView visibleRect]));
 	return [tableContentView visibleRect];
 }
 
