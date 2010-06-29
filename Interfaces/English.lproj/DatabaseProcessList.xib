@@ -2,17 +2,17 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D573</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
 		<string key="IBDocument.InterfaceBuilderVersion">762</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">460.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string key="NS.object.0">762</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="78"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -844,7 +844,7 @@
 				<string key="NSWindowContentMaxSize">{292, 112}</string>
 				<string key="NSWindowContentMinSize">{189, 93}</string>
 				<object class="NSView" key="NSWindowView" id="123987262">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -853,7 +853,6 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{17, 56}, {48, 14}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
-							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="582871149">
 								<int key="NSCellFlags">68288064</int>
@@ -870,7 +869,6 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{124, 56}, {48, 14}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
-							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="514749158">
 								<int key="NSCellFlags">68288064</int>
@@ -887,7 +885,6 @@
 							<int key="NSvFlags">259</int>
 							<string key="NSFrame">{{94, 13}, {70, 28}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
-							<reference key="NSWindow"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="255352692">
@@ -915,7 +912,6 @@
 							<int key="NSvFlags">259</int>
 							<string key="NSFrame">{{26, 13}, {70, 28}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
-							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="857419907">
 								<int key="NSCellFlags">67239424</int>
@@ -937,7 +933,6 @@
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{70, 52}, {49, 22}}</string>
 							<reference key="NSSuperview" ref="123987262"/>
-							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="437242737">
 								<int key="NSCellFlags">-1804468671</int>
@@ -1025,8 +1020,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{189, 93}</string>
-					<reference key="NSSuperview"/>
-					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{189, 115}</string>
@@ -2073,9 +2066,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{396, 222}, {575, 203}}</string>
+					<string>{{385, 322}, {575, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{396, 222}, {575, 203}}</string>
+					<string>{{385, 322}, {575, 203}}</string>
 					<integer value="1"/>
 					<string>{{321, 508}, {411, 341}}</string>
 					<integer value="0"/>
@@ -2116,7 +2109,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{385, 524}, {218, 183}}</string>
+					<string>{{364, 269}, {209, 78}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -2124,7 +2117,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="197497844"/>
-							<string key="toolTip">Duplicate the selected table</string>
+							<string key="toolTip">Toggle the display of the Process ID column</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2159,6 +2152,13 @@
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
+					<string key="className">NSApplication</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Frameworks/PSMTabBar/PSMTabDragAssistant.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -2170,6 +2170,20 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Frameworks/MCPKit/MCPFoundationKit/MCPNull.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarControl.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2720,6 +2734,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">PSMTabBar.framework/Headers/PSMTabBarControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Print.framework/Headers/PDEPluginInterface.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
