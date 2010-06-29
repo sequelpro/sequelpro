@@ -395,6 +395,7 @@
 					}
 
 					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
+					[newWindowController setHideForSingleTab:YES];
 
 				}
 

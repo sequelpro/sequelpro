@@ -93,6 +93,8 @@
 	if ([history count] && historyPosition > 0) backEnabled = YES;
 	if ([history count] && historyPosition + 1 < [history count]) forwardEnabled = YES;
 
+	if(!historyControl) return;
+
 	[historyControl setEnabled:backEnabled forSegment:0];
 	[historyControl setEnabled:forwardEnabled forSegment:1];
 
@@ -229,7 +231,7 @@
 - (void) toolbarWillAddItem:(NSNotification *)aNotification {
 	if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
 		toolbarItemVisible = YES;
-		[self performSelector:@selector(updateToolbarItem) withObject:nil afterDelay:0.1];
+		[self performSelectorOnMainThread:@selector(updateToolbarItem) withObject:nil waitUntilDone:YES];
 	}
 }
 

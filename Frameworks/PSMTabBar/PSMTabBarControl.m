@@ -942,14 +942,14 @@
 		
 		//send the delegate messages
 		if (_isHidden) {
-			if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidHide:)]) {
+			if ([self delegate] && [[self delegate] respondsToSelector:@selector(tabView:tabBarDidHide:)]) {
 				[[self delegate] tabView:[self tabView] tabBarDidHide:self];
 			}
 		} else {
 			[self addSubview:_overflowPopUpButton];
 			[self addSubview:_addTabButton];
 
-			if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidUnhide:)]) {
+			if ([self delegate] && [[self delegate] respondsToSelector:@selector(tabView:tabBarDidUnhide:)]) {
 				[[self delegate] tabView:[self tabView] tabBarDidUnhide:self];
 			}
 		}

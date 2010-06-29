@@ -654,8 +654,8 @@
  * or the selected table document supports the selector.
  */
 - (BOOL) respondsToSelector:(SEL)theSelector
-{	
-	return ([super respondsToSelector:theSelector] || [selectedTableDocument respondsToSelector:theSelector]);
+{
+	return ([super respondsToSelector:theSelector] || (selectedTableDocument && [selectedTableDocument respondsToSelector:theSelector]));
 }
 
 /**
