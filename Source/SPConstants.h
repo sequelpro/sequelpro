@@ -286,6 +286,7 @@ extern NSString *SPProcessListEnableAutoRefresh;
 extern NSString *SPProcessListAutoRrefreshInterval;
 extern NSString *SPFavoritesSortedBy;
 extern NSString *SPFavoritesSortedInReverse;
+extern NSString *SPAlwaysShowWindowTabBar;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

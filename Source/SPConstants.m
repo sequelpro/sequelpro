@@ -134,6 +134,7 @@ NSString *SPProcessListEnableAutoRefresh         = @"ProcessListEnableAutoRefres
 NSString *SPProcessListAutoRrefreshInterval      = @"ProcessListAutoRrefreshInterval";
 NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
 NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
+NSString *SPAlwaysShowWindowTabBar				 = @"WindowAlwaysShowTabBar";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";

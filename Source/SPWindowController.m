@@ -53,7 +53,7 @@
 	// Set up the tab bar
 	[tabBar setStyleNamed:@"SequelPro"];
 	[tabBar setCanCloseOnlyTab:NO];
-	[tabBar setHideForSingleTab:YES];
+	[tabBar setHideForSingleTab:![[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]];
 	[tabBar setShowAddTabButton:YES];
 	[tabBar setSizeCellsToFit:NO];
 	[tabBar setCellMinWidth:100];
@@ -260,6 +260,17 @@
 }
 
 /**
+ * Toggle Tab Bar Visibility
+ */
+
+- (IBAction)toggleTabBarShown:(id)sender
+{
+	[tabBar setHideForSingleTab:![tabBar isTabBarHidden]];
+	[[NSUserDefaults standardUserDefaults] setBool:![tabBar hideForSingleTab] forKey:SPAlwaysShowWindowTabBar];
+}
+
+
+/**
  * Menu validation
  */
 - (BOOL) validateMenuItem:(NSMenuItem *)menuItem
@@ -273,6 +284,12 @@
 		return ([tabView numberOfTabViewItems] != 1);
 	}
 
+	// Show/hide Tab bar
+	if ([menuItem action] == @selector(toggleTabBarShown:)) {
+		[menuItem setTitle:(![tabBar isTabBarHidden] ? NSLocalizedString(@"Hide Tab Bar", @"hide tab bar") : NSLocalizedString(@"Show Tab Bar", @"show tab bar"))];
+		return [[tabBar cells] count] <= 1;
+	}
+	
 	// See if the front document blocks validation of this item
 	if (![selectedTableDocument validateMenuItem:menuItem]) return NO;
 

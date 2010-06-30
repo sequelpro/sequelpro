@@ -29,7 +29,7 @@
 {
 	IBOutlet PSMTabBarControl *tabBar;
 	IBOutlet NSTabView *tabView;
-
+	
 	NSMenuItem *closeWindowMenuItem;
 	NSMenuItem *closeTabMenuItem;
 
@@ -46,6 +46,7 @@
 - (IBAction)closeTab:(id)sender;
 - (IBAction)selectNextDocumentTab:(id)sender;
 - (IBAction)selectPreviousDocumentTab:(id)sender;
+- (IBAction)toggleTabBarShown:(id)sender;
 - (NSArray *)documents;
 - (void)selectTabAtIndex:(NSInteger)index;
 - (void)setHideForSingleTab:(BOOL)hide;
