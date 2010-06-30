@@ -340,6 +340,9 @@
 	
 	[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
 	
+	// Set the tooltip
+	[[exportTableList tableColumnWithIdentifier:@"content"] setHeaderToolTip:(enable) ? @"" : NSLocalizedString(@"Include content", @"include content table column tooltip")];
+	
 	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
@@ -378,7 +381,7 @@
 {
 	[self setExportCancelled:YES];
 	
-	[exportProgressTitle setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling export message")];
+	[exportProgressTitle setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[exportProgressText setStringValue:NSLocalizedString(@"Cleaning up...", @"cancelling export cleaning up message")];
 	
 	// Disable the cancel button

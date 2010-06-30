@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D573</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
 		<string key="IBDocument.InterfaceBuilderVersion">762</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">460.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
@@ -21,8 +21,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1215"/>
 			<integer value="1"/>
+			<integer value="1229"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1131,7 +1131,7 @@
 							<object class="NSTabViewItem" id="286086449">
 								<string key="NSIdentifier">sql</string>
 								<object class="NSView" key="NSView" id="311280472">
-									<nil key="NSNextResponder"/>
+									<reference key="NSNextResponder" ref="683006936"/>
 									<int key="NSvFlags">256</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1478,6 +1478,7 @@
 										</object>
 									</object>
 									<string key="NSFrame">{{10, 7}, {189, 247}}</string>
+									<reference key="NSSuperview" ref="683006936"/>
 								</object>
 								<string key="NSLabel">SQL</string>
 								<reference key="NSColor" ref="683790803"/>
@@ -2292,7 +2293,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSTabViewItem" id="317037302">
 								<string key="NSIdentifier">xml</string>
 								<object class="NSView" key="NSView" id="855848511">
-									<reference key="NSNextResponder" ref="683006936"/>
+									<nil key="NSNextResponder"/>
 									<int key="NSvFlags">256</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2331,7 +2332,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										</object>
 									</object>
 									<string key="NSFrame">{{10, 7}, {189, 247}}</string>
-									<reference key="NSSuperview" ref="683006936"/>
 								</object>
 								<string key="NSLabel">XML</string>
 								<reference key="NSColor" ref="683790803"/>
@@ -2401,14 +2401,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<reference key="NSTabView" ref="683006936"/>
 							</object>
 						</object>
-						<reference key="NSSelectedTabViewItem" ref="317037302"/>
+						<reference key="NSSelectedTabViewItem" ref="286086449"/>
 						<reference key="NSFont" ref="695505032"/>
 						<int key="NSTvFlags">4</int>
 						<bool key="NSAllowTruncatedLabels">YES</bool>
 						<bool key="NSDrawsBackground">YES</bool>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="855848511"/>
+							<reference ref="311280472"/>
 						</object>
 					</object>
 					<object class="NSScrollView" id="505274803">
@@ -2512,6 +2512,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 												<bool key="NSIsResizeable">YES</bool>
 												<bool key="NSIsEditable">YES</bool>
 												<reference key="NSTableView" ref="324452213"/>
+												<string key="NSHeaderToolTip">Include structure</string>
 											</object>
 											<object class="NSTableColumn" id="690984560">
 												<string key="NSIdentifier">content</string>
@@ -2545,6 +2546,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 												<bool key="NSIsResizeable">YES</bool>
 												<bool key="NSIsEditable">YES</bool>
 												<reference key="NSTableView" ref="324452213"/>
+												<string key="NSHeaderToolTip">Include content</string>
 											</object>
 											<object class="NSTableColumn" id="193458164">
 												<string key="NSIdentifier">drop</string>
@@ -2578,6 +2580,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 												<bool key="NSIsResizeable">YES</bool>
 												<bool key="NSIsEditable">YES</bool>
 												<reference key="NSTableView" ref="324452213"/>
+												<string key="NSHeaderToolTip">Include drop syntax</string>
 											</object>
 										</object>
 										<double key="NSIntercellSpacingWidth">3</double>
@@ -4967,7 +4970,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{454, 494}</string>
-					<string>{{562, 186}, {450, 377}}</string>
+					<string>{{645, 237}, {450, 377}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
