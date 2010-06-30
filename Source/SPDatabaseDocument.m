@@ -4479,7 +4479,8 @@
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {
 	if (sidebarGrabber != nil) {
-		return [sidebarGrabber convertRect:[sidebarGrabber bounds] toView:splitView];
+		NSRect grabberBounds = [sidebarGrabber bounds];
+		return [sidebarGrabber convertRect:NSMakeRect(grabberBounds.origin.x + (grabberBounds.size.width - 16), grabberBounds.origin.y, 16, grabberBounds.size.height) toView:splitView];
 	} else {
 		return NSZeroRect;
 	}
