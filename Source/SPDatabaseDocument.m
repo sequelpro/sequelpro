@@ -232,6 +232,9 @@
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow setContentView:taskProgressLayer];
+
+	[contentViewSplitter setDelegate:self];
+
 }
 
 /**
@@ -4446,6 +4449,16 @@
 #pragma mark -
 #pragma mark SplitView delegate methods
 
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)dividerIndex
+{
+
+	// Limit the right view of DBViewSplitter in order to avoid GUI element overlapping
+	if(splitView == contentViewSplitter) return proposedMax - 470;
+
+	return proposedMax;
+
+}
+
 /**
  * tells the splitView that it can collapse views
  */
@@ -4456,7 +4469,11 @@
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
+	// Fix tablesList search field frame after collapsing the tablesList
+	[listFilterField setFrameSize:NSMakeSize([[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width - 8, [listFilterField frame].size.height)];
+
 	[self updateChooseDatabaseToolbarItemWidth];
+
 }
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
