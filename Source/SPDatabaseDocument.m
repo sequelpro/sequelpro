@@ -4225,7 +4225,7 @@
 	// Update the toolbar
 	BOOL toolbarVisible = ![parentWindow toolbar] || [[parentWindow toolbar] isVisible];
 	[parentWindow setToolbar:mainToolbar];
-	if (!toolbarVisible) [[parentWindow toolbar] setVisible:NO];
+	[[parentWindow toolbar] setVisible:toolbarVisible];
 
 	// Update the window's title and represented document
 	[self updateWindowTitle:self];

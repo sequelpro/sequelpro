@@ -26,6 +26,7 @@
 #import "PSMTabBarCell.h"
 #import "PSMTabBarControl.h"
 #import "NSBezierPath_AMShading.h"
+#import "PSMTabDragAssistant.h"
 
 #define kPSMSequelProObjectCounterRadius 7.0
 #define kPSMSequelProCounterMinWidth 20
@@ -133,7 +134,8 @@
 	
 	if ([cell tabState] & PSMTab_SelectedMask) {
 		if (tabOrientation == PSMTabBarHorizontalOrientation) {
-			dragRect.size.height -= 2.0;
+			dragRect.origin.x -= 5.0;
+			dragRect.size.width += 10.0;
 		} else {
 			dragRect.size.height += 1.0;
 			dragRect.origin.y -= 1.0;
@@ -345,7 +347,7 @@
 }
 
 #pragma mark -
-#pragma mark ---- drawing ----
+#pragma mark Drawing
 
 // Step 1
 - (void)drawTabBar:(PSMTabBarControl *)bar inRect:(NSRect)rect
@@ -449,82 +451,143 @@
 {
     NSRect cellFrame = [cell frame];	
     NSColor *lineColor = nil;
+	NSColor *fillColor = nil;
+	NSColor *shadowColor = nil;
     NSBezierPath *outlineBezier = [NSBezierPath bezierPath];
     NSBezierPath *fillBezier = [NSBezierPath bezierPath];
 	NSPoint center = NSZeroPoint;
-	BOOL tabBarIsRightOfSelectedTab = NO;
-	
-	// Determine if the selected tab is right of this tab
-	for (PSMTabBarCell *aCell in [tabBar cells]) {
-		if (aCell == cell) break;
-		if ([aCell state] == NSOnState) {
-			tabBarIsRightOfSelectedTab = YES;
-			break;
+	NSPoint topLeftArcCenter, bottomLeftArcCenter, topRightArcCenter, bottomRightArcCenter;
+	BOOL drawRightEdge = YES;
+	BOOL drawLeftEdge = YES;
+
+	// For cells in the off state, determine whether to draw the edges.
+	if ([cell state] == NSOffState) {
+		NSUInteger selectedCellIndex = NSUIntegerMax;
+		NSUInteger drawingCellIndex = NSUIntegerMax;
+		NSUInteger firstOverflowedCellIndex = NSUIntegerMax;
+
+		NSUInteger currentIndex = 0;
+		for (PSMTabBarCell *aCell in [tabBar cells]) {
+			if (aCell == cell) drawingCellIndex = currentIndex;
+			if ([aCell state] == NSOnState || ([aCell isPlaceholder] && [aCell currentStep] > 1)) {
+				selectedCellIndex = currentIndex;
+			}
+			if ([aCell isInOverflowMenu]) {
+				firstOverflowedCellIndex = currentIndex;
+				break;
+			}
+			currentIndex++;
+		}
+
+		// Draw the left edge if the cell is to the left of the active tab, or if the preceding cell is
+		// being dragged, and not for the very first cell.
+		if ((!drawingCellIndex || (drawingCellIndex == 1 && [[[tabBar cells] objectAtIndex:0] isPlaceholder]))
+			|| (drawingCellIndex > selectedCellIndex
+				&& (drawingCellIndex != selectedCellIndex + 1 || ![[[tabBar cells] objectAtIndex:selectedCellIndex] isPlaceholder])))
+		{
+			drawLeftEdge = NO;
+		}
+
+		// Draw the right edge for tabs to the right, the last tab in the bar, and where the following
+		// cell is being dragged.
+		if (drawingCellIndex < selectedCellIndex
+			&& drawingCellIndex != firstOverflowedCellIndex - 1
+			&& (drawingCellIndex >= selectedCellIndex + 1 || ![[[tabBar cells] objectAtIndex:selectedCellIndex] isPlaceholder]))
+		{
+			drawRightEdge = NO;
+		}
+	}
+
+	// Set up colours
+	if ([[tabBar window] isKeyWindow]) {
+		lineColor = [NSColor darkGrayColor];
+		if ([cell state] == NSOnState) {
+			fillColor = [NSColor colorWithCalibratedWhite:0.59 alpha:1.0];
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.7];
+		} else {
+			fillColor = [NSColor colorWithCalibratedWhite:0.495 alpha:1.0];		
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:1.0];
+		}
+	} else {
+		lineColor = [NSColor colorWithCalibratedWhite:0.49 alpha:1.0];
+		if ([cell state] == NSOnState) {
+			fillColor = [NSColor colorWithCalibratedWhite:0.81 alpha:1.0];
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.4];
+		} else {
+			fillColor = [NSColor colorWithCalibratedWhite:0.685 alpha:1.0];
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.7];
 		}
 	}
 	
-	if ([[tabBar window] isKeyWindow]) {
-		lineColor = [NSColor darkGrayColor];
-	} else {
-		lineColor = [NSColor colorWithCalibratedWhite:0.49 alpha:1.0];
-	}
-	
-	//disable antialiasing of bezier paths
 	[NSGraphicsContext saveGraphicsState];
-	[[NSGraphicsContext currentContext] setShouldAntialias:YES];
-	
 	
 	NSRect aRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y, cellFrame.size.width, cellFrame.size.height);
 
-	// selected tab
-    if ([cell state] == NSOnState) {
+	// If the tab bar is hidden, don't draw the top pixel
+	if ([tabBar isTabBarHidden]) {
+		aRect.origin.y++;
+		aRect.size.height--;
+	}
 
-		// draw top left arc
-		center = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
-	
-		// draw bottom left arc
-		center = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];		
+	// Set up the corner bezier paths arc centers
+	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
+	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
+	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius );
 
-		// draw bottom right arc
-		center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius );
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];		
-		
-		// draw top right arc
-		center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
-		[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];		
+	// Construct the outline path
+	if (drawLeftEdge) {
+		[outlineBezier appendBezierPathWithArcWithCenter:topLeftArcCenter radius:kPSMSequelProTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
+		[outlineBezier appendBezierPathWithArcWithCenter:bottomLeftArcCenter radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
+	}
+	if (drawRightEdge) {
+		[outlineBezier appendBezierPathWithArcWithCenter:bottomRightArcCenter radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
+		[outlineBezier appendBezierPathWithArcWithCenter:topRightArcCenter radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];
+	}
 
-		// Set up a fill bezier with the pieced-together path
-		[fillBezier appendBezierPath:outlineBezier];
+	// Set up a fill bezier based on the outline path
+	[fillBezier appendBezierPath:outlineBezier];
 
-		// Set the tab outer shadow and draw the shadow
-		[NSGraphicsContext saveGraphicsState];
-		NSShadow *shadow = [[NSShadow alloc] init];
-		[shadow setShadowBlurRadius:4];
-		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:[[tabBar window] isKeyWindow]?0.7:0.4]];
-		[shadow setShadowOffset:NSMakeSize(0, 0)];
-		[shadow set];
-		[outlineBezier stroke];
-		[shadow release];
-		[NSGraphicsContext restoreGraphicsState];
+	// If one edge is missing, apply a local fill to the other edge
+	if (drawRightEdge && !drawLeftEdge) {
+		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y)];
+		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height)];
+	} else if (!drawRightEdge && drawLeftEdge) {
+		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + 0.5 + kPSMSequelProTabCornerRadius, aRect.origin.y)];
+	}
 
-		// Fill the tab with a solid colour
-		if ([[tabBar window] isKeyWindow]) {
-			[[NSColor colorWithCalibratedWhite:0.59 alpha:1.0] set];			
-		} else {
-			[[NSColor colorWithCalibratedWhite:0.81 alpha:1.0] set];
-		}
-		[fillBezier fill];
+	// Set the tab outer shadow and draw the shadow
+	[NSGraphicsContext saveGraphicsState];
+	NSShadow *shadow = [[NSShadow alloc] init];
+	[shadow setShadowBlurRadius:4];
+	[shadow setShadowColor:shadowColor];
+	[shadow setShadowOffset:NSMakeSize(0, 0)];
+	[shadow set];
+	[outlineBezier stroke];
+	[shadow release];
+	[NSGraphicsContext restoreGraphicsState];
 
-		// Re-stroke without shadow over the fill.
-		[lineColor set];
-		[outlineBezier stroke];
+	// Fill the tab with a solid colour
+	[fillColor set];
+	[fillBezier fill];
 
-		// Add a bottom line to the tab, with a slight inner glow
+	// Re-stroke without shadow over the fill.
+	[lineColor set];
+	[outlineBezier stroke];
+
+	// Add a bottom line to the active tab, with a slight inner glow
+	if ([cell state] == NSOnState) {
 		outlineBezier = [NSBezierPath bezierPath];
-		[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x + (2 * kPSMSequelProTabCornerRadius), aRect.origin.y + aRect.size.height - 0.5)];
-		[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - (2 * kPSMSequelProTabCornerRadius), aRect.origin.y + aRect.size.height - 0.5)];
+		if (drawLeftEdge) {
+			[outlineBezier appendBezierPathWithArcWithCenter:bottomLeftArcCenter radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
+		} else {
+			[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y + aRect.size.height - 0.5)];
+		}
+		if (drawRightEdge) {
+			[outlineBezier appendBezierPathWithArcWithCenter:bottomRightArcCenter radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
+		} else {
+			[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width, aRect.origin.y + aRect.size.height - 0.5)];
+		}
 		shadow = [[NSShadow alloc] init];
 		[shadow setShadowBlurRadius:1];
 		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.3]];
@@ -532,42 +595,45 @@
 		[shadow set];
 		[outlineBezier stroke];
 
-	// unselected tab		
-    } else {
-        
-        // rollover
-//        if ([cell isHighlighted]) {
-//            [[NSColor colorWithCalibratedWhite:1.0 alpha:0.1] set];
-//            NSRectFillUsingOperation(aRect, NSCompositeSourceAtop);
-//        }
-        
-		if (tabBarIsRightOfSelectedTab) {
-			//lineColor = [NSColor greenColor];
-			
-			// draw bottom right arc
-			center = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
-			
-			// draw top right arc
-			center = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:270 clockwise:NO];
+	// Add the shadow over the tops of background tabs
+	} else if (drawLeftEdge || drawRightEdge) {
 
-		// Don't draw the left edge for the leftmost tab
-		} else if ([[tabBar cells] objectAtIndex:0] != cell) {
-			//lineColor = [NSColor redColor];
-			
-			// draw top left arc
-			center = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:270 endAngle:360 clockwise:NO];
-			
-			// draw bottom left arc
-			center = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-			[outlineBezier appendBezierPathWithArcWithCenter:center radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
+		// Set up a CGContext so that drawing can be clipped (to prevent shadow issues)
+		CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+		CGContextSaveGState(context);
+		NSPoint topLeft, topRight;
+		CGFloat drawAlpha = [[tabBar window] isKeyWindow] ? 1.0 : 0.7;
+		outlineBezier = [NSBezierPath bezierPath];
+
+		// Calculate the endpoints of the line
+		if (drawLeftEdge) {
+			topLeft = NSMakePoint(aRect.origin.x + 0.5 - kPSMSequelProTabCornerRadius + 2, aRect.origin.y + 0.5);
+		} else {
+			topLeft = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + 0.5);
+		}
+		if (drawRightEdge) {
+			topRight = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5 - 2, aRect.origin.y + 0.5);
+		} else {
+			topRight = NSMakePoint(aRect.origin.x + 0.5 + kPSMSequelProTabCornerRadius, aRect.origin.y + 0.5);
 		}
 
-		[lineColor set];
+		// Set up the line and clipping point
+		CGContextClipToRect(context, NSMakeRect(topLeft.x, topLeft.y, topRight.x-topLeft.x, aRect.size.height));
+		[[NSColor colorWithCalibratedWhite:0.2 alpha:drawAlpha] set];
+		[outlineBezier moveToPoint:topLeft];
+		[outlineBezier lineToPoint:topRight];
+
+		// Set up the shadow
+		shadow = [[NSShadow alloc] init];
+		[shadow setShadowBlurRadius:4];
+		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.2 alpha:drawAlpha]];
+		[shadow setShadowOffset:NSMakeSize(0,0)];
+		[shadow set];
+
+		// Draw, and then restore the previous graphics state
 		[outlineBezier stroke];
-    }
+		CGContextRestoreGState(context);
+	}
 	
 	[NSGraphicsContext restoreGraphicsState];
 	

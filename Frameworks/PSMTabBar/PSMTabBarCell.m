@@ -347,8 +347,10 @@
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
     if (_isPlaceholder) {
-        [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
-        NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
+		if (![_controlView usesSafariStyleDragging]) {
+			[[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
+			NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
+		}
         return;
     }
     
@@ -400,25 +402,31 @@
 {
 	NSRect cellFrame = [(id <PSMTabStyle>)[(PSMTabBarControl *)_controlView style] dragRectForTabCell:self orientation:(PSMTabBarOrientation)[(PSMTabBarControl *)_controlView orientation]];
 	//NSRect cellFrame = [self frame];
-	
-    [_controlView lockFocus];
-    NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:cellFrame] autorelease];
-    [_controlView unlockFocus];
-    NSImage *image = [[[NSImage alloc] initWithSize:[rep size]] autorelease];
-    [image addRepresentation:rep];
-    NSImage *returnImage = [[[NSImage alloc] initWithSize:[rep size]] autorelease];
-    [returnImage lockFocus];
-    [image compositeToPoint:NSMakePoint(0.0, 0.0) operation:NSCompositeSourceOver fraction:1.0];
-    [returnImage unlockFocus];
+
+	// Determine the target coordinates to draw into
+	NSRect oldFrame = [self frame];
+	NSRect tabDrawFrame = oldFrame;
+	tabDrawFrame.origin.x -= cellFrame.origin.x;
+
+	// Draw the tab into a new image
+	NSImage *image = [[[NSImage alloc] initWithSize:cellFrame.size] autorelease];
+	[image lockFocusFlipped:YES];
+	[self setFrame:tabDrawFrame];
+	[(id <PSMTabStyle>)[(PSMTabBarControl *)_controlView style] drawTabCell:self];
+	[self setFrame:oldFrame];
+	[image unlockFocus];
+
+	// Add the indicator if appropriate
     if (![[self indicator] isHidden]) {
         NSImage *pi = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"pi"]];
-        [returnImage lockFocus];
+        [image lockFocus];
         NSPoint indicatorPoint = NSMakePoint([self frame].size.width - MARGIN_X - kPSMTabBarIndicatorWidth, MARGIN_Y);
         [pi compositeToPoint:indicatorPoint operation:NSCompositeSourceOver fraction:1.0];
-        [returnImage unlockFocus];
+        [image unlockFocus];
         [pi release];
     }
-    return returnImage;
+
+	return image;
 }
 
 #pragma mark -

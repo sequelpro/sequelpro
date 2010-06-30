@@ -26,6 +26,7 @@
 		[self setLevel:NSStatusWindowLevel];
 		[self setIgnoresMouseEvents:YES];
 		[self setOpaque:NO];
+		[self setBackgroundColor:[NSColor clearColor]];
 		
 		[_dragView setImage:image];
 		

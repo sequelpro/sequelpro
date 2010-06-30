@@ -12,7 +12,7 @@
 
 @implementation PSMTabDragWindowController
 
-- (id)initWithImage:(NSImage *)image styleMask:(NSUInteger)styleMask tearOffStyle:(PSMTabBarTearOffStyle)tearOffStyle
+- (id)initWithImage:(NSImage *)image styleMask:(NSUInteger)styleMask tearOffStyle:(PSMTabBarTearOffStyle)tearOffStyle initialAlpha:(CGFloat)initialAlpha
 {
 	PSMTabDragWindow *window = [PSMTabDragWindow dragWindowWithImage:image styleMask:styleMask];
 	if ( (self = [super initWithWindow:window]) ) {
@@ -24,7 +24,7 @@
 			[window setHasShadow:YES];
 		}
 		
-		[window setAlphaValue:kPSMTabDragWindowAlpha];
+		[window setAlphaValue:initialAlpha];
 	}
 	return self;
 }

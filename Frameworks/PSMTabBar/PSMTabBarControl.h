@@ -79,6 +79,7 @@ enum {
     BOOL                        _useOverflowMenu;
 	BOOL						_alwaysShowActiveTab;
 	BOOL						_allowsScrubbing;
+	BOOL						_useSafariStyleDragging;
 	NSInteger							_resizeAreaCompensation;
 	PSMTabBarOrientation		_orientation;
 	BOOL						_automaticallyAnimates;
@@ -157,6 +158,8 @@ enum {
 - (void)setAlwaysShowActiveTab:(BOOL)value;
 - (BOOL)allowsScrubbing;
 - (void)setAllowsScrubbing:(BOOL)value;
+- (BOOL)usesSafariStyleDragging;
+- (void)setUsesSafariStyleDragging:(BOOL)value;
 - (PSMTabBarTearOffStyle)tearOffStyle;
 - (void)setTearOffStyle:(PSMTabBarTearOffStyle)tearOffStyle;
 
@@ -207,7 +210,7 @@ enum {
 - (BOOL)tabView:(NSTabView *)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl;
 - (BOOL)tabView:(NSTabView *)aTabView shouldAllowTabViewItem:(NSTabViewItem *)tabViewItem toLeaveTabBar:(PSMTabBarControl *)tabBarControl;
 - (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl;
-
+- (void)draggingEvent:(id <NSDraggingInfo>)dragEvent enteredTabBar:(PSMTabBarControl *)tabBarControl tabView:(NSTabViewItem *)tabViewItem;
 
 //Tear-off tabs methods
 - (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(NSUInteger *)styleMask;

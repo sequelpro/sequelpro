@@ -11,6 +11,7 @@
 #import "PSMTabBarCell.h"
 #import "PSMTabStyle.h"
 #import "NSString_AITruncation.h"
+#import "PSMTabDragAssistant.h"
 
 #define MAX_OVERFLOW_MENUITEM_TITLE_LENGTH	60
 
@@ -194,11 +195,13 @@
     NSArray *cells = [_control cells];
     NSInteger cellCount = [cells count];
     
-    // make sure all of our tabs are accounted for before updating
-    if ([[_control tabView] numberOfTabViewItems] != cellCount) {
+    // make sure all of our tabs are accounted for before updating,
+	// or only proceed if a drag is in progress (where counts may mismatch)
+    if ([[_control tabView] numberOfTabViewItems] != cellCount && ![[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
         return;
     }
     
+	// 
     [_cellTrackingRects removeAllObjects];
     [_closeButtonTrackingRects removeAllObjects];
     [_cellFrames removeAllObjects];
@@ -211,7 +214,7 @@
     _addButtonRect.size = [[_control addTabButton] frame].size;
     if ([_control orientation] == PSMTabBarHorizontalOrientation) {
         _addButtonRect.origin.y = MARGIN_Y;
-        _addButtonRect.origin.x += [[cellWidths valueForKeyPath:@"@sum.floatValue"] doubleValue] + 2;
+        _addButtonRect.origin.x += [[cellWidths valueForKeyPath:@"@sum.floatValue"] doubleValue] + MARGIN_X;
     } else {
         _addButtonRect.origin.x = 0;
         _addButtonRect.origin.y = [[cellWidths lastObject] doubleValue];
@@ -326,8 +329,10 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 				width = [_control cellOptimumWidth];
 			}
 			
-			width = ceil(width);
+			//if ([currentCell isPlaceholder]) width = 1;
 			
+			width = ceil(width);
+				
 			//check to see if there is not enough space to place all tabs as preferred
 			if (totalOccupiedWidth + width >= availableWidth) {
 				//There's not enough space to add currentCell at its preferred width!

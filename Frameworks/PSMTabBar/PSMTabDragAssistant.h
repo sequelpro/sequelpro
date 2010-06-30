@@ -22,7 +22,7 @@
     PSMTabBarControl            *_destinationTabBar;
     NSMutableSet                *_participatingTabBars;
     PSMTabBarCell               *_draggedCell;
-    NSInteger                         _draggedCellIndex;   // for snap back
+    NSInteger                   _draggedCellIndex;   // for snap back
     BOOL                        _isDragging;
 	
 	// Support for dragging into new windows

@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
+#import "PSMTabDragAssistant.h"
 
 @interface SPWindowController (PrivateAPI)
 
@@ -61,6 +62,7 @@
 	[tabBar setCellOptimumWidth:250];
 	[tabBar setSelectsTabsOnMouseDown:YES];
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
+	[tabBar setUsesSafariStyleDragging:YES];
 
     // hook up add tab button
     [[tabBar addTabButton] setTarget:self];
@@ -265,7 +267,7 @@
 
 - (IBAction)toggleTabBarShown:(id)sender
 {
-	[tabBar setHideForSingleTab:![tabBar isTabBarHidden]];
+	[tabBar setHideForSingleTab:![tabBar hideForSingleTab]];
 	[[NSUserDefaults standardUserDefaults] setBool:![tabBar hideForSingleTab] forKey:SPAlwaysShowWindowTabBar];
 }
 
@@ -341,6 +343,7 @@
  */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
+	if ([[PSMTabDragAssistant sharedDragAssistant] isDragging]) return;
 	selectedTableDocument = [tabViewItem identifier];
 	[selectedTableDocument didBecomeActiveTabInWindow];
 	if ([[self window] isKeyWindow]) [selectedTableDocument tabDidBecomeKey];
@@ -410,6 +413,22 @@
 }
 
 /**
+ * Respond to dragging events entering the tab in the tab bar.
+ * Allows custom behaviours - for example, if dragging text, switch to the custom
+ * query view.
+ */
+- (void)draggingEvent:(id <NSDraggingInfo>)dragEvent enteredTabBar:(PSMTabBarControl *)tabBarControl tabView:(NSTabViewItem *)tabViewItem
+{
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
+
+	if (![theDocument isCustomQuerySelected] 
+		&& [[[dragEvent draggingPasteboard] types] indexOfObject:NSStringPboardType] != NSNotFound)
+	{
+		[theDocument viewQuery:self];
+	}
+}
+
+/**
  * Show tooltip for a tab view item.
  */
 - (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem
@@ -456,6 +475,14 @@
 }
 
 /**
+ * When dragging a tab off a tab bar, add a shadow to the drag window.
+ */
+- (void)tabViewDragWindowCreated:(NSWindow *)dragWindow
+{
+	[dragWindow setHasShadow:YES];
+}
+
+/**
  * Allow dragging and dropping of tabs to any position, including out of a tab bar
  * to create a new window.
  */
@@ -481,9 +508,9 @@
 		toolbarHeight = innerFrame.size.height - [[[self window] contentView] frame].size.height;
 	}
 
-	// Tweak window positioning according to the style and toolbar
-	point.x -= [[tabBar style] leftMarginForTabBarControl];
-	point.y += 21 + toolbarHeight - kPSMTabBarControlHeight;
+	// Adjust the positioning as appropriate
+	point.y += toolbarHeight;
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]) point.y += kPSMTabBarControlHeight;
 
 	// Set the new window position and size
 	NSRect targetWindowFrame = [[self window] frame];
@@ -510,10 +537,13 @@
 	NSImage *viewImage = [[NSImage alloc] init];
 
 	// Capture an image of the entire window
-	[[[self window] contentView] lockFocus];
-	NSBitmapImageRep *viewRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:[[[self window] contentView] frame]] autorelease];
+	CGImageRef windowImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, [[self window] windowNumber], kCGWindowImageBoundsIgnoreFraming);
+	NSBitmapImageRep *viewRep = [[NSBitmapImageRep alloc] initWithCGImage:windowImage];
 	[viewImage addRepresentation:viewRep];
-	[[[self window] contentView] unlockFocus];
+
+	// Calculate the titlebar+toolbar height
+	CGFloat contentViewOffsetY = [[self window] frame].size.height - [[[self window] contentView] frame].size.height;
+	offset->height = contentViewOffsetY + [tabBar frame].size.height;
 
 	// Draw over the tab bar area
 	[viewImage lockFocus];
@@ -529,16 +559,11 @@
 
 	// Draw the background flipped, which is actually the right way up
 	NSAffineTransform *transform = [NSAffineTransform transform];
+	[transform translateXBy:0.0 yBy:[[[self window] contentView] frame].size.height];
 	[transform scaleXBy:1.0 yBy:-1.0];
 	[transform concat];
-	tabFrame.origin.y = -tabFrame.origin.y - tabFrame.size.height;
 	[(id <PSMTabStyle>)[[aTabView delegate] style] drawBackgroundInRect:tabFrame];
-	[transform invert];
-	[transform concat];
 	[viewImage unlockFocus];
-
-	offset->height = 21;
-	*styleMask = NSTitledWindowMask | NSUnifiedTitleAndToolbarWindowMask;
 
 	return [viewImage autorelease];
 }
@@ -557,7 +582,9 @@
  */
 - (void)tabDragStopped:(id)sender
 {
-	[tabBar setHideForSingleTab:YES];
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]) {
+		[tabBar setHideForSingleTab:YES];
+	}
 }
 
 #pragma mark -

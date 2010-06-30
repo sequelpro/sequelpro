@@ -137,6 +137,7 @@
 	_selectsTabsOnMouseDown = NO;
     _alwaysShowActiveTab = NO;
 	_allowsScrubbing = NO;
+	_useSafariStyleDragging = NO;
     _cellMinWidth = 100;
     _cellMaxWidth = 280;
     _cellOptimumWidth = 130;
@@ -594,6 +595,16 @@
 	_allowsScrubbing = value;
 }
 
+- (BOOL)usesSafariStyleDragging
+{
+	return _useSafariStyleDragging;
+}
+
+- (void)setUsesSafariStyleDragging:(BOOL)value
+{
+	_useSafariStyleDragging = value;
+}
+
 - (PSMTabBarTearOffStyle)tearOffStyle
 {
 	return _tearOffStyle;
@@ -1002,8 +1013,9 @@
 
 - (void)update:(BOOL)animate
 {
-    // make sure all of our tabs are accounted for before updating
-    if ([[self tabView] numberOfTabViewItems] != [_cells count]) {
+    // make sure all of our tabs are accounted for before updating,
+	// or only proceed if a drag is in progress (where counts may mismatch)
+    if ([[self tabView] numberOfTabViewItems] != [_cells count] && ![[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
         return;
     }
 
@@ -1163,11 +1175,18 @@
 
 - (void)_setupTrackingRectsForCell:(PSMTabBarCell *)cell
 {
+
+	// Skip tracking rects for placeholders - not required.
+	if ([cell isPlaceholder]) return;
+
     NSInteger tag, index = [_cells indexOfObject:cell];
     NSRect cellTrackingRect = [_controller cellTrackingRectAtIndex:index];
     NSPoint mousePoint = [self convertPoint:[[self window] mouseLocationOutsideOfEventStream] fromView:nil];
     BOOL mouseInCell = NSMouseInRect(mousePoint, cellTrackingRect, [self isFlipped]);
-    
+
+	// If dragging, suppress mouse interaction
+	if ([[PSMTabDragAssistant sharedDragAssistant] isDragging]) mouseInCell = NO;
+
     //set the cell tracking rect
     [self removeTrackingRect:[cell cellTrackingTag]];
     tag = [self addTrackingRect:cellTrackingRect owner:cell userData:nil assumeInside:mouseInCell];
@@ -1496,10 +1515,12 @@
 															   userInfo:sender
 																repeats:NO] retain];
 			}
-			//If user drags a text string to a tab switch to Custom Query Editor
-			if (![[[cell representedObject] identifier] isCustomQuerySelected] 
-				&& [[[sender draggingPasteboard] types] indexOfObject:NSStringPboardType] != NSNotFound) {
-				[[[cell representedObject] identifier] performSelector:@selector(viewQuery:) withObject:nil];
+
+			// Notify the delegate to respond to drag events if supported.  This allows custom
+			// behaviour when dragging certain drag types onto the tab - for example changing the
+			// view appropriately.
+			if ([self delegate] && [[self delegate] respondsToSelector:@selector(draggingEvent:enteredTabBar:tabView:)]) {
+				[[self delegate] draggingEvent:sender enteredTabBar:self tabView:[cell representedObject]];
 			}
 		}
 		return NSDragOperationCopy;
