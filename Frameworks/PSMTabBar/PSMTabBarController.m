@@ -329,8 +329,6 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 				width = [_control cellOptimumWidth];
 			}
 			
-			//if ([currentCell isPlaceholder]) width = 1;
-			
 			width = ceil(width);
 				
 			//check to see if there is not enough space to place all tabs as preferred

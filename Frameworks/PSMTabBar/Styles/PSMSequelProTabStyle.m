@@ -618,7 +618,7 @@
 		}
 
 		// Set up the line and clipping point
-		CGContextClipToRect(context, NSMakeRect(topLeft.x, topLeft.y, topRight.x-topLeft.x, aRect.size.height));
+		CGContextClipToRect(context, (CGRect)NSMakeRect(topLeft.x, topLeft.y, topRight.x-topLeft.x, aRect.size.height));
 		[[NSColor colorWithCalibratedWhite:0.2 alpha:drawAlpha] set];
 		[outlineBezier moveToPoint:topLeft];
 		[outlineBezier lineToPoint:topRight];
