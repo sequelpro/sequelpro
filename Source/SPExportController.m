@@ -112,6 +112,11 @@
 	[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
 		
 	[exportSQLInsertNValueTextField setIntegerValue:250];
+	
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
+	
+	// If found the set the default path to the user's desktop, otherwise use their home directory
+	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 }
 
 #pragma mark -
@@ -172,11 +177,6 @@
 	
 	// Ensure interface validation
 	[self switchTab:self];
-	
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
-	
-	// If found the set the default path to the user's desktop, otherwise use their home directory
-	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	
 	[NSApp beginSheet:[self window]
 	   modalForWindow:[tableDocumentInstance parentWindow]
