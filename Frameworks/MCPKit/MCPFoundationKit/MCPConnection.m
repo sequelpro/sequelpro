@@ -43,7 +43,7 @@
 BOOL lastPingSuccess;
 BOOL pingActive;
 
-const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS ;
+const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const NSUInteger kMCPConnection_Not_Inited = 1000;
 const NSUInteger kLengthOfTruncationForLog = 100;
@@ -1485,7 +1485,9 @@ void performThreadedKeepAlive(void *ptr)
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCPStreamingNone) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
-					if (!queryCancelled || !queryCancelUsedReconnect) [self unlockConnection];
+					if (!queryCancelled || !queryCancelUsedReconnect) {
+                        [self unlockConnection];
+                    }
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
 				} else if (streamResultType == MCPStreamingFast) {
@@ -1695,6 +1697,25 @@ void performThreadedKeepAlive(void *ptr)
 	return queryCancelUsedReconnect;
 }
 
+/**
+ * Retrieves all remaining results and discards them.
+ * Necessary if we only retrieve one result, and want to discard all the others.
+ */
+- (void)flushMultiResults
+{
+    // repeat as long as there are results
+    while(!mysql_next_result(mConnection))
+    {
+        MYSQL_RES *result = mysql_use_result(mConnection);
+        // check if the result is really a result
+        if (result) {
+            // retrieve all rows
+            while (mysql_fetch_row(result));
+            mysql_free_result(result);
+        }
+    }
+}
+
 #pragma mark -
 #pragma mark Connection locking
 
@@ -1744,6 +1765,13 @@ void performThreadedKeepAlive(void *ptr)
     // potentially dangerous, therefore we log this to the console
     if ([connectionLock condition]!=MCPConnectionBusy) {
         NSLog(@"Tried to unlock the connection, but it wasn't locked.");
+    }
+    
+    // Since we connected with CLIENT_MULTI_RESULT, we must make sure there are nor more results!
+    // This is still a bit of a dirty hack
+    if (mysql_more_results(mConnection)) {
+        NSLog(@"Discarding unretrieved results. This is currently normal when using CALL.");
+        [self flushMultiResults];
     }
     
     // We tell everyone that the connection is available again!

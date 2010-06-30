@@ -277,6 +277,7 @@ void performThreadedKeepAlive(void *ptr);
 - (void)cancelCurrentQuery;
 - (BOOL)queryCancelled;
 - (BOOL)queryCancellationUsedReconnect;
+- (void)flushMultiResults;
 
 // Locking
 - (void)lockConnection;
