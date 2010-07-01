@@ -1,0 +1,212 @@
+<html>
+<head>
+<title>Sequel Pro Help - MySQL SQL Referernce</title>
+<meta name="AppleTitle" content="SQL Reference">
+<meta name="AppleFont" content="Lucida Grande">
+<meta ROBOTS="robots" CONTENT="anchors">
+</head>
+<body text="#000000" link="#0000FF" alink="#0000FF" vlink="#0000FF" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0">
+
+<font face="Lucida Grande,Geneva,Arial">
+
+<br>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="80">
+	<tr>
+		<td align="left" valign="top" width="70">
+		<img src="sequel-pro_logo.jpg" width="60" height="60" border="0">
+		</td>
+		<td align="left"><h1>MySQL SQL Reference</h1>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+		<img src="bar.gif" width="100%" height="20">
+		</td>
+	</tr>
+</table>
+
+<br>
+<font size="-1">
+&nbsp;<a href="../index.html">Back to the main menu</a>
+<br>
+<br>
+<table border="0" width="95%">
+	<tr>
+		<td>
+		<font face="Lucida Grande,Geneva,Arial" size="-1">
+		In the following commands and functions, any italicized text should be replaced by a variable
+		or name of your choice. Any text within brackets ( [ and ] ) is optional. This is only a short reference
+		of the SQL commands supported in MySQL. It is NOT the full list and also may not be complete
+		nor up-to-date.
+		</font>
+		</td>
+	</tr>
+</table>
+
+<br>
+<table border="0" cellpadding="5" cellspacing="2" width="100%">
+	<tr>
+		<td width="60%" valign="top">
+		<font face="Lucida Grande,Geneva,Arial" size="-1">
+		<b>Commands</b>
+		<br>
+		CREATE DATABASE [IF NOT EXISTS] <i>name</i>
+		<br>
+		CREATE [UNIQUE|FULLTEXT] INDEX <i>name</i> ON <i>table</i> (<i>column</i>,..)
+		<br>
+		CREATE TABLE [IF NOT EXISTS] <i>name</i>
+		<br>
+		DELETE FROM <i>table</i> [WHERE <i>clause</i>] [LIMIT <i>n</i>]
+		<br>
+		DROP DATABASE [IF EXISTS] <i>name</i>
+		<br>
+		DROP TABLE [IF EXISTS] <i>name</i>
+		<br>
+		GRANT <i>privilege</i> ON <i>table</i> TO <i>user</i>
+		<br>
+		INSERT [INTO] <i>table</i> [ (column, ...) ] VALUES (values, ...)
+		<br>
+		LOAD DATA INFILE <i>file</i>  INTO TABLE <i>name</i>
+		<br>
+		SELECT [DISTINCT|ALL| |] FROM <i>table</i> [WHERE <i>clause</i> ]
+		<br>
+		UPDATE <i>table</i> SET <i>column=value,...</i> [WHERE <i>clause</i>] [LIMIT <i>n</i>]
+		<br>
+		<br>
+		<b>Logical Operators</b>
+		<br>
+		NOT <i>or</i>&nbsp; ! - performs a logical not
+		<br>
+		OR <i>or</i> | | - performs a logical or
+		<br>
+		XOR - performs a logical exclusive or
+		<br>
+		AND <i>or</i> &amp;&amp; - performs a logical and
+		</font>
+		</td>
+		<td width="40%" valign="top">
+		<font face="Lucida Grande,Geneva,Arial" size="-1">
+		<b>Aggregate Functions</b>
+		<br>
+		AVG(<i>expression</i>)
+		<br>
+		BIT_AND(<i>expression</i>)
+		<br>
+		BIT_OR(<i>expression</i>)
+		<br>
+		COUNT(<i>expression</i>)
+		<br>
+		MAX(<i>expression</i>)
+		<br>
+		MIN(<i>expression</i>)
+		<br>
+		STD(<i>expression</i>)/STDDEV(<i>expression</i>)
+		<br>
+		SUM(<i>expression</i>)
+		<br>
+		<br>
+		<b>General Functions</b>
+		<br>
+		ABS(<i>number</i>)
+		<br>
+		ACOS(<i>number</i>)
+		<br>
+		ADDDATE(<i>date</i>, INTERVAL, <i>amount</i>, <i>type</i>)
+		<br>
+		ASCII(<i>char</i>)
+		<br>
+		ASIN(<i>number</i>)
+		<br>
+		ATAN(<i>number</i>)
+		<br>
+		ATAN2(x, y)
+		<br>
+		BENCHMARK(<i>num</i>, <i>function</i>)
+		<br>
+		BIN((<i>decimal</i>)
+		<br>
+		BIT_COUNT(<i>number</i>)
+		<br>
+		BIT_LENGTH(<i>number</i>)
+		<br>
+		CEILING(<i>number</i>)
+		<br>
+		CHAR_LENGTH(<i>string</i>)
+		<br>
+		COS(<i>radians</i>)
+		<br>
+		COT(<i>radians</i>)
+		<br>
+		CURDATE()
+		<br>
+		CURTIME()
+		<br>
+		DATABASE()
+		<br>
+		DATE_FORMAT(<i>date</i>, <i>format</i>)
+		<br>
+		DAYNAME(<i>date</i>)
+		<br>
+		DAYOFMONTH(<i>date</i>)
+		<br>
+		DAYOFWEEK(<i>date</i>)
+		<br>
+		DAYOFYEAR(<i>date</i>)
+		<br>
+		EXP(<i>power</i>)
+		<br>
+		FLOOR(<i>number</i>)
+		<br>
+		FORMAT(<i>number</i>, <i>decimals</i>)
+		<br>
+		HOUR(<i>time</i>)
+		<br>
+		LENGTH(<i>string</i>)
+		<br>
+		LOG(<i>number</i>)
+		<br>
+		LOWER(<i>number</i>)
+		<br>
+		MD5(<i>string</i>)
+		<br>
+		MINUTE(<i>time</i>)
+		<br>
+		MONTH(<i>date</i>)
+		<br>
+		MONTHNAME(<i>date</i>)
+		<br>
+		NOW()
+		<br>
+		PASSWORD(<i>string</i>)
+		<br>
+		QUARTER(<i>date</i>)
+		<br>
+		REVERSE(<i>string</i>)
+		<br>
+		SECOND(<i>time</i>)
+		<br>
+		SIGN(<i>number</i>)
+		<br>
+		SPACE(<i>number</i>)
+		<br>
+		SQRT(<i>number</i>)
+		<br>
+		UPPER(<i>string</i>)
+		<br>
+		VERSION()
+		<br>
+		WEEK(<i>date</i>)
+		<br>
+		WEEKDAY(<i>date</i>)
+		<br>
+		YEAR(<i>date</i>)
+		</font>
+		</td>
+	</tr>
+</table>
+
+</font>
+
+</body>
+</html>
