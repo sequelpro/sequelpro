@@ -486,7 +486,6 @@
 {
 	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
 	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	MCPStreamingResult	*streamingResult  = nil;
 	NSMutableString		*errors     = [NSMutableString string];
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
@@ -542,122 +541,130 @@
 		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
 
 		// Don't run blank queries, or queries which only contain whitespace.
-		if (![query length])
-			continue;
+		if (![query length]) continue;
 
 		// store trimmed queries for usedQueries and history
 		[tempQueries addObject:query];
 
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
+		MCPMultiResult *theQueryResults = [mySQLConnection streamingMultiQueryString:query];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
-        
-        NSMutableDictionary* queryResult;
-        // If we are reloading, don't create a new result, but rather replace the existing result
-        if (reloadingExistingResult && queryCount==1) {
-            queryResult = [queryResults objectAtIndex:currentQueryResult];
-        } else {
-            // Create a new dictionary for the current query and add it to the list
+                
+        if (!reloadingExistingResult) {
             if ([queryResults count]>=maxQueryResults) [queryResults removeObjectAtIndex:0];
-            queryResult = [NSMutableDictionary dictionaryWithCapacity:10];
-            [queryResults addObject:queryResult];
         }
-        [queryResult setObject:query forKey:@"query"];
-        [queryResult setObject:[NSString stringWithFormat:@"%d %@", nextQueryResultIndex, query] forKey:@"name"];
-        nextQueryResultIndex++;
-        [queryResult setObject:[NSNumber numberWithDouble:[mySQLConnection lastQueryExecutionTime]] forKey:@"time"];
-        
-        SPDataStorage* currentResultData = [[[SPDataStorage alloc] init] autorelease];
-        [queryResult setObject:currentResultData forKey:@"data"];
-        
-        
-        NSArray *columnDefinitions = [streamingResult fetchResultFieldsStructure];
-        if (columnDefinitions == nil) columnDefinitions = [NSArray array];
-        [queryResult setObject:columnDefinitions forKey: @"columns"];
-        
-        currentQueryResult = [queryResults indexOfObject:queryResult];
-        
-        [self processResult:streamingResult intoDataStorage:currentResultData];
-        
-        [[self onMainThread] updateTableView];
-        
-        [queryResult setObject:[NSNumber numberWithInt:[mySQLConnection affectedRows]] forKey:@"affected rows"];
-        
-		// Record any affected rows
-		if ( [mySQLConnection affectedRows] != -1 )
-			totalAffectedRows += [mySQLConnection affectedRows];
-		else if ( [streamingResult numOfRows] )
-			totalAffectedRows += [streamingResult numOfRows];
-
-		[streamingResult release];
-
-		// Store any error messages
-		if ([mySQLConnection queryErrored] || [mySQLConnection queryCancelled]) {
-
-			NSString *errorString;
-			if ([mySQLConnection queryCancelled]) {
-				if ([mySQLConnection queryCancellationUsedReconnect])
-					errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
-				else
-					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
-			} else {
-				errorString = [mySQLConnection getLastErrorMessage];
-			}
+        NSDictionary *queryResultSet;
+        while (queryResultSet = [theQueryResults nextResultSet])
+        {
+            MCPStreamingResult *streamingResult = [queryResultSet objectForKey:@"result"];
+            NSMutableDictionary* queryResult;
+            // If we are reloading, don't create a new result, but rather replace the existing result
+            if (reloadingExistingResult && queryCount==1) {
+                queryResult = [queryResults objectAtIndex:currentQueryResult];
+            } else {
+                // Create a new dictionary for the current query and add it to the list
+                queryResult = [NSMutableDictionary dictionaryWithCapacity:10];
+                [queryResults addObject:queryResult];
+            }
+            [queryResult setObject:query forKey:@"query"];
+            [queryResult setObject:[NSString stringWithFormat:@"%d %@", nextQueryResultIndex, query] forKey:@"name"];
+            [queryResult setObject:[NSNumber numberWithDouble:[mySQLConnection lastQueryExecutionTime]] forKey:@"time"];
             
-            [queryResult setObject:errorString forKey:@"error"];
+            SPDataStorage* currentResultData = [[[SPDataStorage alloc] init] autorelease];
+            [queryResult setObject:currentResultData forKey:@"data"];
             
-			// If the query errored, append error to the error log for display at the end
-			if ( queryCount > 1 ) {
-				if(firstErrorOccuredInQuery == -1)
-					firstErrorOccuredInQuery = i+1;
-
-				if(!suppressErrorSheet)
-				{
-					// Update error text for the user
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-										(long)(i+1),
-										errorString]];
-					[[errorText onMainThread] setStringValue:errors];
-
-					// ask the user to continue after detecting an error
-					if (![mySQLConnection queryCancelled]) {
-						NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-						[alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
-						[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
-						[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
-						[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
-						[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
-						[alert setAlertStyle:NSWarningAlertStyle];
-						NSInteger choice = [[alert onMainThread] runModal];
-						switch (choice){
-							case NSAlertFirstButtonReturn:
-								suppressErrorSheet = YES;
-							case NSAlertSecondButtonReturn:
-								break;
-							default:
-								if(i < queryCount-1) // output that message only if it was not the last one
-									[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
-								i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
-						}
-					}
-				} else {
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-											(long)(i+1),
-											errorString]];
-				}
-			} else {
-				[errors setString:errorString];
-			}
-		} else {
-			// Check if table/db list needs an update
-			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
-			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
-				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
-				databaseWasChanged = YES;
-		}
+            
+            NSArray *columnDefinitions;
+            if (streamingResult) columnDefinitions = [streamingResult fetchResultFieldsStructure];
+            if (columnDefinitions == nil) columnDefinitions = [NSArray array];
+            [queryResult setObject:columnDefinitions forKey: @"columns"];
+            
+            currentQueryResult = [queryResults indexOfObject:queryResult];
+            
+            if (streamingResult) [self processResult:streamingResult intoDataStorage:currentResultData];
+            
+            [[self onMainThread] updateTableView];
+            
+            [queryResult setObject:[NSNumber numberWithInt:[mySQLConnection affectedRows]] forKey:@"affected rows"];
+            
+            // Record any affected rows
+            NSInteger affectedRows = [[queryResultSet objectForKey:@"affected_rows"] integerValue];
+            if ( affectedRows != -1 )
+                totalAffectedRows += affectedRows;
+            else if ( streamingResult && [streamingResult numOfRows] )
+                totalAffectedRows += [streamingResult numOfRows];
+                        
+            // Store any error messages
+            if ([mySQLConnection queryErrored] || [mySQLConnection queryCancelled]) {
+                
+                NSString *errorString;
+                if ([mySQLConnection queryCancelled]) {
+                    if ([mySQLConnection queryCancellationUsedReconnect])
+                        errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
+                    else
+                        errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
+                } else {
+                    errorString = [mySQLConnection getLastErrorMessage];
+                }
+                
+                [queryResult setObject:errorString forKey:@"error"];
+                
+                // If the query errored, append error to the error log for display at the end
+                if ( queryCount > 1 ) {
+                    if(firstErrorOccuredInQuery == -1)
+                        firstErrorOccuredInQuery = i+1;
+                    
+                    if(!suppressErrorSheet)
+                    {
+                        // Update error text for the user
+                        [errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+                                              (long)(i+1),
+                                              errorString]];
+                        [[errorText onMainThread] setStringValue:errors];
+                        
+                        // ask the user to continue after detecting an error
+                        if (![mySQLConnection queryCancelled]) {
+                            NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+                            [alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
+                            [alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
+                            [alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
+                            [alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
+                            [alert setInformativeText:[mySQLConnection getLastErrorMessage]];
+                            [alert setAlertStyle:NSWarningAlertStyle];
+                            NSInteger choice = [[alert onMainThread] runModal];
+                            switch (choice){
+                                case NSAlertFirstButtonReturn:
+                                    suppressErrorSheet = YES;
+                                case NSAlertSecondButtonReturn:
+                                    break;
+                                default:
+                                    if(i < queryCount-1) // output that message only if it was not the last one
+                                        [errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
+                                    i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
+                            }
+                        }
+                    } else {
+                        [errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+                                              (long)(i+1),
+                                              errorString]];
+                    }
+                } else {
+                    [errors setString:errorString];
+                }
+            } else {
+                // Check if table/db list needs an update
+                // The regex is a compromise between speed and usefullness. TODO: further improvements are needed
+                if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
+                    tableListNeedsReload = YES;
+                if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
+                    databaseWasChanged = YES;
+            }
+        }
+        
+        if (!reloadingExistingResult) nextQueryResultIndex++;
+        
 		// If the query was cancelled, end all queries.
 		if ([mySQLConnection queryCancelled]) break;
 	}
@@ -684,7 +691,7 @@
 		
 	// Perform empty query if no query is given
 	if ( !queryCount ) {
-		streamingResult = [mySQLConnection streamingQueryString:@""];
+		MCPStreamingResult *streamingResult = [mySQLConnection streamingQueryString:@""];
 		[streamingResult cancelResultLoad];
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
@@ -913,7 +920,7 @@
         // if we are processing data into the currently selected result, tell the table view things have changed
         [customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
     }
-
+    
 	// Set the column count on the data store
 	[dataStorage setColumnCount:[theResult numOfFields]];
 

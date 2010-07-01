@@ -31,6 +31,7 @@
 #import "MCPNumber.h"
 #import "MCPNull.h"
 #import "MCPStreamingResult.h"
+#import "MCPMultiResult.h"
 #import "MCPConnectionProxy.h"
 #import "MCPStringAdditions.h"
 #import "SPStringAdditions.h"
@@ -1363,6 +1364,16 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
+ * Takes a query string and returns an MCPMultiResult representing the (possible multiple) results of the query.
+ * Just use [MCPMultiResult nextResult] to get MCPStreamingresults, until nil is returned.
+ */
+- (MCPMultiResult *)streamingMultiQueryString:(NSString *)query
+{
+	return [self queryString:query usingEncoding:mEncoding streamingResult:MCPStreamingMulti];
+}
+
+
+/**
  * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
@@ -1494,6 +1505,8 @@ void performThreadedKeepAlive(void *ptr)
 					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:NO];
 				} else if (streamResultType == MCPStreamingLowMem) {
 					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:YES];
+				} else if (streamResultType == MCPStreamingMulti) {
+					theResult = [[MCPMultiResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self];
 				}
 				
 				// Ensure no problem occurred during the result fetch

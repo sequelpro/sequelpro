@@ -58,7 +58,7 @@
  * Initialise a MCPStreamingResult in the same way as MCPResult - as used
  * internally by the MCPConnection !{queryString:} method.
  */
-- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection
+- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(id)theConnection
 {
 	return [self initWithMySQLPtr:mySQLPtr encoding:theEncoding timeZone:theTimeZone connection:theConnection withFullStreaming:NO];
 }
@@ -67,7 +67,7 @@
  * Master initialisation method, allowing selection of either full streaming or safe streaming
  * (see "important note" above)
  */
-- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection withFullStreaming:(BOOL)useFullStreaming
+- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(id)theConnection withFullStreaming:(BOOL)useFullStreaming
 {
 	if ((self = [super init])) {
 		mEncoding = theEncoding;
@@ -419,6 +419,8 @@
 - (void)_downloadAllData
 {
 	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
+    [[NSThread currentThread] setName:@"MCPStreaming Result Data Download Thread"];
+
 	MYSQL_ROW theRow;
 	unsigned long *fieldLengths;
 	NSInteger i, dataCopiedLength, rowDataLength;
@@ -493,6 +495,8 @@
 - (void) _freeAllDataWhenDone
 {
 	NSAutoreleasePool *dataFreeingPool = [[NSAutoreleasePool alloc] init];
+    
+    [[NSThread currentThread] setName:@"MCPStreaming Result Data Free Thread"];
 
 	while (!dataDownloaded || freedRowCount != downloadedRowCount) {
 

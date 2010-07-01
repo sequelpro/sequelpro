@@ -38,7 +38,7 @@ typedef struct SP_MYSQL_ROWS {
 
 @interface MCPStreamingResult : MCPResult
 {
-	MCPConnection *parentConnection;
+	id parentConnection;
 
 	MYSQL_FIELD *fieldDefinitions;
 	

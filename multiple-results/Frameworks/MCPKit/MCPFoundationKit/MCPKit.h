@@ -32,6 +32,7 @@
 #import <MCPKit/MCPNull.h>
 #import <MCPKit/MCPResult.h>
 #import <MCPKit/MCPStreamingResult.h>
+#import <MCPKit/MCPMultiResult.h>
 #import <MCPKit/MCPConnection.h>
 #import <MCPKit/MCPNumber.h>
 #import <MCPKit/MCPResultPlus.h>
