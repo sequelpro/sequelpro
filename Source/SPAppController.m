@@ -406,8 +406,12 @@
 
 					// Select active tab
 					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
+
 					// Reset setHideForSingleTab
-					[newWindowController setHideForSingleTab:YES];
+					if([[NSUserDefaults standardUserDefaults] objectForKey:SPAlwaysShowWindowTabBar])
+						[newWindowController setHideForSingleTab:[[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]];
+					else
+						[newWindowController setHideForSingleTab:YES];
 
 				}
 

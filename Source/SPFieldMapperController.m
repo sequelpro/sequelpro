@@ -82,7 +82,13 @@
 {
 
 	// Set source path
-	[fileSourcePath setURL:[NSURL fileURLWithPath:sourcePath]];
+	// Note: [fileSourcePath setURL:[NSURL fileWithPath:sourcePath]] does NOT work
+	// if Sequel Pro runs localized. Reason unknown, it seems to be a NSPathControl bug.
+	// Ask HansJB for more info.
+	NSPathControl *pc = [[[NSPathControl alloc] initWithFrame:NSZeroRect] autorelease];
+	[pc setURL:[NSURL fileURLWithPath:sourcePath]];
+	if([pc pathComponentCells])
+		[fileSourcePath setPathComponentCells:[pc pathComponentCells]];
 	[fileSourcePath setDoubleAction:@selector(goBackToFileChooser:)];
 
 	[onupdateTextView setDelegate:theDelegate];
