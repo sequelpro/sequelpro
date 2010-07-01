@@ -515,11 +515,7 @@
 		[[customQueryView onMainThread] scrollColumnToVisible:0];
 	}
 
-	// Remove all the columns if not reloading the table
-	if(!reloadingExistingResult) {
-		if (cqColumnDefinition) [cqColumnDefinition release], cqColumnDefinition = nil;
-		[[self onMainThread] updateTableView];
-	}
+    [[self onMainThread] updateTableView];
 
 	// Disable automatic query retries on failure for the custom queries
 	[mySQLConnection setAllowQueryRetries:NO];
@@ -552,28 +548,43 @@
 		// store trimmed queries for usedQueries and history
 		[tempQueries addObject:query];
 
+
 		// Run the query, timing execution (note this also includes network and overhead)
 		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
-
-		// If this is the last query, retrieve and store the result; otherwise,
-		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount || [mySQLConnection queryCancelled]) {
-
-			// Retrieve and cache the column definitions for the result array
-			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
-
-			if(!reloadingExistingResult) {
-				[[self onMainThread] updateTableView];
-			}
-
-			[self processResultIntoDataStorage:streamingResult];
-		} else {
-			[streamingResult cancelResultLoad];
-		}
-
+        
+        NSMutableDictionary* queryResult;
+        // If we are reloading, don't create a new result, but rather replace the existing result
+        if (reloadingExistingResult && queryCount==1) {
+            queryResult = [queryResults objectAtIndex:currentQueryResult];
+        } else {
+            // Create a new dictionary for the current query and add it to the list
+            if ([queryResults count]>=maxQueryResults) [queryResults removeObjectAtIndex:0];
+            queryResult = [NSMutableDictionary dictionaryWithCapacity:10];
+            [queryResults addObject:queryResult];
+        }
+        [queryResult setObject:query forKey:@"query"];
+        [queryResult setObject:[NSString stringWithFormat:@"%d %@", nextQueryResultIndex, query] forKey:@"name"];
+        nextQueryResultIndex++;
+        [queryResult setObject:[NSNumber numberWithDouble:[mySQLConnection lastQueryExecutionTime]] forKey:@"time"];
+        
+        SPDataStorage* currentResultData = [[[SPDataStorage alloc] init] autorelease];
+        [queryResult setObject:currentResultData forKey:@"data"];
+        
+        
+        NSArray *columnDefinitions = [streamingResult fetchResultFieldsStructure];
+        if (columnDefinitions == nil) columnDefinitions = [NSArray array];
+        [queryResult setObject:columnDefinitions forKey: @"columns"];
+        
+        currentQueryResult = [queryResults indexOfObject:queryResult];
+        
+        [self processResult:streamingResult intoDataStorage:currentResultData];
+        
+        [[self onMainThread] updateTableView];
+        
+        [queryResult setObject:[NSNumber numberWithInt:[mySQLConnection affectedRows]] forKey:@"affected rows"];
+        
 		// Record any affected rows
 		if ( [mySQLConnection affectedRows] != -1 )
 			totalAffectedRows += [mySQLConnection affectedRows];
@@ -594,7 +605,9 @@
 			} else {
 				errorString = [mySQLConnection getLastErrorMessage];
 			}
-
+            
+            [queryResult setObject:errorString forKey:@"error"];
+            
 			// If the query errored, append error to the error log for display at the end
 			if ( queryCount > 1 ) {
 				if(firstErrorOccuredInQuery == -1)
@@ -668,9 +681,7 @@
 	
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
-	
-	lastExecutedQuery = [[tempQueries lastObject] retain];
-	
+		
 	// Perform empty query if no query is given
 	if ( !queryCount ) {
 		streamingResult = [mySQLConnection streamingQueryString:@""];
@@ -736,7 +747,7 @@
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	
 	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( !resultDataCount ) {
+	if ( ![self currentResultDataCount] ) {
 		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
 
 		// Notify any listeners that the query has completed
@@ -764,8 +775,8 @@
 	// If more than one table name is found set resultTableName to nil.
 	// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
 	// and the resultTableName can differ due to case-sensitive/insensitive settings!.
-	NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
-	for(id field in cqColumnDefinition) {
+	NSString *resultTableName = [[[self currentColumnDefinitions] objectAtIndex:0] objectForKey:@"org_table"];
+	for(id field in [self currentColumnDefinitions]) {
 		if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
 			resultTableName = nil;
 			break;
@@ -791,7 +802,7 @@
 	}
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+	[customQueryView setTableInstance:self withTableData:[self currentResultData] withColumns:[self currentColumnDefinitions] withTableName:resultTableName withConnection:mySQLConnection];
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -812,10 +823,80 @@
 	[queryRunningPool release];
 }
 
+/**
+ * Returns the column definition of the currently selected result
+ * Returns an empty NSArray if there are no columns (never returns nil)
+ */
+- (NSArray*) currentColumnDefinitions
+{
+    NSArray *columnDefinitions;
+    @try {
+        columnDefinitions = [[queryResults objectAtIndex:currentQueryResult] objectForKey:@"columns"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        columnDefinitions = nil;
+    }
+    if (columnDefinitions == nil) columnDefinitions = [NSArray array];
+    return columnDefinitions;
+}
+
+/**
+ * Returns the query used to generate the current result
+ */
+- (NSString*) currentResultQuery
+{
+    NSString *query;
+    @try {
+        query = [[queryResults objectAtIndex:currentQueryResult] objectForKey:@"query"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        query = nil;
+    }
+    if (query==nil) query = [NSString string];
+    return query;
+}
+
+
+/**
+ * Returns the current query result data storage
+ * Returns nil if no data is found
+ */
+- (SPDataStorage*) currentResultData
+{
+    SPDataStorage *data;
+    @try {
+        data = [[queryResults objectAtIndex:currentQueryResult] objectForKey:@"data"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        data = nil;
+    }
+    return data;
+}
+
+/**
+ * Returns the number of rows in the current query result
+ */
+- (NSInteger) currentResultDataCount
+{
+    SPDataStorage *data;
+    @try {
+        data = [[queryResults objectAtIndex:currentQueryResult] objectForKey:@"data"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        data = nil;
+    }
+    return data ? [data count] : 0;
+}
+
+
 /*
  * Processes a supplied streaming result set, loading it into the data array.
  */
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
+- (void)processResult:(MCPStreamingResult *)theResult intoDataStorage:(SPDataStorage *)dataStorage
 {
 	NSArray *tempRow;
 	NSUInteger rowsProcessed = 0;
@@ -824,14 +905,17 @@
 	BOOL tableViewRedrawn = NO;
 
 	// Remove all items from the table
-	resultDataCount = 0;
-	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	pthread_mutex_lock(&resultDataLock);
-	[resultData removeAllRows];
+	[dataStorage removeAllRows];
 	pthread_mutex_unlock(&resultDataLock);
+	
+    if (dataStorage==[self currentResultData]) {
+        // if we are processing data into the currently selected result, tell the table view things have changed
+        [customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+    }
 
 	// Set the column count on the data store
-	[resultData setColumnCount:[theResult numOfFields]];
+	[dataStorage setColumnCount:[theResult numOfFields]];
 
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
@@ -840,8 +924,7 @@
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 
 		pthread_mutex_lock(&resultDataLock);
-		SPDataStorageAddRow(resultData, tempRow);
-		resultDataCount++;
+		SPDataStorageAddRow(dataStorage, tempRow);
 		pthread_mutex_unlock(&resultDataLock);
 
 		// Update the count of rows processed
@@ -849,13 +932,19 @@
 
 		// Update the table view with new results every now and then
 		if (rowsProcessed > nextTableDisplayBoundary) {
-			[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
-			if (!tableViewRedrawn) {
-				[customQueryView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
-				tableViewRedrawn = YES;
-			}
-			nextTableDisplayBoundary *= 2;
-		}
+            // but only if we are actually populating the currently selected result
+            if (dataStorage==[self currentResultData]) {
+                [customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+                if (!tableViewRedrawn) {
+                    [customQueryView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+                    tableViewRedrawn = YES;
+                }
+                nextTableDisplayBoundary *= 2;
+            } else {
+                nextTableDisplayBoundary += 100;
+            }
+
+        }
 
 		// Drain and reset the autorelease pool every ~1024 rows
 		if (!(rowsProcessed % 1024)) {
@@ -1343,7 +1432,10 @@
 {
 	NSArray *theColumns;
 	NSTableColumn *theCol;
-
+    // tell the query list to reload the data
+    [multipleResultList reloadData];
+    [multipleResultList selectRowIndexes:[NSIndexSet indexSetWithIndex:currentQueryResult] byExtendingSelection:NO];
+    
 	// Remove all existing columns from the table
 	theColumns = [customQueryView tableColumns];
 	while ([theColumns count]) {
@@ -1354,11 +1446,12 @@
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
+        
 	// If there are no table columns to add, return
-	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
+	if (![[self currentColumnDefinitions] count]) return;
 
 	// Add the new table columns
-	for (NSDictionary *columnDefinition in cqColumnDefinition) {
+	for (NSDictionary *columnDefinition in [self currentColumnDefinitions]) {
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[theCol setResizingMask:NSTableColumnUserResizingMask];
 		[theCol setEditable:YES];
@@ -1460,7 +1553,7 @@
 
 	//Look for all columns which are coming from "tableForColumn"
 	NSMutableArray *columnsForFieldTableName = [NSMutableArray array];
-	for(field in cqColumnDefinition) {
+	for(field in [self currentColumnDefinitions]) {
 		if([[field objectForKey:@"org_table"] isEqualToString:tableForColumn])
 			[columnsForFieldTableName addObject:field];
 	}
@@ -1470,7 +1563,7 @@
 	[fieldIDQueryStr setString:@"WHERE ("];
 
 	// --- Build WHERE clause ---
-	dataRow = [resultData rowContentsAtIndex:rowIndex];
+	dataRow = [[self currentResultData] rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
@@ -1530,8 +1623,11 @@
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if (aTableView == customQueryView) {
-		return (resultData == nil) ? 0 : resultDataCount;
+		return [self currentResultDataCount];
 	} 
+    else if (aTableView == multipleResultList) {
+        return [queryResults count];
+    }
 	else {
 		return 0;
 	}
@@ -1554,7 +1650,8 @@
 			// rows or columns may be requested.  Use gray to show loading in these cases.
 			if (isWorking) {
 				pthread_mutex_lock(&resultDataLock);
-				if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+                SPDataStorage *resultData = [self currentResultData];
+				if (rowIndex < [resultData count] && columnIndex < [resultData columnCount]) {
 					theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 				}
 				pthread_mutex_unlock(&resultDataLock);
@@ -1564,7 +1661,7 @@
 					return;
 				}
 			} else {
-				theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+				theValue = SPDataStorageObjectAtRowAndColumn([self currentResultData], rowIndex, columnIndex);
 			}
 			
 			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
@@ -1587,14 +1684,15 @@
 		// cases.
 		if (isWorking) {
 			pthread_mutex_lock(&resultDataLock);
-			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+            SPDataStorage *resultData = [self currentResultData];
+			if (rowIndex < [resultData count] && columnIndex < [resultData columnCount]) {
 				theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex) copy] autorelease];
 			}
 			pthread_mutex_unlock(&resultDataLock);
 
 			if (!theValue) return @"...";
 		} else {
-			theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+			theValue = SPDataStorageObjectAtRowAndColumn([self currentResultData], rowIndex, columnIndex);
 		}
 		
 		if ([theValue isKindOfClass:[NSData class]])
@@ -1604,7 +1702,10 @@
 			return [prefs objectForKey:SPNullValue];
 
 	    return theValue;
-	}
+	} 
+    else if (aTableView == multipleResultList) {
+        return [[queryResults objectAtIndex:rowIndex] objectForKey:@"name"];
+    }
 	else {
 		return @"";
 	}
@@ -1616,11 +1717,11 @@
 
 		// Field editing
 		if (fieldIDQueryString == nil) return;
-
+        
 		NSDictionary *columnDefinition;
 
 		// Retrieve the column defintion
-		for(id c in cqColumnDefinition) {
+		for(id c in [self currentColumnDefinitions]) {
 			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 				break;
@@ -1694,17 +1795,19 @@
 				}
 				return;
 			}
+            
+            
+			// On success reload table data by reexecuting the current query, but only if the reloading preference is checked
+            if ([prefs boolForKey:SPReloadAfterEditingRow])
+            {
+                reloadingExistingResult = YES;
+                [self storeCurrentResultViewForRestoration];
+                [self performQueries:[NSArray arrayWithObject:[self currentResultQuery]] withCallback:NULL];
+            }
+            else {
+                SPDataStorageReplaceObjectAtRowAndColumn([self currentResultData], rowIndex, [[aTableColumn identifier] intValue], anObject);
+            }
 			
-			// On success reload table data by executing the last query if reloading is enabled
-			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
-				reloadingExistingResult = YES;
-				[self storeCurrentResultViewForRestoration];
-
-				[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
-			} else {
-				// otherwise, just update the data in the data storage
-				SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
-			}
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
@@ -1723,9 +1826,10 @@
 
 	// Prevent sorting while a query is running
 	if ([tableDocumentInstance isWorking]) return;
-	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
+    
+	if (![[self currentColumnDefinitions] count]) return;
 
-	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
+	NSMutableString *queryString = [NSMutableString stringWithString:[self currentResultQuery]];
 
 	//sets order descending if a header is clicked twice
 	if ( sortField && [[tableColumn identifier] isEqualToNumber:sortField] ) {
@@ -1928,7 +2032,7 @@
 	// possible exceptions (eg for reloading tables etc.)
 	id theValue;
 	@try{
-		theValue = SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]);
+		theValue = SPDataStorageObjectAtRowAndColumn([self currentResultData], row, [[aTableColumn identifier] integerValue]);
 	}
 	@catch(id ae) {
 		return nil;
@@ -1976,7 +2080,7 @@
 		NSInteger numberOfPossibleUpdateRows = -1;
 
 		// Retrieve the column defintion
-		for(id c in cqColumnDefinition) {
+		for(id c in [self currentColumnDefinitions]) {
 			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 				break;
@@ -2035,7 +2139,7 @@
 		 && [columnDefinition valueForKey:@"char_length"])
 			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
 
-		id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+		id originalData = [[self currentResultData] cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 		if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
 
 		id editData = [[fieldEditor editWithObject:originalData
@@ -2064,7 +2168,23 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return tableRowsSelectable;
+    if (aTableView == customQueryView) {
+        return tableRowsSelectable;
+    } else {
+        return YES;
+    }
+}
+
+/**
+ * Change the current result when clicking on the result list
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+    if ([aNotification object] == multipleResultList) {
+        currentQueryResult = [multipleResultList selectedRow];
+        [self updateTableView];
+        [customQueryView reloadData];
+    }
 }
 
 #pragma mark -
@@ -2076,11 +2196,11 @@
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
 {
 	// Abort if still loading the table
-	if (![cqColumnDefinition count]) return;
+	if (![[self currentColumnDefinitions] count]) return;
 
 	// Retrieve the original index of the column from the identifier
 	NSInteger columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] integerValue];
-	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
+	NSDictionary *columnDefinition = [[self currentColumnDefinitions] objectAtIndex:columnIndex];
 
 	// Don't save if the column doesn't map to an underlying SQL field
 	if (![columnDefinition objectForKey:@"org_name"] || ![(NSString *)[columnDefinition objectForKey:@"org_name"] length])
@@ -3114,7 +3234,6 @@
 		isDesc = NO;
 		sortColumn = nil;
 		selectionButtonCanBeEnabled = NO;
-		cqColumnDefinition = nil;
 		favoritesManager = nil;
 
 		tableRowsSelectable = YES;
@@ -3140,9 +3259,12 @@
 		[[helpWebView backForwardList] setCapacity:20];
 		
 		// init tableView's data source
-		resultDataCount = 0;
-		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
+
+        maxQueryResults = 25; // This should probably be set in a preference or adapt to available memory
+        queryResults = [[NSMutableArray alloc] initWithCapacity:maxQueryResults];
+        currentQueryResult = -1;
+        nextQueryResultIndex = 1;
 
 		currentHistoryOffsetIndex = -1;
 		historyItemWasJustInserted = NO;
@@ -3257,13 +3379,12 @@
 	[prefs removeObserver:self forKeyPath:SPGlobalResultTableFont];
 
 	[usedQuery release];
-	[resultData release];
 	[favoritesManager release];
+    [queryResults release];
 	
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
-	if (cqColumnDefinition) [cqColumnDefinition release];
 	if (selectionIndexToRestore) [selectionIndexToRestore release];
 	if (currentQueryRanges) [currentQueryRanges release];
 	

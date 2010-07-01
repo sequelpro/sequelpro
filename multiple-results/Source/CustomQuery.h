@@ -107,6 +107,8 @@
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
+    
+    IBOutlet NSTableView *multipleResultList;
 
 	SPQueryFavoriteManager *favoritesManager;
 
@@ -128,13 +130,24 @@
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
 
-	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
-	NSInteger resultDataCount;
-	NSArray *cqColumnDefinition;
-	NSString *lastExecutedQuery;
 	NSInteger editedRow;
 	NSRect editedScrollViewRect;
+
+    /**
+    * queryResults is a mutable array containing NSMutableDictionaries
+    * The keys in the dictionaries are:
+    * query         the query that was executed
+    * name          the name given to the query, composed of a running index and the query
+    * error         an error message if the query failed
+    * time          the execution time of the query
+    * columns       the column definition of the result
+    * data          the actual result of the query
+    */
+    NSMutableArray* queryResults;
+    NSInteger currentQueryResult;
+    NSInteger maxQueryResults;
+    NSInteger nextQueryResultIndex;
 
 	BOOL isWorking;
 	BOOL tableRowsSelectable;
@@ -189,7 +202,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
+- (void)processResult:(MCPStreamingResult *)theResult intoDataStorage:(SPDataStorage *)dataStorage;
 
 // Retrieving and setting table state
 - (void) updateTableView;
