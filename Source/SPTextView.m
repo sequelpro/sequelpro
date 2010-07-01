@@ -2550,21 +2550,26 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			case SPT_SINGLE_QUOTED_TEXT:
 			case SPT_DOUBLE_QUOTED_TEXT:
 			    tokenColor = quoteColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_BACKTICK_QUOTED_TEXT:
 			    tokenColor = backtickColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_RESERVED_WORD:
 			    tokenColor = keywordColor;
 			    break;
 			case SPT_NUMERIC:
 				tokenColor = numericColor;
+				allowToCheckForUpperCase = NO;
 				break;
 			case SPT_COMMENT:
 			    tokenColor = commentColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_VARIABLE:
 			    tokenColor = variableColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_WHITESPACE:
 			    continue;
@@ -2585,7 +2590,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywordsEnabled && !delBackwardsWasPressed
+		if (textBufferSizeIncreased 
+			&& allowToCheckForUpperCase 
+			&& autouppercaseKeywordsEnabled 
+			&& !delBackwardsWasPressed
 			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
