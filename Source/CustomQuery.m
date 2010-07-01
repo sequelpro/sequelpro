@@ -1694,13 +1694,17 @@
 				}
 				return;
 			}
-
-			// On success reload table data by executing the last query
-			reloadingExistingResult = YES;
-			[self storeCurrentResultViewForRestoration];
-
-			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
 			
+			// On success reload table data by executing the last query if reloading is enabled
+			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
+				reloadingExistingResult = YES;
+				[self storeCurrentResultViewForRestoration];
+
+				[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
+			} else {
+				// otherwise, just update the data in the data storage
+				SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
+			}
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
