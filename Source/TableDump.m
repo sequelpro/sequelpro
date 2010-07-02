@@ -46,69 +46,63 @@
 @implementation TableDump
 
 #pragma mark -
-#pragma mark IBAction methods
+#pragma mark Initialisation
 
 /**
- * Update the table lists with the list of tables, retrieved from the
- * SPTablesList.  If the user has pressed the reload button, trigger a reload
- * from the server; otherwise used the cached lists.
- * Retrieve only tables for all modes except SQL.
+ * Init.
  */
-- (IBAction)reloadTables:(id)sender
+- (id)init
 {
-
-	// Trigger a reload if necessary
-	if (sender != self) [tablesListInstance updateTables:self];
-
-	// Clear all existing tables
-	[tables removeAllObjects];
-
-	// For all modes, retrieve table and view names
-	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
-	for (id itemName in tablesAndViews) {
-		[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], itemName,  [NSNumber numberWithInt:SPTableTypeTable], nil]];
+	if ((self = [super init])) {
+		
+		nibObjectsToRelease = [[NSMutableArray alloc] init];
+		fieldMappingArray = nil;
+		fieldMappingGlobalValueArray = nil;
+		fieldMappingTableColumnNames = nil;
+		fieldMappingTableDefaultValues = nil;
+		fieldMappingImportArray = nil;
+		csvImportTailString = nil;
+		csvImportHeaderString = nil;
+		csvImportMethodHasTail = NO;
+		fieldMappingImportArrayIsPreview = NO;
+		fieldMappingArrayHasGlobalVariables = NO;
+		importMethodIsUpdate = NO;
+		insertRemainingRowsAfterUpdate = NO;
+		numberOfImportDataColumns = 0;
+		
+		prefs = nil;
+		lastFilename = nil;
+		_mainNibLoaded = NO;
 	}
-
-	// For SQL only, add procedures and functions
-	if (exportMode == SPExportingSQL) {
-		NSArray *procedures = [tablesListInstance allProcedureNames];
-		for (id procName in procedures) {
-			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], procName, [NSNumber numberWithInt:SPTableTypeProc], nil]];
-		}
-		NSArray *functions = [tablesListInstance allFunctionNames];
-		for (id funcName in functions) {
-			[tables addObject:[NSMutableArray arrayWithObjects:[NSNumber numberWithBool:YES], funcName, [NSNumber numberWithInt:SPTableTypeFunc], nil]];
-		}	
-	}
-
-	// Update interface
-	if (exportMode == SPExportingSQL) [exportDumpTableView reloadData];
-	else if (exportMode == SPExportingCSV) [exportMultipleCSVTableView reloadData];
-	else if (exportMode == SPExportingXML) [exportMultipleXMLTableView reloadData];
+	
+	return self;
 }
 
 /**
- * Selects or deselects all tables
+ * UI setup.
  */
-- (IBAction)selectTables:(id)sender
+- (void)awakeFromNib
 {
-	NSEnumerator *enumerator;
-	id theObject;
+	if (_mainNibLoaded) return;
+	_mainNibLoaded = YES;
 	
-	[self reloadTables:self];
-	
-	enumerator = [tables objectEnumerator];
-	while ( (theObject = [enumerator nextObject]) ) {
-		if ( [sender tag] ) {
-			[theObject replaceObjectAtIndex:0 withObject:[NSNumber numberWithBool:YES]];
-		} else {
-			[theObject replaceObjectAtIndex:0 withObject:[NSNumber numberWithBool:NO]];
-		}
-	}
-	
-	[exportDumpTableView reloadData];
-	[exportMultipleCSVTableView reloadData];
-	[exportMultipleXMLTableView reloadData];
+	// Load the import accessory view, retaining a reference to the top-level objects that need releasing.
+	NSArray *importAccessoryTopLevelObjects = nil;
+	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ImportAccessory" bundle:[NSBundle mainBundle]];
+	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
+	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
+	[nibLoader release];
+}
+
+#pragma mark -
+#pragma mark IBAction methods
+
+/**
+ * Cancels the current operation.
+ */
+- (IBAction)cancelProgressBar:(id)sender
+{
+	progressCancelled = YES;
 }
 
 /**
@@ -123,7 +117,7 @@
 /**
  * Convenience method for closing and restoring the progress sheet to default state.
  */
-- (void) closeAndStopProgressSheet
+- (void)closeAndStopProgressSheet
 {
 	if (![NSThread isMainThread]) {
 		[self performSelectorOnMainThread:@selector(closeAndStopProgressSheet) withObject:nil waitUntilDone:YES];
@@ -136,364 +130,41 @@
 	[[singleProgressBar onMainThread] setMaxValue:100];
 }
 
-#pragma mark -
-#pragma mark Export methods
-
-- (void)export
-{
-	[self reloadTables:self];
-	[NSApp beginSheet:exportWindow modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
-}
-
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	[sheet orderOut:self];
-}
-
-- (void)exportFile:(NSInteger)tag
-/*
- invoked when user clicks on an export menuItem
+/**
+ * When the compression setting on export is altered, update the filename
+ * and if appropriate the required extension.
  */
+- (IBAction)updateExportCompressionSetting:(id)sender
 {
-	NSString *file;
-	NSString *contextInfo;
-	currentExportPanel = [NSSavePanel savePanel];
-	[currentExportPanel setAllowsOtherFileTypes:YES];
-//	[currentExportPanel setExtensionHidden:YES];
-    [currentExportPanel setCanSelectHiddenExtension:YES];
-	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil];
-	
-	switch ( tag ) {
-		case 5:
-			// export dump
-			exportMode = SPExportingSQL;
-			[self reloadTables:self];
-			[sqlCompressionSwitch setState:[prefs boolForKey:SPSQLExportUseCompression]?NSOnState:NSOffState];
-			if ([prefs boolForKey:SPSQLExportUseCompression]) {
-				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:[NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL], @"gz", nil]];
-			} else {
-				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionSQL, nil]];
+	if (exportMode == SPExportingSQL) {
+		if ([sender state] == NSOnState) {
+			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:[NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL], @"gz", nil]];
+			
+			// if file name text view is the first responder re-select the path name only without '.sql.gz'
+			if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
+				NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
+				if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:[NSString stringWithFormat:@".%@.gz", SPFileExtensionSQL]]) {
+					NSRange selRange = [filenameTextView selectedRange];
+					selRange.length -= 4;
+					[filenameTextView setSelectedRange:selRange];
+				}
 			}
-			file = [NSString stringWithFormat:@"%@_%@.%@", [tableDocumentInstance database], currentDate, [currentExportPanel requiredFileType]];
-			[currentExportPanel setAccessoryView:exportDumpView];
-			contextInfo = @"exportDump";
-			break;
 			
-			// Export the full resultset for the currently selected table to a file in CSV format
-		case 6:
-			exportMode = SPExportingCSV;
-			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
-			[currentExportPanel setAccessoryView:exportCSVView];
-			[csvFullStreamingSwitch setEnabled:YES];
-			contextInfo = @"exportTableContentAsCSV";
-			break;
-			
-			// Export the full resultset for the currently selected table to a file in XML format
-		case 7:
-			exportMode = SPExportingXML;
-			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance table]];
-			contextInfo = @"exportTableContentAsXML";
-			break;
-			
-			// Export the current "browse" view to a file in CSV format
-		case 8:
-			exportMode = SPExportingCSV;
-			file = [NSString stringWithFormat:@"%@ view.csv", [tableDocumentInstance table]];
-			[currentExportPanel setAccessoryView:exportCSVView];
-			[csvFullStreamingSwitch setEnabled:NO];
-			contextInfo = @"exportBrowseViewAsCSV";
-			break;
-			
-			// Export the current "browse" view to a file in XML format
-		case 9:
-			exportMode = SPExportingXML;
-			file = [NSString stringWithFormat:@"%@ view.xml", [tableDocumentInstance table]];
-			contextInfo = @"exportBrowseViewAsXML";
-			break;
-			
-			// Export the current custom query result set to a file in CSV format
-		case 10:
-			exportMode = SPExportingCSV;
-			file = @"customresult.csv";
-			[currentExportPanel setAccessoryView:exportCSVView];
-			[csvFullStreamingSwitch setEnabled:NO];
-			contextInfo = @"exportCustomResultAsCSV";
-			break;
-			
-			// Export the current custom query result set to a file in XML format
-		case 11:
-			exportMode = SPExportingXML;
-			file = @"customresult.xml";
-			contextInfo = @"exportCustomResultAsXML";
-			break;
-			
-			// Export multiple tables to a file in CSV format
-		case 12:
-			exportMode = SPExportingCSV;
-			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
-			[currentExportPanel setAccessoryView:exportMultipleCSVView];
-			contextInfo = @"exportMultipleTablesAsCSV";
-			break;
-			
-			// Export multiple tables to a file in XML format
-		case 13:
-			exportMode = SPExportingXML;
-			[self reloadTables:self];
-			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
-			[currentExportPanel setAccessoryView:exportMultipleXMLView];
-			contextInfo = @"exportMultipleTablesAsXML";
-			break;
-			
-			// graphviz dot file
-		case 14:
-			exportMode = SPExportingDOT;
-			[self reloadTables:self];
-			file = [NSString stringWithString:[tableDocumentInstance database]];
-			[currentExportPanel setRequiredFileType:@"dot"];
-			contextInfo = @"exportDot";
-			break;
-			
-		default:
-			ALog(@"ERROR: unknown export item with tag %d", tag);
-			return;
-			break;
-	}
-
-	[currentExportPanel setDelegate:self];
-
-	// Open the savePanel
-	[currentExportPanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
-										  file:file modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-								didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
-								
-
-	// Wait for the SavePanel and check for '.sql.gz' extension; if so - select only the path name without any extensions
-	while(![currentExportPanel isVisible]) { usleep(100); }
-	if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
-		NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
-		if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:@".sql.gz"]) {
-			NSRange selRange = [filenameTextView selectedRange];
-			selRange.length -= 4;
-			[filenameTextView setSelectedRange:selRange];
-		}
-	}
-}
-
-/**
- * When the export "Save" dialog is closed, fire up a background thread to perform
- * the requested export.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	[sheet orderOut:self];
-	
-	if ( returnCode != NSOKButton )
-		return;
-	
-	// Save path to preferences
-	[prefs setObject:[sheet directory] forKey:@"savePath"];
-
-	// Set up the details required for the export and pass them into a new worker thread
-	NSDictionary *exportProcessDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-												contextInfo, @"action",
-												[sheet filename], @"filename",
-												nil];
-	[NSThread detachNewThreadSelector:@selector(exportBackgroundProcess:) toTarget:self withObject:exportProcessDictionary];
-}
-
-/**
- * Save the export file in a background thread; open a file handle, pass it in to
- * the appropriate data-writing function for streaming the export data to, and
- * close the handle.
- */
-- (void)exportBackgroundProcess:(NSDictionary *)exportAction
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSString *exportActionName = [exportAction objectForKey:@"action"];
-	NSString *exportFile = [exportAction objectForKey:@"filename"];
-	SPFileHandle *fileHandle = nil;
-	BOOL success;	
-
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
-
-	// Reset the progress cancelled boolean
-	progressCancelled = NO;
-	
-	// Error if the file already exists and is not writable, and get a fileHandle to it.
-	if ( [[NSFileManager defaultManager] fileExistsAtPath:exportFile] ) {
-		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:exportFile]
-			|| !(fileHandle = [SPFileHandle fileHandleForWritingAtPath:exportFile]) ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
-			[pool release];
-			return;
-		}
-		
-	// Otherwise attempt to create a file
-	} else {
-		if ( ![[NSFileManager defaultManager] createFileAtPath:exportFile contents:[NSData data] attributes:nil] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-			[pool release];
-			return;
-		}
-		
-		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [SPFileHandle fileHandleForWritingAtPath:exportFile];
-		if ( !fileHandle ) {
-			[[NSFileManager defaultManager] removeFileAtPath:exportFile handler:nil];
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-			[pool release];
-			return;
-		}
-	}
-	
-	// Export the tables selected in the MySQL export sheet to a file
-	if ( [exportActionName isEqualToString:@"exportDump"] ) {
-		[fileHandle setShouldWriteWithGzipCompression:([sqlCompressionSwitch state] == NSOnState)];
-		success = [self dumpSelectedTablesAsSqlToFileHandle:fileHandle];
-		
-		// Export the full resultset for the currently selected table to a file in CSV format
-	} else if ( [exportActionName isEqualToString:@"exportTableContentAsCSV"] ) {
-		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"csv" usingMulti:NO];
-		
-		// Export the full resultset for the currently selected table to a file in XML format
-	} else if ( [exportActionName isEqualToString:@"exportTableContentAsXML"] ) {
-		success = [self exportTables:[NSArray arrayWithObject:[tableDocumentInstance table]] toFileHandle:fileHandle usingFormat:@"xml" usingMulti:NO];
-		
-	// Export the current "browse" view to a file in CSV or XML format
-	} else if ( [exportActionName isEqualToString:@"exportBrowseViewAsCSV"]
-				|| [exportActionName isEqualToString:@"exportBrowseViewAsXML"] )
-	{
-
-		// Start an indeterminate progress sheet, as getting the current result set can take a significant period of time
-		[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting content view to CSV", @"title showing that application is saving content view as CSV")]];
-		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
-		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-		[[singleProgressSheet onMainThread] makeKeyWindow];
-
-		[[singleProgressBar onMainThread] startAnimation:self];		
-		NSArray *contentViewArray = [tableContentInstance currentResult];
-
-		if ( [exportActionName isEqualToString:@"exportBrowseViewAsCSV"] ) {
-			success = [self writeCsvForArray:contentViewArray orStreamingResult:nil
-								toFileHandle:fileHandle
-							outputFieldNames:[exportFieldNamesSwitch state]
-								terminatedBy:[exportFieldsTerminatedField stringValue]
-								  enclosedBy:[exportFieldsEnclosedField stringValue]
-								   escapedBy:[exportFieldsEscapedField stringValue]
-									lineEnds:[exportLinesTerminatedField stringValue]
-						  withNumericColumns:nil
-								   totalRows:[contentViewArray count]
-									silently:YES];
-		} else {		
-			success = [self writeXmlForArray:contentViewArray orStreamingResult:nil
-								toFileHandle:fileHandle
-								   tableName:(NSString *)[tableDocumentInstance table]
-								  withHeader:YES
-								   totalRows:[contentViewArray count]
-									silently:YES];
-		}
-
-		// Close the progress sheet
-		[self closeAndStopProgressSheet];
-		
-	// Export the current custom query result set to a file in CSV or XML format
-	} else if ( [exportActionName isEqualToString:@"exportCustomResultAsCSV"]
-				|| [exportActionName isEqualToString:@"exportCustomResultAsXML"] )
-	{
-
-		// Start an indeterminate progress sheet, as getting the current result set can take a significant period of time
-		if ([exportActionName isEqualToString:@"exportCustomResultAsCSV"]) {
-			[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to CSV", @"title showing that application is saving custom query view as CSV")]];
 		} else {
-			[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting custom query view to XML", @"title showing that application is saving custom query view as XML")]];
+			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 		}
-		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Exporting data...", @"text showing that app is preparing data")];
-		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-		[[singleProgressSheet onMainThread] makeKeyWindow];
-
-		[[singleProgressBar onMainThread] startAnimation:self];
-		NSArray *customQueryViewArray = [customQueryInstance currentResult];
-
-		if ( [exportActionName isEqualToString:@"exportCustomResultAsCSV"] ) {
-			success = [self writeCsvForArray:customQueryViewArray orStreamingResult:nil
-								toFileHandle:fileHandle
-							outputFieldNames:[exportFieldNamesSwitch state]
-								terminatedBy:[exportFieldsTerminatedField stringValue]
-								  enclosedBy:[exportFieldsEnclosedField stringValue]
-								   escapedBy:[exportFieldsEscapedField stringValue]
-									lineEnds:[exportLinesTerminatedField stringValue]
-						  withNumericColumns:nil
-								   totalRows:[customQueryViewArray count]
-									silently:YES];
-		} else {
-			success = [self writeXmlForArray:customQueryViewArray orStreamingResult:nil
-								toFileHandle:fileHandle
-								   tableName:@"custom"
-								  withHeader:YES
-								   totalRows:[customQueryViewArray count]
-									silently:YES];
-		}
-
-		// Close the progress sheet
-		[self closeAndStopProgressSheet];
-
-		// Export multiple tables to a file in CSV format
-	} else if ( [exportActionName isEqualToString:@"exportMultipleTablesAsCSV"] ) {
-		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"csv"];
 		
-		// Export multiple tables to a file in XML format
-	} else if ( [exportActionName isEqualToString:@"exportMultipleTablesAsXML"] ) {
-		success = [self exportSelectedTablesToFileHandle:fileHandle usingFormat:@"xml"];
-		
-		// Export the tables selected in the MySQL export sheet to a file
-	} else if ( [exportActionName isEqualToString:@"exportDot"] ) {
-			success = [self dumpSchemaAsDotToFileHandle:fileHandle];
-			
-		// Unknown operation
-	} else {
-		ALog(@"Unknown export operation: %@", [exportActionName description]);
-		[pool release];
-		return;
+		[prefs setBool:([sender state] == NSOnState) forKey:SPSQLExportUseCompression];
 	}
-	
-	// Close the file handle
-	[fileHandle closeFile];
-
-	// If progress was cancelled, remove the file
-	if (progressCancelled) {
-		[[NSFileManager defaultManager] removeItemAtPath:exportFile error:nil];
-	}
-
-	// Display error message on problems
-	if ( !progressCancelled && !success ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-	}
-
-    // Export finished Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@",@"description for finished exporting growl notification"), [exportFile lastPathComponent]] 
-													  document:tableDocumentInstance
-                                              notificationName:@"Export Finished"];
-	[pool release];
 }
 
 #pragma mark -
 #pragma mark Import methods
 
-- (void)importFromClipboard
-/*
- invoked when user clicks on an ImportFromClipboard menuItem
+/**
+ * Invoked when user clicks on an ImportFromClipboard menuitem.
  */
+- (void)importFromClipboard
 {
 
 	// clipboard textview with no wrapping
@@ -525,14 +196,12 @@
 		modalDelegate:self
 	   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"importFromClipboard"];
-
-	// NSString );
 }
 
-- (void)importFile
-/*
- invoked when user clicks on an import menuItem
+/**
+ * Invoked when user clicks on an import menuitem.
  */
+- (void)importFile
 {
 	// prepare open panel and accessory view
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
@@ -560,11 +229,17 @@
 						  contextInfo:nil];
 }
 
+/**
+ * Shows/hides the CSV options accessory view based on the selected format.
+ */
 - (IBAction)changeFormat:(id)sender
 {
 	[importCSVBox setHidden:![[[importFormatPopup selectedItem] title] isEqualToString:@"CSV"]];
 }
 
+/**
+ * Starts the import process on a background thread.
+ */
 - (void)importBackgroundProcess:(NSString*)filename
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -579,7 +254,10 @@
 	[pool release];
 }
 
-- (void) importSQLFile:(NSString *)filename
+/**
+ *
+ */
+- (void)importSQLFile:(NSString *)filename
 {
 	NSAutoreleasePool *importPool;
 	SPFileHandle *sqlFileHandle;
@@ -833,7 +511,10 @@
                                               notificationName:@"Import Finished"];
 }
 
-- (void) importCSVFile:(NSString *)filename
+/**
+ *
+ */
+- (void)importCSVFile:(NSString *)filename
 {
 	NSAutoreleasePool *importPool;
 	NSFileHandle *csvFileHandle;
@@ -1278,6 +959,9 @@
 	}
 }
 
+/**
+ *
+ */
 - (void)openPanelDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
@@ -1345,12 +1029,16 @@
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:importFileName];
 }
 
+/**
+ *
+ */
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
 	[importFormatPopup selectItemWithTitle:@"SQL"];
 	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:filename];
 }
-/*
+
+/**
  * Sets up the field mapping array, and asks the user to provide a field mapping to an
  * appropriate table; on success, constructs the field mapping array into the global variable,
  * and returns true.  On failure, displays error messages itself, and returns false.
@@ -1462,21 +1150,23 @@
 	if(fieldMapperSheetStatus == 2)
 		return YES;
 	else
-		return FALSE;
-
+		return NO;
 }
 
+/**
+ *
+ */
 - (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[sheet orderOut:self];
 	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
 }
 
-/*
+/**
  * Construct the SET and WHERE clause for a CSV row, based on the field mapping array 
  * for the import method "UPDATE".
  */
-- (NSString *) mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray
+- (NSString *)mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray
 {
 
 	NSMutableString *setString = [NSMutableString stringWithString:@""];
@@ -1549,14 +1239,15 @@
 			}
 		}
 	}
+	
 	return [NSString stringWithFormat:@"%@ %@", setString, whereString];
 }
 
-/*
+/**
  * Construct the VALUES string for a CSV row, based on the field mapping array - including
  * surrounding brackets but not including the VALUES keyword.
  */
-- (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray
+- (NSString *)mappedValueStringForRowArray:(NSArray *)csvRowArray
 {
 	NSMutableString *valueString = [NSMutableString stringWithString:@"("];
 	NSInteger i;
@@ -1596,1502 +1287,16 @@
 	}
 
 	[valueString appendString:@")"];
+	
 	return valueString;
 }
 
 #pragma mark -
-#pragma mark Format methods
+#pragma mark Import delegate notifications
 
-/*
- Dump the selected tables to a file handle in SQL format.
+/**
+ * Called when the selection within an open/save panel changes.
  */
-- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(SPFileHandle *)fileHandle
-{
-	NSInteger i,j,t,rowCount, colCount, lastProgressValue, queryLength;
-	NSInteger progressBarWidth;
-	NSInteger tableType = SPTableTypeTable; //real tableType will be setup later
-	MCPResult *queryResult;
-	MCPStreamingResult *streamingResult;
-	NSAutoreleasePool *exportAutoReleasePool = nil;
-	NSString *tableName, *tableColumnTypeGrouping, *previousConnectionEncoding;
-	NSArray *fieldNames;
-	NSArray *theRow;
-	NSMutableArray *selectedTables = [NSMutableArray array];
-	NSMutableArray *selectedProcs = [NSMutableArray array];
-	NSMutableArray *selectedFuncs = [NSMutableArray array];
-	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
-	NSMutableString *metaString = [NSMutableString string];
-	NSMutableString *cellValue = [NSMutableString string];
-	NSMutableString *sqlString = [[NSMutableString alloc] init];
-	NSMutableString *errors = [NSMutableString string];
-	NSDictionary *tableDetails;
-	NSMutableArray *tableColumnNumericStatus;
-	NSEnumerator *viewSyntaxEnumerator;
-	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	id createTableSyntax = nil;
-	BOOL previousConnectionEncodingViaLatin1;
-	
-	// Reset the interface
-	[errorsView setString:@""];
-	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
-	[[singleProgressBar onMainThread] setDoubleValue:0];
-	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-	[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
-	
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet
-	   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-	   didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];
-
-	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
-
-	// Copy over the selected item names into tables in preparation for iteration
-	NSMutableArray *targetArray;
-	for ( i = 0 ; i < [tables count] ; i++ ) {
-		if ( [NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 0) boolValue] ) {
-			switch ([NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 2) intValue]) {
-				case SPTableTypeProc:
-					targetArray = selectedProcs;
-					break;
-				case SPTableTypeFunc:
-					targetArray = selectedFuncs;
-					break;
-				default:
-					targetArray = selectedTables;
-					break;
-			}
-			[targetArray addObject:[NSString stringWithString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(tables, i), 1)]];
-		}
-	}
-	
-
-	// If NoBOMforSQLdumpFile is not set to YES write the UTF-8 Byte Order Marker
-	[metaString setString:([prefs boolForKey:SPNoBOMforSQLdumpFile]) ? @"" : @"\xef\xbb\xbf"];
-
-	// Add the dump header to the dump file.
-	[metaString appendString:@"# Sequel Pro dump\n"];
-	[metaString appendString:[NSString stringWithFormat:@"# Version %@\n",
-							 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[metaString appendString:@"# http://code.google.com/p/sequel-pro\n#\n"];
-	[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n",
-							 [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-	[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [tableDocumentInstance database]]];
-	[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
-	[metaString appendString:@"# ************************************************************\n\n"];
-
-	// Add commands to store the client encodings used when importing and set to UTF8 to preserve data
-	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n"];
-	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n"];
-	[metaString appendString:@"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n"];
-	[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
-	
-	// Add commands to store and disable unique checks, foreign key checks, mode and notes where supported.
-	// Include trailing semicolons to ensure they're run individually.  Use mysql-version based comments.
-	if ( [addDropTableSwitch state] == NSOnState )
-		[metaString appendString:@"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n"];
-	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
-	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
-	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
-
-	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-
-	// Store the current connection encoding so it can be restored after the dump.
-	previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
-	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
-	
-	// Set the connection to UTF8 to be able to export correctly.
-	[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
-	
-	// Loop through the selected tables
-	for ( i = 0 ; i < [selectedTables count] ; i++ ) {
-		if (progressCancelled) break;
-		lastProgressValue = 0;
-		
-		// Update the progress text and reset the progress bar to indeterminate status while fetching data
-		tableName = NSArrayObjectAtIndex(selectedTables, i);
-		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-		[[singleProgressText onMainThread] displayIfNeeded];
-		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-		[[singleProgressBar onMainThread] startAnimation:self];
-		
-		// Add the name of table
-		[fileHandle writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName]
-							   dataUsingEncoding:NSUTF8StringEncoding]];
-		
-		
-		// Determine whether this table is a table or a view via the create table command, and keep the create table syntax
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
-		[queryResult setReturnDataAsStrings:YES];
-		if ( [queryResult numOfRows] ) {
-			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-			if ([tableDetails objectForKey:@"Create View"]) {
-				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
-				createTableSyntax = [self createViewPlaceholderSyntaxForView:tableName];
-				tableType = SPTableTypeView;
-			} else {
-				createTableSyntax = [[[tableDetails objectForKey:@"Create Table"] copy] autorelease];
-				tableType = SPTableTypeTable;
-			}
-			[tableDetails release];
-		}
-		if ([mySQLConnection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-			if ( [addErrorsSwitch state] == NSOnState ) {
-				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
-			}
-		}
-
-
-		// Add a "drop table" command if specified in the export dialog
-		if ( [addDropTableSwitch state] == NSOnState )
-			[fileHandle writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable)?@"TABLE":@"VIEW"), [tableName backtickQuotedString]]
-								   dataUsingEncoding:NSUTF8StringEncoding]];
-		
-
-		// Add the create syntax for the table if specified in the export dialog
-		if ( [addCreateTableSwitch state] == NSOnState && createTableSyntax) {
-			if ( [createTableSyntax isKindOfClass:[NSData class]] ) {
-				createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:connectionEncoding] autorelease];
-			}
-			[fileHandle writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];
-			[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
-		}
-		
-		// Add the table content if required
-		if ( [addTableContentSwitch state] == NSOnState && tableType == SPTableTypeTable ) {
-
-			// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-			tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
-			colCount = [[tableDetails objectForKey:@"columns"] count];
-			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
-			for ( j = 0; j < colCount ; j++ ) {
-				tableColumnTypeGrouping = [NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j) objectForKey:@"typegrouping"];
-				if ([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"]
-					|| [tableColumnTypeGrouping isEqualToString:@"float"]) {
-					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
-				} else {
-					[tableColumnNumericStatus addObject:[NSNumber numberWithBool:NO]];
-				}
-			}
-
-			// Retrieve the number of rows in the table for progress bar drawing
-			rowCount = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
-			
-			// Set up a result set in streaming mode
-			streamingResult = [[mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([sqlFullStreamingSwitch state] == NSOnState)] retain];
-			fieldNames = [streamingResult fetchFieldNames];
-			
-			// Update the progress text and set the progress bar back to determinate
-			[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Dumping...", @"text showing that app is writing data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-			[[singleProgressBar onMainThread] stopAnimation:self];
-			[[singleProgressBar onMainThread] setIndeterminate:NO];
-			[[singleProgressBar onMainThread] setDoubleValue:0];
-			
-			if (rowCount) {
-				queryLength = 0;
-				
-				// Lock the table for writing and disable keys if supported
-				[metaString setString:@""];
-				[metaString appendString:[NSString stringWithFormat:@"LOCK TABLES %@ WRITE;\n", [tableName backtickQuotedString]]];
-				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n", [tableName backtickQuotedString]]];
-				[fileHandle writeData:[metaString dataUsingEncoding:connectionEncoding]];
-
-				// Construct the start of the insertion command
-				[fileHandle writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(",
-										[tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
-				
-				// Iterate through the rows to construct a VALUES group for each
-				j = 0;
-				exportAutoReleasePool = [[NSAutoreleasePool alloc] init];
-				while (theRow = [streamingResult fetchNextRowAsArray]) {
-					if (progressCancelled) {
-						[mySQLConnection cancelCurrentQuery];
-						[streamingResult cancelResultLoad];
-						break;
-					}
-					j++;
-					[sqlString setString:@""];
-					
-					// Update the progress bar
-					if ((j*progressBarWidth/rowCount) > lastProgressValue) {
-						[singleProgressBar setDoubleValue:(j*progressBarWidth/rowCount)];
-						lastProgressValue = (j*progressBarWidth/rowCount);
-					}
-
-
-					for ( t = 0 ; t < colCount ; t++ ) {
-						
-						// Add NULL values directly to the output row
-						if ( [[theRow objectAtIndex:t] isMemberOfClass:[NSNull class]] ) {
-							[sqlString appendString:@"NULL"];
-							
-						// Add data types directly as hex data
-						} else if ( [[theRow objectAtIndex:t] isKindOfClass:[NSData class]] ) {
-							[sqlString appendString:@"X'"];
-							[sqlString appendString:[mySQLConnection prepareBinaryData:[theRow objectAtIndex:t]]];
-							[sqlString appendString:@"'"];
-							
-						} else {
-							[cellValue setString:[[theRow objectAtIndex:t] description]];
-							
-							// Add empty strings as a pair of quotes
-							if ([cellValue length] == 0) {
-								[sqlString appendString:@"''"];
-								
-							} else {
-								
-								// If this is a numeric column type, add the number directly.
-								if ( [[tableColumnNumericStatus objectAtIndex:t] boolValue] ) {
-									[sqlString appendString:cellValue];
-									
-								// Otherwise add a quoted string with special characters escaped
-								} else {
-									[sqlString appendString:@"'"];
-									[sqlString appendString:[mySQLConnection prepareString:cellValue]];
-									[sqlString appendString:@"'"];
-								}
-							}
-						}
-						
-						// Add the field separator if this isn't the last cell in the row
-						if (t != [theRow count] - 1) [sqlString appendString:@","];
-					}
-					
-					queryLength += [sqlString length];
-					
-					// Close this VALUES group and set up the next one if appropriate
-					if (j != rowCount) {
-						
-						// Add a new INSERT starter command every ~250k of data.
-						if (queryLength > 250000) {
-							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(",
-													 [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
-							queryLength = 0;
-							
-							// Use the opportunity to drain and reset the autorelease pool
-							[exportAutoReleasePool drain];
-							exportAutoReleasePool = [[NSAutoreleasePool alloc] init];
-						} else {
-							[sqlString appendString:@"),\n\t("];
-						}
-					} else {
-						[sqlString appendString:@")"];
-					}
-					
-					// Write this row to the file
-					[fileHandle writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
-				}
-
-				// Complete the command
-				[fileHandle writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
-
-				// Unlock the table and re-enable keys if supported
-				[metaString setString:@""];
-				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\n", [tableName backtickQuotedString]]];
-				[metaString appendString:@"UNLOCK TABLES;\n"];
-				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-			
-				// Drain the autorelease pool
-				[exportAutoReleasePool drain];
-			}
-						
-			if ([mySQLConnection queryErrored]) {
-				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-				if ( [addErrorsSwitch state] == NSOnState ) {
-					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-										   dataUsingEncoding:NSUTF8StringEncoding]];
-				}
-			}
-
-			// Release the result set
-			[streamingResult release];
-		}
-
-		// Export triggers, if any
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
-													[tableName tickQuotedString]]];
-		[queryResult setReturnDataAsStrings:YES];
-		if ( [queryResult numOfRows] ) {
-			[metaString setString:@"\n"];
-			[metaString appendString:@"DELIMITER ;;\n"];
-			
-			for (int s=0; s<[queryResult numOfRows]; s++) {
-				NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-				
-				//Definer is user@host but we need to escape it to `user`@`host`
-				NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-											[[triggersDefiner objectAtIndex:0] backtickQuotedString],
-											[[triggersDefiner objectAtIndex:1] backtickQuotedString]
-											];
-				
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", 
-										  [triggers objectForKey:@"sql_mode"]]];
-				[metaString appendString:@"/*!50003 CREATE */ "];
-				[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", 
-										  escapedDefiner]];
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
-										  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
-										  [triggers objectForKey:@"Timing"],
-										  [triggers objectForKey:@"Event"],
-										  [[triggers objectForKey:@"Table"] backtickQuotedString],
-										  [triggers objectForKey:@"Statement"]
-										  ]];
-				[triggers release];
-			}
-			
-			[metaString appendString:@"DELIMITER ;\n"];
-			[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
-			[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-		}
-		
-		if ([mySQLConnection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-			if ( [addErrorsSwitch state] == NSOnState ) {
-				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-									   dataUsingEncoding:NSUTF8StringEncoding]];
-			}
-		}
-
-		// Add an additional separator between tables
-		[fileHandle writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
-	}
-
-	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
-	viewSyntaxEnumerator = [viewSyntaxes keyEnumerator];
-	while (tableName = [viewSyntaxEnumerator nextObject]) {
-		[metaString setString:@"\n\n"];
-		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
-		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
-		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-	}
-
-	// Export procedures and functions
-	for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) {
-
-		// Retrieve the array of selected procedures or functions, and skip export if not selected
-		NSMutableArray *selectedItems;
-		if ([procedureType isEqualToString:@"PROCEDURE"]) selectedItems = selectedProcs;
-		else selectedItems = selectedFuncs;
-		if (![selectedItems count]) continue;
-
-		// Retrieve the definitions
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */;",
-													procedureType,
-													[[tableDocumentInstance database] tickQuotedString]]];
-		[queryResult setReturnDataAsStrings:YES];
-		if ( [queryResult numOfRows] ) {
-			[metaString setString:@"\n"];
-			[metaString appendString:@"--\n"];
-			[metaString appendString:[NSString stringWithFormat:@"-- Dumping routines (%@) for database %@\n",
-									  procedureType,
-									  [[tableDocumentInstance database] tickQuotedString]]];
-			[metaString appendString:@"--\n"];
-			[metaString appendString:@"DELIMITER ;;\n"];
-
-			// Loop through the definitions, exporting if enabled
-			for (int s=0; s<[queryResult numOfRows]; s++) {
-				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
-
-				// Only proceed if the item was selected for export
-				if (![selectedItems containsObject:procedureName]) {
-					[proceduresList release];
-					continue;
-				}
-
-				// Retrieve the procedure CREATE syntax
-				MCPResult *createProcedureResult;
-				createProcedureResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", 
-																	  procedureType,
-																	  [procedureName backtickQuotedString]]];
-				[createProcedureResult setReturnDataAsStrings:YES];
-
-				if ([mySQLConnection queryErrored]) {
-					[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-					if ( [addErrorsSwitch state] == NSOnState ) {
-						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-											   dataUsingEncoding:NSUTF8StringEncoding]];
-					}
-					[proceduresList release];
-					continue;
-				}
-
-				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
-				NSString *createProcedure = [procedureInfo objectForKey:[NSString stringWithFormat:@"Create %@", [procedureType capitalizedString]]];
-
-				// A NULL result indicates a permission problem
-				if ([createProcedure isNSNull]) {
-					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permisions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
-					[errors appendString:errorString];
-					if ( [addErrorsSwitch state] == NSOnState ) {
-						[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", errorString]
-											   dataUsingEncoding:NSUTF8StringEncoding]];
-					}
-					[proceduresList release];
-					[procedureInfo release];
-					continue;
-				}
-
-				// Add the "drop" command if specified in the export dialog
-				if ([addDropTableSwitch state] == NSOnState) {
-					[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", 
-											  procedureType,
-											  [procedureName backtickQuotedString]]];
-				}
-				
-				// Only continue if the "create syntax" is specified in the export dialog
-				if ([addCreateTableSwitch state] == NSOffState) {
-					[proceduresList release];
-					[procedureInfo release];
-					continue;
-				}
-				
-				//Definer is user@host but we need to escape it to `user`@`host`
-				NSArray *procedureDefiner = [[proceduresList objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-											[[procedureDefiner objectAtIndex:0] backtickQuotedString],
-											[[procedureDefiner objectAtIndex:1] backtickQuotedString]
-											];
-				
-				
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", 
-										  [procedureInfo objectForKey:@"sql_mode"]]];
-				
-				NSRange procedureRange = [createProcedure rangeOfString:procedureType options:NSCaseInsensitiveSearch];
-				NSString *procedureBody = [createProcedure substringFromIndex:procedureRange.location];
-				
-				// /*!50003 CREATE*/ /*!50020 DEFINER=`sequelpro`@`%`*/ /*!50003 PROCEDURE `p`()
-				// 													  BEGIN
-				// 													  /* This procedure does nothing */
-				// END */;;
-				//Build the CREATE PROCEDURE string to include MySQL Version limiters
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 CREATE*/ /*!50020 DEFINER=%@*/ /*!50003 %@ */;;\n",
-										  escapedDefiner,
-										  procedureBody]];
-							
-				[procedureInfo release];
-				[proceduresList release];
-				
-				[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;;\n"];
-			}
-			
-			[metaString appendString:@"DELIMITER ;\n"];
-			[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-		}
-		
-		if ([mySQLConnection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-			if ( [addErrorsSwitch state] == NSOnState ) {
-				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-									   dataUsingEncoding:NSUTF8StringEncoding]];
-			}
-		}
-		
-	}
-
-	// Restore unique checks, foreign key checks, and other settings saved at the start
-	[metaString setString:@"\n\n\n"];
-	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
-	[metaString appendString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n"];
-	[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
-	if ( [addDropTableSwitch state] == NSOnState )
-		[metaString appendString:@"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n"];
-
-	// Restore the client encoding to the original encoding before import
-	[metaString appendString:@"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n"];
-	[metaString appendString:@"/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n"];
-	[metaString appendString:@"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n"];
-
-	// Write footer-type information to the file
-	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-
-	// Restore the connection character set to pre-export details
-	[tableDocumentInstance
-	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
-	 reloadingViews:NO];
-	[previousConnectionEncoding release];
-
-	// Close the progress sheet
-	[self closeAndStopProgressSheet];
-
-	// Show errors sheet if there have been errors
-	if ( [errors length] ) {
-		[self showErrorSheetWithMessage:errors];
-	}
-
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-
-	[sqlString release];
-	return TRUE;
-}
-
-/*
- Dump the selected tables to a file handle in Graphviz dot format.
- See here for language syntax: http://www.graphviz.org/doc/info/lang.html
- (Not the easiest to decode)
- */
-- (BOOL)dumpSchemaAsDotToFileHandle:(SPFileHandle *)fileHandle
-{
-	NSMutableString *metaString = [NSMutableString string];
-	NSInteger  progressBarWidth;
-	NSString *previousConnectionEncoding;
-	BOOL previousConnectionEncodingViaLatin1;
-	
-	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting Dot file", @"text showing that the application is exporting a Dot file")];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
-	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-	[[singleProgressBar onMainThread] setDoubleValue:0];
-	
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet
-	   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-	   didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];
-		
-	[metaString setString:@"// Generated by: Sequel Pro\n"];
-	[metaString appendString:[NSString stringWithFormat:@"// Version %@\n",
-							  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[metaString appendString:@"// http://code.google.com/p/sequel-pro\n//\n"];
-	[metaString appendString:[NSString stringWithFormat:@"// Host: %@ (MySQL %@)\n",
-							  [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-	[metaString appendString:[NSString stringWithFormat:@"// Database: %@\n", [tableDocumentInstance database]]];
-	[metaString appendString:[NSString stringWithFormat:@"// Generation Time: %@\n", [NSDate date]]];
-	[metaString appendString:@"// ************************************************************\n\n"];
-	
-	[metaString appendString:@"digraph \"Database Structure\" {\n"];
-	[metaString appendString:[NSString stringWithFormat:@"\tlabel = \"ER Diagram: %@\";\n", [tableDocumentInstance database]]];
-	[metaString appendString:@"\tlabelloc = t;\n"];
-	[metaString appendString:@"\tcompound = true;\n"];
-	[metaString appendString:@"\tnode [ shape = record ];\n"];
-	[metaString appendString:@"\tfontname = \"Helvetica\";\n"];
-	[metaString appendString:@"\tranksep = 1.25;\n"];
-	[metaString appendString:@"\tratio = 0.7;\n"];
-	[metaString appendString:@"\trankdir = LR;\n"];
-
-	// Write information to the file
-	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-	
-	// store connection encoding
-	previousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
-	previousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
-	
-	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
-	
-	// tables here
-	for ( NSInteger i = 0 ; i < [tables count] ; i++ ) {
-		if (progressCancelled) break;
-
-		NSString *tableName = [[tables objectAtIndex:i] objectAtIndex:1];
-		NSDictionary *tinfo = [tableDataInstance informationForTable:tableName];
-
-		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[tables count], tableName]];
-		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-		[[singleProgressBar onMainThread] startAnimation:self];
-		
-		NSString *hdrColor = @"#DDDDDD";
-		if( [[tinfo objectForKey:@"type"] isEqualToString:@"View"] ) {
-			hdrColor = @"#DDDDFF";
-		}
-		
-		[metaString setString:[NSString stringWithFormat:@"\tsubgraph \"table_%@\" {\n", tableName]];
-		[metaString appendString:@"\t\tnode [ shape = \"plaintext\" ];\n"];
-		[metaString appendString:[NSString stringWithFormat:@"\t\t\"%@\" [ label=<\n", tableName]];
-		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
-		[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"%@\">%@</TD></TR>\n", hdrColor, tableName]];
-		
-		// grab column info
-		NSArray *cinfo = [tinfo objectForKey:@"columns"];
-		for( NSInteger j = 0; j < [cinfo count]; j++ ) {
-			[metaString appendString:[NSString stringWithFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"name"], [[cinfo objectAtIndex:j] objectForKey:@"type"]]];
-		}
-		
-		[metaString appendString:@"\t\t\t</TABLE>>\n"];
-		[metaString appendString:@"\t\t];\n"];
-		[metaString appendString:@"\t}\n"];
-		[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-		
-		// see about relations
-		cinfo = [tinfo objectForKey:@"constraints"];
-		for( NSInteger j = 0; j < [cinfo count]; j++ ) {
-			if (progressCancelled) break;
-
-			// Get the column references.  Currently the columns themselves are an array,
-			// while reference columns and tables are comma separated if there are more than
-			// one.  Only use the first of each for the time being.
-			NSArray *ccols = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"columns"];
-			NSString *ccol = NSArrayObjectAtIndex(ccols, 0);
-			NSString *rcol = [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_columns"];
-			NSString *extra = @"";
-			if( [ccols count] > 1 ) {
-				extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
-				rcol = NSArrayObjectAtIndex([rcol componentsSeparatedByString:@","], 0);
-			}
-			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@",
-							   tableName,
-							   ccol,
-							   [NSArrayObjectAtIndex(cinfo, j) objectForKey:@"ref_table"],
-							   rcol,
-							   extra
-							   ]];
-		}
-		
-	}
-
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Fetching relations...", @"text showing that app is fetching data")];
-	[[singleProgressBar onMainThread] setIndeterminate:YES];
-	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-	[[singleProgressBar onMainThread] startAnimation:self];
-	
-	[metaString setString:@"edge [ arrowhead=inv, arrowtail=normal, style=dashed, color=\"#444444\" ];\n"];
-	
-	// grab the relations
-	for( NSInteger i = 0; i < [fkInfo count]; i++ ) {
-		[metaString appendString:[NSString stringWithFormat:@"%@;\n", [fkInfo objectAtIndex:i]]];
-	}
-	
-	[fkInfo release];
-	
-	// done
-	[metaString appendString:@"}\n"];
-	
-	// Write information to the file
-	[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-
-	// Restore the connection character set to pre-export details
-	[tableDocumentInstance
-	 setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, previousConnectionEncodingViaLatin1?@"-":@""]
-	 reloadingViews:NO];
-	[previousConnectionEncoding release];
-
-	
-	// Close the progress sheet
-	[self closeAndStopProgressSheet];
-
-
-	return TRUE;
-}
-
-
-/*
- * Takes an array, or a streaming result set, and writes the appropriate data
- * in CSV format to the supplied SPFileHandle.
- * The field terminators, quotes and escape characters should all be supplied
- * together with the line terminators; if an array of numeric column types is
- * supplied, processing of rows is significantly sped up as each field does not
- * need to be parsed.
- * Also takes a totalRows parameter, which is used for drawing progress bars -
- * for arrays, this must be accurate, but for streaming result sets it is only
- * used for drawing the progress bar.
- */
-- (BOOL)writeCsvForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult toFileHandle:(SPFileHandle *)fileHandle
-		outputFieldNames:(BOOL)outputFieldNames
-		terminatedBy:(NSString *)fieldSeparatorString
-		enclosedBy:(NSString *)enclosingString
-		escapedBy:(NSString *)escapeString
-		lineEnds:(NSString *)lineEndString
-		withNumericColumns:(NSArray *)tableColumnNumericStatus
-		totalRows:(NSInteger)totalRows
-		silently:(BOOL)silently
-{
-	NSAutoreleasePool *csvExportPool;
-	NSStringEncoding tableEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
-	NSMutableString *csvCellString = [NSMutableString string];
-	NSArray *csvRow;
-	id csvCell;
-	NSMutableString *csvString = [NSMutableString string];
-	NSString *nullString = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
-	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString;
-	NSString *dataConversionString;
-	NSInteger currentRowIndex;
-	NSScanner *csvNumericTester;
-	BOOL quoteFieldSeparators = [enclosingString isEqualToString:@""];
-	BOOL csvCellIsNumeric;
-	NSInteger i, progressBarWidth, lastProgressValue, currentPoolDataLength;
-	NSInteger csvCellCount = 0;
-
-	// Detect and restore special characters being used as terminating or line end strings
-	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:fieldSeparatorString];
-	[tempSeparatorString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-											options:NSLiteralSearch
-											  range:NSMakeRange(0, [tempSeparatorString length])];
-	[tempSeparatorString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-											options:NSLiteralSearch
-											  range:NSMakeRange(0, [tempSeparatorString length])];
-	[tempSeparatorString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-											options:NSLiteralSearch
-											  range:NSMakeRange(0, [tempSeparatorString length])];
-	fieldSeparatorString = [NSString stringWithString:tempSeparatorString];
-	NSMutableString *tempLineEndString = [NSMutableString stringWithString:lineEndString];
-	[tempLineEndString replaceOccurrencesOfString:@"\\t" withString:@"\t"
-										  options:NSLiteralSearch
-											range:NSMakeRange(0, [tempLineEndString length])];
-	[tempLineEndString replaceOccurrencesOfString:@"\\n" withString:@"\n"
-										  options:NSLiteralSearch
-											range:NSMakeRange(0, [tempLineEndString length])];
-	[tempLineEndString replaceOccurrencesOfString:@"\\r" withString:@"\r"
-										  options:NSLiteralSearch
-											range:NSMakeRange(0, [tempLineEndString length])];
-	lineEndString = [NSString stringWithString:tempLineEndString];
-	
-	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-	lastProgressValue = 0;
-	[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
-	[[singleProgressBar onMainThread] setDoubleValue:0];
-	[[singleProgressBar onMainThread] setIndeterminate:NO];
-	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-	
-	if ( !silently ) {
-		
-		// Set the progress text
-		[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting CSV", @"text showing that the application is exporting a CSV")];
-		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-		
-		// Open progress sheet
-		[[NSApp onMainThread] beginSheet:singleProgressSheet
-		   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-		   didEndSelector:nil contextInfo:nil];
-		[[singleProgressSheet onMainThread] makeKeyWindow];
-	}
-	
-	// Set up escaped versions of strings for substitution within the loop
-	escapedEscapeString = [NSString stringWithFormat:@"%@%@", escapeString, escapeString];
-	escapedFieldSeparatorString = [NSString stringWithFormat:@"%@%@", escapeString, fieldSeparatorString];
-	escapedEnclosingString = [NSString stringWithFormat:@"%@%@", escapeString, enclosingString];
-	escapedLineEndString = [NSString stringWithFormat:@"%@%@", escapeString, lineEndString];
-	
-	// Set up the starting row; for supplied arrays, which include the column
-	// headers as the first row, decide whether to skip the first row.
-	currentRowIndex = 0;
-	if (array && !outputFieldNames) {
-		currentRowIndex++;
-	}
-
-	// Drop into the processing loop
-	csvExportPool = [[NSAutoreleasePool alloc] init];
-	currentPoolDataLength = 0;
-	while (1) {
-		if (progressCancelled) {
-			if (streamingResult) {
-				[mySQLConnection cancelCurrentQuery];
-				[streamingResult cancelResultLoad];
-			}
-			break;
-		}
-
-		// Retrieve the next row from the supplied data, either directly from the array...
-		if (array) {
-			csvRow = NSArrayObjectAtIndex(array, currentRowIndex);
-
-		// Or by reading an appropriate row from the streaming result
-		} else {
-			
-			// If still requested to read the field names, get the field names
-			if (outputFieldNames) {
-				csvRow = [streamingResult fetchFieldNames];
-				outputFieldNames = NO;
-			} else {
-				csvRow = [streamingResult fetchNextRowAsArray];
-				if (!csvRow) break;
-			}
-		}
-		
-		// Get the cell count if we don't already have it stored
-		if (!csvCellCount) csvCellCount = [csvRow count];
-		
-		[csvString setString:@""];
-		for ( i = 0 ; i < csvCellCount ; i++ ) {
-			csvCell = NSArrayObjectAtIndex(csvRow, i);
-
-			// For NULL objects supplied from a queryResult, add an unenclosed null string as per prefs
-			if ([csvCell isKindOfClass:[NSNull class]]) {
-				[csvString appendString:nullString];
-				if (i < csvCellCount - 1) [csvString appendString:fieldSeparatorString];
-				continue;
-			}
-			
-			// Retrieve the contents of this cell
-			if ([csvCell isKindOfClass:[NSData class]]) {
-				dataConversionString = [[NSString alloc] initWithData:csvCell encoding:tableEncoding];
-				if (dataConversionString == nil)
-					dataConversionString = [[NSString alloc] initWithData:csvCell encoding:NSASCIIStringEncoding];
-				[csvCellString setString:[NSString stringWithString:dataConversionString]];
-				[dataConversionString release];
-			} else {
-				[csvCellString setString:[csvCell description]];
-			}
-			
-			// For NULL values supplied via an array add the unenclosed null string as set in preferences
-			if ( [csvCellString isEqualToString:nullString] ) {
-				[csvString appendString:nullString];
-
-			// Add empty strings as a pair of enclosing characters.
-			} else if ( [csvCellString length] == 0 ) {
-				[csvString appendString:enclosingString];
-				[csvString appendString:enclosingString];
-				
-			} else {
-				
-				// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
-				if (tableColumnNumericStatus != nil) {
-					csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, i) boolValue];
-
-				// Otherwise, first test whether this cell contains data
-				} else if ([NSArrayObjectAtIndex(csvRow, i) isKindOfClass:[NSData class]]) {
-					csvCellIsNumeric = FALSE;
-
-				// Or fall back to testing numeric content via an NSScanner.
-				} else {
-					csvNumericTester = [NSScanner scannerWithString:csvCellString];
-					csvCellIsNumeric = [csvNumericTester scanFloat:nil] && [csvNumericTester isAtEnd]
-										&& ([csvCellString characterAtIndex:0] != '0'
-											|| [csvCellString length] == 1
-											|| ([csvCellString length] > 1 && [csvCellString characterAtIndex:1] == '.'));
-				}
-				
-				// Escape any occurrences of the escaping character
-				[csvCellString replaceOccurrencesOfString:escapeString
-											   withString:escapedEscapeString
-												  options:NSLiteralSearch
-													range:NSMakeRange(0, [csvCellString length])];
-				
-				// Escape any occurrences of the enclosure string
-				if ( ![escapeString isEqualToString:enclosingString] ) {
-					[csvCellString replaceOccurrencesOfString:enclosingString
-												   withString:escapedEnclosingString
-													  options:NSLiteralSearch
-														range:NSMakeRange(0, [csvCellString length])];
-				}
-
-				// If the string isn't quoted or otherwise enclosed, escape occurrences of the
-				// field separators and line end character
-				if ( quoteFieldSeparators || csvCellIsNumeric ) {
-					[csvCellString replaceOccurrencesOfString:fieldSeparatorString
-												   withString:escapedFieldSeparatorString
-													  options:NSLiteralSearch
-														range:NSMakeRange(0, [csvCellString length])];
-					[csvCellString replaceOccurrencesOfString:lineEndString
-												   withString:escapedLineEndString
-													  options:NSLiteralSearch
-														range:NSMakeRange(0, [csvCellString length])];
-				}
-				
-				// Write out the cell data by appending strings - this is significantly faster than stringWithFormat.
-				if (csvCellIsNumeric) {
-					[csvString appendString:csvCellString];
-				} else {
-					[csvString appendString:enclosingString];
-					[csvString appendString:csvCellString];
-					[csvString appendString:enclosingString];
-				}
-			}
-			if (i < csvCellCount - 1) [csvString appendString:fieldSeparatorString];
-		}
-		
-		// Append the line ending to the string for this row, and record the length processed for pool flushing
-		[csvString appendString:lineEndString];
-		currentPoolDataLength += [csvString length];
-		
-		// Write it to the fileHandle
-		[fileHandle writeData:[csvString dataUsingEncoding:tableEncoding]];
-
-		// Update the progress counter and progress bar
-		currentRowIndex++;
-		if (totalRows && (currentRowIndex*progressBarWidth/totalRows) > lastProgressValue) {
-			[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-			lastProgressValue = (currentRowIndex*progressBarWidth/totalRows);
-		}
-		
-		// If an array was supplied and we've processed all rows, break
-		if (array && totalRows == currentRowIndex) break;
-
-		// Drain the autorelease pool as required to keep memory usage low
-		if (currentPoolDataLength > 250000) {
-			[csvExportPool drain];
-			csvExportPool = [[NSAutoreleasePool alloc] init];
-		}
-	}
-
-	[csvExportPool drain];
-	
-	// Close the progress sheet if it's present
-	if ( !silently ) {
-		[self closeAndStopProgressSheet];
-	} else {
-
-		// Restore the progress bar to a normal maximum
-		[[singleProgressBar onMainThread] setMaxValue:100];
-	}
-
-	return TRUE;
-}
-
-/*
- * Takes an array, or streaming result reference, and writes it in XML
- * format to the supplied SPFileHandle.  For output, also takes a table
- * name for tag construction, and a toggle to control whether the header
- * is output.
- * Also takes a totalRows parameter, which is used for drawing progress bars -
- * for arrays, this must be accurate, but for streaming result sets it is only
- * used for drawing the progress bar.
- */
-- (BOOL)writeXmlForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult toFileHandle:(SPFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header totalRows:(NSInteger)totalRows silently:(BOOL)silently
-{
-	NSAutoreleasePool *xmlExportPool;
-	NSStringEncoding tableEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
-	NSMutableArray *xmlTags = [NSMutableArray array];
-	NSArray *xmlRow;
-	NSMutableString *xmlString = [NSMutableString string];
-	NSMutableString *xmlItem = [NSMutableString string];
-	NSString *dataConversionString;
-	NSInteger i, currentRowIndex, lastProgressValue, progressBarWidth, currentPoolDataLength;
-	NSInteger xmlRowCount = 0;
-	
-	// Updating the progress bar can take >20% of processing time - store details to only update when required
-	progressBarWidth = (NSInteger)[singleProgressBar bounds].size.width;
-	lastProgressValue = 0;
-	[[singleProgressBar onMainThread] setIndeterminate:NO];
-	[[singleProgressBar onMainThread] setMaxValue:progressBarWidth];
-	[[singleProgressBar onMainThread] setDoubleValue:0];
-	
-	// Set up an array of encoded field names as opening and closing tags
-	if (array) {
-		xmlRow = [array objectAtIndex:0];
-	} else {
-		xmlRow = [streamingResult fetchFieldNames];
-	}
-	for ( i = 0; i < [xmlRow count]; i++ ) {
-		[xmlTags addObject:[NSMutableArray array]];
-		[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"\t\t<%@>",
-											  [self htmlEscapeString:[[xmlRow objectAtIndex:i] description]]]];
-		[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"</%@>\n",
-											  [self htmlEscapeString:[[xmlRow objectAtIndex:i] description]]]];
-	}
-	
-	if ( !silently ) {
-		
-		// Set the progress text
-		[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting XML", @"text showing that the application is exporting XML")];
-		[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-		
-		// Open progress sheet
-		[[NSApp onMainThread] beginSheet:singleProgressSheet
-		   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-		   didEndSelector:nil contextInfo:nil];
-		[[singleProgressSheet onMainThread] makeKeyWindow];
-	}
-	
-	// Output the XML header if required
-	if ( header ) {
-		[xmlString setString:@"<?xml version=\"1.0\"?>\n\n"];
-		[xmlString appendString:@"<!--\n-\n"];
-		[xmlString appendString:@"- Sequel Pro dump\n"];
-		[xmlString appendString:[NSString stringWithFormat:@"- Version %@\n",
-								 [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-		[xmlString appendString:@"- http://code.google.com/p/sequel-pro\n-\n"];
-		[xmlString appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n",
-								 [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-		[xmlString appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
-		[xmlString appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
-		[xmlString appendString:@"-\n-->\n\n"];
-		[fileHandle writeData:[xmlString dataUsingEncoding:tableEncoding]];
-	}
-	
-	// Write an opening tag in the form of the table name
-	[fileHandle writeData:[[NSString stringWithFormat:@"\t<%@>\n",
-							[self htmlEscapeString:table]]
-						   dataUsingEncoding:tableEncoding]];
-	
-	// Set up the starting row, which is 0 for streaming result sets and
-	// 1 for supplied arrays which include the column headers as the first row.
-	currentRowIndex = 0;
-	if (array) currentRowIndex++;
-
-	// Drop into the processing loop
-	xmlExportPool = [[NSAutoreleasePool alloc] init];
-	currentPoolDataLength = 0;
-	while (1) {
-		if (progressCancelled) {
-			if (streamingResult) {
-				[mySQLConnection cancelCurrentQuery];
-				[streamingResult cancelResultLoad];
-			}
-			break;
-		}
-
-		// Retrieve the next row from the supplied data, either directly from the array...
-		if (array) {
-			xmlRow = NSArrayObjectAtIndex(array, currentRowIndex);
-
-		// Or by reading an appropriate row from the streaming result
-		} else {
-			xmlRow = [streamingResult fetchNextRowAsArray];
-			if (!xmlRow) break;
-		}
-
-		// Get the cell count if we don't already have it stored
-		if (!xmlRowCount) xmlRowCount = [xmlRow count];
-		
-		// Construct the row
-		[xmlString setString:@"\t<row>\n"];
-		for ( i = 0 ; i < xmlRowCount ; i++ ) {
-			
-			// Retrieve the contents of this tag
-			if ([NSArrayObjectAtIndex(xmlRow, i) isKindOfClass:[NSData class]]) {
-				dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(xmlRow, i) encoding:tableEncoding];
-				if (dataConversionString == nil)
-					dataConversionString = [[NSString alloc] initWithData:NSArrayObjectAtIndex(xmlRow, i) encoding:NSASCIIStringEncoding];
-				[xmlItem setString:[NSString stringWithString:dataConversionString]];
-				[dataConversionString release];
-			} else {
-				[xmlItem setString:[NSArrayObjectAtIndex(xmlRow, i) description]];
-			}
-			
-			// Add the opening and closing tag and the contents to the XML string
-			[xmlString appendString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(xmlTags, i), 0)];
-			[xmlString appendString:[self htmlEscapeString:xmlItem]];
-			[xmlString appendString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(xmlTags, i), 1)];
-		}
-		[xmlString appendString:@"\t</row>\n"];
-		
-		// Record the total length for use with pool flushing
-		currentPoolDataLength += [xmlString length];
-		
-		// Write the row to the filehandle
-		[fileHandle writeData:[xmlString dataUsingEncoding:tableEncoding]];
-
-		// Update the progress counter and progress bar
-		currentRowIndex++;
-		if (totalRows && (currentRowIndex*progressBarWidth/totalRows) > lastProgressValue) {
-			[singleProgressBar setDoubleValue:(currentRowIndex*progressBarWidth/totalRows)];
-			lastProgressValue = (currentRowIndex*progressBarWidth/totalRows);
-		}
-		
-		// If an array was supplied and we've processed all rows, break
-		if (array && totalRows == currentRowIndex) break;
-
-		// Drain the autorelease pool as required to keep memory usage low
-		if (currentPoolDataLength > 250000) {
-			[xmlExportPool drain];
-			xmlExportPool = [[NSAutoreleasePool alloc] init];
-		}
-	}
-	
-	// Write the closing tag for the table
-	[fileHandle writeData:[[NSString stringWithFormat:@"\t</%@>",
-							[self htmlEscapeString:table]]
-						   dataUsingEncoding:tableEncoding]];
-	
-	[xmlExportPool drain];
-
-	// Close the progress sheet if appropriate
-	if ( !silently ) {
-		[self closeAndStopProgressSheet];
-	} else {
-
-		// Restore the progress bar to a normal maximum
-		[[singleProgressBar onMainThread] setMaxValue:100];
-	}
-
-	return TRUE;
-}
-
-/*
- Processes the selected tables within the multiple table export accessory view and passes them
- to be exported.
- */
-- (BOOL)exportSelectedTablesToFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type
-{
-	NSInteger i;
-	NSMutableArray *selectedTables = [NSMutableArray array];
-	
-	// Extract the table names of the selected tables
-	for ( i = 0 ; i < [tables count] ; i++ ) {
-		if ( [[[tables objectAtIndex:i] objectAtIndex:0] boolValue] ) {
-			[selectedTables addObject:[NSString stringWithString:[[tables objectAtIndex:i] objectAtIndex:1]]];
-		}
-	}
-	
-	return [self exportTables:selectedTables toFileHandle:fileHandle usingFormat:type usingMulti:YES];
-}
-
-/*
- Walks through the selected tables and exports them to a file handle.  The export type must be
- "csv" for CSV format, and "xml" for XML format.
- */
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
-{
-	NSInteger i, j;
-	MCPResult *queryResult;
-	MCPStreamingResult *streamingResult;
-	NSInteger streamingResultCount;
-	NSString *tableName, *tableColumnTypeGrouping;
-	NSMutableString *infoString = [NSMutableString string];
-	NSMutableString *errors = [NSMutableString string];
-	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
-	NSMutableString *csvLineEnd = [NSMutableString string];
-	NSDictionary *tableDetails = nil;
-	NSMutableArray *tableColumnNumericStatus;
-	
-	// Reset the interface
-	[errorsView setString:@""];
-	[[singleProgressTitle onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), [type uppercaseString]]];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-	[[singleProgressBar onMainThread] setDoubleValue:0];
-
-	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
-	
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet
-	   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-	   didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];	
-
-	// Add a dump header to the dump file, dependant on export type.
-	if ( [type isEqualToString:@"csv"] ) {
-		csvLineEnd = [NSMutableString stringWithString:[exportMultipleLinesTerminatedField stringValue]]; 
-		[csvLineEnd replaceOccurrencesOfString:@"\\t" withString:@"\t"
-									   options:NSLiteralSearch
-										 range:NSMakeRange(0, [csvLineEnd length])];
-		[csvLineEnd replaceOccurrencesOfString:@"\\n" withString:@"\n"
-									   options:NSLiteralSearch
-										 range:NSMakeRange(0, [csvLineEnd length])];
-		[csvLineEnd replaceOccurrencesOfString:@"\\r" withString:@"\r"
-									   options:NSLiteralSearch
-										 range:NSMakeRange(0, [csvLineEnd length])];
-		if ([selectedTables count] > 1) {
-			[infoString setString:[NSString stringWithFormat:@"Host: %@   Database: %@   Generation Time: %@%@%@",
-								   [tableDocumentInstance host], [tableDocumentInstance database], [NSDate date], csvLineEnd, csvLineEnd]];
-		}
-	} else if ( [type isEqualToString:@"xml"] ) {
-		[infoString setString:@"<?xml version=\"1.0\"?>\n\n"];
-		[infoString appendString:@"<!--\n-\n"];
-		[infoString appendString:@"- Sequel Pro dump\n"];
-		[infoString appendString:[NSString stringWithFormat:@"- Version %@\n",
-								  [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-		[infoString appendString:@"- http://code.google.com/p/sequel-pro\n-\n"];
-		[infoString appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n",
-								  [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-		[infoString appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
-		[infoString appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
-		[infoString appendString:@"-\n-->\n\n\n"];
-		[infoString appendString:[NSString stringWithFormat:@"<%@>\n\n\n",
-								  [self htmlEscapeString:[tableDocumentInstance database]]]];
-	}
-	[fileHandle writeData:[infoString dataUsingEncoding:connectionEncoding]];
-	
-	// Loop through the selected tables
-	for ( i = 0 ; i < [selectedTables count] && !progressCancelled; i++ ) {
-		if (progressCancelled) break;
-		
-		// Update the progress text and reset the progress bar to indeterminate status
-		tableName = [selectedTables objectAtIndex:i];
-		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): fetching data...", @"text showing that app is fetching data for table dump"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-		[[singleProgressBar onMainThread] setIndeterminate:YES];
-		[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-		[[singleProgressBar onMainThread] startAnimation:self];
-		
-		// For CSV exports of more than one table, output the name of the table
-		if ( [type isEqualToString:@"csv"] && [selectedTables count] > 1) {
-			[fileHandle writeData:[[NSString stringWithFormat:@"Table %@%@%@", tableName, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
-		}
-
-		// Determine whether this table is a table or a view via the create table command, and get the table details
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
-		[queryResult setReturnDataAsStrings:YES];
-		if ( [queryResult numOfRows] ) {
-			tableDetails = [NSDictionary dictionaryWithDictionary:[queryResult fetchRowAsDictionary]];
-			if ([tableDetails objectForKey:@"Create View"]) {
-				tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForView:tableName]];
-			} else {
-				tableDetails = [NSDictionary dictionaryWithDictionary:[tableDataInstance informationForTable:tableName]];
-			}
-		}
-
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		tableColumnNumericStatus = [NSMutableArray array];
-		for ( j = 0; j < [[tableDetails objectForKey:@"columns"] count] ; j++ ) {
-			tableColumnTypeGrouping = [[[tableDetails objectForKey:@"columns"] objectAtIndex:j] objectForKey:@"typegrouping"];
-			if ([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"]
-				|| [tableColumnTypeGrouping isEqualToString:@"float"]) {
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:YES]];
-			} else {
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:NO]];
-			}
-		}
-
-		BOOL useLowMemoryBlockingStreaming;
-		if ([type isEqualToString:@"csv"]) {
-			if (multi)
-				useLowMemoryBlockingStreaming = ([multiCSVFullStreamingSwitch state] == NSOnState);
-			else
-				useLowMemoryBlockingStreaming = ([csvFullStreamingSwitch state] == NSOnState);
-		} else {
-			useLowMemoryBlockingStreaming = ([multiXMLFullStreamingSwitch state] == NSOnState);
-		}
-
-		// Perform a COUNT for progress purposes and make a streaming request for the data
-		streamingResultCount = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
-		streamingResult = [[mySQLConnection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:useLowMemoryBlockingStreaming] retain];
-
-		// Note any errors during initial query
-		if ([mySQLConnection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-		}
-
-		// Update the progress text and set the progress bar back to determinate
-		[[singleProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %ld of %lu (%@): Writing data...", @"text showing that app is writing data for table export"), (long)(i+1), (unsigned long)[selectedTables count], tableName]];
-		[[singleProgressBar onMainThread] stopAnimation:self];
-		[[singleProgressBar onMainThread] setUsesThreadedAnimation:NO];
-		[[singleProgressBar onMainThread] setIndeterminate:NO];
-		[[singleProgressBar onMainThread] setDoubleValue:0];
-		
-		// Use the appropriate export method to write the data to file
-		if ( [type isEqualToString:@"csv"] ) {
-			if (multi) {
-				[self writeCsvForArray:nil orStreamingResult:streamingResult
-						  toFileHandle:fileHandle
-					  outputFieldNames:[exportMultipleFieldNamesSwitch state]
-						  terminatedBy:[exportMultipleFieldsTerminatedField stringValue]
-							enclosedBy:[exportMultipleFieldsEnclosedField stringValue]
-							 escapedBy:[exportMultipleFieldsEscapedField stringValue]
-							  lineEnds:[exportMultipleLinesTerminatedField stringValue]
-					withNumericColumns:tableColumnNumericStatus
-							 totalRows:streamingResultCount
-							  silently:YES];
-			} else {
-				[self writeCsvForArray:nil orStreamingResult:streamingResult
-						  toFileHandle:fileHandle
-					  outputFieldNames:[exportFieldNamesSwitch state]
-						  terminatedBy:[exportFieldsTerminatedField stringValue]
-							enclosedBy:[exportFieldsEnclosedField stringValue]
-							 escapedBy:[exportFieldsEscapedField stringValue]
-							  lineEnds:[exportLinesTerminatedField stringValue]
-					withNumericColumns:tableColumnNumericStatus
-							 totalRows:streamingResultCount
-							  silently:YES];
-			}
-
-			// Add a spacer to the file
-			[fileHandle writeData:[[NSString stringWithFormat:@"%@%@%@", csvLineEnd, csvLineEnd, csvLineEnd] dataUsingEncoding:connectionEncoding]];
-		} else if ( [type isEqualToString:@"xml"] ) {
-			[self writeXmlForArray:nil orStreamingResult:streamingResult
-					  toFileHandle:fileHandle
-						 tableName:tableName
-						withHeader:NO
-						 totalRows:streamingResultCount
-						  silently:YES];
-			
-			// Add a spacer to the file
-			[fileHandle writeData:[[NSString stringWithString:@"\n\n\n"] dataUsingEncoding:connectionEncoding]];
-		}
-
-		// Release the result set
-		[streamingResult release];
-
-		// Note any errors during data retrieval
-		if ([mySQLConnection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-		}		
-	}
-	
-	// For XML output, close the database tag
-	if ( [type isEqualToString:@"xml"] ) {
-		[fileHandle writeData:[[NSString stringWithFormat:@"</%@>",
-								[self htmlEscapeString:[tableDocumentInstance database]]]
-							   dataUsingEncoding:connectionEncoding]];
-	}
-	
-	// Close the progress sheet
-	[self closeAndStopProgressSheet];
-	
-	// Show the errors sheet if there have been errors
-	if ( [errors length] ) {
-		[self showErrorSheetWithMessage:errors];
-	}
-
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-	
-	return TRUE;
-}
-
-- (NSString *)htmlEscapeString:(NSString *)string
-/*
- html escapes a string
- */
-{
-	NSMutableString *mutableString = [NSMutableString stringWithString:string];
-	
-	[mutableString replaceOccurrencesOfString:@"&" withString:@"&amp;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	[mutableString replaceOccurrencesOfString:@"<" withString:@"&lt;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	[mutableString replaceOccurrencesOfString:@">" withString:@"&gt;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	[mutableString replaceOccurrencesOfString:@"\"" withString:@"&quot;"
-									  options:NSLiteralSearch
-										range:NSMakeRange(0, [mutableString length])];
-	
-	return [NSString stringWithString:mutableString];
-}
-
-/*
- * Retrieve information for a view and use that to construct a CREATE TABLE
- * string for an equivalent basic table.  Allows the construction of
- * placeholder tables to resolve view interdependencies in dumps.
- */
-- (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName
-{
-	NSDictionary *viewInformation;
-	NSMutableString *placeholderSyntax, *fieldString;
-	NSArray *viewColumns;
-	NSDictionary *column;
-	NSInteger i, j;
-
-	// Get structured information for the view via the SPTableData parsers
-	viewInformation = [tableDataInstance informationForView:viewName];
-	if (!viewInformation) return nil;
-	viewColumns = [viewInformation objectForKey:@"columns"];
-	
-	// Set up the start of the placeholder string and initialise an empty field string
-	placeholderSyntax = [[NSMutableString alloc] initWithFormat:@"CREATE TABLE %@ (\n", [viewName backtickQuotedString]];
-	fieldString = [[NSMutableString alloc] init];
-
-	// Loop through the columns, creating an appropriate column definition for each and appending it to the syntax string
-	for (i = 0; i < [viewColumns count]; i++) {
-		column = [viewColumns objectAtIndex:i];
-		[fieldString setString:[[column objectForKey:@"name"] backtickQuotedString]];
-
-		// Add the type and length information as appropriate
-		if ([column objectForKey:@"length"]) {
-			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], [column objectForKey:@"length"]];
-		} else if ([column objectForKey:@"values"]) {
-			[fieldString appendFormat:@" %@(", [column objectForKey:@"type"]];
-			for (j = 0; j < [[column objectForKey:@"values"] count]; j++) {
-				[fieldString appendFormat:@"'%@'%@", [mySQLConnection prepareString:[[column objectForKey:@"values"] objectAtIndex:j]], (j+1 == [[column objectForKey:@"values"] count])?@"":@","];
-			}
-			[fieldString appendString:@")"];
-		} else {
-			[fieldString appendFormat:@" %@", [column objectForKey:@"type"]];
-		}
-	
-		// Field specification details
-		if ([[column objectForKey:@"unsigned"] integerValue] == 1) [fieldString appendString:@" UNSIGNED"];
-		if ([[column objectForKey:@"zerofill"] integerValue] == 1) [fieldString appendString:@" ZEROFILL"];
-		if ([[column objectForKey:@"binary"] integerValue] == 1) [fieldString appendString:@" BINARY"];
-		if ([[column objectForKey:@"null"] integerValue] == 0) [fieldString appendString:@" NOT NULL"];
-
-		// Provide the field default if appropriate
-		if ([column objectForKey:@"default"]) {
-
-			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those.
-			if ([column objectForKey:@"default"] == [NSNull null]) {
-				if ([[column objectForKey:@"null"] integerValue])
-					[fieldString appendString:@" DEFAULT NULL"];
-
-			} else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"]
-						&& [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
-			} else {
-				[fieldString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[column objectForKey:@"default"]]];
-			}
-		}
-		
-		// Extras aren't required for the temp table.
-		// Add the field string to the syntax string
-		[placeholderSyntax appendFormat:@"   %@%@\n", fieldString, (i == [viewColumns count]-1)?@"":@","];
-	}
-
-	// Append the remainder of the table string
-	[placeholderSyntax appendString:@") ENGINE=MyISAM;"];
-
-	// Clean up and return.
-	[fieldString release];
-	return [placeholderSyntax autorelease];
-}
-
-//additional methods
-- (void)setConnection:(MCPConnection *)theConnection
-/*
- sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
- */
-{
-	NSButtonCell *switchButton = [[NSButtonCell alloc] init];
-	
-	prefs = [[NSUserDefaults standardUserDefaults] retain];
-	
-	mySQLConnection = theConnection;
-	
-	//set up the interface
-	[switchButton setButtonType:NSSwitchButton];
-	[switchButton setControlSize:NSSmallControlSize];
-	[[exportDumpTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
-	[[exportMultipleCSVTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
-	[[exportMultipleXMLTableView tableColumnWithIdentifier:@"switch"] setDataCell:switchButton];
-	[switchButton release];
-	if ( [prefs boolForKey:SPUseMonospacedFonts] ) {
-		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-		[[[exportMultipleXMLTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-		[errorsView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-	} else {
-		[[[exportDumpTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[[[exportMultipleCSVTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[[[exportMultipleXMLTableView tableColumnWithIdentifier:@"tables"] dataCell]
-		 setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[errorsView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
-}
-
-#pragma mark -
-#pragma mark Table view datasource methods
-
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
-{
-	return [tables count];
-}
-
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	[aCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-}
-
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	id returnObject = nil;
-
-	if ( [[aTableColumn identifier] isEqualToString:@"switch"] ) {
-		returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:0];
-	} else {
-		returnObject = [[tables objectAtIndex:rowIndex] objectAtIndex:1];
-	}
-
-	return returnObject;
-}
-
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:0 withObject:anObject];
-}
-
-
-#pragma mark -
-#pragma mark Import/export delegate notifications
-
-// Called when the selection within an open/save panel changes
 - (void)panelSelectionDidChange:(id)sender
 {
 	NSArray *selectedFilenames = [sender filenames];
@@ -3143,97 +1348,35 @@
 	}
 }
 
-/**
- * When the compression setting on export is altered, update the filename
- * and if appropriate the required extension.
- */
-- (IBAction)updateExportCompressionSetting:(id)sender
-{
-	if (exportMode == SPExportingSQL) {
-		if ([sender state] == NSOnState) {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:[NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL], @"gz", nil]];
-
-			// if file name text view is the first responder re-select the path name only without '.sql.gz'
-			if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
-				NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
-				if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:[NSString stringWithFormat:@".%@.gz", SPFileExtensionSQL]]) {
-					NSRange selRange = [filenameTextView selectedRange];
-					selRange.length -= 4;
-					[filenameTextView setSelectedRange:selRange];
-				}
-			}
-
-		} else {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
-		}
-		[prefs setBool:([sender state] == NSOnState) forKey:SPSQLExportUseCompression];
-	}
-}
-
-
 #pragma mark -
 #pragma mark Other
 
-- (void)awakeFromNib
+/**
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once.
+ */
+- (void)setConnection:(MCPConnection *)theConnection
 {
-	if (_mainNibLoaded) return;
-	_mainNibLoaded = YES;
-
-	[self switchTab:[[exportToolbar items] objectAtIndex:0]];
-	[exportToolbar setSelectedItemIdentifier:[[[exportToolbar items] objectAtIndex:0] itemIdentifier]];
-
-	// Load the import accessory view, retaining a reference to the top-level objects that need releasing.
-	NSArray *importAccessoryTopLevelObjects = nil;
-	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ImportAccessory" bundle:[NSBundle mainBundle]];
-	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
-	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
-	[nibLoader release];
+	NSButtonCell *switchButton = [[NSButtonCell alloc] init];
+	
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+	
+	mySQLConnection = theConnection;
+	
+	// Set up the interface
+	[switchButton setButtonType:NSSwitchButton];
+	[switchButton setControlSize:NSSmallControlSize];
+	[switchButton release];
+	
+	if ([prefs boolForKey:SPUseMonospacedFonts]) {
+		[errorsView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
+	} else {
+		[errorsView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	}
 }
 
-- (id)init
-{
-	self = [super init];
-	
-	tables = [[NSMutableArray alloc] init];
-	nibObjectsToRelease = [[NSMutableArray alloc] init];
-	fieldMappingArray = nil;
-	fieldMappingGlobalValueArray = nil;
-	fieldMappingTableColumnNames = nil;
-	fieldMappingTableDefaultValues = nil;
-	fieldMappingImportArray = nil;
-	csvImportTailString = nil;
-	csvImportHeaderString = nil;
-	csvImportMethodHasTail = NO;
-	fieldMappingImportArrayIsPreview = NO;
-	fieldMappingArrayHasGlobalVariables = NO;
-	importMethodIsUpdate = NO;
-	insertRemainingRowsAfterUpdate = NO;
-	numberOfImportDataColumns = 0;
-	
-	prefs = nil;
-	lastFilename = nil;
-	_mainNibLoaded = NO;
-	
-	return self;
-}
-
-- (void)dealloc
-{	
-	[tables release];
-	if (fieldMappingImportArray) [fieldMappingImportArray release];
-	if (lastFilename) [lastFilename release];
-	if (prefs) [prefs release];
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	[nibObjectsToRelease release];
-	
-	[super dealloc];
-}
-
-- (IBAction)cancelProgressBar:(id)sender
-{
-	progressCancelled = YES;
-}
-
+/**
+ *
+ */
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
 	NSArray *array = [toolbar items];
@@ -3247,13 +1390,16 @@
     return items;
 }
 
+/**
+ *
+ */
 - (void)showErrorSheetWithMessage:(NSString*)message
 {
 	if (![NSThread isMainThread]) {
 		[self performSelectorOnMainThread:@selector(showErrorSheetWithMessage:) withObject:message waitUntilDone:YES];
 		return;
 	}
-
+	
 	[errorsView setString:message];
 	[NSApp beginSheet:errorsSheet 
 	   modalForWindow:[tableDocumentInstance parentWindow] 
@@ -3264,26 +1410,21 @@
 }
 
 #pragma mark -
-#pragma mark New Export methods
 
-- (IBAction)switchTab:(id)sender
-{
-	if ([sender isKindOfClass:[NSToolbarItem class]]) {
-		[exportTabBar selectTabViewItemWithIdentifier:[[sender label] lowercaseString]];
-	}
-}
-
-- (IBAction)switchInput:(id)sender
-{
-	if ([sender isKindOfClass:[NSMatrix class]]) {
-		[exportTableList setEnabled:([[sender selectedCell] tag] == 3)];
-	}
-}
-
-
-- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem
-{
-	return YES;
+/**
+ * Dealloc.
+ */
+- (void)dealloc
+{	
+	if (fieldMappingImportArray) [fieldMappingImportArray release];
+	if (lastFilename) [lastFilename release];
+	if (prefs) [prefs release];
+	
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	
+	[nibObjectsToRelease release];
+	
+	[super dealloc];
 }
 
 @end
