@@ -381,6 +381,10 @@
 {
 	[self setExportCancelled:YES];
 	
+	[exportProgressIndicator setIndeterminate:YES];
+	[exportProgressIndicator setUsesThreadedAnimation:YES];
+	[exportProgressIndicator startAnimation:self];
+	
 	[exportProgressTitle setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[exportProgressText setStringValue:NSLocalizedString(@"Cleaning up...", @"cancelling export cleaning up message")];
 	
@@ -389,10 +393,6 @@
 	
 	// Cancel all of the currently running operations
 	[operationQueue cancelAllOperations];
-	
-	// Close the progress sheet
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
 	
 	// Loop the cached export file paths and remove them from disk if they exist
 	NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -403,6 +403,14 @@
 			[[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
 		}
 	}
+	
+	// Close the progress sheet
+	[NSApp endSheet:exportProgressWindow returnCode:0];
+	[exportProgressWindow orderOut:self];
+	
+	// Stop the progress indicator
+	[exportProgressIndicator stopAnimation:self];
+	[exportProgressIndicator setUsesThreadedAnimation:NO];
 	
 	// Re-enable the cancel button for future exports
 	[sender setEnabled:YES];
