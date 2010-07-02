@@ -95,7 +95,7 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		
 		// Default filename tokens
-		availableFilenameTokens = @"host,database,table,date,time";
+		availableFilenameTokens = NSLocalizedString(@"host,database,table,date,time", @"default custom export filename tokens");
 	}
 	
 	return self;
@@ -231,33 +231,31 @@
 	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
 	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
 	
-	[string replaceOccurrencesOfString:@"host" withString:[tableDocumentInstance host]
+	[string replaceOccurrencesOfString:NSLocalizedString(@"host", @"export filename host token") 
+							withString:[tableDocumentInstance host]
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
 	
-	[string replaceOccurrencesOfString:@"database" withString:[tableDocumentInstance database]
+	[string replaceOccurrencesOfString:NSLocalizedString(@"database", @"export filename database token") 
+							withString:[tableDocumentInstance database]
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
 	
-	if (table) {
-		[string replaceOccurrencesOfString:@"table" withString:table
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [string length])];
-	}
-	else {
-		[string replaceOccurrencesOfString:@"table" withString:@""
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [string length])];
-	}
+	[string replaceOccurrencesOfString:NSLocalizedString(@"table", @"table") 
+							withString:(table) ? table : @""
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
 	
-	[string replaceOccurrencesOfString:@"date" withString:[dateFormatter stringFromDate:[NSDate date]]
+	[string replaceOccurrencesOfString:NSLocalizedString(@"date", @"export filename date token") 
+							withString:[dateFormatter stringFromDate:[NSDate date]]
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
 	
 	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 	
-	[string replaceOccurrencesOfString:@"time" withString:[dateFormatter stringFromDate:[NSDate date]]
+	[string replaceOccurrencesOfString:NSLocalizedString(@"time", @"export filename time token") 
+							withString:[dateFormatter stringFromDate:[NSDate date]]
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
 	
