@@ -1364,15 +1364,19 @@ would result in a position change.
 		[queryString appendString:@" "];
 		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
 	}
+	
+	BOOL isTimestampType = [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"];
 
 	// Add the default value
 	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 		if ([[originalRow objectForKey:@"Null"] integerValue] == 1) {
-			[queryString appendString:@" DEFAULT NULL"];
+			[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
 		}
-	} else if ( [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
+	} 
+	else if (isTimestampType && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
-	} else {
+	} 
+	else {
 		[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"Default"]]]];
 	}
 
@@ -1399,9 +1403,10 @@ would result in a position change.
 
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
+	
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection getLastErrorMessage]]);
 	} else {
 		[tableDataInstance resetAllData];
 		[tablesListInstance setStatusRequiresReload:YES];
