@@ -112,7 +112,11 @@
 	// Select the SQL tab
 	[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
 		
+	// By default a new SQL INSERT statement should be created every 250KiB of data
 	[exportSQLInsertNValueTextField setIntegerValue:250];
+	
+	// Prevents the background colour from changing when clicked
+	[[exportCustomFilenameViewLabelButton cell] setHighlightsBy:NSNoCellMask];
 	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
 	
