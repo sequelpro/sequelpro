@@ -221,7 +221,8 @@
 	 */
 	NSMutableArray *exportFiles;
 
-	NSInteger heightOffset;
+	NSInteger heightOffset1;
+	NSInteger heightOffset2;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
 }

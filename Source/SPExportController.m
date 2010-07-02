@@ -87,7 +87,8 @@
 		showAdvancedView = NO;
 		showCustomFilenameView = NO;
 		
-		heightOffset = 0;
+		heightOffset1 = 0;
+		heightOffset2 = 0;
 		windowMinWidth = [[self window] minSize].width;
 		windowMinHeigth = [[self window] minSize].height;
 		
@@ -849,17 +850,17 @@
 	[exportCustomFilenameViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportCustomFilenameView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	
-	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
+	NSInteger newMinHeight = (windowMinHeigth - heightOffset1 + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset1 + delta;
 	
 	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
 	
-	frame.origin.y += heightOffset;
-	frame.size.height -= heightOffset;
+	frame.origin.y += heightOffset1;
+	frame.size.height -= heightOffset1;
 	
-	heightOffset = delta;
+	heightOffset1 = delta;
 	
-	frame.origin.y -= heightOffset;
-	frame.size.height += heightOffset;
+	frame.origin.y -= heightOffset1;
+	frame.size.height += heightOffset1;
 	
 	[[self window] setFrame:frame display:YES animate:YES];
 	
@@ -897,17 +898,17 @@
 	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	
-	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
+	NSInteger newMinHeight = (windowMinHeigth - heightOffset2 + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset2 + delta;
 	
 	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
 	
-	frame.origin.y += heightOffset;
-	frame.size.height -= heightOffset;
+	frame.origin.y += heightOffset2;
+	frame.size.height -= heightOffset2;
 	
-	heightOffset = delta;
+	heightOffset2 = delta;
 	
-	frame.origin.y -= heightOffset;
-	frame.size.height += heightOffset;
+	frame.origin.y -= heightOffset2;
+	frame.size.height += heightOffset2;
 	
 	[[self window] setFrame:frame display:YES animate:YES];
 	
