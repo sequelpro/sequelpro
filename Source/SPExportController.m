@@ -434,10 +434,8 @@
 	[panel setCanChooseFiles:NO];
 	[panel setCanChooseDirectories:YES];
 	[panel setCanCreateDirectories:YES];
-	
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
-	
-	[panel beginSheetForDirectory:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory() 
+		
+	[panel beginSheetForDirectory:nil 
 							 file:nil 
 				   modalForWindow:[self window] 
 					modalDelegate:self 
