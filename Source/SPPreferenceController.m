@@ -608,7 +608,7 @@
 // -------------------------------------------------------------------------------
 // tableView:writeRowsWithIndexes:toPasteboard:
 // -------------------------------------------------------------------------------
-- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
+/*- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:nil];
@@ -683,7 +683,7 @@
 	[self updateDefaultFavoritePopup];
 	
 	return YES;
-}
+}*/
 
 #pragma mark -
 #pragma mark TableView delegate methods
