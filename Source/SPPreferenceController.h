@@ -100,6 +100,7 @@
 - (IBAction)setDefaultColors:(id)sender;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseFavoritesSortOrder:(id)sender;
+- (IBAction)makeSelectedFavoriteDefault:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;

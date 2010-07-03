@@ -58,6 +58,8 @@
 @synthesize connectionSSHKeychainItemName;
 @synthesize connectionSSHKeychainItemAccount;
 
+#pragma mark -
+
 /**
  * Initialise the connection controller, linking it to the
  * parent document and setting up the parent window.
@@ -682,6 +684,9 @@
     
 }
 
+/**
+ *
+ */
 - (void)reverseSortFavorites:(id)sender
 {
     reverseFavoritesSort = (![sender state]);
@@ -694,42 +699,6 @@
 	[sender setState:reverseFavoritesSort]; 
 }
 
-- (void)_sortFavorites
-{
-    NSString *sortKey = @"";
-	
-	switch (currentSortItem)
-	{
-		case SPFavoritesSortNameItem:
-			sortKey = @"name";
-			break;
-		case SPFavoritesSortHostItem:
-			sortKey = @"host";
-			break;
-		case SPFavoritesSortTypeItem:
-			sortKey = @"type";
-			break;
-		default:
-			sortKey = @"name";
-			break;
-	}
-	
-	NSSortDescriptor *sortDescriptor = nil;
-	
-	if (currentSortItem == SPFavoritesSortTypeItem) {
-		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort)] autorelease];
-	}
-	else {
-		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
-	}
-	NSDictionary *first = [[favorites objectAtIndex:0] retain];
-    [favorites removeObjectAtIndex:0];
-	[favorites sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-	[favorites insertObject:first atIndex:0];
-	[favoritesTable reloadData];
-    [first release];
-    
-}
 /**
  * Updates the local favorites array from the user defaults
  */
@@ -1084,6 +1053,7 @@
 
 #pragma mark -
 #pragma mark Menu Validation
+
 -(BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
     SEL action = [menuItem action];
@@ -1103,6 +1073,49 @@
     return YES;
     
 }
+
+#pragma mark -
+#pragma mark Private API
+
+- (void)_sortFavorites
+{
+    NSString *sortKey = @"";
+	
+	switch (currentSortItem)
+	{
+		case SPFavoritesSortNameItem:
+			sortKey = @"name";
+			break;
+		case SPFavoritesSortHostItem:
+			sortKey = @"host";
+			break;
+		case SPFavoritesSortTypeItem:
+			sortKey = @"type";
+			break;
+		default:
+			sortKey = @"name";
+			break;
+	}
+	
+	NSSortDescriptor *sortDescriptor = nil;
+	
+	if (currentSortItem == SPFavoritesSortTypeItem) {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort)] autorelease];
+	}
+	else {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
+	}
+	
+	NSDictionary *first = [[favorites objectAtIndex:0] retain];
+    
+	[favorites removeObjectAtIndex:0];
+	[favorites sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+	[favorites insertObject:first atIndex:0];
+	[favoritesTable reloadData];
+    
+	[first release];
+}
+
 @end
 
 #pragma mark -

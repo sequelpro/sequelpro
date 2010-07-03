@@ -46,6 +46,12 @@
 
 @end
 
+@interface SPFlippedView : NSView
+
+- (BOOL)isFlipped;
+
+@end
+
 @interface SPConnectionController : NSObject 
 {
 	id delegate;
@@ -111,7 +117,6 @@
     
     BOOL reverseFavoritesSort;
     SPFavoritesSortItem previousSortItem, currentSortItem;
-
 }
 
 @property (readwrite, assign) id delegate;
@@ -162,11 +167,5 @@
 - (IBAction)addFavorite:(id)sender;
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)aNotification;
-
-@end
-
-@interface SPFlippedView: NSView
-
-- (BOOL)isFlipped;
 
 @end
