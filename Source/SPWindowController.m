@@ -73,8 +73,8 @@
 	closeTabMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1103];
 
 	// Register for drag start and stop notifications - used to show/hide tab bars
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:@"SPTabDragStart" object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:@"SPTabDragStop" object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:PSMTabDragDidEndNotification object:nil];
 }
 
 /**
@@ -375,7 +375,6 @@
  */
 - (BOOL)tabView:(NSTabView *)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl
 {
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPTabDragStart" object:self];
 	return YES;
 }
 
@@ -408,8 +407,6 @@
 
 	// Check the window and move it to front if it's key (eg for new window creation)
 	if ([[tabBarControl window] isKeyWindow]) [[tabBarControl window] orderFront:self];
-
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPTabDragStop" object:self];
 }
 
 /**

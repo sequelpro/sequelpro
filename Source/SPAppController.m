@@ -33,6 +33,7 @@
 #import "SPConstants.h"
 #import "SPWindowController.h"
 
+#import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
 
 @implementation SPAppController
@@ -79,7 +80,10 @@
 	
 	// Register SPAppController for AppleScript events
 	[[NSScriptExecutionContext sharedScriptExecutionContext] setTopLevelObject:self];
-	
+
+	// Register for drag start notifications - used to bring all windows to front
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
+
 	isNewFavorite = NO;
 }
 
@@ -498,6 +502,14 @@
 	}
 
 	return nil;
+}
+
+/**
+ * When tab drags start, bring all the windows in front of other applications.
+ */
+- (void)tabDragStarted:(id)sender
+{
+	[NSApp arrangeInFront:self];
 }
 
 #pragma mark -
@@ -920,6 +932,8 @@
  */
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	if(_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
 	[prefsController release], prefsController = nil;
 	[aboutController release], aboutController = nil;

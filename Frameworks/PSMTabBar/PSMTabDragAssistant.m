@@ -433,9 +433,9 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 		[[[self sourceTabBar] delegate] tabView:[[self sourceTabBar] tabView] didDropTabViewItem:[[self draggedCell] representedObject] inTabBar:[self destinationTabBar]];
 	}
 	
-	[[NSNotificationCenter defaultCenter] postNotificationName:PSMTabDragDidEndNotification object:nil];
-	
     [self finishDrag];
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:PSMTabDragDidEndNotification object:nil];
 }
 
 - (void)draggedImageEndedAt:(NSPoint)aPoint operation:(NSDragOperation)operation
@@ -510,9 +510,9 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 			}
 		}
 		
-		[[NSNotificationCenter defaultCenter] postNotificationName:PSMTabDragDidEndNotification object:nil];
-		
 		[self finishDrag];
+		
+		[[NSNotificationCenter defaultCenter] postNotificationName:PSMTabDragDidEndNotification object:nil];
     }
 }
 
