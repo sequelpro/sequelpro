@@ -164,6 +164,11 @@
                     [self _localizeStringsInObject:[segmentedControl menuForSegment:segmentIndex] table:table];
                 }
                 
+            } else if ([view isKindOfClass:[NSTableView class]]) {
+                for (NSTableColumn *column in [view tableColumns]) {
+                    [self _localizeStringValueOfObject:[column headerCell] table:table];
+                }
+                
             } else
                 [self _localizeStringsInObject:[control cell] table:table];
 
