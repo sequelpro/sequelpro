@@ -98,7 +98,9 @@
 	
 	[prefs synchronize];
 	
-	[self _sortFavorites];
+	if (currentSortItem > -1) {
+		[self _sortFavorites];
+	}	
 }
 
 #pragma mark -
@@ -456,7 +458,7 @@
  * Sorts the favorites table view based on the selected sort by item
  */
 - (IBAction)sortFavorites:(id)sender
-{
+{	
 	previousSortItem = currentSortItem;
 	currentSortItem  = [[sender menu] indexOfItem:sender];
 	
@@ -465,8 +467,9 @@
 	// Perform sorting
 	[self _sortFavorites];
 	
-	[[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
-	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
+	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	
+	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];	
 }
 
 /**
@@ -621,12 +624,12 @@
 }
 
 #pragma mark -
-#pragma mark TableView drag & drop datasource methods
+#pragma mark TableView drag & drop delegate methods
 
 // -------------------------------------------------------------------------------
 // tableView:writeRowsWithIndexes:toPasteboard:
 // -------------------------------------------------------------------------------
-/*- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:nil];
@@ -670,6 +673,22 @@
 	NSInteger lastFavoriteIndexCached;
 	NSMutableDictionary *draggedRow;
 	
+	// Disable all automatic sorting
+	currentSortItem = -1;
+	reverseFavoritesSort = NO;
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
+	
+	// Remove sort descriptors
+	[favoritesController setSortDescriptors:[NSArray array]];
+	
+	// Uncheck sort by menu items
+	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
+	{
+		[menuItem setState:NSOffState];
+	}
+		
 	originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] integerValue];
 	destinationRow = row;
 
@@ -701,7 +720,7 @@
 	[self updateDefaultFavoritePopup];
 	
 	return YES;
-}*/
+}
 
 #pragma mark -
 #pragma mark TableView delegate methods
@@ -1383,9 +1402,6 @@
 			break;
 		case SPFavoritesSortTypeItem:
 			sortKey = @"type";
-			break;
-		default:
-			sortKey = @"name";
 			break;
 	}
 	

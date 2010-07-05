@@ -114,8 +114,10 @@
 	IBOutlet NSButton *helpButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
-    
+    IBOutlet NSMenuItem *favoritesSortByMenuItem;
+	
     BOOL reverseFavoritesSort;
+	
     SPFavoritesSortItem previousSortItem, currentSortItem;
 }
 

@@ -114,13 +114,10 @@
         [favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
 		// Sort the favourites to match prefs and select the appropriate row
-		[self _sortFavorites];
-		NSInteger tableRow;
-		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
-			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
-		} else {
-			tableRow = [prefs integerForKey:SPDefaultFavorite] + 1;
-		}
+		if (currentSortItem > -1) [self _sortFavorites];
+		
+		NSInteger tableRow = ([prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite] + 1);
+		
 		if (tableRow < [favorites count]) {
 			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue];
 			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
@@ -679,9 +676,9 @@
 	// Perform sorting
 	[self _sortFavorites];
 	
-	[[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
-    
 }
 
 /**
@@ -891,29 +888,49 @@
 }
 
 #pragma mark -
-#pragma mark Favorites tableview datasource and delegate methods
+#pragma mark TableView drag & drop delegate methods
 
-/**
- * Returns the number of favorites to display
- */
-- (NSInteger) numberOfRowsInTableView:(NSTableView *)aTableView
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
 {
-	return [favorites count];
+    NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+    [pboard declareTypes:[NSArray arrayWithObject:favoritesPBoardType] owner:self];
+    [pboard setData:archivedData forType:favoritesPBoardType];
+    return YES;
 }
 
-/**
- * Returns the favorite names to be displayed in the table
- */
-- (id) tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
-	return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
+    if (row == 0) return NSDragOperationNone;
+    if ([info draggingSource] == aTableView)
+    {
+        [aTableView setDropRow:row dropOperation:NSTableViewDropAbove];
+        return NSDragOperationMove;
+    }
+    return NSDragOperationNone;
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView acceptDrop:(id < NSDraggingInfo >)info 
-              row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
+- (BOOL)tableView:(NSTableView *)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
 {
     BOOL acceptedDrop = NO;
-    if ((row == 0) || ([info draggingSource] != aTableView))  return acceptedDrop;
+    
+	if ((row == 0) || ([info draggingSource] != aTableView))  return acceptedDrop;
+	
+	// Disable all automatic sorting
+	currentSortItem = -1;
+	reverseFavoritesSort = NO;
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
+	
+	// Remove sort descriptors
+	[favorites sortUsingDescriptors:[NSArray array]];
+	
+	// Uncheck sort by menu items
+	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
+	{
+		[menuItem setState:NSOffState];
+	}
+	
     NSPasteboard* pboard = [info draggingPasteboard];
     NSData* rowData = [pboard dataForType:favoritesPBoardType];
     NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
@@ -932,38 +949,44 @@
     [favorites insertObject:draggedFavorite atIndex:row];
     [aTableView reloadData];
     [aTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-    // reset the prefs with the new order
+    
+	// reset the prefs with the new order
     NSMutableArray *reorderedFavorites = [[NSMutableArray alloc] initWithArray:favorites];
     [reorderedFavorites removeObjectAtIndex:0];
     [prefs setObject:reorderedFavorites forKey:SPFavorites];
+	
 	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
-    [reorderedFavorites release];
-    [self updateFavorites];
-    acceptedDrop = YES;
+    
+	[reorderedFavorites release];
+    
+	[self updateFavorites];
+    
+	acceptedDrop = YES;
+	
     return acceptedDrop;
-
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes 
-     toPasteboard:(NSPasteboard *)pboard
+#pragma mark -
+#pragma mark Favorites tableview datasource methods
+
+/**
+ * Returns the number of favorites to display
+ */
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-    NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
-    [pboard declareTypes:[NSArray arrayWithObject:favoritesPBoardType] owner:self];
-    [pboard setData:archivedData forType:favoritesPBoardType];
-    return YES;
+	return [favorites count];
 }
 
-- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id < NSDraggingInfo >)info 
-                 proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
+/**
+ * Returns the favorite names to be displayed in the table
+ */
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-    if (row == 0) return NSDragOperationNone;
-    if ([info draggingSource] == aTableView)
-    {
-        [aTableView setDropRow:row dropOperation:NSTableViewDropAbove];
-        return NSDragOperationMove;
-    }
-    return NSDragOperationNone;
+	return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
 }
+
+#pragma mark -
+#pragma mark Favorites tableview delegate methods
 
 /**
  * Loads a favorite, if any are selected.
@@ -1021,7 +1044,7 @@
 
 
 #pragma mark -
-#pragma mark NSSplitView delegate methods
+#pragma mark SplitView delegate methods
 
 /**
  * When the split view is resized, trigger a resize in the hidden table
@@ -1032,6 +1055,7 @@
 - (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex
 {
 	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	
 	return proposedPosition;
 }
 
@@ -1130,7 +1154,5 @@
 {
     return YES;
 }
-
-
 
 @end

@@ -57,6 +57,7 @@
 	IBOutlet NSTextField *favoriteUserTextFieldSocket;
 	IBOutlet NSTextField *favoriteUserTextFieldSSH;
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
+	IBOutlet NSMenuItem *favoritesSortByMenuItem;
 
 	IBOutlet id tableCell;
 	
