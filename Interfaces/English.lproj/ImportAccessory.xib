@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">10D573</string>
-		<string key="IBDocument.InterfaceBuilderVersion">740</string>
+		<string key="IBDocument.SystemVersion">10F569</string>
+		<string key="IBDocument.InterfaceBuilderVersion">788</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">460.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">740</string>
+			<string key="NS.object.0">788</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -57,7 +57,7 @@
 									<object class="NSButton" id="321311538">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">264</int>
-										<string key="NSFrame">{{2, 63}, {188, 18}}</string>
+										<string key="NSFrame">{{2, 63}, {411, 18}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSButtonCell" key="NSCell" id="382295631">
@@ -84,7 +84,7 @@
 									<object class="NSComboBox" id="455670945">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{124, 8}, {54, 22}}</string>
+										<string key="NSFrame">{{149, 8}, {54, 22}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSComboBoxCell" key="NSCell" id="224560182">
@@ -202,12 +202,12 @@
 									<object class="NSTextField" id="88279563">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{13, 15}, {106, 14}}</string>
+										<string key="NSFrame">{{2, 15}, {142, 14}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="206342718">
 											<int key="NSCellFlags">68288064</int>
-											<int key="NSCellFlags2">4195328</int>
+											<int key="NSCellFlags2">71304192</int>
 											<string key="NSContents">Fields enclosed by:</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="88279563"/>
@@ -223,7 +223,7 @@
 									<object class="NSComboBox" id="595983007">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">265</int>
-										<string key="NSFrame">{{328, 35}, {54, 22}}</string>
+										<string key="NSFrame">{{360, 35}, {54, 22}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSComboBoxCell" key="NSCell" id="762842881">
@@ -305,12 +305,12 @@
 									<object class="NSTextField" id="201675078">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">265</int>
-										<string key="NSFrame">{{221, 37}, {102, 17}}</string>
+										<string key="NSFrame">{{212, 37}, {143, 17}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="82042584">
 											<int key="NSCellFlags">67239424</int>
-											<int key="NSCellFlags2">4194304</int>
+											<int key="NSCellFlags2">71303168</int>
 											<string key="NSContents">Fields escaped by:</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="201675078"/>
@@ -321,7 +321,7 @@
 									<object class="NSComboBox" id="704974988">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">265</int>
-										<string key="NSFrame">{{328, 8}, {54, 22}}</string>
+										<string key="NSFrame">{{360, 8}, {54, 22}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSComboBoxCell" key="NSCell" id="658483425">
@@ -404,12 +404,12 @@
 									<object class="NSTextField" id="381931944">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">265</int>
-										<string key="NSFrame">{{210, 12}, {113, 17}}</string>
+										<string key="NSFrame">{{212, 12}, {143, 17}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="391954730">
 											<int key="NSCellFlags">67239424</int>
-											<int key="NSCellFlags2">4194304</int>
+											<int key="NSCellFlags2">71303168</int>
 											<string key="NSContents">Lines terminated by:</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="381931944"/>
@@ -420,7 +420,7 @@
 									<object class="NSComboBox" id="557825428">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{124, 36}, {54, 22}}</string>
+										<string key="NSFrame">{{149, 36}, {54, 22}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSComboBoxCell" key="NSCell" id="674293841">
@@ -505,12 +505,12 @@
 									<object class="NSTextField" id="980919427">
 										<reference key="NSNextResponder" ref="749758351"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{2, 40}, {117, 14}}</string>
+										<string key="NSFrame">{{2, 40}, {142, 14}}</string>
 										<reference key="NSSuperview" ref="749758351"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="556711750">
 											<int key="NSCellFlags">68288064</int>
-											<int key="NSCellFlags2">4195328</int>
+											<int key="NSCellFlags2">71304192</int>
 											<string key="NSContents">Fields terminated by:</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="980919427"/>
@@ -519,11 +519,11 @@
 										</object>
 									</object>
 								</object>
-								<string key="NSFrameSize">{383, 84}</string>
+								<string key="NSFrameSize">{416, 84}</string>
 								<reference key="NSSuperview" ref="143318538"/>
 							</object>
 						</object>
-						<string key="NSFrame">{{17, 9}, {383, 84}}</string>
+						<string key="NSFrame">{{17, 10}, {416, 84}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
 						<string key="NSOffsets">{0, 0}</string>
 						<object class="NSTextFieldCell" key="NSTitleCell">
@@ -546,7 +546,7 @@
 					<object class="NSPopUpButton" id="841218020">
 						<reference key="NSNextResponder" ref="768243701"/>
 						<int key="NSvFlags">264</int>
-						<string key="NSFrame">{{183, 101}, {100, 26}}</string>
+						<string key="NSFrame">{{209, 101}, {100, 26}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="1032099677">
@@ -610,7 +610,7 @@
 					<object class="NSTextField" id="640853005">
 						<reference key="NSNextResponder" ref="768243701"/>
 						<int key="NSvFlags">264</int>
-						<string key="NSFrame">{{128, 107}, {53, 17}}</string>
+						<string key="NSFrame">{{154, 107}, {53, 17}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="379355660">
@@ -624,7 +624,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{417, 135}</string>
+				<string key="NSFrameSize">{450, 135}</string>
 				<reference key="NSSuperview"/>
 				<object class="NSMutableString" key="NSClassName">
 					<characters key="NS.bytes">NSView</characters>
@@ -662,7 +662,7 @@
 										<object class="NSTextView" id="770071618">
 											<reference key="NSNextResponder" ref="51216656"/>
 											<int key="NSvFlags">2322</int>
-											<string key="NSFrameSize">{500, 29}</string>
+											<string key="NSFrame">{{0, 15}, {500, 14}}</string>
 											<reference key="NSSuperview" ref="51216656"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="243631584">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -1398,6 +1398,7 @@
 					<string>-3.IBPluginDependency</string>
 					<string>1.IBEditorWindowLastContentRect</string>
 					<string>1.IBPluginDependency</string>
+					<string>1.IBViewEditorWindowController.showingBoundsRectangles</string>
 					<string>1.ImportedFromIB2</string>
 					<string>10.IBPluginDependency</string>
 					<string>10.ImportedFromIB2</string>
@@ -1463,8 +1464,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{583, 146}, {417, 135}}</string>
+					<string>{{168, 334}, {450, 135}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<boolean value="YES"/>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -1527,9 +1529,9 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{674, 272}, {500, 353}}</string>
+					<string>{{220, 272}, {500, 353}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{674, 272}, {500, 353}}</string>
+					<string>{{220, 272}, {500, 353}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{500, 353}</string>
@@ -1603,6 +1605,55 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>cancelProgressBar:</string>
+							<string>changeFormat:</string>
+							<string>closeSheet:</string>
+							<string>panelSelectionDidChange:</string>
+							<string>reloadTables:</string>
+							<string>selectTables:</string>
+							<string>switchInput:</string>
+							<string>switchTab:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">cancelProgressBar:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">changeFormat:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">closeSheet:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">panelSelectionDidChange:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">reloadTables:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">selectTables:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">switchInput:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">switchTab:</string>
+								<string key="candidateClassName">id</string>
+							</object>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -1722,6 +1773,285 @@
 							<string>id</string>
 						</object>
 					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addCreateTableSwitch</string>
+							<string>addDropTableSwitch</string>
+							<string>addErrorsSwitch</string>
+							<string>addTableContentSwitch</string>
+							<string>csvFullStreamingSwitch</string>
+							<string>customQueryInstance</string>
+							<string>errorsSheet</string>
+							<string>errorsView</string>
+							<string>exportCSVView</string>
+							<string>exportDumpTableView</string>
+							<string>exportDumpView</string>
+							<string>exportFieldNamesSwitch</string>
+							<string>exportFieldsEnclosedField</string>
+							<string>exportFieldsEscapedField</string>
+							<string>exportFieldsTerminatedField</string>
+							<string>exportLinesTerminatedField</string>
+							<string>exportMultipleCSVTableView</string>
+							<string>exportMultipleCSVView</string>
+							<string>exportMultipleFieldNamesSwitch</string>
+							<string>exportMultipleFieldsEnclosedField</string>
+							<string>exportMultipleFieldsEscapedField</string>
+							<string>exportMultipleFieldsTerminatedField</string>
+							<string>exportMultipleLinesTerminatedField</string>
+							<string>exportMultipleXMLTableView</string>
+							<string>exportMultipleXMLView</string>
+							<string>exportTabBar</string>
+							<string>exportTableList</string>
+							<string>exportToolbar</string>
+							<string>exportWindow</string>
+							<string>importCSVBox</string>
+							<string>importCSVView</string>
+							<string>importFieldMapperSheetWindow</string>
+							<string>importFieldNamesSwitch</string>
+							<string>importFieldsEnclosedField</string>
+							<string>importFieldsEscapedField</string>
+							<string>importFieldsTerminatedField</string>
+							<string>importFormatPopup</string>
+							<string>importFromClipboardAccessoryView</string>
+							<string>importFromClipboardSheet</string>
+							<string>importFromClipboardTextView</string>
+							<string>importLinesTerminatedField</string>
+							<string>multiCSVFullStreamingSwitch</string>
+							<string>multiXMLFullStreamingSwitch</string>
+							<string>singleProgressBar</string>
+							<string>singleProgressSheet</string>
+							<string>singleProgressText</string>
+							<string>singleProgressTitle</string>
+							<string>sqlFullStreamingSwitch</string>
+							<string>tableContentInstance</string>
+							<string>tableDataInstance</string>
+							<string>tableDocumentInstance</string>
+							<string>tableSourceInstance</string>
+							<string>tableWindow</string>
+							<string>tablesListInstance</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">addCreateTableSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">addDropTableSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">addErrorsSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">addTableContentSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">csvFullStreamingSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">customQueryInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">errorsSheet</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">errorsView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportCSVView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportDumpTableView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportDumpView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportFieldNamesSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportFieldsEnclosedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportFieldsEscapedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportFieldsTerminatedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportLinesTerminatedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleCSVTableView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleCSVView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleFieldNamesSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleFieldsEnclosedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleFieldsEscapedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleFieldsTerminatedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleLinesTerminatedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleXMLTableView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportMultipleXMLView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportTabBar</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportTableList</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportToolbar</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportWindow</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importCSVBox</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importCSVView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFieldMapperSheetWindow</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFieldNamesSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFieldsEnclosedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFieldsEscapedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFieldsTerminatedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFormatPopup</string>
+								<string key="candidateClassName">NSPopUpButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFromClipboardAccessoryView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFromClipboardSheet</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importFromClipboardTextView</string>
+								<string key="candidateClassName">NSTextView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importLinesTerminatedField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">multiCSVFullStreamingSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">multiXMLFullStreamingSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">singleProgressBar</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">singleProgressSheet</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">singleProgressText</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">singleProgressTitle</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sqlFullStreamingSwitch</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tableContentInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tableDataInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tableDocumentInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tableSourceInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tableWindow</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tablesListInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+						</object>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBDocumentRelativeSource</string>
 						<string key="minorKey">../../Source/TableDump.h</string>
@@ -1730,6 +2060,7 @@
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
+		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
 			<integer value="3000" key="NS.object.0"/>
@@ -1737,5 +2068,18 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<nil key="IBDocument.LastKnownRelativeProjectPath"/>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
+		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
+			<bool key="EncodedWithXMLCoder">YES</bool>
+			<object class="NSArray" key="dict.sortedKeys">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>NSMenuCheckmark</string>
+				<string>NSMenuMixedState</string>
+			</object>
+			<object class="NSMutableArray" key="dict.values">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>{9, 8}</string>
+				<string>{7, 2}</string>
+			</object>
+		</object>
 	</data>
 </archive>

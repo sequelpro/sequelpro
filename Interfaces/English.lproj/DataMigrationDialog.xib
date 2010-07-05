@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="12"/>
+			<integer value="332"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1000,7 +1000,7 @@
 								<object class="NSButton" id="80724644">
 									<reference key="NSNextResponder" ref="219742831"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{227, 62}, {134, 18}}</string>
+									<string key="NSFrame">{{227, 62}, {335, 18}}</string>
 									<reference key="NSSuperview" ref="219742831"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="843921917">
@@ -1301,7 +1301,7 @@
 								<object class="NSButton" id="346675130">
 									<reference key="NSNextResponder" ref="471578497"/>
 									<int key="NSvFlags">289</int>
-									<string key="NSFrame">{{213, 8}, {139, 18}}</string>
+									<string key="NSFrame">{{212, 8}, {335, 18}}</string>
 									<reference key="NSSuperview" ref="471578497"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="450486129">
@@ -1365,7 +1365,7 @@
 									</object>
 								</object>
 							</object>
-							<string key="NSFrame">{{66, 20}, {377, 44}}</string>
+							<string key="NSFrame">{{59.5, 20}, {390, 44}}</string>
 							<reference key="NSSuperview" ref="78582513"/>
 							<string key="NSClassName">NSView</string>
 						</object>
@@ -3112,9 +3112,9 @@
 						<reference key="object" ref="471578497"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="346675130"/>
 							<reference ref="446881673"/>
 							<reference ref="388473976"/>
+							<reference ref="346675130"/>
 						</object>
 						<reference key="parent" ref="78582513"/>
 						<string key="objectName">Advanced View for UPDATE</string>
@@ -3404,9 +3404,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{125, 1}, {522, 348}}</string>
+					<string>{{51, 107}, {522, 348}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{125, 1}, {522, 348}}</string>
+					<string>{{51, 107}, {522, 348}}</string>
 					<integer value="1"/>
 					<string>{{387, 725}, {432, 282}}</string>
 					<boolean value="NO"/>
