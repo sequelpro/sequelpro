@@ -22,6 +22,7 @@
 + (void)_localizeStringValueOfObject:(id)object table:(NSString *)table;
 + (void)_localizePlaceholderStringOfObject:(id)object table:(NSString *)table;
 + (void)_localizeToolTipOfObject:(id)object table:(NSString *)table;
++ (void)_localizeLabelOfObject:(id)object table:(NSString *)table;
 @end
 
 
@@ -172,6 +173,14 @@
             } else
                 [self _localizeStringsInObject:[control cell] table:table];
 
+        } else if ([view isKindOfClass:[NSTabView class]]) {
+            NSTabView *tabView = (NSTabView *)view;
+            for (NSTabViewItem *tabViewItem in [tabView tabViewItems]) {
+                [self _localizeLabelOfObject:tabViewItem table:table];
+                [self _localizeToolTipOfObject:tabViewItem table:table];
+                [self _localizeStringsInObject:[tabViewItem view] table:table];
+            }
+
         }
         
         [self _localizeStringsInObject:[view subviews] table:table];
@@ -218,5 +227,6 @@ DM_DEFINE_LOCALIZE_BLAH_OF_OBJECT(alternateTitle, AlternateTitle)
 DM_DEFINE_LOCALIZE_BLAH_OF_OBJECT(stringValue, StringValue)
 DM_DEFINE_LOCALIZE_BLAH_OF_OBJECT(placeholderString, PlaceholderString)
 DM_DEFINE_LOCALIZE_BLAH_OF_OBJECT(toolTip, ToolTip)
+DM_DEFINE_LOCALIZE_BLAH_OF_OBJECT(label, Label)
 
 @end
