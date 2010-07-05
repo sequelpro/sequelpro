@@ -869,9 +869,10 @@
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableMenuItem2 setHidden:YES];
 		[showCreateSyntaxMenuItem setHidden:YES];
-		
-		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
-		
+
+		// Get main menu "Table"'s submenu
+		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTag:SPMainMenuTable] submenu];
+
 		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
 		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
 		
@@ -926,7 +927,7 @@
 	
 	// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 	// according to the table types
-	NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
+	NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTag:SPMainMenuTable] submenu];
 	
 	// Enable/disable the various menu items depending on the selected item. Also update their titles.
 	// Note, that this should ideally be moved to menu item validation as opposed to using fixed item positions.

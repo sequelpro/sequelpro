@@ -106,7 +106,7 @@
  * Add a new relation using the selected values.
  */
 - (IBAction)confirmAddRelation:(id)sender
-{	
+{
 	[self closeRelationSheet:self];
 	
 	NSString *thisTable  = [tablesListInstance tableName];
@@ -137,11 +137,11 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);		
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);
 	} 
 	else {
 		[self _refreshRelationDataForcingCacheRefresh:YES];
-	} 	
+	}
 }
 
 /**
@@ -164,7 +164,7 @@
  * Called whenever the user selected to add a new relation. 
  */
 - (IBAction)addRelation:(id)sender
-{	
+{
 	// Set up the controls
 	[addRelationTableBox setTitle:[NSString stringWithFormat:@"Table: %@", [tablesListInstance tableName]]];
 	
@@ -179,7 +179,7 @@
 	[result dataSeek:0];
 	
 	for (NSInteger i = 0; i < [result numOfRows]; i++)
-	{		
+	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
 	
@@ -198,22 +198,22 @@
 - (IBAction)removeRelation:(id)sender
 {
 	if ([relationsTableView numberOfSelectedRows] > 0) {
-		
+
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Delete relation", @"delete relation message") 
 										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 										   otherButton:nil 
 							 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected relations? This action cannot be undone.", @"delete selected relation informative message")];
-		
+
 		[alert setAlertStyle:NSCriticalAlertStyle];
-		
+
 		NSArray *buttons = [alert buttons];
-		
+
 		// Change the alert's cancel button to have the key equivalent of return
 		[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-		
+
 		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
 	}
 }
@@ -234,30 +234,29 @@
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations] || ![tableDocumentInstance isWorking];
 
 	// To begin enable all interface elements
-	[addRelationButton setEnabled:enableInteraction];		
+	[addRelationButton setEnabled:enableInteraction];
 	[refreshRelationsButton setEnabled:enableInteraction];
 	[relationsTableView setEnabled:YES];
 	
 	// Get the current table's storage engine
 	NSString *engine = [tableDataInstance statusValueForKey:@"Engine"];
-	
+
 	if (([tablesListInstance tableType] == SPTableTypeTable) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
-		
+
 		// Update the text label
 		[labelTextField setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
-		
+
 		[addRelationButton setEnabled:enableInteraction];
 		[refreshRelationsButton setEnabled:enableInteraction];
 		[relationsTableView setEnabled:YES];
-	} 
-	else {
-		[addRelationButton setEnabled:NO];		
-		[refreshRelationsButton setEnabled:NO];	
+	} else {
+		[addRelationButton setEnabled:NO];
+		[refreshRelationsButton setEnabled:NO];
 		[relationsTableView setEnabled:NO];
-		
-		[labelTextField setStringValue:([tablesListInstance tableType] == SPTableTypeTable) ? @"This table currently does not support relations. Only tables that use the InnoDB storage engine support them." : @""];
-	}	
-	
+
+		[labelTextField setStringValue:([tablesListInstance tableType] == SPTableTypeTable) ? NSLocalizedString(@"This table currently does not support relations. Only tables that use the InnoDB storage engine support them.", @"This table currently does not support relations. Only tables that use the InnoDB storage engine support them.") : @""];
+	}
+
 	[self _refreshRelationDataForcingCacheRefresh:NO];
 }
 
@@ -359,21 +358,21 @@
 	[data addObject:headings];
 	
 	[headings release];
-		
+
 	// Get the relation data
 	for (NSDictionary *relation in relationData)
 	{
 		NSMutableArray *temp = [[NSMutableArray alloc] init];
-		
+
 		[temp addObject:[relation objectForKey:@"name"]];
 		[temp addObject:[relation objectForKey:@"columns"]];
 		[temp addObject:[relation objectForKey:@"fk_table"]];
 		[temp addObject:[relation objectForKey:@"fk_columns"]];
 		[temp addObject:([relation objectForKey:@"on_update"]) ? [relation objectForKey:@"on_update"] : @""];
 		[temp addObject:([relation objectForKey:@"on_delete"]) ? [relation objectForKey:@"on_delete"] : @""];
-		
+
 		[data addObject:temp];
-		
+
 		[temp release];
 	}
 	
@@ -386,35 +385,35 @@
 - (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if ([contextInfo isEqualToString:@"removeRelation"]) {
-		
+
 		if (returnCode == NSAlertDefaultReturn) {
-			
+
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
-			
+
 			NSUInteger row = [selectedSet lastIndex];
-			
+
 			while (row != NSNotFound) 
 			{
 				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
 				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
-				
+
 				[connection queryString:query];
-				
+
 				if ([connection queryErrored]) {
-					
+
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete relation", @"error deleting relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection getLastErrorMessage]]);	
-					
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection getLastErrorMessage]]);
+
 					// Abort loop
 					break;
 				} 
-				
+
 				row = [selectedSet indexLessThanIndex:row];
 			}
-			
+
 			[self _refreshRelationDataForcingCacheRefresh:YES];
 		}
 	} 
@@ -424,21 +423,21 @@
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
+{
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [relationsTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 	// Use monospaced fonts preference changed
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
-		
+
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
+
 		for (NSTableColumn *column in [relationsTableView tableColumns])
 		{
 			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-		
+
 		[relationsTableView reloadData];
 	}
 }
@@ -451,7 +450,7 @@
 	// Remove row
 	if ([menuItem action] == @selector(removeRelation:)) {
 		[menuItem setTitle:([relationsTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Delete Relations", @"delete relations menu item") : NSLocalizedString(@"Delete Relation", @"delete relation menu item")];
-		
+
 		return ([relationsTableView numberOfSelectedRows] > 0);
 	}
 	
@@ -464,12 +463,12 @@
  * Dealloc.
  */
 - (void)dealloc
-{	
+{
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
 	[relationData release], relationData = nil;
-	
+
 	[super dealloc];
 }
 
@@ -485,11 +484,11 @@
 	[relationData removeAllObjects];
 	
 	if ([tablesListInstance tableType] == SPTableTypeTable) {
-		
+
 		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
-				
+
 		NSArray *constraints = [tableDataInstance getConstraints];
-		
+
 		for (NSDictionary *constraint in constraints) 
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -500,7 +499,7 @@
 									([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
 									([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
 									nil]];
-			
+
 		}
 	} 
 	
@@ -515,40 +514,40 @@
 {
 	NSString *column = [columnPopUpButton titleOfSelectedItem];
 	NSString *table = [refTablePopUpButton titleOfSelectedItem];
-		
+
 	[tableDataInstance resetAllData];
 	[tableDataInstance updateInformationForCurrentTable];
-	
+
 	NSDictionary *columnInfo = [[tableDataInstance columnWithName:column] copy];
-		
+
 	[refColumnPopUpButton setEnabled:NO];
 	[confirmAddRelationButton setEnabled:NO];
-	
+
 	[refColumnPopUpButton removeAllItems];
-	
+
 	[tableDataInstance resetAllData];
 	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
-	
+
 	NSArray *columns = [tableInfo objectForKey:@"columns"];
-	
+
 	NSMutableArray *validColumns = [NSMutableArray array];
-	
+
 	// Only add columns of the same data type
 	for (NSDictionary *aColumn in columns) 
-	{		
+	{
 		if ([[columnInfo objectForKey:@"type"] isEqualToString:[aColumn objectForKey:@"type"]]) {
-			[validColumns addObject:[aColumn objectForKey:@"name"]];			
+			[validColumns addObject:[aColumn objectForKey:@"name"]];
 		}
 	}
-	
+
 	// Add the valid columns
 	if ([validColumns count] > 0) {
 		[refColumnPopUpButton addItemsWithTitles:validColumns];
-		
+
 		[refColumnPopUpButton setEnabled:YES];
 		[confirmAddRelationButton setEnabled:YES];
 	}
-	
+
 	[columnInfo release];
 }
 
