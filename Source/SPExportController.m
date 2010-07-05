@@ -38,6 +38,7 @@
 @interface SPExportController (PrivateAPI)
 
 - (void)_updateDisplayedExportFilename;
+- (void)_updateAvailableExportFilenameTokens;
 - (NSString *)_generateDefaultExportFilename;
 - (NSString *)_currentDefaultExportFileExtension;
 
@@ -94,9 +95,6 @@
 		windowMinHeigth = [[self window] minSize].height;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
-		
-		// Default filename tokens
-		availableFilenameTokens = NSLocalizedString(@"host,database,table,date,time", @"default custom export filename tokens");
 	}
 	
 	return self;
@@ -358,6 +356,8 @@
 	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
+	[self _updateAvailableExportFilenameTokens];
+	
 	if (!showCustomFilenameView) [self _updateDisplayedExportFilename];
 }
 
@@ -379,8 +379,7 @@
 		[exportDeselectAllTablesButton setEnabled:isSelectedTables];
 		[exportRefreshTablesButton setEnabled:isSelectedTables];
 		
-		availableFilenameTokens = ([sender indexOfSelectedItem] == SPQueryExport) ? @"host,database,date,time" : @"host,database,table,date,time";
-		
+		[self _updateAvailableExportFilenameTokens];
 		[self _updateDisplayedExportFilename];
 	}
 }
@@ -432,10 +431,7 @@
  * Opens the open panel when user selects to change the output path.
  */
 - (IBAction)changeExportOutputPath:(id)sender
-{
-	[exportCustomFilenameTokenField setStringValue:@""];
-	[exportCustomFilenameTokensField setStringValue:availableFilenameTokens];
-	
+{	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	
 	[panel setCanChooseFiles:NO];
@@ -713,6 +709,14 @@
 	} 
 	
 	[exportCustomFilenameViewLabelButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Customize Filename (%@)", @"customize file name label"), filename]];
+}
+
+/**
+ * Updates the available export filename tokens.
+ */
+- (void)_updateAvailableExportFilenameTokens
+{		
+	[exportCustomFilenameTokensField setStringValue:((exportSource == SPQueryExport) || (exportType == SPDotExport)) ? NSLocalizedString(@"host,database,date,time", @"custom export filename tokens without table") : NSLocalizedString(@"host,database,table,date,time", @"default custom export filename tokens")];
 }
 
 /**

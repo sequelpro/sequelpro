@@ -187,11 +187,6 @@
 	SPExportSource exportSource;
 	
 	/**
-	 * Available filename tokens
-	 */
-	NSString *availableFilenameTokens;
-	
-	/**
 	 * Display advanced view flag
 	 */
 	BOOL showAdvancedView;
