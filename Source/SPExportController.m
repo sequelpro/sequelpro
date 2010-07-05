@@ -39,6 +39,7 @@
 
 - (void)_updateDisplayedExportFilename;
 - (NSString *)_generateDefaultExportFilename;
+- (NSString *)_currentDefaultExportFileExtension;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -260,12 +261,20 @@
 								 range:NSMakeRange(0, [string length])];
 	
 	// Strip comma separators
-	[string replaceOccurrencesOfString:@"," withString:@""
+	[string replaceOccurrencesOfString:@"," 
+							withString:@""
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
 	
 	// Replace colons with hyphens
-	[string replaceOccurrencesOfString:@":" withString:@"-"
+	[string replaceOccurrencesOfString:@":" 
+							withString:@"-"
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+	
+	// Replace forward slashes with hyphens
+	[string replaceOccurrencesOfString:@"/" 
+							withString:@"-"
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
 	
@@ -690,7 +699,18 @@
  */
 - (void)_updateDisplayedExportFilename
 {	
-	NSString *filename = ([[exportCustomFilenameTokenField stringValue] length] > 0) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:[[tablesListInstance tables] objectAtIndex:1]] : [self _generateDefaultExportFilename]; 
+	NSString *filename  = @"";
+	
+	if ([[exportCustomFilenameTokenField stringValue] length] > 0) {
+		
+		// Get the current export file extension
+		NSString *extension = [self _currentDefaultExportFileExtension];
+		
+		filename = [[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:[[tablesListInstance tables] objectAtIndex:1]] stringByAppendingPathExtension:extension];
+	}
+	else {
+		filename = [self _generateDefaultExportFilename];
+	} 
 	
 	[exportCustomFilenameViewLabelButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Customize Filename (%@)", @"customize file name label"), filename]];
 }
@@ -701,7 +721,7 @@
 - (NSString *)_generateDefaultExportFilename
 {
 	NSString *filename = @"";
-	NSString *extension = @"";
+	NSString *extension = [self _currentDefaultExportFileExtension];
 	
 	// Determine what the file name should be
 	switch (exportSource) 
@@ -717,6 +737,16 @@
 			break;
 	}
 	
+	return ([extension length] > 0) ? [filename stringByAppendingPathExtension:extension] : filename;
+}
+
+/**
+ * Returns the current default export file extension based on the selected export type.
+ */
+- (NSString *)_currentDefaultExportFileExtension
+{
+	NSString *extension = @"";
+	
 	switch (exportType) {
 		case SPSQLExport:
 			extension = ([exportCompressOutputFile state]) ? [NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL] : SPFileExtensionSQL;
@@ -729,7 +759,7 @@
 			break;
 	}
 	
-	return ([extension length] > 0) ? [filename stringByAppendingPathExtension:extension] : filename;
+	return extension;
 }
 
 /**
