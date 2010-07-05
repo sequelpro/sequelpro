@@ -1409,6 +1409,14 @@
 	[errorsSheet makeKeyWindow];
 }
 
+/**
+ *
+ */
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet orderOut:self];
+}
+
 #pragma mark -
 
 /**
