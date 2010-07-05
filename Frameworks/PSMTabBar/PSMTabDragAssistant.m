@@ -810,6 +810,9 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 					
 						// Determine the index of the tab the dragged tab is over
 						NSUInteger overCellIndex = [cells indexOfObject:overCell];
+						
+						// Determine the index of the current target
+						NSUInteger currentTargetCellIndex = _targetCell?[cells indexOfObject:_targetCell]:NSUIntegerMax;
 
 						// Ensure that drag changes aren't as a result of an animation
 						NSInteger currentCellStep = [[cells objectAtIndex:(overCellIndex - 1)] currentStep];
@@ -817,7 +820,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 
 							// Center of the tab is past the edge of the tab to the left
 							if (targetPoint.x < (overCellRect.origin.x + overCellRect.size.width)
-								&& targetPoint.x > (overCellRect.origin.x + overCellRect.size.width/2.0))
+								&& currentTargetCellIndex > overCellIndex)
 							{
 								[self setTargetCell:[cells objectAtIndex:(overCellIndex - 1)]];
 

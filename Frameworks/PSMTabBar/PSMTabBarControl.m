@@ -450,7 +450,9 @@
 - (void)setHideForSingleTab:(BOOL)value
 {
     _hideForSingleTab = value;
-    [self update];
+    if ([_cells count] == 1) {
+        [self update];
+    }
 }
 
 - (BOOL)showAddTabButton
