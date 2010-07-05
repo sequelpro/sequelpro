@@ -169,6 +169,9 @@ static NSMutableArray *deliciousBindingKeys = nil;
                     NSString *localizedSegmentLabel = [self _localizedStringForString:[segmentedControl labelForSegment:segmentIndex] table:table];
                     if (localizedSegmentLabel)
                         [segmentedControl setLabel:localizedSegmentLabel forSegment:segmentIndex];
+                    NSString *localizedSegmentTooltip = [self _localizedStringForString:[[segmentedControl cell] toolTipForSegment:segmentIndex] table:table];
+                    if (localizedSegmentTooltip)
+                        [[segmentedControl cell] setToolTip:localizedSegmentTooltip forSegment:segmentIndex];
                     
                     [self _localizeStringsInObject:[segmentedControl menuForSegment:segmentIndex] table:table];
                 }
@@ -190,6 +193,7 @@ static NSMutableArray *deliciousBindingKeys = nil;
                     }
                     [view bind:@"value" toObject:[vb objectForKey:NSObservedObjectKey] withKeyPath:[vb objectForKey:NSObservedKeyPathKey] options:lvb];
                 }
+                [self _localizeStringsInObject:[control cell] table:table];
                 
             } else
                 [self _localizeStringsInObject:[control cell] table:table];
