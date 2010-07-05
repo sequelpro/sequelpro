@@ -25,6 +25,7 @@
 + (void)_localizeLabelOfObject:(id)object table:(NSString *)table;
 @end
 
+static NSMutableArray *deliciousBindingKeys = nil;
 
 @implementation NSBundle (DMLocalizedNibBundle)
 
@@ -35,6 +36,12 @@
     NSAutoreleasePool *autoreleasePool = [[NSAutoreleasePool alloc] init];
     if (self == [NSBundle class]) {
         method_exchangeImplementations(class_getClassMethod(self, @selector(loadNibFile:externalNameTable:withZone:)), class_getClassMethod(self, @selector(deliciousLocalizingLoadNibFile:externalNameTable:withZone:)));
+        deliciousBindingKeys = [[NSMutableArray alloc] initWithObjects:
+                                    NSMultipleValuesPlaceholderBindingOption,
+                                    NSNoSelectionPlaceholderBindingOption,
+                                    NSNotApplicablePlaceholderBindingOption,
+                                    NSNullPlaceholderBindingOption,
+                                    nil];
     }
     [autoreleasePool release];
 }
@@ -114,6 +121,7 @@
     } else if ([object isKindOfClass:[NSMenuItem class]]) {
         NSMenuItem *menuItem = object;
         [self _localizeTitleOfObject:menuItem table:table];
+        [self _localizeToolTipOfObject:menuItem table:table];
         
         [self _localizeStringsInObject:[menuItem submenu] table:table];
         
@@ -168,6 +176,19 @@
             } else if ([view isKindOfClass:[NSTableView class]]) {
                 for (NSTableColumn *column in [view tableColumns]) {
                     [self _localizeStringValueOfObject:[column headerCell] table:table];
+                }
+            
+            } else if ([view isKindOfClass:[NSTextField class]]) {
+                NSDictionary *vb;
+                if (vb = [view infoForBinding:@"value"]) {
+                    NSMutableDictionary *lvb = [NSMutableDictionary dictionaryWithDictionary:[vb objectForKey:NSOptionsKey]];
+                    for (NSString *bindingKey in deliciousBindingKeys) {
+                        if ([lvb objectForKey:bindingKey] == [NSNull null]) continue;
+                        NSString *localizedBindingString = [self _localizedStringForString:[lvb objectForKey:bindingKey] table:table];
+                        if (localizedBindingString)
+                            [lvb setObject:localizedBindingString forKey:bindingKey];
+                    }
+                    [view bind:@"value" toObject:[vb objectForKey:NSObservedObjectKey] withKeyPath:[vb objectForKey:NSObservedKeyPathKey] options:lvb];
                 }
                 
             } else
