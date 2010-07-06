@@ -21,10 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
-			<integer value="442"/>
-			<integer value="295"/>
-			<integer value="1109"/>
+			<integer value="1105"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -62,7 +59,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{454, 494}</string>
 				<object class="NSView" key="NSWindowView" id="13817034">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -335,7 +332,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{451, 494}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{454, 516}</string>
@@ -355,7 +351,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{213, 50}</string>
 				<object class="NSView" key="NSWindowView" id="217849587">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -481,7 +477,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{379, 139}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{213, 72}</string>
@@ -500,7 +495,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{213, 107}</string>
 				<object class="NSView" key="NSWindowView" id="487307915">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -594,7 +589,6 @@
 									</object>
 									<string key="NSFrame">{{1, 1}, {352, 178}}</string>
 									<reference key="NSSuperview" ref="835590192"/>
-									<reference key="NSNextKeyView" ref="195858660"/>
 									<reference key="NSDocView" ref="195858660"/>
 									<reference key="NSBGColor" ref="628696263"/>
 									<object class="NSCursor" key="NSCursor">
@@ -627,7 +621,6 @@
 							</object>
 							<string key="NSFrame">{{20, 45}, {365, 180}}</string>
 							<reference key="NSSuperview" ref="487307915"/>
-							<reference key="NSNextKeyView" ref="919560029"/>
 							<int key="NSsFlags">18</int>
 							<reference key="NSVScroller" ref="1025585018"/>
 							<reference key="NSHScroller" ref="24038425"/>
@@ -681,7 +674,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{405, 267}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{213, 129}</string>
@@ -711,7 +703,7 @@
 							<int key="NSPeriodicInterval">75</int>
 							<object class="NSMenuItem" key="NSMenuItem" id="713988214">
 								<reference key="NSMenu" ref="516760020"/>
-								<string key="NSTitle">Selected Tables</string>
+								<string key="NSTitle">Tables</string>
 								<string key="NSKeyEquiv"/>
 								<int key="NSKeyEquivModMask">1048576</int>
 								<int key="NSMnemonicLoc">2147483647</int>
@@ -4974,7 +4966,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{454, 494}</string>
-					<string>{{518, 237}, {450, 377}}</string>
+					<string>{{762, 257}, {450, 377}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -5005,7 +4997,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{525, 541}, {207, 54}}</string>
+					<string>{{768, 509}, {207, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5566,6 +5558,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>cancelExport:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
+							<string>exportCustomQueryResultAsFormat:</string>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
 							<string>switchInput:</string>
@@ -5590,6 +5583,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -5599,6 +5593,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>cancelExport:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
+							<string>exportCustomQueryResultAsFormat:</string>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
 							<string>switchInput:</string>
@@ -5621,6 +5616,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">closeSheet:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">exportCustomQueryResultAsFormat:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
