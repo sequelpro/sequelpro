@@ -84,8 +84,6 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	sqlTableDataInstance = [[[SPTableData alloc] init] autorelease];
 	[sqlTableDataInstance setConnection:connection];
-
-	NSAutoreleasePool *sqlExportPool = [[NSAutoreleasePool alloc] init];
 			
 	MCPResult *queryResult;
 	MCPStreamingResult *streamingResult;
@@ -120,6 +118,8 @@
 		(![self sqlDatabaseName])     || ([[self sqlDatabaseName] isEqualToString:@""]) ||
 		(![self sqlDatabaseVersion]   || ([[self sqlDatabaseName] isEqualToString:@""])))
 	{
+		[errors release];
+		[sqlString release];
 		[pool release];
 		return;
 	}
@@ -321,7 +321,7 @@
 				// Iterate through the rows to construct a VALUES group for each
 				j = 0, k = 0;
 				
-				sqlExportPool = [[NSAutoreleasePool alloc] init];
+				NSAutoreleasePool *sqlExportPool = [[NSAutoreleasePool alloc] init];
 				
 				// Inform the delegate that we are about to start writing the data to disk
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];

@@ -76,6 +76,9 @@
 			success = NO;
 		}
 	}
+	
+	[dbActionTableCopy release];
+	
 	return success;
 }
 

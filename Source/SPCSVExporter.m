@@ -186,9 +186,9 @@
 		[queryResult setReturnDataAsStrings:YES];
 		
 		if ([queryResult numOfRows]) {
-			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+			id object = [[[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]] objectForKey:@"Create View"];
 			
-			tableDetails = [[NSDictionary alloc] initWithDictionary:([tableDetails objectForKey:@"Create View"]) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
+			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
 		}
 		
 		// Retrieve the table details via the data class, and use it to build an array containing column numeric status

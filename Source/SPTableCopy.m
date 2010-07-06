@@ -57,9 +57,7 @@
 		[createTableStatement insertString:@"." atIndex:13];
 		[createTableStatement insertString:[targetDB backtickQuotedString] atIndex:13];
 
-		[connection queryString:createTableStatement];	
-		[createTableStatement release];
-	
+		[connection queryString:createTableStatement];		
 	
 		if ([connection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Failed to copy table", @"copy table error message"), 
@@ -73,6 +71,9 @@
 	} else {
 		NSLog(@"Could not copy non-table/view %@", tableName);
 	}
+	
+	[createTableStatement release];
+	
 	return NO;
 }
 
