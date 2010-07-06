@@ -202,7 +202,7 @@ static NSMutableArray *deliciousBindingKeys = nil;
             NSTabView *tabView = (NSTabView *)view;
             for (NSTabViewItem *tabViewItem in [tabView tabViewItems]) {
                 [self _localizeLabelOfObject:tabViewItem table:table];
-                if ([tabView respondsToSelector:@selector(toolTip)]) // 10.6+
+                if ([tabViewItem respondsToSelector:@selector(toolTip)]) // 10.6+
                     [self _localizeToolTipOfObject:tabViewItem table:table];
                 [self _localizeStringsInObject:[tabViewItem view] table:table];
             }
