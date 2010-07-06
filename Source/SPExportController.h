@@ -238,7 +238,7 @@
 @property(readwrite, assign) MCPConnection *connection;
 
 - (void)export;
-- (void)exportTables:(NSArray *)table asFormat:(SPExportType)format;
+- (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
 - (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table;
@@ -253,6 +253,7 @@
 - (IBAction)selectDeselectAllTables:(id)sender;
 - (IBAction)toggleCustomFilenameFormatView:(id)sender;
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
+- (IBAction)exportCustomQueryResultAsFormat:(id)sender;
 
 - (IBAction)toggleSQLIncludeStructure:(id)sender;
 - (IBAction)toggleSQLIncludeContent:(id)sender;

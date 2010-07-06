@@ -131,13 +131,13 @@
  */
 - (void)export
 {	
-	[self exportTables:nil asFormat:SPSQLExport];
+	[self exportTables:nil asFormat:SPSQLExport usingSource:SPTableExport];
 }
 
 /**
  * Displays the export window with the supplied tables and export type/format selected.
  */
-- (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format
+- (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format usingSource:(SPExportSource)source
 {	
 	// Select the correct tab
 	[exportTypeTabBar selectTabViewItemAtIndex:format];
@@ -150,7 +150,7 @@
 	if ([exportFiles count] > 0) [exportFiles removeAllObjects];
 			
 	// Select the 'selected tables' source option
-	[exportInputPopUpButton selectItemAtIndex:SPTableExport];
+	[exportInputPopUpButton selectItemAtIndex:source];
 	
 	// If tables were supplied, select them
 	if (exportTables) {
@@ -595,6 +595,17 @@
 	[self _toggleExportButtonOnBackgroundThread];
 }
 
+/**
+ * Opens the export sheet, selecting custom query as the export source.
+ */
+- (IBAction)exportCustomQueryResultAsFormat:(id)sender
+{	
+	[self exportTables:nil asFormat:[sender tag] usingSource:SPQueryExport];
+
+	// Ensure UI validation
+	[self switchInput:exportInputPopUpButton];
+}
+
 #pragma mark -
 #pragma mark Table view datasource methods
 
@@ -667,6 +678,18 @@
 	if (returnCode == NSOKButton) {
 		[exportPathField setStringValue:[panel directory]];
 	}
+}
+
+/**
+ * Menu item validation.
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	if ([menuItem action] == @selector(exportCustomQueryResultAsFormat:)) {
+		return ([[customQueryInstance currentResult] count] > 1);
+	}
+	
+	return YES;
 }
 
 #pragma mark -

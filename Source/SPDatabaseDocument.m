@@ -2346,7 +2346,7 @@
  */
 - (IBAction)exportSelectedTablesAs:(id)sender
 {
-	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag]];
+	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag] usingSource:SPTableExport];
 }
 
 #pragma mark -

@@ -47,7 +47,7 @@
 #define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
-@class SPQueryFavoriteManager, SPDataStorage;
+@class SPQueryFavoriteManager, SPDataStorage, BWSplitView;
 
 @interface CustomQuery : NSObject 
 {
@@ -107,6 +107,9 @@
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
+	
+	IBOutlet NSButton *queryInfoButton;
+	IBOutlet BWSplitView *queryInfoPaneSplitView;
 
 	SPQueryFavoriteManager *favoritesManager;
 
@@ -178,6 +181,7 @@
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
 - (IBAction)showCompletionList:(id)sender;
+- (IBAction)toggleQueryInfoPaneCollapse:(id)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;

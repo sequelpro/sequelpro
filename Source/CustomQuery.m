@@ -45,6 +45,8 @@
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
 
+#import <BWToolkitFramework/BWToolkitFramework.h>
+
 @implementation CustomQuery
 
 #pragma mark IBAction methods
@@ -448,6 +450,16 @@
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
 	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
+}
+
+/**
+ * Toggle whether the query info pane is visible.
+ */
+- (IBAction)toggleQueryInfoPaneCollapse:(id)sender
+{
+	[queryInfoPaneSplitView toggleCollapse:sender];
+	
+	[sender setToolTip:([sender state] == NSOffState) ? NSLocalizedString(@"Show Query Information", @"Show Query Information") : NSLocalizedString(@"Hide Query Information", @"Hide Query Information")];
 }
 
 #pragma mark -
@@ -2254,7 +2266,6 @@
 
 }
 
-
 #pragma mark -
 #pragma mark SplitView delegate methods
 
@@ -2271,11 +2282,7 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
-	if ( offset == 0 ) {
-		return proposedMax - 100;
-	} else {
-		return proposedMax - 73;
-	}
+	if (sender != queryInfoPaneSplitView) return (offset == 0) ? (proposedMax - 100) : (proposedMax - 73);
 }
 
 /*
@@ -2283,13 +2290,16 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
-	if ( offset == 0 ) {
-		return proposedMin + 100;
-	} else {
-		return proposedMin + 100;
-	}
+	if (sender != queryInfoPaneSplitView) return proposedMin + 100;
 }
 
+/**
+ * The query information pane cannot be resized.
+ */
+- (NSRect)splitView:(NSSplitView *)splitView effectiveRect:(NSRect)proposedEffectiveRect forDrawnRect:(NSRect)drawnRect ofDividerAtIndex:(NSInteger)dividerIndex
+{
+	return (splitView == queryInfoPaneSplitView ? NSZeroRect : proposedEffectiveRect);
+}
 
 #pragma mark -
 #pragma mark MySQL Help
@@ -3061,7 +3071,6 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	// Control "Save ... to Favorites"
 	if ( [menuItem tag] == SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG ) {
 		if ([[textView string] length] < 1) return NO;
@@ -3077,12 +3086,10 @@
 	if ( [menuItem tag] == SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG ) {
 		if ([[textView string] length] < 1) return NO;
 	}
-
 	// Avoid selecting button list headers
 	else if ( [menuItem tag] == SP_FAVORITE_HEADER_MENUITEM_TAG ) {
 		return NO;
 	}
-
 	// Control Clear History menu item title according to isUntitled
 	else if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
 		if ( [tableDocumentInstance isUntitled] ) {
@@ -3093,7 +3100,6 @@
 			[menuItem setToolTip:NSLocalizedString(@"Clear the document-based history list", @"clear the document-based history list tooltip message")];
 		}
 	}
-
 	// Check for History items
 	else if ( [menuItem tag] >= SP_HISTORY_COPY_MENUITEM_TAG && [menuItem tag] <= SP_HISTORY_CLEAR_MENUITEM_TAG ) {
 		return ([queryHistoryButton numberOfItems]-7);
@@ -3245,7 +3251,15 @@
 
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
 
-
+	// Collapse the query information pane
+	/*if ([queryInfoPaneSplitView collapsibleSubview]) {
+		[queryInfoButton setNextState];
+		[queryInfoButton setToolTip:NSLocalizedString(@"Show Query Information", @"Show Query Information")];
+		
+		[queryInfoPaneSplitView setValue:[NSNumber numberWithFloat:[queryInfoPaneSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		[[queryInfoPaneSplitView collapsibleSubview] setFrameSize:NSMakeSize([queryInfoPaneSplitView collapsibleSubview].frame.size.width, 0)];
+		[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES];
+	}*/
 }
 
 /**
