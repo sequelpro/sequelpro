@@ -117,6 +117,7 @@
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
 	
     BOOL reverseFavoritesSort;
+	BOOL mySQLConnectionCancelled;
 	
     SPFavoritesSortItem previousSortItem, currentSortItem;
 }
@@ -145,6 +146,7 @@
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
+- (IBAction)cancelMySQLConnection:(id)sender;
 - (void)initiateSSHTunnelConnection;
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
 - (void)initiateMySQLConnection;

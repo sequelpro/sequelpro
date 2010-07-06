@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CustomQuery.h
+//  SPCustomQuery.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -49,7 +49,7 @@
 
 @class SPQueryFavoriteManager, SPDataStorage, BWSplitView;
 
-@interface CustomQuery : NSObject 
+@interface SPCustomQuery : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;

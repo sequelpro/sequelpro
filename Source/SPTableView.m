@@ -90,7 +90,7 @@
 	// Check if ENTER or RETURN is hit and edit the column.
 	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
 	{
-		if (![[[[self delegate] class] description] isEqualToString:@"CustomQuery"] &&
+		if (![[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"] &&
 			![[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]){
 			
 			// Ensure that editing is permitted

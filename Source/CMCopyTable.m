@@ -30,7 +30,7 @@
 #import "SPTableContent.h"
 #import "SPTableTriggers.h"
 #import "SPTableRelations.h"
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 #import "SPNotLoaded.h"
 #import "SPConstants.h"
 #import "SPDataStorage.h"
@@ -461,7 +461,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			}
 		}
 	}
-	if([[[[self delegate] class] description] isEqualToString:@"CustomQuery"]) {
+	if([[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"]) {
 		id tableContentView = [[self delegate] valueForKeyPath:@"customQueryView"];
 		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 

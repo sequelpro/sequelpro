@@ -30,13 +30,13 @@
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
-@class SPNarrowDownCompletion, SPDatabaseDocument, SPTablesList, CustomQuery;
+@class SPNarrowDownCompletion, SPDatabaseDocument, SPTablesList, SPCustomQuery;
 
 @interface SPTextView : NSTextView 
 {
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTablesList *tablesListInstance;
-	IBOutlet CustomQuery *customQueryInstance;
+	IBOutlet SPCustomQuery *customQueryInstance;
 
 	BOOL autoindentEnabled;
 	BOOL autopairEnabled;

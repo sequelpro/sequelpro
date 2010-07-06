@@ -28,7 +28,7 @@
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 #import "SPGrowlController.h"
 #import "SPSQLParser.h"
 #import "SPCSVParser.h"

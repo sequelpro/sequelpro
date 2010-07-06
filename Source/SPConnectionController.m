@@ -34,6 +34,8 @@
 @interface SPConnectionController (PrivateAPI)
 
 - (void)_sortFavorites;
+- (void)_initiateMySQLConnectionInBackground;
+- (void)_initiatedMySQLConnectionEstablished;
 
 @end
 
@@ -77,6 +79,7 @@
 		mySQLConnection = nil;
 		sshTunnel = nil;
 		cancellingConnection = NO;
+		mySQLConnectionCancelled = NO;
         favoritesPBoardType = @"FavoritesPBoardType";
 
 		// Load the connection nib, keeping references to the top-level objects for later release
@@ -221,15 +224,23 @@
 	
 	// Trim whitespace and newlines from the host field before attempting to connect
 	[self setHost:[[self host] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-
+	
 	// Initiate the SSH connection process for tunnels
 	if ([self type] == SPSSHTunnelConnection) {
 		[self performSelector:@selector(initiateSSHTunnelConnection) withObject:nil afterDelay:0.0];
 		return;
 	}
-
+	
 	// ...or start the MySQL connection process directly	
 	[self performSelector:@selector(initiateMySQLConnection) withObject:nil afterDelay:0.0];
+}
+
+/**
+ * Cancels (or rather marks) the current connection is to be cancelled once established.
+ */
+- (IBAction)cancelMySQLConnection:(id)sender
+{
+	mySQLConnectionCancelled = YES;
 }
 
 /*
@@ -310,105 +321,12 @@
 	
 	[progressIndicatorText display];
 
-	// Initialise to socket if appropriate.
-	if ([self type] == SPSocketConnection) {
-		mySQLConnection = [[MCPConnection alloc] initToSocket:[self socket] withLogin:[self user]];
-
-	// Otherwise, initialise to host, using tunnel if appropriate
-	} else {
-		if ([self type] == SPSSHTunnelConnection) {
-			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
-														withLogin:[self user]
-														usingPort:[sshTunnel localPort]];
-			[mySQLConnection setConnectionProxy:sshTunnel];
-		} else {
-			mySQLConnection = [[MCPConnection alloc] initToHost:[self host]
-														withLogin:[self user]
-														usingPort:([[self port] length]?[[self port] integerValue]:3306)];
-		}
-	}
-
-	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
-	if (!connectionKeychainItemName && [self password]) {
-		[mySQLConnection setPassword:[self password]];
-	}
-	
-	// Connection delegate must be set before actual connection attempt is made
-	[mySQLConnection setDelegate:tableDocument];
-	
-	// Set whether or not we should enable delegate logging according to the prefs
-	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:SPConsoleEnableLogging]];
-
-	// Set options from preferences
-	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] integerValue]];
-	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:SPUseKeepAlive] boolValue]];
-	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] doubleValue]];
-
-	// Connect
-	[mySQLConnection connect];
-
-	if (![mySQLConnection isConnected]) {
-		if (sshTunnel) {
-
-			// If an SSH tunnel is running, temporarily block to allow the tunnel to register changes in state
-			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
-
-			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
-			if ([sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
-				if ([sshTunnel localPortFallback]) {
-					[mySQLConnection setPort:[sshTunnel localPortFallback]];
-					[mySQLConnection connect];
-					if (![mySQLConnection isConnected]) {
-						[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
-					}
-				}
-			}
-		}
-		
-		if (![mySQLConnection isConnected]) {
-			NSString *errorMessage;
-			if (sshTunnel && [sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@", @"message of panel when SSH port forwarding failed"), [self host], [mySQLConnection getLastErrorMessage]];
-				[self failConnectionWithTitle:NSLocalizedString(@"SSH port forwarding failed", @"title when ssh tunnel port forwarding failed") errorMessage:errorMessage detail:[sshTunnel debugMessages]];
-			} else if ([mySQLConnection getLastErrorID] == 1045) { // "Access denied" error
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because access was denied.\n\nDouble-check your username and password and ensure that access from your current location is permitted.\n\nMySQL said: %@", @"message of panel when connection to host failed due to access denied error"), [self host], [mySQLConnection getLastErrorMessage]];
-				[self failConnectionWithTitle:NSLocalizedString(@"Access denied!", @"connection failed due to access denied title") errorMessage:errorMessage detail:nil];
-			} else if ([self type] == SPSocketConnection && (![self socket] || ![[self socket] length]) && ![mySQLConnection findSocketPath]) {
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The socket file could not be found in any common location. Please supply the correct socket location.\n\nMySQL said: %@", @"message of panel when connection to socket failed because optional socket could not be found"), [mySQLConnection getLastErrorMessage]];
-				[self failConnectionWithTitle:NSLocalizedString(@"Socket not found!", @"socket not found title") errorMessage:errorMessage detail:nil];
-			} else if ([self type] == SPSocketConnection) {
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
-				[self failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
-			} else {
-				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], (long)[[prefs objectForKey:SPConnectionTimeoutValue] integerValue], [mySQLConnection getLastErrorMessage]];
-				[self failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
-			}
-			
-			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
-			[mySQLConnection release], mySQLConnection = nil;
-			return;
-		}
-	}
-	if ([self database] && ![[self database] isEqualToString:@""]) {
-		if (![mySQLConnection selectDB:[self database]]) {
-			[self failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection getLastErrorMessage]] detail:nil];
-			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
-			[mySQLConnection release], mySQLConnection = nil;
-			return;
-		}
-	}
-	
-	// Successful connection!
-	[progressIndicator stopAnimation:self];
-	[progressIndicatorText setHidden:YES];
-	[addToFavoritesButton setHidden:NO];
+	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+	[connectButton setAction:@selector(cancelMySQLConnection:)];
 	[connectButton setEnabled:YES];
-
-	// Release the tunnel if set - will now be retained by the connection
-	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
-
-	// Pass the connection to the document and clean up the interface
-	[self addConnectionToDocument];
+	[connectButton display];
+	
+	[NSThread detachNewThreadSelector:@selector(_initiateMySQLConnectionInBackground) toTarget:self withObject:nil];
 }
 
 /*
@@ -1101,6 +1019,9 @@
 #pragma mark -
 #pragma mark Private API
 
+/**
+ *
+ */
 - (void)_sortFavorites
 {
     NSString *sortKey = @"";
@@ -1138,6 +1059,155 @@
 	[favoritesTable reloadData];
     
 	[first release];
+}
+
+/**
+ *
+ */
+- (void)_initiatedMySQLConnectionEstablished
+{	
+	if (mySQLConnectionCancelled) {		
+		[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling connection message")];
+		[progressIndicatorText display];
+		
+		if ([mySQLConnection isConnected]) {
+			[mySQLConnection disconnect];
+			[mySQLConnection release], mySQLConnection = nil;
+		}
+		
+		// Kill the SSH connection if present
+		[self cancelConnection];
+		
+		// Reset the UI
+		[addToFavoritesButton setHidden:NO];
+		[addToFavoritesButton display];
+		[helpButton setHidden:NO];
+		[helpButton display];
+		[connectButton setTitle:NSLocalizedString(@"Connect", @"connect button")];
+		[connectButton setEnabled:YES];
+		[connectButton display];
+		[progressIndicator stopAnimation:self];
+		[progressIndicator display];
+		[progressIndicatorText setHidden:YES];
+		[progressIndicatorText display];
+		
+		return;
+	}
+	
+	// Successful connection!
+	[connectButton setEnabled:NO];
+	[progressIndicator stopAnimation:self];
+	[progressIndicatorText setHidden:YES];
+	[addToFavoritesButton setHidden:NO];
+	
+	// Release the tunnel if set - will now be retained by the connection
+	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+	
+	// Pass the connection to the document and clean up the interface
+	[self addConnectionToDocument];
+}
+
+/**
+ *
+ */
+- (void)_initiateMySQLConnectionInBackground
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		
+	// Initialise to socket if appropriate.
+	if ([self type] == SPSocketConnection) {
+		mySQLConnection = [[MCPConnection alloc] initToSocket:[self socket] withLogin:[self user]];
+		
+		// Otherwise, initialise to host, using tunnel if appropriate
+	} else {
+		if ([self type] == SPSSHTunnelConnection) {
+			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
+													  withLogin:[self user]
+													  usingPort:[sshTunnel localPort]];
+			[mySQLConnection setConnectionProxy:sshTunnel];
+		} else {
+			mySQLConnection = [[MCPConnection alloc] initToHost:[self host]
+													  withLogin:[self user]
+													  usingPort:([[self port] length]?[[self port] integerValue]:3306)];
+		}
+	}
+	
+	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
+	if (!connectionKeychainItemName && [self password]) {
+		[mySQLConnection setPassword:[self password]];
+	}
+	
+	// Connection delegate must be set before actual connection attempt is made
+	[mySQLConnection setDelegate:tableDocument];
+	
+	// Set whether or not we should enable delegate logging according to the prefs
+	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:SPConsoleEnableLogging]];
+	
+	// Set options from preferences
+	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] integerValue]];
+	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:SPUseKeepAlive] boolValue]];
+	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] doubleValue]];
+	
+	// Connect
+	[mySQLConnection connect];
+	
+	if (![mySQLConnection isConnected]) {
+		if (sshTunnel) {
+			
+			// If an SSH tunnel is running, temporarily block to allow the tunnel to register changes in state
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+			
+			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
+			if ([sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
+				if ([sshTunnel localPortFallback]) {
+					[mySQLConnection setPort:[sshTunnel localPortFallback]];
+					[mySQLConnection connect];
+					if (![mySQLConnection isConnected]) {
+						[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+					}
+				}
+			}
+		}
+		
+		if (![mySQLConnection isConnected]) {
+			NSString *errorMessage = @"";
+			if (sshTunnel && [sshTunnel state] == PROXY_STATE_FORWARDING_FAILED) {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because the port connection via SSH was refused.\n\nPlease ensure that your MySQL host is set up to allow TCP/IP connections (no --skip-networking) and is configured to allow connections from the host you are tunnelling via.\n\nYou may also want to check the port is correct and that you have the necessary privileges.\n\nChecking the error detail will show the SSH debug log which may provide more details.\n\nMySQL said: %@", @"message of panel when SSH port forwarding failed"), [self host], [mySQLConnection getLastErrorMessage]];
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"SSH port forwarding failed", @"title when ssh tunnel port forwarding failed") errorMessage:errorMessage detail:[sshTunnel debugMessages]];
+			} else if ([mySQLConnection getLastErrorID] == 1045) { // "Access denied" error
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@ because access was denied.\n\nDouble-check your username and password and ensure that access from your current location is permitted.\n\nMySQL said: %@", @"message of panel when connection to host failed due to access denied error"), [self host], [mySQLConnection getLastErrorMessage]];
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Access denied!", @"connection failed due to access denied title") errorMessage:errorMessage detail:nil];
+			} else if ([self type] == SPSocketConnection && (![self socket] || ![[self socket] length]) && ![mySQLConnection findSocketPath]) {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The socket file could not be found in any common location. Please supply the correct socket location.\n\nMySQL said: %@", @"message of panel when connection to socket failed because optional socket could not be found"), [mySQLConnection getLastErrorMessage]];
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Socket not found!", @"socket not found title") errorMessage:errorMessage detail:nil];
+			} else if ([self type] == SPSocketConnection) {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
+			} else {
+				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], (long)[[prefs objectForKey:SPConnectionTimeoutValue] integerValue], [mySQLConnection getLastErrorMessage]];
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
+			}
+			
+			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			[mySQLConnection release], mySQLConnection = nil;
+			[pool release];
+			return;
+		}
+	}
+	
+	if ([self database] && ![[self database] isEqualToString:@""]) {
+		if (![mySQLConnection selectDB:[self database]]) {
+			[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection getLastErrorMessage]] detail:nil];
+			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			[mySQLConnection release], mySQLConnection = nil;
+			[pool release];
+			return;
+		}
+	}
+	
+	[self performSelectorOnMainThread:@selector(_initiatedMySQLConnectionEstablished) withObject:nil waitUntilDone:NO];
+		
+	[pool release];
 }
 
 @end

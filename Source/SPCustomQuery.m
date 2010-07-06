@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CustomQuery.m
+//  SPCustomQuery.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 #import "SPSQLParser.h"
 #import "SPGrowlController.h"
 #import "SPStringAdditions.h"
@@ -47,7 +47,7 @@
 
 #import <BWToolkitFramework/BWToolkitFramework.h>
 
-@implementation CustomQuery
+@implementation SPCustomQuery
 
 #pragma mark IBAction methods
 

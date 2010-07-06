@@ -33,7 +33,7 @@
 #import "SPGrowlController.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPDatabaseDocument.h"
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 #import "SPFileHandle.h"
 #import "SPAlertSheets.h"
 

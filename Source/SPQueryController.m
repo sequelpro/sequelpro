@@ -27,7 +27,7 @@
 #import "SPConsoleMessage.h"
 #import "SPArrayAdditions.h"
 #import "SPConstants.h"
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 

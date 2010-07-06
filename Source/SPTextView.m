@@ -23,7 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTextView.h"
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 #import "SPDatabaseDocument.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
@@ -531,7 +531,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	NSRange r = [self selectedRange];
 
-	if(![self delegate] || ![[self delegate] isKindOfClass:[CustomQuery class]] || r.length || snippetControlCounter > -1) return;
+	if(![self delegate] || ![[self delegate] isKindOfClass:[SPCustomQuery class]] || r.length || snippetControlCounter > -1) return;
 
 	if(r.location) {
 		NSCharacterSet *ignoreCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"\"'`;,()[]{}=+/<> \t\n\r"];
@@ -2028,8 +2028,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return;
 	}
 
-	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to CustomQuery
-	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[CustomQuery class]]){
+	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to SPCustomQuery
+	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]){
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
 
@@ -2702,7 +2702,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[[self queryEditorBackgroundColor] setFill];
 		NSRectFill(rect);
 
-		if([[self delegate] isKindOfClass:[CustomQuery class]]) {
+		if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 
 			// Highlightes the current query if set in the Pref and no snippet session
 			// and if nothing is selected in the text view
@@ -2892,7 +2892,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	// Validate Select Active Query
 	if ([menuItem action] == @selector(selectCurrentQuery)) {
-		return ([self isEditable] && [[self delegate] isKindOfClass:[CustomQuery class]]);
+		return ([self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]);
 	}
 	// Disable "Copy with Column Names" and "Copy as SQL INSERT"
 	// in the main menu

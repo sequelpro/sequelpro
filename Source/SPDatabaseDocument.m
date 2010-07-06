@@ -29,7 +29,7 @@
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
-#import "CustomQuery.h"
+#import "SPCustomQuery.h"
 #import "TableDump.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
@@ -2346,7 +2346,7 @@
  */
 - (IBAction)exportSelectedTablesAs:(id)sender
 {
-	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag] usingSource:SPTableExport];
+	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag]];
 }
 
 #pragma mark -
