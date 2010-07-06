@@ -24,7 +24,7 @@
 
 #import "SPFieldMapperController.h"
 #import "SPTableData.h"
-#import "TableDump.h"
+#import "SPDataImport.h"
 #import "SPTablesList.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"

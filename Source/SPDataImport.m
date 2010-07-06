@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableDump.m
+//  SPDataImport.m
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "TableDump.h"
+#import "SPDataImport.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
@@ -43,7 +43,7 @@
 #import "SPNotLoaded.h"
 #import "SPFileHandle.h"
 
-@implementation TableDump
+@implementation SPDataImport
 
 #pragma mark -
 #pragma mark Initialisation

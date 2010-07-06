@@ -30,7 +30,7 @@
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
 #import "SPCustomQuery.h"
-#import "TableDump.h"
+#import "SPDataImport.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPExportController.h"
@@ -2346,7 +2346,7 @@
  */
 - (IBAction)exportSelectedTablesAs:(id)sender
 {
-	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag]];
+	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag] usingSource:SPTableExport];
 }
 
 #pragma mark -
@@ -3417,7 +3417,7 @@
 }
 
 /**
- * Passes the request to the tableDump object
+ * Passes the request to the dataImport object
  */
 - (IBAction)import:(id)sender
 {
@@ -3425,7 +3425,7 @@
 }
 
 /**
- * Passes the request to the tableDump object
+ * Passes the request to the dataImport object
  */
 - (IBAction)importFromClipboard:(id)sender
 {
@@ -3433,7 +3433,7 @@
 }
 
 /**
- * Passes the request to the tableDump object
+ * Passes the request to the dataImport object
  */
 - (IBAction)export:(id)sender
 {

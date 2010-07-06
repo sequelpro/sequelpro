@@ -28,7 +28,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPPreferenceController.h"
 #import "SPAboutController.h"
-#import "TableDump.h"
+#import "SPDataImport.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPConstants.h"
 #import "SPWindowController.h"

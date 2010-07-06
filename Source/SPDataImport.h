@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  TableDump.h
+//  SPDataImport.h
 //  sequel-pro
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
@@ -28,7 +28,7 @@
 
 @class SPFieldMapperController, SPFileHandle;
 
-@interface TableDump : NSObject 
+@interface SPDataImport : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;

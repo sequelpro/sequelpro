@@ -101,7 +101,7 @@
 		17E641580EF01EF6001BC333 /* SPGrowlController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414D0EF01EF6001BC333 /* SPGrowlController.m */; };
 		17E641590EF01EF6001BC333 /* SPTableContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414F0EF01EF6001BC333 /* SPTableContent.m */; };
 		17E6415A0EF01EF6001BC333 /* SPDatabaseDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */; };
-		17E6415B0EF01EF6001BC333 /* TableDump.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641530EF01EF6001BC333 /* TableDump.m */; };
+		17E6415B0EF01EF6001BC333 /* SPDataImport.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641530EF01EF6001BC333 /* SPDataImport.m */; };
 		17E6415C0EF01EF6001BC333 /* SPTableStructure.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641550EF01EF6001BC333 /* SPTableStructure.m */; };
 		17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6415F0EF01F15001BC333 /* SPTableInfo.m */; };
 		17E641650EF01F15001BC333 /* SPTablesList.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641610EF01F15001BC333 /* SPTablesList.m */; };
@@ -592,8 +592,8 @@
 		17E6414F0EF01EF6001BC333 /* SPTableContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContent.m; sourceTree = "<group>"; };
 		17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseDocument.h; sourceTree = "<group>"; };
 		17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseDocument.m; sourceTree = "<group>"; };
-		17E641520EF01EF6001BC333 /* TableDump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableDump.h; sourceTree = "<group>"; };
-		17E641530EF01EF6001BC333 /* TableDump.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableDump.m; sourceTree = "<group>"; };
+		17E641520EF01EF6001BC333 /* SPDataImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataImport.h; sourceTree = "<group>"; };
+		17E641530EF01EF6001BC333 /* SPDataImport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataImport.m; sourceTree = "<group>"; };
 		17E641540EF01EF6001BC333 /* SPTableStructure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableStructure.h; sourceTree = "<group>"; };
 		17E641550EF01EF6001BC333 /* SPTableStructure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructure.m; sourceTree = "<group>"; };
 		17E6415E0EF01F15001BC333 /* SPTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableInfo.h; sourceTree = "<group>"; };
@@ -1176,8 +1176,8 @@
 				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
-				17E641520EF01EF6001BC333 /* TableDump.h */,
-				17E641530EF01EF6001BC333 /* TableDump.m */,
+				17E641520EF01EF6001BC333 /* SPDataImport.h */,
+				17E641530EF01EF6001BC333 /* SPDataImport.m */,
 				17E641540EF01EF6001BC333 /* SPTableStructure.h */,
 				17E641550EF01EF6001BC333 /* SPTableStructure.m */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
@@ -2427,7 +2427,7 @@
 				17E641580EF01EF6001BC333 /* SPGrowlController.m in Sources */,
 				17E641590EF01EF6001BC333 /* SPTableContent.m in Sources */,
 				17E6415A0EF01EF6001BC333 /* SPDatabaseDocument.m in Sources */,
-				17E6415B0EF01EF6001BC333 /* TableDump.m in Sources */,
+				17E6415B0EF01EF6001BC333 /* SPDataImport.m in Sources */,
 				17E6415C0EF01EF6001BC333 /* SPTableStructure.m in Sources */,
 				17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */,
 				17E641650EF01F15001BC333 /* SPTablesList.m in Sources */,
