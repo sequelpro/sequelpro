@@ -2616,6 +2616,10 @@
 	if ([[[self fileURL] path] length] && ![self isUntitled])
 		pathName = [NSString stringWithFormat:@"%@ — ", [[[self fileURL] path] lastPathComponent]];
 
+	if ([connectionController isConnecting]) {
+		return NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting");
+	}
+	
 	if ([self getConnection] == nil)
 		return [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
 
@@ -3793,10 +3797,16 @@
 	if ([[[self fileURL] path] length] && ![self isUntitled]) {
 		pathName = [NSString stringWithFormat:@"%@ — ", [[[self fileURL] path] lastPathComponent]];
 	}
-	if (!_isConnected) {
+	
+	if ([connectionController isConnecting]) {
+		windowTitle = NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting");
+		tabTitle = windowTitle;
+	}
+	else if (!_isConnected) {
 		windowTitle = [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
 		tabTitle = windowTitle;
-	} else {
+	} 
+	else {
 		windowTitle = [NSMutableString string];
 		tabTitle = [NSMutableString string];
 
@@ -3835,7 +3845,7 @@
 			[tabTitle appendString:[self table]];
 		}
 	}
-
+	
 	// Set the titles
 	[parentTabViewItem setLabel:tabTitle];
 	if ([parentWindowController selectedTableDocument] == self) {
@@ -4381,11 +4391,12 @@
  */
 - (void)connectionControllerInitiatingConnection:(id)controller
 {
-	// Update the window title to indicate that we are try to establish a connection
+	// Update the window title to indicate that we are trying to establish a connection
 	[parentTabViewItem setLabel:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
+	
 	if ([parentWindowController selectedTableDocument] == self) {
 		[parentWindow setTitle:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
-	}
+	}	
 }
 
 /**

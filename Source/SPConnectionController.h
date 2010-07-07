@@ -66,6 +66,7 @@
 	MCPConnection *mySQLConnection;
 	BOOL automaticFavoriteSelection;
 	BOOL cancellingConnection;
+	BOOL isConnecting;
 
 	NSInteger previousType;
 	NSInteger type;
@@ -140,6 +141,8 @@
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+
+@property (readonly, assign) BOOL isConnecting;
 @property (readonly, assign) NSString *favoritesPBoardType;
 
 - (id)initWithDocument:(SPDatabaseDocument *)theTableDocument;

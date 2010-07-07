@@ -61,6 +61,8 @@
 @synthesize connectionSSHKeychainItemName;
 @synthesize connectionSSHKeychainItemAccount;
 
+@synthesize isConnecting;
+
 #pragma mark -
 
 /**
@@ -80,6 +82,7 @@
 		mySQLConnection = nil;
 		sshTunnel = nil;
 		cancellingConnection = NO;
+		isConnecting = NO;
 		mySQLConnectionCancelled = NO;
         favoritesPBoardType = @"FavoritesPBoardType";
 
@@ -182,7 +185,9 @@
 	if (![self checkHost]) return;
 	
 	// Basic details have validated - start the connection process animating
+	isConnecting = YES;
 	cancellingConnection = NO;
+	
 	[addToFavoritesButton setHidden:YES];
 	[addToFavoritesButton display];
 	[helpButton setHidden:YES];
@@ -193,6 +198,9 @@
 	[progressIndicator display];
 	[progressIndicatorText setHidden:NO];
 	[progressIndicatorText display];
+	
+	// Start the current tab's progress indicator
+	[tableDocument setIsProcessing:YES];
 
 	// If the password(s) are marked as having been originally sourced from a keychain, check whether they
 	// have been changed or not; if not, leave the mark in place and remove the password from the field
@@ -245,7 +253,7 @@
  */
 - (IBAction)cancelMySQLConnection:(id)sender
 {
-	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling connection message")];
+	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[progressIndicatorText display];
 	
 	mySQLConnectionCancelled = YES;
@@ -1083,6 +1091,9 @@
 	// Must be performed on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] _restoreConnectionInterface];
 	
+	// Stop the current tab's progress indicator
+	[tableDocument setIsProcessing:NO];
+	
 	// Reset the UI
 	[addToFavoritesButton setHidden:NO];
 	[addToFavoritesButton display];
@@ -1112,6 +1123,8 @@
  */
 - (void)_mySQLConnectionEstablished
 {	
+	isConnecting = NO;
+	
 	// If the user hit cancel during the connection attempt, kill the connection once 
 	// established and reset the UI.
 	if (mySQLConnectionCancelled) {		
@@ -1130,6 +1143,9 @@
 	
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Connected", @"connection established message")];
 	[progressIndicatorText display];
+	
+	// Stop the current tab's progress indicator
+	[tableDocument setIsProcessing:NO];
 	
 	// Successful connection!
 	[connectButton setEnabled:NO];
@@ -1231,6 +1247,8 @@
 			}
 			
 			// Tidy up
+			isConnecting = NO;
+			
 			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
 			
 			[mySQLConnection release], mySQLConnection = nil;
@@ -1246,6 +1264,8 @@
 			[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection getLastErrorMessage]] detail:nil];
 			
 			// Tidy up
+			isConnecting = NO;
+			
 			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
 			
 			[mySQLConnection release], mySQLConnection = nil;
