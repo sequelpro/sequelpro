@@ -34,8 +34,9 @@
 @interface SPConnectionController (PrivateAPI)
 
 - (void)_sortFavorites;
+- (void)_restoreConnectionInterface;
+- (void)_mySQLConnectionEstablished;
 - (void)_initiateMySQLConnectionInBackground;
-- (void)_initiatedMySQLConnectionEstablished;
 
 @end
 
@@ -237,9 +238,16 @@
 
 /**
  * Cancels (or rather marks) the current connection is to be cancelled once established.
+ *
+ * Note, that once called this method does not mark the connection attempt to be immediately cancelled as
+ * there is no reliable way to actually cancel connection attempts via the MySQL client libs. Once the
+ * connection is established it will be immediately killed.
  */
 - (IBAction)cancelMySQLConnection:(id)sender
 {
+	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling connection message")];
+	[progressIndicatorText display];
+	
 	mySQLConnectionCancelled = YES;
 }
 
@@ -310,10 +318,13 @@
 }
 
 /*
- * Set up the MySQL connection, either through a successful tunnel or directly.
+ * Set up the MySQL connection, either through a successful tunnel or directly in the background.
  */
 - (void)initiateMySQLConnection
 {
+	// Disable the favorites table view to prevent further connections attempts
+	[favoritesTable setEnabled:NO];
+	
 	if (sshTunnel)
 		[progressIndicatorText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
 	else
@@ -415,7 +426,7 @@
  * Add the connection to the parent document and restore the
  * interface, allowing the application to run as normal.
  */
-- (void) addConnectionToDocument
+- (void)addConnectionToDocument
 {
 	
 	// Hide the connection view and restore the main view
@@ -445,7 +456,7 @@
  * Opens the preferences window, or brings it to the front, and switch to the favorites tab.
  * If a favorite is selected in the connection sheet, it is also select in the prefs window.
  */
-- (IBAction) editFavorites:(id)sender
+- (IBAction)editFavorites:(id)sender
 {
 	SPPreferenceController *prefsController = [[NSApp delegate] preferenceController];
 	
@@ -458,7 +469,7 @@
 /**
  * Show connection help.
  */
-- (IBAction) showHelp:(id)sender
+- (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPGettingConnectedDocURL]];
 }
@@ -498,7 +509,7 @@
  * this is clearer and also prevents a failed connection from being repopulated with the
  * favorite's details instead of the last used details.
  */
-- (void) controlTextDidChange:(NSNotification *)aNotification
+- (void)controlTextDidChange:(NSNotification *)aNotification
 {
 	[favoritesTable deselectAll:self];
 }
@@ -507,7 +518,7 @@
  * When a host field finishes editing, ensure that it hasn't been set to "localhost"
  * to ensure that socket connections don't inadvertently occur.
  */
-- (void) controlTextDidEndEditing:(NSNotification *)notification
+- (void)controlTextDidEndEditing:(NSNotification *)notification
 {
 	if ([notification object] == standardSQLHostField || [notification object] == sshSQLHostField) {
 		[self checkHost];
@@ -518,7 +529,7 @@
  * Control tab view resizing based on the supplied connection type,
  * with an option defining whether it should be animated or not.
  */
-- (void) resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate
+- (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate
 {
 	NSRect frameRect, targetResizeRect;
 	NSInteger additionalFormHeight = 55;
@@ -550,7 +561,7 @@
  * Check the host field and ensure it isn't set to "localhost" for
  * non-socket connections.
  */
-- (BOOL) checkHost
+- (BOOL)checkHost
 {
 	if ([self type] != SPSocketConnection && [[self host] isEqualToString:@"localhost"]) {
 		SPBeginAlertSheet(NSLocalizedString(@"You have entered 'localhost' for a non-socket connection", @"title of error when using 'localhost' for a network connection"),
@@ -584,6 +595,9 @@
 #pragma mark -
 #pragma mark Favorites interaction
 
+/**
+ * Sorts the favorites table view based on the selected sort by item.
+ */
 - (void)sortFavorites:(id)sender
 {
     previousSortItem = currentSortItem;
@@ -600,7 +614,7 @@
 }
 
 /**
- *
+ * Reverses the favorites table view sorting based on the selected criteria.
  */
 - (void)reverseSortFavorites:(id)sender
 {
@@ -617,7 +631,7 @@
 /**
  * Updates the local favorites array from the user defaults
  */
-- (void) updateFavorites
+- (void)updateFavorites
 {
 	[favoritesTable deselectAll:self];
 	if (favorites) [favorites release];
@@ -633,7 +647,7 @@
 /**
  * Sets fields for the chosen favorite.
  */
-- (void) updateFavoriteSelection:(id)sender
+- (void)updateFavoriteSelection:(id)sender
 {
 
 	// If nothing is selected, return without updating the interface
@@ -703,7 +717,7 @@
 /**
  * Returns a KVC-compliant proxy to the currently selected favorite, or nil if nothing selected.
  */
-- (id) selectedFavorite
+- (id)selectedFavorite
 {
 	if ([favoritesTable selectedRow] == -1)
 		return nil;
@@ -715,7 +729,7 @@
  * Adds the current details as a new favorite, select it, and scroll the selected
  * row to visible.
  */
-- (IBAction) addFavorite:(id)sender
+- (IBAction)addFavorite:(id)sender
 {
 	NSString *thePassword, *theSSHPassword;
 	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -1020,7 +1034,7 @@
 #pragma mark Private API
 
 /**
- *
+ * Sorts the connection favorites based on the selected criteria.
  */
 - (void)_sortFavorites
 {
@@ -1062,14 +1076,45 @@
 }
 
 /**
- *
+ * Restores the connection interface to its original state.
  */
-- (void)_initiatedMySQLConnectionEstablished
+- (void)_restoreConnectionInterface
+{
+	// Must be performed on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] _restoreConnectionInterface];
+	
+	// Reset the UI
+	[addToFavoritesButton setHidden:NO];
+	[addToFavoritesButton display];
+	[helpButton setHidden:NO];
+	[helpButton display];
+	[connectButton setTitle:NSLocalizedString(@"Connect", @"connect button")];
+	[connectButton setEnabled:YES];
+	[connectButton display];
+	[progressIndicator stopAnimation:self];
+	[progressIndicator display];
+	[progressIndicatorText setHidden:YES];
+	[progressIndicatorText display];
+	
+	// Re-enable favorites table view
+	[favoritesTable setEnabled:YES];
+	[favoritesTable display];
+	
+	mySQLConnectionCancelled = NO;
+	
+	// Revert the connect button back to its original selector
+	[connectButton setAction:@selector(initiateConnection:)];
+}
+
+/**
+ * Called on the main thread once the MySQL connection is established on the background thread. Either the
+ * connection was cancelled or it was successful. 
+ */
+- (void)_mySQLConnectionEstablished
 {	
+	// If the user hit cancel during the connection attempt, kill the connection once 
+	// established and reset the UI.
 	if (mySQLConnectionCancelled) {		
-		[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling connection message")];
-		[progressIndicatorText display];
-		
 		if ([mySQLConnection isConnected]) {
 			[mySQLConnection disconnect];
 			[mySQLConnection release], mySQLConnection = nil;
@@ -1078,27 +1123,24 @@
 		// Kill the SSH connection if present
 		[self cancelConnection];
 		
-		// Reset the UI
-		[addToFavoritesButton setHidden:NO];
-		[addToFavoritesButton display];
-		[helpButton setHidden:NO];
-		[helpButton display];
-		[connectButton setTitle:NSLocalizedString(@"Connect", @"connect button")];
-		[connectButton setEnabled:YES];
-		[connectButton display];
-		[progressIndicator stopAnimation:self];
-		[progressIndicator display];
-		[progressIndicatorText setHidden:YES];
-		[progressIndicatorText display];
+		[self _restoreConnectionInterface];
 		
 		return;
 	}
 	
+	[progressIndicatorText setStringValue:NSLocalizedString(@"Connected", @"connection established message")];
+	[progressIndicatorText display];
+	
 	// Successful connection!
 	[connectButton setEnabled:NO];
+	[connectButton display];
 	[progressIndicator stopAnimation:self];
 	[progressIndicatorText setHidden:YES];
 	[addToFavoritesButton setHidden:NO];
+	
+	// Re-enable favorites table view
+	[favoritesTable setEnabled:YES];
+	[favoritesTable display];
 	
 	// Release the tunnel if set - will now be retained by the connection
 	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
@@ -1108,7 +1150,7 @@
 }
 
 /**
- *
+ * Initiates the core of the MySQL connection process on a background thread.
  */
 - (void)_initiateMySQLConnectionInBackground
 {
@@ -1188,9 +1230,13 @@
 				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
 			}
 			
+			// Tidy up
 			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			
 			[mySQLConnection release], mySQLConnection = nil;
+			[self _restoreConnectionInterface];
 			[pool release];
+			
 			return;
 		}
 	}
@@ -1198,14 +1244,20 @@
 	if ([self database] && ![[self database] isEqualToString:@""]) {
 		if (![mySQLConnection selectDB:[self database]]) {
 			[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection getLastErrorMessage]] detail:nil];
+			
+			// Tidy up
 			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			
 			[mySQLConnection release], mySQLConnection = nil;
+			[self _restoreConnectionInterface];
 			[pool release];
+			
 			return;
 		}
 	}
 	
-	[self performSelectorOnMainThread:@selector(_initiatedMySQLConnectionEstablished) withObject:nil waitUntilDone:NO];
+	// Connection established
+	[self performSelectorOnMainThread:@selector(_mySQLConnectionEstablished) withObject:nil waitUntilDone:NO];
 		
 	[pool release];
 }
