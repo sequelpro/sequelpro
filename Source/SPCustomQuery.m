@@ -3257,8 +3257,10 @@
 		[queryInfoButton setToolTip:NSLocalizedString(@"Show Query Information", @"Show Query Information")];
 		
 		[queryInfoPaneSplitView setValue:[NSNumber numberWithFloat:[queryInfoPaneSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:NO];
 		[[queryInfoPaneSplitView collapsibleSubview] setFrameSize:NSMakeSize([queryInfoPaneSplitView collapsibleSubview].frame.size.width, 0)];
 		[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES];
+		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:YES];
 	}*/
 }
 

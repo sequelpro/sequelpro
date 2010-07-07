@@ -544,21 +544,12 @@
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
 }
 
-- (void)restoreAutoresizesSubviews:(NSNumber *)flag
-{
-	[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:[flag boolValue]];
-}
-
 /**
  * Toggle whether the splitview is collapsed.
  */
 - (IBAction)togglePaneCollapse:(id)sender
 {
-
 	[tableListSplitView toggleCollapse:sender];
-
-	// Probably due to a bug in BWToolkit we have to reset setAutoresizesSubviews to YES
-	[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:YES];
 
 	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:SPTableInformationPanelCollapsed];
 	[tableInfoCollapseButton setToolTip:([tableInfoCollapseButton state] == NSOffState) ? NSLocalizedString(@"Show Table Information", @"Show Table Information") : NSLocalizedString(@"Hide Table Information", @"Hide Table Information")];
@@ -1875,8 +1866,10 @@
 		[tableInfoCollapseButton setNextState];
 		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];
 		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:NO];
 		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
 		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
+		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:YES];
 	} else {
 		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Hide Table Information",@"Hide Table Information")];
 	}
