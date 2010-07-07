@@ -332,20 +332,20 @@
 		[tableCollationPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 	
-	[tableCreatedAt setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Created at: ", @"table info created at label"), [self _formatValueWithKey:@"Create_time" inDictionary:statusFields]]];
-	[tableUpdatedAt setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Updated at: ", @"table info updated at label"), [self _formatValueWithKey:@"Update_time" inDictionary:statusFields]]];
+	[tableCreatedAt setStringValue:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields]];
+	[tableUpdatedAt setStringValue:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields]];
 	
 	// Set row values
-	[tableRowNumber setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Number of rows: ", @"table info number of rows label"), [self _formatValueWithKey:@"Rows" inDictionary:statusFields]]];
-	[tableRowFormat setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Row format: ", @"table info row format label"), [self _formatValueWithKey:@"Row_format" inDictionary:statusFields]]];	
-	[tableRowAvgLength setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Avg. row length: ", @"table info average row length label"), [self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]]];
-	[tableRowAutoIncrement setStringValue:[NSString stringWithFormat:@" %@", [self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]]];
+	[tableRowNumber setStringValue:[self _formatValueWithKey:@"Rows" inDictionary:statusFields]];
+	[tableRowFormat setStringValue:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields]];
+	[tableRowAvgLength setStringValue:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]];
+	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]];
 	
 	// Set size values
-	[tableDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Data size: ", @"table info data size label"), [self _formatValueWithKey:@"Data_length" inDictionary:statusFields]]]; 
-	[tableMaxDataSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Max data size: ", @"table info max data size label"), [self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]]];	
-	[tableIndexSize setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Index size: ", @"table info index size label"), [self _formatValueWithKey:@"Index_length" inDictionary:statusFields]]]; 
-	[tableSizeFree setStringValue:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Free data size: ", @"table info free data size label"), [self _formatValueWithKey:@"Data_free" inDictionary:statusFields]]];	 
+	[tableDataSize setStringValue:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields]];
+	[tableMaxDataSize setStringValue:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]];
+	[tableIndexSize setStringValue:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields]];
+	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields]];
 	
 	// Set comments
 	[tableCommentsTextView setEditable:YES];
