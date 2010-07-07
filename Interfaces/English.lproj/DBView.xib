@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1246"/>
+			<integer value="5905"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4250,7 +4250,7 @@
 																				<object class="NSScroller" id="892376800">
 																					<reference key="NSNextResponder" ref="709531668"/>
 																					<int key="NSvFlags">256</int>
-																					<string key="NSFrame">{{541.752, 1}, {11, 69}}</string>
+																					<string key="NSFrame">{{542, 1}, {11, 69}}</string>
 																					<reference key="NSSuperview" ref="709531668"/>
 																					<int key="NSsFlags">256</int>
 																					<reference key="NSTarget" ref="709531668"/>
@@ -4270,7 +4270,7 @@
 																					<double key="NSPercent">0.94565218687057495</double>
 																				</object>
 																			</object>
-																			<string key="NSFrame">{{109.248, 0}, {553.752, 71}}</string>
+																			<string key="NSFrame">{{109.248, 0}, {554, 71}}</string>
 																			<reference key="NSSuperview" ref="259390764"/>
 																			<reference key="NSNextKeyView" ref="78677381"/>
 																			<int key="NSsFlags">18</int>
