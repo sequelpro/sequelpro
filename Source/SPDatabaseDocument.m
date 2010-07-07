@@ -4453,7 +4453,7 @@
 {
 
 	// Limit the right view of DBViewSplitter in order to avoid GUI element overlapping
-	if(splitView == contentViewSplitter) return proposedMax - 470;
+	if(splitView == contentViewSplitter) return proposedMax - 495;
 
 	return proposedMax;
 
