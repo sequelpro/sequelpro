@@ -253,20 +253,20 @@
 			[tableCreateSyntaxTextView setEditable:NO];
 		}
 		
-		[tableCreatedAt setStringValue:NSLocalizedString(@"Created at: ", @"table info created at label")];
-		[tableUpdatedAt setStringValue:NSLocalizedString(@"Updated at: ", @"table info updated at label")];
+		[tableCreatedAt setStringValue:@""];
+		[tableUpdatedAt setStringValue:@""];
 		
 		// Set row values
-		[tableRowNumber setStringValue:NSLocalizedString(@"Number of rows: ", @"table info number of rows label")];
-		[tableRowFormat setStringValue:NSLocalizedString(@"Row format: ", @"table info row format label")];	
-		[tableRowAvgLength setStringValue:NSLocalizedString(@"Avg. row length: ", @"table info average row length label")];
+		[tableRowNumber setStringValue:@""];
+		[tableRowFormat setStringValue:@""];
+		[tableRowAvgLength setStringValue:@""];
 		[tableRowAutoIncrement setStringValue:@""];
 		
 		// Set size values
-		[tableDataSize setStringValue:NSLocalizedString(@"Data size: ", @"table info data size label")];
-		[tableMaxDataSize setStringValue:NSLocalizedString(@"Max data size: ", @"table info max data size label")];	
-		[tableIndexSize setStringValue:NSLocalizedString(@"Index size: ", @"table info index size label")]; 
-		[tableSizeFree setStringValue:NSLocalizedString(@"Free data size: ", @"table info free data size label")];
+		[tableDataSize setStringValue:@""];
+		[tableMaxDataSize setStringValue:@""];
+		[tableIndexSize setStringValue:@""];
+		[tableSizeFree setStringValue:@""];
 		
 		// Set comments 
 		[tableCommentsTextView setEditable:NO];

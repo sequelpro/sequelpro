@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5905"/>
+			<integer value="1246"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4467,7 +4467,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="705814774">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Updated at:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="326368890"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4483,7 +4483,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="51220700">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Created at:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="644870593"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4671,7 +4671,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="632489290">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Number of rows:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="412060569"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4687,7 +4687,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="246518824">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Row format:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="795265894"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4703,7 +4703,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="738092126">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Avg. row length:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="747426446"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4718,8 +4718,7 @@
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSTextFieldCell" key="NSCell" id="71975986">
 																<int key="NSCellFlags">68288064</int>
-																<int key="NSCellFlags2">-1874721792</int>
-																<string key="NSContents">Auto increment:</string>
+																<int key="NSCellFlags2">272761856</int>
 																<reference key="NSSupport" ref="26"/>
 																<object class="NSNumberFormatter" key="NSFormatter" id="757535829">
 																	<object class="NSMutableDictionary" key="NS.attributes">
@@ -4806,7 +4805,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="1035416348">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Data size:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="803209800"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4822,7 +4821,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="502320319">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Max data size:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="6005445"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4838,7 +4837,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="686395978">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Index size:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="531020960"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
@@ -4854,7 +4853,7 @@
 															<object class="NSTextFieldCell" key="NSCell" id="314352793">
 																<int key="NSCellFlags">68288064</int>
 																<int key="NSCellFlags2">272761856</int>
-																<string key="NSContents">Free data size:</string>
+																<string key="NSContents"/>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="35887466"/>
 																<reference key="NSBackgroundColor" ref="62854682"/>
