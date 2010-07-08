@@ -3357,7 +3357,10 @@
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
 				LIBRARY_SEARCH_PATHS = "";
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = (
+					"-lstdc++",
+					"-lcrypto",
+				);
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 				STRIP_INSTALLED_PRODUCT = NO;
