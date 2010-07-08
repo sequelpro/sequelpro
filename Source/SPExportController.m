@@ -725,7 +725,9 @@
 		// Get the current export file extension
 		NSString *extension = [self _currentDefaultExportFileExtension];
 		
-		filename = [[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:[[tablesListInstance tables] objectAtIndex:1]] stringByAppendingPathExtension:extension];
+		filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:[[tablesListInstance tables] objectAtIndex:1]];
+		
+		if ([extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
 	}
 	else {
 		filename = [self _generateDefaultExportFilename];
