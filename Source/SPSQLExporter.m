@@ -427,8 +427,12 @@
 						if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
 							(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
 						{
-							[sqlString appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]]];
-							
+							[sqlString appendString:@");\n\nINSERT INTO "];
+							[sqlString appendString:[tableName backtickQuotedString]];
+							[sqlString appendString:@" ("];
+							[sqlString appendString:[fieldNames componentsJoinedAndBacktickQuoted]];
+							[sqlString appendString:@")\nVALUES\n\t("];
+														
 							queryLength = 0, k = 0;
 							
 							// Use the opportunity to drain and reset the autorelease pool
