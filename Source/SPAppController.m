@@ -463,8 +463,9 @@
 	// Set the window controller as the window's delegate
 	[newWindow setDelegate:newWindowController];
 
-	// Show the window
+	// Show the window, and perform frontmost tasks again once the window has drawn
 	[newWindowController showWindow:self];
+	[[newWindowController selectedTableDocument] didBecomeActiveTabInWindow];
 }
 
 /**
