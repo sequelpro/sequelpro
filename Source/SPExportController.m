@@ -117,7 +117,7 @@
 	// Prevents the background colour from changing when clicked
 	[[exportCustomFilenameViewLabelButton cell] setHighlightsBy:NSNoCellMask];
 	
-	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES);
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
 	
 	// If found the set the default path to the user's desktop, otherwise use their home directory
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
