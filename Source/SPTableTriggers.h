@@ -52,6 +52,10 @@
 	MCPConnection *connection;
 	
 	NSMutableArray *triggerData;
+	
+	BOOL isEdit;
+	NSString *editTriggerName;
+	NSString *editTriggerStatement;
 }
 
 @property (readwrite, assign) MCPConnection *connection;

@@ -49,6 +49,7 @@
 {
 	if ((self = [super init])) {
 		triggerData = [[NSMutableArray alloc] init];
+		isEdit = NO;
 	}
 	
 	return self;
@@ -148,6 +149,26 @@
 {	
 	[self closeTriggerSheet:self];
 	
+	// MySQL doesn't have ALTER TRIGGER, so we delete the old one and add a new one.
+	// In case of error, all the old trigger info is kept in buffer
+	if(isEdit && [editTriggerName length]>0)
+	{
+		NSString *queryDelete = [NSString stringWithFormat:@"DROP TRIGGER %@.%@", 
+								 [[tableDocumentInstance database] backtickQuotedString], 
+								 [editTriggerName backtickQuotedString]];
+		[connection queryString:queryDelete];
+		if([connection queryErrored])
+		{
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", 
+												@"error deleting trigger message"), 
+							  NSLocalizedString(@"OK", @"OK button"),
+							  nil, nil, [NSApp mainWindow], nil, nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", 
+																		   @"error deleting trigger informative message"), 
+							   [connection getLastErrorMessage]]);
+		}
+	}
+	
 	NSString *triggerName       = [triggerNameTextField stringValue];
 	NSString *triggerActionTime = [[triggerActionTimePopUpButton titleOfSelectedItem] uppercaseString];
 	NSString *triggerEvent      = [[triggerEventPopUpButton titleOfSelectedItem] uppercaseString];
@@ -164,21 +185,39 @@
 	[connection queryString:query];
 	
 	if (([connection queryErrored])) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"), 
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", 
+											@"error creating trigger message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"), [connection getLastErrorMessage]]);		
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", 
+																	   @"error creating trigger informative message"), 
+						   [connection getLastErrorMessage]]);
+		// In case of error, restore the original trigger statement
+		if(isEdit) {
+			[triggerStatementTextView setString:editTriggerStatement];
+		}
 	} 
 	else {
-		[self _refreshTriggerDataForcingCacheRefresh:YES];
+		[triggerNameTextField setStringValue:@""];
+		[triggerStatementTextView setString:@""];
 	}
+	
+	// After Edit, rename button to Add
+	if(isEdit) 
+	{
+		isEdit = NO;
+		[confirmAddTriggerButton setTitle: NSLocalizedString(@"Add", @"Add trigger button")];
+	}
+	
+	[self _refreshTriggerDataForcingCacheRefresh:YES];	
 }
 
 /**
  * Displays the add new trigger sheet. 
  */
 - (IBAction)addTrigger:(id)sender
-{			
+{
+	
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
@@ -251,6 +290,51 @@
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 	
+	// Start Edit panel
+	if([triggerData count] > rowIndex && [triggerData objectAtIndex:rowIndex] != NSNotFound)
+	{
+		NSDictionary *trigger = [triggerData objectAtIndex:rowIndex];
+		
+		// Temporary save original name and statement (we need them later)
+		editTriggerName = [trigger objectForKey:@"trigger"];
+		editTriggerStatement = [trigger objectForKey:@"statement"];
+
+		[triggerNameTextField setStringValue:editTriggerName];
+		[triggerStatementTextView setString:editTriggerStatement];
+		
+		// Timin title is different then what we have saved in the database (case difference)
+		for(int i=0;i<[[triggerActionTimePopUpButton itemArray] count]; i++)
+		{
+			if([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] 
+				isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]])
+			{
+				[triggerActionTimePopUpButton selectItemAtIndex:i];
+				break;
+			}
+		}
+		
+		// Event title is different then what we have saved in the database (case difference)
+		for(int i=0;i<[[triggerEventPopUpButton itemArray] count]; i++)
+		{
+			if([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] 
+				isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]])
+			{
+				[triggerEventPopUpButton selectItemAtIndex:i];
+				break;
+			}
+		}
+		
+		// Change button label from Add to Edit
+		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Edit", @"Edit trigger button")];
+		isEdit = YES;
+		
+		[NSApp beginSheet:addTriggerPanel
+		   modalForWindow:[tableDocumentInstance parentWindow]
+			modalDelegate:self
+		   didEndSelector:nil 
+			  contextInfo:nil];
+	}
+	
 	return NO;
 }
 
@@ -319,7 +403,6 @@
 				[connection queryString:query];
 				
 				if ([connection queryErrored]) {
-					
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
