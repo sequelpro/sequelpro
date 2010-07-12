@@ -26,12 +26,12 @@
 #import "PSMTabStyle.h"
 
 @interface PSMSequelProTabStyle : NSObject <PSMTabStyle> {
-    NSImage *metalCloseButton;
-    NSImage *metalCloseButtonDown;
-    NSImage *metalCloseButtonOver;
-    NSImage *metalCloseDirtyButton;
-    NSImage *metalCloseDirtyButtonDown;
-    NSImage *metalCloseDirtyButtonOver;
+    NSImage *sequelProCloseButton;
+    NSImage *sequelProCloseButtonDown;
+    NSImage *sequelProCloseButtonOver;
+    NSImage *sequelProCloseDirtyButton;
+    NSImage *sequelProCloseDirtyButtonDown;
+    NSImage *sequelProCloseDirtyButtonOver;
     NSImage *_addTabButtonImage;
     NSImage *_addTabButtonPressedImage;
     NSImage *_addTabButtonRolloverImage;

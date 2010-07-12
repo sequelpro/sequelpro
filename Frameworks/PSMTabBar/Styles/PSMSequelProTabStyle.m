@@ -31,7 +31,7 @@
 #define kPSMSequelProObjectCounterRadius 7.0
 #define kPSMSequelProCounterMinWidth 20
 #define kPSMSequelProTabCornerRadius 4.5
-#define MARGIN_X 7
+#define MARGIN_X 6
 
 @implementation PSMSequelProTabStyle
 
@@ -46,13 +46,13 @@
 - (id) init
 {
     if ( (self = [super init]) ) {
-        metalCloseButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"TabClose_Front"]];
-        metalCloseButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"TabClose_Front_Pressed"]];
-        metalCloseButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"TabClose_Front_Rollover"]];
+        sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose"]];
+        sequelProCloseButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Pressed"]];
+        sequelProCloseButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Rollover"]];
 
-        metalCloseDirtyButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"TabClose_Dirty"]];
-        metalCloseDirtyButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"TabClose_Dirty_Pressed"]];
-        metalCloseDirtyButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"TabClose_Dirty_Rollover"]];
+        sequelProCloseDirtyButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty"]];
+        sequelProCloseDirtyButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty_Pressed"]];
+        sequelProCloseDirtyButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty_Rollover"]];
                 
         _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButton"]];
         _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButtonPushed"]];
@@ -67,12 +67,12 @@
 
 - (void)dealloc
 {
-    [metalCloseButton release];
-    [metalCloseButtonDown release];
-    [metalCloseButtonOver release];
-    [metalCloseDirtyButton release];
-    [metalCloseDirtyButtonDown release];
-    [metalCloseDirtyButtonOver release];
+    [sequelProCloseButton release];
+    [sequelProCloseButtonDown release];
+    [sequelProCloseButtonOver release];
+    [sequelProCloseDirtyButton release];
+    [sequelProCloseDirtyButtonDown release];
+    [sequelProCloseDirtyButtonOver release];
     [_addTabButtonImage release];
     [_addTabButtonPressedImage release];
     [_addTabButtonRolloverImage release];
@@ -156,7 +156,7 @@
     }
     
     NSRect result;
-    result.size = [metalCloseButton size];
+    result.size = [sequelProCloseButton size];
     result.origin.x = cellFrame.origin.x + MARGIN_X;
     result.origin.y = cellFrame.origin.y + MARGIN_Y + 2.0;
     
@@ -177,7 +177,7 @@
 	result.origin.y = cellFrame.origin.y + MARGIN_Y;
     
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed]) {
-        result.origin.x += [metalCloseButton size].width + kPSMTabBarCellPadding;
+        result.origin.x += [sequelProCloseButton size].width + kPSMTabBarCellPadding;
     }
 	
     return result;
@@ -235,7 +235,7 @@
     
     // close button?
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed]) {
-        resultWidth += [metalCloseButton size].width + kPSMTabBarCellPadding;
+        resultWidth += [sequelProCloseButton size].width + kPSMTabBarCellPadding;
     }
     
     // icon?
@@ -270,7 +270,7 @@
     
     // close button?
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed])
-        resultWidth += [metalCloseButton size].width + kPSMTabBarCellPadding;
+        resultWidth += [sequelProCloseButton size].width + kPSMTabBarCellPadding;
     
     // icon?
     if ([cell hasIcon]) {
@@ -408,7 +408,7 @@
 	float shadowAlpha = 0.4;
 
 	// When the window is in the background, tone down the colours
-	if (![[tabBar window] isKeyWindow]) {
+	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
 		backgroundCalibratedWhite = 0.685;
 		lineCalibratedWhite = 0.49;
 		shadowAlpha = 0.3;
@@ -499,7 +499,7 @@
 	}
 
 	// Set up colours
-	if ([[tabBar window] isKeyWindow]) {
+	if ([[tabBar window] isMainWindow] && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
 		if ([cell state] == NSOnState) {
 			fillColor = [NSColor colorWithCalibratedWhite:0.59 alpha:1.0];
@@ -602,7 +602,7 @@
 		CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 		CGContextSaveGState(context);
 		NSPoint topLeft, topRight;
-		CGFloat drawAlpha = [[tabBar window] isKeyWindow] ? 1.0 : 0.7;
+		CGFloat drawAlpha = ([[tabBar window] isMainWindow] && [NSApp isActive])? 1.0 : 0.7;
 		outlineBezier = [NSBezierPath bezierPath];
 
 		// Calculate the endpoints of the line
@@ -664,10 +664,10 @@
         NSRect closeButtonRect = [cell closeButtonRectForFrame:cellFrame];
         NSImage * closeButton = nil;
 
-        closeButton = [cell isEdited] ? metalCloseDirtyButton : metalCloseButton;
+        closeButton = [cell isEdited] ? sequelProCloseDirtyButton : sequelProCloseButton;
 		
-        if ([cell closeButtonOver]) closeButton = [cell isEdited] ? metalCloseDirtyButtonOver : metalCloseButtonOver;
-        if ([cell closeButtonPressed]) closeButton = [cell isEdited] ? metalCloseDirtyButtonDown : metalCloseButtonDown;
+        if ([cell closeButtonOver]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonOver : sequelProCloseButtonOver;
+        if ([cell closeButtonPressed]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonDown : sequelProCloseButtonDown;
         
         closeButtonSize = [closeButton size];
 		
@@ -677,7 +677,6 @@
         
         [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0];
     }
-	insetLabelWidth += [metalCloseButton size].width + kPSMTabBarCellPadding;
     
     // icon
     if ([cell hasIcon]) {
@@ -700,7 +699,9 @@
         
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
-    }
+    } else {
+		insetLabelWidth += [sequelProCloseButton size].width + kPSMTabBarCellPadding;
+	}
     
     // label rect
     NSRect labelRect;
@@ -712,11 +713,7 @@
     if ([cell state] == NSOnState) {
         //labelRect.origin.y -= 1;
     }
-    
-    if (![[cell indicator] isHidden]) {
-        labelRect.size.width -= (kPSMTabBarIndicatorWidth + kPSMTabBarCellPadding);
-    }
-    
+
     // object counter
     if ([cell count] > 0) {
         [[cell countColor] ?: [NSColor colorWithCalibratedWhite:0.3 alpha:0.6] set];
@@ -758,12 +755,12 @@
     //[super encodeWithCoder:aCoder];
 /*    
     if ([aCoder allowsKeyedCoding]) {
-        [aCoder encodeObject:metalCloseButton forKey:@"metalCloseButton"];
-        [aCoder encodeObject:metalCloseButtonDown forKey:@"metalCloseButtonDown"];
-        [aCoder encodeObject:metalCloseButtonOver forKey:@"metalCloseButtonOver"];
-        [aCoder encodeObject:metalCloseDirtyButton forKey:@"metalCloseDirtyButton"];
-        [aCoder encodeObject:metalCloseDirtyButtonDown forKey:@"metalCloseDirtyButtonDown"];
-        [aCoder encodeObject:metalCloseDirtyButtonOver forKey:@"metalCloseDirtyButtonOver"];
+        [aCoder encodeObject:sequelProCloseButton forKey:@"sequelProCloseButton"];
+        [aCoder encodeObject:sequelProCloseButtonDown forKey:@"sequelProCloseButtonDown"];
+        [aCoder encodeObject:sequelProCloseButtonOver forKey:@"sequelProCloseButtonOver"];
+        [aCoder encodeObject:sequelProCloseDirtyButton forKey:@"sequelProCloseDirtyButton"];
+        [aCoder encodeObject:sequelProCloseDirtyButtonDown forKey:@"sequelProCloseDirtyButtonDown"];
+        [aCoder encodeObject:sequelProCloseDirtyButtonOver forKey:@"sequelProCloseDirtyButtonOver"];
         [aCoder encodeObject:_addTabButtonImage forKey:@"addTabButtonImage"];
         [aCoder encodeObject:_addTabButtonPressedImage forKey:@"addTabButtonPressedImage"];
         [aCoder encodeObject:_addTabButtonRolloverImage forKey:@"addTabButtonRolloverImage"];
@@ -778,12 +775,12 @@
 
 /*    
         if ([aDecoder allowsKeyedCoding]) {
-            metalCloseButton = [[aDecoder decodeObjectForKey:@"metalCloseButton"] retain];
-            metalCloseButtonDown = [[aDecoder decodeObjectForKey:@"metalCloseButtonDown"] retain];
-            metalCloseButtonOver = [[aDecoder decodeObjectForKey:@"metalCloseButtonOver"] retain];
-            metalCloseDirtyButton = [[aDecoder decodeObjectForKey:@"metalCloseDirtyButton"] retain];
-            metalCloseDirtyButtonDown = [[aDecoder decodeObjectForKey:@"metalCloseDirtyButtonDown"] retain];
-            metalCloseDirtyButtonOver = [[aDecoder decodeObjectForKey:@"metalCloseDirtyButtonOver"] retain];
+            sequelProCloseButton = [[aDecoder decodeObjectForKey:@"sequelProCloseButton"] retain];
+            sequelProCloseButtonDown = [[aDecoder decodeObjectForKey:@"sequelProCloseButtonDown"] retain];
+            sequelProCloseButtonOver = [[aDecoder decodeObjectForKey:@"sequelProCloseButtonOver"] retain];
+            sequelProCloseDirtyButton = [[aDecoder decodeObjectForKey:@"sequelProCloseDirtyButton"] retain];
+            sequelProCloseDirtyButtonDown = [[aDecoder decodeObjectForKey:@"sequelProCloseDirtyButtonDown"] retain];
+            sequelProCloseDirtyButtonOver = [[aDecoder decodeObjectForKey:@"sequelProCloseDirtyButtonOver"] retain];
             _addTabButtonImage = [[aDecoder decodeObjectForKey:@"addTabButtonImage"] retain];
             _addTabButtonPressedImage = [[aDecoder decodeObjectForKey:@"addTabButtonPressedImage"] retain];
             _addTabButtonRolloverImage = [[aDecoder decodeObjectForKey:@"addTabButtonRolloverImage"] retain];
