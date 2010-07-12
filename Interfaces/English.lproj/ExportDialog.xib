@@ -22,6 +22,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="1105"/>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -59,14 +60,14 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{454, 494}</string>
 				<object class="NSView" key="NSWindowView" id="13817034">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSTabView" id="109227463">
 							<reference key="NSNextResponder" ref="13817034"/>
 							<int key="NSvFlags">18</int>
-							<string key="NSFrame">{{-8, 64}, {467, 424}}</string>
+							<string key="NSFrame">{{-14, 64}, {479, 424}}</string>
 							<reference key="NSSuperview" ref="13817034"/>
 							<object class="NSMutableArray" key="NSTabViewItems">
 								<bool key="EncodedWithXMLCoder">YES</bool>
@@ -75,7 +76,7 @@
 									<object class="NSView" key="NSView" id="254508059">
 										<reference key="NSNextResponder" ref="109227463"/>
 										<int key="NSvFlags">256</int>
-										<string key="NSFrame">{{10, 33}, {447, 378}}</string>
+										<string key="NSFrame">{{10, 33}, {459, 378}}</string>
 										<reference key="NSSuperview" ref="109227463"/>
 									</object>
 									<string key="NSLabel">SQL</string>
@@ -95,7 +96,7 @@
 									<object class="NSView" key="NSView" id="975133006">
 										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
-										<string key="NSFrame">{{10, 33}, {447, 378}}</string>
+										<string key="NSFrame">{{10, 33}, {459, 378}}</string>
 									</object>
 									<string key="NSLabel">CSV</string>
 									<reference key="NSColor" ref="683790803"/>
@@ -106,7 +107,7 @@
 									<object class="NSView" key="NSView" id="351963414">
 										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
-										<string key="NSFrame">{{10, 33}, {447, 378}}</string>
+										<string key="NSFrame">{{10, 33}, {459, 378}}</string>
 									</object>
 									<string key="NSLabel">XML</string>
 									<reference key="NSColor" ref="683790803"/>
@@ -117,7 +118,7 @@
 									<object class="NSView" key="NSView" id="622234095">
 										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
-										<string key="NSFrame">{{10, 33}, {447, 378}}</string>
+										<string key="NSFrame">{{10, 33}, {459, 378}}</string>
 									</object>
 									<string key="NSLabel">Dot</string>
 									<reference key="NSColor" ref="683790803"/>
@@ -332,6 +333,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{451, 494}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{454, 516}</string>
@@ -4966,7 +4968,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{454, 494}</string>
-					<string>{{762, 257}, {450, 377}}</string>
+					<string>{{378, 126}, {450, 377}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -4997,7 +4999,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{768, 509}, {207, 54}}</string>
+					<string>{{384, 378}, {207, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
