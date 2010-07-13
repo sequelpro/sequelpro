@@ -39,6 +39,7 @@
 
 #include <unistd.h>
 #include <mach/mach_time.h>
+#include <SystemConfiguration/SystemConfiguration.h>
 
 BOOL lastPingSuccess;
 BOOL pingActive;
@@ -56,6 +57,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 @interface MCPConnection (PrivateAPI)
 
 - (void)_getServerVersionString;
+- (BOOL)_isCurrentHostReachable;
 
 @end
 
@@ -115,6 +117,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		serverVersionString = nil;
 		mTimeZone = nil;
 		isDisconnecting = NO;
+		canPerformAutomaticReconnect = YES;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -305,6 +308,18 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	if (mConnected && newState == PROXY_STATE_IDLE && currentProxyState == PROXY_STATE_CONNECTED) {
 		currentProxyState = newState;
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
+
+		// If no network is present, loop for a short period waiting for one to become available
+		uint64_t elapsedTime_t, networkWaitStartTime_t = mach_absolute_time();
+		Nanoseconds elapsedTime;
+		while (![self _isCurrentHostReachable]) {
+			elapsedTime_t = mach_absolute_time() - networkWaitStartTime_t;
+			elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
+			if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > 5) break;
+			usleep(250000);
+		}
+
+		// Trigger a reconnect
 		if (!isDisconnecting) [NSThread detachNewThreadSelector:@selector(reconnect) toTarget:self withObject:nil];
 
 		return;
@@ -341,11 +356,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		// Ensure the custom timeout option is set
 		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
 
-		// Set automatic reconnection for use with mysql_ping
-		// TODO: Automatic reconnection is currently used by MCPConnection, using thread IDs to
-		// detect when this has occurred.  Custom reconnection may be preferable.
-		my_bool trueBool = TRUE;
-		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &trueBool);
+		// ensure that automatic reconnection is explicitly disabled - now handled manually.
+		my_bool falseBool = FALSE;
+		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &falseBool);
 	}
 
 	// Set the host as appropriate
@@ -385,6 +398,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	mConnected = YES;
 	connectionStartTime = mach_absolute_time();
+	canPerformAutomaticReconnect = YES;
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
 	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
@@ -540,6 +554,16 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		}
 		
 		if (mConnection != NULL) {
+
+			// If no network is present, loop for a short period waiting for one to become available
+			uint64_t elapsedTime_t, networkWaitStartTime_t = mach_absolute_time();
+			Nanoseconds elapsedTime;
+			while (![self _isCurrentHostReachable]) {
+				elapsedTime_t = mach_absolute_time() - networkWaitStartTime_t;
+				elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
+				if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > 5) break;
+				usleep(250000);
+			}
 			
 			// Attempt to reestablish the connection
 			[self connect];
@@ -573,6 +597,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		switch (failureDecision) {				
 			case MCPConnectionCheckDisconnect:
+				[self setLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
 				[reconnectionPool release];
 				return NO;				
 			default:
@@ -606,8 +631,22 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnection];
-	
-	// If the connection doesn't appear to be responding, show a dialog asking how to proceed
+
+	// If the connection doesn't appear to be responding, and we can still attempt an automatic
+	// reconnect (only once each connection - eg an automatic reconnect failure prevents loops,
+	// but an automatic reconnect success resets the flag for another attempt in future)
+	if (!connectionVerified && canPerformAutomaticReconnect) {
+		
+		// Note that a return of "NO" here has already asked the user, so if reconnect fails,
+		// return failure.
+		if ([self reconnect]) {
+			[self restoreConnectionDetails];
+			return YES;
+		}
+		return NO;
+	}
+
+	// If automatic reconnect cannot be used, show a dialog asking how to proceed
 	if (!connectionVerified) {
 		
 		// Ask delegate what to do, defaulting to "disconnect".
@@ -617,6 +656,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		}
 		
 		switch (failureDecision) {
+
 			// 'Reconnect' has been selected. Request a reconnect, and retry.
 			case MCPConnectionCheckReconnect:
 				[self reconnect];
@@ -2861,6 +2901,29 @@ void performThreadedKeepAlive(void *ptr)
 			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
 		}
 	}
+}
+
+/**
+ * Determine whether the current host is reachable; essentially
+ * whether a connection is available (no packets should be sent)
+ */
+- (BOOL)_isCurrentHostReachable
+{
+	BOOL hostReachable;
+	SCNetworkConnectionFlags reachabilityStatus;
+	hostReachable = SCNetworkCheckReachabilityByName("dev.mysql.com", &reachabilityStatus);
+
+	// If the function returned failure, also return failure.
+	if (!hostReachable) return NO;
+
+	// Ensure that the network is reachable
+	if (!(reachabilityStatus & kSCNetworkFlagsReachable)) return NO;
+
+	// Ensure that Airport is up/connected if present
+	if (reachabilityStatus & kSCNetworkFlagsConnectionRequired) return NO;
+
+	// Return success
+	return YES;
 }
 
 @end
