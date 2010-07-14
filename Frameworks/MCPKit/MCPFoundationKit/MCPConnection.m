@@ -43,6 +43,7 @@
 
 BOOL lastPingSuccess;
 BOOL pingActive;
+NSInteger pingFailureCount;
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
@@ -58,6 +59,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 - (void)_getServerVersionString;
 - (BOOL)_isCurrentHostReachable;
+- (void)_setupKeepalivePingTimer;
 
 @end
 
@@ -104,7 +106,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		connectionLogin = nil;
 		connectionSocket = nil;
 		connectionPassword = nil;
-		keepAliveTimer = [[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(keepAlive:) userInfo:nil repeats:YES] retain];
 		keepAliveThread = NULL;
 		lastKeepAliveTime = 0;
 		pingThread = NULL;
@@ -117,7 +118,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		serverVersionString = nil;
 		mTimeZone = nil;
 		isDisconnecting = NO;
-		canPerformAutomaticReconnect = YES;
+		automaticReconnectAttempts = 0;
+		pingFailureCount = 0;
 		
 		// Initialize ivar defaults
 		connectionTimeout = 10;
@@ -151,6 +153,12 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		// Obtain pointers
 		cStringPtr = [self methodForSelector:cStringSEL];
+
+		// Start the keepalive timer
+		if ([NSThread isMainThread])
+			[self _setupKeepalivePingTimer];
+		else
+			[self performSelectorOnMainThread:@selector(_setupKeepalivePingTimer) withObject:nil waitUntilDone:YES];
 	}
 	
 	return self;
@@ -309,16 +317,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		currentProxyState = newState;
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
 
-		// If no network is present, loop for a short period waiting for one to become available
-		uint64_t elapsedTime_t, networkWaitStartTime_t = mach_absolute_time();
-		Nanoseconds elapsedTime;
-		while (![self _isCurrentHostReachable]) {
-			elapsedTime_t = mach_absolute_time() - networkWaitStartTime_t;
-			elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
-			if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > 5) break;
-			usleep(250000);
-		}
-
 		// Trigger a reconnect
 		if (!isDisconnecting) [NSThread detachNewThreadSelector:@selector(reconnect) toTarget:self withObject:nil];
 
@@ -387,7 +385,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	// Connect
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
-	
+
 	if (theRet != mConnection) {
 		[self setLastErrorMessage:nil];
 		
@@ -398,7 +396,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	mConnected = YES;
 	connectionStartTime = mach_absolute_time();
-	canPerformAutomaticReconnect = YES;
+	lastKeepAliveTime = 0;
+	automaticReconnectAttempts = 0;
+	pingFailureCount = 0;
 	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
 	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
@@ -493,6 +493,16 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	mConnected = NO;
 	isDisconnecting = NO;
 
+	// If no network is present, loop for a short period waiting for one to become available
+	uint64_t elapsedTime_t, networkWaitStartTime_t = mach_absolute_time();
+	Nanoseconds elapsedTime;
+	while (![self _isCurrentHostReachable]) {
+		elapsedTime_t = mach_absolute_time() - networkWaitStartTime_t;
+		elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
+		if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > 5) break;
+		usleep(250000);
+	}
+
 	// If there is a proxy, ensure it's disconnected and attempt to reconnect it in blocking fashion
 	if (connectionProxy) {
 		[connectionProxy setConnectionStateChangeSelector:nil delegate:nil];
@@ -555,16 +565,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		if (mConnection != NULL) {
 
-			// If no network is present, loop for a short period waiting for one to become available
-			uint64_t elapsedTime_t, networkWaitStartTime_t = mach_absolute_time();
-			Nanoseconds elapsedTime;
-			while (![self _isCurrentHostReachable]) {
-				elapsedTime_t = mach_absolute_time() - networkWaitStartTime_t;
-				elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
-				if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > 5) break;
-				usleep(250000);
-			}
-			
 			// Attempt to reestablish the connection
 			[self connect];
 		}
@@ -635,7 +635,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	// If the connection doesn't appear to be responding, and we can still attempt an automatic
 	// reconnect (only once each connection - eg an automatic reconnect failure prevents loops,
 	// but an automatic reconnect success resets the flag for another attempt in future)
-	if (!connectionVerified && canPerformAutomaticReconnect) {
+	if (!connectionVerified && automaticReconnectAttempts < 1) {
+		automaticReconnectAttempts++;
 		
 		// Note that a return of "NO" here has already asked the user, so if reconnect fails,
 		// return failure.
@@ -785,6 +786,15 @@ void pingConnectionTask(void *ptr)
         return;
     }
 
+	// If the maximum number of ping failures has been reached, trigger a reconnect
+	if (pingFailureCount >= 3) {
+		NSAutoreleasePool *connectionPool = [[NSAutoreleasePool alloc] init];
+		[self unlockConnection];
+		[self reconnect];
+		[connectionPool drain];
+		return;
+	}
+
 	// Use a ping timeout between zero and thirty seconds
 	NSInteger pingTimeout = 30;
 	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
@@ -811,7 +821,11 @@ void pingConnectionTask(void *ptr)
  */
 void performThreadedKeepAlive(void *ptr)
 {
-	mysql_ping((MYSQL *)ptr);
+	if (mysql_ping((MYSQL *)ptr)) {
+		pingFailureCount++;
+	} else {
+		pingFailureCount = 0;
+	}
 }
 
 /**
@@ -2926,4 +2940,13 @@ void performThreadedKeepAlive(void *ptr)
 	return YES;
 }
 
+/**
+ * Set up the keepalive timer; this should be called on the main
+ * thread, to ensure the timer isn't descheduled when child threads
+ * terminate.
+ */
+- (void)_setupKeepalivePingTimer
+{
+	keepAliveTimer = [[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(keepAlive:) userInfo:nil repeats:YES] retain];
+}
 @end

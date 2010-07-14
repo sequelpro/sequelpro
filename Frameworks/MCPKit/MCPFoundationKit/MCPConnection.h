@@ -183,7 +183,7 @@
 	NSInteger isQueryingDbStructure;
 	BOOL cancelQueryingDbStructure;
 	BOOL lockQuerying;
-	BOOL canPerformAutomaticReconnect;
+	NSInteger automaticReconnectAttempts;
 	
 	// Pointers
 	IMP cStringPtr;
