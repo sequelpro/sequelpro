@@ -2342,6 +2342,17 @@
 }
 
 /**
+ * Opens the export dialog on the SQL dump tab with the selected tables checked for export. If no tables 
+ * are selected then all tables are checked.
+ */
+- (IBAction)export:(id)sender
+{
+	NSArray *tables = [tablesListInstance selectedTableItems];
+	
+	[exportControllerInstance exportTables:([tables count]) ? tables : nil asFormat:SPSQLExport usingSource:SPTableExport];
+}
+
+/**
  * Exports the selected tables in the chosen file format.
  */
 - (IBAction)exportSelectedTablesAs:(id)sender
@@ -3434,19 +3445,6 @@
 - (IBAction)importFromClipboard:(id)sender
 {
 	[tableDumpInstance importFromClipboard];
-}
-
-/**
- * Passes the request to the dataImport object
- */
-- (IBAction)export:(id)sender
-{
-	if ([sender tag] == -1) {
-		[exportControllerInstance export];
-	} 
-	else {
-		[tableDumpInstance exportFile:[sender tag]];
-	}
 }
 
 - (IBAction)exportTable:(id)sender

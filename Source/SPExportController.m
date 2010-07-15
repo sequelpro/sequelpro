@@ -127,14 +127,6 @@
 #pragma mark IB action methods
 
 /**
- * Display the export window allowing the user to select what and of what type to export.
- */
-- (void)export
-{	
-	[self exportTables:nil asFormat:SPSQLExport usingSource:SPTableExport];
-}
-
-/**
  * Displays the export window with the supplied tables and export type/format selected.
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format usingSource:(SPExportSource)source

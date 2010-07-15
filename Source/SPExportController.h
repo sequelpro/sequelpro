@@ -237,7 +237,6 @@
  */
 @property(readwrite, assign) MCPConnection *connection;
 
-- (void)export;
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
