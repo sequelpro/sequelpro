@@ -365,11 +365,17 @@
 						}
 						
 						id object = NSArrayObjectAtIndex(row, t);
-						
+												
 						// Add NULL values directly to the output row
 						if ([object isMemberOfClass:[NSNull class]]) {
 							[sqlString appendString:@"NULL"];
 						} 
+						// If the field is off type BIT, the values need a binary prefix of b'x'.
+						else if ([[NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], t) objectForKey:@"type"] isEqualToString:@"BIT"]) {
+							[sqlString appendString:@"b'"];
+							[sqlString appendString:[object description]];
+							[sqlString appendString:@"'"];
+						}
 						// Add data types directly as hex data
 						else if ([object isKindOfClass:[NSData class]]) {
 							
@@ -400,8 +406,7 @@
 							if ([cellValue length] == 0) {
 								[sqlString appendString:@"''"];
 							} 
-							else {								
-								// If this is a numeric column type, add the number directly.
+							else {	
 								if ([NSArrayObjectAtIndex(tableColumnNumericStatus, t) boolValue]) {
 									[sqlString appendString:cellValue];
 								} 

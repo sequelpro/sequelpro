@@ -45,8 +45,12 @@
 
 
 @interface MCPStreamingResult (PrivateAPI)
+
+const char *_int2bin(unsigned int n, unsigned long len, char *buf);
+
 - (void) _downloadAllData;
 - (void) _freeAllDataWhenDone;
+
 @end
 
 @implementation MCPStreamingResult : MCPResult
@@ -159,7 +163,7 @@
 - (NSArray *)fetchNextRowAsArray
 {
 	MYSQL_ROW theRow;
-	char *theRowData;
+	char *theRowData, *buf;
 	unsigned long *fieldLengths;
 	NSInteger i, copiedDataLength;
 	NSMutableArray *returnArray;
@@ -242,7 +246,12 @@
 				copiedDataLength += fieldLengths[i] + 1;
 			}
 		}
-
+		
+		// If the field is of type BIT, then allocate the binary buffer
+		if (fieldDefinitions[i].type == FIELD_TYPE_BIT) {
+			buf = malloc(fieldDefinitions[i].length + 1);
+		}
+		
 		// If the data hasn't already been detected as NULL - in which case it will have been
 		// set to NSNull - process the data by type
 		if (cellData == nil) {
@@ -283,7 +292,12 @@
 					break;
 
 				case FIELD_TYPE_BIT:
-					cellData = (theData != NULL) ? [NSString stringWithFormat:@"%u", theData[0]] : @"";
+					// Get a binary representation of the data
+					_int2bin(theData[1], fieldDefinitions[i].length, buf);
+					
+					cellData = (theData != NULL) ? [NSString stringWithUTF8String:buf] : @"";
+					
+					free(buf);
 					break;
 
 				case FIELD_TYPE_TINY_BLOB:
@@ -412,6 +426,21 @@
 @end
 
 @implementation MCPStreamingResult (PrivateAPI)
+
+/**
+ * Provides a binary representation of the supplied integer (n) in the supplied buffer (buf). The resulting
+ * binary representation will be zero-padded according to the supplied field length (len).
+ */
+const char *_int2bin(unsigned int n, unsigned long len, char *buf)
+{					
+    for (int i = (len - 1); i >= 0; --i)
+	{
+        buf[i] = (n & 1) ? '1' : '0';
+        n >>= 1;
+    }
+	
+    buf[len] = '\0';
+}
 
 /**
  * Used internally to download results in a background thread

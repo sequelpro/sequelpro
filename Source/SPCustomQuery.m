@@ -1671,7 +1671,7 @@
 				} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 					newObject = @"NULL";
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
-					newObject = ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"])?@"0":@"1");
+					newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
 							&& [[anObject description] isEqualToString:@"NOW()"]) {
 					newObject = @"NOW()";
@@ -1681,7 +1681,7 @@
 			}
 
 			[mySQLConnection queryString:
-				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@=%@ %@ LIMIT 1", 
+				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1", 
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 			

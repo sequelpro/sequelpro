@@ -2150,7 +2150,7 @@
 				if ([[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 					[rowValue setString:@"CURRENT_TIMESTAMP"];
 				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
-					[rowValue setString:((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"])?@"0":@"1")];
+					[rowValue setString:[NSString stringWithFormat:@"b'%@'", ((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"]) ? @"0" : [rowObject description])]];
 				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"date"]
 							&& [[rowObject description] isEqualToString:@"NOW()"]) {
 					[rowValue setString:@"NOW()"];
@@ -2161,12 +2161,11 @@
 		}
 		[fieldValues addObject:[NSString stringWithString:rowValue]];
 	}
-	
+		
 	// Use INSERT syntax when creating new rows - no need to do not loaded checking, as all values have been entered
 	if ( isEditingNewRow ) {
 		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
-					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
-
+					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];		
 	// Use UPDATE syntax otherwise
 	} else {
 		BOOL firstCellOutput = NO;
@@ -2179,7 +2178,7 @@
 			if (firstCellOutput) [queryString appendString:@", "];
 			else firstCellOutput = YES;
 
-			[queryString appendString:[NSString stringWithFormat:@"%@=%@",
+			[queryString appendString:[NSString stringWithFormat:@"%@ = %@",
 									   [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] backtickQuotedString], [fieldValues objectAtIndex:i]]];
 		}
 		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
@@ -2332,7 +2331,6 @@
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
 	NSMutableString *argument = [NSMutableString string];
-	// NSString *columnType;
 	NSArray *columnNames;
 	NSInteger i;
 	
@@ -2384,18 +2382,25 @@
 			tempValue = [tableValues cellDataAtRow:row column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 
 		// Otherwise use the oldRow
-		} else {
+		} 
+		else {
 			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 		}
 
-		if ( [tempValue isNSNull] ) {
+		if ([tempValue isNSNull]) {
 			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
-		} else if ( [tempValue isSPNotLoaded] ) {
+		} 
+		else if ([tempValue isSPNotLoaded]) {
 			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
 			return @"";
-		} else {
-
-			if ( [tempValue isKindOfClass:[NSData class]] )
+		} 
+		else {					
+			// If the field is of type BIT then it needs a binary prefix
+			if ([[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"type"] isEqualToString:@"BIT"]) {
+				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection prepareString:tempValue]]];
+			}
+			// BLOB/TEXT data
+			else if ([tempValue isKindOfClass:[NSData class]])
 				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
@@ -2435,7 +2440,7 @@
 {
 	NSInteger i;
 	NSMutableArray *fields = [NSMutableArray array];
-	
+		
 	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && ([dataColumns count] > 0)) {
 		
 		NSArray *columnNames = [tableDataInstance columnNames];
@@ -2443,7 +2448,7 @@
 		for (i = 0 ; i < [columnNames count]; i++) 
 		{
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
-				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
+					[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
 			} 
 			else {
 				// For blob/text fields, select a null placeholder so the column count is still correct
