@@ -2157,21 +2157,23 @@
 	
 	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 	
+	// Set up the table type and whether content can be duplicated.  The table type is used
+	// in queries and should not be localized.
 	switch (tblType){
 		case SPTableTypeTable:
-			tableType = NSLocalizedString(@"table",@"table");
+			tableType = @"table";
 			[copyTableContentSwitch setEnabled:YES];
 			break;
 		case SPTableTypeView:
-			tableType = NSLocalizedString(@"view",@"view");
+			tableType = @"view";
 			[copyTableContentSwitch setEnabled:NO];
 			break;
 		case SPTableTypeProc:
-			tableType = NSLocalizedString(@"procedure",@"procedure");
+			tableType = @"procedure";
 			[copyTableContentSwitch setEnabled:NO];
 			break;
 		case SPTableTypeFunc:
-			tableType = NSLocalizedString(@"function",@"function");
+			tableType = @"function";
 			[copyTableContentSwitch setEnabled:NO];
 			break;
 	}
