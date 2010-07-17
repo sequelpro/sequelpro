@@ -460,7 +460,7 @@
 	[csvExporter setCsvNULLString:[exportCSVNULLValuesAsTextField stringValue]];
 		
 	// If required create separate files
-	if ([self exportToMultipleFiles]) {
+	if (exportSource == SPTableExport && [self exportToMultipleFiles]) {
 		
 		if (createCustomFilename) {
 			
@@ -469,7 +469,9 @@
 			
 			// If the user chose to use a custom filename format and we exporting to multiple files, make
 			// sure the table name is included to ensure the output files are unique.
-			[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
+			if (exportTableCount > 1) {
+				[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
+			}
 		}
 		else {
 			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
