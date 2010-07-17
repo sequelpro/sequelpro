@@ -51,6 +51,8 @@
 	IBOutlet id removeIndexButton;
 	IBOutlet id refreshIndexesButton;
 	IBOutlet id indexesTableView;
+	IBOutlet NSSplitView *tablesIndexesSplitView;
+	IBOutlet NSButton *indexesShowButton;
 	
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
@@ -98,5 +100,8 @@
 // Task interaction
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification;
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+
+// Split view interaction
+- (IBAction)unhideIndexesView:(id)sender;
 
 @end

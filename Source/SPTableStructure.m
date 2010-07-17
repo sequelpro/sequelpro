@@ -1549,17 +1549,34 @@ would result in a position change.
 
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
-	return proposedMax - 150;
+	return proposedMax - 130;
 }
 
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
-	return proposedMin + 150;
+	return proposedMin + 130;
 }
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {	
 	return [structureGrabber convertRect:[structureGrabber bounds] toView:splitView];
+}
+
+- (void)splitViewDidResizeSubviews:(NSNotification *)aNotification
+{
+	if ([aNotification object] == tablesIndexesSplitView) {
+		NSView *indexesView = [[tablesIndexesSplitView subviews] objectAtIndex:1];
+		if ([tablesIndexesSplitView isSubviewCollapsed:indexesView]) {
+			[indexesShowButton setHidden:NO];
+		} else {
+			[indexesShowButton setHidden:YES];	
+		}
+	}
+}
+
+- (IBAction)unhideIndexesView:(id)sender
+{
+	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
 }
 
 #pragma mark -
