@@ -749,8 +749,12 @@
 - (void)orderFront:(id)sender
 {
 	[self filter];
-	[super orderFront:sender];
-	[self performSelector:@selector(watchUserEvents) withObject:nil afterDelay:0.05];
+	if (!closeMe) {
+		[super orderFront:sender];
+		[self performSelector:@selector(watchUserEvents) withObject:nil afterDelay:0.05];
+	} else {
+		[self close];
+	}
 }
 
 - (void)watchUserEvents
