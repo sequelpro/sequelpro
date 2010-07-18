@@ -2561,7 +2561,8 @@
 		[[NSString stringWithFormat:
 			SPMySQLSearchURL,
 			searchString,
-			version]
+			version,
+			NSLocalizedString(@"en", @"MySQL search language code - eg in http://search.mysql.com/search?q=select&site=refman-50&lr=lang_en")]
 		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 }
 

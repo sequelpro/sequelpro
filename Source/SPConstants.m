@@ -169,16 +169,9 @@ NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellChecking
 NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
 
 // URLs
-NSString *SPHomePageURL                          = @"http://www.sequelpro.com/";
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
-NSString *SPFAQURL                               = @"http://www.sequelpro.com/docs/Frequently_Asked_Questions";
-NSString *SPDocumentationURL                     = @"http://www.sequelpro.com/docs/";
-NSString *SPContactURL                           = @"http://www.sequelpro.com/docs/Contact_the_developers";
-NSString *SPKeyboardShortcutsURL                 = @"http://www.sequelpro.com/docs/Keyboard_Shortcuts";
-NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@";
+NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@&lr=lang_%@";
 NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
-NSString *SPGettingConnectedDocURL               = @"http://www.sequelpro.com/docs/Getting_Connected";
-NSString *SPTranslationFeedbackURL               = @"http://dev.sequelpro.com/translate/feedback";
 
 // Toolbar constants
 

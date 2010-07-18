@@ -553,7 +553,7 @@
 	[header appendString:@"<!--\n-\n"];
 	[header appendString:@"- Sequel Pro XML dump\n"];
 	[header appendString:[NSString stringWithFormat:@"- Version %@\n-\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[header appendString:[NSString stringWithFormat:@"- %@\n- %@\n-\n", SPHomePageURL, SPDevURL]];
+	[header appendString:[NSString stringWithFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL]];
 	[header appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n", [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
 	[header appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
 	[header appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];

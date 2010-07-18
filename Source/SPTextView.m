@@ -73,8 +73,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define SP_SYNTAX_HILITE_BIAS 2000
 #define SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING 20000000
 
-#define MYSQL_DOC_SEARCH_URL @"http://dev.mysql.com/doc/refman/%@/en/%@.html"
-
 #pragma mark -
 
 // some helper functions for handling rectangles and points

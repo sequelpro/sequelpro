@@ -175,6 +175,15 @@ typedef enum
 	SPEncodingEUCKRKorean		= 180
 } SPEncodingTypes;
 
+// Predefined localisable URLs
+#define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"http://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"http://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_DOCUMENTATION       NSLocalizedString(@"http://www.sequelpro.com/docs/", @"Localized documentation home page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_CONTACT             NSLocalizedString(@"http://www.sequelpro.com/docs/Contact_the_developers", @"Localized contact page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_KEYBOARDSHORTCUTS   NSLocalizedString(@"http://www.sequelpro.com/docs/Keyboard_Shortcuts", @"Localized keyboard shortcuts page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"http://www.sequelpro.com/docs/Getting_Connected", @"Localized connection help page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"http://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
+
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;
 
@@ -321,16 +330,9 @@ extern NSString *SPBlobTextEditorSpellCheckingEnabled;
 extern NSString *SPUniqueSchemaDelimiter;
 
 // URLs
-extern NSString *SPHomePageURL;
 extern NSString *SPDonationsURL;
-extern NSString *SPFAQURL;
-extern NSString *SPDocumentationURL;
-extern NSString *SPContactURL;
-extern NSString *SPKeyboardShortcutsURL;
 extern NSString *SPMySQLSearchURL;
 extern NSString *SPDevURL;
-extern NSString *SPGettingConnectedDocURL;
-extern NSString *SPTranslationFeedbackURL;
 
 // Toolbar constants
 

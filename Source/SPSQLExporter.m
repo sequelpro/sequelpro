@@ -174,7 +174,7 @@
 	// Add the dump header to the dump file
 	[metaString appendString:@"# Sequel Pro SQL dump\n"];
 	[metaString appendString:[NSString stringWithFormat:@"# Version %@\n#\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[metaString appendString:[NSString stringWithFormat:@"# %@\n# %@\n#\n", SPHomePageURL, SPDevURL]];
+	[metaString appendString:[NSString stringWithFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL]];
 	[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n", [self sqlDatabaseHost], [self sqlDatabaseVersion]]];
 	[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [self sqlDatabaseName]]];
 	[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];

@@ -649,7 +649,7 @@
  */
 - (IBAction)visitWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPHomePageURL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_HOMEPAGE]];
 }
 
 /**
@@ -657,7 +657,7 @@
  */
 - (IBAction)visitHelpWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPDocumentationURL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_DOCUMENTATION]];
 }
 
 /**
@@ -665,7 +665,7 @@
  */
 - (IBAction)visitFAQWebsite:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPFAQURL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_FAQ]];
 }
 
 /**
@@ -673,7 +673,7 @@
  */
 - (IBAction)provideFeedback:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPContactURL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONTACT]];
 }
 
 /**
@@ -681,7 +681,7 @@
  */
 - (IBAction)provideTranslationFeedback:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPTranslationFeedbackURL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_TRANSLATIONFEEDBACK]];
 }
 
 /**
@@ -689,7 +689,7 @@
  */
 - (IBAction)viewKeyboardShortcuts:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPKeyboardShortcutsURL]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_KEYBOARDSHORTCUTS]];
 }
 
 #pragma mark -
