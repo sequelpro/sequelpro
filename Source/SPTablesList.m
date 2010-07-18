@@ -2066,7 +2066,8 @@
 		
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableEncodingButton indexOfSelectedItem] > 0) {
-		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [[tableDocumentInstance mysqlEncodingFromEncodingTag:[tableEncodingButton tag]] backtickQuotedString]];
+		NSString *encodingName = [[tableEncodingButton title] stringByMatching:@"\\((.*)\\)" capture:1L];
+		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [[tableDocumentInstance mysqlEncodingFromEncodingTag:encodingName] backtickQuotedString]];
 	}
 	
 	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
