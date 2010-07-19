@@ -105,7 +105,6 @@
 // IBAction methods
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)cancelProgressBar:(id)sender;
-- (IBAction)updateExportCompressionSetting:(id)sender;
 
 // Import methods
 - (void)importFile;
@@ -114,7 +113,6 @@
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
-- (void)openPanelDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (BOOL)buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
 - (NSString *)mappedValueStringForRowArray:(NSArray *)csvRowArray;
 - (NSString *)mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;

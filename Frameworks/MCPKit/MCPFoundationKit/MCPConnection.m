@@ -118,6 +118,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		serverVersionString = nil;
 		mTimeZone = nil;
 		isDisconnecting = NO;
+		userTriggeredDisconnect = NO;
 		automaticReconnectAttempts = 0;
 		pingFailureCount = 0;
 		
@@ -395,6 +396,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	}
 	
 	mConnected = YES;
+	userTriggeredDisconnect = NO;
 	connectionStartTime = mach_absolute_time();
 	lastKeepAliveTime = 0;
 	automaticReconnectAttempts = 0;
@@ -598,6 +600,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		switch (failureDecision) {				
 			case MCPConnectionCheckDisconnect:
 				[self setLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
+				userTriggeredDisconnect = YES;
 				[reconnectionPool release];
 				return NO;				
 			default:
@@ -616,6 +619,15 @@ static BOOL sTruncateLongFieldInLogs = YES;
 - (BOOL)isConnected
 {
 	return mConnected;
+}
+
+/**
+ * Returns YES if the user chose to disconnect at the last "connection failure"
+ * prompt, NO otherwise.
+ */
+- (BOOL)userTriggeredDisconnect
+{
+	return userTriggeredDisconnect;
 }
 
 /**
@@ -670,6 +682,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			case MCPConnectionCheckDisconnect:
 				if (mConnected) [self disconnect];
 				[self setLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
+				userTriggeredDisconnect = YES;
 				return NO;
 				
 			// 'Retry' has been selected - return a recursive call.

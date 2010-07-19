@@ -141,6 +141,7 @@
 
 	BOOL useKeepAlive;
 	BOOL isDisconnecting;
+	BOOL userTriggeredDisconnect;
 	NSInteger connectionTimeout;
 	CGFloat keepAliveInterval;
 	
@@ -227,6 +228,7 @@
 - (void)disconnect;
 - (BOOL)reconnect;
 - (BOOL)isConnected;
+- (BOOL)userTriggeredDisconnect;
 - (BOOL)checkConnection;
 - (BOOL)pingConnection;
 void pingConnectionTask(void *ptr);
