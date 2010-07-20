@@ -579,18 +579,18 @@
 	if ([cell state] == NSOnState) {
 		outlineBezier = [NSBezierPath bezierPath];
 		if (drawLeftEdge) {
-			[outlineBezier appendBezierPathWithArcWithCenter:bottomLeftArcCenter radius:kPSMSequelProTabCornerRadius startAngle:180 endAngle:90 clockwise:YES];
+			[outlineBezier appendBezierPathWithArcWithCenter:bottomLeftArcCenter radius:kPSMSequelProTabCornerRadius startAngle:145 endAngle:90 clockwise:YES];
 		} else {
 			[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y + aRect.size.height - 0.5)];
 		}
 		if (drawRightEdge) {
-			[outlineBezier appendBezierPathWithArcWithCenter:bottomRightArcCenter radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:0 clockwise:YES];
+			[outlineBezier appendBezierPathWithArcWithCenter:bottomRightArcCenter radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:35 clockwise:YES];
 		} else {
 			[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width, aRect.origin.y + aRect.size.height - 0.5)];
 		}
 		shadow = [[NSShadow alloc] init];
 		[shadow setShadowBlurRadius:1];
-		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.3]];
+		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
 		[shadow setShadowOffset:NSMakeSize(0, 1)];
 		[shadow set];
 		[outlineBezier stroke];

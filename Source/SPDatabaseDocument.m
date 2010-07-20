@@ -3817,8 +3817,8 @@
 		// Add the name to the window
 		[windowTitle appendString:[self name]];
 
-		// Also add to the frontmost tab, and other tabs if the host is different, not connected, or no db is selected
-		if (frontTableDocument == self || [[frontTableDocument name] isNotEqualTo:[self name]] || ![frontTableDocument getConnection] || ![self database]) {
+		// Also add to the non-front tabs if the host is different, not connected, or no db is selected
+		if ([[frontTableDocument name] isNotEqualTo:[self name]] || ![frontTableDocument getConnection] || ![self database]) {
 			[tabTitle appendString:[self name]];
 		}
 
@@ -4441,7 +4441,7 @@
 	if([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 
 			&& [[sheet title] isEqualToString:@"Reset Auto Increment"]) {
 
-		id it = [tableSourceInstance valueForKeyPath:@"indexView"];
+		id it = [tableSourceInstance valueForKeyPath:@"indexesTableView"];
 		NSRect mwrect = [[NSApp mainWindow] frame];
 		NSRect ltrect = [[tablesListInstance valueForKeyPath:@"tablesListView"] frame];
 		NSRect rowrect = [it rectOfRow:[it selectedRow]];
@@ -4450,9 +4450,10 @@
 		rowrect.origin.x -= 8;
 		return [it convertRect:rowrect toView:nil];
 
-	} else
-		return rect;
+	}
 
+	rect.origin.y -= [[parentWindowController valueForKey:@"tabBar"] frame].size.height - 1;
+	return rect;
 }
 
 #pragma mark -
