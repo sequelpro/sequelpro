@@ -559,7 +559,9 @@
 			[tableDataInstance updateTriggersForCurrentTable];
 		}
 		
-		NSArray *triggers = [tableDataInstance triggers];
+		NSArray *triggers = nil;
+		if ([connection serverMajorVersion] >= 5 && [connection serverMinorVersion] >= 0)
+			triggers = [tableDataInstance triggers];
 		
 		for (NSDictionary *trigger in triggers) 
 		{
