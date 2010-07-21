@@ -19,6 +19,9 @@ echo 'Updating build version...'
 # Add the build/bundle version
 "${SRCROOT}/Scripts/build-version.pl"
 
+# Remove the .ibplugin from within BWToolkit
+rm -rf "${BUILD_PRODUCT}/Contents/Frameworks/BWToolkitFramework.framework/Versions/A/Resources/BWToolkit.ibplugin"
+
 # Perform localisation updates for 'Release' or 'Distribution' builds
 if [[ "$CONFIGURATION" == 'Release' || "$CONFIGURATION" == 'Distribution' ]]
 then
