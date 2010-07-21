@@ -1437,6 +1437,9 @@
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
 
+	// Ensure call on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] enableTaskCancellationWithTitle:buttonTitle callbackObject:callbackObject callbackFunction:callbackFunction];
+
 	if (callbackObject && callbackFunction) {
 		taskCancellationCallbackObject = callbackObject;
 		taskCancellationCallbackSelector = callbackFunction;
@@ -1456,6 +1459,9 @@
 
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
+
+	// Ensure call on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] disableTaskCancellation];
 	
 	taskCanBeCancelled = NO;
 	taskCancellationCallbackObject = nil;
