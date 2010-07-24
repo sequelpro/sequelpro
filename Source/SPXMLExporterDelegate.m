@@ -45,6 +45,7 @@
 	
 	// Only update the progress text if this is a table export
 	if (exportSource == SPTableExport) {
+		
 		// Update the current table export index
 		currentTableExportIndex = (exportTableCount - [exporters count]);
 		

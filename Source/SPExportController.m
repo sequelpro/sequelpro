@@ -117,6 +117,9 @@
 	// Prevents the background colour from changing when clicked
 	[[exportCustomFilenameViewLabelButton cell] setHighlightsBy:NSNoCellMask];
 	
+	// Set the progress indicator's max value
+	[exportProgressIndicator setMaxValue:(NSInteger)[exportProgressIndicator bounds].size.width];
+	
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
 	
 	// If found the set the default path to the user's desktop, otherwise use their home directory
@@ -523,6 +526,14 @@
 }
 
 /**
+ * Updates the default filename extenstion based on the selected output compression format.
+ */
+- (IBAction)changeExportCompressionFormat:(id)sender
+{
+	[self _updateDisplayedExportFilename];
+}
+
+/**
  * Toggles the state of the custom filename format token fields.
  */
 - (IBAction)toggleCustomFilenameFormatView:(id)sender
@@ -770,7 +781,10 @@
 	
 	switch (exportType) {
 		case SPSQLExport:
-			extension = ([exportCompressOutputFile state]) ? [NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL] : SPFileExtensionSQL;
+			extension = SPFileExtensionSQL;
+			break;
+		case SPCSVExport:
+			extension = @"csv";
 			break;
 		case SPXMLExport:
 			extension = @"xml";
@@ -780,6 +794,18 @@
 			break;
 	}
 	
+	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {
+				
+		SPFileCompressionFormat compressionFormat = [exportOutputCompressionFormatPopupButton indexOfSelectedItem];
+		
+		if ([extension length] > 0) {
+			extension = [extension stringByAppendingPathExtension:(compressionFormat == SPGzipCompression) ? @"gz" : @"bz2"];
+		}
+		else {
+			extension = (compressionFormat == SPGzipCompression) ? @"gz" : @"bz2";
+		}
+	}
+			
 	return extension;
 }
 

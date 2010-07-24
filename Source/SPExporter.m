@@ -31,6 +31,7 @@
 @synthesize exportProgressValue;
 @synthesize exportProcessIsRunning;
 @synthesize exportUsingLowMemoryBlockingStreaming;
+@synthesize exportOutputCompressionFormat;
 @synthesize exportData;
 @synthesize exportOutputFileHandle;
 @synthesize exportOutputEncoding;
@@ -44,9 +45,11 @@
 	if ((self = [super init])) {		
 		[self setExportProgressValue:0];
 		[self setExportProcessIsRunning:NO];
+		[self setExportOutputCompressFile:NO];
+		[self setExportOutputCompressionFormat:SPNoCompression];
 		
 		// Default the resulting data to an empty string
-		[self setExportData:@""];
+		[self setExportData:[NSString string]];
 		
 		// Default the output encoding to UTF-8
 		[self setExportOutputEncoding:NSUTF8StringEncoding];
@@ -61,8 +64,29 @@
 - (void)main
 {
 	@throw [NSException exceptionWithName:@"NSOperation main() Call" 
-								   reason:@"Can't call NSOperation's main() method in SPExpoter, must be overriden in subclass." 
+								   reason:@"Cannot call NSOperation's main() method in SPExpoter, must be overriden in a subclass. See SPExporter.h" 
 								 userInfo:nil];
+}
+
+/**
+ * Returns whether or not file compression is in use.
+ */
+- (BOOL)exportOutputCompressFile
+{
+	return exportOutputCompressFile;
+}
+
+/**
+ * Sets whether or not the resulting output of this exporter should be compressed.
+ */
+- (void)setExportOutputCompressFile:(BOOL)compress
+{
+	// If the export file handle is nil or a compression format has not yet been set don't proceed
+	if ((!exportOutputFileHandle) || ([self exportOutputCompressionFormat] == SPNoCompression)) return;
+	
+	exportOutputCompressFile = compress;
+	
+	[[self exportOutputFileHandle] setShouldWriteWithCompressionFormat:(compress) ? [self exportOutputCompressionFormat] : SPNoCompression];
 }
 
 /**

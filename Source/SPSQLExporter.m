@@ -52,7 +52,6 @@
 @synthesize sqlOutputIncludeUTF8BOM;
 @synthesize sqlOutputEncodeBLOBasHex;
 @synthesize sqlOutputIncludeErrors;
-@synthesize sqlOutputCompressFile;
 @synthesize sqlCurrentTableExportIndex;
 @synthesize sqlInsertAfterNValue;
 @synthesize sqlInsertDivider;
@@ -140,6 +139,8 @@
 	{
 		// Check for cancellation flag
 		if ([self isCancelled]) {
+			[errors release];
+			[sqlString release];
 			[pool release];
 			return;
 		}
@@ -159,7 +160,7 @@
 		[targetArray addObject:item];
 	}
 			
-	// If required write the UTF-8 Byte Order Mark
+	// If required write the UTF-8 Byte Order Mark (BOM)
 	if ([self sqlOutputIncludeUTF8BOM]) {
 		[metaString setString:@"\xef\xbb\xbf"];
 		[metaString appendString:@"# ************************************************************\n"];
@@ -167,9 +168,6 @@
 	else {
 		[metaString setString:@"# ************************************************************\n"];
 	}
-		
-	// If required set the file handle to compress it's output
-	[[self exportOutputFileHandle] setShouldWriteWithGzipCompression:[self sqlOutputCompressFile]];
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# Sequel Pro SQL dump\n"];
@@ -185,12 +183,6 @@
 	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n"];
 	[metaString appendString:@"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n"];
 	[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
-	
-	// Add commands to store and disable unique checks, foreign key checks, mode and notes where supported.
-	// Include trailing semicolons to ensure they're run individually. Use MySQL-version based comments.
-	//if (sqlOutputIncludeDropSyntax) {
-		//[metaString appendString:@"/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n"];
-	//}
 	
 	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
 	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
@@ -721,10 +713,6 @@
 	[metaString appendString:@"/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n"];
 	[metaString appendString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n"];
 	[metaString appendString:@"/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n"];
-	
-	//if (sqlOutputIncludeDropSyntax) {
-		//[metaString appendString:@"/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n"];
-	//}
 	
 	// Restore the client encoding to the original encoding before import
 	[metaString appendString:@"/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n"];

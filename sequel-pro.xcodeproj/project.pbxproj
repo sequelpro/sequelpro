@@ -52,6 +52,7 @@
 		1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */; };
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
+		179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A7773311C52D8E001E27B4 /* SPIndexesController.m */; };
 		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
@@ -488,6 +489,7 @@
 		1792C13610AD75C800ABE758 /* SPServerVariablesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPServerVariablesController.m; sourceTree = "<group>"; };
 		1792C25F10AE1A2D00ABE758 /* SPConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionDelegate.h; sourceTree = "<group>"; };
 		1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionDelegate.m; sourceTree = "<group>"; };
+		179ECEC611F265EE009C6A40 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
 		17A66F6A10B1ED59004C9B12 /* old-appicon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "old-appicon.icns"; sourceTree = "<group>"; };
@@ -998,6 +1000,7 @@
 				58C458DF10CF188F00E6E13E /* libcrypto.dylib in Frameworks */,
 				B52ECDDC10DDACE9009DC3E8 /* BWToolkitFramework.framework in Frameworks */,
 				586EBD2411418D7C00B3DE45 /* FeedbackReporter.framework in Frameworks */,
+				179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1014,8 +1017,10 @@
 				4DECC3320EC2A170008D359E /* Sparkle.framework */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
 				586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */,
+				580E8EDC11EBE2A4000D8427 /* SystemConfiguration.framework */,
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
 				17B7B58F1016028F00F057DE /* libcrypto.dylib */,
+				179ECEC611F265EE009C6A40 /* libbz2.dylib */,
 				17B7B591101602AE00F057DE /* libssl.dylib */,
 				583CE52C11725642008F148E /* libz.dylib */,
 			);
@@ -1786,7 +1791,6 @@
 				1761FD9C0EF0486A00331368 /* Scripts */,
 				2A37F4C3FDCFA73011CA2CEA /* Frameworks */,
 				19C28FB0FE9D524F11CA2CBB /* Products */,
-				580E8EDC11EBE2A4000D8427 /* SystemConfiguration.framework */,
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";

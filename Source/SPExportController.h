@@ -69,8 +69,8 @@
 	IBOutlet NSView *exportAdvancedOptionsView;
 	IBOutlet NSButton *exportAdvancedOptionsViewLabelButton;
 	IBOutlet NSButton *exportUseUTF8BOMButton;
-	IBOutlet NSButton *exportCompressOutputFile;
 	IBOutlet NSButton *exportProcessLowMemoryButton;
+	IBOutlet NSPopUpButton *exportOutputCompressionFormatPopupButton;
 	
 	IBOutlet BWAnchoredButtonBar *exportTableListButtonBar;
 	
@@ -250,6 +250,7 @@
 - (IBAction)changeExportOutputPath:(id)sender;
 - (IBAction)refreshTableList:(id)sender;
 - (IBAction)selectDeselectAllTables:(id)sender;
+- (IBAction)changeExportCompressionFormat:(id)sender;
 - (IBAction)toggleCustomFilenameFormatView:(id)sender;
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
 - (IBAction)exportCustomQueryResultAsFormat:(id)sender;

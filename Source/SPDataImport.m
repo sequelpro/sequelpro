@@ -596,7 +596,7 @@
 - (void)importCSVFile:(NSString *)filename
 {
 	NSAutoreleasePool *importPool;
-	NSFileHandle *csvFileHandle;
+	SPFileHandle *csvFileHandle;
 	NSMutableData *csvDataBuffer;
 	const unsigned char *csvDataBufferBytes;
 	NSData *fileChunk;
@@ -630,7 +630,8 @@
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
 
 	// Open a filehandle for the CSV file
-	csvFileHandle = [NSFileHandle fileHandleForReadingAtPath:filename];
+	csvFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
+	
 	if (!csvFileHandle) {
 		SPBeginAlertSheet(NSLocalizedString(@"Import Error", @"Import Error title"),
 						  NSLocalizedString(@"OK", @"OK button"),
@@ -1278,13 +1279,17 @@
 	if ( [selectedFilenames count] != 1 ) return;
 	pathExtension = [[[selectedFilenames objectAtIndex:0] pathExtension] uppercaseString];
 
-	// If a file has extension ".gz", indicating gzip, fetch the next extension
-	if ([pathExtension isEqualToString:@"GZ"]) {
+	// If the file has an extension '.gz' or '.bz2' indicating gzip or bzip2 compression, fetch the next extension
+	if ([pathExtension isEqualToString:@"GZ"] || [pathExtension isEqualToString:@"BZ2"]) {
 		NSMutableString *pathString = [NSMutableString stringWithString:[selectedFilenames objectAtIndex:0]];
-		[pathString deleteCharactersInRange:NSMakeRange([pathString length]-3, 3)];
-		pathExtension = [[pathString pathExtension] uppercaseString];
+		
+		BOOL isGzip = [pathExtension isEqualToString:@"GZ"];
+		
+		[pathString deleteCharactersInRange:NSMakeRange([pathString length] - (isGzip ? 3 : 4), (isGzip ? 3 : 4))];
+		
+		pathExtension = [[pathString pathExtension] uppercaseString];		
 	}
-
+	
 	if ([pathExtension isEqualToString:@"SQL"]) {
 		[importFormatPopup selectItemWithTitle:@"SQL"];
 		[self changeFormat:self];
@@ -1347,7 +1352,7 @@
 }
 
 /**
- *
+ * Selectable toolbar identifiers.
  */
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
@@ -1363,7 +1368,7 @@
 }
 
 /**
- *
+ * Displays the import error sheet with the supplied error message.
  */
 - (void)showErrorSheetWithMessage:(NSString*)message
 {
@@ -1381,9 +1386,6 @@
 	[errorsSheet makeKeyWindow];
 }
 
-/**
- *
- */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[sheet orderOut:self];

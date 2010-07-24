@@ -153,6 +153,7 @@
 		{
 			// Check for cancellation flag
 			if ([self isCancelled]) {
+				[fkInfo release];
 				[pool release];
 				return;
 			}

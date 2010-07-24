@@ -88,11 +88,6 @@
 	BOOL sqlOutputIncludeErrors;
 	
 	/**
-	 * Compress output
-	 */
-	BOOL sqlOutputCompressFile;
-	
-	/**
 	 * New INSERT statement divider
 	 */
 	SPSQLExportInsertDivider sqlInsertDivider;
@@ -127,7 +122,6 @@
 @property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
 @property(readwrite, assign) BOOL sqlOutputEncodeBLOBasHex;
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
-@property(readwrite, assign) BOOL sqlOutputCompressFile;
 
 @property(readwrite, assign) NSUInteger sqlCurrentTableExportIndex;
 @property(readwrite, assign) NSUInteger sqlInsertAfterNValue;

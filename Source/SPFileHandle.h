@@ -25,13 +25,16 @@
 
 /**
  * Provides a class which aims to duplicate some of the most-used functionality
- * of NSFileHandle, while also transparently supporting GZip-compressed content
- * on reading; also supports GZip compression when writing.
+ * of NSFileHandle, while also transparently supporting gzip and bzip2 compressed content
+ * on reading; gzip and bzip2 compression is also supported on writing.
  */
 
 #import <Cocoa/Cocoa.h>
 
-@interface SPFileHandle : NSObject {
+#import "SPConstants.h"
+
+@interface SPFileHandle : NSObject 
+{
 	void *wrappedFile;
 	char *wrappedFilePath;
 
@@ -46,57 +49,58 @@
 	BOOL dataWritten;
 	BOOL allDataWritten;
 	BOOL fileIsClosed;
-	BOOL useGzip;
+	BOOL useCompression;
+	
+	SPFileCompressionFormat compressionFormat;
 }
-
 
 #pragma mark -
 #pragma mark Class methods
 
-+ (id) fileHandleForReadingAtPath:(NSString *)path;
-+ (id) fileHandleForWritingAtPath:(NSString *)path;
-+ (id) fileHandleForPath:(NSString *)path mode:(int)mode;
++ (id)fileHandleForReadingAtPath:(NSString *)path;
++ (id)fileHandleForWritingAtPath:(NSString *)path;
++ (id)fileHandleForPath:(NSString *)path mode:(int)mode;
 
 #pragma mark -
 #pragma mark Initialisation
 
 // Returns a file handle initialised with a file
-- (id) initWithFile:(void *)theFile fromPath:(const char *)path mode:(int)mode;
-
+- (id)initWithFile:(void *)theFile fromPath:(const char *)path mode:(int)mode;
 
 #pragma mark -
 #pragma mark Data reading
 
 // Reads data up to a specified number of bytes from the file
-- (NSMutableData *) readDataOfLength:(NSUInteger)length;
+- (NSMutableData *)readDataOfLength:(NSUInteger)length;
 
 // Returns the data to the end of the file
-- (NSMutableData *) readDataToEndOfFile;
+- (NSMutableData *)readDataToEndOfFile;
 
 // Returns the on-disk (raw) length of data read so far - can be used in progress bars
-- (NSUInteger) realDataReadLength;
+- (NSUInteger)realDataReadLength;
 
 #pragma mark -
 #pragma mark Data writing
 
-// Set whether data should be written as gzipped data (defaults to NO on a fresh object)
-- (void) setShouldWriteWithGzipCompression:(BOOL)useGzip;
+// Set whether data should be written in the supplied compression format (defaults to NO on a fresh object)
+- (void)setShouldWriteWithCompressionFormat:(SPFileCompressionFormat)useCompressionFormat;
 
 // Write the provided data to the file
-- (void) writeData:(NSData *)data;
+- (void)writeData:(NSData *)data;
 
 // Ensures any buffers are written to disk
-- (void) synchronizeFile;
+- (void)synchronizeFile;
 
 // Prevents further access to the file
-- (void) closeFile;
-
+- (void)closeFile;
 
 #pragma mark -
 #pragma mark File information
 
-// Returns whether gzip compression is enabled on the file
-- (BOOL) isCompressed;
+// Returns whether compression is enabled on the file
+- (BOOL)isCompressed;
 
+// Returns the compression format being used. Currently gzip or bzip2 only.
+- (SPFileCompressionFormat)compressionFormat;
 
 @end

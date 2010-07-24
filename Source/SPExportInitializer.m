@@ -187,6 +187,8 @@
 				}
 			}
 			
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
@@ -267,16 +269,10 @@
 		
 		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
 		[sqlExporter setSqlOutputEncodeBLOBasHex:[exportSQLBLOBFieldsAsHexCheck state]];
-		[sqlExporter setSqlOutputCompressFile:[exportCompressOutputFile state]];
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
 		
 		[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
 		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
-		
-		// Set generic properties
-		[sqlExporter setConnection:connection];
-		[sqlExporter setExportOutputEncoding:[connection encoding]];
-		[sqlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
 		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
@@ -286,15 +282,10 @@
 				
 		[sqlExporter setSqlExportTables:exportTables];
 		
-		// Set the exporter's max progress
-		[sqlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
-
-		// Set the progress bar's max value
-		[exportProgressIndicator setMaxValue:[sqlExporter exportMaxProgress]];
-		
 		// Create custom filename if required
 		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]];
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:([exportCompressOutputFile state]) ? [NSString stringWithFormat:@"%@.gz", SPFileExtensionSQL] : SPFileExtensionSQL]];
+		
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
 				
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 				
@@ -333,7 +324,7 @@
 				}
 			}
 			
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"xml"]];
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
 			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
@@ -382,15 +373,9 @@
 		SPDotExporter *dotExporter = [[SPDotExporter alloc] initWithDelegate:self];
 		
 		[dotExporter setDotTableData:tableDataInstance];
-		
 		[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
 		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
 		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-				
-		// Set generic properties
-		[dotExporter setConnection:connection];
-		[dotExporter setExportOutputEncoding:[connection encoding]];
-		[dotExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
 		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
@@ -400,12 +385,6 @@
 		
 		[dotExporter setDotExportTables:exportTables];
 		
-		// Set the exporter's max progress
-		[dotExporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
-		
-		// Set the progress bar's max value
-		[exportProgressIndicator setMaxValue:[dotExporter exportMaxProgress]];
-		
 		// Create custom filename if required
 		if (createCustomFilename) {
 			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
@@ -414,7 +393,7 @@
 			[exportFilename setString:[tableDocumentInstance database]];
 		}
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"dot"]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
 
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
@@ -423,6 +402,17 @@
 		[exporters addObject:dotExporter];
 		
 		[dotExporter release];
+	}
+	
+	// For each of the created exporters, set their generic properties
+	for (SPExporter *exporter in exporters)
+	{
+		[exporter setConnection:connection];
+		[exporter setExportOutputEncoding:[connection encoding]];
+		[exporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
+		[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
+		[exporter setExportOutputCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+		[exporter setExportOutputCompressFile:([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression)];
 	}
 		
 	// Add the first exporter to the operation queue
@@ -451,7 +441,6 @@
 	}
 	
 	[csvExporter setCsvTableData:tableDataInstance];
-	
 	[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
 	[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
 	[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
@@ -476,20 +465,13 @@
 		else {
 			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
 		}
-						
+		
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+				
 		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[csvExporter setExportOutputFileHandle:fileHandle];
 	}
-	
-	// Set generic properties
-	[csvExporter setConnection:connection];
-	[csvExporter setExportOutputEncoding:[connection encoding]];
-	[csvExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
-	[csvExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
-	
-	// Set the progress bar's max value
-	[exportProgressIndicator setMaxValue:[csvExporter exportMaxProgress]];
 	
 	return [csvExporter autorelease];
 }
@@ -520,7 +502,7 @@
 	// If required create separate files
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		[exportFilename setString:[[exportPathField stringValue] stringByAppendingPathComponent:table]];
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:@"xml"]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
 		
 		fileHandle = [self getFileHandleForFilePath:exportFilename];
 						
@@ -529,15 +511,6 @@
 		
 		[xmlExporter setExportOutputFileHandle:fileHandle];
 	}
-	
-	// Set generic properties
-	[xmlExporter setConnection:connection];
-	[xmlExporter setExportOutputEncoding:[connection encoding]];
-	[xmlExporter setExportMaxProgress:((NSInteger)[exportProgressIndicator bounds].size.width)];
-	[xmlExporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
-	
-	// Set the progress bar's max value
-	[exportProgressIndicator setMaxValue:[xmlExporter exportMaxProgress]];
 	
 	return [xmlExporter autorelease];
 }
