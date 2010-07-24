@@ -97,6 +97,7 @@
 			
 			// Get the first 3 bytes from the file
 			for (i = 0; (c = getc(wrappedFile)) != EOF && i < 4; bzbuf[i++] = c);
+			rewind(wrappedFile);
 			
 			// Test to see if the file is gzip compressed
 			BOOL isGzip = (!gzdirect(gzfile));
