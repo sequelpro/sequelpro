@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPPDFExporter.h
+//  SPExportFilenameUtilities.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on April 24, 2010
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on July 25, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,33 +23,21 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPExporter.h"
-#import "SPPDFExporterProtocol.h"
+#import "SPExportController.h"
 
 /**
- * @class SPPDFExporter SPPDFExporter.m
+ * @category SPExportFilenameUtilities SPExportFilenameUtilities.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * PDF exporter class.
+ * Export filename utilities category.
  */
-@interface SPPDFExporter : SPExporter 
-{
-	/**
-	 * Exporter delegate
-	 */
-	NSObject <SPPDFExporterProtocol> *delegate;
-}
+@interface SPExportController (SPExportFilenameUtilities)
 
-@property(readwrite, assign) NSObject *delegate;
-
-/**
- * Initialise an instance of SPPDFExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
- */
-- (id)initWithDelegate:(NSObject *)exportDelegate;
+- (void)updateDisplayedExportFilename;
+- (void)updateAvailableExportFilenameTokens;
+- (NSString *)generateDefaultExportFilename;
+- (NSString *)currentDefaultExportFileExtension;
+- (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table;
 
 @end

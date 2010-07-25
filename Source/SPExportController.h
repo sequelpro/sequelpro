@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 #import "SPConstants.h"
 
 @class MCPConnection, BWAnchoredButtonBar;
@@ -242,7 +240,6 @@
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
-- (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table;
 
 // IB action methods
 - (IBAction)closeSheet:(id)sender;

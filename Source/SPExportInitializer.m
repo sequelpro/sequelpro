@@ -187,7 +187,7 @@
 				}
 			}
 			
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
@@ -285,7 +285,7 @@
 		// Create custom filename if required
 		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]];
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 				
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 				
@@ -324,7 +324,7 @@
 				}
 			}
 			
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 			
 			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
@@ -393,7 +393,7 @@
 			[exportFilename setString:[tableDocumentInstance database]];
 		}
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 
 		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
@@ -466,7 +466,7 @@
 			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
 		}
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 				
 		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
@@ -502,7 +502,7 @@
 	// If required create separate files
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		[exportFilename setString:[[exportPathField stringValue] stringByAppendingPathComponent:table]];
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self _currentDefaultExportFileExtension]]];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 		
 		fileHandle = [self getFileHandleForFilePath:exportFilename];
 						

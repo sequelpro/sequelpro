@@ -37,11 +37,6 @@
 
 @interface SPExportController (PrivateAPI)
 
-- (void)_updateDisplayedExportFilename;
-- (void)_updateAvailableExportFilenameTokens;
-- (NSString *)_generateDefaultExportFilename;
-- (NSString *)_currentDefaultExportFileExtension;
-
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable;
@@ -179,7 +174,7 @@
 	[exportTypeTabBar selectTabViewItemAtIndex:format];
 	
 	// Set the default export filename
-	[self _updateDisplayedExportFilename];
+	[self updateDisplayedExportFilename];
 	
 	[self refreshTableList:self];
 	
@@ -250,71 +245,6 @@
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Finished exporting to %@", @"description for finished exporting growl notification"), exportFilename] 
 													  document:tableDocumentInstance
 											  notificationName:@"Export Finished"];
-}
-
-/**
- * Expands the custom filename format based on the selected tokens.
- */
-- (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table
-{
-	NSMutableString *string = [NSMutableString stringWithString:format];
-	
-	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-	
-	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
-	
-	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
-	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
-	
-	[string replaceOccurrencesOfString:NSLocalizedString(@"host", @"export filename host token") 
-							withString:[tableDocumentInstance host]
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	[string replaceOccurrencesOfString:NSLocalizedString(@"database", @"export filename database token") 
-							withString:[tableDocumentInstance database]
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	[string replaceOccurrencesOfString:NSLocalizedString(@"table", @"table") 
-							withString:(table) ? table : @""
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	[string replaceOccurrencesOfString:NSLocalizedString(@"date", @"export filename date token") 
-							withString:[dateFormatter stringFromDate:[NSDate date]]
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
-	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
-	
-	[string replaceOccurrencesOfString:NSLocalizedString(@"time", @"export filename time token") 
-							withString:[dateFormatter stringFromDate:[NSDate date]]
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	// Strip comma separators
-	[string replaceOccurrencesOfString:@"," 
-							withString:@""
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	// Replace colons with hyphens
-	[string replaceOccurrencesOfString:@":" 
-							withString:@"-"
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	// Replace forward slashes with hyphens
-	[string replaceOccurrencesOfString:@"/" 
-							withString:@"-"
-							   options:NSLiteralSearch
-								 range:NSMakeRange(0, [string length])];
-	
-	[dateFormatter release];
-	
-	return string;
 }
 
 /**
@@ -392,9 +322,9 @@
 	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
-	[self _updateAvailableExportFilenameTokens];
+	[self updateAvailableExportFilenameTokens];
 	
-	if (!showCustomFilenameView) [self _updateDisplayedExportFilename];
+	if (!showCustomFilenameView) [self updateDisplayedExportFilename];
 }
 
 /**
@@ -415,8 +345,8 @@
 		[exportDeselectAllTablesButton setEnabled:isSelectedTables];
 		[exportRefreshTablesButton setEnabled:isSelectedTables];
 		
-		[self _updateAvailableExportFilenameTokens];
-		[self _updateDisplayedExportFilename];
+		[self updateAvailableExportFilenameTokens];
+		[self updateDisplayedExportFilename];
 	}
 }
 
@@ -571,7 +501,7 @@
  */
 - (IBAction)changeExportCompressionFormat:(id)sender
 {
-	[self _updateDisplayedExportFilename];
+	[self updateDisplayedExportFilename];
 }
 
 /**
@@ -589,7 +519,7 @@
 		
 	// On close update the displayed filename
 	if (!showCustomFilenameView) {
-		[self _updateDisplayedExportFilename];
+		[self updateDisplayedExportFilename];
 	} 
 	else {
 		[exportCustomFilenameViewLabelButton setTitle:NSLocalizedString(@"Customize Filename", @"default customize file name label")];
@@ -756,99 +686,6 @@
 
 #pragma mark -
 #pragma mark Private API
-
-/**
- * Updates the displayed export filename, either custom or default.
- */
-- (void)_updateDisplayedExportFilename
-{	
-	NSString *filename  = @"";
-	
-	if ([[exportCustomFilenameTokenField stringValue] length] > 0) {
-		
-		// Get the current export file extension
-		NSString *extension = [self _currentDefaultExportFileExtension];
-		
-		filename = [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:[[tablesListInstance tables] objectAtIndex:1]];
-		
-		if ([extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
-	}
-	else {
-		filename = [self _generateDefaultExportFilename];
-	} 
-	
-	[exportCustomFilenameViewLabelButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Customize Filename (%@)", @"customize file name label"), filename]];
-}
-
-/**
- * Updates the available export filename tokens.
- */
-- (void)_updateAvailableExportFilenameTokens
-{		
-	[exportCustomFilenameTokensField setStringValue:((exportSource == SPQueryExport) || (exportType == SPDotExport)) ? NSLocalizedString(@"host,database,date,time", @"custom export filename tokens without table") : NSLocalizedString(@"host,database,table,date,time", @"default custom export filename tokens")];
-}
-
-/**
- * Generates the default export filename based on the selected export options.
- */
-- (NSString *)_generateDefaultExportFilename
-{
-	NSString *filename = @"";
-	NSString *extension = [self _currentDefaultExportFileExtension];
-	
-	// Determine what the file name should be
-	switch (exportSource) 
-	{
-		case SPFilteredExport:
-			filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
-			break;
-		case SPQueryExport:
-			filename = @"query_result";
-			break;
-		case SPTableExport:
-			filename = [tableDocumentInstance database];
-			break;
-	}
-	
-	return ([extension length] > 0) ? [filename stringByAppendingPathExtension:extension] : filename;
-}
-
-/**
- * Returns the current default export file extension based on the selected export type.
- */
-- (NSString *)_currentDefaultExportFileExtension
-{
-	NSString *extension = @"";
-	
-	switch (exportType) {
-		case SPSQLExport:
-			extension = SPFileExtensionSQL;
-			break;
-		case SPCSVExport:
-			extension = @"csv";
-			break;
-		case SPXMLExport:
-			extension = @"xml";
-			break;
-		case SPDotExport:
-			extension = @"dot";
-			break;
-	}
-	
-	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {
-				
-		SPFileCompressionFormat compressionFormat = [exportOutputCompressionFormatPopupButton indexOfSelectedItem];
-		
-		if ([extension length] > 0) {
-			extension = [extension stringByAppendingPathExtension:(compressionFormat == SPGzipCompression) ? @"gz" : @"bz2"];
-		}
-		else {
-			extension = (compressionFormat == SPGzipCompression) ? @"gz" : @"bz2";
-		}
-	}
-			
-	return extension;
-}
 
 /**
  * Enables or disables the export button based on the state of various interface controls. 

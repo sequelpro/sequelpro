@@ -56,6 +56,7 @@
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A7773311C52D8E001E27B4 /* SPIndexesController.m */; };
 		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
+		17AF787B11FC41C00073D043 /* SPExportFilenameUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */; };
 		17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B576101601C300F057DE /* libmysqlclient.a */; };
 		17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
 		17B7B592101602AE00F057DE /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B591101602AE00F057DE /* libssl.dylib */; };
@@ -499,6 +500,8 @@
 		17A7773211C52D8E001E27B4 /* SPIndexesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIndexesController.h; sourceTree = "<group>"; };
 		17A7773311C52D8E001E27B4 /* SPIndexesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexesController.m; sourceTree = "<group>"; };
 		17A7773711C52E61001E27B4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/IndexesView.xib; sourceTree = "<group>"; };
+		17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFilenameUtilities.h; sourceTree = "<group>"; };
+		17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFilenameUtilities.m; sourceTree = "<group>"; };
 		17B7B5621016012700F057DE /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		17B7B576101601C300F057DE /* libmysqlclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient.a; sourceTree = "<group>"; };
 		17B7B577101601C300F057DE /* libmysqlclient_r.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient_r.a; sourceTree = "<group>"; };
@@ -1743,6 +1746,8 @@
 				173C836E11AAD26E00B8B084 /* SPExportInitializer.m */,
 				173C836F11AAD26E00B8B084 /* SPExportUtilities.h */,
 				173C837011AAD26E00B8B084 /* SPExportUtilities.m */,
+				17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */,
+				17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */,
 				173C836C11AAD24300B8B084 /* Exporters */,
 				173C837C11AAD2C500B8B084 /* Delegate Protocols */,
 				173C837D11AAD2D300B8B084 /* Delegate Categories */,
@@ -2550,6 +2555,7 @@
 				58B909A511C3B919000826E5 /* DMLocalizedNibBundle.m in Sources */,
 				17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */,
 				589ED05B11E0ACD100C1DCEA /* DMLocalizedNib.m in Sources */,
+				17AF787B11FC41C00073D043 /* SPExportFilenameUtilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
