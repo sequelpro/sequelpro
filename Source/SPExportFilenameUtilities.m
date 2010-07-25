@@ -95,7 +95,8 @@
 			extension = SPFileExtensionSQL;
 			break;
 		case SPCSVExport:
-			extension = @"csv";
+			// If the tab character (\t) is selected as the feild separator return the extension as .tsv 
+			extension = ([exportCSVFieldsTerminatedField indexOfSelectedItem] == 2) ? @"tsv" : @"csv";
 			break;
 		case SPXMLExport:
 			extension = @"xml";

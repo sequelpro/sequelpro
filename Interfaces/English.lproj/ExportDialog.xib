@@ -22,7 +22,6 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="1183"/>
-			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -60,7 +59,7 @@
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{449, 480}</string>
 				<object class="NSView" key="NSWindowView" id="13817034">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -431,7 +430,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{449, 480}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{449, 502}</string>
@@ -1886,15 +1884,16 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 												<object class="NSComboTableView" key="NSTableView" id="343222687">
 													<reference key="NSNextResponder"/>
 													<int key="NSvFlags">274</int>
-													<string key="NSFrameSize">{13, 54}</string>
+													<string key="NSFrameSize">{31, 54}</string>
 													<reference key="NSSuperview"/>
 													<reference key="NSWindow"/>
+													<reference key="NSNextKeyView"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSMutableArray" key="NSTableColumns">
 														<bool key="EncodedWithXMLCoder">YES</bool>
 														<object class="NSTableColumn">
 															<integer value="0" key="NSIdentifier"/>
-															<double key="NSWidth">10</double>
+															<double key="NSWidth">28</double>
 															<double key="NSMinWidth">10</double>
 															<double key="NSMaxWidth">1000</double>
 															<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -1915,8 +1914,9 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 																<reference key="NSTextColor" ref="628696263"/>
 															</object>
 															<object class="NSTextFieldCell" key="NSDataCell">
-																<int key="NSCellFlags">338820672</int>
+																<int key="NSCellFlags">1412562496</int>
 																<int key="NSCellFlags2">1024</int>
+																<string key="NSContents">,</string>
 																<reference key="NSSupport" ref="26"/>
 																<reference key="NSControlView" ref="343222687"/>
 																<bool key="NSDrawsBackground">YES</bool>
@@ -1947,7 +1947,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 													</object>
 													<double key="NSRowHeight">16</double>
 													<string key="NSAction">tableViewAction:</string>
-													<int key="NSTvFlags">-765427712</int>
+													<int key="NSTvFlags">-767524864</int>
 													<reference key="NSDelegate" ref="24725207"/>
 													<reference key="NSDataSource" ref="24725207"/>
 													<reference key="NSTarget" ref="24725207"/>
@@ -3306,6 +3306,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="destination" ref="257072199"/>
 					</object>
 					<int key="connectionID">1349</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="160760073"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">1350</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -5095,7 +5103,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{449, 480}</string>
-					<string>{{459, 205}, {450, 359}}</string>
+					<string>{{439, 411}, {450, 359}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -5470,7 +5478,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1349</int>
+			<int key="maxID">1350</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5718,6 +5726,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>changeExportCompressionFormat:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
+							<string>export:</string>
 							<string>exportCustomQueryResultAsFormat:</string>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
@@ -5745,6 +5754,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -5755,6 +5765,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>changeExportCompressionFormat:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
+							<string>export:</string>
 							<string>exportCustomQueryResultAsFormat:</string>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
@@ -5782,6 +5793,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">closeSheet:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">export:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -6218,6 +6233,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPExportController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPExportFilenameUtilities.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

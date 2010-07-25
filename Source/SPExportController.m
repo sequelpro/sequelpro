@@ -119,6 +119,12 @@
 	
 	// If found the set the default path to the user's desktop, otherwise use their home directory
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
+	
+	// Register to receive notifications of a change in selection of the CSV field separator
+	/*[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(comboBoxSelectionDidChange:)
+												 name:NSComboBoxSelectionDidChangeNotification
+											   object:nil];*/
 }
 
 #pragma mark -
@@ -626,6 +632,16 @@
 	[tabViewItem setView:exporterView];
 	
 	[self switchTab:self];
+}
+
+#pragma mark -
+#pragma mark Combo box delegate methods
+
+- (void)comboBoxSelectionDidChange:(NSNotification *)notification
+{
+	if ([notification object] == exportCSVFieldsTerminatedField) {
+		[self updateDisplayedExportFilename];
+	}
 }
 
 #pragma mark -
