@@ -47,6 +47,7 @@
 	IBOutlet id importFieldMapperSheetWindow;
 
 	IBOutlet NSPopUpButton *importFormatPopup;
+	IBOutlet NSPopUpButton *importEncodingPopup;
 	
 	IBOutlet id importFromClipboardSheet;
 	IBOutlet id importFromClipboardAccessoryView;

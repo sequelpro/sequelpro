@@ -42,6 +42,8 @@
 #import "SPMainThreadTrampoline.h"
 #import "SPNotLoaded.h"
 #import "SPFileHandle.h"
+#import "SPEncodingPopupAccessory.h"
+#import <UniversalDetector/UniversalDetector.h>
 
 @interface SPDataImport (PrivateAPI)
 
@@ -99,6 +101,16 @@
 	[nibLoader instantiateNibWithOwner:self topLevelObjects:&importAccessoryTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
 	[nibLoader release];
+
+	// Set up the encodings menu
+	NSMutableArray *encodings = [NSMutableArray arrayWithArray:[SPEncodingPopupAccessory enabledEncodings]];
+	[importEncodingPopup removeAllItems];
+	[importEncodingPopup addItemWithTitle:NSLocalizedString(@"Autodetect", @"Encoding autodetect menu item")];
+	[[importEncodingPopup menu] addItem:[NSMenuItem separatorItem]];
+	for (NSNumber *encodingNumber in encodings) {
+		[importEncodingPopup addItemWithTitle:[NSString localizedNameOfStringEncoding:[encodingNumber unsignedIntegerValue]]];
+		[[importEncodingPopup lastItem] setTag:[encodingNumber unsignedIntegerValue]];
+	}
 }
 
 #pragma mark -
@@ -176,7 +188,15 @@
 	[importFieldsEscapedField setStringValue:[prefs objectForKey:SPCSVImportFieldEscapeCharacter]];
 	[importFieldsEnclosedField setStringValue:[prefs objectForKey:SPCSVImportFieldEnclosedBy]];
 	[importFieldNamesSwitch setState:[[prefs objectForKey:SPCSVImportFirstLineIsHeader] boolValue]];
+
+	// Reset and disable the encoding menu
+	[importEncodingPopup selectItemWithTag:NSUTF8StringEncoding];
+	[importEncodingPopup setEnabled:NO];
+
+	// Add the view, and resize it to fit the accessory view size
 	[importFromClipboardAccessoryView addSubview:importCSVView];
+	NSRect accessoryViewRect = [importFromClipboardAccessoryView frame];
+	[importCSVView setFrame:NSMakeRect(0, 0, accessoryViewRect.size.width, accessoryViewRect.size.height)];
 
 	[NSApp beginSheet:importFromClipboardSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
@@ -375,6 +395,22 @@
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
+	// Determine the file encoding.  The first item in the encoding menu is "Autodetect"; if
+	// this is selected, attempt to detect the encoding of the file (using first 2.5MB).
+	if (![importEncodingPopup indexOfSelectedItem]) {
+		SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
+		if (detectorFileHandle) {
+			UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
+			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
+			sqlEncoding = [fileEncodingDetector encoding];
+			[fileEncodingDetector release];
+		}
+
+	// Otherwise, get the encoding to use from the menu
+	} else {
+		sqlEncoding = [importEncodingPopup selectedTag];
+	}
+
 	// Read in the file in a loop
 	sqlParser = [[SPSQLParser alloc] init];
 	[sqlParser setDelimiterSupport:YES];
@@ -427,31 +463,27 @@
 				}
 
 				// Try to generate a NSString with the resulting data
-				if (importSQLAsUTF8) {
-					sqlString = [[NSString alloc] initWithData:[sqlDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)]
-													  encoding:NSUTF8StringEncoding];
-					if (!sqlString) {
-						importSQLAsUTF8 = NO;
-						sqlEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
+				sqlString = [[NSString alloc] initWithData:[sqlDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)]
+												  encoding:sqlEncoding];
+				if (!sqlString) {
+					[self closeAndStopProgressSheet];
+					NSString *displayEncoding;
+					if (![importEncodingPopup indexOfSelectedItem]) {
+						displayEncoding = [NSString stringWithFormat:@"%@ - %@", [importEncodingPopup titleOfSelectedItem], [NSString localizedNameOfStringEncoding:sqlEncoding]];
+					} else {
+						displayEncoding = [NSString localizedNameOfStringEncoding:sqlEncoding];
 					}
-				}
-				if (!importSQLAsUTF8) {
-					sqlString = [[NSString alloc] initWithData:[sqlDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)]
-													  encoding:[MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]]];
-					if (!sqlString) {
-						[self closeAndStopProgressSheet];
-						SPBeginAlertSheet(NSLocalizedString(@"File read error", @"SQL read error title"),
-										  NSLocalizedString(@"OK", @"OK button"),
-										  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-										  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in either UTF-8 or the current connection encoding (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), [tableDocumentInstance connectionEncoding], (long)queriesPerformed]);
-						[sqlParser release];
-						[sqlDataBuffer release];
-						[importPool drain];
-						[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-						if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-							[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
-						return;
-					}
+					SPBeginAlertSheet(NSLocalizedString(@"File read error", @"SQL read error title"),
+									  NSLocalizedString(@"OK", @"OK button"),
+									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), displayEncoding, (long)queriesPerformed]);
+					[sqlParser release];
+					[sqlDataBuffer release];
+					[importPool drain];
+					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+					if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
+						[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
+					return;
 				}
 
 				// Add the NSString segment to the SQL parser and release it
@@ -660,6 +692,22 @@
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
+	// Determine the file encoding.  The first item in the encoding menu is "Autodetect"; if
+	// this is selected, attempt to detect the encoding of the file (using first 2.5MB).
+	if (![importEncodingPopup indexOfSelectedItem]) {
+		SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
+		if (detectorFileHandle) {
+			UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
+			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
+			csvEncoding = [fileEncodingDetector encoding];
+			[fileEncodingDetector release];
+		}
+
+	// Otherwise, get the encoding to use from the menu
+	} else {
+		csvEncoding = [importEncodingPopup selectedTag];
+	}
+
 	// Read in the file in a loop.  The loop actually needs to perform three tasks: read in
 	// CSV data and parse them into row arrays; present the field mapping interface once it
 	// has some data to show within the interface; and use the field mapping data to construct
@@ -736,10 +784,16 @@
 				csvString = [[NSString alloc] initWithData:[csvDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)] encoding:csvEncoding];
 				if (!csvString) {
 					[self closeAndStopProgressSheet];
+					NSString *displayEncoding;
+					if (![importEncodingPopup indexOfSelectedItem]) {
+						displayEncoding = [NSString stringWithFormat:@"%@ - %@", [importEncodingPopup titleOfSelectedItem], [NSString localizedNameOfStringEncoding:csvEncoding]];
+					} else {
+						displayEncoding = [NSString localizedNameOfStringEncoding:csvEncoding];
+					}
 					SPBeginAlertSheet(NSLocalizedString(@"File read error", @"CSV read error title"),
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the connection encoding (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), [tableDocumentInstance connectionEncoding], (long)rowsImported]);
+									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), displayEncoding, (long)rowsImported]);
 					[csvParser release];
 					[csvDataBuffer release];
 					[parsedRows release];
