@@ -2348,22 +2348,19 @@
 }
 
 /**
- * Opens the export dialog on the SQL dump tab with the selected tables checked for export. If no tables 
- * are selected then all tables are checked.
- */
-- (IBAction)export:(id)sender
-{
-	NSArray *tables = [tablesListInstance selectedTableItems];
-	
-	[exportControllerInstance exportTables:([tables count]) ? tables : nil asFormat:SPSQLExport usingSource:SPTableExport];
-}
-
-/**
  * Exports the selected tables in the chosen file format.
  */
 - (IBAction)exportSelectedTablesAs:(id)sender
 {
 	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag] usingSource:SPTableExport];
+}
+
+/**
+ * Opens the data export dialog.
+ */
+- (IBAction)export:(id)sender
+{
+	[exportControllerInstance export:self];
 }
 
 #pragma mark -
@@ -3453,16 +3450,6 @@
 	[tableDumpInstance importFromClipboard];
 }
 
-- (IBAction)exportTable:(id)sender
-{
-	return [self export:sender];
-}
-
-- (IBAction)exportMultipleTables:(id)sender
-{
-	return [self export:sender];
-}
-
 /*
  * Show the MySQL Help TOC of the current MySQL connection
  * Invoked by the MainMenu > Help > MySQL Help
@@ -3508,7 +3495,6 @@
 	}
 
 	if ([menuItem action] == @selector(import:) ||
-		[menuItem action] == @selector(exportMultipleTables:) ||
 		[menuItem action] == @selector(removeDatabase:) ||
 		[menuItem action] == @selector(copyDatabase:) ||
 		[menuItem action] == @selector(renameDatabase:))
@@ -3535,10 +3521,6 @@
 			[menuItem setTitle:NSLocalizedString(@"Save Queries…", @"Save Queries…")];
 
 		return YES;
-	}
-
-	if ([menuItem action] == @selector(exportTable:)) {
-		return ([self database] != nil && [self table] != nil);
 	}
 
 	if ([menuItem action] == @selector(printDocument:)) {

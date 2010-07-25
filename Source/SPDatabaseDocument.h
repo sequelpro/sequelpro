@@ -258,6 +258,7 @@
 - (IBAction)focusOnTableContentFilter:(id)sender;
 - (IBAction)focusOnTableListFilter:(id)sender;
 - (IBAction)export:(id)sender;
+
 - (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
@@ -307,8 +308,6 @@
 - (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)importFromClipboard:(id)sender;
-- (IBAction)exportTable:(id)sender;
-- (IBAction)exportMultipleTables:(id)sender;
 - (IBAction)viewStructure:(id)sender;
 - (IBAction)viewContent:(id)sender;
 - (IBAction)viewQuery:(id)sender;

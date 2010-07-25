@@ -130,6 +130,47 @@
 #pragma mark IB action methods
 
 /**
+ * Opens the export dialog selecting the appropriate export type and source based on the current context.
+ * For example, if either the table content view or custom query editor views are active and there is 
+ * data available, these options will be selected as the export source ('Filtered' or 'Query Result'). If 
+ * either of these views are not active then the default source are the currently selected tables. If no 
+ * tables are currently selected then all tables are checked. Note that in this instance the default export 
+ * type is SQL where as in the case of filtered or query result export the default type is CSV.
+ */
+- (IBAction)export:(id)sender
+{
+	SPExportType exportType = SPSQLExport;
+	SPExportSource exportSource = SPTableExport;
+	
+	NSArray *tables = [tablesListInstance selectedTableItems];
+	
+	BOOL isCustomQuerySelected = ([tableDocumentInstance isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1)); 
+	BOOL isContentSelected     = ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
+	
+	if (isContentSelected) {
+		tables = nil;
+		exportType = SPCSVExport;
+		exportSource = SPFilteredExport;
+	}
+	else if (isCustomQuerySelected) {
+		tables = nil;
+		exportType = SPCSVExport;
+		exportSource = SPQueryExport;
+	}
+	else {
+		tables = ([tables count]) ? tables : nil; 
+	}
+	
+	[self exportTables:tables asFormat:exportType usingSource:exportSource];
+	
+	// Ensure UI validation
+	[self switchInput:exportInputPopUpButton];
+}
+
+#pragma mark -
+#pragma mark Export methods
+
+/**
  * Displays the export window with the supplied tables and export type/format selected.
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format usingSource:(SPExportSource)source
