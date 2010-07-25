@@ -119,7 +119,7 @@
 		taskProgressValue = 0;
 		taskProgressValueDisplayInterval = 1;
 		taskDrawTimer = nil;
-		taskFadeAnimator = nil;
+		taskFadeInStartDate = nil;
 		taskCanBeCancelled = NO;
 		taskCancellationCallbackObject = nil;
 		taskCancellationCallbackSelector = NULL;
@@ -1304,27 +1304,37 @@
 		[mainToolbar validateVisibleItems];
 		[chooseDatabaseButton setEnabled:NO];
 				
-		// Schedule appearance of the task window in the near future
-		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
+		// Schedule appearance of the task window in the near future, using a frame timer.
+		taskFadeInStartDate = [[NSDate alloc] init];
+		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0 / 30.0 target:self selector:@selector(fadeInTaskProgressWindow:) userInfo:nil repeats:YES] retain];
 	}
 }
 
 /**
  * Show the task progress window, after a small delay to minimise flicker.
  */
-- (void) showTaskProgressWindow:(NSTimer *)theTimer
+- (void) fadeInTaskProgressWindow:(NSTimer *)theTimer
 {
-	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+	float timeSinceFadeInStart = [[NSDate date] timeIntervalSinceDate:taskFadeInStartDate];
 
-	// Center the task window and fade it in
-	[self centerTaskWindow];
-	NSDictionary *animationDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
-										taskProgressWindow, NSViewAnimationTargetKey,
-										nil];
-	taskFadeAnimator = [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObject:animationDetails]];
-	[taskFadeAnimator setDuration:0.6];
-	[taskFadeAnimator startAnimation];
+	// Keep the window hidden for the first ~0.5 secs
+	if (timeSinceFadeInStart < 0.5) return;
+
+	CGFloat alphaValue = [taskProgressWindow alphaValue];
+
+	// If the task progress window is still hidden, center it before revealing it
+	if (alphaValue == 0) [self centerTaskWindow];
+
+	// Fade in the task window over 0.6 seconds
+	alphaValue = (timeSinceFadeInStart - 0.5) / 0.6;
+	if (alphaValue > 1.0) alphaValue = 1.0;
+	[taskProgressWindow setAlphaValue:alphaValue];
+
+	// If the window has been fully faded in, clean up the timer.
+	if (alphaValue == 1.0) {
+		[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+		[taskFadeInStartDate release], taskFadeInStartDate = nil; 
+	}
 }
 
 
@@ -1405,12 +1415,9 @@
 	if (!_isWorkingLevel) {
 
 		// Cancel the draw timer if it exists
-		if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
-
-		// Cancel the fade-in animator if it exists
-		if (taskFadeAnimator) {
-			if ([taskFadeAnimator isAnimating]) [taskFadeAnimator stopAnimation];
-			[taskFadeAnimator release], taskFadeAnimator = nil;
+		if (taskDrawTimer) {
+			[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+			[taskFadeInStartDate release], taskFadeInStartDate = nil; 
 		}
 
 		// Hide the task interface and reset to indeterminate
@@ -4625,8 +4632,8 @@
 	if (mySQLConnection) [mySQLConnection release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
-	if (taskDrawTimer) [taskDrawTimer release];
-	if (taskFadeAnimator) [taskFadeAnimator release];
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
+	if (taskFadeInStartDate) [taskFadeInStartDate release];
 	if (queryEditorInitString) [queryEditorInitString release];
 	if (spfFileURL) [spfFileURL release];
 	if (spfPreferences) [spfPreferences release];

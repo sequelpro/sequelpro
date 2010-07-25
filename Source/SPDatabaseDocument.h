@@ -154,7 +154,7 @@
 	CGFloat taskDisplayLastValue;
 	CGFloat taskProgressValueDisplayInterval;
 	NSTimer *taskDrawTimer;
-	NSViewAnimation *taskFadeAnimator;
+	NSDate *taskFadeInStartDate;
 	BOOL taskCanBeCancelled;
 	id taskCancellationCallbackObject;
 	SEL taskCancellationCallbackSelector;
@@ -221,7 +221,7 @@
 
 // Task progress and notification methods
 - (void)startTaskWithDescription:(NSString *)description;
-- (void)showTaskProgressWindow:(NSTimer *)theTimer;
+- (void)fadeInTaskProgressWindow:(NSTimer *)theTimer;
 - (void)setTaskDescription:(NSString *)description;
 - (void)setTaskPercentage:(CGFloat)taskPercentage;
 - (void)setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay;
