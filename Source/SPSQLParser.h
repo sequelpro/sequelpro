@@ -65,6 +65,7 @@
 	NSInteger charCacheStart;
 	NSInteger charCacheEnd;
 	BOOL ignoreCommentStrings;
+	BOOL containsCRs;
 
 	BOOL supportDelimiters;
 	NSString *delimiter;
@@ -78,7 +79,14 @@ typedef enum _SPCommentTypes {
 	SPCStyleComment = 2
 } SPCommentType;
 
-/*
+/**
+ * Return whether any carriage returns have been encountered during
+ * parsing; quoted strings are not included.  May be used to determine
+ * whether text needs to be normalised.
+ */
+- (BOOL)containsCarriageReturns;
+
+/**
  * Set whether comment strings should be ignored during parsing.
  * Normally, comment strings are treated as dead space and ignored;
  * for certain parsing operations, characters within comments need
@@ -87,7 +95,7 @@ typedef enum _SPCommentTypes {
  */
 - (void) setIgnoreCommentStrings:(BOOL)ignoringCommentStrings;
 
-/*
+/**
  * Set whether DELIMITER support should be enabled while parsing.
  * This is off by default; when switched on, delimiters commands will
  * be parsed out and not returned to the calling class, and any active 
@@ -96,12 +104,12 @@ typedef enum _SPCommentTypes {
  */
 - (void) setDelimiterSupport:(BOOL)shouldSupportDelimiters;
 
-/*
+/**
  * Removes comments within the current string, trimming "#", "--[/s]", and "⁄* *⁄" style strings.
  */
 - (void) deleteComments;
 
-/*
+/**
  * Removes quotes surrounding the string if present, and un-escapes internal occurrences of the quote character,
  * before returning the resulting string.
  * If no quotes surround the current string, return the entire string; if the current string contains several
@@ -109,7 +117,13 @@ typedef enum _SPCommentTypes {
  */
 - (NSString *) unquotedString;
 
-/*
+/**
+ * Normalise a string, readying it for queries - trims whitespace from both
+ * ends, and ensures line endings which aren't in quotes are LF.
+ */
++ (NSString *) normaliseQueryForExecution:(NSString *)queryString;
+
+/**
  * Removes characters from the string up to the first occurrence of the supplied character.
  * "inclusively" controls whether the supplied character is also removed.
  * Quoted strings are automatically ignored when looking for the character.
@@ -118,13 +132,13 @@ typedef enum _SPCommentTypes {
  */
 - (BOOL) trimToCharacter:(unichar)character inclusively:(BOOL)inclusive;
 
-/* 
+/**
  * As trimToCharacter: ..., but allows control over whether characters within quoted strings
  * are ignored.
  */
 - (BOOL) trimToCharacter:(unichar)character inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * Returns an NSString containing characters from the string up to the first occurrence of the supplied character.
  * "inclusively" controls whether the supplied character is also returned.
  * Quoted strings are automatically ignored when looking for the character.
@@ -133,13 +147,13 @@ typedef enum _SPCommentTypes {
  */
 - (NSString *) stringToCharacter:(unichar)character inclusively:(BOOL)inclusive;
 
-/*
+/**
  * As stringToCharacter: ..., but allows control over whether characters within quoted strings
  * are ignored.
  */
 - (NSString *) stringToCharacter:(unichar)character inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * Returns an NSString containing characters from the string up to the first occurrence of the supplied
  * character, also removing them from the string.  "trimmingInclusively" controls whether or not the
  * supplied character is removed from the string on a successful match, while "returningInclusively"
@@ -150,13 +164,13 @@ typedef enum _SPCommentTypes {
  */
 - (NSString *) trimAndReturnStringToCharacter:(unichar)character trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn;
 
-/*
+/**
  * As trimAndReturnStringToCharacter: ..., but allows control over whether characters within quoted
  * strings are ignored.
  */
 - (NSString *) trimAndReturnStringToCharacter:(unichar)character trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * Returns characters from the string up to and from the first occurrence of the supplied opening character
  * to the appropriate occurrence of the supplied closing character. "inclusively" controls whether the supplied
  * characters should also be returned.
@@ -166,24 +180,24 @@ typedef enum _SPCommentTypes {
  */
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive;
 
-/*
+/**
  * As stringFromCharacter: toCharacter: ..., but allows control over whether to skip
  * over bracket-enclosed characters, as in subqueries, enums, definitions or groups
  */
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive skippingBrackets:(BOOL)skipBrackets;
 
-/*
+/**
  * As stringFromCharacter: toCharacter: ..., but allows control over whether characters within quoted
  * strings are ignored.
  */
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * As stringFromCharacter: toCharacter: ..., but allows control over both bracketing and quoting.
  */
 - (NSString *) stringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter inclusively:(BOOL)inclusive skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * As stringFromCharacter: toCharacter: ..., but also trims the string up to the "to" character and
  * up to or including the "from" character, depending on whether "trimmingInclusively" is set.
  * "returningInclusively" controls whether the supplied characters should also be returned.
@@ -191,25 +205,25 @@ typedef enum _SPCommentTypes {
  */
 - (NSString *) trimAndReturnStringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn;
 
-/*
+/**
  * As trimAndReturnStringFromCharacter: toCharacter: ..., but allows control over whether to
  * skip over bracket-enclosed characters, as in subqueries, enums, definitions or groups.
  */
 - (NSString *) trimAndReturnStringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn skippingBrackets:(BOOL)skipBrackets;
 
-/*
+/**
  * As trimAndReturnStringFromCharacter: toCharacter: ..., but allows control over whether characters
  * within quoted strings are ignored.
  */
 - (NSString *) trimAndReturnStringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * As trimAndReturnStringFromCharacter: toCharacter: ..., but allows control over both bracketing
  * and quoting.
  */
 - (NSString *) trimAndReturnStringFromCharacter:(unichar)fromCharacter toCharacter:(unichar)toCharacter trimmingInclusively:(BOOL)inclusiveTrim returningInclusively:(BOOL)inclusiveReturn skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * Split a string on the boundaries formed by the supplied character, returning an array of strings.
  * Quoted strings are automatically ignored when looking for the characters.
  * SQL comments are automatically ignored when looking for the characters.
@@ -217,24 +231,24 @@ typedef enum _SPCommentTypes {
  */
 - (NSArray *) splitStringByCharacter:(unichar)character;
 
-/*
+/**
  * As splitStringByCharacter: ..., but allows control over whether to skip over bracket-enclosed
  * characters, as in subqueries, enums, definitions or groups.
  */
 - (NSArray *) splitStringByCharacter:(unichar)character skippingBrackets:(BOOL)skipBrackets;
 
-/*
+/**
  * As splitStringByCharacter:, but allows control over whether characters
  * within quoted strings are ignored.
  */
 - (NSArray *) splitStringByCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * As splitStringByCharacter: ..., but allows control over both bracketing and quoting.
  */
 - (NSArray *) splitStringByCharacter:(unichar)character skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 
-/*
+/**
  * As splitStringByCharacter:, but returning only the ranges of queries, stored as NSValues.
  * Quoted strings are automatically ignored when looking for the characters.
  * SQL comments are automatically ignored when looking for the characters.
@@ -242,7 +256,7 @@ typedef enum _SPCommentTypes {
  */
 - (NSArray *) splitStringIntoRangesByCharacter:(unichar)character;
 
-/*
+/**
  * Methods used internally by this class to power the methods above:
  */
 - (NSUInteger) firstOccurrenceOfCharacter:(unichar)character ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
@@ -250,14 +264,6 @@ typedef enum _SPCommentTypes {
 - (NSUInteger) firstOccurrenceOfCharacter:(unichar)character afterIndex:(NSInteger)startIndex skippingBrackets:(BOOL)skipBrackets ignoringQuotedStrings:(BOOL)ignoreQuotedStrings;
 - (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)index;
 - (NSUInteger) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(NSInteger)index;
-
-/*
- * Cacheing methods to enable a faster alternative to characterAtIndex: when walking strings, and overrides to update.
- */
-- (unichar) charAtIndex:(NSInteger)index;
-- (void) clearCharCache;
-- (void) deleteCharactersInRange:(NSRange)aRange;
-- (void) insertString:(NSString *)aString atIndex:(NSUInteger)anIndex;
 
 /* Required and primitive methods to allow subclassing class cluster */
 #pragma mark -
@@ -278,6 +284,8 @@ typedef enum _SPCommentTypes {
 - (NSUInteger) replaceOccurrencesOfString:(NSString *)target withString:(NSString *)replacement options:(NSUInteger)opts range:(NSRange)searchRange;
 - (void) setString:(NSString *)string;
 - (void) replaceCharactersInRange:(NSRange)range withString:(NSString *)string;
+- (void) deleteCharactersInRange:(NSRange)aRange;
+- (void) insertString:(NSString *)aString atIndex:(NSUInteger)anIndex;
 - (void) dealloc;
 
 @end

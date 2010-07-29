@@ -1092,6 +1092,58 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
+ * Gets a MySQL charset for the given NSStringEncoding.
+ * If the NSStringEncoding was not matched, nil is returned.
+ */
++ (NSString *) mySQLEncodingForStringEncoding:(NSStringEncoding)stringEncoding
+{
+	switch (stringEncoding) {
+
+		// Unicode encodings:
+		case NSUTF8StringEncoding:
+			return @"utf8";
+		case NSUnicodeStringEncoding:
+			return @"ucs2";
+		
+		// Roman alphabet encodings:
+		case NSASCIIStringEncoding:
+			return @"ascii";
+		case NSISOLatin1StringEncoding:
+		case NSWindowsCP1252StringEncoding:
+			return @"latin1";
+		case NSMacOSRomanStringEncoding:
+			return @"macroman";
+		
+		// Roman alphabet with central/east european additions:
+		case NSISOLatin2StringEncoding:
+			return @"latin2";
+		case NSWindowsCP1250StringEncoding:
+			return @"cp1250";
+		
+		// Turkish
+		case NSWindowsCP1254StringEncoding:
+			return @"latin5";
+		
+		// Greek:
+		case NSWindowsCP1253StringEncoding:
+			return @"greek";
+		
+		// Cyrillic:	
+		case NSWindowsCP1251StringEncoding:
+			return @"cp1251";
+		 		
+		// Asian:
+		case NSJapaneseEUCStringEncoding:
+			return @"ujis";
+		case NSShiftJISStringEncoding:
+			return @"sjis";
+
+		default:
+			return nil;
+	}
+}
+
+/**
  * Returns the default charset of the library mysqlclient used.
  */
 + (NSStringEncoding)defaultMySQLEncoding

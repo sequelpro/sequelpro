@@ -72,11 +72,23 @@
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 	[queryParser setDelimiterSupport:YES];
 	queries = [queryParser splitStringByCharacter:';'];
+
+	// If carriage returns were found, normalise the queries
+	if ([queryParser containsCarriageReturns]) {
+		NSMutableArray *normalisedQueries = [NSMutableArray arrayWithCapacity:[queries count]];
+		for (NSString *query in queries) {
+			[normalisedQueries addObject:[SPSQLParser normaliseQueryForExecution:query]];
+		}
+		queries = normalisedQueries;
+	}
+
 	[queryParser release];
 
 	oldThreadedQueryRange = [textView selectedRange];
-	// Unselect a selection if given to avoid interferring with error highlighting
+
+	// Unselect a selection if given to avoid interfering with error highlighting
 	[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location, 0)];
+
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
@@ -132,7 +144,7 @@
 			NSBeep();
 			return;
 		}
-		queries = [NSArray arrayWithObject:query];
+		queries = [NSArray arrayWithObject:[SPSQLParser normaliseQueryForExecution:query]];
 
 		// Remember query start position for error highlighting
 		queryTextViewStartPosition = currentQueryRange.location;
@@ -142,6 +154,16 @@
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
 		[queryParser setDelimiterSupport:YES];
 		queries = [queryParser splitStringByCharacter:';'];
+
+		// If carriage returns were found, normalise the queries
+		if ([queryParser containsCarriageReturns]) {
+			NSMutableArray *normalisedQueries = [NSMutableArray arrayWithCapacity:[queries count]];
+			for (NSString *query in queries) {
+				[normalisedQueries addObject:[SPSQLParser normaliseQueryForExecution:query]];
+			}
+			queries = normalisedQueries;
+		}
+
 		[queryParser release];
 
 		// Remember query start position for error highlighting
@@ -551,7 +573,7 @@
 
 		if (i > 0) {
 			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
-			[tableDocumentInstance setTaskDescription:taskString];
+			[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
 			[[errorText onMainThread] setStringValue:taskString];
 		}
 

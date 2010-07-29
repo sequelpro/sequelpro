@@ -358,6 +358,7 @@
 	BOOL importSQLAsUTF8 = YES;
 	BOOL allDataRead = NO;
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;
+	NSString *connectionEncodingToRestore = nil;
 	NSCharacterSet *whitespaceAndNewlineCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 	// Start the notification timer to allow notifications to be shown, even if frontmost, for long queries
@@ -404,6 +405,10 @@
 			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
 			sqlEncoding = [fileEncodingDetector encoding];
 			[fileEncodingDetector release];
+			if ([MCPConnection mySQLEncodingForStringEncoding:sqlEncoding]) {
+				connectionEncodingToRestore = [tableDocumentInstance connectionEncoding];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [MCPConnection mySQLEncodingForStringEncoding:sqlEncoding]]];
+			}
 		}
 
 	// Otherwise, get the encoding to use from the menu
@@ -425,6 +430,9 @@
 
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
+			if (connectionEncodingToRestore) {
+				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", connectionEncodingToRestore]];
+			}
 			[self closeAndStopProgressSheet];
 			SPBeginAlertSheet(NSLocalizedString(@"File read error", @"SQL read error title"),
 							  NSLocalizedString(@"OK", @"OK button"),
@@ -466,6 +474,9 @@
 				sqlString = [[NSString alloc] initWithData:[sqlDataBuffer subdataWithRange:NSMakeRange(dataBufferLastQueryEndPosition, dataBufferPosition - dataBufferLastQueryEndPosition)]
 												  encoding:sqlEncoding];
 				if (!sqlString) {
+					if (connectionEncodingToRestore) {
+						[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", connectionEncodingToRestore]];
+					}
 					[self closeAndStopProgressSheet];
 					NSString *displayEncoding;
 					if (![importEncodingPopup indexOfSelectedItem]) {
@@ -522,9 +533,15 @@
 		while (query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO]) {
 			if (progressCancelled) break;
 			fileProcessedLength += [query lengthOfBytesUsingEncoding:sqlEncoding] + 1;
-		
+
+			// Ensure whitespace is removed from both ends, and normalise if necessary.
+			if ([sqlParser containsCarriageReturns]) {
+				query = [SPSQLParser normaliseQueryForExecution:query];
+			} else {
+				query = [query stringByTrimmingCharactersInSet:whitespaceAndNewlineCharset];
+			}
+
 			// Skip blank or whitespace-only queries to avoid errors
-			query = [query stringByTrimmingCharactersInSet:whitespaceAndNewlineCharset];
 			if (![query length]) continue;
 			
 			// Run the query
@@ -575,6 +592,9 @@
 	}
 
 	// Clean up
+	if (connectionEncodingToRestore) {
+		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", connectionEncodingToRestore]];
+	}
 	[sqlParser release];
 	[sqlDataBuffer release];
 	[importPool drain];
