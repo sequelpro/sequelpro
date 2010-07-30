@@ -167,29 +167,9 @@
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
 
-			// Create custom filename if required
-			if (createCustomFilename) {
-				[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
-			}
-			else {
-				// Determine what the file name should be
-				switch (exportSource) 
-				{
-					case SPFilteredExport:
-						[exportFilename setString:[NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]]];
-						break;
-					case SPQueryExport:
-						[exportFilename setString:@"query_result"];
-						break;
-					case SPTableExport:
-						[exportFilename setString:[tableDocumentInstance database]];
-						break;
-				}
-			}
+			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
 			
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-			
-			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+			singleFileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
 		// Start the export process depending on the data source
@@ -287,7 +267,7 @@
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 				
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+		SPFileHandle *fileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 				
 		[sqlExporter setExportOutputFileHandle:fileHandle];
 		
@@ -304,29 +284,9 @@
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
 			
-			// Create custom filename if required
-			if (createCustomFilename) {
-				[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
-			}
-			else {
-				// Determine what the file name should be
-				switch (exportSource) 
-				{
-					case SPFilteredExport:
-						[exportFilename setString:[NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]]];
-						break;
-					case SPQueryExport:
-						[exportFilename setString:@"query_result"];
-						break;
-					case SPTableExport:
-						[exportFilename setString:[tableDocumentInstance database]];
-						break;
-				}
-			}
-			
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-			
-			singleFileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
+						
+			singleFileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
 		// Start the export process depending on the data source
@@ -395,7 +355,7 @@
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 
-		SPFileHandle *fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+		SPFileHandle *fileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[dotExporter setExportOutputFileHandle:fileHandle];
 		
@@ -468,7 +428,7 @@
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 				
-		fileHandle = [self getFileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+		fileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[csvExporter setExportOutputFileHandle:fileHandle];
 	}
@@ -504,7 +464,7 @@
 		[exportFilename setString:[[exportPathField stringValue] stringByAppendingPathComponent:table]];
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 		
-		fileHandle = [self getFileHandleForFilePath:exportFilename];
+		fileHandle = [self fileHandleForFilePath:exportFilename];
 						
 		// Write the file header
 		[self writeXMLHeaderToFileHandle:fileHandle];
@@ -542,7 +502,7 @@
 /**
  * Returns a file handle for writing at the supplied path.
  */
-- (SPFileHandle *)getFileHandleForFilePath:(NSString *)path
+- (SPFileHandle *)fileHandleForFilePath:(NSString *)path
 {
 	SPFileHandle *fileHandle = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
