@@ -18,6 +18,7 @@
     NSColor *_foreColor;
     NSColor *_backColor;
     BOOL _drawBackground;
+    NSShadow *_shadow;
     
     NSTimer *_fadeOutAnimationTimer;
     BOOL _isFadingOut;

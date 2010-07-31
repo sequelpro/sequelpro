@@ -226,6 +226,12 @@
 
 	// Set up the progress indicator child window and layer - change indicator color and size
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
+	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
+	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0, -1.0)];
+	[progressIndicatorShadow setShadowBlurRadius:1.0];
+	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.75]];
+	[taskProgressIndicator setShadow:progressIndicatorShadow];
+	[progressIndicatorShadow release];
 	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
 	[taskProgressWindow setReleasedWhenClosed:NO];
 	[taskProgressWindow setOpaque:NO];
@@ -1276,11 +1282,11 @@
 	// Set the task text.  If a nil string was supplied, a generic query notification is occurring -
 	// if a task is not already active, use default text.
 	if (!description) {
-		if (!_isWorkingLevel) [taskDescriptionText setStringValue:NSLocalizedString(@"Working...", @"Generic working description")];
+		if (!_isWorkingLevel) [self setTaskDescription:NSLocalizedString(@"Working...", @"Generic working description")];
 	
 	// Otherwise display the supplied string
 	} else {
-		[taskDescriptionText setStringValue:description];
+		[self setTaskDescription:description];
 	}
 
 	// Increment the task level
@@ -1343,7 +1349,22 @@
  */
 - (void) setTaskDescription:(NSString *)description
 {
-	[taskDescriptionText setStringValue:description];
+	NSShadow *shadow = [[NSShadow alloc] init];
+	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.75]];
+	[shadow setShadowOffset:NSMakeSize(1.0, -1.0)];
+	[shadow setShadowBlurRadius:3.0];
+
+	NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+													[NSFont boldSystemFontOfSize:13.0], NSFontAttributeName,
+													shadow, NSShadowAttributeName,
+													nil];
+	NSAttributedString *string = [[NSAttributedString alloc] initWithString:description attributes:attributes];
+
+	[taskDescriptionText setAttributedStringValue:string];
+
+	[string release];
+	[attributes release];
+	[shadow release];
 }
 
 /**

@@ -56,6 +56,7 @@
 		_currentValue = 0.0;
 		_maxValue = 100.0;
 		_usesThreadedAnimation = NO;
+		_shadow = nil;
     }
     return self;
 }
@@ -63,6 +64,7 @@
 - (void) dealloc {
 	if (_foreColor) [_foreColor release];
 	if (_backColor) [_backColor release];
+	if (_shadow) [_shadow release];
 	if (_isAnimating) [self stopAnimation:self];
     
 	[super dealloc];
@@ -94,14 +96,16 @@
 	else
 		maxSize = size.width;
 
+	CGContextRef currentContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+	[NSGraphicsContext saveGraphicsState];
+
+	if (_shadow) [_shadow set];
+
 	// fill the background, if set
 	if(_drawBackground) {
 		[_backColor set];
 		[NSBezierPath fillRect:[self bounds]];
 	}
-
-	CGContextRef currentContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-	[NSGraphicsContext saveGraphicsState];
 
 	// Move the CTM so 0,0 is at the center of our bounds
 	CGContextTranslateCTM(currentContext,[self bounds].size.width/2,[self bounds].size.height/2);
@@ -311,6 +315,20 @@
         _drawBackground = value;
     }
     [self setNeedsDisplay:YES];
+}
+
+- (NSShadow *)shadow
+{
+	return [[_shadow retain] autorelease];
+}
+
+- (void)setShadow:(NSShadow *)value
+{
+	if (_shadow != value) {
+		[_shadow release];
+		_shadow = [value copy];
+		[self setNeedsDisplay:YES];
+	}
 }
 
 - (BOOL)isIndeterminate
