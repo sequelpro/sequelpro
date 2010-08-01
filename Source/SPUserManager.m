@@ -210,10 +210,10 @@
 			
 			// We only care about setting the user and password keys on the parent, together with their
 			// original values for comparison purposes
-			[parent setValue:username forKey:@"user"];
-			[parent setValue:username forKey:@"originaluser"];
-			[parent setValue:[item objectForKey:@"Password"] forKey:@"password"];
-			[parent setValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
+			[parent setPrimitiveValue:username forKey:@"user"];
+			[parent setPrimitiveValue:username forKey:@"originaluser"];
+			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
+			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
 
 			[self _initializeChild:child withItem:item];
 			
@@ -357,7 +357,10 @@
 					key = [privColumnToGrantMap objectForKey:key];
 				}
 				[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:key];
-			} else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
+			} else if ([key isEqualToString:@"Db"]) {
+                [dbPriv setValue:[[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"]
+                          forKey:key];
+            } else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
 				[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
 			}
 		}
@@ -754,25 +757,41 @@
 			return;			
 		}
 	}
-	
+
 	[self.managedObjectContext reset];
-	[grantedSchemaPrivs removeAllObjects];
+    [grantedSchemaPrivs removeAllObjects];
 	[grantedTableView reloadData];
 	[self _initializeAvailablePrivs];	
-	[treeController fetch:nil];
+    [outlineView reloadData];
+	[treeController rearrangeObjects];
+    
+    // Get all the stores on the current MOC and remove them.
+    NSArray *stores = [[self.managedObjectContext persistentStoreCoordinator] persistentStores];
+    for(NSPersistentStore* store in stores)
+    {
+        NSError *error = nil;
+        [[self.managedObjectContext persistentStoreCoordinator] removePersistentStore:store error:error];
+    }
+    // Add a new store
+    NSError *error = nil;
+    [[self.managedObjectContext persistentStoreCoordinator] 
+     addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error];
+    
+    // Reinitialize the tree with values from the database.
+    [self _initializeUsers];
 
 	// After the reset, ensure all original password and user values are up-to-date.
-    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
-    													 inManagedObjectContext:self.managedObjectContext];
-    NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
-    [request setEntity:entityDescription];
-    NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
-    for (NSManagedObject *user in userArray) {
-    	if (![user parent]) {
-    		[user setValue:[user valueForKey:@"user"] forKey:@"originaluser"];
-    		[user setValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
-    	}
-    }
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
+														 inManagedObjectContext:self.managedObjectContext];
+	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
+	[request setEntity:entityDescription];
+	NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
+	for (NSManagedObject *user in userArray) {
+		if (![user parent]) {
+			[user setPrimitiveValue:[user valueForKey:@"user"] forKey:@"originaluser"];
+			[user setPrimitiveValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
+		}
+	}
 }
 
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled
@@ -782,11 +801,12 @@
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
 	NSString *selectedDb = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
-												schema:selectedDb 
+												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 												  host:[selectedHost valueForKey:@"host"]];
 	NSManagedObject *priv = nil;
 	BOOL isNew = FALSE;
 	
+    
 	if ([selectedPrivs count] > 0)
 	{
 		priv = [selectedPrivs objectAtIndex:0];
@@ -919,11 +939,6 @@
 	if (!isInitializing) [outlineView reloadData];
 }
 
-- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
-{
-	[self refresh:nil];
-}
-
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
 	for (NSManagedObject *user in updatedUsers) 
@@ -965,8 +980,12 @@
 					[self checkAndDisplayMySqlError];
 				}
 			}
+            
+            
 		} else {
-			[self grantPrivilegesToUser:user];			
+            [self updateResourcesForUser:user];
+			[self grantPrivilegesToUser:user];
+            
 		}
 	}
 	
@@ -988,9 +1007,11 @@
 		
 	}
 	
-	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
-	[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
-	[droppedUsers release];
+    if ([droppedUsers length] > 2) {
+        droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
+        [self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+        [droppedUsers release];        
+    }
 	
 	return TRUE;
 }
@@ -1028,8 +1049,10 @@
             // Create user in database
             [self.mySqlConnection queryString:createStatement];
             
-            if ([self checkAndDisplayMySqlError]) 
-                [self grantPrivilegesToUser:user];
+            if ([self checkAndDisplayMySqlError]) {
+                [self updateResourcesForUser:user];
+                [self grantPrivilegesToUser:user];                
+            }
         }	
 	}
 	
@@ -1046,6 +1069,18 @@
 	
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
 	
+	NSString *statement = [NSString stringWithFormat:@"SELECT USER,HOST FROM `mysql`.`db` WHERE USER=%@ AND HOST=%@ AND DB=%@",
+									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
+									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
+									  [dbName tickQuotedString]];
+	MCPResult *result = [self.mySqlConnection queryString:statement];
+	NSUInteger rows = [result numOfRows];
+	BOOL userExists = YES;
+	if (rows == 0)
+	{
+		userExists = NO;
+	}
+	
 	for (NSString *key in self.privsSupportedByServer)
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
@@ -1056,7 +1091,10 @@
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
+				if (userExists || [grantPrivileges count] > 0) {
+					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
+				}
+				
 			}
 		}
 		@catch (NSException * e) {
@@ -1092,6 +1130,24 @@
 	return TRUE;
 }
 
+/**
+ * Update resource limites for given user
+ */
+- (BOOL)updateResourcesForUser:(NSManagedObject *)user
+{
+    if ([user valueForKey:@"parent"] != nil) {
+        NSString *updateResourcesStatement = [NSString stringWithFormat:
+                                              @"UPDATE mysql.user SET max_questions=%@,max_updates=%@,max_connections=%@ WHERE User=%@ AND Host=%@",
+                                              [user valueForKey:@"max_questions"],
+                                              [user valueForKey:@"max_updates"],
+                                              [user valueForKey:@"max_connections"],
+                                              [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
+                                              [[user valueForKey:@"host"] tickQuotedString]];
+        [self.mySqlConnection queryString:updateResourcesStatement];
+        [self checkAndDisplayMySqlError];
+                                              
+    }
+}
 /**
  * Grant or revoke privileges for the supplied user.
  */
@@ -1183,7 +1239,8 @@
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+	NSPredicate *predicate = 
+        [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
 	NSEntityDescription *privEntity = [NSEntityDescription entityForName:@"Privileges"
 														 inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
@@ -1233,7 +1290,41 @@
 
 #pragma mark -
 #pragma mark Tab View Delegate methods
+- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+    BOOL retVal = YES;
+    // If there aren't any selected objects, then can't change tab view item
+    if ([[treeController selectedObjects] count] == 0) return NO;
+    
+    // Currently selected object in tree
+    id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+    
+    // If we are selecting a tab view that requires there be a child,
+    // make sure there is a child to select.  If not, don't allow it.
+    if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
+        || [[tabViewItem identifier] isEqualToString:@"Resources"]
+        || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+        id parent = [selectedObject parent];
+        if (parent) {
+            retVal = ([[parent children] count] > 0);
+        } else {
+            retVal = ([[selectedObject children] count] > 0);
+        }
+        if (retVal == NO) {
+            NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
+                                             defaultButton:@"Add Host"
+                                           alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+                                               otherButton:nil
+                                 informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
+            NSInteger ret = [alert runModal];
+            if (ret == NSAlertDefaultReturn) {
+                [self addHost:nil];
+            }
+        }
 
+    }
+    return retVal;
+}
 -(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ([[treeController selectedObjects] count] == 0) return;
@@ -1253,6 +1344,13 @@
 		// if the tab is either Global Privs or Resources and we have a user 
 		// selected, then open tree and select first child node.
 		[self _selectFirstChildOfParentNode];
+	}
+}
+
+- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+		[self _initializeSchemaPrivs];
 	}
 }
 
@@ -1292,7 +1390,9 @@
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
 				NSString *selectedSchema = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
-				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] schema:selectedSchema host:[user valueForKey:@"host"]];
+				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
+                                                      schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
+                                                        host:[user valueForKey:@"host"]];
 				
 				if ([results count] > 0) {
 					NSManagedObject *priv = [results objectAtIndex:0];
@@ -1345,16 +1445,6 @@
 		}
 
 	}		
-}
-
-#pragma mark -
-#pragma mark Tab view delegate methods
-
-- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-    if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-    	[self _initializeSchemaPrivs];
-    }
 }
 
 #pragma mark -

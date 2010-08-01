@@ -67,7 +67,7 @@
 	}
 	
 	// Send the query started/working notification
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
   
 	// Retrieve the column information for this table.
 	// TODO: update this and indexes to use TableData at some point - tiny bit more parsing required...
@@ -75,12 +75,12 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -97,12 +97,12 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -192,7 +192,7 @@
 	[[self onMainThread] setTableDetails:tableDetails];
 
 	// Send the query finished/work complete notification
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
 }
 
@@ -400,7 +400,32 @@
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
+}
+
+/**
+ * Process the remove field sheet closing, performing the delete if the user
+ * confirmed the action.
+ */
+- (void)removeFieldSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Order out current sheet to suppress overlapping of sheets
+	[[alert window] orderOut:nil];
+
+	if (returnCode == NSAlertDefaultReturn) {
+		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
+		
+		NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+		
+		if ([NSThread isMainThread]) {
+			[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
+			
+			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+		} 
+		else {
+			[self _removeFieldAndForeignKey:removeKey];
+		}
+	}
 }
 
 /**
@@ -452,7 +477,32 @@
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
+}
+
+/**
+ * Process the remove index sheet closing, performing the delete if the user
+ * confirmed the action.
+ */
+- (void)removeIndexSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Order out current sheet to suppress overlapping of sheets
+	[[alert window] orderOut:nil];
+
+	if (returnCode == NSAlertDefaultReturn) {
+		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing index...", @"removing index task status message")];
+		
+		NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+		
+		if ([NSThread isMainThread]) {
+			[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
+			
+			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
+		} 
+		else {
+			[self _removeIndexAndForeignKey:removeKey];
+		}
+	}
 }
 
 - (IBAction)resetAutoIncrement:(id)sender
@@ -468,7 +518,7 @@
 		[NSApp beginSheet:resetAutoIncrementSheet
 		   modalForWindow:tableWindow 
 			modalDelegate:self
-		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		   didEndSelector:@selector(resetAutoincrementSheetDidEnd:returnCode:contextInfo:) 
 			  contextInfo:@"resetAutoIncrement"];
 
 		[resetAutoIncrementValue setStringValue:@"1"];
@@ -477,6 +527,20 @@
 		[self setAutoIncrementTo:@"1"];
 	}
 
+}
+
+/**
+ * Process the autoincrement sheet closing, resetting if the user
+ * confirmed the action.
+ */
+- (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Order out current sheet to suppress overlapping of sheets
+	[theSheet orderOut:nil];
+
+	if (returnCode == NSAlertDefaultReturn) {
+		[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+	}
 }
 
 #pragma mark -
@@ -515,8 +579,29 @@
 	[NSApp beginSheet:indexSheet
 	   modalForWindow:tableWindow 
 		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:) 
 		  contextInfo:@"addIndex"];
+}
+
+/**
+ * Process the new index sheet closing, adding the index if appropriate
+ */
+- (void)addIndexSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[theSheet orderOut:nil];
+
+	if (returnCode == NSOKButton) {
+		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
+		
+		if ([NSThread isMainThread]) {
+			[NSThread detachNewThreadSelector:@selector(_addIndex) toTarget:self withObject:nil];
+			
+			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
+		} 
+		else {
+			[self _addIndex];
+		}
+	}
 }
 
 /**
@@ -606,7 +691,7 @@ closes the keySheet
 	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"), 
 								selTable, [mySQLConnection getLastErrorMessage]]);
 	}
@@ -732,7 +817,11 @@ closes the keySheet
 			([[theRow objectForKey:@"Type"] isEqualToString:@"datetime"])) 
 		{
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
-			if ([oldRow isEqualToDictionary:theRow]) return YES;
+			if ([oldRow isEqualToDictionary:theRow]) {
+				isEditingRow = NO;
+				currentlyEditingRow = -1;
+				return YES;
+			}
 			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
 															[selectedTable backtickQuotedString], 
@@ -742,7 +831,11 @@ closes the keySheet
 		} 
 		else {
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue 
-			if ([oldRow isEqualToDictionary:theRow]) return YES;
+			if ([oldRow isEqualToDictionary:theRow]) {
+				isEditingRow = NO;
+				currentlyEditingRow = -1;
+				return YES;
+			}
 			
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@(%@)",
 															[selectedTable backtickQuotedString], 
@@ -894,7 +987,7 @@ closes the keySheet
 		if([mySQLConnection getLastErrorID] == 1146) { // If the current table doesn't exist anymore
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 							  NSLocalizedString(@"OK", @"OK button"), 
-							  nil, nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil, 
+							  nil, nil, tableWindow, self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"), 
 							  selectedTable, [mySQLConnection getLastErrorMessage]]);
 
@@ -918,20 +1011,58 @@ closes the keySheet
 		if (isEditingNewRow) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"), 
 							  NSLocalizedString(@"Edit row", @"Edit row button"), 
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@'.\n\nMySQL said: %@", @"error adding field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		} 
 		else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"), 
 							  NSLocalizedString(@"Edit row", @"Edit row button"), 
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow", 
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@'.\n\nMySQL said: %@", @"error changing field informative message"), 
 							  [theRow objectForKey:@"Field"], [mySQLConnection getLastErrorMessage]]);
 		}
 		
 		return NO;
 	}
+}
+
+/**
+ * Perform the action requested in the Add Row error sheet.
+ */
+- (void)addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+
+	// Order out current sheet to suppress overlapping of sheets
+	[[alert window] orderOut:nil];
+
+	alertSheetOpened = NO;
+
+	// Remain in edit mode - reselect the row and resume editing
+	if (returnCode == NSAlertDefaultReturn) {
+
+		// Problem: reentering edit mode for first cell doesn't function
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
+	}
+
+	// Discard changes and cancel editing
+	else {
+		if (!isEditingNewRow) {
+			[tableFields replaceObjectAtIndex:currentlyEditingRow
+								   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+			isEditingRow = NO;
+		} 
+		else {
+			[tableFields removeObjectAtIndex:currentlyEditingRow];
+			isEditingRow = NO;
+			isEditingNewRow = NO;
+		}
+
+		currentlyEditingRow = -1;
+	}
+
+	[tableSourceView reloadData];
 }
 
 /**
@@ -953,7 +1084,7 @@ closes the keySheet
 
     // Display the error sheet
     SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"),
-			nil, nil, tableWindow, self, nil, nil, nil,
+			nil, nil, tableWindow, self, nil, nil,
 			[errorDictionary objectForKey:@"message"]);
 }
 
@@ -1022,104 +1153,17 @@ closes the keySheet
 
 /**
  * Called whenever a sheet is dismissed.
- *
- * if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
- * if contextInfo == removefield: removes row from mysql-db if user hits ok
- * if contextInfo == removeindex: removes index from mysql-db if user hits ok
- * if contextInfo == addIndex: adds and index to the mysql-db if user hits ok
- * if contextInfo == cannotremovefield: do nothing
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
 	else if ([sheet respondsToSelector:@selector(window)])
 		[[sheet window] orderOut:nil];
-	
-	if ([contextInfo isEqualToString:@"addrow"]) {
-		
-		alertSheetOpened = NO;
-		
-		if (returnCode == NSAlertDefaultReturn) {
-			
-			// Problem: reentering edit mode for first cell doesn't function
-			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
-			[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
-		} 
-		else {
-			if (!isEditingNewRow) {
-				[tableFields replaceObjectAtIndex:currentlyEditingRow
-									   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
-				isEditingRow = NO;
-			} 
-			else {
-				[tableFields removeObjectAtIndex:currentlyEditingRow];
-				isEditingRow = NO;
-				isEditingNewRow = NO;
-			}
-			
-			currentlyEditingRow = -1;
-		}
-		
-		[tableSourceView reloadData];
-	}
-	else if ([contextInfo isEqualToString:@"removeField"] || [contextInfo isEqualToString:@"removeFieldAndForeignKey"]) {
-		if (returnCode == NSAlertDefaultReturn) {
-			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
-			
-			NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
-			
-			if ([NSThread isMainThread]) {
-				[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
-				
-				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
-			} 
-			else {
-				[self _removeFieldAndForeignKey:removeKey];
-			}
-		}
-	} 
-	else if ([contextInfo isEqualToString:@"addIndex"]) {
-		if (returnCode == NSOKButton) {
-			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
-			
-			if ([NSThread isMainThread]) {
-				[NSThread detachNewThreadSelector:@selector(_addIndex) toTarget:self withObject:nil];
-				
-				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
-			} 
-			else {
-				[self _addIndex];
-			}
-		}
-	}
-	else if ([contextInfo isEqualToString:@"removeIndex"] || [contextInfo isEqualToString:@"removeIndexAndForeignKey"]) {
-		if (returnCode == NSAlertDefaultReturn) {
-			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing index...", @"removing index task status message")];
-			
-			NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
-			
-			if ([NSThread isMainThread]) {
-				[NSThread detachNewThreadSelector:@selector(_removeIndexAndForeignKey:) toTarget:self withObject:removeKey];
-				
-				[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
-			} 
-			else {
-				[self _removeIndexAndForeignKey:removeKey];
-			}
-		}
-	} 
-	else if ([contextInfo isEqualToString:@"cannotremovefield"]) {
-		;
-	}
-	else if ([contextInfo isEqualToString:@"resetAutoIncrement"]) {
-		if (returnCode == NSAlertDefaultReturn) {
-			[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-		}
-	}
-	else
-		alertSheetOpened = NO;
+
+	alertSheetOpened = NO;
 }
 
 #pragma mark -
@@ -1445,14 +1489,18 @@ would result in a position change.
 		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
 	}
 
+	BOOL isTimestampType = [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"];
+
 	// Add the default value
 	if ([[originalRow objectForKey:@"Default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 		if ([[originalRow objectForKey:@"Null"] integerValue] == 1) {
-			[queryString appendString:@" DEFAULT NULL"];
+			[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
 		}
-	} else if ( [[originalRow objectForKey:@"Type"] isEqualToString:@"timestamp"] && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
-			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
-	} else {
+	}
+	else if (isTimestampType && ([[[originalRow objectForKey:@"Default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
+		[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+	}
+	else {
 		[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"Default"]]]];
 	}
 
@@ -1480,8 +1528,8 @@ would result in a position change.
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
-			[NSString stringWithFormat:NSLocalizedString(@"Couldn't move field. MySQL said: %@", @"message of panel when field cannot be added in drag&drop operation"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection getLastErrorMessage]]);
 	} else {
 		[tableDataInstance resetAllData];
 		[tablesListInstance setStatusRequiresReload:YES];
@@ -1550,9 +1598,9 @@ would result in a position change.
 	row = [tableSourceView editedRow];
 	column = [tableSourceView editedColumn];
 
-	 if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ||
-				[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) //trap enter and tab
-	 {
+	// Trap the tab key, selecting the next item in the line
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	{
 		//save current line
 		[[control window] makeFirstResponder:control];
 		if ( column == 9 ) {
@@ -1574,9 +1622,19 @@ would result in a position change.
 		}
 		return TRUE;
 		 
-	 } else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
-					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
-		//abort editing
+	// Trap the enter key, triggering a save
+	}
+	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+	{
+		[[control window] makeFirstResponder:control];
+		[self addRowToDB];
+		return TRUE;
+
+	// Trap escape, aborting the edit and reverting the row
+	}
+	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
+					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
+	{
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
 			isEditingRow = NO;
@@ -1737,7 +1795,7 @@ would result in a position change.
 		
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, 
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [mySQLConnection getLastErrorMessage]]);
 		}
 		else {

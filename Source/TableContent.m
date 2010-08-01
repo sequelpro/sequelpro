@@ -190,7 +190,7 @@
 	}
 
 	// Post a notification that a query will be performed
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// Set up the table details for the new table, and trigger an interface update
 	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -226,7 +226,7 @@
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 	// Post the notification that the query is finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 	// Clear any details to restore now that they have been restored
 	[self clearDetailsToRestore];
@@ -562,7 +562,7 @@
 	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 
 	// Notify any listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 	
 	// Start construction of the query string
 	queryString = [NSMutableString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
@@ -669,7 +669,7 @@
 	[self updatePaginationState];
 
 	// Notify listenters that the query has finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 	// Trigger a full reload if required
 	if (fullTableReloadRequired) [self reloadTable:self];
@@ -1323,7 +1323,7 @@
 	if ( [tableContentView numberOfSelectedRows] < 1 )
 		return;
 	if ( [tableContentView numberOfSelectedRows] > 1 ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
 		return;
 	}
 	
@@ -1428,8 +1428,301 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.", @"delete rows informative message"), (long)[tableContentView numberOfSelectedRows]]];
 	}
 	
-	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+	[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
+
+/**
+ * Perform the requested row deletion action.
+ */
+- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+
+	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
+	NSString *wherePart;
+	NSInteger i, errors;
+	BOOL consoleUpdateStatus;
+	BOOL reloadAfterRemovingRow = [prefs boolForKey:SPReloadAfterRemovingRow];
+
+	// Order out current sheet to suppress overlapping of sheets
+	[[alert window] orderOut:nil];
+
+	if ( [contextInfo isEqualToString:@"removeallrows"] ) {		
+		if ( returnCode == NSAlertDefaultReturn ) {
+			//check if the user is currently editing a row
+			if (isEditingRow) {
+				//cancel the edit
+				isEditingRow = NO;
+				// in case the delete fails, make sure we at least stay in a somewhat consistent state
+				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
+				currentlyEditingRow = -1;				
+			}
+			
+			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
+			if ( ![mySQLConnection queryErrored] ) {
+
+				// Reset auto increment if suppression button was ticked
+				if([[alert suppressionButton] state] == NSOnState)
+					[tableSourceInstance setAutoIncrementTo:@"1"];
+
+				[self reloadTable:self];
+
+			} else {
+				[self performSelector:@selector(showErrorSheetWith:)
+					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete rows.\n\nMySQL said: %@", @"message when deleteing all rows failed"),
+						   [mySQLConnection getLastErrorMessage]],
+						nil]
+					afterDelay:0.3];
+			}
+		}
+	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
+		if ( returnCode == NSAlertDefaultReturn ) {
+			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
+
+			//check if the user is currently editing a row
+			if (isEditingRow) {
+				//make sure that only one row is selected. This should never happen
+				if ([selectedRows count]!=1) {
+					NSLog(@"Expected only one selected row, but found %d",[selectedRows count]);
+				}
+				// this code is pretty much taken from the escape key handler
+				if ( isEditingNewRow ) {
+					// since the user is currently editing a new row, we don't actually have to delete any rows from the database
+					// we just have to remove the row from the view (and the store)
+					isEditingRow = NO;
+					isEditingNewRow = NO;
+					tableRowsCount--;
+					[tableValues removeRowAtIndex:currentlyEditingRow];
+					currentlyEditingRow = -1;
+					[self updateCountText];
+					[tableContentView reloadData];
+					
+					//deselect the row
+					[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+
+					// we also don't have to reload the table, since no query went to the database
+					return;
+				} else {
+					//cancel the edit
+					isEditingRow = NO;
+					// in case the delete fails, make sure we at least stay in a somewhat consistent state
+					[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
+					currentlyEditingRow = -1;				
+				}
+
+			}
+			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+			
+			errors = 0;
+
+			// Disable updating of the Console Log window for large number of queries
+			// to speed the deletion
+			consoleUpdateStatus = [[SPQueryController sharedQueryController] allowConsoleUpdate];
+			if([selectedRows count] > 10)
+				[[SPQueryController sharedQueryController] setAllowConsoleUpdate:NO];
+
+			NSUInteger index = [selectedRows firstIndex];
+
+			NSArray *primaryKeyFieldNames = [tableDataInstance primaryKeyColumnNames];
+
+			// If no PRIMARY KEY is found and numberOfSelectedRows > 3 then
+			// check for uniqueness of rows via combining all column values;
+			// if unique then use the all columns as 'primary keys'
+			if([selectedRows count] >3 && primaryKeyFieldNames == nil) {
+				primaryKeyFieldNames = [tableDataInstance columnNames];
+
+				NSInteger numberOfRows = 0;
+				// Get the number of rows in the table
+				MCPResult *r;
+				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]];
+				if (![mySQLConnection queryErrored]) {
+					NSArray *a = [r fetchRowAsArray];
+					if([a count])
+						numberOfRows = [[a objectAtIndex:0] integerValue];
+				}
+				// Check for uniqueness via LIMIT numberOfRows-1,numberOfRows for speed
+				if(numberOfRows > 0) {
+					[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ GROUP BY %@ LIMIT %ld,%ld", [selectedTable backtickQuotedString], [primaryKeyFieldNames componentsJoinedAndBacktickQuoted], (long)(numberOfRows-1), (long)numberOfRows]];
+					if([mySQLConnection affectedRows] == 0)
+						primaryKeyFieldNames = nil;
+				} else {
+					primaryKeyFieldNames = nil;
+				}
+			}
+
+			if(primaryKeyFieldNames == nil) {
+				// delete row by row
+				while (index != NSNotFound) {
+
+					wherePart = [NSString stringWithString:[self argumentForRow:index]];
+
+					//argumentForRow might return empty query, in which case we shouldn't execute the partial query
+					if([wherePart length]) {
+						[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
+
+						// Check for errors
+						if ( ![mySQLConnection affectedRows] || [mySQLConnection queryErrored]) {
+							// If error delete that index from selectedRows for reloading table if 
+							// "ReloadAfterRemovingRow" is disbaled
+							if(!reloadAfterRemovingRow)
+								[selectedRows removeIndex:index];
+							errors++;
+						}
+					} else {
+						if(!reloadAfterRemovingRow)
+							[selectedRows removeIndex:index];
+						errors++;
+					}
+					index = [selectedRows indexGreaterThanIndex:index];
+				}
+			} else if ([primaryKeyFieldNames count] == 1) {
+				// if table has only one PRIMARY KEY
+				// delete the fast way by using the PRIMARY KEY in an IN clause
+				NSMutableString *deleteQuery = [NSMutableString string];
+				NSInteger affectedRows = 0;
+
+				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
+
+				while (index != NSNotFound) {
+
+					id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
+
+					if([keyValue isKindOfClass:[NSData class]])
+						[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
+					else
+						[deleteQuery appendString:[NSString stringWithFormat:@"'%@'", [keyValue description]]];
+
+					// Split deletion query into 256k chunks
+					if([deleteQuery length] > 256000) {
+						[deleteQuery appendString:@")"];
+						[mySQLConnection queryString:deleteQuery];
+						// Remember affected rows for error checking
+						affectedRows += [mySQLConnection affectedRows];
+						// Reinit a new deletion query
+						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
+					} else {
+						[deleteQuery appendString:@","];
+					}
+
+					index = [selectedRows indexGreaterThanIndex:index];
+				}
+
+				// Check if deleteQuery's maximal length was reached for the last index
+				// if yes omit the empty query
+				if(![deleteQuery hasSuffix:@"("]) {
+					// Replace final , by ) and delete the remaining rows
+					[deleteQuery setString:[NSString stringWithFormat:@"%@)", [deleteQuery substringToIndex:([deleteQuery length]-1)]]];
+					[mySQLConnection queryString:deleteQuery];
+					// Remember affected rows for error checking
+					affectedRows += [mySQLConnection affectedRows];
+				}
+				
+				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
+			} else {
+				// if table has more than one PRIMARY KEY
+				// delete the row by using all PRIMARY KEYs in an OR clause
+				NSMutableString *deleteQuery = [NSMutableString string];
+				NSInteger affectedRows = 0;
+				
+				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
+				
+				while (index != NSNotFound) {
+					
+					// Build the AND clause of PRIMARY KEYS
+					[deleteQuery appendString:@"("];
+					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
+
+						id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
+						
+						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
+						if ([keyValue isKindOfClass:[NSData class]]) {
+							[deleteQuery appendString:@"=X'"];
+							[deleteQuery appendString:[mySQLConnection prepareBinaryData:keyValue]];
+						} else {
+							[deleteQuery appendString:@"='"];
+							[deleteQuery appendString:[mySQLConnection prepareString:[keyValue description]]];
+						}
+						[deleteQuery appendString:@"' AND "];
+					}
+					
+					// Remove the trailing AND and add the closing bracket
+					[deleteQuery deleteCharactersInRange:NSMakeRange([deleteQuery length]-5, 5)];
+					[deleteQuery appendString:@")"];
+					
+					// Split deletion query into 64k chunks
+					if([deleteQuery length] > 64000) {
+						[mySQLConnection queryString:deleteQuery];
+						// Remember affected rows for error checking
+						affectedRows += [mySQLConnection affectedRows];
+						// Reinit a new deletion query
+						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
+					} else {
+						[deleteQuery appendString:@" OR "];
+					}
+					
+					index = [selectedRows indexGreaterThanIndex:index];
+				}
+				
+				// Check if deleteQuery's maximal length was reached for the last index
+				// if yes omit the empty query
+				if(![deleteQuery hasSuffix:@"WHERE "]) {
+					// Remove final ' OR ' and delete the remaining rows
+					[deleteQuery setString:[deleteQuery substringToIndex:([deleteQuery length]-4)]];
+					[mySQLConnection queryString:deleteQuery];
+					// Remember affected rows for error checking
+					affectedRows += [mySQLConnection affectedRows];
+				}
+				
+				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
+			}
+						
+			// Restore Console Log window's updating bahaviour
+			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
+			
+			if (errors) {
+				NSArray *message;
+				//TODO: The following three messages are NOT localisable!
+				if (errors < 0) {
+					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+							   nil];
+				} 
+				else {
+					if (primaryKeyFieldNames == nil)
+						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+								   nil];
+					else
+						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+								   nil];
+				}
+				
+				[self performSelector:@selector(showErrorSheetWith:)
+						   withObject:message
+						   afterDelay:0.3];
+			}
+
+			// Refresh table content
+			if ( errors || reloadAfterRemovingRow ) {
+				previousTableRowsCount = tableRowsCount;
+				[self loadTableValues];
+			} else {
+				for ( i = tableRowsCount - 1 ; i >= 0 ; i-- ) {
+					if ([selectedRows containsIndex:i]) [tableValues removeRowAtIndex:i];
+				}
+				tableRowsCount = [tableValues count];
+				[tableContentView reloadData];
+			}
+			[tableContentView deselectAll:self];
+		} else {
+			// The user clicked cancel in the "sure you wanna delete" message
+			// restore editing or whatever
+		}
+
+	}
+}
+
 
 // Accessors
 
@@ -1798,13 +2091,13 @@
 		return YES;
 	}
 
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
 	if (!isEditingNewRow && [oldRow isEqualToArray:[tableValues rowContentsAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		return YES;
 	}
 
@@ -1904,12 +2197,12 @@
 	}
 		
 	[fieldValues release];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
 		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 		} else {
 			NSBeep();
@@ -1958,12 +2251,40 @@
 
 	// Report errors which have occurred
 	} else {
-		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addrow",
+		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, tableWindow, self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
 }
 
+/*
+ * Handle the user decision as a result of an addRow error.
+ */
+- (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Order out current sheet to suppress overlapping of sheets
+	[[alert window] orderOut:nil];
+
+	// Edit row selected - reselect the row, and start editing.
+	if ( returnCode == NSAlertDefaultReturn ) {
+		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+		[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
+
+	// Discard changes selected
+	} else {
+		if ( !isEditingNewRow ) {
+			[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+			isEditingRow = NO;
+		} else {
+			tableRowsCount--;
+			[tableValues removeRowAtIndex:currentlyEditingRow];
+			isEditingRow = NO;
+			isEditingNewRow = NO;
+		}
+		currentlyEditingRow = -1;
+	}
+	[tableContentView reloadData];
+}
 
 /*
  * A method to be called whenever the table selection changes; checks whether the current
@@ -2038,7 +2359,7 @@
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
 		if ( [prefs boolForKey:SPLoadBlobsAsNeeded] && [self tableContainsBlobOrTextColumns] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  NSLocalizedString(@"You can't hide blob and text fields when working with tables without index.", @"message of panel when trying to edit tables without index and with hidden blob/text fields"));
 			[keys removeAllObjects];
 			[tableContentView deselectAll:self];
@@ -2130,315 +2451,12 @@
 	}
 }
 
-- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 /*
- if contextInfo == addrow: remain in edit-mode if user hits OK, otherwise cancel editing
- if contextInfo == removerow: removes row if user hits OK
+ * Close an open sheet.
  */
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
-	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
-	NSString *wherePart;
-	NSInteger i, errors;
-	BOOL consoleUpdateStatus;
-	BOOL reloadAfterRemovingRow = [prefs boolForKey:SPReloadAfterRemovingRow];
-
-	if([sheet respondsToSelector:@selector(orderOut:)])
-		[sheet orderOut:self];
-	else if([sheet window] && [[sheet window] respondsToSelector:@selector(orderOut:)])
-		[[sheet window] orderOut:self];
-
-	if ( [contextInfo isEqualToString:@"addrow"] ) {
-		
-		if ( returnCode == NSAlertDefaultReturn ) {
-			[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
-			[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[tableWindow windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
-		} else {
-			if ( !isEditingNewRow ) {
-				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
-				isEditingRow = NO;
-			} else {
-				tableRowsCount--;
-				[tableValues removeRowAtIndex:currentlyEditingRow];
-				isEditingRow = NO;
-				isEditingNewRow = NO;
-			}
-			currentlyEditingRow = -1;
-		}
-		[tableContentView reloadData];
-	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
-			//check if the user is currently editing a row
-			if (isEditingRow) {
-				//cancel the edit
-				isEditingRow = NO;
-				// in case the delete fails, make sure we at least stay in a somewhat consistent state
-				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
-				currentlyEditingRow = -1;
-			}
-			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
-			if ( ![mySQLConnection queryErrored] ) {
-
-				// Reset auto increment if suppression button was ticked
-				if([[sheet suppressionButton] state] == NSOnState)
-					[tableSourceInstance setAutoIncrementTo:@"1"];
-
-				[self reloadTable:self];
-
-			} else {
-				[self performSelector:@selector(showErrorSheetWith:)
-					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\n\nMySQL said: %@", @"message of panel when field cannot be removed"),
-						   [mySQLConnection getLastErrorMessage]],
-						nil]
-					afterDelay:0.3];
-			}
-		}
-	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
-			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
-
-    		//check if the user is currently editing a row
-    		if (isEditingRow) {
-    			//make sure that only one row is selected. This should never happen
-    			if ([selectedRows count]!=1) {
-    				NSLog(@"Expected only one selected row, but found %d",[selectedRows count]);
-    			}
-    			// this code is pretty much taken from the escape key handler
-    			if ( isEditingNewRow ) {
-    				// since the user is currently editing a new row, we don't actually have to delete any rows from the database
-    				// we just have to remove the row from the view (and the store)
-    				isEditingRow = NO;
-    				isEditingNewRow = NO;
-    				tableRowsCount--;
-    				[tableValues removeRowAtIndex:currentlyEditingRow];
-    				currentlyEditingRow = -1;
-    				[self updateCountText];
-    				[tableContentView reloadData];
-
-    				//deselect the row
-    				[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-
-    				// we also don't have to reload the table, since no query went to the database
-    				return;
-    			} else {
-    				//cancel the edit
-    				isEditingRow = NO;
-    				// in case the delete fails, make sure we at least stay in a somewhat consistent state
-    				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
-    				currentlyEditingRow = -1;
-    			}
-
-    		}
-			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-
-			errors = 0;
-
-			// Disable updating of the Console Log window for large number of queries
-			// to speed the deletion
-			consoleUpdateStatus = [[SPQueryController sharedQueryController] allowConsoleUpdate];
-			if([selectedRows count] > 10)
-				[[SPQueryController sharedQueryController] setAllowConsoleUpdate:NO];
-
-			NSUInteger index = [selectedRows firstIndex];
-
-			NSArray *primaryKeyFieldNames = [tableDataInstance primaryKeyColumnNames];
-
-			// If no PRIMARY KEY is found and numberOfSelectedRows > 3 then
-			// check for uniqueness of rows via combining all column values;
-			// if unique then use the all columns as 'primary keys'
-			if([selectedRows count] >3 && primaryKeyFieldNames == nil) {
-				primaryKeyFieldNames = [tableDataInstance columnNames];
-
-				NSInteger numberOfRows = 0;
-				// Get the number of rows in the table
-				MCPResult *r;
-				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]];
-				if (![mySQLConnection queryErrored]) {
-					NSArray *a = [r fetchRowAsArray];
-					if([a count])
-						numberOfRows = [[a objectAtIndex:0] integerValue];
-				}
-				// Check for uniqueness via LIMIT numberOfRows-1,numberOfRows for speed
-				if(numberOfRows > 0) {
-					[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ GROUP BY %@ LIMIT %ld,%ld", [selectedTable backtickQuotedString], [primaryKeyFieldNames componentsJoinedAndBacktickQuoted], (long)(numberOfRows-1), (long)numberOfRows]];
-					if([mySQLConnection affectedRows] == 0)
-						primaryKeyFieldNames = nil;
-				} else {
-					primaryKeyFieldNames = nil;
-				}
-			}
-
-			if(primaryKeyFieldNames == nil) {
-				// delete row by row
-				while (index != NSNotFound) {
-
-					wherePart = [NSString stringWithString:[self argumentForRow:index]];
-
-					//argumentForRow might return empty query, in which case we shouldn't execute the partial query
-					if([wherePart length]) {
-						[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
-
-						// Check for errors
-						if ( ![mySQLConnection affectedRows] || [mySQLConnection queryErrored]) {
-							// If error delete that index from selectedRows for reloading table if 
-							// "ReloadAfterRemovingRow" is disbaled
-							if(!reloadAfterRemovingRow)
-								[selectedRows removeIndex:index];
-							errors++;
-						}
-					} else {
-						if(!reloadAfterRemovingRow)
-							[selectedRows removeIndex:index];
-						errors++;
-					}
-					index = [selectedRows indexGreaterThanIndex:index];
-				}
-			} else if ([primaryKeyFieldNames count] == 1) {
-				// if table has only one PRIMARY KEY
-				// delete the fast way by using the PRIMARY KEY in an IN clause
-				NSMutableString *deleteQuery = [NSMutableString string];
-				NSInteger affectedRows = 0;
-
-				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
-
-				while (index != NSNotFound) {
-
-					id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
-
-					if([keyValue isKindOfClass:[NSData class]])
-						[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
-					else
-						[deleteQuery appendString:[NSString stringWithFormat:@"'%@'", [keyValue description]]];
-
-					// Split deletion query into 256k chunks
-					if([deleteQuery length] > 256000) {
-						[deleteQuery appendString:@")"];
-						[mySQLConnection queryString:deleteQuery];
-						// Remember affected rows for error checking
-						affectedRows += [mySQLConnection affectedRows];
-						// Reinit a new deletion query
-						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
-					} else {
-						[deleteQuery appendString:@","];
-					}
-
-					index = [selectedRows indexGreaterThanIndex:index];
-				}
-
-				// Check if deleteQuery's maximal length was reached for the last index
-				// if yes omit the empty query
-				if(![deleteQuery hasSuffix:@"("]) {
-					// Replace final , by ) and delete the remaining rows
-					[deleteQuery setString:[NSString stringWithFormat:@"%@)", [deleteQuery substringToIndex:([deleteQuery length]-1)]]];
-					[mySQLConnection queryString:deleteQuery];
-					// Remember affected rows for error checking
-					affectedRows += [mySQLConnection affectedRows];
-				}
-
-				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
-			} else {
-				// if table has more than one PRIMARY KEY
-				// delete the row by using all PRIMARY KEYs in an OR clause
-				NSMutableString *deleteQuery = [NSMutableString string];
-				NSInteger affectedRows = 0;
-				
-				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
-				
-				while (index != NSNotFound) {
-					
-					// Build the AND clause of PRIMARY KEYS
-					[deleteQuery appendString:@"("];
-					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
-
-						id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
-						
-						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
-						if ([keyValue isKindOfClass:[NSData class]]) {
-							[deleteQuery appendString:@"=X'"];
-							[deleteQuery appendString:[mySQLConnection prepareBinaryData:keyValue]];
-						} else {
-							[deleteQuery appendString:@"='"];
-							[deleteQuery appendString:[mySQLConnection prepareString:[keyValue description]]];
-						}
-						[deleteQuery appendString:@"' AND "];
-					}
-					
-					// Remove the trailing AND and add the closing bracket
-					[deleteQuery deleteCharactersInRange:NSMakeRange([deleteQuery length]-5, 5)];
-					[deleteQuery appendString:@")"];
-					
-					// Split deletion query into 64k chunks
-					if([deleteQuery length] > 64000) {
-						[mySQLConnection queryString:deleteQuery];
-						// Remember affected rows for error checking
-						affectedRows += [mySQLConnection affectedRows];
-						// Reinit a new deletion query
-						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
-					} else {
-						[deleteQuery appendString:@" OR "];
-					}
-					
-					index = [selectedRows indexGreaterThanIndex:index];
-				}
-				
-				// Check if deleteQuery's maximal length was reached for the last index
-				// if yes omit the empty query
-				if(![deleteQuery hasSuffix:@"WHERE "]) {
-					// Remove final ' OR ' and delete the remaining rows
-					[deleteQuery setString:[deleteQuery substringToIndex:([deleteQuery length]-4)]];
-					[mySQLConnection queryString:deleteQuery];
-					// Remember affected rows for error checking
-					affectedRows += [mySQLConnection affectedRows];
-				}
-
-				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
-			}
-			
-			// Restore Console Log window's updating bahaviour
-			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
-
-			if (errors) {
-				NSArray *message;
-				//TODO: The following three messages are NOT localisable!
-				if (errors < 0) {
-					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
-							   nil];
-				}
-				else {
-					if (primaryKeyFieldNames == nil)
-						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
-								   nil];
-					else
-						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
-								   nil];
-				}
-
-				[self performSelector:@selector(showErrorSheetWith:)
-						   withObject:message
-						   afterDelay:0.3];
-			}
-
-			// Refresh table content
-			if ( errors || reloadAfterRemovingRow ) {
-				previousTableRowsCount = tableRowsCount;
-				[self loadTableValues];
-			} else {
-				for ( i = tableRowsCount - 1 ; i >= 0 ; i-- ) {
-					if ([selectedRows containsIndex:i]) [tableValues removeRowAtIndex:i];
-				}
-				tableRowsCount = [tableValues count];
-				[tableContentView reloadData];
-			}
-			[tableContentView deselectAll:self];
-		} else {
-			// The user clicked cancel in the "sure you wanna delete" message
-			// restore editing or whatever
-		}
-	}
+	[sheet orderOut:self];
 }
 
 /**
@@ -2449,7 +2467,7 @@
 {
 	// error := first object is the title , second the message, only one button OK
 	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, tableWindow, self, nil, nil, nil,
+			nil, nil, tableWindow, self, nil, nil,
 			[error objectAtIndex:1]);
 }
 
@@ -2643,8 +2661,8 @@
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
-		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
+		[[tableInfoInstance onMainThread] tableChanged:nil];
+		[[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] onMainThread] loadTable:selectedTable];
 
 	// Otherwise, if the table status value is accurate, use it
 	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
@@ -2662,8 +2680,8 @@
 		maxNumRowsIsEstimate = NO;
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
-		[tableInfoInstance tableChanged:nil];
-		[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTable waitUntilDone:YES];
+		[[tableInfoInstance onMainThread] tableChanged:nil];
+		[[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] onMainThread] loadTable:selectedTable];
 
 	// Use the estimate count
 	} else {
@@ -2685,7 +2703,7 @@
 					maxNumRows = foundMaxRows;
 					maxNumRowsIsEstimate = NO;
 				}
-			} else if (!isInterruptedLoad && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
+			} else if (!isInterruptedLoad && !isFiltered && tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
 				maxNumRows = foundMaxRows;
 				maxNumRowsIsEstimate = NO;
 			}
@@ -2695,7 +2713,7 @@
 		}
 		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
 		[tableDataInstance setStatusValue:maxNumRowsIsEstimate?@"n":@"y" forKey:@"RowsCountAccurate"];
-		[tableInfoInstance tableChanged:nil];
+		[[tableInfoInstance onMainThread] tableChanged:nil];
 	}
 }
 
@@ -2926,7 +2944,7 @@
 	[self loadTableValues];
 
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
 		[tableDocumentInstance endTask];
 		[sortPool drain];
@@ -3021,7 +3039,7 @@
 
 		MCPResult *tempResult = [mySQLConnection queryString:query];
 		if (![tempResult numOfRows]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 			return NO;
 		}

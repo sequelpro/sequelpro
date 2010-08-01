@@ -90,7 +90,7 @@
 	if ([tableDocumentInstance database]) {
 
 		// Notify listeners that a query has started
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
@@ -208,7 +208,7 @@
 		}
 		*/		
 		// Notify listeners that the query has finished
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	}
 
 	// Add the table headers even if no tables were found
@@ -692,40 +692,35 @@
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
 
+	structureLoaded = NO;
+	contentLoaded = NO;
+	statusLoaded = NO;
+	triggersLoaded = NO;
 	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;
-			contentLoaded = NO;
-			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
 			if(tableEncoding == nil) {
 				[tableContentInstance loadTable:nil];
 			} else {
 				[tableContentInstance loadTable:selectedTableName];
 			}
-			structureLoaded = NO;
 			contentLoaded = YES;
-			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
-			structureLoaded = NO;
-			contentLoaded = NO;
+			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 			statusLoaded = YES;
-		} else {
-			structureLoaded = NO;
-			contentLoaded = NO;
-			statusLoaded = NO;
+		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5 ) {
+			[[tableTriggersInstance onMainThread] loadTriggers];
+			triggersLoaded = YES;
 		}
 	} else {
 
 		// if we are not looking at a table or view, clear these
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
-		structureLoaded = NO;
-		contentLoaded = NO;
-		statusLoaded = NO;
+		[[extendedTableInfoInstance onMainThread] loadTable:nil];
+		[[tableTriggersInstance onMainThread] loadTriggers];
 	}
 
 	// Update the "Show Create Syntax" window if it's already opened
@@ -768,10 +763,12 @@
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 		[extendedTableInfoInstance loadTable:nil];
-
+		[tableTriggersInstance loadTriggers];
+		
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
+		triggersLoaded = NO;
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
@@ -1334,7 +1331,7 @@
 		// Table has invalid name
         // Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, nil,
+						  @selector(sheetDidEnd:returnCode:contextInfo:), nil,
                           [NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
         return;
     }
@@ -1355,29 +1352,32 @@
         // if the 'table' is a view or a table, reload the currently selected view 
         if (selectedTableType == SPTableTypeTable || selectedTableType == SPTableTypeView)
         {
+			statusLoaded = NO;
+			structureLoaded = NO;
+			contentLoaded = NO;
+			triggersLoaded = NO;
             switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
                 case 0:
                     [tableSourceInstance loadTable:newTableName];
                     structureLoaded = YES;
-                    contentLoaded = statusLoaded = NO;
                     break;
                 case 1:
                     [tableContentInstance loadTable:newTableName];
                     contentLoaded = YES;
-                    structureLoaded = statusLoaded = NO;
                     break;
                 case 3:
                     [extendedTableInfoInstance loadTable:newTableName];
                     statusLoaded = YES;
-                    structureLoaded = contentLoaded = NO;
                     break;
-                default:
-                    statusLoaded = structureLoaded = contentLoaded = NO;
+				case 5:
+					[tableTriggersInstance loadTriggers];
+					triggersLoaded = YES;
+					break;
             }
         }
     }
     @catch (NSException * myException) {
-        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [myException reason]);
+        SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [myException reason]);
     }
     
     // Set window title to reflect the new table name
@@ -1557,8 +1557,9 @@
 {
 	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
 
-	if ( [tablesListView numberOfSelectedRows] == 1  && 
-		([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) ) {
+	if ([tablesListView numberOfSelectedRows] == 1
+		&& ([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) )
+	{
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
 			[tableSourceInstance loadTable:selectedTableName];
@@ -1571,8 +1572,13 @@
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
-			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
+			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 			statusLoaded = YES;
+		}
+
+		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5) && !triggersLoaded ) {
+			[[tableTriggersInstance onMainThread] loadTriggers];
+			triggersLoaded = YES;
 		}
 	}
 	else {
@@ -1802,6 +1808,7 @@
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
+		triggersLoaded = NO;
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
@@ -1825,8 +1832,10 @@
 		[tableInfoCollapseButton setNextState];
 		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];
 		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:NO];
 		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
 		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
+		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:YES];
 	} else {
 		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Hide Table Information",@"Hide Table Information")];
 	}
@@ -2084,7 +2093,7 @@
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"), 
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), nil, @"addRow",
+						  @selector(sheetDidEnd:returnCode:contextInfo:), @"addRow",
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
 		
 		[tablesListView reloadData];
@@ -2102,7 +2111,7 @@
 	NSString *tableType = @"";
 	
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
 		return;
 	}
 	
@@ -2138,7 +2147,7 @@
 
 	if ( ![queryResult numOfRows] ) {
 		//error while getting table structure
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
 		
     } else {
@@ -2184,7 +2193,7 @@
 			// Check for errors, only displaying if the connection hasn't been terminated
 			if ([mySQLConnection queryErrored]) {
 				if ([mySQLConnection isConnected]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
 				}
 				return;
@@ -2197,7 +2206,7 @@
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 			
 			if ([mySQLConnection queryErrored]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
 			}
 			
@@ -2205,7 +2214,7 @@
 		
         if ([mySQLConnection queryErrored]) {
 			//error while creating new table
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
         } else {
 			
@@ -2225,7 +2234,6 @@
 									  nil,
 									  tableWindow,
 									  self,
-									  nil,
 									  nil,
 									  nil,
 									  NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")

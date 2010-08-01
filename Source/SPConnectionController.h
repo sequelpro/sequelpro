@@ -29,6 +29,7 @@
 #import "TableDocument.h"
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
+#import "SPConstants.h"
 
 @class BWAnchoredButtonBar;
 
@@ -42,6 +43,12 @@
 
 - (void)connectionControllerInitiatingConnection:(id)controller;
 - (void)connectionControllerConnectAttemptFailed:(id)controller;
+
+@end
+
+@interface SPFlippedView : NSView
+
+- (BOOL)isFlipped;
 
 @end
 
@@ -73,6 +80,7 @@
 	NSString *sshUser;
 	NSString *sshPassword;
 	NSString *sshPort;
+@private NSString *favoritesPBoardType;
 
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
@@ -104,6 +112,11 @@
 	IBOutlet NSButton *helpButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
+    IBOutlet NSMenuItem *favoritesSortByMenuItem;
+    
+    BOOL reverseFavoritesSort;
+
+    SPFavoritesSortItem previousSortItem, currentSortItem;
 }
 
 @property (readwrite, assign) id delegate;
@@ -124,6 +137,7 @@
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+@property (readonly, assign) NSString *favoritesPBoardType;
 
 - (id)initWithDocument:(TableDocument *)theTableDocument;
 
@@ -134,13 +148,14 @@
 - (void)initiateMySQLConnection;
 - (void)cancelConnection;
 - (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
-- (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)addConnectionToDocument;
 
 // Interface interaction
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
+- (IBAction)sortFavorites:(id)sender;
+- (IBAction)reverseSortFavorites:(id)sender;
 
 // Connection details interaction
 - (BOOL)checkHost;
@@ -152,11 +167,5 @@
 - (IBAction)addFavorite:(id)sender;
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)aNotification;
-
-@end
-
-@interface SPFlippedView: NSView
-
-- (BOOL)isFlipped;
 
 @end

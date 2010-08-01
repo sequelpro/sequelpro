@@ -98,7 +98,9 @@
 	
 	[prefs synchronize];
 	
-	[self _sortFavorites];
+	if (currentSortItem > -1) {
+		[self _sortFavorites];
+	}
 }
 
 #pragma mark -
@@ -437,7 +439,8 @@
 	// Perform sorting
 	[self _sortFavorites];
 	
-	[[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
 }
 
@@ -454,6 +457,19 @@
 	[self _sortFavorites];
 	
 	[sender setState:reverseFavoritesSort]; 
+}
+
+/**
+ * Makes the selected favorite the default.
+ */
+- (IBAction)makeSelectedFavoriteDefault:(id)sender
+{
+	// Minus 2 from index to account for the "Last Used" and separator items
+	[prefs setInteger:[favoritesTableView selectedRow] forKey:SPDefaultFavorite];
+	
+	[favoritesTableView reloadData];
+	
+	[self updateDefaultFavoritePopup];
 }
 
 #pragma mark -
@@ -569,13 +585,18 @@
 // -------------------------------------------------------------------------------
 // tableView:objectValueForTableColumn:row:
 // -------------------------------------------------------------------------------
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
+	if ([[tableColumn identifier] isEqualToString:@"default"] && (rowIndex == [prefs integerForKey:SPDefaultFavorite])) {
+		return [NSImage imageNamed:@"blue-tick"];
+	}
+	else {
+		return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	}
 }
 
 #pragma mark -
-#pragma mark TableView drag & drop datasource methods
+#pragma mark TableView drag & drop delegate methods
 
 // -------------------------------------------------------------------------------
 // tableView:writeRowsWithIndexes:toPasteboard:
@@ -624,6 +645,22 @@
 	NSInteger lastFavoriteIndexCached;
 	NSMutableDictionary *draggedRow;
 	
+	// Disable all automatic sorting
+	currentSortItem = -1;
+	reverseFavoritesSort = NO;
+
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
+
+	// Remove sort descriptors
+	[favoritesController setSortDescriptors:[NSArray array]];
+
+	// Uncheck sort by menu items
+	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
+	{
+		[menuItem setState:NSOffState];
+	}
+
 	originalRow = [[[info draggingPasteboard] stringForType:SPFavoritesPasteboardDragType] integerValue];
 	destinationRow = row;
 
@@ -667,9 +704,11 @@
 {
 	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
 		[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
+		
 		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] integerValue] == SPSocketConnection) {
 			[cell setFavoriteHost:@"localhost"];
-		} else {
+		} 
+		else {
 			[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
 		}
 	}
@@ -1005,39 +1044,39 @@
     if ([contextInfo isEqualToString:@"removeFavorite"]) {
     	if (returnCode == NSAlertDefaultReturn) {
 
-    	// Get selected favorite's details
-    	NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
-    	NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
-    	NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
-    	NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
-    	NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
-    	NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
-    	NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
-    	NSInteger type     = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
+			// Get selected favorite's details
+			NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
+			NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
+			NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
+			NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
+			NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
+			NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
+			NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
+			NSInteger type     = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
 
-    	// Remove passwords from the Keychain
-    	[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
-    							account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
-    	[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
-    							account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
+			// Remove passwords from the Keychain
+			[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
+									account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
+			[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
+									account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
+			
+			// Reset last used favorite
+			if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
+				[prefs setInteger:0	forKey:SPLastFavoriteIndex];
+			}
+			
+			// Reset default favorite
+			if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
+				[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
+			}
 
-    	// Reset last used favorite
-    	if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
-    		[prefs setInteger:0	forKey:SPLastFavoriteIndex];
-    	}
-
-    	// Reset default favorite
-    	if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
-    		[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
-    	}
-
-    	[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
-
-    	[favoritesTableView reloadData];
-
-    	[self updateDefaultFavoritePopup];
-    	}
-    }
+			[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
+			
+			[favoritesTableView reloadData];
+			
+			[self updateDefaultFavoritePopup];
+		}
+	}
 }
 
 - (void)setGrowlEnabled:(BOOL)value
@@ -1064,7 +1103,7 @@
 //
 // Build the default favorite popup button
 // -------------------------------------------------------------------------------
-- (void)updateDefaultFavoritePopup;
+- (void)updateDefaultFavoritePopup
 {
 	[defaultFavoritePopup removeAllItems];
 	
@@ -1072,27 +1111,29 @@
 	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
-	NSInteger i;
-	for(i=0; i<[[[favoritesController arrangedObjects] valueForKeyPath:@"name"] count]; i++ ){
-		NSMenuItem *favoritePrefMenuItem = [[NSMenuItem alloc] initWithTitle:[[[favoritesController arrangedObjects] valueForKeyPath:@"name"] objectAtIndex:i] 
-																	  action:NULL
-															   keyEquivalent:@"" ];
-		[[defaultFavoritePopup menu] addItem:favoritePrefMenuItem];
-		[favoritePrefMenuItem release];
+	// Add all favorites to the menu
+	for (NSString *favorite in [[favoritesController arrangedObjects] valueForKeyPath:@"name"])
+	{
+		NSMenuItem *favoriteMenuItem = [[NSMenuItem alloc] initWithTitle:favorite action:NULL keyEquivalent:@""];
+		
+		[[defaultFavoritePopup menu] addItem:favoriteMenuItem];
+		
+		[favoriteMenuItem release];
 	}
 	
 	// Add item to switch to edit favorites pane
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	[defaultFavoritePopup addItemWithTitle:@"Edit Favorites…"];
-	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setAction:@selector(displayFavoritePreferences:)];
-	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
+	
+	NSMenuItem *editMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item") action:@selector(displayFavoritePreferences:) keyEquivalent:@""];
+	
+	[editMenuItem setTarget:self];
+	
+	[[defaultFavoritePopup menu] addItem:editMenuItem];
+	
+	[editMenuItem release];
 	
 	// Select the default favorite from prefs
-	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
-		[defaultFavoritePopup selectItemAtIndex:[prefs integerForKey:SPDefaultFavorite] + 2];
-	} else {
-		[defaultFavoritePopup selectItemAtIndex:0];
-	}
+	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed]) ? ([prefs integerForKey:SPDefaultFavorite] + 2) : 0];
 }
 
 // -------------------------------------------------------------------------------
@@ -1180,6 +1221,10 @@
 		return ([favoritesTableView numberOfSelectedRows] > 0);
 	}
 	
+	if (action == @selector(makeSelectedFavoriteDefault:)) {
+		return ([favoritesTableView numberOfSelectedRows] == 1);
+	}
+	
 	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseFavoritesSortOrder:))) {
 		
 		// Loop all the items in the sort by menu only checking the currently selected one
@@ -1213,11 +1258,8 @@
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
-
-@implementation SPPreferenceController (PrivateAPI)
+#pragma mark Private API
 
 // -------------------------------------------------------------------------------
 // _setupToolbar
@@ -1306,7 +1348,7 @@
  * Sorts the connection favorites based on the selected criteria.
  */
 - (void)_sortFavorites
-{
+{		
 	NSString *sortKey = @"";
 	
 	switch (currentSortItem)
@@ -1319,9 +1361,6 @@
 			break;
 		case SPFavoritesSortTypeItem:
 			sortKey = @"type";
-			break;
-		default:
-			sortKey = @"name";
 			break;
 	}
 	
@@ -1337,16 +1376,16 @@
 	[favoritesController setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
 	
 	[favoritesTableView reloadData];
+	
+	[self updateDefaultFavoritePopup];
 }
 
-// -------------------------------------------------------------------------------
-// _resizeWindowForContentView:
-//
-// Resizes the window to the size of the supplied view.
-// -------------------------------------------------------------------------------
+/**
+ * Resizes the window to the size of the supplied view.
+ */
 - (void)_resizeWindowForContentView:(NSView *)view
 {
-	// remove all current views
+	// Remove all current views
 	NSEnumerator *en = [[[preferencesWindow contentView] subviews] objectEnumerator];
 	NSView *subview;
   
@@ -1355,10 +1394,10 @@
 		[subview removeFromSuperview];
 	}
   
-	// resize window
+	// Resize window
 	[preferencesWindow resizeForContentView:view titleBarVisible:YES];
   
-	// add view
+	// Add view
 	[[preferencesWindow contentView] addSubview:view];
 	[view setFrameOrigin:NSMakePoint(0, 0)];
 }

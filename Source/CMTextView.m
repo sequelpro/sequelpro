@@ -1538,7 +1538,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSMutableString *snip = [[NSMutableString alloc] initWithCapacity:[theSnippet length]];
 
 	@try{
-		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^{}]*?[^\\\\])\\}";
+		NSString *re = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^\\{\\}]*?[^\\\\])\\}";
 		NSString *mirror_re = @"(?<!\\\\)\\$(1?\\d)(?=\\D)";
 
 		if(targetRange.length)
@@ -1842,7 +1842,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				return [stdout autorelease];
 			} else {
 				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
 				[stdout release];
 				NSBeep();
@@ -2551,21 +2551,26 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			case SPT_SINGLE_QUOTED_TEXT:
 			case SPT_DOUBLE_QUOTED_TEXT:
 			    tokenColor = quoteColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_BACKTICK_QUOTED_TEXT:
 			    tokenColor = backtickColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_RESERVED_WORD:
 			    tokenColor = keywordColor;
 			    break;
 			case SPT_NUMERIC:
 				tokenColor = numericColor;
+				allowToCheckForUpperCase = NO;
 				break;
 			case SPT_COMMENT:
 			    tokenColor = commentColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_VARIABLE:
 			    tokenColor = variableColor;
+				allowToCheckForUpperCase = NO;
 			    break;
 			case SPT_WHITESPACE:
 			    continue;
@@ -2586,7 +2591,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
 		// Check the end of the token
-		if (textBufferSizeIncreased && allowToCheckForUpperCase && autouppercaseKeywordsEnabled && !delBackwardsWasPressed
+		if (textBufferSizeIncreased
+			&& allowToCheckForUpperCase
+			&& autouppercaseKeywordsEnabled
+			&& !delBackwardsWasPressed
 			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done

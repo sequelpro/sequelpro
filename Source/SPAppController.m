@@ -125,10 +125,8 @@
 	if ([sender isKindOfClass:[NSOpenPanel class]]) {
 		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:@"sql"]) {
 			[encodingPopUp setEnabled:YES];
-			[sender setAllowsMultipleSelection:NO];
 		} else {
 			[encodingPopUp setEnabled:NO];
-			[sender setAllowsMultipleSelection:YES];
 		}
 	}
 }
@@ -145,14 +143,11 @@
 	}
 	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
-	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
+	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanChooseDirectories:NO];
-	[panel setAllowsMultipleSelection:YES];
-	// TODO: it seems that setting setResolvesAliases to YES causes some
-	// problems in dragging files to the panel and changing to directory could crash SP
-	// ask Hans for details
-	// [panel setResolvesAliases:YES];
+	[panel setAllowsMultipleSelection:NO];
+	[panel setResolvesAliases:YES];
 
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
 	if(![[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding]) {
@@ -441,6 +436,7 @@
 																@"queryHistory",
 																@"tableColumnWidths",
 																@"savePath",
+																@"NSRecentDocumentRecords",
 																nil]];
 
 	return preferences;

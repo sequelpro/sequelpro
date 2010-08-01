@@ -103,7 +103,7 @@
 		taskProgressValue = 0;
 		taskProgressValueDisplayInterval = 1;
 		taskDrawTimer = nil;
-		taskFadeAnimator = nil;
+		taskFadeInStartDate = nil;
 		taskCanBeCancelled = NO;
 		taskCancellationCallbackObject = nil;
 		taskCancellationCallbackSelector = NULL;
@@ -233,6 +233,12 @@
 
 	// Set up the progress indicator child window and layer - add to main window, change indicator color and size
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
+	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
+	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0, -1.0)];
+	[progressIndicatorShadow setShadowBlurRadius:1.0];
+	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.75]];
+	[taskProgressIndicator setShadow:progressIndicatorShadow];
+	[progressIndicatorShadow release];
 	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
 	[taskProgressWindow setOpaque:NO];
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
@@ -679,7 +685,7 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
-	userManagerInstance.mySqlConnection = mySQLConnection;
+	//userManagerInstance.mySqlConnection = mySQLConnection;
 
 	// Set the cutom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
@@ -1051,7 +1057,7 @@
 {
 	// error := first object is the title , second the message, only one button OK
 	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, tableWindow, self, nil, nil, nil,
+			nil, nil, tableWindow, self, nil, nil,
 			[error objectAtIndex:1]);
 }
 
@@ -1063,7 +1069,7 @@
 	NSString *dbName = nil;
 
 	// Notify listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if (![mySQLConnection queryErrored]) {
@@ -1088,7 +1094,7 @@
 	}
 
 	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
 - (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname
@@ -1197,15 +1203,17 @@
  */
 - (void) startTaskWithDescription:(NSString *)description
 {
+	// Ensure a call on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] startTaskWithDescription:description];
 
 	// Set the task text.  If a nil string was supplied, a generic query notification is occurring -
 	// if a task is not already active, use default text.
 	if (!description) {
-		if (!_isWorkingLevel) [taskDescriptionText setStringValue:NSLocalizedString(@"Working...", @"Generic working description")];
+		if (!_isWorkingLevel) [self setTaskDescription:NSLocalizedString(@"Working...", @"Generic working description")];
 	
 	// Otherwise display the supplied string
 	} else {
-		[taskDescriptionText setStringValue:description];
+		[self setTaskDescription:description];
 	}
 
 	// Increment the task level
@@ -1215,7 +1223,6 @@
 	if (_isWorkingLevel == 1 || !taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = YES;
 		[taskProgressIndicator setIndeterminate:YES];
-		[taskProgressIndicator animate:self];
 		[taskProgressIndicator startAnimation:self];
 		taskDisplayLastValue = 0;
 	}
@@ -1230,55 +1237,86 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		[mainToolbar validateVisibleItems];
 				
-		// Schedule appearance of the task window in the near future
-		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(showTaskProgressWindow:) userInfo:nil repeats:NO] retain];
+		// Schedule appearance of the task window in the near future, using a frame timer.
+		taskFadeInStartDate = [[NSDate alloc] init];
+		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0 / 30.0 target:self selector:@selector(fadeInTaskProgressWindow:) userInfo:nil repeats:YES] retain];
 	}
 }
 
 /**
  * Show the task progress window, after a small delay to minimise flicker.
  */
-- (void) showTaskProgressWindow:(NSTimer *)theTimer
+- (void) fadeInTaskProgressWindow:(NSTimer *)theTimer
 {
-	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+    float timeSinceFadeInStart = [[NSDate date] timeIntervalSinceDate:taskFadeInStartDate];
 
-	// Center the task window and fade it in
-	[self centerTaskWindow];
-	NSDictionary *animationDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
-										taskProgressWindow, NSViewAnimationTargetKey,
-										nil];
-	taskFadeAnimator = [[NSViewAnimation alloc] initWithViewAnimations:[NSArray arrayWithObject:animationDetails]];
-	[taskFadeAnimator setDuration:0.6];
-	[taskFadeAnimator startAnimation];
+    // Keep the window hidden for the first ~0.5 secs
+    if (timeSinceFadeInStart < 0.5) return;
+
+    CGFloat alphaValue = [taskProgressWindow alphaValue];
+
+    // If the task progress window is still hidden, center it before revealing it
+    if (alphaValue == 0) [self centerTaskWindow];
+
+    // Fade in the task window over 0.6 seconds
+    alphaValue = (timeSinceFadeInStart - 0.5) / 0.6;
+    if (alphaValue > 1.0) alphaValue = 1.0;
+    [taskProgressWindow setAlphaValue:alphaValue];
+
+    // If the window has been fully faded in, clean up the timer.
+    if (alphaValue == 1.0) {
+    	[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+    	[taskFadeInStartDate release], taskFadeInStartDate = nil;
+    }
 }
-
 
 /**
  * Updates the task description shown to the user.
  */
 - (void) setTaskDescription:(NSString *)description
 {
-	[taskDescriptionText setStringValue:description];
+	NSShadow *shadow = [[NSShadow alloc] init];
+	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.75]];
+    [shadow setShadowOffset:NSMakeSize(1.0, -1.0)];
+    [shadow setShadowBlurRadius:3.0];
+
+    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+    												[NSFont boldSystemFontOfSize:13.0], NSFontAttributeName,
+    												shadow, NSShadowAttributeName,
+    												nil];
+    NSAttributedString *string = [[NSAttributedString alloc] initWithString:description attributes:attributes];
+
+    [taskDescriptionText setAttributedStringValue:string];
+
+    [string release];
+    [attributes release];
+    [shadow release];
 }
 
 /**
  * Sets the task percentage progress - the first call to this automatically
  * switches the progress display to determinate.
+ * Can be called from background threads - forwards to main thread as appropriate.
  */
 - (void) setTaskPercentage:(CGFloat)taskPercentage
 {
+
+	// If the task display is currently indeterminate, set it to determinate on the main thread.
 	if (taskDisplayIsIndeterminate) {
+		if (![NSThread isMainThread]) return [[self onMainThread] setTaskPercentage:taskPercentage];
+
 		taskDisplayIsIndeterminate = NO;
 		[taskProgressIndicator stopAnimation:self];
 		[taskProgressIndicator setDoubleValue:0.5];
 	}
 
+	// Check the supplied progress.  Compare it to the display interval - how often
+	// the interface is updated - and update the interface if the value has changed enough.
 	taskProgressValue = taskPercentage;
 	if (taskProgressValue > taskDisplayLastValue + taskProgressValueDisplayInterval
 		|| taskProgressValue < taskDisplayLastValue - taskProgressValueDisplayInterval)
 	{
-		[taskProgressIndicator setDoubleValue:taskProgressValue];
+		[taskProgressIndicator performSelectorOnMainThread:@selector(setNumberValue:) withObject:[NSNumber numberWithDouble:taskProgressValue] waitUntilDone:NO];
 		taskDisplayLastValue = taskProgressValue;
 	}
 }
@@ -1298,6 +1336,7 @@
 	}
 
 	if (taskDisplayIsIndeterminate) return;
+	[NSObject cancelPreviousPerformRequestsWithTarget:taskProgressIndicator];
 	taskDisplayIsIndeterminate = YES;
 	[taskProgressIndicator setIndeterminate:YES];
 	[taskProgressIndicator startAnimation:self];
@@ -1311,10 +1350,7 @@
 {
 
 	// Ensure a call on the main thread
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
-		return;
-	}
+	if (![NSThread isMainThread]) return [[self onMainThread] endTask];
 
 	// Decrement the working level
 	_isWorkingLevel--;
@@ -1326,12 +1362,9 @@
 	if (!_isWorkingLevel) {
 
 		// Cancel the draw timer if it exists
-		if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
-
-		// Cancel the fade-in animator if it exists
-		if (taskFadeAnimator) {
-			if ([taskFadeAnimator isAnimating]) [taskFadeAnimator stopAnimation];
-			[taskFadeAnimator release], taskFadeAnimator = nil;
+		if (taskDrawTimer) {
+			[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
+			[taskFadeInStartDate release], taskFadeInStartDate = nil;
 		}
 
 		// Hide the task interface and reset to indeterminate
@@ -1358,6 +1391,9 @@
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
 
+	// Ensure call on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] enableTaskCancellationWithTitle:buttonTitle callbackObject:callbackObject callbackFunction:callbackFunction];
+
 	if (callbackObject && callbackFunction) {
 		taskCancellationCallbackObject = callbackObject;
 		taskCancellationCallbackSelector = callbackFunction;
@@ -1377,7 +1413,10 @@
 
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
-	
+
+	// Ensure call on the main thread
+	if (![NSThread isMainThread]) return [[self onMainThread] disableTaskCancellation];
+
 	taskCanBeCancelled = NO;
 	taskCancellationCallbackObject = nil;
 	taskCancellationCallbackSelector = NULL;
@@ -2297,7 +2336,13 @@
  * Displays the user account manager.
  */
 - (IBAction)showUserManager:(id)sender
-{	
+{
+	if (!userManagerInstance)
+    {
+       userManagerInstance = [[SPUserManager alloc] init];
+       userManagerInstance.mySqlConnection = mySQLConnection;
+    }
+
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
 	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	
@@ -2318,9 +2363,14 @@
 	
 	[NSApp beginSheet:[userManagerInstance window]
 	   modalForWindow:tableWindow 
-		modalDelegate:userManagerInstance 
+		modalDelegate:self 
 	   didEndSelector:@selector(userManagerSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
+}
+
+- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
+{
+    [userManagerInstance release], userManagerInstance = nil;
 }
 
 /**
@@ -2350,10 +2400,10 @@
 
 	if (![mySQLConnection queryErrored]) {
 		//flushed privileges without errors
-		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
 																																					  [mySQLConnection getLastErrorMessage]]);
 	}
 }
@@ -4052,8 +4102,8 @@
 	if (mySQLConnection) [mySQLConnection release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
-	if (taskDrawTimer) [taskDrawTimer release];
-	if (taskFadeAnimator) [taskFadeAnimator release];
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
+	if (taskFadeInStartDate) [taskFadeInStartDate release];
 	if (queryEditorInitString) [queryEditorInitString release];
 	if (spfPreferences) [spfPreferences release];
 	if (spfSession) [spfSession release];
@@ -4075,7 +4125,7 @@
 	// This check is not necessary anymore as the add database button is now only enabled if the name field
 	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -4091,14 +4141,14 @@
 	
 	if ([mySQLConnection queryErrored]) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
 		
 		return;
 	}
 	
 	// Error while selecting the new database (is this even possible?)
 	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
 		
 		[self setDatabases:self];
 		
@@ -4181,7 +4231,7 @@
 			|| ![mySQLConnection selectDB:targetDatabaseName])
 		{
 			if ( [mySQLConnection isConnected] ) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 
 				// Update the database list
 				[self setDatabases:self];
@@ -4234,9 +4284,6 @@
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
 	}
-
-	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
 
 	[self endTask];
 	[taskPool drain];

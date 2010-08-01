@@ -51,7 +51,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the index is out of bounds
-	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
 
 	// Construct the NSMutableArray
 	NSMutableArray *rowArray = [NSMutableArray arrayWithCapacity:numColumns];
@@ -71,7 +71,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the row or column index is out of bounds
-	if (rowIndex >= numRows || columnIndex >= numColumns) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (rowIndex >= numRows || columnIndex >= numColumns) [NSException raise:NSRangeException format:@"Requested storage index (row %llu, col %llu) beyond bounds (%llu, %llu)", rowIndex, columnIndex, numRows, numColumns];
 
 	// Return the content
 	return dataStorage[rowIndex][columnIndex];
@@ -158,7 +158,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the index is out of bounds
-	if (index > numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (index > numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
 
 	// If "inserting" at the end of the array just add a row
 	if (index == numRows) return SPDataStorageAddRow(self, row);
@@ -198,7 +198,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 	NSUInteger cellsProcessed = 0;
 
 	// Throw an exception if the index is out of bounds
-	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
 
 	id *storageRow = dataStorage[index];
 
@@ -226,7 +226,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception of either index is out of bounds
-	if (rowIndex >= numRows || columnIndex >= numColumns) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (rowIndex >= numRows || columnIndex >= numColumns) [NSException raise:NSRangeException format:@"Requested storage index (row %llu, col %llu) beyond bounds (%llu, %llu)", rowIndex, columnIndex, numRows, numColumns];
 
 	// Release the old object and retain the new one
 	if (dataStorage[rowIndex][columnIndex]) CFRelease(dataStorage[rowIndex][columnIndex]);
@@ -241,7 +241,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the index is out of bounds
-	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
 
 	// Free the row
 	NSUInteger j = numColumns;
@@ -267,7 +267,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the range is out of bounds
-	if (rangeToRemove.location + rangeToRemove.length > numRows) [NSException raise:NSRangeException format:@"Requested storage index beyond bounds"];
+	if (rangeToRemove.location + rangeToRemove.length > numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (rangeToRemove.location + rangeToRemove.length), numRows];
 
 	// Free rows in the range
 	NSUInteger i, j = numColumns;

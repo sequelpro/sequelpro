@@ -158,7 +158,7 @@
 	NSString *contextInfo;
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	[savePanel setAllowsOtherFileTypes:YES];
-	[savePanel setExtensionHidden:NO];
+	[savePanel setCanSelectHiddenExtension:YES];
 	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil];
 	
 	switch ( tag ) {
@@ -306,7 +306,7 @@
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:exportFile] ) {
 		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:exportFile]
 			|| !(fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile]) ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			[pool release];
 			return;
@@ -318,7 +318,7 @@
 		// Otherwise attempt to create a file
 	} else {
 		if ( ![[NSFileManager defaultManager] createFileAtPath:exportFile contents:[NSData data] attributes:nil] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			[pool release];
 			return;
@@ -328,7 +328,7 @@
 		fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile];
 		if ( !fileHandle ) {
 			[[NSFileManager defaultManager] removeFileAtPath:exportFile handler:nil];
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 			[pool release];
 			return;
@@ -458,7 +458,7 @@
 
 	// Display error message on problems
 	if ( !progressCancelled && !success ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 						  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
 	}
 
@@ -561,7 +561,7 @@
 	if (!sqlFileHandle) {
 		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
-						  nil, nil, tableWindow, self, nil, nil, nil,
+						  nil, nil, tableWindow, self, nil, nil,
 						  NSLocalizedString(@"SQL file open error", @"The SQL file you selected could not be found or read."));
 		return;
 	}
@@ -602,7 +602,7 @@
 			[self closeAndStopProgressSheet];
 			SPBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, tableWindow, self, nil, nil, nil,
+							  nil, nil, tableWindow, self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"SQL read error", @"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)"), (long)queriesPerformed, [exception reason]]);
 			[sqlParser release];
 			[sqlDataBuffer release];
@@ -650,7 +650,7 @@
 						[self closeAndStopProgressSheet];
 						SPBeginAlertSheet(NSLocalizedString(@"SQL read error title", @"File read error"),
 										  NSLocalizedString(@"OK", @"OK button"),
-										  nil, nil, tableWindow, self, nil, nil, nil,
+										  nil, nil, tableWindow, self, nil, nil,
 										  [NSString stringWithFormat:NSLocalizedString(@"SQL encoding read error", @"An error occurred when reading the file, as it could not be read in either UTF-8 or %@.\n\nOnly %ld queries were executed."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)queriesPerformed]);
 						[sqlParser release];
 						[sqlDataBuffer release];
@@ -803,7 +803,7 @@
 	if (!csvFileHandle) {
 		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
-						  nil, nil, tableWindow, self, nil, nil, nil,
+						  nil, nil, tableWindow, self, nil, nil,
 						  NSLocalizedString(@"CSV file open error", @"The CSV file you selected could not be found or read."));
 		return;
 	}
@@ -861,7 +861,7 @@
 			[self closeAndStopProgressSheet];
 			SPBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, tableWindow, self, nil, nil, nil,
+							  nil, nil, tableWindow, self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"CSV read error", @"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)"), (long)rowsImported, [exception reason]]);
 			[csvParser release];
 			[csvDataBuffer release];
@@ -908,7 +908,7 @@
 					[self closeAndStopProgressSheet];
 					SPBeginAlertSheet(NSLocalizedString(@"CSV read error title", @"File read error"),
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, tableWindow, self, nil, nil, nil,
+									  nil, nil, tableWindow, self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"CSV encoding read error", @"An error occurred when reading the file, as it could not be read using %@.\n\nOnly %ld rows were imported."), [[tableDocumentInstance connectionEncoding] UTF8String], (long)rowsImported]);
 					[csvParser release];
 					[csvDataBuffer release];
@@ -1244,7 +1244,7 @@
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
-						  nil, nil, nil,
+						  nil, nil,
 						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
 						  );
 		return FALSE;
@@ -1257,7 +1257,7 @@
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
-						  nil, nil, nil,
+						  nil, nil,
 						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
 						  );
 		return FALSE;
@@ -1271,7 +1271,7 @@
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil,
 						  tableWindow, self,
-						  nil, nil, nil,
+						  nil, nil,
 						  NSLocalizedString(@"Can't import CSV data into a database without any tables!", @"error text when trying to import csv data, but we have no tables in the db")
 						  );
 		return FALSE;
@@ -1785,52 +1785,52 @@
 
 			// Release the result set
 			[streamingResult release];
+		}
+
+		// Export triggers, if any
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
+													[tableName tickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
+		if ( [queryResult numOfRows] ) {
+			[metaString setString:@"\n"];
+			[metaString appendString:@"DELIMITER ;;\n"];
 			
-			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
-														[tableName tickQuotedString]]];
-			[queryResult setReturnDataAsStrings:YES];
-			if ( [queryResult numOfRows] ) {
-				[metaString setString:@"\n"];
-				[metaString appendString:@"DELIMITER ;;\n"];
+			for (int s=0; s<[queryResult numOfRows]; s++) {
+				NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
 				
-				for (int s=0; s<[queryResult numOfRows]; s++) {
-					NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
-					
-					//Definer is user@host but we need to escape it to `user`@`host`
-					NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-					NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-												[[triggersDefiner objectAtIndex:0] backtickQuotedString],
-												[[triggersDefiner objectAtIndex:1] backtickQuotedString]
-												];
-					
-					[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", 
-											  [triggers objectForKey:@"sql_mode"]]];
-					[metaString appendString:@"/*!50003 CREATE */ "];
-					[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", 
-											  escapedDefiner]];
-					[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
-											  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
-											  [triggers objectForKey:@"Timing"],
-											  [triggers objectForKey:@"Event"],
-											  [[triggers objectForKey:@"Table"] backtickQuotedString],
-											  [triggers objectForKey:@"Statement"]
-											  ]];
-					[triggers release];
-				}
+				//Definer is user@host but we need to escape it to `user`@`host`
+				NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
+				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
+											[[triggersDefiner objectAtIndex:0] backtickQuotedString],
+											[[triggersDefiner objectAtIndex:1] backtickQuotedString]
+											];
 				
-				[metaString appendString:@"DELIMITER ;\n"];
-				[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
-				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", 
+										  [triggers objectForKey:@"sql_mode"]]];
+				[metaString appendString:@"/*!50003 CREATE */ "];
+				[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", 
+										  escapedDefiner]];
+				[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
+										  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
+										  [triggers objectForKey:@"Timing"],
+										  [triggers objectForKey:@"Event"],
+										  [[triggers objectForKey:@"Table"] backtickQuotedString],
+										  [triggers objectForKey:@"Statement"]
+										  ]];
+				[triggers release];
 			}
 			
-			if ([mySQLConnection queryErrored]) {
-				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-				if ( [addErrorsSwitch state] == NSOnState ) {
-					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-										   dataUsingEncoding:NSUTF8StringEncoding]];
-				}
+			[metaString appendString:@"DELIMITER ;\n"];
+			[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
+			[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+		}
+		
+		if ([mySQLConnection queryErrored]) {
+			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+			if ( [addErrorsSwitch state] == NSOnState ) {
+				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
+									   dataUsingEncoding:NSUTF8StringEncoding]];
 			}
-			
 		}
 
 		// Add an additional separator between tables

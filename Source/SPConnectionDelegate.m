@@ -28,6 +28,7 @@
 #import "SPQueryController.h"
 #import "SPKeychain.h"
 #import "SPConstants.h"
+#import "SPAlertSheets.h"
 
 @implementation TableDocument (SPConnectionDelegate)
 
@@ -102,7 +103,7 @@
  */
 - (void)noConnectionAvailable:(id)connection
 {	
-	NSBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
+	SPBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
 }
 
 /**
@@ -130,6 +131,16 @@
 
 
 	return connectionErrorCode;
+}
+
+/**
+ * Invoke to display an informative but non-fatal error directly to the user.
+ */
+- (void)showErrorWithTitle:(NSString *)theTitle message:(NSString *)theMessage
+{
+	if ([tableWindow isVisible]) {
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, theMessage);
+	}
 }
 
 /**

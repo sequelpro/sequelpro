@@ -67,6 +67,12 @@
 	[super dealloc];
 }
 
+/**
+ * Notification to indicate the table has changed and that the table info requires
+ * reloading for display.  This is called on table changes, and also (with a nil argument)
+ * during certain refresh operations to trigger a data update.
+ * This function is not thread-safe.
+ */
 - (void)tableChanged:(NSNotification *)notification
 {
 	NSDictionary *tableStatus;

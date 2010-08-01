@@ -66,9 +66,9 @@
 }
 
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+@property (nonatomic, retain) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain) NSMutableDictionary *privsSupportedByServer;
 
 @property (nonatomic, retain) NSArray *treeSortDescriptors;
@@ -101,6 +101,7 @@
 - (BOOL)insertUsers:(NSArray *)insertedUsers;
 - (BOOL)deleteUsers:(NSArray *)deletedUsers;
 - (BOOL)updateUsers:(NSArray *)updatedUsers;
+- (BOOL)updateResourcesForUser:(NSManagedObject *)user;
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 - (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
 

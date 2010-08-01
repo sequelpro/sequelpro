@@ -60,6 +60,7 @@
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
+		17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 17D3649711DFE61B00CC9413 /* blue-tick.tiff */; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
 		17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */; };
 		17DD52B911507217007D8950 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B811507217007D8950 /* Credits.rtf */; };
@@ -142,6 +143,8 @@
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
 		584192A1101E57BB0089807F /* NSMutableArray-MultipleSort.m in Sources */ = {isa = PBXBuildFile; fileRef = 584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
+		58587B5A11B4437C00D129ED /* NSNotificationAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58587B5811B4437C00D129ED /* NSNotificationAdditions.h */; };
+		58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58587B5911B4437C00D129ED /* NSNotificationAdditions.m */; };
 		586EBD2411418D7C00B3DE45 /* FeedbackReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */; };
 		586EBD5D11418D9400B3DE45 /* FeedbackReporter.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */; };
 		586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
@@ -164,6 +167,7 @@
 		58C4593810D0674D00E6E13E /* spficon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 58C4593610D0674D00E6E13E /* spficon.icns */; };
 		58C4593910D0674E00E6E13E /* sqlicon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 58C4593710D0674D00E6E13E /* sqlicon.icns */; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
+		58C61CFA11960312003BAA5D /* SPAlertSheets.m in Sources */ = {isa = PBXBuildFile; fileRef = 584095181107CB6600260CFD /* SPAlertSheets.m */; };
 		58CB20ED0F79A75D005EA204 /* button_edit_mode_selected.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58CB20EC0F79A75D005EA204 /* button_edit_mode_selected.tiff */; };
 		58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */; };
 		58CDB3400FCE13EF00F8ACA3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
@@ -403,6 +407,7 @@
 		17CC97F210B4ABE90034CD7A /* SPAboutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAboutController.m; sourceTree = "<group>"; };
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
+		17D3649711DFE61B00CC9413 /* blue-tick.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "blue-tick.tiff"; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
 		17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "sequel-pro-print-template.html"; sourceTree = "<group>"; };
@@ -552,6 +557,8 @@
 		5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray-MultipleSort.h"; sourceTree = "<group>"; };
 		584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray-MultipleSort.m"; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
+		58587B5811B4437C00D129ED /* NSNotificationAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSNotificationAdditions.h; path = "Support files/NSNotificationAdditions.h"; sourceTree = "<group>"; };
+		58587B5911B4437C00D129ED /* NSNotificationAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSNotificationAdditions.m; path = "Support files/NSNotificationAdditions.m"; sourceTree = "<group>"; };
 		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		586F432A0FD74CFC00B428D7 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SSHQuestionDialog.xib; sourceTree = "<group>"; };
 		5870868210FA3E9C00D58E1C /* SPDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataStorage.h; sourceTree = "<group>"; };
@@ -958,6 +965,7 @@
 				17B7B5561016003F00F057DE /* MySQL */,
 				17B7B5581016005700F057DE /* MCPEntrepriseKit */,
 				17B7B5571016004500F057DE /* MCPFoundationKit */,
+				58587B4E11B4433B00D129ED /* Support files */,
 			);
 			name = MCPKit;
 			path = ../Frameworks/MCPKit;
@@ -1241,6 +1249,8 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				17BFC80D10D3FF5200A3B112 /* Icons */,
+				17D3649711DFE61B00CC9413 /* blue-tick.tiff */,
 				BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */,
 				BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */,
 				BCCDED64115940CB00285E65 /* sync_arrows_03.tiff */,
@@ -1248,7 +1258,6 @@
 				BCCDED66115940CB00285E65 /* sync_arrows_05.tiff */,
 				BCCDED67115940CB00285E65 /* sync_arrows_06.tiff */,
 				BCEF78C5115215CA0023F8C2 /* network-small.tif */,
-				17BFC80D10D3FF5200A3B112 /* Icons */,
 				BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */,
 				177E792B0FCB54EC00E9E122 /* database-small.png */,
 				177E792C0FCB54EC00E9E122 /* dummy-small.png */,
@@ -1441,6 +1450,15 @@
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
+		58587B4E11B4433B00D129ED /* Support files */ = {
+			isa = PBXGroup;
+			children = (
+				58587B5811B4437C00D129ED /* NSNotificationAdditions.h */,
+				58587B5911B4437C00D129ED /* NSNotificationAdditions.m */,
+			);
+			name = "Support files";
+			sourceTree = "<group>";
+		};
 		58DA884E103E1597000B98DF /* Debugging & Support */ = {
 			isa = PBXGroup;
 			children = (
@@ -1518,6 +1536,7 @@
 				17B7B5F0101603D200F057DE /* mysql_version.h in Headers */,
 				17B7B5F1101603D200F057DE /* typelib.h in Headers */,
 				17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */,
+				58587B5A11B4437C00D129ED /* NSNotificationAdditions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1742,6 +1761,7 @@
 				BCCDED6B115940CB00285E65 /* sync_arrows_04.tiff in Resources */,
 				BCCDED6C115940CB00285E65 /* sync_arrows_05.tiff in Resources */,
 				BCCDED6D115940CB00285E65 /* sync_arrows_06.tiff in Resources */,
+				17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1789,6 +1809,7 @@
 				17B7B5DF101603B200F057DE /* MCPResult.m in Sources */,
 				17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */,
 				583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */,
+				58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1808,6 +1829,7 @@
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
 				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
 				58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */,
+				58C61CFA11960312003BAA5D /* SPAlertSheets.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2216,6 +2238,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/MCPKit-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -2333,7 +2356,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_WARNINGS = YES;
@@ -2357,9 +2380,11 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
+				OTHER_LDFLAGS = "-lstdc++";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -2378,6 +2403,7 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
+					"-lstdc++",
 					"-framework",
 					Foundation,
 					"-framework",
@@ -2400,6 +2426,7 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
+					"-lstdc++",
 					"-framework",
 					Foundation,
 					"-framework",
@@ -2419,8 +2446,10 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
+					"-lstdc++",
 					"-framework",
 					Foundation,
 					"-framework",
@@ -2450,6 +2479,10 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
+				OTHER_LDFLAGS = (
+					"-lstdc++",
+					"-lcrypto",
+				);
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -2472,6 +2505,10 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/MCPKit/MySQL/lib\"";
+				OTHER_LDFLAGS = (
+					"-lstdc++",
+					"-lcrypto",
+				);
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -2494,7 +2531,10 @@
 				LEX_INSERT_LINE_DIRECTIVES = YES;
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = (
+					"-lstdc++",
+					"-lcrypto",
+				);
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 				STRIP_INSTALLED_PRODUCT = NO;

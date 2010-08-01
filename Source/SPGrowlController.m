@@ -77,10 +77,7 @@ static SPGrowlController *sharedGrowlController = nil;
 
 - (id)autorelease { return self; }
 
-- (void)release
-{
-	if (timingNotificationName) [timingNotificationName release];
-}
+- (void)release { }
 
 /**
  * Posts a Growl notification using the supplied details and default values.

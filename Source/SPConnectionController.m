@@ -31,6 +31,12 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 
+@interface SPConnectionController (PrivateAPI)
+
+- (void)_sortFavorites;
+
+@end
+
 @implementation SPConnectionController
 
 @synthesize delegate;
@@ -52,6 +58,8 @@
 @synthesize connectionSSHKeychainItemName;
 @synthesize connectionSSHKeychainItemAccount;
 
+#pragma mark -
+
 /**
  * Initialise the connection controller, linking it to the
  * parent document and setting up the parent window.
@@ -69,6 +77,7 @@
 		mySQLConnection = nil;
 		sshTunnel = nil;
 		cancellingConnection = NO;
+        favoritesPBoardType = @"FavoritesPBoardType";
 
 		// Load the connection nib
 		[NSBundle loadNibNamed:@"ConnectionView" owner:self];
@@ -89,22 +98,26 @@
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
 		favorites = nil;
 		[self updateFavorites];
-
+        
 		// Register an observer for changes within the favorites
 		[prefs addObserver:self forKeyPath:SPFavorites options:NSKeyValueObservingOptionNew context:NULL];
 
+        // Set sort items
+        currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
+        reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
+        
 		// Register double click for the favorites view (double click favorite to connect)
 		[favoritesTable setTarget:self];
 		[favoritesTable setDoubleAction:@selector(initiateConnection:)];
+        [favoritesTable registerForDraggedTypes:[NSArray arrayWithObject:favoritesPBoardType]];
+        [favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
-		// Set the focus to the favorites table and select the appropriate row
+		// Sort the favourites to match prefs, set the focus to the favorites table and select the appropriate row
+		if (currentSortItem > -1) [self _sortFavorites];
 		[documentWindow setInitialFirstResponder:favoritesTable];
-		NSInteger tableRow;
-		if ([prefs boolForKey:SPSelectLastFavoriteUsed] == YES) {
-			tableRow = [prefs integerForKey:SPLastFavoriteIndex] + 1;
-		} else {
-			tableRow = [prefs integerForKey:SPDefaultFavorite] + 1;
-		}
+
+		NSInteger tableRow = ([prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite] + 1);
+
 		if (tableRow < [favorites count]) {
 			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue];
 			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
@@ -120,7 +133,6 @@
 			[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.0];
 		}
 	}
-	
 	return self;
 }
 
@@ -153,13 +165,13 @@
 {	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
+		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
 		return;
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
 	if ([self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
+		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, documentWindow, self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
 		return;
 	}
 
@@ -438,16 +450,15 @@
 
 	// Only display the connection error message if there is a window visible
 	if ([documentWindow isVisible]) {
-		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, nil, @selector(errorSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, documentWindow, self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 	}
 }
 
 /**
  * Alert sheet callback method - invoked when an error sheet is closed.
  */
-- (void)errorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {	
-	[sheet orderOut:self];
 	
 	// Restore the passwords from keychain for editing if appropriate
 	if (connectionKeychainItemName) {
@@ -632,7 +643,6 @@
 							documentWindow,	// Window to attach to
 							self,	// Modal delegate
 							@selector(localhostErrorSheetDidEnd:returnCode:contextInfo:),	// Did end selector
-							nil,	// Did dismiss selector
 							nil,	// Contextual info for selectors
 							NSLocalizedString(@"To MySQL, 'localhost' is a special host and means that a socket connection should be used.\n\nDid you mean to use a socket connection, or to connect to the local machine via a port?  If you meant to connect via a port, '127.0.0.1' should be used instead of 'localhost'.", @"message of error when using 'localhost' for a network connection"));
 		return NO;
@@ -644,9 +654,8 @@
 /**
  * Alert sheet callback method - invoked when the error sheet is closed.
  */
-- (void)localhostErrorSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)localhostErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {	
-	[sheet orderOut:self];
 	if (returnCode == NSAlertAlternateReturn) {
 		[self setType:SPSocketConnection];
 		[self setHost:@""];
@@ -657,6 +666,37 @@
 
 #pragma mark -
 #pragma mark Favorites interaction
+
+- (void)sortFavorites:(id)sender
+{
+    previousSortItem = currentSortItem;
+	currentSortItem  = [[sender menu] indexOfItem:sender];
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	
+	// Perform sorting
+	[self _sortFavorites];
+	
+	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+
+	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
+    
+}
+
+/**
+ *
+ */
+- (void)reverseSortFavorites:(id)sender
+{
+    reverseFavoritesSort = (![sender state]);
+    
+	[prefs setBool:reverseFavoritesSort forKey:SPFavoritesSortedInReverse];
+	
+	// Perform re-sorting
+	[self _sortFavorites];
+	
+	[sender setState:reverseFavoritesSort]; 
+}
 
 /**
  * Updates the local favorites array from the user defaults
@@ -850,12 +890,93 @@
 }
 
 #pragma mark -
-#pragma mark Favorites tableview datasource and delegate methods
+#pragma mark TableView drag & drop delegate methods
+
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
+{
+    NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+    [pboard declareTypes:[NSArray arrayWithObject:favoritesPBoardType] owner:self];
+    [pboard setData:archivedData forType:favoritesPBoardType];
+    return YES;
+}
+
+- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
+{
+    if (row == 0) return NSDragOperationNone;
+    if ([info draggingSource] == aTableView)
+    {
+        [aTableView setDropRow:row dropOperation:NSTableViewDropAbove];
+        return NSDragOperationMove;
+    }
+    return NSDragOperationNone;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
+{
+    BOOL acceptedDrop = NO;
+
+
+	if ((row == 0) || ([info draggingSource] != aTableView))  return acceptedDrop;
+
+	// Disable all automatic sorting
+	currentSortItem = -1;
+	reverseFavoritesSort = NO;
+
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
+
+	// Remove sort descriptors
+	[favorites sortUsingDescriptors:[NSArray array]];
+
+	// Uncheck sort by menu items
+	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
+	{
+		[menuItem setState:NSOffState];
+	}
+
+    NSPasteboard* pboard = [info draggingPasteboard];
+    NSData* rowData = [pboard dataForType:favoritesPBoardType];
+    NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+    NSInteger dragRow = [rowIndexes firstIndex];
+    NSInteger defaultConnectionRow = [prefs integerForKey:SPLastFavoriteIndex];
+    if (defaultConnectionRow == dragRow)
+    {
+        [prefs setInteger:row forKey:SPLastFavoriteIndex];
+    }
+    NSMutableDictionary *draggedFavorite = [favorites objectAtIndex:dragRow];
+    [favorites removeObjectAtIndex:dragRow];
+    if (row > [favorites count])
+    {
+        row--;
+    }
+    [favorites insertObject:draggedFavorite atIndex:row];
+    [aTableView reloadData];
+    [aTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+
+	// reset the prefs with the new order
+    NSMutableArray *reorderedFavorites = [[NSMutableArray alloc] initWithArray:favorites];
+    [reorderedFavorites removeObjectAtIndex:0];
+    [prefs setObject:reorderedFavorites forKey:SPFavorites];
+
+	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
+
+	[reorderedFavorites release];
+
+	[self updateFavorites];
+
+	acceptedDrop = YES;
+
+	return acceptedDrop;
+
+}
+
+#pragma mark -
+#pragma mark Favorites tableview datasource methods
 
 /**
  * Returns the number of favorites to display
  */
-- (NSInteger) numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	return [favorites count];
 }
@@ -863,10 +984,13 @@
 /**
  * Returns the favorite names to be displayed in the table
  */
-- (id) tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
 }
+
+#pragma mark -
+#pragma mark Favorites tableview delegate methods
 
 /**
  * Loads a favorite, if any are selected.
@@ -922,8 +1046,9 @@
 		[(ImageAndTextCell *)aCell setTextColor:[NSColor grayColor]];
 }
 
+
 #pragma mark -
-#pragma mark NSSplitView delegate methods
+#pragma mark SplitView delegate methods
 
 /**
  * When the split view is resized, trigger a resize in the hidden table
@@ -950,6 +1075,71 @@
 	return (proposedMin + 80);
 }
 
+#pragma mark -
+#pragma mark Menu Validation
+
+-(BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    SEL action = [menuItem action];
+    if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
+		
+		// Loop all the items in the sort by menu only checking the currently selected one
+		for (NSMenuItem *item in [[menuItem menu] itemArray])
+		{
+			[item setState:([[menuItem menu] indexOfItem:item] == currentSortItem) ? NSOnState : NSOffState];
+		}
+		
+		// Check or uncheck the reverse sort item
+		if (action == @selector(reverseSortFavorites:)) {
+			[menuItem setState:reverseFavoritesSort];
+		}
+    }
+    return YES;
+    
+}
+
+#pragma mark -
+#pragma mark Private API
+
+- (void)_sortFavorites
+{
+    NSString *sortKey = @"";
+	
+	switch (currentSortItem)
+	{
+		case SPFavoritesSortNameItem:
+			sortKey = @"name";
+			break;
+		case SPFavoritesSortHostItem:
+			sortKey = @"host";
+			break;
+		case SPFavoritesSortTypeItem:
+			sortKey = @"type";
+			break;
+		default:
+			sortKey = @"name";
+			break;
+	}
+	
+	NSSortDescriptor *sortDescriptor = nil;
+	
+	if (currentSortItem == SPFavoritesSortTypeItem) {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort)] autorelease];
+	}
+	else {
+		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
+	}
+	
+	NSDictionary *first = [[favorites objectAtIndex:0] retain];
+    
+	[favorites removeObjectAtIndex:0];
+	[favorites sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+	[favorites insertObject:first atIndex:0];
+	[favoritesTable reloadData];
+    
+	[first release];
+}
+
 @end
 
 #pragma mark -
@@ -964,5 +1154,7 @@
 {
     return YES;
 }
+
+
 
 @end

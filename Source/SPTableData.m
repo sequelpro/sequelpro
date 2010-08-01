@@ -42,8 +42,8 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
-		triggers = [[NSMutableArray alloc] init];
-		
+
+		triggers = nil;
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
 		mySQLConnection = nil;
@@ -121,6 +121,19 @@
 
 - (NSArray *) triggers
 {
+
+	// If triggers is nil, the triggers need to be loaded - if a table is selected on MySQL >= 5.0.2
+	if (!triggers) {
+		if ([tableListInstance tableType] == SPTableTypeTable
+			&& [mySQLConnection serverMajorVersion]		>= 5
+			&& [mySQLConnection serverMinorVersion]		>= 0)
+		{
+			[self updateTriggersForCurrentTable];
+		} else {
+			return [NSArray array];
+		}
+	}
+
 	return (NSArray *)triggers;
 }
 
@@ -234,6 +247,11 @@
 	[columnNames removeAllObjects];
 	[status removeAllObjects];
 	
+	if (triggers != nil) {
+		[triggers release];
+		triggers = nil;
+	}
+	
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 		tableEncoding = nil;
@@ -334,7 +352,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
 			// If the current table doesn't exist anymore reload table list
@@ -608,39 +626,12 @@
 	[createTableParser release];
 	[fieldParser release];
 	
-	// Triggers
-	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
-											  [tableName tickQuotedString]]];
-	[theResult setReturnDataAsStrings:YES];
-	
-	// Check for any errors, but only display them if a connection still exists
-	if ([mySQLConnection queryErrored]) {
-		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
-							  nil, nil, [NSApp mainWindow], self, nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
-							   tableName, [mySQLConnection getLastErrorMessage]]);
-		}
-		[tableColumns release];
-		if (encodingString) [encodingString release];
-
-		return nil;
-	}
-	
-	[triggers removeAllObjects];
-	if( [theResult numOfRows] ) {
-		for(i=0; i<[theResult numOfRows]; i++){
-			[triggers addObject:[theResult fetchRowAsDictionary]];
-		}
-	}
-	
 
 	// this will be 'Table' or 'View'
 	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
-	[tableData setObject:[NSArray arrayWithArray:triggers] forKey:@"triggers"];
 
 	[encodingString release];
 	[tableColumns release];
@@ -711,7 +702,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -743,7 +734,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -841,7 +832,7 @@
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
-					nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
@@ -856,6 +847,12 @@
 		// Reassign any "Type" key - for MySQL < 4.1 - to "Engine" for consistency.
 		if ([status objectForKey:@"Type"]) {
 			[status setObject:[status objectForKey:@"Type"] forKey:@"Engine"];
+		}
+
+		// If the "Engine" key is NULL, a problem occurred when retrieving the table information.
+		if ([[status objectForKey:@"Engine"] isNSNull]) {
+			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:@"An error occurred retrieving table information.  MySQL said: %@", [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
+			return FALSE;
 		}
 
 		// Add a note for whether the row count is accurate or not - only for MyISAM
@@ -878,6 +875,36 @@
 	return TRUE;
 }
 
+/**
+ * Retrieve the triggers for the current table and add to local cache for reuse.
+ */
+- (BOOL) updateTriggersForCurrentTable
+{
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
+											  [[tableListInstance tableName] tickQuotedString]]];
+	[theResult setReturnDataAsStrings:YES];
+	
+	// Check for any errors, but only display them if a connection still exists
+	if ([mySQLConnection queryErrored]) {
+		if ([mySQLConnection isConnected]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"), NSLocalizedString(@"OK", @"OK button"), 
+							  nil, nil, [NSApp mainWindow], self, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+							  [tableListInstance tableName], [mySQLConnection getLastErrorMessage]]);
+			if (triggers) [triggers release], triggers = nil;
+		}
+
+		return NO;
+	}
+
+	if (triggers) [triggers release];
+	triggers = [[NSMutableArray alloc] init];
+	for (int i=0; i<[theResult numOfRows]; i++) {
+		[triggers addObject:[theResult fetchRowAsDictionary]];
+	}
+
+	return YES;
+}
 
 /*
  * Parse an array of field definition parts - not including name but including type and optionally unsigned/zerofill/null
@@ -1122,9 +1149,9 @@
 	[columns release];
 	[columnNames release];
 	[constraints release];
-	[triggers release];
 	[status release];
 	
+	if (triggers) [triggers release];
 	if (tableEncoding) [tableEncoding release];
 	if (tableCreateSyntax) [tableCreateSyntax release];
 	if (mySQLConnection) [mySQLConnection release];

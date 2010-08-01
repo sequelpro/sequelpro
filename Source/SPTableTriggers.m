@@ -77,12 +77,7 @@
 											 selector:@selector(triggerStatementTextDidChange:) 
 												 name:NSTextStorageDidProcessEditingNotification 
 											   object:[triggerStatementTextView textStorage]];
-	
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(tableSelectionChanged:) 
-												 name:SPTableChangedNotification 
-											   object:tableDocumentInstance];
-	
+
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -92,6 +87,46 @@
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+}
+
+/**
+ * Called whenever the user selects the triggers tab for the first time,
+ * or switches between tables with the triggers tab active.
+ */
+- (void)loadTriggers
+{
+	BOOL enableInteraction = ((![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) || (![tableDocumentInstance isWorking]));
+
+	// Disable all interface elements by default
+	[addTriggerButton setEnabled:NO];
+	[refreshTriggersButton setEnabled:NO];
+	[triggersTableView setEnabled:NO];
+	[labelTextField setStringValue:@""];
+
+	// Show a warning if the version of MySQL is too low to support triggers
+	if ([connection serverMajorVersion] < 5
+		|| ([connection serverMajorVersion]     == 5
+			&& [connection serverMinorVersion]  == 0
+			&& [connection serverReleaseVersion] < 2))
+	{
+		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
+		return;
+	}
+
+	// If no item is selected, or the item selected is not a table, return.
+	if (![tablesListInstance tableName] || [tablesListInstance tableType] != SPTableTypeTable)
+		return;
+
+	// Update the text label
+	[labelTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Triggers for table: %@", @"triggers for table label"), [tablesListInstance tableName]]];
+
+	// Enable interface elements
+	[addTriggerButton setEnabled:enableInteraction];
+	[refreshTriggersButton setEnabled:enableInteraction];
+	[triggersTableView setEnabled:YES];
+
+	// Ensure trigger data is loaded
+	[self _refreshTriggerDataForcingCacheRefresh:NO];
 }
 
 #pragma mark -
@@ -131,7 +166,7 @@
 	if (([connection queryErrored])) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+						  nil, nil, [NSApp mainWindow], nil, nil, nil, 
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"), [connection getLastErrorMessage]]);		
 	} 
 	else {
@@ -183,49 +218,6 @@
 - (IBAction)refreshTriggers:(id)sender
 {
 	[self _refreshTriggerDataForcingCacheRefresh:YES];
-}
-
-/**
- * Called whenever the user selects a different table.
- */
-- (void)tableSelectionChanged:(NSNotification *)notification
-{
-	BOOL enableInteraction = ((![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) || (![tableDocumentInstance isWorking]));
-	
-	// To begin enable all interface elements
-	[addTriggerButton setEnabled:enableInteraction];		
-	[refreshTriggersButton setEnabled:enableInteraction];
-	[triggersTableView setEnabled:YES];	
-	
-	if (([connection serverMajorVersion]   >= 5) &&
-		([connection serverMinorVersion]   >= 0) &&
-		([connection serverReleaseVersion] >= 2)) {
-		
-		// Update the text label
-		[labelTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Triggers for table: %@", @"triggers for table label"), [tablesListInstance tableName]]];
-		
-		[addTriggerButton setEnabled:enableInteraction];
-		[refreshTriggersButton setEnabled:enableInteraction];
-		[triggersTableView setEnabled:YES];
-			
-		[self _refreshTriggerDataForcingCacheRefresh:NO];
-	} 
-	else {
-		[addTriggerButton setEnabled:NO];		
-		[refreshTriggersButton setEnabled:NO];	
-		[triggersTableView setEnabled:NO];
-		
-		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
-	}
-	
-	// If a proc or function is selected disable everything.
-	if (([tablesListInstance tableType] == SPTableTypeProc) || ([tablesListInstance tableType] == SPTableTypeFunc)) {
-		[addTriggerButton setEnabled:NO];		
-		[refreshTriggersButton setEnabled:NO];
-		[triggersTableView setEnabled:NO];	
-		
-		[labelTextField setStringValue:@""];
-	}
 }
 
 #pragma mark -
@@ -330,7 +322,7 @@
 					
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove trigger", @"error removing trigger message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
+									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be removed.\n\nMySQL said: %@", @"error removing trigger informative message"), [connection getLastErrorMessage]]);	
 					
 					// Abort loop
@@ -479,9 +471,14 @@
 	
 	if ([tablesListInstance tableType] == SPTableTypeTable) {
 		
-		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
+		if (clearAllCaches) {
+			[tableDataInstance resetAllData];
+			[tableDataInstance updateTriggersForCurrentTable];
+		}
 		
-		NSArray *triggers = [tableDataInstance triggers];
+		NSArray *triggers = nil;
+		if ([connection serverMajorVersion] >= 5 && [connection serverMinorVersion] >= 0)
+			triggers = [tableDataInstance triggers];
 		
 		for (NSDictionary *trigger in triggers) 
 		{

@@ -110,7 +110,7 @@
 		[sender selectItemWithTitle:currentType];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection getLastErrorMessage]]);
 	}
 }
@@ -137,7 +137,7 @@
 		[sender selectItemWithTitle:currentEncoding];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table encoding", @"error changing table encoding message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@", @"error changing table encoding informative message"), newEncoding, [connection getLastErrorMessage]]);
 	}
 }
@@ -164,7 +164,7 @@
 		[sender selectItemWithTitle:currentCollation];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table collation", @"error changing table collation message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@", @"error changing table collation informative message"), newCollation, [connection getLastErrorMessage]]);
 	}
 }
@@ -360,7 +360,9 @@
 	[tableCreateSyntaxTextView setString:@""];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:[tableDataInstance tableCreateSyntax]];
-	[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] stringByAppendingString:@";"]];
+	if ([tableDataInstance tableCreateSyntax]) {
+		[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] stringByAppendingString:@";"]];
+	}
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
 	
@@ -381,28 +383,42 @@
 
 	NSMutableDictionary *tableInfo = [NSMutableDictionary dictionary];
 	NSDictionary *statusFields = [tableDataInstance statusValues];
-	
-	[tableInfo setObject:[tableTypePopUpButton titleOfSelectedItem] forKey:@"type"];
-	[tableInfo setObject:[tableEncodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
-	[tableInfo setObject:[tableCollationPopUpButton titleOfSelectedItem] forKey:@"collation"];
-	
-	[tableInfo setObject:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields] forKey:@"createdAt"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields] forKey:@"updatedAt"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Rows" inDictionary:statusFields] forKey:@"rowNumber"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields] forKey:@"rowFormat"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields] forKey:@"rowAvgLength"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields] forKey:@"rowAutoIncrement"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields] forKey:@"dataSize"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields] forKey:@"maxDataSize"];
-	[tableInfo setObject:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields] forKey:@"indexSize"];
+
+	if([tableTypePopUpButton titleOfSelectedItem])
+		[tableInfo setObject:[tableTypePopUpButton titleOfSelectedItem] forKey:@"type"];
+	if([tableEncodingPopUpButton titleOfSelectedItem])
+		[tableInfo setObject:[tableEncodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
+	if([tableCollationPopUpButton titleOfSelectedItem])
+		[tableInfo setObject:[tableCollationPopUpButton titleOfSelectedItem] forKey:@"collation"];
+
+	if([self _formatValueWithKey:@"Create_time" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields] forKey:@"createdAt"];
+	if([self _formatValueWithKey:@"Update_time" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields] forKey:@"updatedAt"];
+	if([self _formatValueWithKey:@"Rows" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Rows" inDictionary:statusFields] forKey:@"rowNumber"];
+	if([self _formatValueWithKey:@"Row_format" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields] forKey:@"rowFormat"];
+	if([self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields] forKey:@"rowAvgLength"];
+	if([self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields] forKey:@"rowAutoIncrement"];
+	if([self _formatValueWithKey:@"Data_length" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields] forKey:@"dataSize"];
+	if([self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields] forKey:@"maxDataSize"];
+	if([self _formatValueWithKey:@"Index_length" inDictionary:statusFields])
+		[tableInfo setObject:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields] forKey:@"indexSize"];
 	[tableInfo setObject:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields] forKey:@"sizeFree"];
-	
-	[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
-		
+
+	if([tableCommentsTextView string])
+		[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
+
 	NSError *error = nil;
 	NSArray *HTMLExcludes = [NSArray arrayWithObjects:@"doctype", @"html", @"head", @"body", @"xml", nil];
 	
-	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:NSHTMLTextDocumentType, NSDocumentTypeDocumentAttribute, HTMLExcludes, NSExcludedElementsDocumentAttribute, nil];
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:NSHTMLTextDocumentType, 
+		NSDocumentTypeDocumentAttribute, HTMLExcludes, NSExcludedElementsDocumentAttribute, nil];
 
 	// Set tableCreateSyntaxTextView's font size temporarily to 10pt for printing
 	NSFont *oldFont = [tableCreateSyntaxTextView font];
@@ -411,7 +427,8 @@
 	[tableCreateSyntaxTextView setFont:[NSFont fontWithName:[oldFont fontName] size:10.0]];
 
 	// Convert tableCreateSyntaxTextView to HTML
-	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) documentAttributes:attributes error:&error];
+	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) 
+		documentAttributes:attributes error:&error];
 
 	// Restore original font settings
 	[tableCreateSyntaxTextView setFont:oldFont];
@@ -419,12 +436,12 @@
 	
 	if (error != nil) {
 		NSLog(@"Error generating table's create syntax HTML for printing. Excluding from print out. Error was: %@", [error localizedDescription]);
-		
+
 		return tableInfo;
 	}
-	
+
 	NSString *HTMLString = [[[NSString alloc] initWithData:HTMLData encoding:NSUTF8StringEncoding] autorelease];
-	
+
 	[tableInfo setObject:HTMLString forKey:@"createSyntax"];
 	
 	return tableInfo;
@@ -454,7 +471,7 @@
 			}
 			else {
 				SPBeginAlertSheet(NSLocalizedString(@"Error changing table comment", @"error changing table comment message"), 
-								  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil, nil,
+								  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@", @"error changing table comment informative message"), newComment, [connection getLastErrorMessage]]);
 			}
 		}
