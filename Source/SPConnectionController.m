@@ -318,10 +318,10 @@
 		[tableDocument setTitlebarStatus:@"SSH Disconnected"];
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
 	} else if (newState == PROXY_STATE_CONNECTED) {
-		[tableDocument setTitlebarStatus:@"SSH Connected"];
+		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
 		[self initiateMySQLConnection];
 	} else {
-		[tableDocument setTitlebarStatus:@"SSH Connecting…"];
+		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting…", @"SSH connecting titlebar marker")];
 	}
 }
 

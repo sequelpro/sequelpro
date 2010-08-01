@@ -1149,7 +1149,7 @@
 	[defaultFavoritePopup removeAllItems];
 	
 	// Use the last used favorite
-	[defaultFavoritePopup addItemWithTitle:@"Last Used"];
+	[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"Last Used", @"Last Used entry in favorites menu")];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
 	// Add all favorites to the menu
