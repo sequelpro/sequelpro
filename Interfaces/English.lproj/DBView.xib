@@ -23,6 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="6765"/>
 			<integer value="673"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -7623,15 +7624,15 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 			<object class="NSWindowTemplate" id="437271354">
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 162}, {329, 348}}</string>
+				<string key="NSWindowRect">{{196, 162}, {360, 348}}</string>
 				<int key="NSWTFlags">1946157056</int>
 				<string key="NSWindowTitle">New Trigger</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
-				<string key="NSWindowContentMinSize">{329, 348}</string>
+				<string key="NSWindowContentMinSize">{360, 348}</string>
 				<object class="NSView" key="NSWindowView" id="729080358">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7648,12 +7649,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<object class="NSTextField" id="896803250">
 											<reference key="NSNextResponder" ref="744559560"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{49, 66}, {39, 14}}</string>
+											<string key="NSFrame">{{1, 66}, {116, 14}}</string>
 											<reference key="NSSuperview" ref="744559560"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="423785954">
 												<int key="NSCellFlags">68288064</int>
-												<int key="NSCellFlags2">4326400</int>
+												<int key="NSCellFlags2">71435264</int>
 												<string key="NSContents">Name:</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="896803250"/>
@@ -7664,7 +7665,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<object class="NSTextField" id="923241940">
 											<reference key="NSNextResponder" ref="744559560"/>
 											<int key="NSvFlags">266</int>
-											<string key="NSFrame">{{94, 64}, {181, 19}}</string>
+											<string key="NSFrame">{{125, 64}, {181, 19}}</string>
 											<reference key="NSSuperview" ref="744559560"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="868956191">
@@ -7681,7 +7682,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<object class="NSPopUpButton" id="119577300">
 											<reference key="NSNextResponder" ref="744559560"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{91, 35}, {187, 22}}</string>
+											<string key="NSFrame">{{121, 35}, {187, 22}}</string>
 											<reference key="NSSuperview" ref="744559560"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSPopUpButtonCell" key="NSCell" id="395583979">
@@ -7735,7 +7736,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<object class="NSPopUpButton" id="463531222">
 											<reference key="NSNextResponder" ref="744559560"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{91, 10}, {187, 22}}</string>
+											<string key="NSFrame">{{121, 10}, {187, 22}}</string>
 											<reference key="NSSuperview" ref="744559560"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSPopUpButtonCell" key="NSCell" id="545923807">
@@ -7800,12 +7801,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<object class="NSTextField" id="944080514">
 											<reference key="NSNextResponder" ref="744559560"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{15, 40}, {72, 14}}</string>
+											<string key="NSFrame">{{1, 40}, {116, 14}}</string>
 											<reference key="NSSuperview" ref="744559560"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="485839481">
 												<int key="NSCellFlags">68288064</int>
-												<int key="NSCellFlags2">4326400</int>
+												<int key="NSCellFlags2">71435264</int>
 												<string key="NSContents">Action Time:</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="944080514"/>
@@ -7816,12 +7817,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<object class="NSTextField" id="467991826">
 											<reference key="NSNextResponder" ref="744559560"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{51, 15}, {36, 14}}</string>
+											<string key="NSFrame">{{1, 15}, {116, 14}}</string>
 											<reference key="NSSuperview" ref="744559560"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="972905785">
 												<int key="NSCellFlags">68288064</int>
-												<int key="NSCellFlags2">4326400</int>
+												<int key="NSCellFlags2">71435264</int>
 												<string key="NSContents">Event:</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="467991826"/>
@@ -7830,11 +7831,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 											</object>
 										</object>
 									</object>
-									<string key="NSFrame">{{1, 1}, {293, 93}}</string>
+									<string key="NSFrame">{{1, 1}, {324, 93}}</string>
 									<reference key="NSSuperview" ref="215249222"/>
 								</object>
 							</object>
-							<string key="NSFrame">{{17, 219}, {295, 109}}</string>
+							<string key="NSFrame">{{17, 219}, {326, 109}}</string>
 							<reference key="NSSuperview" ref="729080358"/>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
@@ -7857,7 +7858,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSButton" id="512753622">
 							<reference key="NSNextResponder" ref="729080358"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{218, 13}, {96, 28}}</string>
+							<string key="NSFrame">{{249, 13}, {96, 28}}</string>
 							<reference key="NSSuperview" ref="729080358"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
@@ -7878,7 +7879,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSButton" id="497835077">
 							<reference key="NSNextResponder" ref="729080358"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{124, 13}, {96, 28}}</string>
+							<string key="NSFrame">{{155, 13}, {96, 28}}</string>
 							<reference key="NSSuperview" ref="729080358"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="442324996">
@@ -7931,7 +7932,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 													<string>public.url</string>
 												</object>
 											</object>
-											<string key="NSFrameSize">{287, 14}</string>
+											<string key="NSFrameSize">{318, 14}</string>
 											<reference key="NSSuperview" ref="43515485"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="880430958">
 												<object class="NSLayoutManager" key="NSLayoutManager">
@@ -7949,7 +7950,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 													<nil key="NSDelegate"/>
 												</object>
 												<reference key="NSTextView" ref="524621994"/>
-												<double key="NSWidth">287</double>
+												<double key="NSWidth">318</double>
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
@@ -7992,7 +7993,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 											<nil key="NSDelegate"/>
 										</object>
 									</object>
-									<string key="NSFrame">{{1, 1}, {287, 168}}</string>
+									<string key="NSFrame">{{1, 1}, {318, 168}}</string>
 									<reference key="NSSuperview" ref="535637428"/>
 									<reference key="NSNextKeyView" ref="524621994"/>
 									<reference key="NSDocView" ref="524621994"/>
@@ -8022,7 +8023,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<double key="NSPercent">0.94565218687057495</double>
 								</object>
 							</object>
-							<string key="NSFrame">{{20, 45}, {289, 170}}</string>
+							<string key="NSFrame">{{20, 45}, {320, 170}}</string>
 							<reference key="NSSuperview" ref="729080358"/>
 							<reference key="NSNextKeyView" ref="43515485"/>
 							<int key="NSsFlags">530</int>
@@ -8031,10 +8032,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<reference key="NSContentView" ref="43515485"/>
 						</object>
 					</object>
-					<string key="NSFrameSize">{329, 348}</string>
+					<string key="NSFrameSize">{360, 348}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
-				<string key="NSMinSize">{329, 370}</string>
+				<string key="NSMinSize">{360, 370}</string>
 				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSWindowTemplate" id="1066802919">
@@ -16517,10 +16519,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="object" ref="729080358"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="497835077"/>
-							<reference ref="512753622"/>
 							<reference ref="535637428"/>
 							<reference ref="215249222"/>
+							<reference ref="512753622"/>
+							<reference ref="497835077"/>
 						</object>
 						<reference key="parent" ref="437271354"/>
 					</object>
@@ -16560,10 +16562,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="467991826"/>
 							<reference ref="944080514"/>
-							<reference ref="463531222"/>
-							<reference ref="119577300"/>
-							<reference ref="923241940"/>
 							<reference ref="896803250"/>
+							<reference ref="923241940"/>
+							<reference ref="119577300"/>
+							<reference ref="463531222"/>
 						</object>
 						<reference key="parent" ref="729080358"/>
 					</object>
@@ -22736,23 +22738,23 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{308, 178}, {329, 348}}</string>
+					<string>{{308, 178}, {360, 348}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{308, 178}, {329, 348}}</string>
+					<string>{{308, 178}, {360, 348}}</string>
 					<integer value="0"/>
 					<boolean value="YES"/>
-					<string>{329, 348}</string>
+					<string>{360, 348}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableArray">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="IBUserGuide">
 							<reference key="view" ref="729080358"/>
-							<double key="location">101</double>
+							<double key="location">132</double>
 							<int key="affinity">0</int>
 						</object>
 						<object class="IBUserGuide">
 							<reference key="view" ref="729080358"/>
-							<double key="location">292</double>
+							<double key="location">323</double>
 							<int key="affinity">0</int>
 						</object>
 					</object>
@@ -24141,11 +24143,9 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>changeFormat:</string>
 							<string>closeSheet:</string>
 							<string>panelSelectionDidChange:</string>
-							<string>updateExportCompressionSetting:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -24160,7 +24160,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>changeFormat:</string>
 							<string>closeSheet:</string>
 							<string>panelSelectionDidChange:</string>
-							<string>updateExportCompressionSetting:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -24180,10 +24179,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="name">panelSelectionDidChange:</string>
 								<string key="candidateClassName">id</string>
 							</object>
-							<object class="IBActionInfo">
-								<string key="name">updateExportCompressionSetting:</string>
-								<string key="candidateClassName">id</string>
-							</object>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -24200,6 +24195,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>errorsView</string>
 							<string>importCSVBox</string>
 							<string>importCSVView</string>
+							<string>importEncodingPopup</string>
 							<string>importFieldMapperSheetWindow</string>
 							<string>importFieldNamesSwitch</string>
 							<string>importFieldsEnclosedField</string>
@@ -24236,6 +24232,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>NSPopUpButton</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -24275,6 +24272,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>errorsView</string>
 							<string>importCSVBox</string>
 							<string>importCSVView</string>
+							<string>importEncodingPopup</string>
 							<string>importFieldMapperSheetWindow</string>
 							<string>importFieldNamesSwitch</string>
 							<string>importFieldsEnclosedField</string>
@@ -24340,6 +24338,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<object class="IBToOneOutletInfo">
 								<string key="name">importCSVView</string>
 								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">importEncodingPopup</string>
+								<string key="candidateClassName">NSPopUpButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">importFieldMapperSheetWindow</string>
@@ -24487,9 +24489,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>copyCreateTableSyntaxFromSheet:</string>
 							<string>copyDatabase:</string>
 							<string>export:</string>
-							<string>exportMultipleTables:</string>
 							<string>exportSelectedTablesAs:</string>
-							<string>exportTable:</string>
 							<string>flushPrivileges:</string>
 							<string>flushTable:</string>
 							<string>focusOnTableContentFilter:</string>
@@ -24571,8 +24571,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -24596,9 +24594,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>copyCreateTableSyntaxFromSheet:</string>
 							<string>copyDatabase:</string>
 							<string>export:</string>
-							<string>exportMultipleTables:</string>
 							<string>exportSelectedTablesAs:</string>
-							<string>exportTable:</string>
 							<string>flushPrivileges:</string>
 							<string>flushTable:</string>
 							<string>focusOnTableContentFilter:</string>
@@ -24701,15 +24697,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">exportMultipleTables:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
 								<string key="name">exportSelectedTablesAs:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">exportTable:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -25370,8 +25358,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>cancelExport:</string>
+							<string>changeExportCompressionFormat:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
+							<string>export:</string>
 							<string>exportCustomQueryResultAsFormat:</string>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
@@ -25385,6 +25375,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -25405,8 +25397,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>cancelExport:</string>
+							<string>changeExportCompressionFormat:</string>
 							<string>changeExportOutputPath:</string>
 							<string>closeSheet:</string>
+							<string>export:</string>
 							<string>exportCustomQueryResultAsFormat:</string>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
@@ -25425,11 +25419,19 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">changeExportCompressionFormat:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">changeExportOutputPath:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">closeSheet:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">export:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -25491,7 +25493,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportCSVIncludeFieldNamesCheck</string>
 							<string>exportCSVLinesTerminatedField</string>
 							<string>exportCSVNULLValuesAsTextField</string>
-							<string>exportCompressOutputFile</string>
 							<string>exportCustomFilenameTokenField</string>
 							<string>exportCustomFilenameTokensField</string>
 							<string>exportCustomFilenameView</string>
@@ -25504,6 +25505,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportHTMLIncludeStructureCheck</string>
 							<string>exportInputPopUpButton</string>
 							<string>exportOptionsTabBar</string>
+							<string>exportOutputCompressionFormatPopupButton</string>
 							<string>exportPDFIncludeStructureCheck</string>
 							<string>exportPathField</string>
 							<string>exportProcessLowMemoryButton</string>
@@ -25547,7 +25549,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>NSButton</string>
 							<string>NSComboBox</string>
 							<string>NSTextField</string>
-							<string>NSButton</string>
 							<string>NSTokenField</string>
 							<string>NSTokenField</string>
 							<string>NSView</string>
@@ -25560,6 +25561,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>NSButton</string>
 							<string>NSPopUpButton</string>
 							<string>NSTabView</string>
+							<string>NSPopUpButton</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
@@ -25606,7 +25608,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportCSVIncludeFieldNamesCheck</string>
 							<string>exportCSVLinesTerminatedField</string>
 							<string>exportCSVNULLValuesAsTextField</string>
-							<string>exportCompressOutputFile</string>
 							<string>exportCustomFilenameTokenField</string>
 							<string>exportCustomFilenameTokensField</string>
 							<string>exportCustomFilenameView</string>
@@ -25619,6 +25620,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>exportHTMLIncludeStructureCheck</string>
 							<string>exportInputPopUpButton</string>
 							<string>exportOptionsTabBar</string>
+							<string>exportOutputCompressionFormatPopupButton</string>
 							<string>exportPDFIncludeStructureCheck</string>
 							<string>exportPathField</string>
 							<string>exportProcessLowMemoryButton</string>
@@ -25702,10 +25704,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">exportCompressOutputFile</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
 								<string key="name">exportCustomFilenameTokenField</string>
 								<string key="candidateClassName">NSTokenField</string>
 							</object>
@@ -25752,6 +25750,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<object class="IBToOneOutletInfo">
 								<string key="name">exportOptionsTabBar</string>
 								<string key="candidateClassName">NSTabView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportOutputCompressionFormatPopupButton</string>
+								<string key="candidateClassName">NSPopUpButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">exportPDFIncludeStructureCheck</string>
@@ -25866,6 +25868,13 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPExportController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPExportFilenameUtilities.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
