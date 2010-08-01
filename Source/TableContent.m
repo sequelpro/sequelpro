@@ -546,8 +546,12 @@
  */
 - (void) loadTableValues
 {
+
 	// If no table is selected, return
 	if (!selectedTable) return;
+
+	// Wrap the values load in an autorelease pool to ensure full and timely release
+	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
 
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
@@ -669,6 +673,8 @@
 
 	// Trigger a full reload if required
 	if (fullTableReloadRequired) [self reloadTable:self];
+
+	[loadPool drain];
 }
 
 /*
@@ -760,13 +766,9 @@
 		pthread_mutex_unlock(&tableValuesLock);
 	}
 
-	// Ensure the table is aware of changes
-    if ([NSThread isMainThread]) {
-        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
-    } else {
-        [tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
-        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
-    }
+	// Ensure the table is aware of changes, especially for non-threaded loads
+	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+	[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
 	
 	// Clean up the autorelease pool and reset the progress indicator
 	[dataLoadingPool drain];
@@ -1351,11 +1353,11 @@
 			[tempRow replaceObjectAtIndex:i withObject:[dbDataRow objectAtIndex:i]];
 		}
 	}
-	
+
 	//insert the copied row
 	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
 	tableRowsCount++;
-	
+
 	//select row and go in edit mode
 	[tableContentView reloadData];
 	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView selectedRow]+1] byExtendingSelection:NO];
@@ -1372,13 +1374,12 @@
 - (IBAction)removeRow:(id)sender
 {
 	// Check whether a save of the current row is required.
-	// if (![self saveRowOnDeselect]) 
+	//if (![self saveRowOnDeselect]) 
 	//	return;
 
 	// cancel editing (maybe this is not the ideal method -- see xcode docs for that method)
 	[tableWindow endEditingFor:nil];
 
-	
 	if (![tableContentView numberOfSelectedRows])
 		return;
 	
@@ -1972,12 +1973,13 @@
  */
 - (BOOL)saveRowOnDeselect
 {
-	// Save any edits which have been made but not saved to the table yet.
-	[tableWindow endEditingFor:nil];
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
 	isSavingRow = YES;
+
+	// Save any edits which have been made but not saved to the table yet.
+	[tableWindow endEditingFor:nil];
 
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
@@ -2164,17 +2166,16 @@
 			currentlyEditingRow = -1;
 		}
 		[tableContentView reloadData];
-	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {		
+	} else if ( [contextInfo isEqualToString:@"removeallrows"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//check if the user is currently editing a row
 			if (isEditingRow) {
 				//cancel the edit
 				isEditingRow = NO;
 				// in case the delete fails, make sure we at least stay in a somewhat consistent state
-				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
-				currentlyEditingRow = -1;				
+				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+				currentlyEditingRow = -1;
 			}
-			
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( ![mySQLConnection queryErrored] ) {
 
@@ -2187,7 +2188,7 @@
 			} else {
 				[self performSelector:@selector(showErrorSheetWith:)
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-						[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete rows.\n\nMySQL said: %@", @"message when deleteing all rows failed"),
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove rows.\n\nMySQL said: %@", @"message of panel when field cannot be removed"),
 						   [mySQLConnection getLastErrorMessage]],
 						nil]
 					afterDelay:0.3];
@@ -2197,40 +2198,40 @@
 		if ( returnCode == NSAlertDefaultReturn ) {
 			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
 
-			//check if the user is currently editing a row
-			if (isEditingRow) {
-				//make sure that only one row is selected. This should never happen
-				if ([selectedRows count]!=1) {
-					NSLog(@"Expected only one selected row, but found %d",[selectedRows count]);
-				}
-				// this code is pretty much taken from the escape key handler
-				if ( isEditingNewRow ) {
-					// since the user is currently editing a new row, we don't actually have to delete any rows from the database
-					// we just have to remove the row from the view (and the store)
-					isEditingRow = NO;
-					isEditingNewRow = NO;
-					tableRowsCount--;
-					[tableValues removeRowAtIndex:currentlyEditingRow];
-					currentlyEditingRow = -1;
-					[self updateCountText];
-					[tableContentView reloadData];
-					
-					//deselect the row
-					[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+    		//check if the user is currently editing a row
+    		if (isEditingRow) {
+    			//make sure that only one row is selected. This should never happen
+    			if ([selectedRows count]!=1) {
+    				NSLog(@"Expected only one selected row, but found %d",[selectedRows count]);
+    			}
+    			// this code is pretty much taken from the escape key handler
+    			if ( isEditingNewRow ) {
+    				// since the user is currently editing a new row, we don't actually have to delete any rows from the database
+    				// we just have to remove the row from the view (and the store)
+    				isEditingRow = NO;
+    				isEditingNewRow = NO;
+    				tableRowsCount--;
+    				[tableValues removeRowAtIndex:currentlyEditingRow];
+    				currentlyEditingRow = -1;
+    				[self updateCountText];
+    				[tableContentView reloadData];
 
-					// we also don't have to reload the table, since no query went to the database
-					return;
-				} else {
-					//cancel the edit
-					isEditingRow = NO;
-					// in case the delete fails, make sure we at least stay in a somewhat consistent state
-					[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
-					currentlyEditingRow = -1;				
-				}
+    				//deselect the row
+    				[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
-			}
+    				// we also don't have to reload the table, since no query went to the database
+    				return;
+    			} else {
+    				//cancel the edit
+    				isEditingRow = NO;
+    				// in case the delete fails, make sure we at least stay in a somewhat consistent state
+    				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+    				currentlyEditingRow = -1;
+    			}
+
+    		}
 			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-			
+
 			errors = 0;
 
 			// Disable updating of the Console Log window for large number of queries
@@ -2334,7 +2335,7 @@
 					// Remember affected rows for error checking
 					affectedRows += [mySQLConnection affectedRows];
 				}
-				
+
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
 			} else {
 				// if table has more than one PRIMARY KEY
@@ -2390,32 +2391,32 @@
 					// Remember affected rows for error checking
 					affectedRows += [mySQLConnection affectedRows];
 				}
-				
+
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
 			}
-						
+			
 			// Restore Console Log window's updating bahaviour
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
-			
+
 			if (errors) {
 				NSArray *message;
 				//TODO: The following three messages are NOT localisable!
 				if (errors < 0) {
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ removed! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
 							   nil];
-				} 
+				}
 				else {
 					if (primaryKeyFieldNames == nil)
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
 								   nil];
 					else
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been removed. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
 								   nil];
 				}
-				
+
 				[self performSelector:@selector(showErrorSheetWith:)
 						   withObject:message
 						   afterDelay:0.3];
@@ -2437,7 +2438,6 @@
 			// The user clicked cancel in the "sure you wanna delete" message
 			// restore editing or whatever
 		}
-
 	}
 }
 
@@ -3186,7 +3186,7 @@
 #pragma mark Other methods
 
 /*
- * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
+ * Trap the enter and escape keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
@@ -3197,8 +3197,9 @@
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
 
-	// Trap tab key
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	// Trap enter and tab keys
+	if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ||
+		[textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
 	{
 		[[control window] makeFirstResponder:control];
 
@@ -3227,49 +3228,7 @@
 		}
 		return TRUE;
 	}
-    
-    // Trap enter key
-    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
-    {
-        [[control window] makeFirstResponder:control];
-        [self addRowToDB];
-		return TRUE;
-    }
-    
-    // Trap down arrow key
-    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
-    {
-        NSUInteger newRow = row+1;
-        if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
-
-        [[control window] makeFirstResponder:control];
-        [self addRowToDB];
-        
-        if (newRow>=tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
-        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
-        
-        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
-        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
-		return TRUE;
-    }
-    
-    // Trap up arrow key
-    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
-    {
-        if (row==0) return TRUE; //already at the beginning of the list
-        NSUInteger newRow = row-1;
-        
-        [[control window] makeFirstResponder:control];
-        [self addRowToDB];
-        
-        if (newRow>=tableRowsCount) return TRUE; // addRowToDB could reload the table and change the number of rows
-        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
-        
-        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
-        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
-		return TRUE;
-    }
-    
+	
 	// Trap the escape key
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
 			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )

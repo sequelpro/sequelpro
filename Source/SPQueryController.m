@@ -778,7 +778,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	messagesVisibleSet = nil;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	
+
 	[dateFormatter release], dateFormatter = nil;
 	
 	[messagesFullSet release], messagesFullSet = nil;
@@ -948,9 +948,9 @@ static SPQueryController *sharedQueryController = nil;
 	if (!error) {
 		messageTemp = [messageTemp stringByAppendingString:@";"];
 	}
-	
+
 	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:messageTemp date:[NSDate date] connection:connection];
-		
+
 	[consoleMessage setIsError:error];
 	
 	[messagesFullSet addObject:consoleMessage];

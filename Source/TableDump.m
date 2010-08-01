@@ -41,7 +41,6 @@
 #import "SPFieldMapperController.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPNotLoaded.h"
-#import "SPFileHandle.h"
 
 @implementation TableDump
 
@@ -157,9 +156,9 @@
 {
 	NSString *file;
 	NSString *contextInfo;
-	currentExportPanel = [NSSavePanel savePanel];
-	[currentExportPanel setAllowsOtherFileTypes:YES];
-	[currentExportPanel setExtensionHidden:NO];
+	NSSavePanel *savePanel = [NSSavePanel savePanel];
+	[savePanel setAllowsOtherFileTypes:YES];
+	[savePanel setExtensionHidden:NO];
 	NSString *currentDate = [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil];
 	
 	switch ( tag ) {
@@ -167,14 +166,9 @@
 			// export dump
 			exportMode = SPExportingSQL;
 			[self reloadTables:self];
-			[sqlCompressionSwitch setState:[prefs boolForKey:SPSQLExportUseCompression]?NSOnState:NSOffState];
-			if ([prefs boolForKey:SPSQLExportUseCompression]) {
-				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
-			} else {
-				[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql", nil]];
-			}
-			file = [NSString stringWithFormat:@"%@_%@.%@", [tableDocumentInstance database], currentDate, [currentExportPanel requiredFileType]];
-			[currentExportPanel setAccessoryView:exportDumpView];
+			file = [NSString stringWithFormat:@"%@_%@.sql", [tableDocumentInstance database], currentDate];
+			[savePanel setRequiredFileType:@"sql"];
+			[savePanel setAccessoryView:exportDumpView];
 			contextInfo = @"exportDump";
 			break;
 			
@@ -182,7 +176,7 @@
 		case 6:
 			exportMode = SPExportingCSV;
 			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance table]];
-			[currentExportPanel setAccessoryView:exportCSVView];
+			[savePanel setAccessoryView:exportCSVView];
 			[csvFullStreamingSwitch setEnabled:YES];
 			contextInfo = @"exportTableContentAsCSV";
 			break;
@@ -198,7 +192,7 @@
 		case 8:
 			exportMode = SPExportingCSV;
 			file = [NSString stringWithFormat:@"%@ view.csv", [tableDocumentInstance table]];
-			[currentExportPanel setAccessoryView:exportCSVView];
+			[savePanel setAccessoryView:exportCSVView];
 			[csvFullStreamingSwitch setEnabled:NO];
 			contextInfo = @"exportBrowseViewAsCSV";
 			break;
@@ -214,7 +208,7 @@
 		case 10:
 			exportMode = SPExportingCSV;
 			file = @"customresult.csv";
-			[currentExportPanel setAccessoryView:exportCSVView];
+			[savePanel setAccessoryView:exportCSVView];
 			[csvFullStreamingSwitch setEnabled:NO];
 			contextInfo = @"exportCustomResultAsCSV";
 			break;
@@ -231,7 +225,7 @@
 			exportMode = SPExportingCSV;
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@.csv", [tableDocumentInstance database]];
-			[currentExportPanel setAccessoryView:exportMultipleCSVView];
+			[savePanel setAccessoryView:exportMultipleCSVView];
 			contextInfo = @"exportMultipleTablesAsCSV";
 			break;
 			
@@ -240,7 +234,7 @@
 			exportMode = SPExportingXML;
 			[self reloadTables:self];
 			file = [NSString stringWithFormat:@"%@.xml", [tableDocumentInstance database]];
-			[currentExportPanel setAccessoryView:exportMultipleXMLView];
+			[savePanel setAccessoryView:exportMultipleXMLView];
 			contextInfo = @"exportMultipleTablesAsXML";
 			break;
 			
@@ -249,7 +243,7 @@
 			exportMode = SPExportingDOT;
 			[self reloadTables:self];
 			file = [NSString stringWithString:[tableDocumentInstance database]];
-			[currentExportPanel setRequiredFileType:@"dot"];
+			[savePanel setRequiredFileType:@"dot"];
 			contextInfo = @"exportDot";
 			break;
 			
@@ -259,24 +253,12 @@
 			break;
 	}
 
-	[currentExportPanel setDelegate:self];
+	[savePanel setDelegate:self];
 
 	// Open the savePanel
-	[currentExportPanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
-										  file:file modalForWindow:tableWindow modalDelegate:self
-								didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
-								
-
-	// Wait for the SavePanel and check for '.sql.gz' extension; if so - select only the path name without any extensions
-	while(![currentExportPanel isVisible]) { usleep(100); }
-	if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
-		NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
-		if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:@".sql.gz"]) {
-			NSRange selRange = [filenameTextView selectedRange];
-			selRange.length -= 4;
-			[filenameTextView setSelectedRange:selRange];
-		}
-	}
+	[savePanel beginSheetForDirectory:[prefs objectForKey:@"savePath"]
+								 file:file modalForWindow:tableWindow modalDelegate:self
+					   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
 /**
@@ -311,7 +293,7 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *exportActionName = [exportAction objectForKey:@"action"];
 	NSString *exportFile = [exportAction objectForKey:@"filename"];
-	SPFileHandle *fileHandle = nil;
+	NSFileHandle *fileHandle = nil;
 	BOOL success;	
 
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
@@ -323,14 +305,17 @@
 	// Error if the file already exists and is not writable, and get a fileHandle to it.
 	if ( [[NSFileManager defaultManager] fileExistsAtPath:exportFile] ) {
 		if ( ![[NSFileManager defaultManager] isWritableFileAtPath:exportFile]
-			|| !(fileHandle = [SPFileHandle fileHandleForWritingAtPath:exportFile]) ) {
+			|| !(fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile]) ) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
 							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
 			[pool release];
 			return;
 		}
 		
-	// Otherwise attempt to create a file
+		// Truncate the file to zero bytes
+		[fileHandle truncateFileAtOffset:0];
+		
+		// Otherwise attempt to create a file
 	} else {
 		if ( ![[NSFileManager defaultManager] createFileAtPath:exportFile contents:[NSData data] attributes:nil] ) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -340,7 +325,7 @@
 		}
 		
 		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [SPFileHandle fileHandleForWritingAtPath:exportFile];
+		fileHandle = [NSFileHandle fileHandleForWritingAtPath:exportFile];
 		if ( !fileHandle ) {
 			[[NSFileManager defaultManager] removeFileAtPath:exportFile handler:nil];
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil,
@@ -352,7 +337,6 @@
 	
 	// Export the tables selected in the MySQL export sheet to a file
 	if ( [exportActionName isEqualToString:@"exportDump"] ) {
-		[fileHandle setShouldWriteWithGzipCompression:([sqlCompressionSwitch state] == NSOnState)];
 		success = [self dumpSelectedTablesAsSqlToFileHandle:fileHandle];
 		
 		// Export the full resultset for the currently selected table to a file in CSV format
@@ -489,51 +473,6 @@
 #pragma mark -
 #pragma mark Import methods
 
-- (void)importFromClipboard
-/*
- invoked when user clicks on an ImportFromClipboard menuItem
- */
-{
-	// Load accessory nib each time
-	if(![NSBundle loadNibNamed:@"ImportAccessory" owner:self]) {
-		NSBeep();
-		NSLog(@"ImportAccessory accessory dialog could not be loaded.");
-		return;
-	}
-
-	// clipboard textview with no wrapping
-	const CGFloat LargeNumberForText = 1.0e7;
-	[[importFromClipboardTextView textContainer] setContainerSize:NSMakeSize(LargeNumberForText, LargeNumberForText)];
-	[[importFromClipboardTextView textContainer] setWidthTracksTextView:NO];
-	[[importFromClipboardTextView textContainer] setHeightTracksTextView:NO];
-	[importFromClipboardTextView setAutoresizingMask:NSViewNotSizable];
-	[importFromClipboardTextView setMaxSize:NSMakeSize(LargeNumberForText, LargeNumberForText)];
-	[importFromClipboardTextView setHorizontallyResizable:YES];
-	[importFromClipboardTextView setVerticallyResizable:YES];
-	[importFromClipboardTextView setFont:[NSFont fontWithName:@"Monaco" size:11.0f]];
-	
-	if([[[NSPasteboard generalPasteboard] stringForType:NSStringPboardType] length] > 4000)
-		[importFromClipboardTextView setString:[[[[NSPasteboard generalPasteboard] stringForType:NSStringPboardType] substringToIndex:4000] stringByAppendingString:@"\n…"]];
-	else
-		[importFromClipboardTextView setString:[[NSPasteboard generalPasteboard] stringForType:NSStringPboardType]];
-
-	// Preset the accessory view with prefs defaults
-	[importFieldsTerminatedField setStringValue:[prefs objectForKey:SPCSVImportFieldTerminator]];
-	[importLinesTerminatedField setStringValue:[prefs objectForKey:SPCSVImportLineTerminator]];
-	[importFieldsEscapedField setStringValue:[prefs objectForKey:SPCSVImportFieldEscapeCharacter]];
-	[importFieldsEnclosedField setStringValue:[prefs objectForKey:SPCSVImportFieldEnclosedBy]];
-	[importFieldNamesSwitch setState:[[prefs objectForKey:SPCSVImportFirstLineIsHeader] boolValue]];
-	[importFromClipboardAccessoryView addSubview:importCSVView];
-
-	[NSApp beginSheet:importFromClipboardSheet
-	   modalForWindow:tableWindow
-		modalDelegate:self
-	   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"importFromClipboard"];
-
-	// NSString );
-}
-
 - (void)importFile
 /*
  invoked when user clicks on an import menuItem
@@ -594,7 +533,7 @@
 - (void) importSQLFile:(NSString *)filename
 {
 	NSAutoreleasePool *importPool;
-	SPFileHandle *sqlFileHandle;
+	NSFileHandle *sqlFileHandle;
 	NSMutableData *sqlDataBuffer;
 	const unsigned char *sqlDataBufferBytes;
 	NSData *fileChunk;
@@ -609,7 +548,6 @@
 	NSInteger dataBufferLength = 0;
 	NSInteger dataBufferPosition = 0;
 	NSInteger dataBufferLastQueryEndPosition = 0;
-	BOOL fileIsCompressed;
 	BOOL importSQLAsUTF8 = YES;
 	BOOL allDataRead = NO;
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;
@@ -619,17 +557,14 @@
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
 
 	// Open a filehandle for the SQL file
-	sqlFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
+	sqlFileHandle = [NSFileHandle fileHandleForReadingAtPath:filename];
 	if (!sqlFileHandle) {
 		SPBeginAlertSheet(NSLocalizedString(@"Import Error title", @"Import Error"),
 						  NSLocalizedString(@"OK button label", @"OK button"),
 						  nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"SQL file open error", @"The SQL file you selected could not be found or read."));
-		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
 	}
-	fileIsCompressed = [sqlFileHandle isCompressed];
 
 	// Grab the file length
 	fileTotalLength = [[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
@@ -673,8 +608,6 @@
 			[sqlDataBuffer release];
 			[importPool drain];
 			[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-			if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-				[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 			return;
 		}
 
@@ -723,8 +656,6 @@
 						[sqlDataBuffer release];
 						[importPool drain];
 						[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-						if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-							[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 						return;
 					}
 				}
@@ -748,11 +679,7 @@
 		}
 		
 		// Before entering the following loop, check that we actually have a connection. If not, bail.
-		if (![mySQLConnection isConnected]) {
-			if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-				[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
-			return;
-		}
+		if (![mySQLConnection isConnected]) return;
 
 		// Extract and process any complete SQL queries that can be found in the strings parsed so far
 		while (query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO]) {
@@ -775,15 +702,9 @@
 			queriesPerformed++;
 
 			// Update the progress bar
-			if (fileIsCompressed) {
-				[singleProgressBar setDoubleValue:[sqlFileHandle realDataReadLength]];
-				[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of SQL", @"SQL import progress text where total size is unknown"),
-					[NSString stringForByteSize:fileProcessedLength]]];			
-			} else {
-				[singleProgressBar setDoubleValue:fileProcessedLength];
-				[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
-					[NSString stringForByteSize:fileProcessedLength], [NSString stringForByteSize:fileTotalLength]]];
-			}
+			[singleProgressBar setDoubleValue:fileProcessedLength];
+			[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+				[NSString stringForByteSize:fileProcessedLength], [NSString stringForByteSize:fileTotalLength]]];
 		}
 		
 		// If all the data has been read, break out of the processing loop
@@ -815,8 +736,6 @@
 	[sqlDataBuffer release];
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-	if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-		[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 
 	// Close progress sheet
 	[self closeAndStopProgressSheet];
@@ -872,9 +791,7 @@
 	NSInteger i;
 	BOOL allDataRead = NO;
 	BOOL insertBaseStringHasEntries;
-	
 	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
-
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
 
@@ -888,8 +805,6 @@
 						  NSLocalizedString(@"OK button label", @"OK button"),
 						  nil, nil, tableWindow, self, nil, nil, nil,
 						  NSLocalizedString(@"CSV file open error", @"The CSV file you selected could not be found or read."));
-		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
 	}
 
@@ -953,16 +868,14 @@
 			[parsedRows release];
 			[parsePositions release];
 			if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-			if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-			if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-			if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-			if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-			if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-			if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+    		if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+    		if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+    		if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+    		if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+    		if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+    		if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 			[importPool drain];
 			[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-			if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-				[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 			return;
 		}
 
@@ -1002,16 +915,14 @@
 					[parsedRows release];
 					[parsePositions release];
 					if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-					if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-					if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-					if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-					if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-					if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-					if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+    				if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+    				if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+    				if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+    				if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+    				if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+    				if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 					[importPool drain];
 					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-					if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-						[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 					return;
 				}
 
@@ -1055,16 +966,14 @@
 					[parsedRows release];
 					[parsePositions release];
 					if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-					if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-					if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-					if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-					if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-					if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-					if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+    				if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+    				if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+    				if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+    				if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+    				if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+    				if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 					[importPool drain];
 					[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-					if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-						[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 					return;
 				}
 
@@ -1102,23 +1011,21 @@
 			// Before entering the following loop, check that we actually have a connection. If not, bail.
 			if (![mySQLConnection isConnected]) {
 				[self closeAndStopProgressSheet];
-				[csvParser release];
-				[csvDataBuffer release];
-				[parsedRows release];
-				[parsePositions release];
-				if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-				if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-				if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-				if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-				if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-				if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-				if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
-				[importPool drain];
-				[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-				if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-					[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
-				return;
-			}
+    			[csvParser release];
+    			[csvDataBuffer release];
+    			[parsedRows release];
+    			[parsePositions release];
+    			if(csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+    			if(csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+    			if(fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+    			if(fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+    			if(fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+    			if(fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+    			if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+    			[importPool drain];
+    			[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+    			return;
+    		}
 
 			// If we have more than the csvRowsPerQuery amount, or if we're at the end of the
 			// available data, construct and run a query.
@@ -1262,8 +1169,6 @@
 	if(fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 	[importPool drain];
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-	if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
-		[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 
 	// Close progress sheet
 	[self closeAndStopProgressSheet];
@@ -1273,8 +1178,8 @@
 		[self showErrorSheetWithMessage:errors];
 	}
 	
-	// Import finished Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
+    // Import finished Growl notification
+    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
 														window:tableWindow
                                               notificationName:@"Import Finished"];
@@ -1290,71 +1195,30 @@
 	}
 }
 
-- (void)openPanelDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
-	// if contextInfo == nil NSOpenPanel else importFromClipboardPanel
-
 	// save values to preferences
-	if(contextInfo == nil)
-		[prefs setObject:[(NSOpenPanel*)sheet directory] forKey:@"openPath"];
-	else
-		[importFromClipboardTextView setString:@""];
-
+	[prefs setObject:[sheet directory] forKey:@"openPath"];
 	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
 	
-	// close NSOpenPanel sheet
-	if(contextInfo == nil)
-		[sheet orderOut:self];
-
-	// check if user canceled
+	// close sheet, and check if user canceled
+	[sheet orderOut:self];
 	if (returnCode != NSOKButton)
 		return;
 
 	// Reset progress cancelled from any previous runs
 	progressCancelled = NO;
 
-	NSString *importFileName;
+	if(lastFilename) [lastFilename release]; lastFilename = nil;
+	lastFilename = [[NSString stringWithString:[sheet filename]] retain];
 
-	// File path from NSOpenPanel
-	if(contextInfo == nil)
-	{
-		if(lastFilename) [lastFilename release]; lastFilename = nil;
-		lastFilename = [[NSString stringWithString:[(NSOpenPanel*)sheet filename]] retain];
-		importFileName = [NSString stringWithString:lastFilename];
-		if(lastFilename == nil || ![lastFilename length]) {
-			NSBeep();
-			return;
-		}
+	if(lastFilename == nil || ![lastFilename length]) {
+		NSBeep();
+		return;
 	}
-	
-	// Import from Clipboard
-	else
-	{
-		importFileName = [NSString stringWithFormat:@"%@%@", SPImportClipboardTempFileNamePrefix, 
-			[[NSDate  date] descriptionWithCalendarFormat:@"%H%M%S" 
-												timeZone:nil 
-												locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]]];
-
-		// Write clipboard content to temp file using the connection encoding
-
-		NSStringEncoding encoding;
-		if ([[[importFormatPopup selectedItem] title] isEqualToString:@"SQL"])
-			encoding = NSUTF8StringEncoding;
-		else
-			encoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
-
-		if(![[[NSPasteboard generalPasteboard] stringForType:NSStringPboardType] writeToFile:importFileName atomically:NO encoding:encoding error:nil]) {
-			NSBeep();
-			NSLog(@"Couldn't write clipboard content to temporary file.");
-			return;
-		}
-	}
-
-	if(importFileName == nil) return;
 
 	// begin import process
-	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:importFileName];
+	[NSThread detachNewThreadSelector:@selector(importBackgroundProcess:) toTarget:self withObject:lastFilename];
 }
 
 - (void)startSQLImportProcessWithFile:(NSString *)filename
@@ -1618,7 +1482,7 @@
 /*
  Dump the selected tables to a file handle in SQL format.
  */
-- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(SPFileHandle *)fileHandle
+- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle
 {
 	NSInteger i,j,t,rowCount, colCount, lastProgressValue, queryLength;
 	NSInteger progressBarWidth;
@@ -1921,52 +1785,52 @@
 
 			// Release the result set
 			[streamingResult release];
-		}
-
-		// Export triggers, if any
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
-													[tableName tickQuotedString]]];
-		[queryResult setReturnDataAsStrings:YES];
-		if ( [queryResult numOfRows] ) {
-			[metaString setString:@"\n"];
-			[metaString appendString:@"DELIMITER ;;\n"];
 			
-			for (int s=0; s<[queryResult numOfRows]; s++) {
-				NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+			queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", 
+														[tableName tickQuotedString]]];
+			[queryResult setReturnDataAsStrings:YES];
+			if ( [queryResult numOfRows] ) {
+				[metaString setString:@"\n"];
+				[metaString appendString:@"DELIMITER ;;\n"];
 				
-				//Definer is user@host but we need to escape it to `user`@`host`
-				NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
-				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-											[[triggersDefiner objectAtIndex:0] backtickQuotedString],
-											[[triggersDefiner objectAtIndex:1] backtickQuotedString]
-											];
+				for (int s=0; s<[queryResult numOfRows]; s++) {
+					NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+					
+					//Definer is user@host but we need to escape it to `user`@`host`
+					NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
+					NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
+												[[triggersDefiner objectAtIndex:0] backtickQuotedString],
+												[[triggersDefiner objectAtIndex:1] backtickQuotedString]
+												];
+					
+					[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", 
+											  [triggers objectForKey:@"sql_mode"]]];
+					[metaString appendString:@"/*!50003 CREATE */ "];
+					[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", 
+											  escapedDefiner]];
+					[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
+											  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
+											  [triggers objectForKey:@"Timing"],
+											  [triggers objectForKey:@"Event"],
+											  [[triggers objectForKey:@"Table"] backtickQuotedString],
+											  [triggers objectForKey:@"Statement"]
+											  ]];
+					[triggers release];
+				}
 				
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", 
-										  [triggers objectForKey:@"sql_mode"]]];
-				[metaString appendString:@"/*!50003 CREATE */ "];
-				[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", 
-										  escapedDefiner]];
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
-										  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
-										  [triggers objectForKey:@"Timing"],
-										  [triggers objectForKey:@"Event"],
-										  [[triggers objectForKey:@"Table"] backtickQuotedString],
-										  [triggers objectForKey:@"Statement"]
-										  ]];
-				[triggers release];
+				[metaString appendString:@"DELIMITER ;\n"];
+				[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
+				[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 			
-			[metaString appendString:@"DELIMITER ;\n"];
-			[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
-			[fileHandle writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-		}
-		
-		if ([mySQLConnection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
-			if ( [addErrorsSwitch state] == NSOnState ) {
-				[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
-									   dataUsingEncoding:NSUTF8StringEncoding]];
+			if ([mySQLConnection queryErrored]) {
+				[errors appendString:[NSString stringWithFormat:@"%@\n", [mySQLConnection getLastErrorMessage]]];
+				if ( [addErrorsSwitch state] == NSOnState ) {
+					[fileHandle writeData:[[NSString stringWithFormat:@"# Error: %@\n", [mySQLConnection getLastErrorMessage]]
+										   dataUsingEncoding:NSUTF8StringEncoding]];
+				}
 			}
+			
 		}
 
 		// Add an additional separator between tables
@@ -2147,7 +2011,7 @@
  See here for language syntax: http://www.graphviz.org/doc/info/lang.html
  (Not the easiest to decode)
  */
-- (BOOL)dumpSchemaAsDotToFileHandle:(SPFileHandle *)fileHandle
+- (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle
 {
 	NSMutableString *metaString = [NSMutableString string];
 	NSInteger  progressBarWidth;
@@ -2292,7 +2156,7 @@
 
 /*
  * Takes an array, or a streaming result set, and writes the appropriate data
- * in CSV format to the supplied SPFileHandle.
+ * in CSV format to the supplied NSFileHandle.
  * The field terminators, quotes and escape characters should all be supplied
  * together with the line terminators; if an array of numeric column types is
  * supplied, processing of rows is significantly sped up as each field does not
@@ -2301,7 +2165,7 @@
  * for arrays, this must be accurate, but for streaming result sets it is only
  * used for drawing the progress bar.
  */
-- (BOOL)writeCsvForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult toFileHandle:(SPFileHandle *)fileHandle
+- (BOOL)writeCsvForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult toFileHandle:(NSFileHandle *)fileHandle
 		outputFieldNames:(BOOL)outputFieldNames
 		terminatedBy:(NSString *)fieldSeparatorString
 		enclosedBy:(NSString *)enclosingString
@@ -2546,14 +2410,14 @@
 
 /*
  * Takes an array, or streaming result reference, and writes it in XML
- * format to the supplied SPFileHandle.  For output, also takes a table
+ * format to the supplied NSFileHandle.  For output, also takes a table
  * name for tag construction, and a toggle to control whether the header
  * is output.
  * Also takes a totalRows parameter, which is used for drawing progress bars -
  * for arrays, this must be accurate, but for streaming result sets it is only
  * used for drawing the progress bar.
  */
-- (BOOL)writeXmlForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult toFileHandle:(SPFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header totalRows:(NSInteger)totalRows silently:(BOOL)silently
+- (BOOL)writeXmlForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult toFileHandle:(NSFileHandle *)fileHandle tableName:(NSString *)table withHeader:(BOOL)header totalRows:(NSInteger)totalRows silently:(BOOL)silently
 {
 	NSAutoreleasePool *xmlExportPool;
 	NSStringEncoding tableEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
@@ -2718,7 +2582,7 @@
  Processes the selected tables within the multiple table export accessory view and passes them
  to be exported.
  */
-- (BOOL)exportSelectedTablesToFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type
+- (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type
 {
 	NSInteger i;
 	NSMutableArray *selectedTables = [NSMutableArray array];
@@ -2737,7 +2601,7 @@
  Walks through the selected tables and exports them to a file handle.  The export type must be
  "csv" for CSV format, and "xml" for XML format.
  */
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi
 {
 	NSInteger i, j;
 	MCPResult *queryResult;
@@ -3113,14 +2977,6 @@
 	// If a single file is selected and the extension is recognised, change the format dropdown automatically
 	if ( [selectedFilenames count] != 1 ) return;
 	pathExtension = [[[selectedFilenames objectAtIndex:0] pathExtension] uppercaseString];
-
-	// If a file has extension ".gz", indicating gzip, fetch the next extension
-	if ([pathExtension isEqualToString:@"GZ"]) {
-		NSMutableString *pathString = [NSMutableString stringWithString:[selectedFilenames objectAtIndex:0]];
-		[pathString deleteCharactersInRange:NSMakeRange([pathString length]-3, 3)];
-		pathExtension = [[pathString pathExtension] uppercaseString];
-	}
-
 	if ([pathExtension isEqualToString:@"SQL"]) {
 		[importFormatPopup selectItemWithTitle:@"SQL"];
 		[self changeFormat:self];
@@ -3153,33 +3009,6 @@
 
 		[fileTask release];
 		[filePipe release];
-	}
-}
-
-/**
- * When the compression setting on export is altered, update the filename
- * and if appropriate the required extension.
- */
-- (IBAction)updateExportCompressionSetting:(id)sender
-{
-	if (exportMode == SPExportingSQL) {
-		if ([sender state] == NSOnState) {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObjects:@"sql.gz", @"gz", nil]];
-
-			// if file name text view is the first responder re-select the path name only without '.sql.gz'
-			if([[currentExportPanel firstResponder] isKindOfClass:[NSTextView class]]) {
-				NSTextView *filenameTextView = (NSTextView *)[currentExportPanel firstResponder];
-				if([filenameTextView selectedRange].length > 4 && [[filenameTextView string] hasSuffix:@".sql.gz"]) {
-					NSRange selRange = [filenameTextView selectedRange];
-					selRange.length -= 4;
-					[filenameTextView setSelectedRange:selRange];
-				}
-			}
-
-		} else {
-			[currentExportPanel setAllowedFileTypes:[NSArray arrayWithObject:@"sql"]];
-		}
-		[prefs setBool:([sender state] == NSOnState) forKey:SPSQLExportUseCompression];
 	}
 }
 

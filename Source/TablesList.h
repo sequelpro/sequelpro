@@ -48,7 +48,6 @@
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id tableInfoInstance;
-	IBOutlet id tableTriggersInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id tableWindow;
@@ -82,7 +81,7 @@
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem2;
-	
+
 	MCPConnection *mySQLConnection;
 	
 	// Table list context menu items
@@ -103,7 +102,7 @@
 	BOOL tableListIsSelectable;
 	BOOL tableListContainsViews;
 
-	BOOL structureLoaded, contentLoaded, statusLoaded, triggersLoaded, alertSheetOpened;
+	BOOL structureLoaded, contentLoaded, statusLoaded, alertSheetOpened;
 }
 
 // IBAction methods

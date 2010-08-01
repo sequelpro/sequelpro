@@ -57,8 +57,6 @@
 
 @property (readwrite, assign) MCPConnection *connection;
 
-- (void)loadTriggers;
-
 // IB action methods
 - (IBAction)addTrigger:(id)sender;
 - (IBAction)removeTrigger:(id)sender;

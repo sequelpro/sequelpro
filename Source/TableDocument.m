@@ -56,16 +56,10 @@
 #import "SPAlertSheets.h"
 #import "SPConstants.h"
 #import "SPMainThreadTrampoline.h"
-#import "SPLogger.h"
-#import "SPDatabaseCopy.h"
-#import "SPTableCopy.h"
-#import "SPDatabaseRename.h"
 
 @interface TableDocument (PrivateAPI)
 
 - (void)_addDatabase;
-- (void)_copyDatabase;
-- (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
@@ -118,7 +112,7 @@
 		statusValues = nil;
 		printThread = nil;
 	}
-	
+
 	return self;
 }
 
@@ -247,7 +241,7 @@
 	[tableWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
 	[taskProgressWindow setReleasedWhenClosed:YES];
 	[taskProgressWindow setContentView:taskProgressLayer];
-	[self centerTaskWindow];	
+	[self centerTaskWindow];
 }
 
 /**
@@ -758,12 +752,8 @@
 				break;
 		}
 	}
-}
 
-- (MCPConnection *) getConnection {
-	return mySQLConnection;
 }
-
 
 /**
  * Set whether the connection controller should automatically start
@@ -921,49 +911,14 @@
 - (IBAction)addDatabase:(id)sender
 {
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-	
+
 	[databaseNameField setStringValue:@""];
-	
+
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:tableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"addDatabase"];
-}
-
-
-/**
- * opens the copy database sheet and copies the databsae
- */
-- (IBAction)copyDatabase:(id)sender
-{	
-	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-	
-	[databaseCopyNameField setStringValue:selectedDatabase];
-	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
-	
-	[NSApp beginSheet:databaseCopySheet
-	   modalForWindow:tableWindow
-		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"copyDatabase"];
-}
-
-/**
- * opens the rename database sheet and renames the databsae
- */
-- (IBAction)renameDatabase:(id)sender
-{	
-	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-	
-	[databaseRenameNameField setStringValue:selectedDatabase];
-	[renameDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename database '%@' to:", @"rename database message"), selectedDatabase]];
-	
-	[NSApp beginSheet:databaseRenameSheet
-	   modalForWindow:tableWindow
-		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"renameDatabase"];
 }
 
 /**
@@ -1049,8 +1004,6 @@
  *
  * if contextInfo == removeDatabase -> Remove the selected database
  * if contextInfo == addDatabase    -> Add a new database
- * if contextInfo == copyDatabase   -> Duplicate the selected database
- * if contextInfo == renameDatabase -> Rename the selected database
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
@@ -1081,16 +1034,6 @@
 				[chooseDatabaseButton selectItemWithTitle:[self database]];
 			else
 				[chooseDatabaseButton selectItemAtIndex:0];
-		}
-	} 
-	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
-		if (returnCode == NSOKButton) {
-			[self _copyDatabase];		
-		}
-	}
-	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
-		if (returnCode == NSOKButton) {
-			[self _renameDatabase];		
 		}
 	}
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
@@ -1282,6 +1225,7 @@
 		[taskCancelButton setHidden:YES];
 
 		// Set flags and prevent further UI interaction in this window
+		[historyControl setEnabled:NO];
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
 		[mainToolbar validateVisibleItems];
@@ -1397,6 +1341,7 @@
 		[taskProgressIndicator setIndeterminate:YES];
 
 		// Re-enable window interface
+		[historyControl setEnabled:YES];
 		databaseListIsSelectable = YES;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
 		[mainToolbar validateVisibleItems];
@@ -2464,22 +2409,22 @@
  */
 - (BOOL)couldCommitCurrentViewActions
 {
-	[tableWindow endEditingFor:nil];
-	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
+    [tableWindow endEditingFor:nil];
+    switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
 
-		// Table structure view
-		case 0:
-			return [tableSourceInstance saveRowOnDeselect];
+    	// Table structure view
+    	case 0:
+    		return [tableSourceInstance saveRowOnDeselect];
 
-		// Table content view
-		case 1:
-			return [tableContentInstance saveRowOnDeselect];
+    	// Table content view
+    	case 1:
+    		return [tableContentInstance saveRowOnDeselect];
 
-		default:
-			break;
-	}
+    	default:
+    		break;
+    }
 
-	return YES;
+    return YES;
 }
 
 #pragma mark -
@@ -2629,10 +2574,6 @@
 		}
 
 	[tablesListInstance selectionShouldChangeInTableView:nil];
-	
-	// Note that this call does not need to be removed in release builds as leaks analysis output is only
-	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
-	[[SPLogger logger] dumpLeaks];
 }
 
 #pragma mark -
@@ -3114,14 +3055,6 @@
 /**
  * Passes the request to the tableDump object
  */
-- (IBAction)importFromClipboard:(id)sender
-{
-	[tableDumpInstance importFromClipboard];
-}
-
-/**
- * Passes the request to the tableDump object
- */
 - (IBAction)export:(id)sender
 {
 	if ([sender tag] == -1) {
@@ -3179,19 +3112,11 @@
 	if ([menuItem action] == @selector(import:) ||
 		[menuItem action] == @selector(export:) ||
 		[menuItem action] == @selector(exportMultipleTables:) ||
-		[menuItem action] == @selector(removeDatabase:) ||
-		[menuItem action] == @selector(copyDatabase:) ||
-		[menuItem action] == @selector(renameDatabase:))
+		[menuItem action] == @selector(removeDatabase:))
 	{
 		return ([self database] != nil);
 	}
-	
-	if ([menuItem action] == @selector(importFromClipboard:))
-	{
-		return ([self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]]) ? YES : NO;
-		
-	}
-	
+
 	// Change "Save Query/Queries" menu item title dynamically
 	// and disable it if no query in the editor
 	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
@@ -3392,7 +3317,7 @@
 	if (![self couldCommitCurrentViewActions]) {
 		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
-	}	
+	}
 	
 	[tableTabView selectTabViewItemAtIndex:5];
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
@@ -3498,9 +3423,6 @@
 
 	// update the toolbar item size
 	[self updateChooseDatabaseToolbarItemWidth];
-
-	// The history controller needs to track toolbar item state - trigger setup.
-	[spHistoryControllerInstance setupInterface];
 }
 
 /**
@@ -3940,13 +3862,7 @@
 	id object = [notification object];
 
 	if (object == databaseNameField) {
-		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseNameField stringValue]])]; 
-	}
-	else if (object == databaseCopyNameField) {
-		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseCopyNameField stringValue]])]; 
-	}
-	else if (object == databaseRenameNameField) {
-		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseRenameNameField stringValue]])]; 
+		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0)]; 
 	}
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
@@ -4129,7 +4045,7 @@
 	[allSystemDatabases release];
 	[printWebView release];
 	[taskProgressWindow close];
-	
+
 	if (connectionController) [connectionController release];
 	if (processListController) [processListController release];
 	if (serverVariablesController) [serverVariablesController release];
@@ -4150,45 +4066,6 @@
 @end
 
 @implementation TableDocument (PrivateAPI)
-
-- (void)_copyDatabase {
-	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
-		return;
-	}
-	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
-	[dbActionCopy setConnection: [self getConnection]];
-	[dbActionCopy setMessageWindow: tableWindow];
-	
-	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
-	
-	if ([dbActionCopy copyDatabaseFrom: [self database] 
-									to: [databaseCopyNameField stringValue]
-						   withContent: copyWithContent]) {
-		[selectedDatabase release];
-		selectedDatabase = [[NSString alloc] initWithString:[databaseCopyNameField stringValue]];
-	}
-	[dbActionCopy release];
-	[self setDatabases: self];
-}			 
-
-- (void)_renameDatabase {
-	if ([[databaseRenameNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
-		return;
-	}
-	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
-	[dbActionRename setConnection: [self getConnection]];
-	[dbActionRename setMessageWindow: tableWindow];
-	
-	if ([dbActionRename renameDatabaseFrom: [self database] 
-										to: [databaseRenameNameField stringValue]]) {
-		[selectedDatabase release];
-		selectedDatabase = [[NSString alloc] initWithString:[databaseRenameNameField stringValue]];
-	}
-	[dbActionRename release];
-	[self setDatabases: self];
-}			 
 
 /**
  * Adds a new database.
@@ -4253,7 +4130,7 @@
 		// An error occurred
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
-							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't delete the database.\nMySQL said: %@", @"message of panel when deleting db failed"), 
+							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't remove database.\nMySQL said: %@", @"message of panel when removing db failed"), 
 								[mySQLConnection getLastErrorMessage]],
 							   nil] 
 				   afterDelay:0.3];

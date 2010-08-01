@@ -64,7 +64,6 @@
 - (BOOL) updateInformationForCurrentView;
 - (NSDictionary *) informationForView:(NSString *)viewName;
 - (BOOL) updateStatusInformationForCurrentTable;
-- (BOOL) updateTriggersForCurrentTable;
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts;
 - (NSArray *) primaryKeyColumnNames;
 

@@ -523,8 +523,8 @@
 	
 	[prefsController showWindow:self];
 	[prefsController displayFavoritePreferences:self];
-		
-	if ([favoritesTable numberOfSelectedRows]) [prefsController selectFavorites:[NSArray arrayWithObject:[self valueForKeyPath:@"selectedFavorite"]]];	
+	
+	if ([favoritesTable numberOfSelectedRows]) [prefsController selectFavorites:[NSArray arrayWithObject:[self valueForKeyPath:@"selectedFavorite"]]];
 }
 
 /**

@@ -181,7 +181,7 @@
  * it's data from the SPUser Entity objects in the current managedObjectContext.
  */
 - (void)_initializeTree:(NSArray *)items
-{
+{	
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
 	for(NSInteger i = 0; i < [items count]; i++)
@@ -269,14 +269,14 @@
 {
 	// Initialize Databases
 	[schemas removeAllObjects];
-	
+
 	MCPResult *results = [self.mySqlConnection listDBs];
 	
 	if ([results numOfRows]) {
 		[results dataSeek:0];
 	}
 	
-	for (NSInteger i = 0; i < [results numOfRows]; i++) {
+	for (int i = 0; i < [results numOfRows]; i++) {
 		[schemas addObject:[results fetchRowAsDictionary]];
 	}
 	
@@ -333,7 +333,7 @@
 	// Assumes that the child has already been initialized with values from the
 	// global user table.
 	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user = %@ and d.host = %@", 
+	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user = %@ and d.host = %@",
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
 	MCPResult *queryResults = [self.mySqlConnection queryString:queryString];
 	if ([queryResults numOfRows] > 0)
@@ -342,7 +342,7 @@
 		[queryResults dataSeek:0];
 	}
 	
-	for (NSInteger i = 0; i < [queryResults numOfRows]; i++) {
+	for (int i = 0; i < [queryResults numOfRows]; i++) {
 		NSDictionary *rowDict = [queryResults fetchRowAsDictionary];
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
 																inManagedObjectContext:[self managedObjectContext]];
@@ -643,6 +643,7 @@
     NSArray *children = [[[treeController selectedObjects] objectAtIndex:0] 
                          valueForKey:@"children"];
 
+
 	// On all the children - host entries - set the username to be deleted,
 	// for later query contruction.
     for(NSManagedObject *child in children)
@@ -761,17 +762,17 @@
 	[treeController fetch:nil];
 
 	// After the reset, ensure all original password and user values are up-to-date.
-	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
-														 inManagedObjectContext:self.managedObjectContext];
-	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
-	[request setEntity:entityDescription];
-	NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
-	for (NSManagedObject *user in userArray) {
-		if (![user parent]) {
-			[user setValue:[user valueForKey:@"user"] forKey:@"originaluser"];
-			[user setValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
-		}
-	}
+    NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
+    													 inManagedObjectContext:self.managedObjectContext];
+    NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
+    [request setEntity:entityDescription];
+    NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
+    for (NSManagedObject *user in userArray) {
+    	if (![user parent]) {
+    		[user setValue:[user valueForKey:@"user"] forKey:@"originaluser"];
+    		[user setValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
+    	}
+    }
 }
 
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled
@@ -975,7 +976,7 @@
 - (BOOL)deleteUsers:(NSArray *)deletedUsers
 {
 	NSMutableString *droppedUsers = [NSMutableString string];
-
+	
 	for (NSManagedObject *user in deletedUsers)
 	{
         if (![[[user entity] name] isEqualToString:@"Privileges"] && [user valueForKey:@"host"] != nil)
@@ -986,7 +987,7 @@
 		}
 		
 	}
-
+	
 	droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
 	[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
 	[droppedUsers release];
@@ -1351,9 +1352,9 @@
 
 - (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-		[self _initializeSchemaPrivs];
-	}
+    if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
+    	[self _initializeSchemaPrivs];
+    }
 }
 
 #pragma mark -

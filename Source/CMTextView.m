@@ -34,7 +34,6 @@
 #import "SPTooltip.h"
 #import "TablesList.h"
 #import "SPNavigatorController.h"
-#import "SPAlertSheets.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -536,23 +535,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if(r.location) {
 		NSCharacterSet *ignoreCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"\"'`;,()[]{}=+/<> \t\n\r"];
 
-		// Check the previous character and don't autocomplete if the character is whitespace or certain types of punctuation
-		if ([ignoreCharacterSet characterIsMember:[[self string] characterAtIndex:r.location - 1]]) return;
+    	// Check the previous character and don't autocomplete if the character is whitespace or certain types of punctuation
+    	if ([ignoreCharacterSet characterIsMember:[[self string] characterAtIndex:r.location - 1]]) return;
 
-		// Suppress auto-completion if the window isn't active anymore
-		if ([[NSApp keyWindow] firstResponder] != self) return;
+    	// Suppress auto-completion if the window isn't active anymore
+    	if ([[NSApp keyWindow] firstResponder] != self) return;
 
-		// Trigger the completion
-		[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+    	// Trigger the completion
+    	[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
 	}
 
 }
 
 - (void) refreshCompletion
 {
-	if(completionWasRefreshed) return;
-	completionWasRefreshed = YES;
-	[self doCompletionByUsingSpellChecker:NO fuzzyMode:completionFuzzyMode autoCompleteMode:NO];
+    if(completionWasRefreshed) return;
+    completionWasRefreshed = YES;
+    [self doCompletionByUsingSpellChecker:NO fuzzyMode:completionFuzzyMode autoCompleteMode:NO];
 }
 
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode
@@ -569,7 +568,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	[self breakUndoCoalescing];
-	
+
 	// Remember state for refreshCompletion
 	completionFuzzyMode = fuzzySearch;
 
@@ -1307,6 +1306,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 	completionIsOpen = YES;
+
 	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 					alreadyTyped:@"" 
 					staticPrefix:@"" 
@@ -1463,6 +1463,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 							if (completionIsOpen) [completionPopup close], completionPopup = nil;
 							completionIsOpen = YES;
+
 							completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:possibleCompletions 
 											alreadyTyped:@"" 
 											staticPrefix:@"" 
@@ -2677,11 +2678,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	[self setTypingAttributes:textAttributes];
 	[self setDefaultParagraphStyle:paragraphStyle];
+	[paragraphStyle release];
 	[self setFont:tvFont];
 
 	[self setEditable:oldEditableStatus];
 
-	[paragraphStyle release];
 }
 
 - (void)drawRect:(NSRect)rect {

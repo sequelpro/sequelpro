@@ -346,9 +346,9 @@
 
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
-	
+
 	NSInteger index = [tableSourceView selectedRow];
-	
+
 	if ((index == -1) || (index > ([tableFields count] - 1))) return;
 
 	// Check if the user tries to delete the last defined field in table
@@ -358,7 +358,7 @@
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Delete the table instead.", @"You cannot delete the last field in a table. Delete the table instead.")];
+							 informativeTextWithFormat:NSLocalizedString(@"You cannot delete the last field in a table. Use 'Remove table' (DROP TABLE) instead.", @"You cannot delete the last field in that table. Use 'Remove table' (DROP TABLE) instead")];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -389,7 +389,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
+						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to remove the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -414,11 +414,11 @@
 	if (![self saveRowOnDeselect]) return;
 	
 	NSInteger index = [indexView selectedRow];
-	
-	if ((index == -1) || (index > ([indexes count] - 1))) return;
-	
-	NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
-	NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
+
+    if ((index == -1) || (index > ([indexes count] - 1))) return;
+
+    NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
+    NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
 		
 	BOOL hasForeignKey = NO;
 	NSString *constraintName = @"";
@@ -441,7 +441,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil 
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
+						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to remove the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -589,20 +589,20 @@ closes the keySheet
 		return;
 
 	if(valueAsString == nil || ![valueAsString length]) {
+
 		// reload data and bail
-		[tableDataInstance resetAllData];
-		[extendedTableInfoInstance loadTable:selTable];
-		[tableInfoInstance tableChanged:nil];
-		return;
-	}
+    	[tableDataInstance resetAllData];
+    	[extendedTableInfoInstance loadTable:selTable];
+    	[tableInfoInstance tableChanged:nil];
+    	return;
+    }
 
-	NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-	[formatter setNumberStyle:NSNumberFormatterDecimalStyle];
-	NSNumber *autoIncValue = [formatter numberFromString:valueAsString];
-	[formatter release];
+    NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+    [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
+    NSNumber *autoIncValue = [formatter numberFromString:valueAsString];
+    [formatter release];
 
-	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], [autoIncValue stringValue]]];
-
+    [mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], [autoIncValue stringValue]]];
 	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 						  NSLocalizedString(@"OK", @"OK button"),
@@ -611,15 +611,14 @@ closes the keySheet
 								selTable, [mySQLConnection getLastErrorMessage]]);
 	}
 
-	// reload data
-	[tableDataInstance resetStatusData];
-	if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
-		[tableDataInstance resetAllData];
-		[extendedTableInfoInstance loadTable:selTable];
-	}
+    // reload data
+    [tableDataInstance resetStatusData];
+    if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
+    	[tableDataInstance resetAllData];
+    	[extendedTableInfoInstance loadTable:selTable];
+    }
 
-	[tableInfoInstance tableChanged:nil];
-
+    [tableInfoInstance tableChanged:nil];
 }
 
 /**
@@ -937,23 +936,23 @@ closes the keySheet
 
 /**
  * A method to show an error sheet after a short delay, so that it can
- * be called from within an endSheet selector. This should be called on 
+ * be called from within an endSheet selector. This should be called on
  * the main thread.
  */
 -(void)showErrorSheetWith:(NSDictionary *)errorDictionary
 {
 
-	// If this method has been called directly, invoke a delay.  Invoking the delay
-	// on the main thread ensures the timer fires on the main thread.
-	if (![errorDictionary objectForKey:@"delayed"]) {
-		NSMutableDictionary *delayedErrorDictionary = [NSMutableDictionary dictionaryWithDictionary:errorDictionary];
-		[delayedErrorDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"delayed"];
-		[self performSelector:@selector(showErrorSheetWith:) withObject:delayedErrorDictionary afterDelay:0.3];
-		return;
-	}
-	
-	// Display the error sheet
-	SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"), 
+    // If this method has been called directly, invoke a delay.  Invoking the delay
+    // on the main thread ensures the timer fires on the main thread.
+    if (![errorDictionary objectForKey:@"delayed"]) {
+    	NSMutableDictionary *delayedErrorDictionary = [NSMutableDictionary dictionaryWithDictionary:errorDictionary];
+    	[delayedErrorDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"delayed"];
+    	[self performSelector:@selector(showErrorSheetWith:) withObject:delayedErrorDictionary afterDelay:0.3];
+    	return;
+    }
+
+    // Display the error sheet
+    SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"),
 			nil, nil, tableWindow, self, nil, nil, nil,
 			[errorDictionary objectForKey:@"message"]);
 }
@@ -1785,8 +1784,8 @@ would result in a position change.
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), relationName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[errorDictionary setObject:NSLocalizedString(@"Unable to remove relation", @"error removing relation message") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), relationName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
 			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		} 
 	}
@@ -1797,9 +1796,10 @@ would result in a position change.
 	
 	// Check for errors, but only if the query wasn't cancelled
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
+		
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 		[errorDictionary setObject:NSLocalizedString(@"Error", @"error") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove field %@.\nMySQL said: %@", @"message of panel when field cannot be removed"),
 									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"Field"],
 									[mySQLConnection getLastErrorMessage]] forKey:@"message"];
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
@@ -1850,9 +1850,9 @@ would result in a position change.
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
-			[[self onMainThread] showErrorSheetWith:errorDictionary];
+			[errorDictionary setObject:NSLocalizedString(@"Unable to remove relation", @"error removing relation message") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to remove the relation '%@'.\n\nMySQL said: %@", @"error removing relation informative message"), constraintName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[[self onMainThread] showErrorSheetWith:errorDictionary];	
 		} 
 	}
 	
@@ -1867,8 +1867,8 @@ would result in a position change.
 	// Check for errors, but only if the query wasn't cancelled
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+		[errorDictionary setObject:NSLocalizedString(@"Unable to remove index", @"error removing index message") forKey:@"title"];
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to remove the index.\n\nMySQL said: %@", @"error removing index informative message"), [mySQLConnection getLastErrorMessage]] forKey:@"message"];
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	} 
 	else {

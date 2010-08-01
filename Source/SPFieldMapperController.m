@@ -82,13 +82,8 @@
 {
 
 	// Set source path
-	if([sourcePath hasPrefix:SPImportClipboardTempFileNamePrefix]) {
-		[fileSourcePath setURL:[NSURL fileURLWithPath:NSLocalizedString(@"Clipboard", @"Clipboard")]];
-	} else {
-		[fileSourcePath setURL:[NSURL fileURLWithPath:sourcePath]];
-	}
+	[fileSourcePath setURL:[NSURL fileURLWithPath:sourcePath]];
 	[fileSourcePath setDoubleAction:@selector(goBackToFileChooser:)];
-
 	[onupdateTextView setDelegate:theDelegate];
 	windowMinWidth = [[self window] minSize].width;
 	windowMinHeigth = [[self window] minSize].height;
@@ -546,11 +541,7 @@
 - (IBAction)goBackToFileChooser:(id)sender
 {
 	[NSApp endSheet:[self window] returnCode:[sender tag]];
-	if([sourcePath hasPrefix:SPImportClipboardTempFileNamePrefix]) {
-		[theDelegate importFromClipboard];
-	} else {
-		[theDelegate importFile];
-	}
+	[theDelegate importFile];
 }
 
 #pragma mark -

@@ -2,8 +2,7 @@ BUILDING SEQUEL PRO
 -------------------
 
 Before you can start making changes to any of the xib files in Interface 
-Builder you will need to install the BWToolkit plugin from 
-http://www.brandonwalkin.com/bwtoolkit/.
+Builder you will need to install the BWToolkit plugin.
 
 To install the plugin you will need to do a Release build of the project so 
 that the BWTookit plugin and frameworks are compiled.

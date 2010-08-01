@@ -52,13 +52,6 @@ enum
 };
 typedef NSUInteger MCPQueryStreamingType;
 
-// Connection state
-// This is used internally by MCPConnection to prevent simultaneous execution of different queries
-enum {
-    MCPConnectionIdle   = 0,
-    MCPConnectionBusy   = 1
-};
-
 // Charcater set mapping constants
 typedef struct _OUR_CHARSET
 {

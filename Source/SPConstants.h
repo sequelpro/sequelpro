@@ -215,8 +215,7 @@ extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
 extern NSString *SPProcessListShowProcessID;
-extern NSString *SPProcessListEnableAutoRefresh;
-extern NSString *SPProcessListAutoRrefreshInterval;
+extern NSString *SPProcessListShowFullProcessList;
 extern NSString *SPFavoritesSortedBy;
 extern NSString *SPFavoritesSortedInReverse;
 
@@ -224,15 +223,13 @@ extern NSString *SPFavoritesSortedInReverse;
 extern NSString *SPPrintWarningRowLimit;
 extern NSString *SPDisplayServerVersionInWindowTitle;
 
-// Import and export
+// Import
 extern NSString *SPCSVImportFieldTerminator;
 extern NSString *SPCSVImportLineTerminator;
 extern NSString *SPCSVImportFieldEnclosedBy;
 extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
-extern NSString *SPImportClipboardTempFileNamePrefix;
-extern NSString *SPSQLExportUseCompression;
 
 // Misc
 extern NSString *SPContentFilters;

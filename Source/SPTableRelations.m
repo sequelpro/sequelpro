@@ -403,10 +403,10 @@
 				
 				if ([connection queryErrored]) {
 					
-					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete relation", @"error deleting relation message"), 
+					SPBeginAlertSheet(NSLocalizedString(@"Unable to remove relation", @"error removing relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection getLastErrorMessage]]);	
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be removed.\n\nMySQL said: %@", @"error removing relation informative message"), [connection getLastErrorMessage]]);	
 					
 					// Abort loop
 					break;
@@ -498,7 +498,7 @@
 									[constraint objectForKey:@"ref_table"], @"fk_table",
 									[constraint objectForKey:@"ref_columns"], @"fk_columns",
 									([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
-									([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
+    								([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
 									nil]];
 			
 		}

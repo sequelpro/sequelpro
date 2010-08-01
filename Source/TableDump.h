@@ -27,7 +27,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class SPFieldMapperController, SPFileHandle;
+@class SPFieldMapperController;
 
 @interface TableDump : NSObject 
 {
@@ -74,16 +74,11 @@
 	IBOutlet id importLinesTerminatedField;
 	IBOutlet id importFieldMapperSheetWindow;
 
-	IBOutlet id importFromClipboardSheet;
-	IBOutlet NSTextView *importFromClipboardTextView;
-	IBOutlet id importFromClipboardAccessoryView;
-
 	IBOutlet id addDropTableSwitch;
 	IBOutlet id addCreateTableSwitch;
 	IBOutlet id addTableContentSwitch;
 	IBOutlet id addErrorsSwitch;
 	IBOutlet id sqlFullStreamingSwitch;
-	IBOutlet id sqlCompressionSwitch;
 	IBOutlet id csvFullStreamingSwitch;
 	IBOutlet id multiCSVFullStreamingSwitch;
 	IBOutlet id multiXMLFullStreamingSwitch;
@@ -122,8 +117,6 @@
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
-
-	NSSavePanel *currentExportPanel;
 }
 
 // IBAction methods
@@ -140,32 +133,31 @@
 
 // Import methods
 - (void)importFile;
-- (void)importFromClipboard;
 - (void)importSQLFile:(NSString *)filename;
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
-- (void)openPanelDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
+- (void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (BOOL) buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
 - (NSString *) mappedValueStringForRowArray:(NSArray *)csvRowArray;
 - (NSString *) mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;
 
 // Export methods
-- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(SPFileHandle *)fileHandle;
-- (BOOL)dumpSchemaAsDotToFileHandle:(SPFileHandle *)fileHandle;
+- (BOOL)dumpSelectedTablesAsSqlToFileHandle:(NSFileHandle *)fileHandle;
+- (BOOL)dumpSchemaAsDotToFileHandle:(NSFileHandle *)fileHandle;
 - (BOOL)writeCsvForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult
-	toFileHandle:(SPFileHandle *)fileHandle
+	toFileHandle:(NSFileHandle *)fileHandle
 	outputFieldNames:(BOOL)firstLine terminatedBy:(NSString *)terminated
 	enclosedBy:(NSString *)enclosed escapedBy:(NSString *)escaped
 	lineEnds:(NSString *)lineEnds withNumericColumns:(NSArray *)tableColumnNumericStatus totalRows:(NSInteger)totalRows silently:(BOOL)silently;
 - (BOOL)writeXmlForArray:(NSArray *)array orStreamingResult:(MCPStreamingResult *)streamingResult
-	toFileHandle:(SPFileHandle *)fileHandle
+	toFileHandle:(NSFileHandle *)fileHandle
 	tableName:(NSString *)table withHeader:(BOOL)header totalRows:(NSInteger)totalRows silently:(BOOL)silently;
 - (NSString *)htmlEscapeString:(NSString *)string;
 - (NSString *)createViewPlaceholderSyntaxForView:(NSString *)viewName;
 
-- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
-- (BOOL)exportSelectedTablesToFileHandle:(SPFileHandle *)fileHandle usingFormat:(NSString *)type;
+- (BOOL)exportTables:(NSArray *)selectedTables toFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type usingMulti:(BOOL)multi;
+- (BOOL)exportSelectedTablesToFileHandle:(NSFileHandle *)fileHandle usingFormat:(NSString *)type;
 
 // New Export methods
 - (IBAction)switchTab:(id)sender;
@@ -177,6 +169,5 @@
 
 // Import/export delegate notifications
 - (void)panelSelectionDidChange:(id)sender;
-- (IBAction)updateExportCompressionSetting:(id)sender;
 
 @end

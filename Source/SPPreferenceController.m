@@ -346,11 +346,11 @@
 - (IBAction)removeFavorite:(id)sender
 {
 	if ([favoritesTableView numberOfSelectedRows] == 1) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete favorite '%@'?", @"delete database message"), [favoritesController valueForKeyPath:@"selection.name"]]
-										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
-									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
-										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the favorite '%@'? This operation cannot be undone.", @"delete database informative message"), [favoritesController valueForKeyPath:@"selection.name"]]];
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Remove favorite '%@'?", @"remove database message"), [favoritesController valueForKeyPath:@"selection.name"]]
+										 defaultButton:NSLocalizedString(@"Remove", @"remove button")
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+										   otherButton:nil
+							 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to remove the favorite '%@'? This operation cannot be undone.", @"remove database informative message"), [favoritesController valueForKeyPath:@"selection.name"]]];
 
 		NSArray *buttons = [alert buttons];
 
@@ -995,49 +995,49 @@
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
-	// Order out current sheet to suppress overlapping of sheets
-	if ([sheet respondsToSelector:@selector(orderOut:)])
+    // Order out current sheet to suppress overlapping of sheets
+    if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
-	else if ([sheet respondsToSelector:@selector(window)])
-		[[sheet window] orderOut:nil];
+    else if ([sheet respondsToSelector:@selector(window)])
+    	[[sheet window] orderOut:nil];
 
-	// Remove the current database
-	if ([contextInfo isEqualToString:@"removeFavorite"]) {
-		if (returnCode == NSAlertDefaultReturn) {
+    // Remove the current database
+    if ([contextInfo isEqualToString:@"removeFavorite"]) {
+    	if (returnCode == NSAlertDefaultReturn) {
 
-		// Get selected favorite's details
-		NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
-		NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
-		NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
-		NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
-		NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
-		NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
-		NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
-		NSInteger type     = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
+    	// Get selected favorite's details
+    	NSString *name     = [favoritesController valueForKeyPath:@"selection.name"];
+    	NSString *user     = [favoritesController valueForKeyPath:@"selection.user"];
+    	NSString *host     = [favoritesController valueForKeyPath:@"selection.host"];
+    	NSString *database = [favoritesController valueForKeyPath:@"selection.database"];
+    	NSString *sshUser  = [favoritesController valueForKeyPath:@"selection.sshUser"];
+    	NSString *sshHost  = [favoritesController valueForKeyPath:@"selection.sshHost"];
+    	NSString *favoriteid = [favoritesController valueForKeyPath:@"selection.id"];
+    	NSInteger type     = [[favoritesController valueForKeyPath:@"selection.type"] integerValue];
 
-		// Remove passwords from the Keychain
-		[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
-								account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
-		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
-								account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
-		
-		// Reset last used favorite
-		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
-			[prefs setInteger:0	forKey:SPLastFavoriteIndex];
-		}
-		
-		// Reset default favorite
-		if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
-			[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
-		}
+    	// Remove passwords from the Keychain
+    	[keychain deletePasswordForName:[keychain nameForFavoriteName:name id:favoriteid]
+    							account:[keychain accountForUser:user host:((type == SPSocketConnection)?@"localhost":host) database:database]];
+    	[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:name id:favoriteid]
+    							account:[keychain accountForSSHUser:sshUser sshHost:sshHost]];
 
-		[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
-		
-		[favoritesTableView reloadData];
-		
-		[self updateDefaultFavoritePopup];
-		}
-	}
+    	// Reset last used favorite
+    	if ([favoritesTableView selectedRow] == [prefs integerForKey:SPLastFavoriteIndex]) {
+    		[prefs setInteger:0	forKey:SPLastFavoriteIndex];
+    	}
+
+    	// Reset default favorite
+    	if ([favoritesTableView selectedRow] == [prefs integerForKey:SPDefaultFavorite]) {
+    		[prefs setInteger:[prefs integerForKey:SPLastFavoriteIndex] forKey:SPDefaultFavorite];
+    	}
+
+    	[favoritesController removeObjectAtArrangedObjectIndex:[favoritesTableView selectedRow]];
+
+    	[favoritesTableView reloadData];
+
+    	[self updateDefaultFavoritePopup];
+    	}
+    }
 }
 
 - (void)setGrowlEnabled:(BOOL)value
@@ -1083,9 +1083,9 @@
 	
 	// Add item to switch to edit favorites pane
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item")];
-	[[[defaultFavoritePopup menu] itemWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item")] setAction:@selector(displayFavoritePreferences:)];
-	[[[defaultFavoritePopup menu] itemWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item")] setTarget:self];
+	[defaultFavoritePopup addItemWithTitle:@"Edit Favorites…"];
+	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setAction:@selector(displayFavoritePreferences:)];
+	[[[defaultFavoritePopup menu] itemWithTitle:@"Edit Favorites…"] setTarget:self];
 	
 	// Select the default favorite from prefs
 	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {

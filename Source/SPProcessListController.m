@@ -33,13 +33,7 @@
 
 @interface SPProcessListController (PrivateAPI)
 
-- (void)_processListRefreshed;
-- (void)_startAutoRefreshTimer;
-- (void)_killAutoRefreshTimer;
-- (void)_fireAutoRefresh:(NSTimer *)timer;
-- (void)_updateSelectedAutoRefreshIntervalInterface;
-- (void)_startAutoRefreshTimerWithInterval:(NSTimeInterval)interval;
-- (void)_getDatabaseProcessListInBackground:(id)object;
+- (void)_getDatabaseProcessList;
 - (void)_killProcessQueryWithId:(NSUInteger)processId;
 - (void)_killProcessConnectionWithId:(NSUInteger)processId;
 - (void)_updateServerProcessesFilterForFilterString:(NSString *)filterString;
@@ -50,20 +44,18 @@
 
 @synthesize connection;
 
-#pragma mark -
-#pragma mark Initialisation
-
 /**
  * Initialisation
  */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseProcessList"])) {
-		
-		autoRefreshTimer = nil;
 		processes = [[NSMutableArray alloc] init];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		
+		// Default the process list comment to SHOW FULL PROCESSLIST
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
 	}
 	
 	return self;
@@ -94,15 +86,6 @@
 	
 	// Register as an observer for the when the UseMonospacedFonts preference changes
 	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-}
-
-/**
- * Interface loading
- */
-- (void)windowDidLoad
-{
-	// Update the selected auto refresh interval
-	[self _updateSelectedAutoRefreshIntervalInterface];
 }
 
 #pragma mark -
@@ -153,27 +136,16 @@
 }
 
 /**
- * Close the current sheet
+ * Close the process list sheet.
  */
-- (IBAction)closeSheet:(id)sender
+- (void)close
 {
-	[NSApp endSheet:[sender window] returnCode:[sender tag]];
-	[[sender window] orderOut:self];
-}
-
-/**
- * If required start the auto refresh timer.
- */
-- (void)showWindow:(id)sender
-{
-	// If the auto refresh option is enable start the timer
-	if ([prefs boolForKey:SPProcessListEnableAutoRefresh]) {
-		
-		// Start the auto refresh time but by pass the interface updates
-		[self _startAutoRefreshTimer];
+	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
+	if ((processesFiltered) && (processesFiltered != processes)) {
+		[processesFiltered release], processesFiltered = nil;
 	}
 	
-	[super showWindow:sender];
+	[super close];
 }
 
 /**
@@ -193,9 +165,24 @@
 	[refreshProcessesButton setEnabled:NO];
 	[saveProcessesButton setEnabled:NO];
 	[filterProcessesSearchField setEnabled:NO];
-		
-	// Get the processes list on a background thread
-	[NSThread detachNewThreadSelector:@selector(_getDatabaseProcessListInBackground:) toTarget:self withObject:nil];
+	
+	[self _getDatabaseProcessList];
+	
+	// Reapply any filters is required
+	if ([[filterProcessesSearchField stringValue] length] > 0) {
+		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];
+	}
+	
+	[processListTableView reloadData];
+	
+	// Enable controls
+	[filterProcessesSearchField setEnabled:YES];
+	[saveProcessesButton setEnabled:YES];
+	[refreshProcessesButton setEnabled:YES];
+	
+	// Stop progress Indicator
+	[refreshProgressIndicator stopAnimation:self];
+	[refreshProgressIndicator setHidden:YES];
 }
 
 /**
@@ -269,7 +256,7 @@
 }
 
 /**
- * Toggles the display of the process ID table column.
+ *
  */
 - (IBAction)toggleShowProcessID:(id)sender
 {
@@ -277,38 +264,13 @@
 }
 
 /**
- * Toggles whether or not auto refresh is enabled.
- */
-- (IBAction)toggleProcessListAutoRefresh:(id)sender
-{
-	BOOL enable = [sender state];
-	
-	// Enable/Disable the refresh button
-	[refreshProcessesButton setEnabled:(!enable)];
-	
-	(enable) ? [self _startAutoRefreshTimer] : [self _killAutoRefreshTimer];
-}
-
-/**
- * Changes the auto refresh time interval based on the selected item
- */
-- (IBAction)setAutoRefreshInterval:(id)sender
-{
-	[self _startAutoRefreshTimerWithInterval:[sender tag]];
-}
-
-/**
  *
  */
-- (IBAction)setCustomAutoRefreshInterval:(id)sender
+- (IBAction)toggeleShowFullProcessList:(id)sender
 {
-	[customIntervalTextField setStringValue:[prefs stringForKey:SPProcessListAutoRrefreshInterval]];
-	
-	[NSApp beginSheet:customIntervalWindow
-	   modalForWindow:[self window]
-		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
+	showFullProcessList = (!showFullProcessList);
+		
+	[self refreshProcessList:self];
 }
 
 #pragma mark -
@@ -333,29 +295,19 @@
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Order out current sheet to suppress overlapping of sheets
-	if ([sheet respondsToSelector:@selector(orderOut:)]) {
+	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
-	}
-	else if ([sheet respondsToSelector:@selector(window)]) {
+	else if ([sheet respondsToSelector:@selector(window)])
 		[[sheet window] orderOut:nil];
-	}
 
 	if (returnCode == NSAlertDefaultReturn) {
+		NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
 		
-		if (sheet == customIntervalWindow) {
-			NSLog(@"Set custom value to: %d", [customIntervalTextField integerValue]);
-			
-			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
+		if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
+			[self _killProcessQueryWithId:processId];
 		}
-		else {
-			NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
-			
-			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
-				[self _killProcessQueryWithId:processId];
-			}
-			else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
-				[self _killProcessConnectionWithId:processId];
-			}
+		else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
+			[self _killProcessConnectionWithId:processId];
 		}
 	}
 }
@@ -403,10 +355,6 @@
 	
 	if ((action == @selector(killProcessQuery:)) || (action == @selector(killProcessConnection:))) {
 		return ([processListTableView numberOfSelectedRows] == 1);
-	}
-	
-	if ((action == @selector(setAutoRefreshInterval:)) || (action == @selector(setCustomAutoRefreshInterval:))) {
-		return [prefs boolForKey:SPProcessListEnableAutoRefresh];
 	}
 	
 	return YES;
@@ -460,7 +408,7 @@
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {	
 	id object = (row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
-		
+	
 	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
 }
 
@@ -477,26 +425,6 @@
 	if (object == filterProcessesSearchField) {
 		[self _updateServerProcessesFilterForFilterString:[object stringValue]];
 	}
-	else if (object == customIntervalTextField) {
-		[customIntervalButton setEnabled:(([[customIntervalTextField stringValue] length] > 0) && ([customIntervalTextField integerValue] > 0))];
-	}
-}
-
-#pragma mark -
-#pragma mark Window delegate methods
-
-/**
- * Kill the auto refresh timer if it's running.
- */
-- (void)windowWillClose:(NSNotification *)notification
-{	
-	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
-	if ((processesFiltered) && (processesFiltered != processes)) {
-		[processesFiltered release], processesFiltered = nil;
-	}
-	
-	// Kill the auto refresh timer if running
-	[self _killAutoRefreshTimer];	
 }
 
 #pragma mark -
@@ -510,139 +438,33 @@
 
 	[processes release], processes = nil;
 	
-	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
-	
 	[super dealloc];
 }
 
-#pragma mark -
-#pragma mark Private API
+@end
+
+@implementation SPProcessListController (PrivateAPI)
 
 /**
- * Called by the background thread on the main thread once it has completed getting the list of processes.
+ * Gets the current process list form the database;
  */
-- (void)_processListRefreshed
+- (void)_getDatabaseProcessList
 {
-	// Reapply any filters is required
-	if ([[filterProcessesSearchField stringValue] length] > 0) {
-		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];
-	}
-	
-	[processListTableView reloadData];
-	
-	// Enable controls
-	[filterProcessesSearchField setEnabled:YES];
-	[saveProcessesButton setEnabled:YES];
-	[refreshProcessesButton setEnabled:(![autoRefreshButton state])];
-	
-	// Stop progress Indicator
-	[refreshProgressIndicator stopAnimation:self];
-	[refreshProgressIndicator setHidden:YES];
-}
-
-/**
- * Starts the auto refresh timer.
- */
-- (void)_startAutoRefreshTimer
-{		
-	autoRefreshTimer = [[NSTimer scheduledTimerWithTimeInterval:[prefs doubleForKey:SPProcessListAutoRrefreshInterval] target:self selector:@selector(_fireAutoRefresh:) userInfo:nil repeats:YES] retain];
-}
-
-/**
- * Kills the auto refresh timer.
- */
-- (void)_killAutoRefreshTimer
-{
-	// If the auto refresh timer is running, kill it
-	if (autoRefreshTimer && [autoRefreshTimer isValid]) {		
-		[autoRefreshTimer invalidate];
-		[autoRefreshTimer release], autoRefreshTimer = nil;
-	}
-}
-
-/**
- * Refreshes the process list when called by the auto refesh timer.
- */
-- (void)_fireAutoRefresh:(NSTimer *)timer
-{	
-	[self refreshProcessList:self];
-}
-
-/**
- *
- */
-- (void)_updateSelectedAutoRefreshIntervalInterface
-{	
-	BOOL found = NO;
-	NSUInteger interval = [prefs integerForKey:SPProcessListAutoRrefreshInterval];
-	
-	NSArray *items = [[autoRefreshIntervalMenuItem submenu] itemArray];
-	
-	// Uncheck all items
-	for (NSMenuItem *item in items)
-	{
-		[item setState:NSOffState];
-	}
-	
-	// Check the selected item
-	for (NSMenuItem *item in items)
-	{ 		
-		if (interval == [item tag]) {
-			found = YES;
-			[item setState:NSOnState];
-			break;
-		}
-	}
-	
-	// If a match wasn't found then a custom value is set
-	if (!found) [[items objectAtIndex:([items count] - 1)] setState:NSOnState];
-}
-
-/**
- * Starts the auto refresh time with the supplied time interval.
- */
-- (void)_startAutoRefreshTimerWithInterval:(NSTimeInterval)interval
-{
-	[prefs setDouble:interval forKey:SPProcessListAutoRrefreshInterval];
-	
-	// Update the interface
-	[self _updateSelectedAutoRefreshIntervalInterface];
-	
-	// Kill the timer and restart it with the new interval
-	[self _killAutoRefreshTimer];
-	[self _startAutoRefreshTimer];
-}
-
-/**
- * Gets a list of current database processed on a background thread.
- */
-- (void)_getDatabaseProcessListInBackground:(id)object;
-{	
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
 	NSUInteger i = 0;
 	
 	// Get processes
-	if ([connection isConnected]) {
-		
-		MCPResult *processList = [connection listProcesses];
-		
-		[processList setReturnDataAsStrings:YES];
-		
-		if ([processList numOfRows]) [processList dataSeek:0];
-		
-		[processes removeAllObjects];
-		
-		for (i = 0; i < [processList numOfRows]; i++) 
-		{
-			[processes addObject:[processList fetchRowAsDictionary]];
-		}
+	MCPResult *processList = [connection queryString:(showFullProcessList) ? @"SHOW FULL PROCESSLIST" : @"SHOW PROCESSLIST"];
+	
+	[processList setReturnDataAsStrings:YES];
+	
+	if ([processList numOfRows]) [processList dataSeek:0];
+	
+	[processes removeAllObjects];
+
+	for (i = 0; i < [processList numOfRows]; i++) 
+	{
+		[processes addObject:[processList fetchRowAsDictionary]];
 	}
-	
-	// Update the UI on the main thread
-	[self performSelectorOnMainThread:@selector(_processListRefreshed) withObject:nil waitUntilDone:NO];
-	
-	[pool release];
 }
 
 /**
@@ -714,13 +536,13 @@
 	// Perform filtering
 	for (NSDictionary *process in processes) 
 	{
-		if (([[process objectForKey:@"Id"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[process objectForKey:@"User"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[process objectForKey:@"Host"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			((![[process objectForKey:@"db"] isNSNull]) && ([[process objectForKey:@"db"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
+		if (([[process objectForKey:@"Id"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)      ||
+			([[process objectForKey:@"User"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)    ||
+			([[process objectForKey:@"Host"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)    ||
+			((![[process objectForKey:@"db"] isNSNull]) && ([[process objectForKey:@"db"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))      ||
 			([[process objectForKey:@"Command"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[process objectForKey:@"Time"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			((![[process objectForKey:@"State"] isNSNull]) && ([[process objectForKey:@"State"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
+			([[process objectForKey:@"Time"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)    ||
+			((![[process objectForKey:@"State"] isNSNull]) && ([[process objectForKey:@"State"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound))   ||
 			((![[process objectForKey:@"Info"] isNSNull]) && ([[process objectForKey:@"Info"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)))
 		{
 			[processesFiltered addObject:process];

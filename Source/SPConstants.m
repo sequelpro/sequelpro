@@ -129,8 +129,7 @@ NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
-NSString *SPProcessListEnableAutoRefresh         = @"ProcessListEnableAutoRefresh";
-NSString *SPProcessListAutoRrefreshInterval      = @"ProcessListAutoRrefreshInterval";
+NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
 NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
 NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 
@@ -138,15 +137,13 @@ NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
 NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 
-// Import and export
+// Import
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";
 NSString *SPCSVImportFieldEscapeCharacter        = @"CSVImportFieldEscapeCharacter";
 NSString *SPCSVImportFieldTerminator             = @"CSVImportFieldTerminator";
 NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader";
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
-NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
-NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";

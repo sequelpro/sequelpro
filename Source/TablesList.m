@@ -253,12 +253,11 @@
 
 	// Query the structure of all databases in the background
 	if(sender == self)
-		// Invoked by SP 
+		// Invoked by SP
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
 	else
 		// User press refresh button ergo force update
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
-
 	
 }
 
@@ -693,35 +692,40 @@
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
 
-	structureLoaded = NO;
-	contentLoaded = NO;
-	statusLoaded = NO;
-	triggersLoaded = NO;
 	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0 ) {
 			[tableSourceInstance loadTable:selectedTableName];
 			structureLoaded = YES;
+			contentLoaded = NO;
+			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 1 ) {
 			if(tableEncoding == nil) {
 				[tableContentInstance loadTable:nil];
 			} else {
 				[tableContentInstance loadTable:selectedTableName];
 			}
+			structureLoaded = NO;
 			contentLoaded = YES;
+			statusLoaded = NO;
 		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3 ) {
-			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
+			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
+			structureLoaded = NO;
+			contentLoaded = NO;
 			statusLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5 ) {
-			[[tableTriggersInstance onMainThread] loadTriggers];
-			triggersLoaded = YES;
+		} else {
+			structureLoaded = NO;
+			contentLoaded = NO;
+			statusLoaded = NO;
 		}
 	} else {
 
 		// if we are not looking at a table or view, clear these
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-		[[extendedTableInfoInstance onMainThread] loadTable:nil];
-		[[tableTriggersInstance onMainThread] loadTriggers];
+		[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:nil waitUntilDone:YES];
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
 	}
 
 	// Update the "Show Create Syntax" window if it's already opened
@@ -751,77 +755,73 @@
 
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release];
-		
+
 		if ([indexes count]) {
 			selectedTableName = [[NSString alloc] initWithString:@""];
-		} 
+		}
 		else {
 			selectedTableName = nil;
 		}
-		
+
 		selectedTableType = SPTableTypeNone;
 
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 		[extendedTableInfoInstance loadTable:nil];
-		[tableTriggersInstance loadTriggers];
-		
+
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
-		triggersLoaded = NO;
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
 		if ([indexes count]) {
-			
 			NSUInteger currentIndex = [indexes lastIndex];
 			BOOL areTableTypeEqual = YES;
 			NSInteger lastType = [[filteredTableTypes objectAtIndex:currentIndex] integerValue];
-			
+
 			while (currentIndex != NSNotFound)
 			{
 				if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] != lastType) {
 					areTableTypeEqual = NO;
 					break;
 				}
-				
+
 				currentIndex = [indexes indexLessThanIndex:currentIndex];
 			}
-			
 			if (areTableTypeEqual) {
 				switch (lastType) {
 					case SPTableTypeTable:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
 					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Tables", @"remove tables menu title")];
 					[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
 					[truncateTableButton setHidden:NO];
 					[truncateTableContextButton setHidden:NO];
 					break;
 					case SPTableTypeView:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Views", @"remove views menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
 					case SPTableTypeProc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedures", @"remove procedures menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
 					case SPTableTypeFunc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
+					[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
+					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Functions", @"remove functions menu title")];
 					[truncateTableButton setHidden:YES];
 					[truncateTableContextButton setHidden:YES];
 					break;
 				}
 			
 			} else {
-				[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Items", @"delete items menu title")];
-				[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Items", @"delete items menu title")];
+				[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
+				[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Items", @"remove items menu title")];
 				[truncateTableButton setHidden:YES];
 				[truncateTableContextButton setHidden:YES];
 			}
@@ -840,7 +840,7 @@
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableMenuItem2 setHidden:YES];
 		[showCreateSyntaxMenuItem setHidden:YES];
-		
+
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
 		
 		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
@@ -894,7 +894,7 @@
 	[separatorTableContextMenuItem setHidden:NO];
 	[separatorTableMenuItem2 setHidden:NO];
 	[separatorTableContextMenuItem2 setHidden:NO];
-	
+
 	// Set gear menu items Remove/Duplicate table/view and mainMenu > Table items
 	// according to the table types
 	NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTitle:@"Table"] submenu];
@@ -922,7 +922,7 @@
 		[duplicateTableMenuItem setHidden:NO];
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableButton setHidden:YES];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 
@@ -931,7 +931,7 @@
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableContextButton setHidden:YES];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove View", @"remove view menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 	} 
@@ -959,7 +959,7 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
 		[truncateTableButton setHidden:NO];
 		[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 
@@ -969,7 +969,7 @@
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
 		[truncateTableContextButton setHidden:NO];
 		[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Table", @"remove table menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 	} 
@@ -990,16 +990,16 @@
 		[duplicateTableMenuItem setHidden:NO];
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableButton setHidden:YES];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
-		
+
 		[renameTableContextMenuItem setHidden:NO];
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableContextButton setHidden:YES];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Procedure", @"remove proc menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 	}
@@ -1020,16 +1020,16 @@
 		[duplicateTableMenuItem setHidden:NO];
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableButton setHidden:YES];
-		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
+		[removeTableMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
-		
+
 		[renameTableContextMenuItem setHidden:NO];
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableContextButton setHidden:YES];
-		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
+		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Remove Function", @"remove func menu title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 	}
@@ -1355,27 +1355,24 @@
         // if the 'table' is a view or a table, reload the currently selected view 
         if (selectedTableType == SPTableTypeTable || selectedTableType == SPTableTypeView)
         {
-			statusLoaded = NO;
-			structureLoaded = NO;
-			contentLoaded = NO;
-			triggersLoaded = NO;
             switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
                 case 0:
                     [tableSourceInstance loadTable:newTableName];
                     structureLoaded = YES;
+                    contentLoaded = statusLoaded = NO;
                     break;
                 case 1:
                     [tableContentInstance loadTable:newTableName];
                     contentLoaded = YES;
+                    structureLoaded = statusLoaded = NO;
                     break;
                 case 3:
                     [extendedTableInfoInstance loadTable:newTableName];
                     statusLoaded = YES;
+                    structureLoaded = contentLoaded = NO;
                     break;
-				case 5:
-					[tableTriggersInstance loadTriggers];
-					triggersLoaded = YES;
-					break;
+                default:
+                    statusLoaded = structureLoaded = contentLoaded = NO;
             }
         }
     }
@@ -1560,9 +1557,8 @@
 {
 	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
 
-	if ([tablesListView numberOfSelectedRows] == 1
-		&& ([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) )
-	{
+	if ( [tablesListView numberOfSelectedRows] == 1  && 
+		([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) ) {
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 0) && !structureLoaded ) {
 			[tableSourceInstance loadTable:selectedTableName];
@@ -1575,13 +1571,8 @@
 		}
 		
 		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 3) && !statusLoaded ) {
-			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
+			[extendedTableInfoInstance performSelectorOnMainThread:@selector(loadTable:) withObject:selectedTableName waitUntilDone:YES];
 			statusLoaded = YES;
-		}
-
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == 5) && !triggersLoaded ) {
-			[[tableTriggersInstance onMainThread] loadTriggers];
-			triggersLoaded = YES;
 		}
 	}
 	else {
@@ -1811,7 +1802,6 @@
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
-		triggersLoaded = NO;
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
@@ -1937,7 +1927,7 @@
 				[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
 			}
 			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
-			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't remove '%@'.\nMySQL said: %@", @"message of panel when an item cannot be removed"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
 			[alert setAlertStyle:NSWarningAlertStyle];
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
 				[alert beginSheetModalForWindow:tableWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -2360,7 +2350,7 @@
         
         [mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", stringTableType, [oldTableName backtickQuotedString]]];
         if ([mySQLConnection queryErrored]) {
-            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't delete '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't delete old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
+            [NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't remove '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't remove old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
         }
         return;
     }

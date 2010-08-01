@@ -238,7 +238,7 @@
 			[tableCreateSyntaxTextView setString:@""];
 			
 			NSString *createViewSyntax = [[[tableDataInstance tableCreateSyntax] createViewSyntaxPrettifier] stringByAppendingString:@";"];
-			
+
 			if (createViewSyntax) {
 				[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:createViewSyntax];
 				[tableCreateSyntaxTextView insertText:createViewSyntax];
@@ -282,7 +282,7 @@
 	NSArray *collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 	
 	if (([engines count] > 0) && ([statusFields objectForKey:@"Engine"])) {
-		
+
 		// Populate type popup button
 		for (NSDictionary *engine in engines)
 		{		
@@ -353,7 +353,7 @@
 	[tableCommentsTextView setString:[statusFields objectForKey:@"Comment"]];
 	[tableCommentsTextView didChangeText];
 	[tableCommentsTextView setEditable:enableInteraction];
-			
+	
 	// Set create syntax
 	[tableCreateSyntaxTextView setEditable:YES];
 	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:@""];
@@ -436,7 +436,7 @@
 - (void)textDidEndEditing:(NSNotification *)notification
 {
 	id object = [notification object];
-	
+
 	if ((object == tableCommentsTextView) && ([object isEditable]) && ([selectedTable length] > 0)) {
 		
 		NSString *currentComment = [[tableDataInstance statusValueForKey:@"Comment"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];

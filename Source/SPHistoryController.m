@@ -57,10 +57,10 @@
 	tableContentInstance = [theDocument valueForKey:@"tableContentInstance"];
 	tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
 	toolbarItemVisible = NO;
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toolbarWillAddItem:) name:NSToolbarWillAddItemNotification object:[theDocument valueForKey:@"mainToolbar"]];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toolbarDidRemoveItem:) name:NSToolbarDidRemoveItemNotification object:[theDocument valueForKey:@"mainToolbar"]];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(startDocumentTask:) name:SPDocumentTaskStartNotification object:theDocument];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(endDocumentTask:) name:SPDocumentTaskEndNotification object:theDocument];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toolbarWillAddItem:) name:NSToolbarWillAddItemNotification object:[theDocument valueForKey:@"mainToolbar"]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toolbarDidRemoveItem:) name:NSToolbarDidRemoveItemNotification object:[theDocument valueForKey:@"mainToolbar"]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(startDocumentTask:) name:SPDocumentTaskStartNotification object:theDocument];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(endDocumentTask:) name:SPDocumentTaskEndNotification object:theDocument];
 }
 
 - (void) dealloc
@@ -80,9 +80,9 @@
 - (void) updateToolbarItem
 {
 
-	// If the toolbar item isn't visible, don't perform any actions - as manipulating
-	// items not on the toolbar can cause crashes.
-	if (!toolbarItemVisible) return;
+    // If the toolbar item isn't visible, don't perform any actions - as manipulating
+    // items not on the toolbar can cause crashes.
+    if (!toolbarItemVisible) return;
 
 	BOOL backEnabled = NO;
 	BOOL forwardEnabled = NO;
@@ -92,7 +92,7 @@
 	// Set the active state of the segments if appropriate
 	if ([history count] && historyPosition > 0) backEnabled = YES;
 	if ([history count] && historyPosition + 1 < [history count]) forwardEnabled = YES;
-
+	
 	[historyControl setEnabled:backEnabled forSegment:0];
 	[historyControl setEnabled:forwardEnabled forSegment:1];
 
@@ -196,13 +196,13 @@
  */
 - (void) setupInterface
 {
-	NSArray *toolbarItems = [[theDocument valueForKey:@"mainToolbar"] items];
-	for (NSToolbarItem *toolbarItem in toolbarItems) {
-		if ([[toolbarItem itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
-			toolbarItemVisible = YES;
-			break;
-		}
-	}
+    NSArray *toolbarItems = [[theDocument valueForKey:@"mainToolbar"] items];
+    for (NSToolbarItem *toolbarItem in toolbarItems) {
+    	if ([[toolbarItem itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
+    		toolbarItemVisible = YES;
+    		break;
+    	}
+    }
 }
 
 /**
@@ -210,7 +210,7 @@
  */
 - (void) startDocumentTask:(NSNotification *)aNotification
 {
-	if (toolbarItemVisible) [historyControl setEnabled:NO];
+    if (toolbarItemVisible) [historyControl setEnabled:NO];
 }
 
 /**
@@ -218,7 +218,7 @@
  */
 - (void) endDocumentTask:(NSNotification *)aNotification
 {
-	if (toolbarItemVisible) [historyControl setEnabled:YES];
+    if (toolbarItemVisible) [historyControl setEnabled:YES];
 }
 
 /**
@@ -227,10 +227,10 @@
  * can cause crashes.
  */
 - (void) toolbarWillAddItem:(NSNotification *)aNotification {
-	if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
-		toolbarItemVisible = YES;
-		[self performSelector:@selector(updateToolbarItem) withObject:nil afterDelay:0.1];
-	}
+    if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
+    	toolbarItemVisible = YES;
+    	[self performSelector:@selector(updateToolbarItem) withObject:nil afterDelay:0.1];
+    }
 }
 
 /**
@@ -239,9 +239,9 @@
  * can cause crashes.
  */
 - (void) toolbarDidRemoveItem:(NSNotification *)aNotification {
-	if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
-		toolbarItemVisible = NO;
-	}
+    if ([[[[aNotification userInfo] objectForKey:@"item"] itemIdentifier] isEqualToString:SPMainToolbarHistoryNavigation]) {
+    	toolbarItemVisible = NO;
+    }
 }
 
 #pragma mark -

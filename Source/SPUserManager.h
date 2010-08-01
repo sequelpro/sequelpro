@@ -27,7 +27,7 @@
 
 @class BWAnchoredButtonBar;
 
-@interface SPUserManager : NSWindowController
+@interface SPUserManager : NSWindowController 
 {	
 	NSPersistentStoreCoordinator *persistentStoreCoordinator;
     NSManagedObjectModel *managedObjectModel;
