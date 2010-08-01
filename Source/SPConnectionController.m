@@ -315,7 +315,7 @@
 	NSInteger newState = [theTunnel state];
 
 	if (newState == PROXY_STATE_IDLE) {
-		[tableDocument setTitlebarStatus:@"SSH Disconnected"];
+		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
 	} else if (newState == PROXY_STATE_CONNECTED) {
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
@@ -648,7 +648,7 @@
 	} else {
 		favorites = [[NSMutableArray alloc] init];
 	}
-	[favorites insertObject:[NSDictionary dictionaryWithObject:@"FAVORITES" forKey:@"name"] atIndex:0];
+	[favorites insertObject:[NSDictionary dictionaryWithObject:NSLocalizedString(@"FAVORITES", @"Favorites title at the top of the sidebar") forKey:@"name"] atIndex:0];
 	[favoritesTable reloadData];
 }
 
