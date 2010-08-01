@@ -853,7 +853,7 @@
 
 		// If the "Engine" key is NULL, a problem occurred when retrieving the table information.
 		if ([[status objectForKey:@"Engine"] isNSNull]) {
-			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:@"An error occurred retrieving table information.  MySQL said: %@", [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
+			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:NSLocalizedString(@"An error occurred retrieving table information.  MySQL said: %@", @"MySQL table info retrieval error message"), [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
 			return FALSE;
 		}
 

@@ -581,7 +581,7 @@
 	// Work out whether a passphrase is being requested, extracting the key name
 	NSString *keyName = [theQuery stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
 	if (keyName) {
-		[sshPasswordText setStringValue:[NSString stringWithFormat:@"Enter your password for the SSH key\n\"%@\"", keyName]];
+		[sshPasswordText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Enter your password for the SSH key\n\"%@\"", @"SSH key password prompt"), keyName]];
 		[sshPasswordKeychainCheckbox setHidden:NO];
         currentKeyName = [keyName retain];
 	} else {

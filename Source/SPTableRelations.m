@@ -166,7 +166,7 @@
 - (IBAction)addRelation:(id)sender
 {
 	// Set up the controls
-	[addRelationTableBox setTitle:[NSString stringWithFormat:@"Table: %@", [tablesListInstance tableName]]];
+	[addRelationTableBox setTitle:[NSString stringWithFormat:NSLocalizedString(@"Table: %@", @"Add Relation sheet title, showing table name"), [tablesListInstance tableName]]];
 	
 	[columnPopUpButton removeAllItems];
 	[columnPopUpButton addItemsWithTitles:[tableDataInstance columnNames]];
@@ -244,7 +244,7 @@
 	if (([tablesListInstance tableType] == SPTableTypeTable) && ([[engine lowercaseString] isEqualToString:@"innodb"])) {
 
 		// Update the text label
-		[labelTextField setStringValue:[NSString stringWithFormat:@"Relations for table: %@", [tablesListInstance tableName]]];
+		[labelTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Relations for table: %@", @"Relations tab subtitle showing table name"), [tablesListInstance tableName]]];
 
 		[addRelationButton setEnabled:enableInteraction];
 		[refreshRelationsButton setEnabled:enableInteraction];

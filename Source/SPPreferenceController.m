@@ -418,7 +418,7 @@
 		[favorite setObject:favoriteid forKey:@"id"];
 
 		// Alter the name for clarity
-		[favorite setObject:[NSString stringWithFormat:@"%@ Copy", [favorite objectForKey:@"name"]] forKey:@"name"];
+		[favorite setObject:[NSString stringWithFormat:NSLocalizedString(@"%@ Copy", @"Initial favourite name after duplicating a previous favourite"), [favorite objectForKey:@"name"]] forKey:@"name"];
 
 		// Create new keychain items if appropriate
 		if (password && [password length]) {

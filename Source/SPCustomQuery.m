@@ -1665,7 +1665,7 @@
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
 		if(!tableForColumn || ![tableForColumn length]) {
-			[errorText setStringValue:[NSString stringWithFormat:@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", [columnDefinition objectForKey:@"name"]]];
+			[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
 			NSBeep();
 			return;
 		}
@@ -2046,9 +2046,9 @@
 
 			if(!isFieldEditable)
 				if(numberOfPossibleUpdateRows == 0)
-					[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", tableForColumn]];
+					[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row"), tableForColumn]];
 				else
-			 		[errorText setStringValue:[NSString stringWithFormat:@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@""]];
+			 		[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Custom Query result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]];
 
 		} else {
 			// no table/databse name are given

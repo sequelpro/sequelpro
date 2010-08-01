@@ -1782,7 +1782,7 @@
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"),[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
 
 		return;
@@ -1801,7 +1801,7 @@
 		return;
 	}
 
-	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:@"Create syntax for %@ '%@'", typeString, [self table]]];
+	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Create syntax for %@ '%@'", @"Create syntax label"), typeString, [self table]]];
 
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
@@ -1852,7 +1852,7 @@
 	// Check for errors, only displaying if the connection hasn't been terminated
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:@"An error occured while creating table syntax.\n\n: %@",[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"),[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
 		}
 		return;
 	}
@@ -1934,13 +1934,13 @@
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Check table successfully passed.",@"check table successfully passed message") : NSLocalizedString(@"Check table failed.", @"check table failed message");
 
-		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nMySQL said: %@", @"Error display text, showing original MySQL error"), message, [lastresult objectForKey:@"Msg_text"]];
 	} else if(statusOK) {
 		message = NSLocalizedString(@"Check of all selected items successfully passed.",@"check of all selected items successfully passed message");
 	}
 	
 	if(message) {
-		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Check %@", what] 
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Check %@", @"CHECK one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
@@ -2010,13 +2010,13 @@
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully analyzed table.",@"analyze table successfully passed message") : NSLocalizedString(@"Analyze table failed.", @"analyze table failed message");
 
-		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nMySQL said: %@", @"Error display text, showing original MySQL error"), message, [lastresult objectForKey:@"Msg_text"]];
 	} else if(statusOK) {
 		message = NSLocalizedString(@"Successfully analyzed all selected items.",@"successfully analyzed all selected items message");
 	}
 	
 	if(message) {
-		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Analyze %@", what] 
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Analyze %@", @"ANALYZE one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
@@ -2086,13 +2086,13 @@
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully optimized table.",@"optimize table successfully passed message") : NSLocalizedString(@"Optimize table failed.", @"optimize table failed message");
 
-		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nMySQL said: %@", @"Error display text, showing original MySQL error"), message, [lastresult objectForKey:@"Msg_text"]];
 	} else if(statusOK) {
 		message = NSLocalizedString(@"Successfully optimized all selected items.",@"successfully optimized all selected items message");
 	}
 
 	if(message) {
-		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Optimize %@", what] 
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Optimize %@", @"OPTIMIZE one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
@@ -2161,13 +2161,13 @@
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully repaired table.",@"repair table successfully passed message") : NSLocalizedString(@"Repair table failed.", @"repair table failed message");
 
-		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nMySQL said: %@", @"Error display text, showing original MySQL error"), message, [lastresult objectForKey:@"Msg_text"]];
 	} else if(statusOK) {
 		message = NSLocalizedString(@"Successfully repaired all selected items.",@"successfully repaired all selected items message");
 	}
 
 	if(message) {
-		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Repair %@", what] 
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Repair %@", @"REPAIR one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
@@ -2236,13 +2236,13 @@
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully flushed table.",@"flush table successfully passed message") : NSLocalizedString(@"Flush table failed.", @"flush table failed message");
 
-		message = [NSString stringWithFormat:@"%@\n\nMySQL said: %@", message, [lastresult objectForKey:@"Msg_text"]];
+		message = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nMySQL said: %@", @"Error display text, showing original MySQL error"), message, [lastresult objectForKey:@"Msg_text"]];
 	} else if(statusOK) {
 		message = NSLocalizedString(@"Successfully flushed all selected items.",@"successfully flushed all selected items message");
 	}
 
 	if(message) {
-		[[NSAlert alertWithMessageText:[NSString stringWithFormat:@"Flush %@", what] 
+		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Flush %@", @"FLUSH one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
