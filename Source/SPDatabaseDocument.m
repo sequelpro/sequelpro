@@ -4468,6 +4468,7 @@
 
 	}
 
+	// Otherwise position the sheet beneath the tab bar if it's visible
 	rect.origin.y -= [[parentWindowController valueForKey:@"tabBar"] frame].size.height - 1;
 	return rect;
 }

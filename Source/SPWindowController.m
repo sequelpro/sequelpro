@@ -391,7 +391,8 @@
 	// If the window changed, perform additional processing.
 	if (draggedFromWindow != [tabBarControl window]) {
 		
-		// Update the old window
+		// Update the old window, ensuring the toolbar is cleared to prevent issues with toolbars in multiple windows
+		[draggedFromWindow setToolbar:nil];
 		[[draggedFromWindow windowController] updateSelectedTableDocument];
 
 		// Update the item's document's window and controller

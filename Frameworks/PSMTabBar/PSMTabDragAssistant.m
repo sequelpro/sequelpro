@@ -305,11 +305,9 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 				}
 			}
 			
-			NSPoint windowOrigin = [[control window] frame].origin;
-
-			windowOrigin.x -= _dragWindowOffset.width;
-			windowOrigin.y += _dragWindowOffset.height;
-			[[_draggedView window] setFrameOrigin:windowOrigin];
+			NSPoint targetPoint = [[_draggedTab window] frame].origin;
+			targetPoint.y += _dragWindowOffset.height;
+			[[_draggedView window] setFrameTopLeftPoint:targetPoint];
 			[[_draggedView window] orderWindow:NSWindowBelow relativeTo:[[_draggedTab window] windowNumber]];
 
 		} else if (_currentTearOffStyle == PSMTabBarTearOffMiniwindow && ![_draggedTab alternateImage]) {
