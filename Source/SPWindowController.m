@@ -401,7 +401,8 @@
 		[draggedDocument setParentWindow:[tabBarControl window]];
 		[draggedDocument didBecomeActiveTabInWindow];
 
-		// Update isProcessing observation
+		// Update window controller's active tab, and update the document's isProcessing observation
+		[[[tabBarControl window] windowController] updateSelectedTableDocument];
 		[draggedDocument removeObserver:[draggedFromWindow windowController] forKeyPath:@"isProcessing"];
 		[[[tabBarControl window] windowController] _updateProgressIndicatorForItem:tabViewItem];
 	}
