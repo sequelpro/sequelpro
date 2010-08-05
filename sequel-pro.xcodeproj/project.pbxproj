@@ -332,6 +332,11 @@
 		B5F4F7810F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B5F4F7800F7BCF990059AE84 /* toolbar-switch-to-procedures.tiff */; };
 		BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */; };
 		BC05F1C5101241DF008A97F8 /* YRKSpinningProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */; };
+		BC0E1486120AAB5600E52E25 /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
+		BC0E1487120AAB5C00E52E25 /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
+		BC0E1493120AABE900E52E25 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
+		BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
+		BC0E14A4120AAC5000E52E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 583CE52C11725642008F148E /* libz.dylib */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
 		BC2777A011514B940034DF6A /* SPNavigatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC27779F11514B940034DF6A /* SPNavigatorController.m */; };
@@ -360,6 +365,8 @@
 		BCCDED6B115940CB00285E65 /* sync_arrows_04.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED65115940CB00285E65 /* sync_arrows_04.tiff */; };
 		BCCDED6C115940CB00285E65 /* sync_arrows_05.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED66115940CB00285E65 /* sync_arrows_05.tiff */; };
 		BCCDED6D115940CB00285E65 /* sync_arrows_06.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED67115940CB00285E65 /* sync_arrows_06.tiff */; };
+		BCD06FC6120AAAC200C73602 /* SPDataAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */; };
+		BCD06FC7120AAACB00C73602 /* SPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1789343A0F30C1DD0097539A /* SPStringAdditions.h */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 		BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */ = {isa = PBXBuildFile; fileRef = BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */; };
 		BCEF78C6115215CA0023F8C2 /* network-small.tif in Resources */ = {isa = PBXBuildFile; fileRef = BCEF78C5115215CA0023F8C2 /* network-small.tif */; };
@@ -384,7 +391,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 584754C1120A04560057631F /* Sequel Pro QLGenerator */;
+			remoteGlobalIDString = 584754C1120A04560057631F;
 			remoteInfo = "Sequel Pro QLGenerator";
 		};
 		58B907CC11BDA552000826E5 /* PBXContainerItemProxy */ = {
@@ -1020,6 +1027,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */,
+				BC0E14A4120AAC5000E52E25 /* libz.dylib in Frameworks */,
+				BC0E1493120AABE900E52E25 /* libcrypto.dylib in Frameworks */,
 				58475686120A065B0057631F /* CoreFoundation.framework in Frameworks */,
 				584756B5120A06740057631F /* CoreServices.framework in Frameworks */,
 				584756B7120A067B0057631F /* ApplicationServices.framework in Frameworks */,
@@ -1093,9 +1103,9 @@
 				584756B6120A067B0057631F /* ApplicationServices.framework */,
 				584756B8120A06830057631F /* QuickLook.framework */,
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
-				17B7B58F1016028F00F057DE /* libcrypto.dylib */,
 				179ECEC611F265EE009C6A40 /* libbz2.dylib */,
 				17B7B591101602AE00F057DE /* libssl.dylib */,
+				17B7B58F1016028F00F057DE /* libcrypto.dylib */,
 				583CE52C11725642008F148E /* libz.dylib */,
 			);
 			name = "Linked Frameworks";
@@ -2146,6 +2156,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BCD06FD5120AAAD700C73602 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BCD06FC7120AAACB00C73602 /* SPStringAdditions.h in Headers */,
+				BCD06FC6120AAAC200C73602 /* SPDataAdditions.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -2188,6 +2207,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 584754C7120A04560057631F /* Build configuration list for PBXNativeTarget "Sequel Pro QLGenerator" */;
 			buildPhases = (
+				BCD06FD5120AAAD700C73602 /* Headers */,
 				584754BE120A04560057631F /* Resources */,
 				584754BF120A04560057631F /* Sources */,
 				584754C0120A04560057631F /* Frameworks */,
@@ -2533,6 +2553,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC0E1487120AAB5C00E52E25 /* SPStringAdditions.m in Sources */,
+				BC0E1486120AAB5600E52E25 /* SPDataAdditions.m in Sources */,
 				584754D3120A05910057631F /* GeneratePreviewForURL.m in Sources */,
 				584754D4120A05910057631F /* GenerateThumbnailForURL.m in Sources */,
 				584754D5120A05910057631F /* main.c in Sources */,

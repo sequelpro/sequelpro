@@ -1,3 +1,6 @@
+//
+//  $Id$
+//
 //  GenerateThumbnailForURL.m
 //  sequel-pro
 //
@@ -42,7 +45,8 @@ OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thum
 {
 	return noErr;
 
-	// The following code is meant as example maybe fr the future
+	// The following code is meant as example maybe for the future
+
 	// NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 	// 
 	// NSData *thumbnailData = [NSData dataWithContentsOfFile:@"appicon.icns"];
