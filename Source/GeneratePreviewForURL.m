@@ -28,12 +28,27 @@
 #import "SPDataAdditions.h"
 #import "SPStringAdditions.h"
 #import <Cocoa/Cocoa.h>
+#import "SPEditorTokens.h"
+
 
 /* -----------------------------------------------------------------------------
-   Generate a preview for file
+  Generate a preview for file
 
-   This function's job is to create preview for designated file
-   ----------------------------------------------------------------------------- */
+  This function's job is to create preview for designated file
+  ----------------------------------------------------------------------------- */
+
+
+#pragma mark lex init
+
+/*
+* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
+*/
+extern NSUInteger yylex();
+extern NSUInteger yyuoffset, yyuleng;
+typedef struct yy_buffer_state *YY_BUFFER_STATE;
+void yy_switch_to_buffer(YY_BUFFER_STATE);
+YY_BUFFER_STATE yy_scan_string (const char *);
+
 
 
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
@@ -191,11 +206,60 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 					@"... SQL ..."
 				]];
 			} else {
+				
+				// perform syntax highlighting
+				NSString *sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:NSUTF8StringEncoding error:nil];
+				NSMutableString *sqlHTML = [NSMutableString string];
+
+				NSRange textRange = NSMakeRange(0, [sqlText length]);
+				NSString *tokenColor;
+				size_t token;
+				NSRange tokenRange;
+
+				// initialise flex
+				yyuoffset = 0; yyuleng = 0;
+				yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
+
+				// now loop through all the tokens
+				while (token=yylex()){
+					switch (token) {
+						case SPT_SINGLE_QUOTED_TEXT:
+						case SPT_DOUBLE_QUOTED_TEXT:
+						    tokenColor = @"#A7221C";
+						    break;
+						case SPT_BACKTICK_QUOTED_TEXT:
+						    tokenColor = @"#001892";
+						    break;
+						case SPT_RESERVED_WORD:
+						    tokenColor = @"#0041F6";
+						    break;
+						case SPT_NUMERIC:
+							tokenColor = @"#67350F";
+							break;
+						case SPT_COMMENT:
+						    tokenColor = @"#265C10";
+						    break;
+						case SPT_VARIABLE:
+						    tokenColor = @"#6C6C6C";
+						    break;
+						case SPT_WHITESPACE:
+						    tokenColor = @"black";
+						    break;
+						default:
+						    tokenColor = @"black";
+					}
+
+					tokenRange = NSMakeRange(yyuoffset, yyuleng);
+					[sqlHTML appendFormat:@"<font color='%@'>%@</font>", tokenColor, [sqlText substringWithRange:tokenRange]];
+
+				}
+
 				html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
 					[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
 					[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
-					[NSString stringWithContentsOfFile:[myURL path] encoding:NSUTF8StringEncoding error:nil]
+					sqlHTML
 				]];
+
 			}
 		} else {
 			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
@@ -221,5 +285,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview)
 {
-    // implement only if supported
+   // implement only if supported
 }
+

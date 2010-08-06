@@ -6,13 +6,8 @@
 body {
 	font-family:'Lucida Grande';
 	font-size:10pt;
-	background-color:#222222;
-	color:white;
-}
-textarea {
-	background-color:#222222;
-	color:white;
-	white-space: nowrap;
+	background-color:white;
+	color:black;
 }
 </style>
 </head>
@@ -21,17 +16,19 @@ textarea {
 <table>
 <tr>
 <td valign="right">
-<img width="200%" src="data:image/auto;base64,%@">
+<img width="100%" src="data:image/auto;base64,%@">
 </td>
 <td>
 <center>
 <b style="font-size:12pt">Sequel Pro SQL Datei</b><br />
 Größe: %@
 </center><br /><br />
-<textarea cols="50" rows="10" readonly>%@</textarea>
 </td>
 </tr>
 </table>
 </center>
+<pre style="padding:2mm; background-color:white" width="100%">
+%@
+</pre>
 </body>
 </html>

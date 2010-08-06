@@ -349,6 +349,8 @@
 		BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */; };
 		BC675A141072039C00C5ACD4 /* SPContentFilterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */; };
 		BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC675A15107203BA00C5ACD4 /* ContentFilterManager.xib */; };
+		BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F15040F7C433C00579954 /* SPEditorTokens.h */; };
+		BC6D709E120C4C9F008027B5 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */; };
 		BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8C8531100E0A8000D7A129 /* SPTableView.m */; };
 		BC93FBBD11514ADE005F1D9F /* Navigator.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC93FBBB11514ADE005F1D9F /* Navigator.xib */; };
@@ -2160,6 +2162,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */,
 				BCD06FC7120AAACB00C73602 /* SPStringAdditions.h in Headers */,
 				BCD06FC6120AAAC200C73602 /* SPDataAdditions.h in Headers */,
 			);
@@ -2553,6 +2556,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC6D709E120C4C9F008027B5 /* SPEditorTokens.l in Sources */,
 				BC0E1487120AAB5C00E52E25 /* SPStringAdditions.m in Sources */,
 				BC0E1486120AAB5600E52E25 /* SPDataAdditions.m in Sources */,
 				584754D3120A05910057631F /* GeneratePreviewForURL.m in Sources */,
