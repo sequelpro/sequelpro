@@ -146,6 +146,10 @@
 		296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
 		29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */ = {isa = PBXBuildFile; fileRef = 29FA88221114619E00D1AF3D /* SPTableTriggers.m */; };
+		34E2B2E2120D9006001D5C4B /* MCPMultiResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E2B2D6120D844B001D5C4B /* MCPMultiResult.h */; };
+		34E2B2E3120D901B001D5C4B /* MCPMultiResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E2B2D7120D844B001D5C4B /* MCPMultiResult.m */; };
+		34E2B2EF120D99F0001D5C4B /* Caution.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B2ED120D99F0001D5C4B /* Caution.tiff */; };
+		34E2B2F0120D99F0001D5C4B /* Success.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B2EE120D99F0001D5C4B /* Success.tiff */; };
 		380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */; };
 		380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
@@ -713,6 +717,10 @@
 		29FA88221114619E00D1AF3D /* SPTableTriggers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTriggers.m; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		34E2B2D6120D844B001D5C4B /* MCPMultiResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPMultiResult.h; sourceTree = "<group>"; };
+		34E2B2D7120D844B001D5C4B /* MCPMultiResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPMultiResult.m; sourceTree = "<group>"; };
+		34E2B2ED120D99F0001D5C4B /* Caution.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Caution.tiff; sourceTree = "<group>"; };
+		34E2B2EE120D99F0001D5C4B /* Success.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Success.tiff; sourceTree = "<group>"; };
 		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditionsTest.h; sourceTree = "<group>"; };
 		380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditionsTest.m; sourceTree = "<group>"; };
@@ -1427,6 +1435,8 @@
 		17B7B5571016004500F057DE /* MCPFoundationKit */ = {
 			isa = PBXGroup;
 			children = (
+				34E2B2D6120D844B001D5C4B /* MCPMultiResult.h */,
+				34E2B2D7120D844B001D5C4B /* MCPMultiResult.m */,
 				17B7B5C4101603B200F057DE /* MCPConnection.h */,
 				17B7B5C5101603B200F057DE /* MCPConnection.m */,
 				17B7B5C7101603B200F057DE /* MCPConstants.h */,
@@ -1701,6 +1711,8 @@
 		17E6418B0EF01FF7001BC333 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				34E2B2ED120D99F0001D5C4B /* Caution.tiff */,
+				34E2B2EE120D99F0001D5C4B /* Success.tiff */,
 				17BFC80D10D3FF5200A3B112 /* Icons */,
 				17D3649711DFE61B00CC9413 /* blue-tick.tiff */,
 				BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */,
@@ -2125,6 +2137,7 @@
 				17B7B5DE101603B200F057DE /* MCPResult.h in Headers */,
 				58BC5E571038983E0058C2E6 /* MCPResultPlus.h in Headers */,
 				58BC5E56103898140058C2E6 /* MCPStreamingResult.h in Headers */,
+				34E2B2E2120D9006001D5C4B /* MCPMultiResult.h in Headers */,
 				17B7B5EA101603D200F057DE /* my_alloc.h in Headers */,
 				17B7B5EB101603D200F057DE /* my_list.h in Headers */,
 				17B7B5EC101603D200F057DE /* mysql.h in Headers */,
@@ -2484,6 +2497,8 @@
 				58A8A72711A0149100B95749 /* MainWindow.xib in Resources */,
 				17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */,
 				17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */,
+				34E2B2EF120D99F0001D5C4B /* Caution.tiff in Resources */,
+				34E2B2F0120D99F0001D5C4B /* Success.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2531,6 +2546,7 @@
 				17B7B5DF101603B200F057DE /* MCPResult.m in Sources */,
 				17B7B5E1101603B200F057DE /* MCPResultPlus.m in Sources */,
 				583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */,
+				34E2B2E3120D901B001D5C4B /* MCPMultiResult.m in Sources */,
 				58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -48,7 +48,8 @@ enum
 {
 	MCPStreamingNone   = 0,
 	MCPStreamingFast   = 1,
-	MCPStreamingLowMem = 2
+	MCPStreamingLowMem = 2,
+	MCPStreamingMulti  = 3
 };
 typedef NSUInteger MCPQueryStreamingType;
 

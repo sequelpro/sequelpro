@@ -34,7 +34,7 @@
 
 @protocol MCPConnectionProxy;
 
-@class MCPResult, MCPStreamingResult;
+@class MCPResult, MCPStreamingResult, MCPMultiResult;
 
 @interface NSObject (MCPConnectionDelegate)
 
@@ -274,6 +274,7 @@ void performThreadedKeepAlive(void *ptr);
 - (MCPResult *)queryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query;
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream;
+- (MCPMultiResult *)streamingMultiQueryString:(NSString *)query;
 - (id)queryString:(NSString *)query usingEncoding:(NSStringEncoding)encoding streamingResult:(NSInteger)streamResult;
 - (my_ulonglong)affectedRows;
 - (my_ulonglong)insertId;

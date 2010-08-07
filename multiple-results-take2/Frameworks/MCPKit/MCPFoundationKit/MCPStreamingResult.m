@@ -62,7 +62,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
  * Initialise a MCPStreamingResult in the same way as MCPResult - as used
  * internally by the MCPConnection !{queryString:} method.
  */
-- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection
+- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(id)theConnection
 {
 	return [self initWithMySQLPtr:mySQLPtr encoding:theEncoding timeZone:theTimeZone connection:theConnection withFullStreaming:NO];
 }
@@ -71,7 +71,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
  * Master initialisation method, allowing selection of either full streaming or safe streaming
  * (see "important note" above)
  */
-- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(MCPConnection *)theConnection withFullStreaming:(BOOL)useFullStreaming
+- (id)initWithMySQLPtr:(MYSQL *)mySQLPtr encoding:(NSStringEncoding)theEncoding timeZone:(NSTimeZone *)theTimeZone connection:(id)theConnection withFullStreaming:(BOOL)useFullStreaming
 {
 	if ((self = [super init])) {
 		mEncoding = theEncoding;
@@ -94,12 +94,18 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
         
 		mResult = mysql_use_result(mySQLPtr);
 
-		if (mResult) {
-			mNumOfFields = mysql_num_fields(mResult);
-			fieldDefinitions = mysql_fetch_fields(mResult);
-		} else {
+		if (mResult == NULL) {
 			mNumOfFields = 0;
+            if (!fullyStreaming) {
+                [parentConnection unlockConnection];
+                connectionUnlocked = YES;
+            }
+            return self;
 		}
+        
+        mNumOfFields = mysql_num_fields(mResult);
+        fieldDefinitions = mysql_fetch_fields(mResult);
+
 
 		// Obtain SEL references and pointer
 		isConnectedSEL = @selector(isConnected);
@@ -145,7 +151,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
         [parentConnection unlockConnection];
     }
     
-	if (!fullyStreaming) {
+	if (!fullyStreaming && mResult!=NULL) {
 		pthread_mutex_destroy(&dataFreeLock);
 		pthread_mutex_destroy(&dataCreationLock);
 	}
@@ -167,6 +173,11 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 	unsigned long *fieldLengths;
 	NSInteger i, copiedDataLength;
 	NSMutableArray *returnArray;
+    
+    // if fetching the result failed, just return nil
+    if (mResult == NULL) {
+        return nil;
+    }
 
 	// Retrieve the next row according to the mode this result set is in.
 	// If fully streaming, retrieve the MYSQL_ROW
@@ -365,7 +376,10 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 - (void) cancelResultLoad
 {
 	MYSQL_ROW theRow;
-
+    
+    if (mResult == NULL) {
+        return;
+    }
 	// Loop through all the rows and ensure the rows are fetched.
 	// If fully streaming, loop through the rows directly
 	if (fullyStreaming) {
@@ -448,6 +462,8 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf)
 - (void)_downloadAllData
 {
 	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
+    [[NSThread currentThread] setName:@"MCPStreaming Result Data Download Thread"];
+
 	MYSQL_ROW theRow;
 	unsigned long *fieldLengths;
 	NSInteger i, dataCopiedLength, rowDataLength;
@@ -522,6 +538,8 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf)
 - (void) _freeAllDataWhenDone
 {
 	NSAutoreleasePool *dataFreeingPool = [[NSAutoreleasePool alloc] init];
+    
+    [[NSThread currentThread] setName:@"MCPStreaming Result Data Free Thread"];
 
 	while (!dataDownloaded || freedRowCount != downloadedRowCount) {
 

@@ -31,6 +31,7 @@
 #import "MCPNumber.h"
 #import "MCPNull.h"
 #import "MCPStreamingResult.h"
+#import "MCPMultiResult.h"
 #import "MCPConnectionProxy.h"
 #import "MCPStringAdditions.h"
 #import "SPStringAdditions.h"
@@ -1482,6 +1483,16 @@ void performThreadedKeepAlive(void *ptr)
 }
 
 /**
+ * Takes a query string and returns an MCPMultiResult representing the (possible multiple) results of the query.
+ * Just use [MCPMultiResult nextResult] to get MCPStreamingresults, until nil is returned.
+ */
+- (MCPMultiResult *)streamingMultiQueryString:(NSString *)query
+{
+	return [self queryString:query usingEncoding:mEncoding streamingResult:MCPStreamingMulti];
+}
+
+
+/**
  * Error checks connection extensively - if this method fails due to a connection error, it will ask how to
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
@@ -1594,12 +1605,16 @@ void performThreadedKeepAlive(void *ptr)
 		lastQueryExecutedAtTime = [self timeConnected];
 		queryExecutionTime = lastQueryExecutedAtTime - queryStartTime;
 		
-		// On success, capture the results
-		if (0 == queryResultCode) {
+        BOOL shouldRetry = (queryResultCode && !isQueryRetry && retryAllowed && [MCPConnection isErrorNumberConnectionError:mysql_errno(mConnection)]);
+        
+        if (streamResultType == MCPStreamingMulti && !shouldRetry) {
+            // if a multiresult is requested, return that, no matter what kind of error may have occurred
+            theResult = [[MCPMultiResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self];
+        } else if (0 == queryResultCode) {
 			
 			queryAffectedRows = mysql_affected_rows(mConnection);
-
-			if (mysql_field_count(mConnection) != 0) {
+            
+            if (mysql_field_count(mConnection) != 0) {
 				
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCPStreamingNone) {
@@ -1634,7 +1649,7 @@ void performThreadedKeepAlive(void *ptr)
 			
 		// On failure, set the error messages and IDs
 		} else {
-			if (!queryCancelled || !queryCancelUsedReconnect) {
+			if (!(queryCancelled && queryCancelUsedReconnect)) {
 				[self unlockConnection];
 			}
 			
@@ -1649,7 +1664,7 @@ void performThreadedKeepAlive(void *ptr)
 				queryErrorId = mysql_errno(mConnection);
 
 				// If the error was a connection error, retry once
-				if (!isQueryRetry && retryAllowed && [MCPConnection isErrorNumberConnectionError:queryErrorId]) {
+				if (shouldRetry) {
 					isQueryRetry = YES;
 					continue;
 				}

@@ -727,15 +727,14 @@ const OUR_CHARSET our_charsets60[] =
  */
 - (NSArray *)fetchResultFieldsStructure
 {
-	MYSQL_FIELD *theField;
-	
+    if (mResult == NULL) return nil;
+
+	MYSQL_FIELD *theField;	
 	NSMutableArray *structureResult = [NSMutableArray array];
 	
 	NSUInteger i;
 	NSUInteger numFields = mysql_num_fields(mResult);
-	
-	if (mResult == NULL) return nil;
-	
+		
 	theField = mysql_fetch_fields(mResult);
 	
 	for (i=0; i < numFields; i++)
