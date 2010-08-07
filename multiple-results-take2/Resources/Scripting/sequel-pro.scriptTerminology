@@ -1,0 +1,17 @@
+{
+	"Name" = "Sequel Pro Suite";
+	"Description" = "Sequel Pro specific classes.";
+
+	"Classes" = {
+		"SPAppController" = {
+			"Name" = "application";
+			"PluralName" = "applications";
+			"Description" = "Sequel Pro's top level scripting object.";
+		};
+		"TableDocument" = {
+			"Name" = "document";
+			"PluralName" = "documents";
+			"Description" = "A Sequel Pro document.";
+		};
+	};
+}
