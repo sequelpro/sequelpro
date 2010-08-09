@@ -63,8 +63,12 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	if (QLPreviewRequestIsCancelled(preview))
 		return noErr;
 
-	// Get current set file icon
-	NSImage *iconImage = [[NSWorkspace sharedWorkspace] iconForFile:[myURL path]];
+	// Get current Sequel Pro's set of file icons
+	NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
+
+	// just in case
+	if(!iconImages || [iconImages count] < 1)
+		iconImages = [NSArray arrayWithObject:[NSImage imageNamed:NSImageNameStopProgressTemplate]];
 
 	NSMutableString *html;
 	NSString *template = nil;
@@ -76,6 +80,12 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	// Dispatch different fiel extensions
 	if([urlExtension isEqualToString:@"spf"]) {
+
+		NSImage *iconImage;
+		if([iconImages count] > 0)
+			iconImage = [iconImages objectAtIndex:1];
+		else
+			iconImage = [iconImages objectAtIndex:0];
 
 		NSError *readError = nil;
 		NSString *convError = nil;
@@ -151,6 +161,13 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		}
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"content filters"]) {
+
+			NSImage *iconImage;
+			if([iconImages count] > 0)
+				iconImage = [iconImages objectAtIndex:1];
+			else
+				iconImage = [iconImages objectAtIndex:0];
+
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
@@ -166,6 +183,13 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		}
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"query favorites"]) {
+
+			NSImage *iconImage;
+			if([iconImages count] > 0)
+				iconImage = [iconImages objectAtIndex:1];
+			else
+				iconImage = [iconImages objectAtIndex:0];
+
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
@@ -185,6 +209,9 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	}
 
 	else if([urlExtension isEqualToString:@"sql"]) {
+
+		NSImage *iconImage = [iconImages objectAtIndex:0];
+
 		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginSQLTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
