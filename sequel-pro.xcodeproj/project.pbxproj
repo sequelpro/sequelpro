@@ -92,7 +92,6 @@
 		17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 17D3649711DFE61B00CC9413 /* blue-tick.tiff */; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
 		17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */; };
-		17DD52B911507217007D8950 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B811507217007D8950 /* Credits.rtf */; };
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
 		17DD52C6115074CB007D8950 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C4115074CB007D8950 /* Localizable.strings */; };
 		17E090E811498FC9007FC1B4 /* SPPrintController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E090E711498FC9007FC1B4 /* SPPrintController.m */; };
@@ -135,6 +134,7 @@
 		17F5B1511048C4E400FC794F /* SPCSVExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5B1501048C4E400FC794F /* SPCSVExporter.m */; };
 		17F5B1541048C50D00FC794F /* SPExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5B1531048C50D00FC794F /* SPExporter.m */; };
 		17F5B39C1049B96A00FC794F /* SPSQLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F5B39B1049B96A00FC794F /* SPSQLExporter.m */; };
+		17F90E2C1210B34900274C98 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17F90E2B1210B34900274C98 /* Credits.rtf */; };
 		296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC89E0F8FD336002A3258 /* WebKit.framework */; };
 		296DC8B60F909194002A3258 /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8A70F909194002A3258 /* MGTemplateEngine.m */; };
 		296DC8B70F909194002A3258 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
@@ -603,7 +603,7 @@
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
 		17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = "sequel-pro-print-template.html"; path = "Templates/sequel-pro-print-template.html"; sourceTree = "<group>"; };
-		17DD52B811507217007D8950 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
+		17DD52B811507217007D8950 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		17DD52C2115074B3007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		17DD52C5115074CB007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		17DD52D1115075B1007D8950 /* bar.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = bar.gif; sourceTree = "<group>"; };
@@ -1583,7 +1583,7 @@
 				1740F8350FC3069700CF3699 /* Templates */,
 				584756F7120A1B0B0057631F /* QuickLook Plugin */,
 				17DD52C4115074CB007D8950 /* Localizable.strings */,
-				17DD52B811507217007D8950 /* Credits.rtf */,
+				17F90E2B1210B34900274C98 /* Credits.rtf */,
 				17CC993A10B4C9C80034CD7A /* License.rtf */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
 				5885940E0F7AEE6000ED0E67 /* sparkle-public-key.pem */,
@@ -2470,7 +2470,7 @@
 				17E0937E114AE154007FC1B4 /* sequel-pro-table-info-print-template.html in Resources */,
 				B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */,
 				17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */,
-				17DD52B911507217007D8950 /* Credits.rtf in Resources */,
+				17F90E2C1210B34900274C98 /* Credits.rtf in Resources */,
 				17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */,
 				17DD52C6115074CB007D8950 /* Localizable.strings in Resources */,
 				BC93FBBD11514ADE005F1D9F /* Navigator.xib in Resources */,
@@ -2826,6 +2826,14 @@
 				17E642070EF020CB001BC333 /* English */,
 			);
 			name = DBView.xib;
+			sourceTree = "<group>";
+		};
+		17F90E2B1210B34900274C98 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				17DD52B811507217007D8950 /* English */,
+			);
+			name = Credits.rtf;
 			sourceTree = "<group>";
 		};
 		4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */ = {
