@@ -30,7 +30,6 @@
 #import <Cocoa/Cocoa.h>
 #import "SPEditorTokens.h"
 
-
 /* -----------------------------------------------------------------------------
   Generate a preview for file
 
@@ -194,80 +193,105 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			return noErr;
 		}
 
-		// compose the html
+		NSError *readError = nil;
+
+		NSStringEncoding sqlEncoding = NSUTF8StringEncoding;
+
 		if(fileAttributes)
 		{
+
 			NSNumber *filesize = [fileAttributes objectForKey:NSFileSize];
-			// catch large files since Finder blocks
-			if([filesize unsignedLongValue] > 3000000) {
-				html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-					[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
-					[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
-					@"... SQL ..."
-				]];
-			} else {
-				
-				// perform syntax highlighting
-				NSString *sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:NSUTF8StringEncoding error:nil];
-				NSMutableString *sqlHTML = [NSMutableString string];
 
-				NSRange textRange = NSMakeRange(0, [sqlText length]);
-				NSString *tokenColor;
-				size_t token;
-				NSRange tokenRange;
+			// compose the html and perform syntax highlighting
 
-				// initialise flex
-				yyuoffset = 0; yyuleng = 0;
-				yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
+			// read the file and try to get a proper encoding
+			NSString *sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
+			
+			if(readError != nil) {
+				// cocoa tries to detect the encoding
+				sqlText = [NSString stringWithContentsOfFile:[myURL path] usedEncoding:&sqlEncoding error:&readError];
+				// fall back to latin1 if no sqlText couldn't read
+				if(sqlText == nil) {
+					sqlEncoding = NSISOLatin1StringEncoding;
+					sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
+				}
+			}
 
-				// now loop through all the tokens
-				while (token=yylex()){
-					switch (token) {
-						case SPT_SINGLE_QUOTED_TEXT:
-						case SPT_DOUBLE_QUOTED_TEXT:
-						    tokenColor = @"#A7221C";
-						    break;
-						case SPT_BACKTICK_QUOTED_TEXT:
-						    tokenColor = @"#001892";
-						    break;
-						case SPT_RESERVED_WORD:
-						    tokenColor = @"#0041F6";
-						    break;
-						case SPT_NUMERIC:
-							tokenColor = @"#67350F";
-							break;
-						case SPT_COMMENT:
-						    tokenColor = @"#265C10";
-						    break;
-						case SPT_VARIABLE:
-						    tokenColor = @"#6C6C6C";
-						    break;
-						case SPT_WHITESPACE:
-						    tokenColor = @"black";
-						    break;
-						default:
-						    tokenColor = @"black";
-					}
+			// bail if nothing could be read
+			if(!sqlText) {
+				[html release];
+				[pool release];
+				return noErr;
+			}
 
-					tokenRange = NSMakeRange(yyuoffset, yyuleng);
-					[sqlHTML appendFormat:@"<font color='%@'>%@</font>", tokenColor, [sqlText substringWithRange:tokenRange]];
+			// truncate large files since Finder blocks
+			NSString *truncatedString = @"";
+			if([filesize unsignedLongValue] > 500000) {
+				sqlText = [sqlText substringToIndex:500000-1];
+				truncatedString = @"\n ✂ ...";
+			}
 
+			NSMutableString *sqlHTML = [NSMutableString string];
+
+			NSRange textRange = NSMakeRange(0, [sqlText length]);
+			NSString *tokenColor;
+			size_t token;
+			NSRange tokenRange;
+
+			// initialise flex
+			yyuoffset = 0; yyuleng = 0;
+			yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
+
+			// now loop through all the tokens
+			while (token=yylex()){
+				switch (token) {
+					case SPT_SINGLE_QUOTED_TEXT:
+					case SPT_DOUBLE_QUOTED_TEXT:
+					    tokenColor = @"#A7221C";
+					    break;
+					case SPT_BACKTICK_QUOTED_TEXT:
+					    tokenColor = @"#001892";
+					    break;
+					case SPT_RESERVED_WORD:
+					    tokenColor = @"#0041F6";
+					    break;
+					case SPT_NUMERIC:
+						tokenColor = @"#67350F";
+						break;
+					case SPT_COMMENT:
+					    tokenColor = @"#265C10";
+					    break;
+					case SPT_VARIABLE:
+					    tokenColor = @"#6C6C6C";
+					    break;
+					case SPT_WHITESPACE:
+					    tokenColor = @"black";
+					    break;
+					default:
+					    tokenColor = @"black";
 				}
 
-				html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-					[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
-					[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
-					sqlHTML
-				]];
+				tokenRange = NSMakeRange(yyuoffset, yyuleng);
+				[sqlHTML appendFormat:@"<font color='%@'>%@</font>", tokenColor, [sqlText substringWithRange:tokenRange]];
 
 			}
-		} else {
+			[sqlHTML appendString:truncatedString];
+
 			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
 				[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
 				[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
-				[NSString stringWithContentsOfFile:[myURL path] encoding:NSUTF8StringEncoding error:nil]
+				sqlHTML
 			]];
+
+		} else {
+
+			// No file attributes were read, bail for safety reasons
+			[html release];
+			[pool release];
+			return noErr;
+
 		}
+
 	}
 
 	CFDictionaryRef properties = (CFDictionaryRef)[NSDictionary dictionary];
