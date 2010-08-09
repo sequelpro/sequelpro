@@ -201,12 +201,15 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		{
 
 			NSNumber *filesize = [fileAttributes objectForKey:NSFileSize];
+			NSUInteger kMaxSQLFileSize = (0.7 * 1024 * 1024);
 
 			// compose the html and perform syntax highlighting
 
 			// read the file and try to get a proper encoding
 			NSString *sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
-			
+			NSMutableString *sqlHTML = [NSMutableString string];
+			NSString *truncatedString = @"";
+
 			if(readError != nil) {
 				// cocoa tries to detect the encoding
 				sqlText = [NSString stringWithContentsOfFile:[myURL path] usedEncoding:&sqlEncoding error:&readError];
@@ -217,65 +220,66 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				}
 			}
 
-			// bail if nothing could be read
+			// if nothing could be read print ... SQL ...
 			if(!sqlText) {
-				[html release];
-				[pool release];
-				return noErr;
-			}
+				[sqlHTML appendString:@"... SQL ..."];
+			} else {
 
-			// truncate large files since Finder blocks
-			NSString *truncatedString = @"";
-			if([filesize unsignedLongValue] > 500000) {
-				sqlText = [sqlText substringToIndex:500000-1];
-				truncatedString = @"\n ✂ ...";
-			}
-
-			NSMutableString *sqlHTML = [NSMutableString string];
-
-			NSRange textRange = NSMakeRange(0, [sqlText length]);
-			NSString *tokenColor;
-			size_t token;
-			NSRange tokenRange;
-
-			// initialise flex
-			yyuoffset = 0; yyuleng = 0;
-			yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
-
-			// now loop through all the tokens
-			while (token=yylex()){
-				switch (token) {
-					case SPT_SINGLE_QUOTED_TEXT:
-					case SPT_DOUBLE_QUOTED_TEXT:
-					    tokenColor = @"#A7221C";
-					    break;
-					case SPT_BACKTICK_QUOTED_TEXT:
-					    tokenColor = @"#001892";
-					    break;
-					case SPT_RESERVED_WORD:
-					    tokenColor = @"#0041F6";
-					    break;
-					case SPT_NUMERIC:
-						tokenColor = @"#67350F";
-						break;
-					case SPT_COMMENT:
-					    tokenColor = @"#265C10";
-					    break;
-					case SPT_VARIABLE:
-					    tokenColor = @"#6C6C6C";
-					    break;
-					case SPT_WHITESPACE:
-					    tokenColor = @"black";
-					    break;
-					default:
-					    tokenColor = @"black";
+				// truncate large files since Finder blocks
+				if([filesize unsignedLongValue] > kMaxSQLFileSize) {
+					sqlText = [sqlText substringToIndex:kMaxSQLFileSize-1];
+					truncatedString = @"\n ✂ ...";
 				}
 
-				tokenRange = NSMakeRange(yyuoffset, yyuleng);
-				[sqlHTML appendFormat:@"<font color='%@'>%@</font>", tokenColor, [sqlText substringWithRange:tokenRange]];
+				NSRange textRange = NSMakeRange(0, [sqlText length]);
+				NSString *tokenColor;
+				size_t token;
+				NSRange tokenRange;
 
+				// initialise flex
+				yyuoffset = 0; yyuleng = 0;
+				yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
+				BOOL skipFontTag;
+
+				// now loop through all the tokens
+				while (token=yylex()){
+					skipFontTag = NO;
+					switch (token) {
+						case SPT_SINGLE_QUOTED_TEXT:
+						case SPT_DOUBLE_QUOTED_TEXT:
+						    tokenColor = @"#A7221C";
+						    break;
+						case SPT_BACKTICK_QUOTED_TEXT:
+						    tokenColor = @"#001892";
+						    break;
+						case SPT_RESERVED_WORD:
+						    tokenColor = @"#0041F6";
+						    break;
+						case SPT_NUMERIC:
+							tokenColor = @"#67350F";
+							break;
+						case SPT_COMMENT:
+						    tokenColor = @"#265C10";
+						    break;
+						case SPT_VARIABLE:
+						    tokenColor = @"#6C6C6C";
+						    break;
+						case SPT_WHITESPACE:
+						    skipFontTag = YES;
+						    break;
+						default:
+					        skipFontTag = YES;
+					}
+
+					tokenRange = NSMakeRange(yyuoffset, yyuleng);
+					if(skipFontTag)
+						[sqlHTML appendString:[sqlText substringWithRange:tokenRange]];
+					else
+						[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [sqlText substringWithRange:tokenRange]];
+
+				}
+				[sqlHTML appendString:truncatedString];
 			}
-			[sqlHTML appendString:truncatedString];
 
 			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
 				[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
