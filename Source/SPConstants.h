@@ -304,6 +304,7 @@ extern NSString *SPProcessListAutoRrefreshInterval;
 extern NSString *SPFavoritesSortedBy;
 extern NSString *SPFavoritesSortedInReverse;
 extern NSString *SPAlwaysShowWindowTabBar;
+extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

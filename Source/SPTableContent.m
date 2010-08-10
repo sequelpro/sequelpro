@@ -1417,7 +1417,7 @@
 		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
 		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 			[alert setShowsSuppressionButton:YES];
-			[[alert suppressionButton] setState:NSOnState];
+			[[alert suppressionButton] setState:([prefs boolForKey:SPResetAutoIncrementAfterDeletionOfAllRows]) ? NSOnState : NSOffState];
 			[[[alert suppressionButton] cell] setControlSize:NSSmallControlSize];
 			[[[alert suppressionButton] cell] setFont:[NSFont systemFontOfSize:11]];
 			[[alert suppressionButton] setTitle:NSLocalizedString(@"Reset AUTO_INCREMENT after deletion?", @"reset auto_increment after deletion of all rows message")];
@@ -1453,7 +1453,7 @@
 	// Order out current sheet to suppress overlapping of sheets
 	[[alert window] orderOut:nil];
 
-	if ( [contextInfo isEqualToString:@"removeallrows"] ) {		
+	if ( [contextInfo isEqualToString:@"removeallrows"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
 			//check if the user is currently editing a row
 			if (isEditingRow) {
@@ -1461,15 +1461,19 @@
 				isEditingRow = NO;
 				// in case the delete fails, make sure we at least stay in a somewhat consistent state
 				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
-				currentlyEditingRow = -1;				
+				currentlyEditingRow = -1;
 			}
 			
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( ![mySQLConnection queryErrored] ) {
 
 				// Reset auto increment if suppression button was ticked
-				if([[alert suppressionButton] state] == NSOnState)
+				if([[alert suppressionButton] state] == NSOnState) {
 					[tableSourceInstance setAutoIncrementTo:@"1"];
+					[prefs setBool:YES forKey:SPResetAutoIncrementAfterDeletionOfAllRows];
+				} else {
+					[prefs setBool:NO forKey:SPResetAutoIncrementAfterDeletionOfAllRows];
+				}
 
 				[self reloadTable:self];
 

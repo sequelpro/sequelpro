@@ -167,5 +167,7 @@
 	<integer>0</integer>
 	<key>FavoritesSortedInReverse</key>
 	<false/>
+	<key>ResetAutoIncrementAfterDeletionOfAllRows</key>
+	<true/>
 </dict>
 </plist>
