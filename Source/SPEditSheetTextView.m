@@ -106,7 +106,7 @@
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"]) // increase text size by 1; ⌘+ and numpad +
+		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
 			[self saveChangedFontInUserDefaults];
