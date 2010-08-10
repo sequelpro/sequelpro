@@ -360,6 +360,7 @@
 		BCA6F631100FA7D700E80253 /* FieldEditorSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCA6F62F100FA7D700E80253 /* FieldEditorSheet.xib */; };
 		BCB56197106F893F00167321 /* ContentFilters.plist in Resources */ = {isa = PBXBuildFile; fileRef = BCB56196106F893F00167321 /* ContentFilters.plist */; };
 		BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */ = {isa = PBXBuildFile; fileRef = BCB5619A106F8A1B00167321 /* EditorQuickLookTypes.plist */; };
+		BCBB3C17121158790011F962 /* SPQLPluginConnectionBundleTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = BCBB3C15121158790011F962 /* SPQLPluginConnectionBundleTemplate.html */; };
 		BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */; };
 		BCCDED68115940CB00285E65 /* sync_arrows_01.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */; };
 		BCCDED69115940CB00285E65 /* sync_arrows_02.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */; };
@@ -371,6 +372,7 @@
 		BCD06FC7120AAACB00C73602 /* SPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1789343A0F30C1DD0097539A /* SPStringAdditions.h */; };
 		BCD0AD490FBBFC340066EA5C /* SPSQLTokenizer.l in Sources */ = {isa = PBXBuildFile; fileRef = BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */; };
 		BCE0025D11173D2A009DA533 /* SPFieldMapperController.m in Sources */ = {isa = PBXBuildFile; fileRef = BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */; };
+		BCEC862012115A30002561DA /* SPQLPluginConnectionBundleWindowTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = BCEC861F12115A30002561DA /* SPQLPluginConnectionBundleWindowTemplate.html */; };
 		BCEF78C6115215CA0023F8C2 /* network-small.tif in Resources */ = {isa = PBXBuildFile; fileRef = BCEF78C5115215CA0023F8C2 /* network-small.tif */; };
 /* End PBXBuildFile section */
 
@@ -989,6 +991,8 @@
 		BCA6F630100FA7D700E80253 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/FieldEditorSheet.xib; sourceTree = "<group>"; };
 		BCB56194106F893700167321 /* ContentFilters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ContentFilters.plist; sourceTree = "<group>"; };
 		BCB56198106F8A1600167321 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = English; path = English.lproj/EditorQuickLookTypes.plist; sourceTree = "<group>"; };
+		BCBB3C16121158790011F962 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = English.lproj/SPQLPluginConnectionBundleTemplate.html; sourceTree = "<group>"; };
+		BCBB3C181211589D0011F962 /* German */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = German; path = German.lproj/SPQLPluginConnectionBundleTemplate.html; sourceTree = "<group>"; };
 		BCCBD7FB104408B000D4C50A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SaveSPFAccessory.xib; sourceTree = "<group>"; };
 		BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = sync_arrows_01.tiff; sourceTree = "<group>"; };
 		BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = sync_arrows_02.tiff; sourceTree = "<group>"; };
@@ -1000,6 +1004,8 @@
 		BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLTokenizer.h; sourceTree = "<group>"; };
 		BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFieldMapperController.h; sourceTree = "<group>"; };
 		BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFieldMapperController.m; sourceTree = "<group>"; };
+		BCEC861D12115A2B002561DA /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = English.lproj/SPQLPluginConnectionBundleWindowTemplate.html; sourceTree = "<group>"; };
+		BCEC862112115A3D002561DA /* German */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = German; path = German.lproj/SPQLPluginConnectionBundleWindowTemplate.html; sourceTree = "<group>"; };
 		BCEF78C5115215CA0023F8C2 /* network-small.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "network-small.tif"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1932,10 +1938,12 @@
 		584756F7120A1B0B0057631F /* QuickLook Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				BCBB3C15121158790011F962 /* SPQLPluginConnectionBundleTemplate.html */,
 				584756FA120A1B290057631F /* SPQLPluginConnectionTemplate.html */,
 				584756FC120A1B290057631F /* SPQLPluginContentFiltersTemplate.html */,
 				584756FE120A1B290057631F /* SPQLPluginQueryFavoritesTemplate.html */,
 				58475700120A1B290057631F /* SPQLPluginSQLTemplate.html */,
+				BCEC861F12115A30002561DA /* SPQLPluginConnectionBundleWindowTemplate.html */,
 			);
 			name = "QuickLook Plugin";
 			sourceTree = "<group>";
@@ -2332,6 +2340,8 @@
 				58475703120A1B290057631F /* SPQLPluginContentFiltersTemplate.html in Resources */,
 				58475704120A1B290057631F /* SPQLPluginQueryFavoritesTemplate.html in Resources */,
 				58475705120A1B290057631F /* SPQLPluginSQLTemplate.html in Resources */,
+				BCBB3C17121158790011F962 /* SPQLPluginConnectionBundleTemplate.html in Resources */,
+				BCEC862012115A30002561DA /* SPQLPluginConnectionBundleWindowTemplate.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3027,12 +3037,30 @@
 			name = EditorQuickLookTypes.plist;
 			sourceTree = "<group>";
 		};
+		BCBB3C15121158790011F962 /* SPQLPluginConnectionBundleTemplate.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BCBB3C16121158790011F962 /* English */,
+				BCBB3C181211589D0011F962 /* German */,
+			);
+			name = SPQLPluginConnectionBundleTemplate.html;
+			sourceTree = "<group>";
+		};
 		BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				BCCBD7FB104408B000D4C50A /* English */,
 			);
 			name = SaveSPFAccessory.xib;
+			sourceTree = "<group>";
+		};
+		BCEC861F12115A30002561DA /* SPQLPluginConnectionBundleWindowTemplate.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BCEC861D12115A2B002561DA /* English */,
+				BCEC862112115A3D002561DA /* German */,
+			);
+			name = SPQLPluginConnectionBundleWindowTemplate.html;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

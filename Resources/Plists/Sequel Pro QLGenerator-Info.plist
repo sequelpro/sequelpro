@@ -13,6 +13,7 @@
 			<array>
 				<string>com.google.code.sequel-pro.spf</string>
 				<string>com.google.code.sequel-pro.sql</string>
+				<string>com.google.code.sequel-pro.spfs</string>
 			</array>
 		</dict>
 	</array>

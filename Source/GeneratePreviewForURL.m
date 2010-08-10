@@ -208,6 +208,147 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	}
 
+	else if([urlExtension isEqualToString:@"spfs"]) {
+
+		NSImage *iconImage = [iconImages objectAtIndex:0];
+
+		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleTemplate" ofType:@"html"] 
+			encoding:NSUTF8StringEncoding error:&templateReadError];
+
+		if (template == nil || ![template length] || templateReadError != nil) {
+			[pool release];
+			return noErr;
+		}
+
+		NSString *windowTemplate = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleWindowTemplate" ofType:@"html"] 
+			encoding:NSUTF8StringEncoding error:&templateReadError];
+
+		if (windowTemplate == nil || ![windowTemplate length] || templateReadError != nil) {
+			[pool release];
+			return noErr;
+		}
+
+		NSError *readError = nil;
+		NSString *convError = nil;
+		NSPropertyListFormat format;
+		NSDictionary *spf = nil;
+
+		// Get info.plist data as dictionary
+		NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/info.plist", [myURL path]] options:NSUncachedRead error:&readError];
+		spf = [[NSPropertyListSerialization propertyListFromData:pData 
+				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+			if(spf) [spf release];
+			[pool release];
+			return noErr;
+		}
+
+		NSMutableString *spfsHTML = [NSMutableString string];
+		NSInteger connectionCounter = 0;
+
+		NSArray *theWindows = [spf objectForKey:@"windows"];
+		for(NSDictionary *window in theWindows) {
+
+			NSInteger tabCounter = 0;
+			NSInteger selectedTab = [[window objectForKey:@"selectedTabIndex"] integerValue];
+
+			[spfsHTML appendString:@"<table width='100%' border=1 style='border-collapse:collapse;border:2px solid lightgrey'>"];
+
+			NSArray *theTabs = [window objectForKey:@"tabs"];
+			for(NSDictionary *tab in theTabs) {
+
+				connectionCounter++;
+
+				if(tabCounter == selectedTab)
+					[spfsHTML appendString:@"<tr><td style='background-color:#EEEEEE'>"];
+				else
+					[spfsHTML appendString:@"<tr><td>"];
+
+				NSString *spfPath = @"";
+				NSString *spfPathDisplay = @"";
+				if([[tab objectForKey:@"isAbsolutePath"] boolValue]) {
+					spfPath = [tab objectForKey:@"path"];
+					if([spfPath hasPrefix:NSHomeDirectory()]) {
+						spfPathDisplay = [spfPath stringByReplacingOccurrencesOfString:NSHomeDirectory() withString:@"~"];
+					} else {
+						spfPathDisplay = spfPath;
+					}
+					spfPathDisplay = [NSString stringWithFormat:@"&nbsp;(%@)", spfPathDisplay];
+
+				} else {
+					spfPathDisplay = @"";
+					spfPath = [NSString stringWithFormat:@"%@/Contents/%@", [myURL path], [tab objectForKey:@"path"]];
+				}
+
+				if(spfPath == nil || ![spfPath length]) {
+					[spfsHTML appendString:@"&nbsp;&nbsp;&nbsp;&nbsp;∅"];
+					continue;
+				}
+				// Get info.plist data as dictionary
+				NSDictionary *sessionSpf;
+				NSData *pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
+				sessionSpf = [[NSPropertyListSerialization propertyListFromData:pData 
+						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+				if(!sessionSpf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+					[spfsHTML appendFormat:@"&nbsp;&nbsp;&nbsp;&nbsp;%@&nbsp;∅", [tab objectForKey:@"path"]];
+				} else {
+
+					NSString *name = @"••••";
+					NSString *host = @"••••";
+					NSString *user = @"••••";
+					NSString *database = @"••••";
+
+					if([[sessionSpf objectForKey:@"data"] isKindOfClass:[NSDictionary class]]) {
+						if([[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] && [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"name"])
+							name = [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"name"];
+						else
+							name = @"";
+						if([[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] && [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"host"])
+							host = [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"host"];
+						else
+							host = @"";
+						if([[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] && [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"user"])
+							user = [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"user"];
+						else
+							user = @"";
+						if([[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] && [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"database"])
+							database = [[[sessionSpf objectForKey:@"data"] objectForKey:@"connection"] objectForKey:@"database"];
+						else
+							database = @"";
+					}
+
+					[spfsHTML appendFormat:windowTemplate,
+						[sessionSpf objectForKey:@"rdbms_type"],
+						[sessionSpf objectForKey:@"rdbms_version"],
+						[name stringByReplacingOccurrencesOfString:@" " withString:@"&nbsp;"],
+						spfPathDisplay,
+						[host stringByReplacingOccurrencesOfString:@" " withString:@"&nbsp;"],
+						[user stringByReplacingOccurrencesOfString:@" " withString:@"&nbsp;"],
+						[database stringByReplacingOccurrencesOfString:@" " withString:@"&nbsp;"]
+					];
+				}
+
+				tabCounter++;
+
+				[spfsHTML appendString:@"</td></tr>"];
+
+			}
+
+			[spfsHTML appendString:@"</table><br />"];
+
+		}
+
+		html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
+			[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
+			connectionCounter,
+			spfsHTML
+		]];
+		
+
+	}
+
 	else if([urlExtension isEqualToString:@"sql"]) {
 
 		NSImage *iconImage = [iconImages objectAtIndex:0];
