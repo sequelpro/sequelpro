@@ -79,12 +79,15 @@
 	IBOutlet CMCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
+	IBOutlet id successImage;
+	IBOutlet id errorImage;
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
 	IBOutlet id valueTextField;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
 	IBOutlet id multipleLineEditingButton;
+    IBOutlet id multipleResultSwitcher;
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *runAllMenuItem;
@@ -107,9 +110,7 @@
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
-	
-	IBOutlet NSButton *queryInfoButton;
-	IBOutlet BWSplitView *queryInfoPaneSplitView;
+    
 
 	SPQueryFavoriteManager *favoritesManager;
 
@@ -131,13 +132,21 @@
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
 
-	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
-	NSInteger resultDataCount;
-	NSArray *cqColumnDefinition;
-	NSString *lastExecutedQuery;
 	NSInteger editedRow;
 	NSRect editedScrollViewRect;
+
+    /**
+    * queryResponses is a mutable array containing NSMutableDictionaries
+    * The keys in the dictionaries are:
+    * query         the query that was executed
+    * time          the execution time of the query
+    * datasets      an NSDictionary containing all the different results
+    */
+    NSMutableArray* queryResponses; // holds the responses from recent custom queries
+    NSInteger currentQueryResponse;
+    NSInteger currentResult;
+    NSInteger maxQueryResponses;
 
 	BOOL isWorking;
 	BOOL tableRowsSelectable;
@@ -181,7 +190,7 @@
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
 - (IBAction)showCompletionList:(id)sender;
-- (IBAction)toggleQueryInfoPaneCollapse:(id)sender;
+- (IBAction) changeSelectedResultTab: (id)anObject;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
@@ -193,7 +202,8 @@
 
 // Accessors
 - (NSArray *)currentResult;
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
+
+- (void)processResult:(MCPStreamingResult *)theResult intoDataStorage:(SPDataStorage *)dataStorage;
 
 // Retrieving and setting table state
 - (void) updateTableView;

@@ -474,16 +474,6 @@
 	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
 }
 
-/**
- * Toggle whether the query info pane is visible.
- */
-- (IBAction)toggleQueryInfoPaneCollapse:(id)sender
-{
-	[queryInfoPaneSplitView toggleCollapse:sender];
-	
-	[sender setToolTip:([sender state] == NSOffState) ? NSLocalizedString(@"Show Query Information", @"Show Query Information") : NSLocalizedString(@"Hide Query Information", @"Hide Query Information")];
-}
-
 #pragma mark -
 #pragma mark Query actions
 
@@ -500,7 +490,7 @@
 		taskString = NSLocalizedString(@"Running query...", @"Running single query string");
 	}
 	[tableDocumentInstance startTaskWithDescription:taskString];
-	[errorText setStringValue:taskString];
+	[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
 	[affectedRowsText setStringValue:@""];
 
 	NSValue *encodedCallbackMethod = nil;
@@ -520,7 +510,6 @@
 {
 	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
 	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	MCPStreamingResult	*streamingResult  = nil;
 	NSMutableString		*errors     = [NSMutableString string];
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
@@ -532,6 +521,7 @@
 	BOOL tableListNeedsReload = NO;
 	BOOL databaseWasChanged = NO;
 	// BOOL queriesSeparatedByDelimiter = NO;
+    NSInteger oldQueryResponse = currentQueryResponse;
 	
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
@@ -548,12 +538,9 @@
 		[[customQueryView onMainThread] scrollRowToVisible:0];
 		[[customQueryView onMainThread] scrollColumnToVisible:0];
 	}
-
-	// Remove all the columns if not reloading the table
-	if(!reloadingExistingResult) {
-		if (cqColumnDefinition) [cqColumnDefinition release], cqColumnDefinition = nil;
-		[[self onMainThread] updateTableView];
-	}
+    
+    currentQueryResponse = -1;
+    [self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:YES];
 
 	// Disable automatic query retries on failure for the custom queries
 	[mySQLConnection setAllowQueryRetries:NO];
@@ -574,7 +561,6 @@
 		if (i > 0) {
 			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
 			[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
-			[[errorText onMainThread] setStringValue:taskString];
 		}
 
 		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
@@ -587,98 +573,126 @@
 		[tempQueries addObject:query];
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
+		MCPMultiResult *theQueryResults = [mySQLConnection streamingMultiQueryString:query];
 		executionTime += [mySQLConnection lastQueryExecutionTime];
 		totalQueriesRun++;
+        
+        NSMutableDictionary* queryResponse;
+        // If we are reloading, don't create a new result, but rather replace the existing result
+        if (reloadingExistingResult && queryCount==1) {
+            queryResponse = [queryResponses objectAtIndex:oldQueryResponse];
+        } else {
+            // Create a new dictionary for the current query and add it to the list
+            queryResponse = [NSMutableDictionary dictionaryWithCapacity:10];
+            if ([queryResponses count]>=maxQueryResponses) [queryResponses removeObjectAtIndex:0];
+            [queryResponses addObject:queryResponse];
+        }
+        [queryResponse setObject:query forKey:@"query"];
+        [queryResponse setObject:[NSNumber numberWithDouble:[mySQLConnection lastQueryExecutionTime]] forKey:@"time"];
+        NSMutableArray *results = [NSMutableArray arrayWithCapacity:5];
+        [queryResponse setObject:results forKey:@"results"];
+        
+        currentQueryResponse = [queryResponses indexOfObject:queryResponse];
 
-		// If this is the last query, retrieve and store the result; otherwise,
-		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount || [mySQLConnection queryCancelled]) {
-
-			// Retrieve and cache the column definitions for the result array
-			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
-
-			if(!reloadingExistingResult) {
-				[[self onMainThread] updateTableView];
-			}
-
-			[self processResultIntoDataStorage:streamingResult];
-		} else {
-			[streamingResult cancelResultLoad];
-		}
-
-		// Record any affected rows
-		if ( [mySQLConnection affectedRows] != -1 )
-			totalAffectedRows += [mySQLConnection affectedRows];
-		else if ( [streamingResult numOfRows] )
-			totalAffectedRows += [streamingResult numOfRows];
-
-		[streamingResult release];
-
-		// Store any error messages
-		if ([mySQLConnection queryErrored] || [mySQLConnection queryCancelled]) {
-
-			NSString *errorString;
-			if ([mySQLConnection queryCancelled]) {
-				if ([mySQLConnection queryCancellationUsedReconnect])
-					errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
-				else
-					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
-			} else {
-				errorString = [mySQLConnection getLastErrorMessage];
-			}
-
-			// If the query errored, append error to the error log for display at the end
-			if ( queryCount > 1 ) {
-				if(firstErrorOccuredInQuery == -1)
-					firstErrorOccuredInQuery = i+1;
-
-				if(!suppressErrorSheet)
-				{
-					// Update error text for the user
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-										(long)(i+1),
-										errorString]];
-					[[errorText onMainThread] setStringValue:errors];
-
-					// ask the user to continue after detecting an error
-					if (![mySQLConnection queryCancelled]) {
-						NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-						[alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
-						[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
-						[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
-						[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
-						[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
-						[alert setAlertStyle:NSWarningAlertStyle];
-						NSInteger choice = [[alert onMainThread] runModal];
-						switch (choice){
-							case NSAlertFirstButtonReturn:
-								suppressErrorSheet = YES;
-							case NSAlertSecondButtonReturn:
-								break;
-							default:
-								if(i < queryCount-1) // output that message only if it was not the last one
-									[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
-								i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
-						}
-					}
-				} else {
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-											(long)(i+1),
-											errorString]];
-				}
-			} else {
-				[errors setString:errorString];
-			}
-		} else {
-			// Check if table/db list needs an update
-			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
-			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
-				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
-				databaseWasChanged = YES;
-		}
+        NSDictionary *queryResultSet;
+        while (queryResultSet = [theQueryResults nextResultSet])
+        {
+            NSMutableDictionary *result = [NSMutableDictionary dictionaryWithCapacity:5];
+            [results addObject:result];
+            MCPStreamingResult *streamingResult = [queryResultSet objectForKey:@"result"];
+            
+            SPDataStorage* datastore = [[[SPDataStorage alloc] init] autorelease];
+            [result setObject:datastore forKey:@"data"];
+            
+            
+            NSArray *columnDefinitions=NULL;
+            if (streamingResult) columnDefinitions = [streamingResult fetchResultFieldsStructure];
+            if (columnDefinitions) [result setObject:columnDefinitions forKey: @"columns"];
+            
+            
+            if (streamingResult) [self processResult:streamingResult intoDataStorage:datastore];
+            
+            if ([queryResultSet objectForKey:@"error"]) {
+                [result setObject:[queryResultSet objectForKey:@"error"] forKey: @"error"];
+            }
+                        
+            
+            [result setObject:[NSNumber numberWithInt:[mySQLConnection affectedRows]] forKey:@"affected rows"];
+            
+            // Record any affected rows
+            NSInteger affectedRows = [[queryResultSet objectForKey:@"affected_rows"] integerValue];
+            if ( affectedRows != -1 )
+                totalAffectedRows += affectedRows;
+            else if ( streamingResult && [streamingResult numOfRows] )
+                totalAffectedRows += [streamingResult numOfRows];
+                
+            [[self onMainThread] updateTableView];
+        }
+        // Store any error messages
+        if ([mySQLConnection queryErrored] || [mySQLConnection queryCancelled]) {
+            
+            NSString *errorString;
+            if ([mySQLConnection queryCancelled]) {
+                if ([mySQLConnection queryCancellationUsedReconnect])
+                    errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
+                else
+                    errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
+            } else {
+                errorString = [mySQLConnection getLastErrorMessage];
+            }
+            
+            [queryResponse setObject:errorString forKey:@"error"];
+            
+            // If the query errored, append error to the error log for display at the end
+            if ( queryCount > 1 ) {
+                if(firstErrorOccuredInQuery == -1)
+                    firstErrorOccuredInQuery = i+1;
+                
+                if(!suppressErrorSheet)
+                {
+                    // Update error text for the user
+                    [errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+                                          (long)(i+1),
+                                          errorString]];
+                    
+                    // ask the user to continue after detecting an error
+                    if (![mySQLConnection queryCancelled]) {
+                        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+                        [alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
+                        [alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
+                        [alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
+                        [alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
+                        [alert setInformativeText:[mySQLConnection getLastErrorMessage]];
+                        [alert setAlertStyle:NSWarningAlertStyle];
+                        NSInteger choice = [[alert onMainThread] runModal];
+                        switch (choice){
+                            case NSAlertFirstButtonReturn:
+                                suppressErrorSheet = YES;
+                            case NSAlertSecondButtonReturn:
+                                break;
+                            default:
+                                if(i < queryCount-1) // output that message only if it was not the last one
+                                    [errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
+                                i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
+                        }
+                    }
+                } else {
+                    [errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+                                          (long)(i+1),
+                                          errorString]];
+                }
+            } else {
+                [errors setString:errorString];
+            }
+        } else {
+            // Check if table/db list needs an update
+            // The regex is a compromise between speed and usefullness. TODO: further improvements are needed
+            if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
+                tableListNeedsReload = YES;
+            if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
+                databaseWasChanged = YES;
+        }
+        
 		// If the query was cancelled, end all queries.
 		if ([mySQLConnection queryCancelled]) break;
 	}
@@ -702,12 +716,10 @@
 	
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
-	
-	lastExecutedQuery = [[tempQueries lastObject] retain];
-	
+		
 	// Perform empty query if no query is given
 	if ( !queryCount ) {
-		streamingResult = [mySQLConnection streamingQueryString:@""];
+		MCPStreamingResult *streamingResult = [mySQLConnection streamingQueryString:@""];
 		[streamingResult cancelResultLoad];
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
@@ -768,10 +780,11 @@
 	[mySQLConnection setAllowQueryRetries:YES];
 
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+    
+    [self performSelectorOnMainThread:@selector(updateTableView) withObject:nil waitUntilDone:YES];
 	
-	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( !resultDataCount ) {
-		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+    // If no results were returned, redraw the empty table and post notifications before returning.
+	if ( ![self currentResultDataCount] ) {
 
 		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -798,15 +811,13 @@
 	// If more than one table name is found set resultTableName to nil.
 	// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
 	// and the resultTableName can differ due to case-sensitive/insensitive settings!.
-	NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
-	for(id field in cqColumnDefinition) {
+	NSString *resultTableName = [[[self currentColumnDefinitions] objectAtIndex:0] objectForKey:@"org_table"];
+	for(id field in [self currentColumnDefinitions]) {
 		if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
 			resultTableName = nil;
 			break;
 		}
 	}
-
-	[customQueryView reloadData];
 
 	// Restore the result view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
@@ -825,7 +836,7 @@
 	}
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+	[customQueryView setTableInstance:self withTableData:[self currentResultData] withColumns:[self currentColumnDefinitions] withTableName:resultTableName withConnection:mySQLConnection];
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -846,10 +857,143 @@
 	[queryRunningPool release];
 }
 
+/**
+ * Returns the column definition of the currently selected result
+ * Returns an empty NSArray if there are no columns (never returns nil)
+ */
+- (NSArray*) currentColumnDefinitions
+{
+    NSArray *columnDefinitions;
+    @try {
+        columnDefinitions = [[[[queryResponses objectAtIndex:currentQueryResponse]
+                    objectForKey:@"results"]
+                    objectAtIndex:currentResult]
+                    objectForKey:@"columns"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        columnDefinitions = nil;
+    }
+    if (columnDefinitions == nil) columnDefinitions = [NSArray array];
+    return columnDefinitions;
+}
+
+/**
+ * Returns the number of results for the current query
+ */
+- (NSString*) currentResultCount
+{
+    SPDataStorage *results;
+    @try {
+        results = [[queryResponses objectAtIndex:currentQueryResponse]
+                    objectForKey:@"results"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        results = nil;
+    }
+    return results ? [results count] : 0;
+}
+
+
+/**
+ * Returns the query used to generate the current result
+ */
+- (NSString*) currentResultQuery
+{
+    NSString *query;
+    @try {
+        query = [[queryResponses objectAtIndex:currentQueryResponse] objectForKey:@"query"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        query = nil;
+    }
+    if (query==nil) query = [NSString string];
+    return query;
+}
+
+
+/**
+ * Returns the current query result data storage
+ * Returns nil if no data is found
+ */
+- (SPDataStorage*) currentResultData
+{
+    SPDataStorage *data;
+    @try {
+        data = [[[[queryResponses objectAtIndex:currentQueryResponse]
+                    objectForKey:@"results"]
+                    objectAtIndex:currentResult]
+                    objectForKey:@"data"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        data = nil;
+    }
+    return data;
+}
+
+/**
+ * Returns the number of rows in the current query result
+ */
+- (NSInteger) currentResultDataCount
+{
+    SPDataStorage *data;
+    @try {
+        data = [[[[queryResponses objectAtIndex:currentQueryResponse]
+                    objectForKey:@"results"]
+                    objectAtIndex:currentResult]
+                    objectForKey:@"data"];
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        data = nil;
+    }
+    return data ? [data count] : 0;
+}
+
+/**
+ * Returns the current error, or nil if no error occured
+ */
+- (NSInteger) currentError
+{
+    NSString *error;
+    @try {
+        error = [[[[queryResponses objectAtIndex:currentQueryResponse]
+                    objectForKey:@"results"]
+                    objectAtIndex:currentResult]
+                    objectForKey:@"error"];
+        if (!error) {
+            error = [[queryResponses objectAtIndex:currentQueryResponse]
+                       objectForKey:@"error"];
+        }
+        if (error) {
+            if ([error isEqual:@""]) error = nil;
+        }
+    }
+    @catch (NSException *e) {
+        if (![[e name] isEqualToString:NSRangeException]) [e raise];
+        error = nil;
+    }
+    return error;
+}
+
+
+/**
+ * This method switches between the different results. Only makes sense if there are mutliple results (eg. stored procedure calls)
+ */
+- (IBAction) changeSelectedResultTab: (id)anObject
+{
+    currentResult = [anObject selectedSegment];
+    [customQueryView noteNumberOfRowsChanged];
+    [self updateTableView];
+}
+
 /*
  * Processes a supplied streaming result set, loading it into the data array.
  */
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
+- (void)processResult:(MCPStreamingResult *)theResult intoDataStorage:(SPDataStorage *)dataStorage
 {
 	NSArray *tempRow;
 	NSUInteger rowsProcessed = 0;
@@ -858,14 +1002,17 @@
 	BOOL tableViewRedrawn = NO;
 
 	// Remove all items from the table
-	resultDataCount = 0;
-	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	pthread_mutex_lock(&resultDataLock);
-	[resultData removeAllRows];
+	[dataStorage removeAllRows];
 	pthread_mutex_unlock(&resultDataLock);
-
+	
+    if (dataStorage==[self currentResultData]) {
+        // if we are processing data into the currently selected result, tell the table view things have changed
+        [customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+    }
+    
 	// Set the column count on the data store
-	[resultData setColumnCount:[theResult numOfFields]];
+	[dataStorage setColumnCount:[theResult numOfFields]];
 
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
@@ -874,8 +1021,7 @@
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 
 		pthread_mutex_lock(&resultDataLock);
-		SPDataStorageAddRow(resultData, tempRow);
-		resultDataCount++;
+		SPDataStorageAddRow(dataStorage, tempRow);
 		pthread_mutex_unlock(&resultDataLock);
 
 		// Update the count of rows processed
@@ -883,13 +1029,19 @@
 
 		// Update the table view with new results every now and then
 		if (rowsProcessed > nextTableDisplayBoundary) {
-			[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
-			if (!tableViewRedrawn) {
-				[customQueryView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
-				tableViewRedrawn = YES;
-			}
-			nextTableDisplayBoundary *= 2;
-		}
+            // but only if we are actually populating the currently selected result
+            if (dataStorage==[self currentResultData]) {
+                [customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+                if (!tableViewRedrawn) {
+                    [customQueryView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
+                    tableViewRedrawn = YES;
+                }
+                nextTableDisplayBoundary *= 2;
+            } else {
+                nextTableDisplayBoundary += 100;
+            }
+
+        }
 
 		// Drain and reset the autorelease pool every ~1024 rows
 		if (!(rowsProcessed % 1024)) {
@@ -1212,8 +1364,8 @@
 	// If errors occur, display them
 	if ( [mySQLConnection queryCancelled] || ([errorsString length] && !queryIsTableSorter)) {
 		// set the error text
-		[errorText setStringValue:errorsString];
-
+        [[tableDocumentInstance onMainThread] setTaskDescription:errorsString];
+        
 		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
 		// by capturing the last number of the error string
 		NSRange errorLineNumberRange = [errorsString rangeOfRegex:@"([0-9]+)[^0-9]*$" options:RKLNoOptions inRange:NSMakeRange(0, [errorsString length]) capture:1L error:nil];
@@ -1271,11 +1423,11 @@
 		}
 
 	} else if ( [errorsString length] && queryIsTableSorter ) {
-		[errorText setStringValue:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
+        [[tableDocumentInstance onMainThread] setTaskDescription:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
 		NSBeep();
 	} else {
-		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
-	}
+        // query was successful, don't show any errors...
+    }
 }
 
 #pragma mark -
@@ -1377,7 +1529,10 @@
 {
 	NSArray *theColumns;
 	NSTableColumn *theCol;
-
+    // tell the query list to reload the data
+    //[multipleResultList reloadData];
+    //[multipleResultList selectRowIndexes:[NSIndexSet indexSetWithIndex:currentQueryResponse] byExtendingSelection:NO];
+    
 	// Remove all existing columns from the table
 	theColumns = [customQueryView tableColumns];
 	while ([theColumns count]) {
@@ -1388,11 +1543,66 @@
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
-	// If there are no table columns to add, return
-	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
-
+    NSInteger numberOfResults = [self currentResultCount];
+    if (currentResult<0) currentResult = 0;
+    if (currentResult>=numberOfResults) currentResult = 0;
+    if (numberOfResults>1) {
+        [multipleResultSwitcher setSegmentCount:0];
+        [multipleResultSwitcher setSegmentCount:numberOfResults];
+        [multipleResultSwitcher setSelectedSegment:currentResult];
+        NSInteger i;
+        for (i=0;i<numberOfResults;i++) {
+            [multipleResultSwitcher setLabel:[NSString stringWithFormat:NSLocalizedString(@"Result %d",@"Title of tab shown in custom query view when a query returns multiple results."),i+1] forSegment:i];
+        }
+        [multipleResultSwitcher setHidden:NO];
+    } else {
+        [multipleResultSwitcher setHidden:YES];
+    }
+    CGFloat requiredDistance = numberOfResults>1 ? 44 : 23;
+    NSRect frame = [customQueryScrollView frame];
+    NSRect bounds = [[customQueryScrollView superview] bounds];
+    CGFloat topDistance = bounds.size.height - frame.origin.y - frame.size.height;
+    if (topDistance != requiredDistance) {
+        [[customQueryScrollView superview] setNeedsDisplayInRect:frame];
+        frame.size.height += topDistance-requiredDistance;
+        [customQueryScrollView setFrame:frame];
+        [customQueryScrollView setNeedsDisplay:YES];
+    }
+    
+	// If there are no table columns to add, show success or failure
+	if ([[self currentColumnDefinitions] count]==0) {
+        // Check if there is an error. If there is, show the error message
+        if ([self currentError]) {
+            [errorText setStringValue:[self currentError]];
+            [errorImage setHidden:NO];
+            [errorText setHidden:NO];
+            [successImage setHidden:YES];
+            [customQueryScrollView setHidden:YES];
+        }
+        // There's no error. Check if there is a query. If there is, display the success symbol.
+        else if (![[self currentResultQuery] isEqual:@""]) {
+            [errorImage setHidden:YES];
+            [errorText setHidden:YES];
+            [successImage setHidden:NO];
+            [customQueryScrollView setHidden:YES];
+        }
+        // there is no query and no error. There's nothing. Display nothing.
+        else {
+            [errorImage setHidden:YES];
+            [errorText setHidden:YES];
+            [successImage setHidden:YES];
+            [customQueryScrollView setHidden:YES];
+        }
+        return;
+    }
+    
+    [errorImage setHidden:YES];
+    [errorText setHidden:YES];
+    [successImage setHidden:YES];
+    [customQueryScrollView setHidden:NO];
+    
 	// Add the new table columns
-	for (NSDictionary *columnDefinition in cqColumnDefinition) {
+	for (NSDictionary *columnDefinition in [self currentColumnDefinitions]) {
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[theCol setResizingMask:NSTableColumnUserResizingMask];
 		[theCol setEditable:YES];
@@ -1425,6 +1635,8 @@
 	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]] width] < 30 )
 		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]]
 				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:0]] width]];
+                
+    [customQueryView reloadData];
 }
 
 /**
@@ -1494,7 +1706,7 @@
 
 	//Look for all columns which are coming from "tableForColumn"
 	NSMutableArray *columnsForFieldTableName = [NSMutableArray array];
-	for(field in cqColumnDefinition) {
+	for(field in [self currentColumnDefinitions]) {
 		if([[field objectForKey:@"org_table"] isEqualToString:tableForColumn])
 			[columnsForFieldTableName addObject:field];
 	}
@@ -1504,7 +1716,7 @@
 	[fieldIDQueryStr setString:@"WHERE ("];
 
 	// --- Build WHERE clause ---
-	dataRow = [resultData rowContentsAtIndex:rowIndex];
+	dataRow = [[self currentResultData] rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
@@ -1564,8 +1776,13 @@
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if (aTableView == customQueryView) {
-		return (resultData == nil) ? 0 : resultDataCount;
+		return [self currentResultDataCount];
 	} 
+    /*
+    else if (aTableView == multipleResultList) {
+        return [queryResponses count];
+    }
+    */
 	else {
 		return 0;
 	}
@@ -1588,7 +1805,8 @@
 			// rows or columns may be requested.  Use gray to show loading in these cases.
 			if (isWorking) {
 				pthread_mutex_lock(&resultDataLock);
-				if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+                SPDataStorage *resultData = [self currentResultData];
+				if (rowIndex < [resultData count] && columnIndex < [resultData columnCount]) {
 					theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 				}
 				pthread_mutex_unlock(&resultDataLock);
@@ -1598,7 +1816,7 @@
 					return;
 				}
 			} else {
-				theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+				theValue = SPDataStorageObjectAtRowAndColumn([self currentResultData], rowIndex, columnIndex);
 			}
 			
 			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
@@ -1621,14 +1839,15 @@
 		// cases.
 		if (isWorking) {
 			pthread_mutex_lock(&resultDataLock);
-			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+            SPDataStorage *resultData = [self currentResultData];
+			if (rowIndex < [resultData count] && columnIndex < [resultData columnCount]) {
 				theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex) copy] autorelease];
 			}
 			pthread_mutex_unlock(&resultDataLock);
 
 			if (!theValue) return @"...";
 		} else {
-			theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+			theValue = SPDataStorageObjectAtRowAndColumn([self currentResultData], rowIndex, columnIndex);
 		}
 		
 		if ([theValue isKindOfClass:[NSData class]])
@@ -1639,6 +1858,11 @@
 
 	    return theValue;
 	}
+    /*
+    else if (aTableView == multipleResultList) {
+        return [[queryResponses objectAtIndex:rowIndex] objectForKey:@"name"];
+    }
+    */
 	else {
 		return @"";
 	}
@@ -1654,7 +1878,7 @@
 		NSDictionary *columnDefinition;
 
 		// Retrieve the column defintion
-		for(id c in cqColumnDefinition) {
+		for(id c in [self currentColumnDefinitions]) {
 			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 				break;
@@ -1665,7 +1889,7 @@
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
 		if(!tableForColumn || ![tableForColumn length]) {
-			[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
+            [[tableDocumentInstance onMainThread] setTaskDescription:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
 			NSBeep();
 			return;
 		}
@@ -1728,17 +1952,19 @@
 				}
 				return;
 			}
+            
+            
+			// On success reload table data by reexecuting the current query, but only if the reloading preference is checked
+            if ([prefs boolForKey:SPReloadAfterEditingRow])
+            {
+                reloadingExistingResult = YES;
+                [self storeCurrentResultViewForRestoration];
+                [self performQueries:[NSArray arrayWithObject:[self currentResultQuery]] withCallback:NULL];
+            }
+            else {
+                SPDataStorageReplaceObjectAtRowAndColumn([self currentResultData], rowIndex, [[aTableColumn identifier] intValue], anObject);
+            }
 			
-			// On success reload table data by executing the last query if reloading is enabled
-			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
-				reloadingExistingResult = YES;
-				[self storeCurrentResultViewForRestoration];
-
-				[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
-			} else {
-				// otherwise, just update the data in the data storage
-				SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
-			}
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
@@ -1757,9 +1983,10 @@
 
 	// Prevent sorting while a query is running
 	if ([tableDocumentInstance isWorking]) return;
-	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
+    
+	if (![[self currentColumnDefinitions] count]) return;
 
-	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
+	NSMutableString *queryString = [NSMutableString stringWithString:[self currentResultQuery]];
 
 	//sets order descending if a header is clicked twice
 	if ( sortField && [[tableColumn identifier] isEqualToNumber:sortField] ) {
@@ -1962,7 +2189,7 @@
 	// possible exceptions (eg for reloading tables etc.)
 	id theValue;
 	@try{
-		theValue = SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]);
+		theValue = SPDataStorageObjectAtRowAndColumn([self currentResultData], row, [[aTableColumn identifier] integerValue]);
 	}
 	@catch(id ae) {
 		return nil;
@@ -2010,7 +2237,7 @@
 		NSInteger numberOfPossibleUpdateRows = -1;
 
 		// Retrieve the column defintion
-		for(id c in cqColumnDefinition) {
+		for(id c in [self currentColumnDefinitions]) {
 			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 				break;
@@ -2046,15 +2273,15 @@
 
 			if(!isFieldEditable)
 				if(numberOfPossibleUpdateRows == 0)
-					[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row"), tableForColumn]];
+					[[tableDocumentInstance onMainThread] setTaskDescription:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row"), tableForColumn]];
 				else
-			 		[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Custom Query result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]];
+			 		[[tableDocumentInstance onMainThread] setTaskDescription:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Custom Query result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]];
 
 		} else {
 			// no table/databse name are given
 			isFieldEditable = NO;
 			fieldIDQueryString = nil;
-		 	[errorText setStringValue:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
+		 	[[tableDocumentInstance onMainThread] setTaskDescription:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
 		}
 
 
@@ -2069,7 +2296,7 @@
 		 && [columnDefinition valueForKey:@"char_length"])
 			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
 
-		id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+		id originalData = [[self currentResultData] cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 		if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
 
 		id editData = [[fieldEditor editWithObject:originalData
@@ -2098,8 +2325,26 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	return tableRowsSelectable;
+    if (aTableView == customQueryView) {
+        return tableRowsSelectable;
+    } else {
+        return YES;
+    }
 }
+
+/**
+ * Change the current result when clicking on the result list
+ */
+/*
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+    if ([aNotification object] == multipleResultList) {
+        currentQueryResponse = [multipleResultList selectedRow];
+        [self updateTableView];
+        [customQueryView reloadData];
+    }
+}
+*/
 
 #pragma mark -
 #pragma mark TableView notifications
@@ -2110,11 +2355,11 @@
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
 {
 	// Abort if still loading the table
-	if (![cqColumnDefinition count]) return;
+	if (![[self currentColumnDefinitions] count]) return;
 
 	// Retrieve the original index of the column from the identifier
 	NSInteger columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] integerValue];
-	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
+	NSDictionary *columnDefinition = [[self currentColumnDefinitions] objectAtIndex:columnIndex];
 
 	// Don't save if the column doesn't map to an underlying SQL field
 	if (![columnDefinition objectForKey:@"org_name"] || ![(NSString *)[columnDefinition objectForKey:@"org_name"] length])
@@ -2304,7 +2549,11 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
-	if (sender != queryInfoPaneSplitView) return (offset == 0) ? (proposedMax - 100) : (proposedMax - 73);
+	if ( offset == 0 ) {
+		return proposedMax - 100;
+	} else {
+		return proposedMax - 73;
+	}
 }
 
 /*
@@ -2312,16 +2561,13 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
-	if (sender != queryInfoPaneSplitView) return proposedMin + 100;
+	if ( offset == 0 ) {
+		return proposedMin + 100;
+	} else {
+		return proposedMin + 100;
+	}
 }
 
-/**
- * The query information pane cannot be resized.
- */
-- (NSRect)splitView:(NSSplitView *)splitView effectiveRect:(NSRect)proposedEffectiveRect forDrawnRect:(NSRect)drawnRect ofDividerAtIndex:(NSInteger)dividerIndex
-{
-	return (splitView == queryInfoPaneSplitView ? NSZeroRect : proposedEffectiveRect);
-}
 
 #pragma mark -
 #pragma mark MySQL Help
@@ -3143,7 +3389,6 @@
 		isDesc = NO;
 		sortColumn = nil;
 		selectionButtonCanBeEnabled = NO;
-		cqColumnDefinition = nil;
 		favoritesManager = nil;
 
 		tableRowsSelectable = YES;
@@ -3169,9 +3414,12 @@
 		[[helpWebView backForwardList] setCapacity:20];
 		
 		// init tableView's data source
-		resultDataCount = 0;
-		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
+
+        maxQueryResponses = 1; // setting this to one disables query result history. it's disabled because it's not yet implemented
+        queryResponses = [[NSMutableArray alloc] initWithCapacity:maxQueryResponses];
+        currentQueryResponse = -1;
+        currentResult = 1;
 
 		currentHistoryOffsetIndex = -1;
 		historyItemWasJustInserted = NO;
@@ -3296,13 +3544,12 @@
 	[prefs removeObserver:self forKeyPath:SPGlobalResultTableFont];
 
 	[usedQuery release];
-	[resultData release];
 	[favoritesManager release];
+    [queryResponses release];
 	
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
-	if (cqColumnDefinition) [cqColumnDefinition release];
 	if (selectionIndexToRestore) [selectionIndexToRestore release];
 	if (currentQueryRanges) [currentQueryRanges release];
 	
