@@ -76,6 +76,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	if (QLPreviewRequestIsCancelled(preview))
 		return noErr;
 
+	NSInteger previewHeight = 280;
+
 	NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[myURL path] error:nil];
 
 	// Dispatch different fiel extensions
@@ -247,7 +249,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		NSMutableString *spfsHTML = [NSMutableString string];
 		NSInteger connectionCounter = 0;
 
-		NSArray *theWindows = [spf objectForKey:@"windows"];
+		NSArray *theWindows = [[[spf objectForKey:@"windows"] reverseObjectEnumerator] allObjects];
 		for(NSDictionary *window in theWindows) {
 
 			NSInteger tabCounter = 0;
@@ -339,6 +341,9 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			[spfsHTML appendString:@"</table><br />"];
 
 		}
+
+		if(connectionCounter > 1)
+			previewHeight = 495;
 
 		html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
 			[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
@@ -455,6 +460,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				sqlHTML
 			]];
 
+		previewHeight = 495;
+
 		} else {
 
 			// No file attributes were read, bail for safety reasons
@@ -465,12 +472,14 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		}
 
 	}
-
-	CFDictionaryRef properties = (CFDictionaryRef)[NSDictionary dictionary];
+	NSMutableDictionary *props;
+	props = [[[NSMutableDictionary alloc] init] autorelease];
+	[props setObject:[NSNumber numberWithInt:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
+	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
 	QLPreviewRequestSetDataRepresentation(preview,
 										  (CFDataRef)[html dataUsingEncoding:NSUTF8StringEncoding],
 										  kUTTypeHTML, 
-										  properties
+										  (CFDictionaryRef)props
 										  );
 
 	[html release];
