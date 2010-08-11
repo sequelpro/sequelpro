@@ -2264,6 +2264,37 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 }
 
+/*
+ * The following moveWord... routines are needed to be able to recognize a db schema à la
+ * db.table.field as ONE word while navigating and selecting by the keyboard
+ */
+- (void)moveWordRight:(id)sender
+{
+	[super moveWordRight:sender];
+	while([self selectedRange].location < [[[self textStorage] string] length] && [[[self textStorage] string] characterAtIndex:[self selectedRange].location] == '.')
+		[super moveWordRight:sender];
+}
+
+- (void)moveWordLeft:(id)sender
+{
+	[super moveWordLeft:sender];
+	while([self selectedRange].location > 0 && [[[self textStorage] string] characterAtIndex:[self selectedRange].location-1] == '.')
+		[super moveWordLeft:sender];
+}
+
+- (void)moveWordLeftAndModifySelection:(id)sender
+{
+	[super moveWordLeftAndModifySelection:sender];
+	while([self selectedRange].location > 0 && [[[self textStorage] string] characterAtIndex:[self selectedRange].location-1] == '.')
+		[super moveWordLeftAndModifySelection:sender];
+}
+
+- (void)moveWordRightAndModifySelection:(id)sender
+{
+	[super moveWordRightAndModifySelection:sender];
+	while(NSMaxRange([self selectedRange]) < [[[self textStorage] string] length] && [[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])] == '.')
+		[super moveWordRightAndModifySelection:sender];
+}
 
 - (void) deleteBackward:(id)sender
 {
