@@ -99,6 +99,9 @@
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
 
 	NSInteger paginationViewHeight;
+
+	NSTimer *tableLoadTimer;
+	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount;
 }
 
 // Table loading methods and information
@@ -107,6 +110,9 @@
 - (void) loadTableValues;
 - (NSString *) tableFilterString;
 - (void) updateCountText;
+- (void) initTableLoadTimer;
+- (void) clearTableLoadTimer;
+- (void) tableLoadUpdate:(NSTimer *)theTimer;
 
 // Table interface actions
 - (IBAction) reloadTable:(id)sender;
@@ -148,6 +154,7 @@
 - (NSString *)fieldListForQuery;
 - (void)updateNumberOfRows;
 - (NSInteger)fetchNumberOfRows;
+- (void)autosizeColumns;
 - (BOOL)saveRowOnDeselect;
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
 

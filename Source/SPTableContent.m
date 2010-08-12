@@ -99,6 +99,8 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 		
 		usedQuery = [[NSString alloc] initWithString:@""];
+
+		tableLoadTimer = nil;
 		
 		// Init default filters for Content Browser
 		contentFilters = nil;
@@ -208,7 +210,10 @@
 									[tableDataInstance getConstraints], @"constraints",
 									nil];
 	[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
-	
+
+	// Init copyTable with necessary information for copying selected rows as SQL INSERT
+	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
+
 	// Trigger a data refresh
 	[self loadTableValues];
 
@@ -231,8 +236,6 @@
 	// Update display if necessary
 	[[tableContentView onMainThread] setNeedsDisplay:YES];
 	
-	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
@@ -689,14 +692,13 @@
 	NSUInteger dataColumnsCount = [dataColumns count];
 	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
 
+	// Set up the table updates timer
+	[[self onMainThread] initTableLoadTimer];
+
 	// Set the column count on the data store
 	[tableValues setColumnCount:dataColumnsCount];
 	
 	CGFloat relativeTargetRowCount = 100.0/targetRowCount;
-	NSUInteger nextTableDisplayBoundary = 50;
-	BOOL tableViewRedrawn = NO;
-
-	NSUInteger rowsProcessed = 0;
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
@@ -711,11 +713,12 @@
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
 
 	// Loop through the result rows as they become available
+	tableRowsCount = 0;
 	while (tempRow = [theResult fetchNextRowAsArray]) {
 		pthread_mutex_lock(&tableValuesLock);
 
-		if (rowsProcessed < previousTableRowsCount) {
-			SPDataStorageReplaceRow(tableValues, rowsProcessed, tempRow);
+		if (tableRowsCount < previousTableRowsCount) {
+			SPDataStorageReplaceRow(tableValues, tableRowsCount, tempRow);
 		} else {
 			SPDataStorageAddRow(tableValues, tempRow);
 		}
@@ -724,42 +727,36 @@
 		if ( prefsLoadBlobsAsNeeded ) {
 			for ( i = 0 ; i < dataColumnsCount ; i++ ) {
 				if (columnBlobStatuses[i]) {
-					SPDataStorageReplaceObjectAtRowAndColumn(tableValues, rowsProcessed, i, [SPNotLoaded notLoaded]);
+					SPDataStorageReplaceObjectAtRowAndColumn(tableValues, tableRowsCount, i, [SPNotLoaded notLoaded]);
 				}
 			}
 		}
-		rowsProcessed++;
+		tableRowsCount++;
 
 		pthread_mutex_unlock(&tableValuesLock);
 
 		// Update the task interface as necessary
 		if (!isFiltered) {
-			if (rowsProcessed < targetRowCount) {
-				[tableDocumentInstance setTaskPercentage:(rowsProcessed*relativeTargetRowCount)];
-			} else if (rowsProcessed == targetRowCount) {
+			if (tableRowsCount < targetRowCount) {
+				[tableDocumentInstance setTaskPercentage:(tableRowsCount*relativeTargetRowCount)];
+			} else if (tableRowsCount == targetRowCount) {
 				[tableDocumentInstance setTaskPercentage:100.0];
 				[[tableDocumentInstance onMainThread] setTaskProgressToIndeterminateAfterDelay:YES];
 			}
 		}
 
-		// Update the table view with new results every now and then
-		if (rowsProcessed > nextTableDisplayBoundary) {
-			if (rowsProcessed > tableRowsCount) tableRowsCount = rowsProcessed;
-			[[tableContentView onMainThread] noteNumberOfRowsChanged];
-			if (!tableViewRedrawn) {
-				[[tableContentView onMainThread] setNeedsDisplay:YES];
-				tableViewRedrawn = YES;
-			}
-			nextTableDisplayBoundary *= 2;
-		}
-
 		// Drain and reset the autorelease pool every ~1024 rows
-		if (!(rowsProcessed % 1024)) {
+		if (!(tableRowsCount % 1024)) {
 			[dataLoadingPool drain];
 			dataLoadingPool = [[NSAutoreleasePool alloc] init];
 		}
 	}
-	tableRowsCount = rowsProcessed;
+
+	// Clean up the interface update timer
+	[[self onMainThread] clearTableLoadTimer];
+
+	// If the final column autoresize wasn't performed, perform it
+	if (tableLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
 
 	// If the reloaded table is shorter than the previous table, remove the extra values from the storage
 	if (tableRowsCount < [tableValues count]) {
@@ -1014,6 +1011,77 @@
 
 	[[countText onMainThread] setStringValue:countString];
 }
+
+/**
+ * Set up the table loading interface update timer.
+ * This should be called on the main thread.
+ */
+- (void) initTableLoadTimer
+{
+	if (tableLoadTimer) [self clearTableLoadTimer];
+	tableLoadInterfaceUpdateInterval = 1;
+	tableLoadLastRowCount = 0;
+	tableLoadTimerTicksSinceLastUpdate = 0;
+
+	tableLoadTimer = [[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(tableLoadUpdate:) userInfo:nil repeats:YES] retain];
+}
+
+/**
+ * Invalidate and release the table loading interface update timer.
+ * This should be called on the main thread.
+ */
+- (void) clearTableLoadTimer
+{
+	if (tableLoadTimer) {
+		[tableLoadTimer invalidate];
+		[tableLoadTimer release];
+		tableLoadTimer = nil;
+	}
+}
+
+/**
+ * Perform table interface updates when loading tables, based on timer
+ * ticks.  As data becomes available, the table should be redrawn to
+ * show new rows - quickly at the start of the table, and then slightly
+ * slower after some time to avoid needless updates.
+ */
+- (void) tableLoadUpdate:(NSTimer *)theTimer
+{
+	if (tableLoadTimerTicksSinceLastUpdate < tableLoadInterfaceUpdateInterval) {
+		tableLoadTimerTicksSinceLastUpdate++;
+		return;
+	}
+
+	// Check whether a table update is required, based on whether new rows are
+	// available to display.
+	if (tableRowsCount == tableLoadLastRowCount) {
+		return;
+	}
+
+	// Update the table display
+	[tableContentView noteNumberOfRowsChanged];
+	if (!tableLoadLastRowCount) [tableContentView setNeedsDisplay:YES];
+
+	// Update column widths in two cases: on very first rows displayed, and once
+	// more than 200 rows are present.
+	if (tableLoadInterfaceUpdateInterval || (tableRowsCount >= 200 && tableLoadLastRowCount < 200)) {
+		[self autosizeColumns];
+	}
+
+	tableLoadLastRowCount = tableRowsCount;
+
+	// Determine whether to decrease the update frequency
+	switch (tableLoadInterfaceUpdateInterval) {
+		case 1:
+			tableLoadInterfaceUpdateInterval = 10;
+			break;
+		case 10:
+			tableLoadInterfaceUpdateInterval = 25;
+			break;
+	}
+	tableLoadTimerTicksSinceLastUpdate = 0;
+}
+
 
 #pragma mark -
 #pragma mark Table interface actions
@@ -2749,6 +2817,27 @@
 	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
 }
 
+/**
+ * Autosize all columns based on their content.
+ * Should be called on the main thread.
+ */
+- (void)autosizeColumns
+{
+	NSDictionary *columnWidths = [tableContentView autodetectColumnWidthsForFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]]];
+	[tableContentView setDelegate:nil];
+	for (NSDictionary *columnDefinition in dataColumns) {
+
+		// Skip columns with saved widths
+		if ([[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]]) continue;
+
+		// Otherwise set the column width
+		NSTableColumn *aTableColumn = [tableContentView tableColumnWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
+		NSUInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] unsignedIntegerValue];
+		[aTableColumn setWidth:targetWidth];
+	}
+	[tableContentView setDelegate:self];
+}
+
 #pragma mark -
 #pragma mark TableView delegate methods
 
@@ -3157,6 +3246,44 @@
 	return tableRowsSelectable;
 }
 
+/**
+ * Resize a column when it's double-clicked.  (10.6+)
+ */
+- (CGFloat)tableView:(NSTableView *)tableView sizeToFitWidthOfColumn:(NSInteger)columnIndex
+{
+	NSTableColumn *theColumn = [[tableView tableColumns] objectAtIndex:columnIndex];
+	NSDictionary *columnDefinition = [dataColumns objectAtIndex:[[theColumn identifier] integerValue]];
+
+	// Get the column width
+	NSUInteger targetWidth = [tableContentView autodetectWidthForColumnDefinition:columnDefinition usingFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]] maxRows:500];
+
+	// Clear any saved widths for the column
+	NSString *dbKey = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
+	NSString *tableKey = [tablesListInstance tableName];
+	NSMutableDictionary *savedWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
+	NSMutableDictionary *dbDict = [NSMutableDictionary dictionaryWithDictionary:[savedWidths objectForKey:dbKey]];
+	NSMutableDictionary *tableDict = [NSMutableDictionary dictionaryWithDictionary:[dbDict objectForKey:tableKey]];
+	if ([tableDict objectForKey:[columnDefinition objectForKey:@"name"]]) {
+		[tableDict removeObjectForKey:[columnDefinition objectForKey:@"name"]];
+		if ([tableDict count]) {
+			[dbDict setObject:[NSDictionary dictionaryWithDictionary:tableDict] forKey:tableKey];
+		} else {
+			[dbDict removeObjectForKey:tableKey];
+		}
+		if ([dbDict count]) {
+			[savedWidths setObject:[NSDictionary dictionaryWithDictionary:dbDict] forKey:dbKey];
+		} else {
+			[savedWidths removeObjectForKey:dbKey];
+		}
+		[prefs setObject:[NSDictionary dictionaryWithDictionary:savedWidths] forKey:SPTableColumnWidths];
+	}
+
+	// Return the width, while the delegate is empty to prevent column resize notifications
+	[tableContentView setDelegate:nil];
+	[tableContentView performSelector:@selector(setDelegate:) withObject:self afterDelay:0.1];
+	return targetWidth;
+}
+
 #pragma mark -
 #pragma mark SplitView delegate methods
 
@@ -3406,7 +3533,9 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:tableContentView];
 
+	[self clearTableLoadTimer];
 	[tableValues release];
 	pthread_mutex_destroy(&tableValuesLock);
 	[dataColumns release];

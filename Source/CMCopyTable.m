@@ -446,6 +446,101 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	tableStorage = theTableStorage;
 }
 
+/**
+ * Autodetect column widths for a specified font.
+ */
+- (NSDictionary *) autodetectColumnWidthsForFont:(NSFont *)theFont;
+{
+	NSMutableDictionary *columnWidths = [NSMutableDictionary dictionaryWithCapacity:[columnDefinitions count]];
+	NSUInteger columnWidth;
+
+	for (NSDictionary *columnDefinition in columnDefinitions) {
+		if ([[NSThread currentThread] isCancelled]) return nil;
+
+		columnWidth = [self autodetectWidthForColumnDefinition:columnDefinition usingFont:theFont maxRows:100];
+		[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
+	}
+
+	return columnWidths;
+}
+
+/**
+ * Autodetect the column width for a specified column - derived from the supplied
+ * column definition, using the stored data and the specified font.
+ */
+- (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition usingFont:(NSFont *)theFont maxRows:(NSUInteger)rowsToCheck
+{
+	CGFloat columnBaseWidth;
+	id contentString;
+	NSUInteger cellWidth, maxCellWidth, i;
+	NSRange linebreakRange;
+	double rowStep;
+	NSUInteger columnIndex = [[columnDefinition objectForKey:@"datacolumnindex"] unsignedIntegerValue];
+	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:theFont forKey:NSFontAttributeName];
+
+	// Check the number of rows available to check, sampling every n rows
+	if ([tableStorage count] < rowsToCheck) {
+		rowsToCheck = [tableStorage count];
+		rowStep = 1;
+	} else {
+		rowStep = floor([tableStorage count] / rowsToCheck);
+	}
+
+	// Set a default padding for this column
+	columnBaseWidth = 24;
+
+	// Iterate through the data store rows, checking widths
+	maxCellWidth = 0;
+	for (i = 0; i < rowsToCheck; i += rowStep) {
+
+		// Retrieve the cell's content
+		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
+
+		// Replace NULLs with their placeholder string
+		if ([contentString isNSNull]) {
+			contentString = [prefs objectForKey:SPNullValue];
+
+		} else {
+
+			// Otherwise, ensure the cell is represented as a short string
+			if ([contentString isKindOfClass:[NSData class]]) {
+				contentString = [contentString shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+			} else if ([contentString length] > 500) {
+				contentString = [contentString substringToIndex:500];
+			}
+
+			// If any linebreaks are present, use only the visible part of the string
+			linebreakRange = [contentString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]];
+			if (linebreakRange.location != NSNotFound) {
+				contentString = [contentString substringToIndex:linebreakRange.location];
+			}
+		}
+
+		// Calculate the width, using it if it's higher than the current stored width
+		cellWidth = [contentString sizeWithAttributes:stringAttributes].width;
+		if (cellWidth > maxCellWidth) maxCellWidth = cellWidth;
+		if (maxCellWidth > SP_MAX_CELL_WIDTH) {
+			maxCellWidth = SP_MAX_CELL_WIDTH;
+			break;
+		}
+	}
+
+	// If the column has a foreign key link, expand the width; and also for enums
+	if ([columnDefinition objectForKey:@"foreignkeyreference"]) {
+		maxCellWidth += 18;
+	} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"]) {
+		maxCellWidth += 8;
+	}
+
+	// Add the padding
+	maxCellWidth += columnBaseWidth;
+
+	// If the header width is wider than this expanded width, use it instead
+	cellWidth = [[columnDefinition objectForKey:@"name"] sizeWithAttributes:[NSDictionary dictionaryWithObject:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName]].width;
+	if (cellWidth + 10 > maxCellWidth) maxCellWidth = cellWidth + 10;
+
+	return maxCellWidth;
+}
 
 - (void)keyDown:(NSEvent *)theEvent
 {
