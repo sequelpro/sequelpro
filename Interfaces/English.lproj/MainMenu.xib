@@ -1081,7 +1081,6 @@
 								</object>
 								<object class="NSMenuItem" id="986291195">
 									<reference key="NSMenu" ref="466354362"/>
-									<bool key="NSIsHidden">YES</bool>
 									<string key="NSTitle">Show Navigator</string>
 									<string key="NSKeyEquiv">n</string>
 									<int key="NSKeyEquivModMask">1835008</int>
