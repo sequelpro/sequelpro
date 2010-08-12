@@ -22,15 +22,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
-#import <Cocoa/Cocoa.h>
-#import <MCPKit/MCPConnection.h>
-#import <MCPKit/MCPResult.h>
+#import <MCPKit/MCPKit.h>
 #import "SPAlertSheets.h"
-#import "SPStringAdditions.h"
-#import "Sequel-Pro.pch"
 
-@interface SPDBActionCommons : NSObject {
+@interface SPDBActionCommons : NSObject 
+{
 	MCPConnection *connection;
 	NSWindow *messageWindow;
 }

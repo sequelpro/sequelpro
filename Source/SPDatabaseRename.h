@@ -22,14 +22,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import "SPDBActionCommons.h"
 #import "SPDatabaseInfo.h"
 
 /**
  * The SPDatabaseRename class povides functionality to rename a database.
  */
-@interface SPDatabaseRename : SPDBActionCommons {
+@interface SPDatabaseRename : SPDBActionCommons 
+{
 	SPDatabaseInfo *dbInfo;
 }
 

@@ -23,9 +23,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDBActionCommons.h"
-#import "SPAlertSheets.h"
-#import "SPStringAdditions.h"
-#import "Sequel-Pro.pch"
 
 @implementation SPDBActionCommons
 

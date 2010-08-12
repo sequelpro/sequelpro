@@ -27,8 +27,7 @@
 /**
  * The SPTableCopy class povides functionality to copy tables between databases.
  */
-@interface SPTableCopy : SPDBActionCommons {
-}
+@interface SPTableCopy : SPDBActionCommons
 
 /**
  * This method copies a table structure from one db to another.

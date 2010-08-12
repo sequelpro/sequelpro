@@ -27,8 +27,7 @@
 /*
  * The SPDatabaseInfo class provides means of retrieving a list of database names
  */
-@interface SPDatabaseInfo : SPDBActionCommons {
-}
+@interface SPDatabaseInfo : SPDBActionCommons
 
 /**
  * This method checks, whether a database exists.
