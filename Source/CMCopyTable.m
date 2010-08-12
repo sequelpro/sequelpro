@@ -480,11 +480,11 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 	// Check the number of rows available to check, sampling every n rows
 	if ([tableStorage count] < rowsToCheck) {
-		rowsToCheck = [tableStorage count];
 		rowStep = 1;
 	} else {
 		rowStep = floor([tableStorage count] / rowsToCheck);
 	}
+	rowsToCheck = [tableStorage count];
 
 	// Set a default padding for this column
 	columnBaseWidth = 24;
@@ -499,6 +499,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		// Replace NULLs with their placeholder string
 		if ([contentString isNSNull]) {
 			contentString = [prefs objectForKey:SPNullValue];
+
+		// Same for cells for which loading has been deferred - likely blobs
+		} else if ([contentString isSPNotLoaded]) {
+			contentString = NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
 
 		} else {
 
