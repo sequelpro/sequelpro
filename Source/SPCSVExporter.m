@@ -47,6 +47,10 @@
 
 /**
  * Initialise an instance of SPCSVExporter using the supplied delegate.
+ *
+ * @param exportDelegate The exporter delegate
+ *
+ * @return The initialised instance
  */
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
@@ -361,7 +365,7 @@
 		currentPoolDataLength += [csvString length];
 		
 		// Write it to the fileHandle
-		[[self exportOutputFileHandle] writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
+		[[self exportOutputFile] writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		currentRowIndex++;
 		
@@ -389,7 +393,7 @@
 	}
 	
 	// Write data to disk
-	[[self exportOutputFileHandle] synchronizeFile];
+	[[[self exportOutputFile] exportFileHandle] synchronizeFile];
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];

@@ -27,13 +27,19 @@
 
 @implementation SPExportUtilities
 
+/**
+ * Tests whether the supplied delegate conforms to the supplied protocol. Throws an exception if it doesn't.
+ *
+ * @param delegate The delegate that is be tested.
+ * @param protocol The protocol that we are testing conformance for.
+ */
 void SPExportDelegateConformsToProtocol(NSObject *delegate, Protocol *protocol)
 {
 	// Check that the the supplied delegate conforms to the supplied protocol, if not throw an exception
 	if (![delegate conformsToProtocol:protocol]) {
-		@throw [NSException exceptionWithName:@"Protocol Conformance" 
-									   reason:[NSString stringWithFormat:@"The supplied delegate does not conform to the protocol '%@'.", NSStringFromProtocol(protocol)] 
-									 userInfo:nil];
+		[NSException raise:@"Protocol Conformance" 
+					format:@"The supplied delegate does not conform to the protocol '%@'." 
+				 arguments:NSStringFromProtocol(protocol)];
 	}
 }
 

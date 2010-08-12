@@ -41,6 +41,10 @@
 
 /**
  * Initialise an instance of SPXMLExporter using the supplied delegate.
+ *
+ * @param exportDelegate The exporter delegate
+ *
+ * @return The initialised instance
  */
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
@@ -109,10 +113,10 @@
 		[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"</%@>\n", [[[xmlRow objectAtIndex:i] description] HTMLEscapeString]]];
 	}
 	
-	[[self exportOutputFileHandle] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
+	[[self exportOutputFile] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
 	
 	// Write an opening tag in the form of the table name
-	[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t<%@>\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
+	[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"\t<%@>\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
 	
 	// Set up the starting row, which is 0 for streaming result sets and
 	// 1 for supplied arrays which include the column headers as the first row.
@@ -204,7 +208,7 @@
 		currentPoolDataLength += [xmlString length];
 		
 		// Write the row to the filehandle
-		[[self exportOutputFileHandle] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
+		[[self exportOutputFile] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Update the progress counter and progress bar
 		currentRowIndex++;
@@ -233,10 +237,10 @@
 	}
 	
 	// Write the closing tag for the table
-	[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
+	[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
 	
 	// Write data to disk
-	[[self exportOutputFileHandle] synchronizeFile];
+	[[[self exportOutputFile] exportFileHandle] synchronizeFile];
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];

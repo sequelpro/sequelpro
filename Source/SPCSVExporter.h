@@ -37,79 +37,72 @@
  */
 @interface SPCSVExporter : SPExporter
 {		
-	/**
-	 * Exporter delegate
-	 */
 	NSObject <SPCSVExporterProtocol> *delegate;
 	
-	/** 
-	 * Data array
-	 */
 	NSArray *csvDataArray;
 	
-	/**
-	 * Table name
-	 */
 	NSString *csvTableName;
-	
-	/**
-	 * Output field names
-	 */
-	BOOL csvOutputFieldNames;
-	
-	/**
-	 * CSV field separator string
-	 */
 	NSString *csvFieldSeparatorString;
-	
-	/**
-	 * CSV enclosing character string
-	 */
 	NSString *csvEnclosingCharacterString;
-	
-	/**
-	 * CSV escape string
-	 */
 	NSString *csvEscapeString;
-	
-	/**
-	 * CSV line ending string
-	 */
 	NSString *csvLineEndingString;
-	
-	/**
-	 * CSV NULL string
-	 */
 	NSString *csvNULLString;
 	
-	/**
-	 * Table data
-	 */
+	BOOL csvOutputFieldNames;
+	
 	SPTableData *csvTableData;
 }
 
+/**
+ * @property delegate Exporter delegate
+ */
 @property(readwrite, assign) NSObject <SPCSVExporterProtocol> *delegate;
 
+/** 
+ * @property csvDataArray Data array
+ */
 @property(readwrite, retain) NSArray *csvDataArray;
-@property(readwrite, retain) NSString *csvTableName;
-
-@property(readwrite, assign) BOOL csvOutputFieldNames;
-
-@property(readwrite, retain) NSString *csvFieldSeparatorString;
-@property(readwrite, retain) NSString *csvEnclosingCharacterString;
-@property(readwrite, retain) NSString *csvEscapeString;
-@property(readwrite, retain) NSString *csvLineEndingString;
-@property(readwrite, retain) NSString *csvNULLString;
-
-@property(readwrite, retain) SPTableData *csvTableData;
 
 /**
- * Initialise an instance of SPCSVExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
+ * @property csvTableName Table name
  */
+@property(readwrite, retain) NSString *csvTableName;
+
+/**
+ * @property csvFieldSeparatorString CSV field separator string
+ */
+@property(readwrite, retain) NSString *csvFieldSeparatorString;
+
+/**
+ * @property csvEnclosingCharacterString CSV enclosing character string
+ */
+@property(readwrite, retain) NSString *csvEnclosingCharacterString;
+
+/**
+ * @property csvEscapeString CSV escape string
+ */
+@property(readwrite, retain) NSString *csvEscapeString;
+
+/**
+ * @property csvLineEndingString CSV line ending string
+ */
+@property(readwrite, retain) NSString *csvLineEndingString;
+
+/**
+ * @property csvNULLString CSV NULL string
+ */
+@property(readwrite, retain) NSString *csvNULLString;
+
+/**
+ * @property csvOutputFieldNames csvOutputFieldNames Output field names
+ */
+@property(readwrite, assign) BOOL csvOutputFieldNames;
+
+/**
+ * @property csvTableData Table data
+ */
+@property(readwrite, retain) SPTableData *csvTableData;
+
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

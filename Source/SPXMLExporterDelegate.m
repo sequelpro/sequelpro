@@ -71,9 +71,9 @@
 		// If we're exporting to multiple files then close the file handle of the exporter
 		// that just finished, ensuring its data is written to disk.
 		if (exportToMultipleFiles) {
-			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
+			[[exporter exportOutputFile] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
 			
-			[[exporter exportOutputFileHandle] closeFile]; 
+			[[exporter exportOutputFile] close]; 
 		}
 		
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -85,11 +85,11 @@
 	// Otherwise if the exporter list is empty, close the progress sheet
 	else {
 		if (exportSource == SPTableExport) {
-			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
+			[[exporter exportOutputFile] writeData:[[NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]] dataUsingEncoding:[connection encoding]]];
 		}
 		
 		// Close the last exporter's file handle
-		[[exporter exportOutputFileHandle] closeFile]; 
+		[[exporter exportOutputFile] close]; 
 		
 		[NSApp endSheet:exportProgressWindow returnCode:0];
 		[exportProgressWindow orderOut:self];

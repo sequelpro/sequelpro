@@ -37,58 +37,54 @@
  */
 @interface SPDotExporter : SPExporter 
 {
-	/**
-	 * Exporter delegate
-	 */
 	NSObject <SPDotExporterProtocol> *delegate;
 	
-	/**
-	 * Table information
-	 */
 	NSArray *dotExportTables;
 	
-	/**
-	 * Current table
-	 */
 	NSString *dotExportCurrentTable;
 	
-	/**
-	 * Table data
-	 */
 	SPTableData *dotTableData;
 	
-	/**
-	 * Database host
-	 */
 	NSString *dotDatabaseHost;
-	
-	/**
-	 * Database name
-	 */
 	NSString *dotDatabaseName;
-	
-	/**
-	 * Database version
-	 */
 	NSString *dotDatabaseVersion;
 }
 
+/**
+ * @property delegate Exporter delegate
+ */
 @property(readwrite, assign) NSObject *delegate;
-@property(readwrite, retain) NSArray *dotExportTables;
-@property(readwrite, retain) NSString *dotExportCurrentTable;
-@property(readwrite, retain) SPTableData *dotTableData;
-
-@property(readwrite, retain) NSString *dotDatabaseHost;
-@property(readwrite, retain) NSString *dotDatabaseName;
-@property(readwrite, retain) NSString *dotDatabaseVersion;
 
 /**
- * Initialise an instance of SPDotExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
+ * @property dotExportTables Table information
  */
+@property(readwrite, retain) NSArray *dotExportTables;
+
+/**
+ * @property dotExportCurrentTable Current table
+ */
+@property(readwrite, retain) NSString *dotExportCurrentTable;
+
+/**
+ * @property dotTableData Table data
+ */
+@property(readwrite, retain) SPTableData *dotTableData;
+
+/**
+ * @property dotDatabaseHost Database host
+ */
+@property(readwrite, retain) NSString *dotDatabaseHost;
+
+/**
+ * @property dotDatabaseName Database name
+ */
+@property(readwrite, retain) NSString *dotDatabaseName;
+
+/**
+ * @property dotDatabaseVersion Database version
+ */
+@property(readwrite, retain) NSString *dotDatabaseVersion;
+
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

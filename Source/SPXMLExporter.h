@@ -35,41 +35,34 @@
  */
 @interface SPXMLExporter : SPExporter 
 {
-	/**
-	 * Exporter delegate
-	 */
 	NSObject <SPXMLExporterProtocol> *delegate;
 	
-	/**
-	 * Data array
-	 */
 	NSArray *xmlDataArray;
-	
-	/**
-	 * Table name
-	 */
+
 	NSString *xmlTableName;
-	
-	/**
-	 * XML NULL string
-	 */
 	NSString *xmlNULLString;
 }
 
+/**
+ * @property delegate Exporter delegate
+ */
 @property(readwrite, assign) NSObject *delegate;
 
+/**
+ * @property xmlDataArray Data array
+ */
 @property(readwrite, retain) NSArray *xmlDataArray;
-@property(readwrite, retain) NSString *xmlTableName;
-
-@property(readwrite, retain) NSString *xmlNULLString;
 
 /**
- * Initialise an instance of SPXMLExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
+ * @property xmlTableName Table name
  */
+@property(readwrite, retain) NSString *xmlTableName;
+
+/**
+ * @property xmlNULLString XML NULL string
+ */
+@property(readwrite, retain) NSString *xmlNULLString;
+
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

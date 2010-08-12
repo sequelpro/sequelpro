@@ -73,7 +73,7 @@
 			
 			// If we're exporting multiple tables to a single file then append some space and the next table's
 			// name, but only if there is at least 2 exportes left.
-			[[exporter exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@", 
+			[[exporter exportOutputFile] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@", 
 														   [exporter csvLineEndingString], 
 														   [exporter csvLineEndingString],
 														   NSLocalizedString(@"Table", @"csv export table heading"),
@@ -84,7 +84,7 @@
 		// Otherwise close the file handle of the exporter that just finished 
 		// ensuring it's data is written to disk.
 		else {
-			[[exporter exportOutputFileHandle] closeFile];
+			[[exporter exportOutputFile] close];
 		}
 		
 		[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -96,7 +96,7 @@
 	// Otherwise if the exporter list is empty, close the progress sheet
 	else {
 		// Close the last exporter's file handle
-		[[exporter exportOutputFileHandle] closeFile];
+		[[exporter exportOutputFile] close];
 		
 		[NSApp endSheet:exportProgressWindow returnCode:0];
 		[exportProgressWindow orderOut:self];

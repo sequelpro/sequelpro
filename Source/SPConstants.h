@@ -183,6 +183,14 @@ typedef enum
 	SPBzip2Compression = 2
 } SPFileCompressionFormat;
 
+// Export file handle creation 
+typedef enum
+{
+	SPExportFileHandleCreated = 0,
+	SPExportFileHandleFailed  = 1,
+	SPExportFileHandleExists  = 2
+} SPExportFileHandleStatus;
+
 // Predefined localisable URLs
 #define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"http://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"http://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")

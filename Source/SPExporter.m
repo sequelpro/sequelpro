@@ -33,7 +33,7 @@
 @synthesize exportUsingLowMemoryBlockingStreaming;
 @synthesize exportOutputCompressionFormat;
 @synthesize exportData;
-@synthesize exportOutputFileHandle;
+@synthesize exportOutputFile;
 @synthesize exportOutputEncoding;
 @synthesize exportMaxProgress;
 
@@ -63,13 +63,13 @@
  */
 - (void)main
 {
-	@throw [NSException exceptionWithName:@"NSOperation main() Call" 
-								   reason:@"Cannot call NSOperation's main() method in SPExpoter, must be overriden in a subclass. See SPExporter.h" 
-								 userInfo:nil];
+	[NSException raise:NSInternalInconsistencyException format:@"Cannot call NSOperation's main() method in SPExpoter, must be overriden in a subclass. See SPExporter.h"];
 }
 
 /**
  * Returns whether or not file compression is in use.
+ *
+ * @return A BOOL indicating the use of compression
  */
 - (BOOL)exportOutputCompressFile
 {
@@ -78,15 +78,17 @@
 
 /**
  * Sets whether or not the resulting output of this exporter should be compressed.
+ *
+ * @param compress A BOOL indicating the use of compression
  */
 - (void)setExportOutputCompressFile:(BOOL)compress
 {
 	// If the export file handle is nil or a compression format has not yet been set don't proceed
-	if ((!exportOutputFileHandle) || ([self exportOutputCompressionFormat] == SPNoCompression)) return;
+	if ((![exportOutputFile exportFileHandle]) || ([self exportOutputCompressionFormat] == SPNoCompression)) return;
 	
 	exportOutputCompressFile = compress;
 	
-	[[self exportOutputFileHandle] setShouldWriteWithCompressionFormat:(compress) ? [self exportOutputCompressionFormat] : SPNoCompression];
+	[[[self exportOutputFile] exportFileHandle] setShouldWriteWithCompressionFormat:(compress) ? [self exportOutputCompressionFormat] : SPNoCompression];
 }
 
 /**
@@ -96,7 +98,7 @@
 {
 	if (exportData) [exportData release], exportData = nil;
 	if (connection) [connection release], connection = nil;
-	if (exportOutputFileHandle) [exportOutputFileHandle release], exportOutputFileHandle = nil;
+	if (exportOutputFile) [exportOutputFile release], exportOutputFile = nil;
 	
 	[super dealloc];
 }

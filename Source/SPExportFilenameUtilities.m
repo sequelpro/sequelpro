@@ -60,6 +60,8 @@
 
 /**
  * Generates the default export filename based on the selected export options.
+ *
+ * @return The default filename.
  */
 - (NSString *)generateDefaultExportFilename
 {
@@ -85,6 +87,8 @@
 
 /**
  * Returns the current default export file extension based on the selected export type.
+ *
+ * @return The default filename extension.
  */
 - (NSString *)currentDefaultExportFileExtension
 {
@@ -123,6 +127,11 @@
 
 /**
  * Expands the custom filename format based on the selected tokens.
+ *
+ * @param format The filename format that is to be expanded.
+ * @param table  A table name to be used within the expanded filename.
+ *
+ * @return The expanded filename.
  */
 - (NSString *)expandCustomFilenameFormatFromString:(NSString *)format usingTableName:(NSString *)table
 {

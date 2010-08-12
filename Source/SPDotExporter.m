@@ -42,6 +42,10 @@
 
 /**
  * Initialise an instance of SPDotExporter using the supplied delegate.
+ *
+ * @param exportDelegate The exporter delegate
+ *
+ * @return The initialised instance
  */
 - (id)initWithDelegate:(NSObject *)exportDelegate
 {
@@ -97,7 +101,7 @@
 	[metaString appendString:@"\trankdir = LR;\n"];
 	
 	// Write information to the file
-	[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 			
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
@@ -144,7 +148,7 @@
 		[metaString appendString:@"\t\t];\n"];
 		[metaString appendString:@"\t}\n"];
 		
-		[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+		[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 		
 		// see about relations
 		columnInfo = [tableInfo objectForKey:@"constraints"];
@@ -192,10 +196,10 @@
 	[metaString appendString:@"}\n"];
 	
 	// Write information to the file
-	[[self exportOutputFileHandle] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 			
 	// Write data to disk
-	[[self exportOutputFileHandle] closeFile];
+	[[self exportOutputFile] close];
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];

@@ -95,7 +95,7 @@
 			// Set gzip buffer
 			gzbuffer(gzfile, 131072);
 			
-			// Get the first 3 bytes from the file
+			// Get the first 4 bytes from the file
 			for (i = 0; (c = getc(wrappedFile)) != EOF && i < 4; bzbuf[i++] = c);
 			rewind(wrappedFile);
 			

@@ -28,7 +28,7 @@
 @class MCPConnection, BWAnchoredButtonBar;
 
 /**
- * @class SPExportController SPExportController.m
+ * @class SPExportController SPExportController.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
@@ -170,9 +170,9 @@
 	NSMutableArray *exporters;
 	
 	/**
-	 * Global export file handle
+	 * Array of export files.
 	 */
-	NSFileHandle *exportFileHandle;
+	NSMutableArray *exportFiles;
 	
 	/**
 	 * Export type
@@ -208,11 +208,6 @@
 	 * Previous connection encoding was via Latin1
 	 */
 	BOOL sqlPreviousConnectionEncodingViaLatin1;
-	
-	/**
-	 * Array of export file paths.
-	 */
-	NSMutableArray *exportFiles;
 
 	NSInteger heightOffset1;
 	NSInteger heightOffset2;

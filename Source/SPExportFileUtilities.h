@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPExportInitializer.h
+//  SPExportFileUtilities.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 31, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on July 30, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -25,23 +25,20 @@
 
 #import "SPExportController.h"
 
-@class SPCSVExporter, SPXMLExporter;
+@class SPExportFile;
 
 /**
- * @category SPExportInitializer SPExportInitializer.h
+ * @category SPExportFileUtilities SPExportFileUtilities.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * Export initializer category.
+ * Export file utilities category.
  */
-@interface SPExportController (SPExportInitializer)
+@interface SPExportController (SPExportFileUtilities)
 
-- (void)startExport;
-- (void)initializeExportUsingSelectedOptions;
+- (void)writeCSVHeaderToExportFile:(SPExportFile *)file;
+- (void)writeXMLHeaderToexportFile:(SPExportFile *)file;
 
-- (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
-
-- (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
-- (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
+- (void)errorCreatingExportFileHandles:(NSArray *)files;
 
 @end

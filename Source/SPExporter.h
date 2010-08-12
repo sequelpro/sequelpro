@@ -50,88 +50,76 @@
 
 #import "SPConstants.h"
 
-@class MCPConnection, SPFileHandle;
+@class MCPConnection, SPExportFile;
 
 @interface SPExporter : NSOperation
 {	
-	/**
-	 * The MySQL connection to use
-	 */
 	MCPConnection *connection;
 	
-	/**
-	 * The exports current progress value
-	 */
 	double exportProgressValue;
-	
-	/**
-	 * The max progress value of the export operation
-	 */
 	double exportMaxProgress;
 	
-	/**
-	 * Indicates whether or not the exporter is running
-	 */
 	BOOL exportProcessIsRunning;
-	
-	/**
-	 * Indicates whether or not low memory streaming is used
-	 */
 	BOOL exportUsingLowMemoryBlockingStreaming;
-	
-	/**
-	 * Compress output
-	 */
 	BOOL exportOutputCompressFile;
 	
-	/**
-	 * Compression format
-	 */
+	
 	SPFileCompressionFormat exportOutputCompressionFormat;
 	
-	/**
-	 * The resulting exported data as a string
-	 */
 	NSString *exportData;
 	
-	/**
-	 * The output file handle of the exporter
-	 */
-	SPFileHandle *exportOutputFileHandle;
-	
-	/**
-	 * Export output encoding
-	 */
+	SPExportFile *exportOutputFile;
+
 	NSStringEncoding exportOutputEncoding;
 }
 
+/**
+ * @property connection The MySQL connection to use
+ */
 @property(readwrite, retain) MCPConnection *connection;
 
+/**
+ * @property exportProgressValue The export's current progress value
+ */
 @property(readwrite, assign) double exportProgressValue;
 
-@property(readwrite, assign) BOOL exportProcessIsRunning;
-@property(readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
-
-@property(readwrite, assign) SPFileCompressionFormat exportOutputCompressionFormat;
-
-@property(readwrite, retain) NSString *exportData;
-@property(readwrite, retain) SPFileHandle *exportOutputFileHandle;
-@property(readwrite, assign) NSStringEncoding exportOutputEncoding;
-
+/**
+ * @property exportMaxProgress The max progress value of the export operation
+ */
 @property(readwrite, assign) double exportMaxProgress;
 
 /**
- * Returns whether or not file compression is in use.
- *
- * @return A BOOL indicating the use of compression
+ * @property exportProcessIsRunning Indicates whether or not the exporter is running
  */
-- (BOOL)exportOutputCompressFile;
+@property(readwrite, assign) BOOL exportProcessIsRunning;
 
 /**
- * Sets whether or not the resulting output of this exporter should be compressed.
- *
- * @param compress A BOOL indicating the use of compression
+ * @property exportUsingLowMemoryBlockingStreaming Indicates whether or not low memory streaming is used
  */
+@property(readwrite, assign) BOOL exportUsingLowMemoryBlockingStreaming;
+
+/**
+ * @property exportOutputCompressionFormat Compression format
+ */
+@property(readwrite, assign) SPFileCompressionFormat exportOutputCompressionFormat;
+
+/**
+ * @property exportData The resulting exported data as a string
+ */
+@property(readwrite, retain) NSString *exportData;
+
+/**
+ * @property exportOutputFile The output file of the exporter
+ */
+@property(readwrite, retain) SPExportFile *exportOutputFile;
+
+/**
+ * @property exportOutputEncoding Export output encoding
+ */
+@property(readwrite, assign) NSStringEncoding exportOutputEncoding;
+
+- (BOOL)exportOutputCompressFile;
+
 - (void)setExportOutputCompressFile:(BOOL)compress;
 
 @end

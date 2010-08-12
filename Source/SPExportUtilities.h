@@ -23,6 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+/**
+ * @class SPExportUtilities SPExportUtilities.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Export utility methods.
+ */
 @interface SPExportUtilities : NSObject 
 
 void SPExportDelegateConformsToProtocol(NSObject *delegate, Protocol *protocol);

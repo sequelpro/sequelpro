@@ -40,106 +40,93 @@
 {
 	NSObject <SPSQLExporterProtocol> *delegate;
 	
-	/**
-	 * Tables
-	 */
 	NSArray *sqlExportTables;
-	
-	/**
-	 * Database host
-	 */
+
 	NSString *sqlDatabaseHost;
-	
-	/**
-	 * Database name
-	 */
 	NSString *sqlDatabaseName;
-	
-	/**
-	 * Database version
-	 */
 	NSString *sqlDatabaseVersion;
-	
-	/**
-	 * Current table
-	 */
 	NSString *sqlExportCurrentTable;
-	
-	/**
-	 * Export errors
-	 */
 	NSString *sqlExportErrors;
 	
-	/**
-	 * Include UTF-8 BOM
-	 */
 	BOOL sqlOutputIncludeUTF8BOM;
-	
-	/**
-	 * Encode BLOB fields as Hex data
-	 */
 	BOOL sqlOutputEncodeBLOBasHex;
-	
-	/**
-	 * Include export errors
-	 */
 	BOOL sqlOutputIncludeErrors;
 	
-	/**
-	 * New INSERT statement divider
-	 */
 	SPSQLExportInsertDivider sqlInsertDivider;
 
-	/**
-	 * Number of tables processed by exporter
-	 */
 	NSUInteger sqlCurrentTableExportIndex;
-	
-	/**
-	 * The value after which a new INSERT statement should be created.
-	 */
 	NSUInteger sqlInsertAfterNValue;
-	
-	/**
-	 * Table information fetcher and parser
-	 */
+
 	SPTableData *sqlTableDataInstance;
 }
 
+/**
+ * @property delegate Exporter delegate
+ */
 @property(readwrite, assign) NSObject *delegate;
 
+/**
+ * @property sqlExportTables Tables
+ */
 @property(readwrite, retain) NSArray *sqlExportTables;
 
+/**
+ * @property sqlDatabaseHost Database host
+ */
 @property(readwrite, retain) NSString *sqlDatabaseHost;
+
+/**
+ * @property sqlDatabaseName Database name
+ */
 @property(readwrite, retain) NSString *sqlDatabaseName;
+
+/**
+ * @property sqlDatabaseVersion Database version
+ */
 @property(readwrite, retain) NSString *sqlDatabaseVersion;
 
+/**
+ * @property sqlExportCurrentTable Current table
+ */
 @property(readwrite, retain) NSString *sqlExportCurrentTable;
+
+/**
+ * @property sqlExportErrors Export errors
+ */
 @property(readwrite, retain) NSString *sqlExportErrors;
 
+/**
+ * @property sqlOutputIncludeUTF8BOM Include UTF-8 BOM
+ */
 @property(readwrite, assign) BOOL sqlOutputIncludeUTF8BOM;
+
+/**
+ * @property sqlOutputEncodeBLOBasHex Encode BLOB fields as Hex data
+ */
 @property(readwrite, assign) BOOL sqlOutputEncodeBLOBasHex;
+
+/**
+ * @property sqlOutputIncludeErrors Include export errors
+ */
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
 
+/**
+ * @property sqlCurrentTableExportIndex Number of tables processed by exporter
+ */
 @property(readwrite, assign) NSUInteger sqlCurrentTableExportIndex;
+
+/**
+ * @property sqlInsertAfterNValue The value after which a new INSERT statement should be created
+ */
 @property(readwrite, assign) NSUInteger sqlInsertAfterNValue;
 
+/**
+ * @property sqlInsertDivider New INSERT statement divider
+ */
 @property(readwrite, assign) SPSQLExportInsertDivider sqlInsertDivider;
 
-/**
- * Initialise an instance of SPSQLExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
- */
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
-/**
- * Returns whether or not any export errors occurred.
- *
- * @return A BOOL indicating the occurrence of errors
- */
 - (BOOL)didExportErrorsOccur;
 
 @end

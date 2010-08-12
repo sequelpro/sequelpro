@@ -34,7 +34,6 @@
 #import "SPMainThreadTrampoline.h"
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
-#import "SPFileHandle.h"
 #import "SPAlertSheets.h"
 
 #import "SPCSVExporter.h"
@@ -43,6 +42,37 @@
 #import "SPDotExporter.h"
 
 @implementation SPExportController (SPExportInitializer)
+
+/**
+ * Starts the export process by placing the first exporter on the operation queue. Also opens the progress
+ * sheet if it's not already visible.
+ */
+- (void)startExport
+{
+	// Start progress indicator
+	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
+	[exportProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
+	
+	[exportProgressIndicator setUsesThreadedAnimation:NO];
+	[exportProgressIndicator setIndeterminate:NO];
+	[exportProgressIndicator setDoubleValue:0];
+
+	// If it's not already displayed, open the progress sheet open the progress sheet.
+	if (![exportProgressWindow isVisible]) {
+		[NSApp beginSheet:exportProgressWindow
+		   modalForWindow:[tableDocumentInstance parentWindow]
+			modalDelegate:self
+		   didEndSelector:nil 
+			  contextInfo:nil];
+	}
+		
+	// Add the first exporter to the operation queue
+	[operationQueue addOperation:[exporters objectAtIndex:0]];
+	
+	// Remove the exporter we just added to the operation queue from our list of exporters 
+	// so we know it's already been done.
+	[exporters removeObjectAtIndex:0];	
+}
 
 /**
  * Initializes the export process by analysing the selected criteria.
@@ -78,12 +108,17 @@
 					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
 
 						// Check the overall export settings
-						if ([[table objectAtIndex:1] boolValue] && [exportSQLIncludeStructureCheck state] == NSOffState)
+						if ([[table objectAtIndex:1] boolValue] && (![exportSQLIncludeStructureCheck state])) {
 							[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:NO]];
-						if ([[table objectAtIndex:2] boolValue] && [exportSQLIncludeContentCheck state] == NSOffState)
+						}
+							
+						if ([[table objectAtIndex:2] boolValue] && (![exportSQLIncludeContentCheck state])) {
 							[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:NO]];
-						if ([[table objectAtIndex:3] boolValue] && [exportSQLIncludeDropSyntaxCheck state] == NSOffState)
+						}
+							
+						if ([[table objectAtIndex:3] boolValue] && (![exportSQLIncludeDropSyntaxCheck state])) {
 							[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:NO]];
+						}
 
 						[exportTables addObject:table];
 					}
@@ -133,12 +168,15 @@
 
 /**
  * Exports the contents of the supplied array of tables or data array.
+ *
+ * @param exportTables An array of table/view names to be exported (can be nil).
+ * @param dataArray    A MySQL result set array to be exported (can be nil).
  */
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
 	NSUInteger i;
-	SPFileHandle *singleFileHandle = nil;
-	BOOL singleFileHeaderHasBeenWritten = NO;
+	BOOL singleFileHandleSet = NO;
+	SPExportFile *singleExportFile = nil, *file = nil;
 	
 	// Change query logging mode
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
@@ -146,10 +184,12 @@
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Export Finished"];
 	
-	// Reset the progress interface
-	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
-	[exportProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
-	[exportProgressIndicator setDoubleValue:0];
+	// Setup the progress sheet
+	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];
+	[exportProgressText setStringValue:NSLocalizedString(@"Initializing...", @"initializing export label")];
+	
+	[exportProgressIndicator setIndeterminate:YES];
+	[exportProgressIndicator setUsesThreadedAnimation:YES];
 	
 	// Open the progress sheet
 	[NSApp beginSheet:exportProgressWindow
@@ -169,7 +209,7 @@
 
 			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
 			
-			singleFileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+			singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
 		// Start the export process depending on the data source
@@ -185,43 +225,15 @@
 				
 				// If required create a single file handle for all CSV exports
 				if (![self exportToMultipleFiles]) {
-					[csvExporter setExportOutputFileHandle:singleFileHandle];
-					
-					if (!singleFileHeaderHasBeenWritten) {
+					if (!singleFileHandleSet) {
+						[singleExportFile setExportFileNeedsCSVHeader:YES];
 						
-						NSMutableString *lineEnding = [NSMutableString stringWithString:[exportCSVLinesTerminatedField stringValue]];
+						[exportFiles addObject:singleExportFile];
 						
-						// Escape tabs, line endings and carriage returns
-						[lineEnding replaceOccurrencesOfString:@"\\t" withString:@"\t"
-													   options:NSLiteralSearch
-														 range:NSMakeRange(0, [lineEnding length])];
-						
-						
-						[lineEnding replaceOccurrencesOfString:@"\\n" withString:@"\n"
-													   options:NSLiteralSearch
-														 range:NSMakeRange(0, [lineEnding length])];
-						
-						[lineEnding replaceOccurrencesOfString:@"\\r" withString:@"\r"
-													   options:NSLiteralSearch
-														 range:NSMakeRange(0, [lineEnding length])];
-						
-						// Write the file header and the first table name
-						[singleFileHandle writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
-													  NSLocalizedString(@"Host", @"csv export host heading"),
-													  [tableDocumentInstance host], 
-													  NSLocalizedString(@"Database", @"csv export database heading"),
-													  [tableDocumentInstance database], 
-													  NSLocalizedString(@"Generation Time", @"csv export generation time heading"),
-													  [NSDate date], 
-													  lineEnding, 
-													  lineEnding,
-													  NSLocalizedString(@"Table", @"csv export table heading"),
-													  table,
-													  lineEnding, 
-													  lineEnding] dataUsingEncoding:[connection encoding]]];
-						
-						singleFileHeaderHasBeenWritten = YES;
+						singleFileHandleSet = YES;
 					}
+					
+					[csvExporter setExportOutputFile:singleExportFile];
 				}
 				
 				[exporters addObject:csvExporter];
@@ -230,7 +242,9 @@
 		else {
 			csvExporter = [self initializeCSVExporterForTable:nil orDataArray:dataArray];
 			
-			[csvExporter setExportOutputFileHandle:singleFileHandle];
+			[exportFiles addObject:singleExportFile];
+			
+			[csvExporter setExportOutputFile:singleExportFile];
 			
 			[exporters addObject:csvExporter];
 		}
@@ -267,9 +281,11 @@
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 				
-		SPFileHandle *fileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-				
-		[sqlExporter setExportOutputFileHandle:fileHandle];
+		file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+		
+		[exportFiles addObject:file];
+		
+		[sqlExporter setExportOutputFile:file];
 		
 		[exporters addObject:sqlExporter];
 		
@@ -286,7 +302,7 @@
 			
 			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
 						
-			singleFileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+			singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
 		// Start the export process depending on the data source
@@ -302,15 +318,11 @@
 				
 				// If required create a single file handle for all XML exports 
 				if (![self exportToMultipleFiles]) {
-					[xmlExporter setExportOutputFileHandle:singleFileHandle];
+					[singleExportFile setExportFileNeedsXMLHeader:YES];
 					
-					if (!singleFileHeaderHasBeenWritten) {
-						
-						// Write the file header
-						[self writeXMLHeaderToFileHandle:singleFileHandle];
-						
-						singleFileHeaderHasBeenWritten = YES;
-					}
+					[exportFiles addObject:singleExportFile];
+					
+					[xmlExporter setExportOutputFile:singleExportFile];
 				}
 				
 				[exporters addObject:xmlExporter];
@@ -319,10 +331,12 @@
 		else {
 			xmlExporter = [self initializeXMLExporterForTable:nil orDataArray:dataArray];
 			
-			[xmlExporter setExportOutputFileHandle:singleFileHandle];
+			[exportFiles addObject:singleExportFile];
+			
+			[xmlExporter setExportOutputFile:singleExportFile];
 		
 			[exporters addObject:xmlExporter];
-		}
+		}		
 	}
 	// Dot export
 	else if (exportType == SPDotExport) {
@@ -354,10 +368,12 @@
 		}
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-
-		SPFileHandle *fileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
-		[dotExporter setExportOutputFileHandle:fileHandle];
+		file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+		
+		[exportFiles addObject:file];
+		
+		[dotExporter setExportOutputFile:file];
 		
 		[exporters addObject:dotExporter];
 		
@@ -375,21 +391,45 @@
 		[exporter setExportOutputCompressFile:([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression)];
 	}
 		
-	// Add the first exporter to the operation queue
-	[operationQueue addOperation:[exporters objectAtIndex:0]];
+	NSMutableArray *problemFiles = [[NSMutableArray alloc] init];
 	
-	// Remove the exporter we just added to the operation queue from our list of exporters 
-	// so we know it's already been done.
-	[exporters removeObjectAtIndex:0];	
+	// Create the actual file handles while dealing with errors (e.g. file already exists, etc) during creation
+	for (SPExportFile *exportFile in exportFiles)
+	{
+		SPExportFileHandleStatus status = [exportFile createExportFileHandle:NO];
+		
+		if (status == SPExportFileHandleCreated) {
+			if ([exportFile exportFileNeedsCSVHeader]) {
+				[self writeCSVHeaderToExportFile:exportFile];
+			}
+			else if ([exportFile exportFileNeedsXMLHeader]) {
+				[self writeXMLHeaderToExportFile:exportFile];
+			}
+		}
+		else {
+			[problemFiles addObject:exportFile];
+		}
+	}
+	
+	// Deal with any file handles that we failed to create for whatever reason
+	if ([problemFiles count] > 0) {
+		[self errorCreatingExportFileHandles:problemFiles];
+	}
+	else {	
+		[problemFiles release];
+		
+		[self startExport];
+	}
 }
 
 /**
  * Initialises a CSV exporter for the supplied table name or data array.
+ *
+ * @param table     The table name for which the exporter should be cerated for (can be nil).
+ * @param dataArray The MySQL result data array for which the exporter should be created for (can be nil).
  */
 - (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
-{
-	SPFileHandle *fileHandle = nil;
-	
+{	
 	SPCSVExporter *csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
 	
 	// Depeding on the export source, set the table name or data array
@@ -427,10 +467,12 @@
 		}
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-				
-		fileHandle = [self fileHandleForFilePath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
+						
+		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
-		[csvExporter setExportOutputFileHandle:fileHandle];
+		[exportFiles addObject:file];
+		
+		[csvExporter setExportOutputFile:file];
 	}
 	
 	return [csvExporter autorelease];
@@ -438,11 +480,12 @@
 
 /**
  * Initialises a XML exporter for the supplied table name or data array.
+ *
+ * @param table     The table name for which the exporter should be cerated for (can be nil).
+ * @param dataArray The MySQL result data array for which the exporter should be created for (can be nil).
  */
 - (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
-{
-	SPFileHandle *fileHandle = nil;
-	
+{	
 	SPXMLExporter *xmlExporter = [[SPXMLExporter alloc] initWithDelegate:self];
 	
 	// Depeding on the export source, set the table name or data array
@@ -463,82 +506,17 @@
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
 		[exportFilename setString:[[exportPathField stringValue] stringByAppendingPathComponent:table]];
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+								
+		SPExportFile *file = [SPExportFile exportFileAtPath:exportFilename];
 		
-		fileHandle = [self fileHandleForFilePath:exportFilename];
-						
-		// Write the file header
-		[self writeXMLHeaderToFileHandle:fileHandle];
+		[file setExportFileNeedsXMLHeader:YES];
 		
-		[xmlExporter setExportOutputFileHandle:fileHandle];
+		[exportFiles addObject:file];
+		
+		[xmlExporter setExportOutputFile:file];
 	}
 	
 	return [xmlExporter autorelease];
-}
-
-/**
- * Writes the XML file header to the supplied file handle.
- */
-- (void)writeXMLHeaderToFileHandle:(SPFileHandle *)fileHandle
-{
-	NSMutableString *header = [NSMutableString string];
-	
-	[header setString:@"<?xml version=\"1.0\"?>\n\n"];
-	[header appendString:@"<!--\n-\n"];
-	[header appendString:@"- Sequel Pro XML dump\n"];
-	[header appendString:[NSString stringWithFormat:@"- Version %@\n-\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[header appendString:[NSString stringWithFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL]];
-	[header appendString:[NSString stringWithFormat:@"- Host: %@ (MySQL %@)\n", [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]]];
-	[header appendString:[NSString stringWithFormat:@"- Database: %@\n", [tableDocumentInstance database]]];
-	[header appendString:[NSString stringWithFormat:@"- Generation Time: %@\n", [NSDate date]]];
-	[header appendString:@"-\n-->\n\n"];
-	
-	if (exportSource == SPTableExport) {
-		[header appendString:[NSString stringWithFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]]];
-	}
-		
-	[fileHandle writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];	
-}
-
-/**
- * Returns a file handle for writing at the supplied path.
- */
-- (SPFileHandle *)fileHandleForFilePath:(NSString *)path
-{
-	SPFileHandle *fileHandle = nil;
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	
-	if ([fileManager fileExistsAtPath:path]) {
-		if ((![fileManager isWritableFileAtPath:path]) || (!(fileHandle = [SPFileHandle fileHandleForWritingAtPath:path]))) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't replace the file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be replaced"));
-			return nil;
-		}
-	} 
-	// Otherwise attempt to create a file
-	else {
-		if (![fileManager createFileAtPath:path contents:[NSData data] attributes:nil]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-			return nil;
-		}
-		
-		// Retrieve a filehandle for the file, attempting to delete it on failure.
-		fileHandle = [SPFileHandle fileHandleForWritingAtPath:path];
-		
-		if (!fileHandle) {
-			[[NSFileManager defaultManager] removeFileAtPath:path handler:nil];
-			
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't write to file. Be sure that you have the necessary privileges.", @"message of panel when file cannot be written"));
-			return nil;
-		}
-	}
-	
-	// Keep a record of the file handle's path in case the user cancels the export then we need to remove
-	// it from disk.
-	[exportFiles addObject:path];
-	
-	return fileHandle;
 }
 
 @end

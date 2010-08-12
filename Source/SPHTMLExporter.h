@@ -35,21 +35,14 @@
  */
 @interface SPHTMLExporter : SPExporter 
 {
-	/**
-	 * Exporter delegate
-	 */
 	NSObject <SPHTMLExporterProtocol> *delegate;
 }
 
+/**
+ * @property delegate Exporter delegate
+ */
 @property(readwrite, assign) NSObject *delegate;
 
-/**
- * Initialise an instance of SPHTMLExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
- */
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

@@ -35,21 +35,14 @@
  */
 @interface SPPDFExporter : SPExporter 
 {
-	/**
-	 * Exporter delegate
-	 */
 	NSObject <SPPDFExporterProtocol> *delegate;
 }
 
+/**
+ * @property delegate Exporter delegate
+ */
 @property(readwrite, assign) NSObject *delegate;
 
-/**
- * Initialise an instance of SPPDFExporter using the supplied delegate.
- *
- * @param exportDelegate The exporter delegate
- *
- * @return The initialised instance
- */
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 
 @end

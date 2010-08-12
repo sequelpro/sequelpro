@@ -34,6 +34,7 @@
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
 #import "SPGrowlController.h"
+#import "SPExportFile.h"
 
 @interface SPExportController (PrivateAPI)
 
@@ -56,7 +57,7 @@
 #pragma mark Initialization
 
 /**
- * Initializes an instance of SPExportController
+ * Initializes an instance of SPExportController.
  */
 - (id)init
 {
@@ -119,12 +120,6 @@
 	
 	// If found the set the default path to the user's desktop, otherwise use their home directory
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
-	
-	// Register to receive notifications of a change in selection of the CSV field separator
-	/*[[NSNotificationCenter defaultCenter] addObserver:self 
-											 selector:@selector(comboBoxSelectionDidChange:)
-												 name:NSComboBoxSelectionDidChangeNotification
-											   object:nil];*/
 }
 
 #pragma mark -
@@ -137,6 +132,8 @@
  * either of these views are not active then the default source are the currently selected tables. If no 
  * tables are currently selected then all tables are checked. Note that in this instance the default export 
  * type is SQL where as in the case of filtered or query result export the default type is CSV.
+ *
+ * @param sender The caller (can be anything or nil as it is not currently used).
  */
 - (IBAction)export:(id)sender
 {
@@ -173,6 +170,10 @@
 
 /**
  * Displays the export window with the supplied tables and export type/format selected.
+ *
+ * @param exportTables The array of table names to be exported
+ * @param format       The export format to be used. See SPExportType constants.
+ * @param source       The source of the export. See SPExportSource constants.
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format usingSource:(SPExportSource)source
 {	
@@ -184,7 +185,8 @@
 	
 	[self refreshTableList:self];
 	
-	if ([exportFiles count] > 0) [exportFiles removeAllObjects];
+	[exporters removeAllObjects];
+	[exportFiles removeAllObjects];
 			
 	// Select the 'selected tables' source option
 	[exportInputPopUpButton selectItemAtIndex:source];
@@ -228,6 +230,8 @@
 
 /**
  * Opens the errors sheet and displays the supplied errors string.
+ *
+ * @param errors The errors string to be displayed
  */
 - (void)openExportErrorsSheetWithString:(NSString *)errors
 {
@@ -378,13 +382,9 @@
 	[operationQueue cancelAllOperations];
 	
 	// Loop the cached export file paths and remove them from disk if they exist
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	
-	for (NSString *filePath in exportFiles)
+	for (SPExportFile *file in exportFiles)
 	{
-		if ([fileManager fileExistsAtPath:filePath]) {
-			[[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
-		}
+		[file delete];
 	}
 	
 	// Close the progress sheet
@@ -397,6 +397,10 @@
 	
 	// Re-enable the cancel button for future exports
 	[sender setEnabled:YES];
+	
+	// Finally get rid of all the exporters and files
+	[exportFiles removeAllObjects];
+	[exporters removeAllObjects];
 }
 
 /**
@@ -705,6 +709,8 @@
 
 /**
  * Enables or disables the export button based on the state of various interface controls. 
+ *
+ * @param uiStateDict A dictionary containing the state of various UI controls.
  */
 - (void)_toggleExportButton:(id)uiStateDict
 {
@@ -789,6 +795,8 @@
 
 /**
  * Enables or disables the export button based on the supplied number (boolean).
+ *
+ * @param enable A boolean indicating the state.
  */
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable
 {
@@ -798,6 +806,8 @@
 /**
  * Resizes the export window's height by the supplied delta, while retaining the position of 
  * all interface controls to accommodate the custom filename view.
+ *
+ * @param delta The height delta for which the height should be adjusted for.
  */
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta
 {
@@ -855,6 +865,8 @@
 /**
  * Resizes the export window's height by the supplied delta, while retaining the position of 
  * all interface controls to accommodate the advanced options view.
+ *
+ * @param delta The height delta for which the height should be adjusted for.
  */
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta
 {
