@@ -483,7 +483,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		[updatingConnections removeObject:connectionName];
 
-		if([[self window] isVisible] || wasNotShown) {
+		if([[self window] isVisible]) {
 			[outlineSchema1 reloadData];
 			[outlineSchema2 reloadData];
 
