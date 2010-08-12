@@ -32,12 +32,19 @@
 #import "SPArrayAdditions.h"
 #import "SPLogger.h"
 #import "SPTooltip.h"
+#import <objc/runtime.h>
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
 #define DragFromNavigatorPboardType  @"SPDragFromNavigatorPboardType"
 
 @implementation SPNavigatorController
+
+static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* context)
+{
+	return (NSComparisonResult)objc_msgSend(s1, @selector(localizedCompare:), s2);
+}
+
 
 /*
  * Returns the shared query console.
@@ -76,6 +83,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 		ignoreUpdate        = NO;
 		isFiltered          = NO;
 		isFiltering         = NO;
+		wasNotShown         = YES;
 		[syncButton setState:NSOffState];
 		NSDictionaryClass   = [NSDictionary class];
 
@@ -475,7 +483,8 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 		[updatingConnections removeObject:connectionName];
 
-		if([[self window] isVisible]) {
+		if([[self window] isVisible] || wasNotShown) {
+			wasNotShown = NO;
 			[outlineSchema1 reloadData];
 			[outlineSchema2 reloadData];
 
@@ -700,7 +709,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				}
 			}
 		}
-		[schemaDataFiltered setDictionary:[structure retain]];
+		[schemaDataFiltered setDictionary:structure];
 		[NSThread detachNewThreadSelector:@selector(reloadAfterFiltering) toTarget:self withObject:nil];
 
 	}
@@ -719,11 +728,17 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 }
 
+- (void)_expandItemOutlineSchema2AfterReloading
+{
+	[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
+}
+
 - (void)reloadAfterFiltering
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	isFiltering = YES;
 	[outlineSchema2 reloadData];
-	[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
+	[self performSelectorOnMainThread:@selector(_expandItemOutlineSchema2AfterReloading) withObject:nil waitUntilDone:YES];
 	isFiltering = NO;
 	[pool release];
 }
@@ -815,14 +830,11 @@ static SPNavigatorController *sharedNavigatorController = nil;
 	}
 
 	if ([item isKindOfClass:NSDictionaryClass]) {
-		NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-		NSArray *sortedItems = [[item allKeys] sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
-		[desc release];
-		return [item objectForKey:[sortedItems objectAtIndex:index]];
+		return [item objectForKey:NSArrayObjectAtIndex([(NSArray*)objc_msgSend(item, @selector(allKeys)) sortedArrayUsingFunction:compareStrings context:nil],index)];
 	}
 	else if ([item isKindOfClass:[NSArray class]]) 
 	{
-		return [item objectAtIndex:index];
+		return NSArrayObjectAtIndex(item,index);
 	}
 	return nil;
 
@@ -913,14 +925,15 @@ static SPNavigatorController *sharedNavigatorController = nil;
 				return [[NSArrayObjectAtIndex([parentObject allKeysForObject:item], 0) componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 
 			} else {
-				if([[parentObject allKeysForObject:item] count]) {
+				id allKeysForItem = [parentObject allKeysForObject:item];
+				if([allKeysForItem count]) {
 					if([outlineView levelForItem:item] == 1) {
 						// It's a db name which wasn't queried yet
 						[[tableColumn dataCell] setImage:databaseIcon];
-						return [[[[parentObject allKeysForObject:item] objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
+						return [[NSArrayObjectAtIndex(allKeysForItem,0) componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 					} else {
 						// It's a field and use the key "  struct_type  " to increase the distance between node and first child
-						if(![NSArrayObjectAtIndex([parentObject allKeysForObject:item], 0) hasPrefix:@"  "]) {
+						if(![NSArrayObjectAtIndex(allKeysForItem,0) hasPrefix:@"  "]) {
 							[[tableColumn dataCell] setImage:fieldIcon];
 							return [[NSArrayObjectAtIndex([parentObject allKeysForObject:item], 0) componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject];
 						} else {
@@ -1068,11 +1081,9 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (void)outlineView:(NSOutlineView *)outlineView didClickTableColumn:(NSTableColumn *)tableColumn
 {
 	if(outlineView == outlineSchema1) {
-		[infoQuickAccessSplitView setPosition:0 ofDividerAtIndex:0];
 		[schemaStatusSplitView setPosition:1000 ofDividerAtIndex:0];
 		[schema12SplitView setPosition:1000 ofDividerAtIndex:0];
 	} else if(outlineView == outlineSchema2) {
-		[infoQuickAccessSplitView setPosition:0 ofDividerAtIndex:0];
 		[schemaStatusSplitView setPosition:1000 ofDividerAtIndex:0];
 		[schema12SplitView setPosition:0 ofDividerAtIndex:0];
 	}
@@ -1167,9 +1178,10 @@ static SPNavigatorController *sharedNavigatorController = nil;
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
 
-	if(tableView == infoTable || tableView == quickAccessTable) {
-		[infoQuickAccessSplitView setPosition:1000 ofDividerAtIndex:0];
-		[schemaStatusSplitView setPosition:200 ofDividerAtIndex:0];
+	if(tableView == infoTable) {
+		CGFloat winHeight = [[self window] frame].size.height;
+		// winHeight = (winHeight < 500) ? winHeight/2 : 500;
+		[schemaStatusSplitView setPosition:winHeight-200 ofDividerAtIndex:0];
 		[outlineSchema1 scrollRowToVisible:[outlineSchema1 selectedRow]];
 		[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
 	}

@@ -31,11 +31,9 @@
 	IBOutlet id outlineSchema2;
 	IBOutlet id navigatorWindow;
 	IBOutlet id infoTable;
-	IBOutlet id quickAccessTable;
 	IBOutlet id searchField;
 	IBOutlet id syncButton;
 
-	IBOutlet id infoQuickAccessSplitView;
 	IBOutlet id schemaStatusSplitView;
 	IBOutlet id schema12SplitView;
 
@@ -66,7 +64,10 @@
 	NSImage *functionIcon;
 	NSImage *fieldIcon;
 	
+	BOOL wasNotShown;
+	
 	Class NSDictionaryClass;
+	
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
