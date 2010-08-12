@@ -345,7 +345,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		if(docCounter > 1) return;
 
-		if(schemaData && [schemaData objectForKey:connectionID])
+		if(schemaData && [schemaData objectForKey:connectionID] && [[NSApp delegate] frontDocument] && [[[NSApp delegate] orderedDocuments] count])
 			[self saveSelectedItems];
 
 		if(schemaDataFiltered)
@@ -484,7 +484,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		[updatingConnections removeObject:connectionName];
 
 		if([[self window] isVisible] || wasNotShown) {
-			wasNotShown = NO;
 			[outlineSchema1 reloadData];
 			[outlineSchema2 reloadData];
 
@@ -494,8 +493,10 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	}
 
-	if([[self window] isVisible])
+	if([[self window] isVisible]) {
+		wasNotShown = NO;
 		[self syncButtonAction:self];
+	}
 
 	if(isFiltered && [[self window] isVisible])
 		[self filterTree:self];
@@ -631,17 +632,17 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	NSString *pattern = [[[searchField stringValue] stringByReplacingOccurrencesOfString:@"." withString:SPUniqueSchemaDelimiter] lowercaseString];
 
-	// Suppress search for '.' since this matches everything
-	if([pattern isEqualToString:SPUniqueSchemaDelimiter]) return;
-
 	[self saveSelectedItems];
 
 	id currentItem = [outlineSchema2 selectedItem];
 	id parentObject = nil;
-	if(isFiltered)
-		parentObject = [outlineSchema2 parentForItem:currentItem] ? [outlineSchema2 parentForItem:currentItem] : schemaDataFiltered;
+	if([outlineSchema2 levelForItem:currentItem] == 0 && !isFiltered)
+		parentObject = currentItem;
 	else
-		parentObject = [outlineSchema2 parentForItem:currentItem] ? [outlineSchema2 parentForItem:currentItem] : schemaData;
+		if(isFiltered)
+			parentObject = [outlineSchema2 parentForItem:currentItem] ? [outlineSchema2 parentForItem:currentItem] : schemaDataFiltered;
+		else
+			parentObject = [outlineSchema2 parentForItem:currentItem] ? [outlineSchema2 parentForItem:currentItem] : schemaData;
 
 	@try{
 
@@ -661,7 +662,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			return;
 		}
 
-		if(isFiltering) return;
+		if(isFiltering || [pattern length] < 2) return;
 
 		isFiltered = YES;
 
@@ -674,7 +675,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[c] %@", pattern];
 		NSArray *filteredItems = [[allSchemaKeys objectForKey:connectionID] filteredArrayUsingPredicate:predicate];
 
-		BOOL searchFailed = NO;
+		BOOL searchFailed = YES;
 
 		for(NSString* item in filteredItems) {
 			NSArray *a = [item componentsSeparatedByString:SPUniqueSchemaDelimiter];
@@ -684,6 +685,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			if(!a || [a count] < 2) continue;
 
 			if(![[structure valueForKey:connectionID] valueForKey:db_id]) {
+				searchFailed = NO;
 				[[structure valueForKey:connectionID] setObject:[NSMutableDictionary dictionary] forKey:db_id];
 			}
 			if([a count] > 2) {
@@ -691,6 +693,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id,SPUniqueSchemaDelimiter,[a objectAtIndex:2]];
 
 				if(![[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id]) {
+					searchFailed = NO;
 					[[[structure valueForKey:connectionID] valueForKey:db_id] setObject:[NSMutableDictionary dictionary] forKey:table_id];
 				}
 
@@ -709,7 +712,11 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				}
 			}
 		}
+		if(searchFailed)
+			NSBeep();
+
 		[schemaDataFiltered setDictionary:structure];
+
 		[NSThread detachNewThreadSelector:@selector(reloadAfterFiltering) toTarget:self withObject:nil];
 
 	}
