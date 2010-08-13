@@ -23,7 +23,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDBActionCommons.h"
-#import "SPDatabaseInfo.h"
+
+@class SPDatabaseInfo;
 
 /**
  * The SPDatabaseRename class povides functionality to rename a database.
@@ -53,7 +54,7 @@
  * @param NSString targetDatabaseName the name of the target database
  * @result BOOL success
  */
-- (BOOL)renameDatabaseFrom: (NSString *)sourceDatabaseName to: (NSString *)targetDatabaseName;
+- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName;
 
 /**
  * This method creates a new database.
@@ -61,7 +62,7 @@
  * @param NSString newDatabaseName name of the new database to be created
  * @return BOOL YES on success, otherwise NO
  */
-- (BOOL) createDatabase: (NSString *)newDatabaseName;
+- (BOOL)createDatabase:(NSString *)newDatabaseName;
 
 /**
  * This method drops a database.
@@ -69,6 +70,6 @@
  * @param NSString databaseName name of the database to drop
  * @return BOOL YES on success, otherwise NO
  */
-- (BOOL) dropDatabase: (NSString *)databaseName;
+- (BOOL)dropDatabase:(NSString *)databaseName;
 
 @end

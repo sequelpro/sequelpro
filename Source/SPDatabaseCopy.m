@@ -30,41 +30,44 @@
 
 @synthesize dbInfo;
 
-- (SPDatabaseInfo *)getDBInfoObject {
+- (SPDatabaseInfo *)getDBInfoObject 
+{
 	if (dbInfo != nil) {
 		return dbInfo;
-	} else {
+	} 
+	else {
 		dbInfo = [[SPDatabaseInfo alloc] init];
+		
 		[dbInfo setConnection:[self connection]];
 		[dbInfo setMessageWindow:messageWindow];
 	}
+	
 	return dbInfo;
 }
 
-- (BOOL)copyDatabaseFrom: (NSString *)sourceDatabaseName to: (NSString *)targetDatabaseName withContent:(BOOL)copyWithContent {
-
+- (BOOL)copyDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent 
+{
 	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
-	// check, whether the source database exists and the target database doesn't.
+	
+	// Check, whether the source database exists and the target database doesn't.
 	NSArray *tables = [NSArray array]; 
+	
 	BOOL sourceExists = [databaseInfo databaseExists:sourceDatabaseName];
 	BOOL targetExists = [databaseInfo databaseExists:targetDatabaseName];
+	
 	if (sourceExists && !targetExists) {
-		// retrieve the list of tables/views/funcs/triggers from the source database
-
-		tables = [connection listTablesFromDB:sourceDatabaseName];
-	} else {
-		SPBeginAlertSheet(NSLocalizedString(@"Cannot create existing database", @"create database exists error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to create the target database.\n\nDatabase %@ already exists.", 
-																	   @"create database error informative message"), 
-						   targetDatabaseName]);
 		
+		// Retrieve the list of tables/views/funcs/triggers from the source database
+		tables = [connection listTablesFromDB:sourceDatabaseName];
+	} 
+	else {
 		return NO;
 	}
-	DLog(@"list of found tables of source db: %@", tables);
-	
+
 	BOOL success = [self createDatabase:targetDatabaseName];
+	
 	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
+	
 	[dbActionTableCopy setConnection:connection];
 	
 	for (NSString *currentTable in tables) {
@@ -82,26 +85,20 @@
 	return success;
 }
 
-- (BOOL) createDatabase: (NSString *)newDatabaseName {
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", 
-								 [newDatabaseName backtickQuotedString]];
+- (BOOL)createDatabase:(NSString *)newDatabaseName 
+{
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [newDatabaseName backtickQuotedString]];
+	
 	[connection queryString:createStatement];	
 
-	if ([connection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Failed to create database", @"create database error message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, messageWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to create the target database.\n\nMySQL said: %@", 
-																	   @"create database error informative message"), 
-						   [connection getLastErrorMessage]]);
-		return NO;
-	}
+	if ([connection queryErrored]) return NO;
+	
 	return YES;
-	
-	
 }
 
-- (void)dealloc {
-	[dbInfo dealloc];
+- (void)dealloc 
+{
+	[dbInfo release], dbInfo = nil;
 }
 
 

@@ -53,7 +53,7 @@
  * @param NSString targetDatabaseName the name of the target database
  * @result BOOL success
  */
-- (BOOL)copyDatabaseFrom: (NSString *)sourceDatabaseName to: (NSString *)targetDatabaseName withContent: (BOOL)copyWithContent;
+- (BOOL)copyDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent;
 
 /**
  * This method creates a new database.
@@ -61,6 +61,6 @@
  * @param NSString newDatabaseName name of the new database to be created
  * @return BOOL YES on success, otherwise NO
  */
-- (BOOL) createDatabase: (NSString *)newDatabaseName;
+- (BOOL)createDatabase:(NSString *)newDatabaseName;
 
 @end

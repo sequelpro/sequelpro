@@ -4673,41 +4673,60 @@
 
 @implementation SPDatabaseDocument (PrivateAPI)
 
-- (void)_copyDatabase {
+- (void)_copyDatabase 
+{
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
+	
 	SPDatabaseCopy *dbActionCopy = [[SPDatabaseCopy alloc] init];
-	[dbActionCopy setConnection: [self getConnection]];
-	[dbActionCopy setMessageWindow: parentWindow];
+	
+	[dbActionCopy setConnection:[self getConnection]];
+	[dbActionCopy setMessageWindow:parentWindow];
 	
 	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
 	
-	if ([dbActionCopy copyDatabaseFrom: [self database] 
-									to: [databaseCopyNameField stringValue]
-						   withContent: copyWithContent]) {
+	if ([dbActionCopy copyDatabaseFrom:[self database] to:[databaseCopyNameField stringValue] withContent:copyWithContent]) {
 		[self selectDatabase:[databaseCopyNameField stringValue] item:nil];
 	}
+	else {
+		SPBeginAlertSheet(NSLocalizedString(@"Unable to copy database", @"unable to copy database message"), 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"), [self database], [databaseCopyNameField stringValue]]);
+	}
+	
 	[dbActionCopy release];
-	[self setDatabases: self];
+	
+	// Update DB list
+	[self setDatabases:self];
 }			 
 
-- (void)_renameDatabase {
+- (void)_renameDatabase 
+{
 	if ([[databaseRenameNameField stringValue] isEqualToString:@""]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
-	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
-	[dbActionRename setConnection: [self getConnection]];
-	[dbActionRename setMessageWindow: parentWindow];
 	
-	if ([dbActionRename renameDatabaseFrom: [self database] 
-										to: [databaseRenameNameField stringValue]]) {
+	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
+	
+	[dbActionRename setConnection:[self getConnection]];
+	[dbActionRename setMessageWindow:parentWindow];
+	
+	if ([dbActionRename renameDatabaseFrom:[self database] to:[databaseRenameNameField stringValue]]) {
 		[self selectDatabase:[databaseRenameNameField stringValue] item:nil];
 	}
+	else {
+		SPBeginAlertSheet(NSLocalizedString(@"Unable to rename database", @"unable to rename database message"), 
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], [databaseRenameNameField stringValue]]);
+	}
+	
 	[dbActionRename release];
-	[self setDatabases: self];
+	
+	// Update DB list
+	[self setDatabases:self];
 }			 
 
 /**

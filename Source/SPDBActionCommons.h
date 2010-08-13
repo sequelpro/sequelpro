@@ -23,7 +23,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <MCPKit/MCPKit.h>
-#import "SPAlertSheets.h"
 
 @interface SPDBActionCommons : NSObject 
 {
@@ -32,12 +31,12 @@
 }
 
 /**
- * @property MCPConnection references the MCPKit connection to MySQL; it has to be set.
+ * @property connection References the MCPKit connection to MySQL; it has to be set.
  */
 @property (retain) MCPConnection *connection;
 
 /**
- * @property the NSWindow instance to send message sheets to
+ * @property messageWindow The NSWindow instance to send message sheets to.
  */
 @property (assign) NSWindow *messageWindow;
 
