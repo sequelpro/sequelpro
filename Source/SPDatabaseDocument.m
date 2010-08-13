@@ -4191,6 +4191,8 @@
 		return isSaved;
 	}
 
+	[[SPNavigatorController sharedNavigatorController] performSelectorOnMainThread:@selector(removeConnection:) withObject:[self connectionID] waitUntilDone:YES];
+
 	// Return YES by default
 	return YES;
 }
@@ -4211,8 +4213,6 @@
 									selector:@selector(autoHelp) 
 									object:nil];
 
-
-	[[SPNavigatorController sharedNavigatorController] performSelectorOnMainThread:@selector(removeConnection:) withObject:[self connectionID] waitUntilDone:YES];
 
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];

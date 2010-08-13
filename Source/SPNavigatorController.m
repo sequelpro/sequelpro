@@ -37,6 +37,7 @@
 static SPNavigatorController *sharedNavigatorController = nil;
 
 #define DragFromNavigatorPboardType  @"SPDragFromNavigatorPboardType"
+#define DragTableDataFromNavigatorPboardType  @"SPDragTableDataFromNavigatorPboardType"
 
 @implementation SPNavigatorController
 
@@ -131,7 +132,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
-	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil]];
+	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:DragTableDataFromNavigatorPboardType, DragFromNavigatorPboardType, NSStringPboardType, nil]];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
@@ -1082,7 +1083,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
 	// Provide data for our custom type, and simple NSStrings.
-	[pboard declareTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil] owner:self];
+	[pboard declareTypes:[NSArray arrayWithObjects:DragTableDataFromNavigatorPboardType, DragFromNavigatorPboardType, NSStringPboardType, nil] owner:self];
 
 	// Collect the actual schema paths without leading connection ID
 	NSMutableArray *draggedItems = [NSMutableArray array];
@@ -1101,6 +1102,16 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[archiver finishEncoding];
 	[pboard setData:arraydata forType:DragFromNavigatorPboardType];
 
+	if([draggedItems count] == 1) {
+		NSArray *pathComponents = [[draggedItems objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
+		// Is a table?
+		if([pathComponents count] == 2) {
+			[pboard setString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ SELECT * FROM %@", 
+					[[pathComponents lastObject] backtickQuotedString],
+					[pathComponents componentsJoinedByPeriodAndBacktickQuoted]
+				] forType:DragTableDataFromNavigatorPboardType];
+		}
+	}
 	// For external destinations provide a comma separated string
 	NSMutableString *dragString = [NSMutableString string];
 	for(id item in draggedItems) {

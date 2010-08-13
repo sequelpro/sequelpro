@@ -1555,7 +1555,7 @@
 			[(ImageAndTextCell*)aCell setIndentationLevel:0];
 		} else {
 			[(ImageAndTextCell*)aCell setIndentationLevel:1];
-			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];			
+			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 	} else {
 		[(ImageAndTextCell*)aCell setImage:nil];
@@ -1569,6 +1569,40 @@
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	return (row == 0) ? 25 : 17;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
+{
+	NSPasteboard *pboard = [info draggingPasteboard];
+	
+	// tables were dropped coming from the Navigator
+	if ( [[pboard types] containsObject:@"SPDragTableDataFromNavigatorPboardType"] ) {
+		NSString *query = [pboard stringForType:@"SPDragTableDataFromNavigatorPboardType"];
+		if(!query) return NO;
+
+		[mySQLConnection queryString:query];
+		if ([mySQLConnection queryErrored]) {
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while importing table", @"rror while importing table message") 
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											   otherButton:nil 
+								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to import a table via: \n%@\n\n\nMySQL said: %@", @"error importing table informative message"), 
+									query, [mySQLConnection getLastErrorMessage]]];
+
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
+			return NO;
+		}
+		[self updateTables:nil];
+		return YES;
+	}
+
+	return NO;
+}
+
+- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id < NSDraggingInfo >)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
+{
+	return NSDragOperationCopy;
 }
 
 #pragma mark -
@@ -1892,6 +1926,11 @@
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+
+
+	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:@"SPDragTableDataFromNavigatorPboardType", nil]];
+	[tablesListView setDropRow:-1 dropOperation:NSTableViewDropOn];
+
 }
 
 /**
