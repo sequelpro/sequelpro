@@ -27,7 +27,6 @@
 
 @interface SPNavigatorController : NSWindowController 
 {
-	IBOutlet id outlineSchema1;
 	IBOutlet id outlineSchema2;
 	IBOutlet id navigatorWindow;
 	IBOutlet id infoTable;
@@ -47,9 +46,7 @@
 	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
 
-	NSString *selectedKey1;
 	NSString *selectedKey2;
-	NSRect selectionViewPort1;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
 	BOOL isFiltered;
@@ -63,8 +60,6 @@
 	NSImage *procedureIcon;
 	NSImage *functionIcon;
 	NSImage *fieldIcon;
-	
-	BOOL wasNotShown;
 	
 	Class NSDictionaryClass;
 	

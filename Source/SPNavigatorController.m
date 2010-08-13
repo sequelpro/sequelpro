@@ -74,16 +74,13 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		schemaDataFiltered  = [[NSMutableDictionary alloc] init];
 		allSchemaKeys       = [[NSMutableDictionary alloc] init];
 		schemaData          = [[NSMutableDictionary alloc] init];
-		expandStatus1       = [[NSMutableDictionary alloc] init];
 		expandStatus2       = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
 		updatingConnections = [[NSMutableArray alloc] init];
-		selectedKey1        = @"";
 		selectedKey2        = @"";
 		ignoreUpdate        = NO;
 		isFiltered          = NO;
 		isFiltering         = NO;
-		wasNotShown         = YES;
 		[syncButton setState:NSOffState];
 		NSDictionaryClass   = [NSDictionary class];
 
@@ -101,7 +98,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(schemaData) [schemaData release];
 	if(infoArray)  [infoArray release];
 	if(updatingConnections)  [updatingConnections release];
-	if(expandStatus1) [expandStatus1 release];
 	if(expandStatus2) [expandStatus2 release];
 	[connectionIcon release];
 	[databaseIcon release];
@@ -133,9 +129,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
-	[outlineSchema1 registerForDraggedTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil]];
-	[outlineSchema1 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
-	[outlineSchema1 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:DragFromNavigatorPboardType, NSStringPboardType, nil]];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
@@ -173,15 +166,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(!schemaData) return;
 
 	NSInteger i;
-	for( i = 0; i < [outlineSchema1 numberOfRows]; i++ ) {
-		id item = [outlineSchema1 itemAtRow:i];
-		id parentObject = [outlineSchema1 parentForItem:item] ? [outlineSchema1 parentForItem:item] : schemaData;
-		if(!parentObject) return;
-		id parentKeys = [parentObject allKeysForObject:item];
-		if(parentKeys && [parentKeys count] == 1)
-			if( [expandStatus1 objectForKey:[parentKeys objectAtIndex:0]] )
-				[outlineSchema1 expandItem:item];
-	}
 	if(!isFiltered) {
 		for( i = 0; i < [outlineSchema2 numberOfRows]; i++ ) {
 			id item = [outlineSchema2 itemAtRow:i];
@@ -196,25 +180,14 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (void)saveSelectedItems
 {
-	selectedKey1 = @"";
-	selectionViewPort1 = [outlineSchema1 visibleRect];
 	if(schemaData) {
-		id selection = nil;
-		selection = [outlineSchema1 selectedItem];
-		if(selection) {
-			id parentObject = [outlineSchema1 parentForItem:selection] ? [outlineSchema1 parentForItem:selection] : schemaData;
-			if(!parentObject || ![parentObject isKindOfClass:NSDictionaryClass]) return;
-			id parentKeys = [parentObject allKeysForObject:selection];
-			if(parentKeys && [parentKeys count] == 1)
-				selectedKey1 = [[parentKeys objectAtIndex:0] description];
-		}
-		
+
 		if(isFiltered) return;
 
 		selectedKey2 = @"";
 		selectionViewPort2 = [outlineSchema2 visibleRect];
 
-		selection = [outlineSchema2 selectedItem];
+		id selection = [outlineSchema2 selectedItem];
 		if(selection) {
 			id parentObject = [outlineSchema2 parentForItem:selection] ? [outlineSchema2 parentForItem:selection] : schemaData;
 			if(!parentObject || ![parentObject isKindOfClass:NSDictionaryClass]) return;
@@ -275,31 +248,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if(!schemaData) return;
 
-	BOOL viewportWasValid1 = NO;
 	BOOL viewportWasValid2 = NO;
-	selectionViewPort1.size = [outlineSchema1 visibleRect].size;
 	selectionViewPort2.size = [outlineSchema2 visibleRect].size;
-	viewportWasValid1 = [outlineSchema1 scrollRectToVisible:selectionViewPort1];
 	viewportWasValid2 = [outlineSchema2 scrollRectToVisible:selectionViewPort2];
-	if(selectedKey1 && [selectedKey1 length]) {
-		id item = schemaData;
-		NSArray *pathArray = [selectedKey1 componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		NSMutableString *aKey = [NSMutableString string];
-		for(NSInteger i=0; i < [pathArray count]; i++) {
-			[aKey appendString:[pathArray objectAtIndex:i]];
-			if(![item objectForKey:aKey]) break;
-			item = [item objectForKey:aKey];
-			[aKey appendString:SPUniqueSchemaDelimiter];
-		}
-		if(item != nil) {
-			NSInteger itemIndex = [outlineSchema1 rowForItem:item];
-			if (itemIndex >= 0) {
-				[outlineSchema1 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
-				if(!viewportWasValid1)
-					[outlineSchema1 scrollRowToVisible:[outlineSchema1 selectedRow]];
-			}
-		}
-	}
 	if(!isFiltered && selectedKey2 && [selectedKey2 length]) {
 		id item = schemaData;
 		NSArray *pathArray = [selectedKey2 componentsSeparatedByString:SPUniqueSchemaDelimiter];
@@ -356,7 +307,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			[allSchemaKeys removeObjectForKey:connectionID];
 
 		if([[self window] isVisible]) {
-			[outlineSchema1 reloadData];
 			[outlineSchema2 reloadData];
 			[self restoreSelectedItems];
 			if(isFiltered)
@@ -484,7 +434,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		[updatingConnections removeObject:connectionName];
 
 		if([[self window] isVisible]) {
-			[outlineSchema1 reloadData];
 			[outlineSchema2 reloadData];
 
 			[self restoreExpandStatus];
@@ -493,10 +442,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	}
 
-	if([[self window] isVisible]) {
-		wasNotShown = NO;
+	if([[self window] isVisible])
 		[self syncButtonAction:self];
-	}
 
 	if(isFiltered && [[self window] isVisible])
 		[self filterTree:self];
@@ -518,7 +465,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (void)removeDatabase:(NSString*)db_id forConnectionID:(NSString*)connectionID
 {
 	[[schemaData objectForKey:connectionID] removeObjectForKey:db_id];
-	[outlineSchema1 reloadData];
 	[outlineSchema2 reloadData];
 }
 
@@ -606,13 +552,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[allSchemaKeys removeObjectForKey:connectionID];
 	[updatingConnections removeAllObjects];
 	[infoArray removeAllObjects];
-	[expandStatus1 removeAllObjects];
 	[expandStatus2 removeAllObjects];
-	[outlineSchema1 reloadData];
 	[outlineSchema2 reloadData];
-	selectedKey1 = @"";
 	selectedKey2 = @"";
-	selectionViewPort1 = NSZeroRect;
 	selectionViewPort2 = NSZeroRect;
 	[syncButton setState:NSOffState];
 	isFiltered = NO;
@@ -745,7 +687,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	isFiltering = YES;
 	[outlineSchema2 reloadData];
-	[self performSelectorOnMainThread:@selector(_expandItemOutlineSchema2AfterReloading) withObject:nil waitUntilDone:YES];
+	// [self performSelectorOnMainThread:@selector(_expandItemOutlineSchema2AfterReloading) withObject:nil waitUntilDone:YES];
+	[self performSelector:@selector(_expandItemOutlineSchema2AfterReloading) onThread:[NSThread currentThread] withObject:nil waitUntilDone:YES modes:[NSArray arrayWithObjects: NSDefaultRunLoopMode, nil]];
 	isFiltering = NO;
 	[pool release];
 }
@@ -797,11 +740,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if(!parentObject || ![parentObject allKeysForObject:item] || ![[parentObject allKeysForObject:item] count]) return;
 
-	if(ov == outlineSchema1)
-	{
-		[expandStatus1 setObject:@"" forKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
-	}
-	else if(ov == outlineSchema2 && !isFiltered)
+	if(ov == outlineSchema2 && !isFiltered)
 	{
 		[expandStatus2 setObject:@"" forKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
 	}
@@ -820,9 +759,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	
 	if(!parentObject || ![parentObject allKeysForObject:item] || ![[parentObject allKeysForObject:item] count]) return;
 
-	if(ov == outlineSchema1)
-		[expandStatus1 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
-	else if(ov == outlineSchema2 && !isFiltered)
+	if(ov == outlineSchema2 && !isFiltered)
 		[expandStatus2 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
 }
 
@@ -1087,10 +1024,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (void)outlineView:(NSOutlineView *)outlineView didClickTableColumn:(NSTableColumn *)tableColumn
 {
-	if(outlineView == outlineSchema1) {
-		[schemaStatusSplitView setPosition:1000 ofDividerAtIndex:0];
-		[schema12SplitView setPosition:1000 ofDividerAtIndex:0];
-	} else if(outlineView == outlineSchema2) {
+	if(outlineView == outlineSchema2) {
 		[schemaStatusSplitView setPosition:1000 ofDividerAtIndex:0];
 		[schema12SplitView setPosition:0 ofDividerAtIndex:0];
 	}
@@ -1189,7 +1123,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		CGFloat winHeight = [[self window] frame].size.height;
 		// winHeight = (winHeight < 500) ? winHeight/2 : 500;
 		[schemaStatusSplitView setPosition:winHeight-200 ofDividerAtIndex:0];
-		[outlineSchema1 scrollRowToVisible:[outlineSchema1 selectedRow]];
 		[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
 	}
 }

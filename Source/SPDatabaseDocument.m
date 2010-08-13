@@ -1246,12 +1246,12 @@
 {
 	BOOL isNavigatorVisible = [[[SPNavigatorController sharedNavigatorController] window] isVisible];
 
-	if(!isNavigatorVisible) {
-		[[SPNavigatorController sharedNavigatorController] updateEntriesForConnection:self];
-	}
-
 	// Show or hide the navigator
 	[[[SPNavigatorController sharedNavigatorController] window] setIsVisible:(!isNavigatorVisible)];
+
+	if(!isNavigatorVisible)
+		[[SPNavigatorController sharedNavigatorController] updateEntriesForConnection:self];
+
 }
 
 - (IBAction)showNavigator:(id)sender
