@@ -75,6 +75,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		allSchemaKeys       = [[NSMutableDictionary alloc] init];
 		schemaData          = [[NSMutableDictionary alloc] init];
 		expandStatus2       = [[NSMutableDictionary alloc] init];
+		cachedSortedKeys    = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
 		updatingConnections = [[NSMutableArray alloc] init];
 		selectedKey2        = @"";
@@ -99,6 +100,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(infoArray)  [infoArray release];
 	if(updatingConnections)  [updatingConnections release];
 	if(expandStatus2) [expandStatus2 release];
+	if(cachedSortedKeys) [cachedSortedKeys release];
 	[connectionIcon release];
 	[databaseIcon release];
 	[tableIcon release];
@@ -315,6 +317,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	}
 }
 
+- (void)_setSyncButtonOn
+{
+	[syncButton setState:NSOnState];
+	[self syncButtonAction:self];
+}
+
 - (void)selectInActiveDocumentItem:(id)item fromView:(id)outlineView
 {
 	// Do nothing for connection root item yet
@@ -351,8 +359,16 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			}
 			if([[doc connectionID] isEqualToString:[pathArray objectAtIndex:0]]) {
 
+				// TODO: in sync mode switch it off while selecting the item in the doc and re-enable it after a delay of one 0.1sec
+				// to avoid gui rendering problems
+				NSInteger oldState = [syncButton state];
+				[syncButton setState:NSOffState];
+
 				// Select the database and table
 				[doc selectDatabase:[pathArray objectAtIndex:1] item:([pathArray count] > 2)?[pathArray objectAtIndex:2]:nil];
+
+				if(oldState == NSOnState)
+					[self performSelector:@selector(_setSyncButtonOn) withObject:nil afterDelay:0.1];
 
 			} else {
 
@@ -387,6 +403,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if([[self window] isVisible]) {
 		[self saveSelectedItems];
 		[infoArray removeAllObjects];
+		[cachedSortedKeys removeAllObjects];
 	}
 
 
@@ -552,6 +569,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[allSchemaKeys removeObjectForKey:connectionID];
 	[updatingConnections removeAllObjects];
 	[infoArray removeAllObjects];
+	[cachedSortedKeys removeAllObjects];
 	[expandStatus2 removeAllObjects];
 	[outlineSchema2 reloadData];
 	selectedKey2 = @"";
@@ -677,18 +695,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 }
 
-- (void)_expandItemOutlineSchema2AfterReloading
-{
-	[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
-}
-
 - (void)reloadAfterFiltering
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	isFiltering = YES;
 	[outlineSchema2 reloadData];
-	// [self performSelectorOnMainThread:@selector(_expandItemOutlineSchema2AfterReloading) withObject:nil waitUntilDone:YES];
-	[self performSelector:@selector(_expandItemOutlineSchema2AfterReloading) onThread:[NSThread currentThread] withObject:nil waitUntilDone:YES modes:[NSArray arrayWithObjects: NSDefaultRunLoopMode, nil]];
+	[outlineSchema2 expandItem:[outlineSchema2 itemAtRow:0] expandChildren:YES];
 	isFiltering = NO;
 	[pool release];
 }
@@ -774,7 +786,44 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	}
 
 	if ([item isKindOfClass:NSDictionaryClass]) {
-		return [item objectForKey:NSArrayObjectAtIndex([(NSArray*)objc_msgSend(item, @selector(allKeys)) sortedArrayUsingFunction:compareStrings context:nil],index)];
+
+		NSArray *allKeys = (NSArray*)objc_msgSend(item, @selector(allKeys));
+
+		// If item contains more than 50 keys store the sort order and use the cached data to speed up
+		// the displaying of the tree data
+		if(!isFiltered && [allKeys count] > 50 && [outlineView parentForItem:item]) {
+
+			// Get the parent
+			id parentObject = [outlineView parentForItem:item];
+
+			// No parent return the child by using the normal sort routine
+			if(!parentObject || ![parentObject isKindOfClass:NSDictionaryClass])
+				return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+
+			// Get the parent key name for storing
+			id parentKeys = [parentObject allKeysForObject:item];
+			if(parentKeys && [parentKeys count] == 1) {
+
+				NSString *itemRef = [NSArrayObjectAtIndex(parentKeys,0) description];
+
+				// For safety reasons
+				if(!itemRef)
+					return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+
+				// Not yet cached so do it
+				if(![cachedSortedKeys objectForKey:itemRef])
+					[cachedSortedKeys setObject:[allKeys sortedArrayUsingFunction:compareStrings context:nil] forKey:itemRef];
+
+				return [item objectForKey:NSArrayObjectAtIndex([cachedSortedKeys objectForKey:itemRef],index)];
+
+			}
+
+			// If something failed return the child by using the normal way
+			return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+
+		} else {
+			return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+		}
 	}
 	else if ([item isKindOfClass:[NSArray class]]) 
 	{

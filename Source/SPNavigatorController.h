@@ -43,14 +43,13 @@
 	NSMutableDictionary *allSchemaKeys;
 	NSMutableArray *infoArray;
 	NSMutableArray *updatingConnections;
-	NSMutableDictionary *expandStatus1;
 	NSMutableDictionary *expandStatus2;
+	NSMutableDictionary *cachedSortedKeys;
 
 	NSString *selectedKey2;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
 	BOOL isFiltered;
-	
 	BOOL isFiltering;
 	
 	NSImage *connectionIcon;
