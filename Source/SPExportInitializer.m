@@ -331,6 +331,8 @@
 		else {
 			xmlExporter = [self initializeXMLExporterForTable:nil orDataArray:dataArray];
 			
+			[singleExportFile setExportFileNeedsXMLHeader:YES];
+			
 			[exportFiles addObject:singleExportFile];
 			
 			[xmlExporter setExportOutputFile:singleExportFile];
