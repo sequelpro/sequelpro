@@ -129,6 +129,9 @@
 	
 	currentPoolDataLength = 0;
 	
+	// Inform the delegate that we are about to start writing the data to disk
+	[delegate performSelectorOnMainThread:@selector(xmlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
+	
 	while (1) 
 	{
 		// Check for cancellation flag

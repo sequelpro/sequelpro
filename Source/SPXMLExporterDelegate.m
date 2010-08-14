@@ -107,6 +107,14 @@
  */
 - (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter
 {
+	[[exportProgressIndicator onMainThread] setDoubleValue:[exporter exportProgressValue]];
+}
+
+/**
+ *
+ */
+- (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter
+{
 	// Only update the progress text if this is a table export
 	if (exportSource == SPTableExport) {
 		[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
@@ -121,14 +129,6 @@
 	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
 	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
 	[[exportProgressIndicator onMainThread] setDoubleValue:0];
-}
-
-/**
- *
- */
-- (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter
-{
-	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
 @end
