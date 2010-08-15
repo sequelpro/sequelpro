@@ -3519,7 +3519,18 @@
 	
 	// Selected tables data export
 	if ([menuItem action] == @selector(exportSelectedTablesAs:)) {
-		return (([self database] != nil) && ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]));
+		
+		NSInteger tag = [menuItem tag];
+		NSInteger type = [tablesListInstance tableType];
+		
+		BOOL enable = (([self database] != nil) && ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]));
+		
+		if (type == SPTableTypeTable) {
+			return enable;
+		}
+		else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
+			return (enable && (tag == SPSQLExport));
+		}		
 	}
 
 	if ([menuItem action] == @selector(import:) ||
