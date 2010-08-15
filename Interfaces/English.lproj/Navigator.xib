@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="150"/>
+			<integer value="153"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -336,7 +336,7 @@
 													<int key="NSsFlags">256</int>
 													<reference key="NSTarget" ref="871868181"/>
 													<string key="NSAction">_doScroller:</string>
-													<double key="NSPercent">0.93785309791564941</double>
+													<double key="NSPercent">0.94883722066879272</double>
 												</object>
 												<object class="NSScroller" id="214181863">
 													<reference key="NSNextResponder" ref="871868181"/>
@@ -344,6 +344,7 @@
 													<string key="NSFrame">{{1, 65}, {120, 11}}</string>
 													<reference key="NSSuperview" ref="871868181"/>
 													<int key="NSViewLayerContentsRedrawPolicy">2</int>
+													<bool key="NSEnabled">YES</bool>
 													<int key="NSsFlags">257</int>
 													<reference key="NSTarget" ref="871868181"/>
 													<string key="NSAction">_doScroller:</string>
@@ -370,7 +371,7 @@
 											<reference key="NSSuperview" ref="464250149"/>
 											<reference key="NSNextKeyView" ref="776459064"/>
 											<int key="NSViewLayerContentsRedrawPolicy">2</int>
-											<int key="NSsFlags">562</int>
+											<int key="NSsFlags">690</int>
 											<reference key="NSVScroller" ref="1053144917"/>
 											<reference key="NSHScroller" ref="214181863"/>
 											<reference key="NSContentView" ref="776459064"/>
@@ -1157,9 +1158,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1362, 471}, {395, 359}}</string>
+					<string>{{136, 298}, {395, 359}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1362, 471}, {395, 359}}</string>
+					<string>{{136, 298}, {395, 359}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{200, 200}</string>
