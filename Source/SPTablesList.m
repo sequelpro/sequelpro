@@ -657,10 +657,16 @@
  */
 - (void)updateSelectionWithTaskString:(NSString *)taskString
 {
-	if (![mySQLConnection isConnected]) return;
+	if (![mySQLConnection isConnected] || [tablesListView selectedRow] < 0) {
+		return;
+	}
+	id selectedItem = [filteredTables objectAtIndex:[tablesListView selectedRow]];
+	if(![selectedItem isKindOfClass:[NSString class]]) {
+		return;
+	}
 
 	// If there is a multiple or blank selection, clear all views directly.
-	if ( [tablesListView numberOfSelectedRows] != 1 || ![(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length] ) {
+	if ( [tablesListView numberOfSelectedRows] != 1 || ![(NSString *)selectedItem length] ) {
 		
 		// Update the selection variables and the interface
 		[self performSelectorOnMainThread:@selector(setSelection:) withObject:nil waitUntilDone:YES];
@@ -1470,16 +1476,28 @@
  * Loads a table in content or source view (if tab selected)
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
-{	
+{
+
+	if([tablesListView selectedRow] < 0) {
+		[self updateSelectionWithTaskString:NSLocalizedString(@"Reloading...", @"Reloading table task string")];
+		return;
+	}
+
+	id selectedItem = [filteredTables objectAtIndex:[tablesListView selectedRow]];
+
+	if(![selectedItem isKindOfClass:[NSString class]]) {
+		[self updateSelectionWithTaskString:NSLocalizedString(@"Reloading...", @"Reloading table task string")];
+		return;
+	}
 
 	// Reset selectability after change if necessary
 	if ([tableDocumentInstance isWorking]) tableListIsSelectable = NO;
 
 	// Perform no action if the selected table hasn't actually changed - reselection etc
 	if ([tablesListView numberOfSelectedRows] == 1
-		&& [(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length]
-		&& [selectedTableName isEqualToString:[filteredTables objectAtIndex:[tablesListView selectedRow]]]
-		&& selectedTableType == [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue])
+		&& [(NSString *)selectedItem length]
+		&& [selectedTableName isEqualToString:(NSString *)selectedItem]
+		&& selectedTableType == [(NSString *)selectedItem integerValue])
 	{
 		return;
 	}
@@ -1488,7 +1506,7 @@
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	NSString *tableName = @"data";
-	if ([tablesListView numberOfSelectedRows] == 1 && [(NSString *)[filteredTables objectAtIndex:[tablesListView selectedRow]] length])
+	if ([tablesListView numberOfSelectedRows] == 1 && [selectedItem isKindOfClass:[NSString class]] && [(NSString *)selectedItem length])
 		tableName = [filteredTables objectAtIndex:[tablesListView selectedRow]];
 	[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), tableName]];
 
@@ -1516,6 +1534,9 @@
 	// Disallow selection while the document is working on a task
 	if ([tableDocumentInstance isWorking]) return NO;
 
+	if(![[filteredTables objectAtIndex:rowIndex] isKindOfClass:[NSString class]])
+		return NO;
+
 	//return (rowIndex != 0);
 	if( [filteredTableTypes count] == 0 )
 		return (rowIndex != 0 );
@@ -1540,7 +1561,11 @@
 {
 	if (rowIndex > 0 && rowIndex < [filteredTableTypes count]
 		&& [[aTableColumn identifier] isEqualToString:@"tables"]) {
-		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeView) {
+		if(![[filteredTables objectAtIndex:rowIndex] isKindOfClass:[NSString class]]) {
+			[(ImageAndTextCell*)aCell setImage:nil];
+			[(ImageAndTextCell*)aCell setIndentationLevel:0];
+		}
+		else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeView) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
 		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeTable) { 
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
@@ -1779,7 +1804,7 @@
 		// Add a "no matches" title if nothing matches the current filter settings
 		if (![filteredTables count]) {
 			[filteredTables addObject:NSLocalizedString(@"NO MATCHES",@"header for no matches in filtered list")];
-			[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];		
+			[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 		}
 
 		// If the currently selected table isn't present in the filter list, add it as a special entry

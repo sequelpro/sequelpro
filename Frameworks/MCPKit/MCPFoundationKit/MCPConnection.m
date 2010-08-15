@@ -2306,9 +2306,13 @@ void performThreadedKeepAlive(void *ptr)
 					return;
 				}
 
+				if(![aTableDict objectForKey:@"name"]) continue;
 				// Extract the name
 				NSString *aTableName = [aTableDict objectForKey:@"name"];
 
+				if(!aTableName) continue;
+				if(![aTableName isKindOfClass:[NSString class]]) continue;
+				if(![aTableName length]) continue;
 				// Retrieve the column details
 				NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
 					[aTableName stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
