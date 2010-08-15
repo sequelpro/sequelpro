@@ -2198,7 +2198,7 @@ void performThreadedKeepAlive(void *ptr)
 	for (id aView in [[[self delegate] valueForKeyPath:@"tablesListInstance"] allViewNames]) {
 		NSDictionary *aViewDict = [NSDictionary dictionaryWithObjectsAndKeys:
 										aView, @"name",
-										@"0", @"type",
+										@"1", @"type",
 										nil];
 		[tablesAndViews addObject:aViewDict];
 	}
