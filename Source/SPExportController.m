@@ -335,6 +335,8 @@
 	[self updateAvailableExportFilenameTokens];
 	
 	if (!showCustomFilenameView) [self updateDisplayedExportFilename];
+	
+	[self refreshTableList:self];
 }
 
 /**
@@ -426,9 +428,7 @@
  * Refreshes the table list.
  */
 - (IBAction)refreshTableList:(id)sender
-{
-	NSUInteger i;
-	
+{	
 	[tables removeAllObjects];
 	
 	// For all modes, retrieve table and view names
@@ -445,7 +445,7 @@
 	}
 		
 	// For SQL only, add procedures and functions
-	if ([[[[exportTypeTabBar selectedTabViewItem] identifier] lowercaseString] isEqualToString:@"sql"]) {
+	if (exportType == SPSQLExport) {
 		NSArray *procedures = [tablesListInstance allProcedureNames];
 		
 		for (id procName in procedures) 
