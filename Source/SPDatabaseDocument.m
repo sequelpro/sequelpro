@@ -3522,15 +3522,25 @@
 		
 		NSInteger tag = [menuItem tag];
 		NSInteger type = [tablesListInstance tableType];
+		NSInteger numberOfSelectedItems = [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 		
-		BOOL enable = (([self database] != nil) && ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]));
+		BOOL enable = (([self database] != nil) && numberOfSelectedItems);
 		
-		if (type == SPTableTypeTable) {
-			return enable;
-		}
-		else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
+		// Enable all export formats if at least one table/view is selected
+		if (numberOfSelectedItems == 1) {
+			if (type == SPTableTypeTable || type == SPTableTypeView) {
+				return enable;
+			}
+			else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
+				return (enable && (tag == SPSQLExport));
+			}
+		} else {
+			for(NSNumber *type in [tablesListInstance selectedTableTypes])
+				if([type intValue] == SPTableTypeTable || [type intValue] == SPTableTypeView)
+					return enable;
+
 			return (enable && (tag == SPSQLExport));
-		}		
+		}
 	}
 
 	if ([menuItem action] == @selector(import:) ||
