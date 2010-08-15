@@ -127,6 +127,7 @@
 // Getters
 - (NSArray *)selectedTableNames;
 - (NSArray *)selectedTableItems;
+- (NSArray *)selectedTableTypes;
 - (NSString *)tableName;
 - (NSInteger)tableType;
 - (NSArray *)tables;

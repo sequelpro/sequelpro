@@ -1108,6 +1108,20 @@
 	return selTables;
 }
 
+- (NSArray *)selectedTableTypes
+{
+	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSMutableArray *selTables = [NSMutableArray array];
+
+	while (currentIndex != NSNotFound) {
+		[selTables addObject:[filteredTableTypes objectAtIndex:currentIndex]];
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+	}
+	return selTables;
+}
+
 /**
  * Returns the currently selected table or nil if no table or mulitple tables are selected
  */
