@@ -603,6 +603,21 @@
 				[[self onMainThread] updateTableView];
 			}
 
+			// Find result table name for copying as SQL INSERT.
+			// If more than one table name is found set resultTableName to nil.
+			// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
+			// and the resultTableName can differ due to case-sensitive/insensitive settings!.
+			NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
+			for(id field in cqColumnDefinition) {
+				if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
+					resultTableName = nil;
+					break;
+				}
+			}
+
+			// Init copyTable with necessary information for copying selected rows as SQL INSERT
+			[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+
 			[self processResultIntoDataStorage:streamingResult];
 		} else {
 			[streamingResult cancelResultLoad];
@@ -794,18 +809,6 @@
 		return;
 	}
 
-	// Find result table name for copying as SQL INSERT.
-	// If more than one table name is found set resultTableName to nil.
-	// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
-	// and the resultTableName can differ due to case-sensitive/insensitive settings!.
-	NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
-	for(id field in cqColumnDefinition) {
-		if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
-			resultTableName = nil;
-			break;
-		}
-	}
-
 	[customQueryView reloadData];
 
 	// Restore the result view origin if appropriate
@@ -823,9 +826,6 @@
 		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 		tableRowsSelectable = previousTableRowsSelectable;
 	}
-
-	// Init copyTable with necessary information for copying selected rows as SQL INSERT
-	[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -852,10 +852,7 @@
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
 {
 	NSArray *tempRow;
-	NSUInteger rowsProcessed = 0;
-	NSUInteger nextTableDisplayBoundary = 50;
 	NSAutoreleasePool *dataLoadingPool;
-	BOOL tableViewRedrawn = NO;
 
 	// Remove all items from the table
 	resultDataCount = 0;
@@ -863,6 +860,9 @@
 	pthread_mutex_lock(&resultDataLock);
 	[resultData removeAllRows];
 	pthread_mutex_unlock(&resultDataLock);
+
+	// Set up the table updates timer
+	[[self onMainThread] initQueryLoadTimer];
 
 	// Set the column count on the data store
 	[resultData setColumnCount:[theResult numOfFields]];
@@ -878,25 +878,18 @@
 		resultDataCount++;
 		pthread_mutex_unlock(&resultDataLock);
 
-		// Update the count of rows processed
-		rowsProcessed++;
-
-		// Update the table view with new results every now and then
-		if (rowsProcessed > nextTableDisplayBoundary) {
-			[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
-			if (!tableViewRedrawn) {
-				[customQueryView performSelectorOnMainThread:@selector(displayIfNeeded) withObject:nil waitUntilDone:NO];
-				tableViewRedrawn = YES;
-			}
-			nextTableDisplayBoundary *= 2;
-		}
-
 		// Drain and reset the autorelease pool every ~1024 rows
-		if (!(rowsProcessed % 1024)) {
+		if (!(resultDataCount % 1024)) {
 			[dataLoadingPool drain];
 			dataLoadingPool = [[NSAutoreleasePool alloc] init];
 		}
 	}
+
+	// Clean up the interface update timer
+	[[self onMainThread] clearQueryLoadTimer];
+
+	// If the final column autoresize wasn't performed, perform it
+	if (queryLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
 
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
 	[customQueryView setNeedsDisplay:YES];
@@ -1279,6 +1272,79 @@
 }
 
 #pragma mark -
+#pragma mark Table load actions
+
+/**
+ * Set up the table loading interface update timer.
+ * This should be called on the main thread.
+ */
+- (void) initQueryLoadTimer
+{
+	if (queryLoadTimer) [self clearTableLoadTimer];
+	queryLoadInterfaceUpdateInterval = 1;
+	queryLoadLastRowCount = 0;
+	queryLoadTimerTicksSinceLastUpdate = 0;
+
+	queryLoadTimer = [[NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(queryLoadUpdate:) userInfo:nil repeats:YES] retain];
+}
+
+/**
+ * Invalidate and release the table loading interface update timer.
+ * This should be called on the main thread.
+ */
+- (void) clearQueryLoadTimer
+{
+	if (queryLoadTimer) {
+		[queryLoadTimer invalidate];
+		[queryLoadTimer release];
+		queryLoadTimer = nil;
+	}
+}
+
+/**
+ * Perform table interface updates when loading queries, based on timer
+ * ticks.  As data becomes available, the table should be redrawn to
+ * show new rows - quickly at the start of the table, and then slightly
+ * slower after some time to avoid needless updates.
+ */
+- (void) queryLoadUpdate:(NSTimer *)theTimer
+{
+	if (queryLoadTimerTicksSinceLastUpdate < queryLoadInterfaceUpdateInterval) {
+		queryLoadTimerTicksSinceLastUpdate++;
+		return;
+	}
+
+	// Check whether a table update is required, based on whether new rows are
+	// available to display.
+	if (resultDataCount == queryLoadLastRowCount) {
+		return;
+	}
+
+	// Update the table display
+	[customQueryView noteNumberOfRowsChanged];
+	if (!queryLoadLastRowCount) [customQueryView setNeedsDisplay:YES];
+
+	// Update column widths in two cases: on very first rows displayed, and once
+	// more than 200 rows are present.
+	if (queryLoadInterfaceUpdateInterval == 1 || (resultDataCount >= 200 && queryLoadLastRowCount < 200)) {
+		[self autosizeColumns];
+	}
+
+	queryLoadLastRowCount = resultDataCount;
+
+	// Determine whether to decrease the update frequency
+	switch (queryLoadInterfaceUpdateInterval) {
+		case 1:
+			queryLoadInterfaceUpdateInterval = 10;
+			break;
+		case 10:
+			queryLoadInterfaceUpdateInterval = 25;
+			break;
+	}
+	queryLoadTimerTicksSinceLastUpdate = 0;
+}
+
+#pragma mark -
 #pragma mark Accessors
 
 /*
@@ -1477,6 +1543,29 @@
 {
 	[self setResultSelectedRowIndexesToRestore:nil];
 	[self setResultViewportToRestore:NSZeroRect];
+}
+
+/**
+ * Autosize all columns based on their content.
+ * Should be called on the main thread.
+ */
+- (void)autosizeColumns
+{
+	if (isWorking) pthread_mutex_lock(&resultDataLock);
+	NSDictionary *columnWidths = [customQueryView autodetectColumnWidths];
+	if (isWorking) pthread_mutex_unlock(&resultDataLock);
+	[customQueryView setDelegate:nil];
+	for (NSDictionary *columnDefinition in cqColumnDefinition) {
+
+		// Skip columns with saved widths
+		if ([[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]]) continue;
+
+		// Otherwise set the column width
+		NSTableColumn *aTableColumn = [customQueryView tableColumnWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
+		NSUInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] unsignedIntegerValue];
+		[aTableColumn setWidth:targetWidth];
+	}
+	[customQueryView setDelegate:self];
 }
 
 #pragma mark -
@@ -2151,6 +2240,43 @@
 	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 }
 
+/**
+ * Resize a column when it's double-clicked.  (10.6+)
+ */
+- (CGFloat)tableView:(NSTableView *)tableView sizeToFitWidthOfColumn:(NSInteger)columnIndex
+{
+	NSTableColumn *theColumn = [[tableView tableColumns] objectAtIndex:columnIndex];
+	NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[theColumn identifier] integerValue]];
+
+	// Get the column width
+	NSUInteger targetWidth = [customQueryView autodetectWidthForColumnDefinition:columnDefinition maxRows:500];
+
+	// Clear any saved widths for the column
+	NSString *dbKey = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
+	NSString *tableKey = [tablesListInstance tableName];
+	NSMutableDictionary *savedWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
+	NSMutableDictionary *dbDict = [NSMutableDictionary dictionaryWithDictionary:[savedWidths objectForKey:dbKey]];
+	NSMutableDictionary *tableDict = [NSMutableDictionary dictionaryWithDictionary:[dbDict objectForKey:tableKey]];
+	if ([tableDict objectForKey:[columnDefinition objectForKey:@"name"]]) {
+		[tableDict removeObjectForKey:[columnDefinition objectForKey:@"name"]];
+		if ([tableDict count]) {
+			[dbDict setObject:[NSDictionary dictionaryWithDictionary:tableDict] forKey:tableKey];
+		} else {
+			[dbDict removeObjectForKey:tableKey];
+		}
+		if ([dbDict count]) {
+			[savedWidths setObject:[NSDictionary dictionaryWithDictionary:dbDict] forKey:dbKey];
+		} else {
+			[savedWidths removeObjectForKey:dbKey];
+		}
+		[prefs setObject:[NSDictionary dictionaryWithDictionary:savedWidths] forKey:SPTableColumnWidths];
+	}
+
+	// Return the width, while the delegate is empty to prevent column resize notifications
+	[customQueryView setDelegate:nil];
+	[customQueryView performSelector:@selector(setDelegate:) withObject:self afterDelay:0.1];
+	return targetWidth;
+}
 
 #pragma mark -
 #pragma mark TextView delegate methods
@@ -3176,6 +3302,8 @@
 		currentHistoryOffsetIndex = -1;
 		historyItemWasJustInserted = NO;
 
+		queryLoadTimer = nil;
+
 		prefs = [NSUserDefaults standardUserDefaults];
 
 	}
@@ -3294,7 +3422,9 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[prefs removeObserver:self forKeyPath:SPGlobalResultTableFont];
+	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
+	[self clearQueryLoadTimer];
 	[usedQuery release];
 	[resultData release];
 	[favoritesManager release];

@@ -156,6 +156,9 @@
 
 	NSInteger currentHistoryOffsetIndex;
 	BOOL historyItemWasJustInserted;
+
+	NSTimer *queryLoadTimer;
+	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
 }
 
 // IBAction methods
@@ -191,6 +194,11 @@
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
 - (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
 
+// Query load actions
+- (void) initQueryLoadTimer;
+- (void) clearQueryLoadTimer;
+- (void) queryLoadUpdate:(NSTimer *)theTimer;
+
 // Accessors
 - (NSArray *)currentResult;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
@@ -203,6 +211,7 @@
 - (void) setResultViewportToRestore:(NSRect)theViewport;
 - (void) storeCurrentResultViewForRestoration;
 - (void) clearResultViewDetailsToRestore;
+- (void) autosizeColumns;
 
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;

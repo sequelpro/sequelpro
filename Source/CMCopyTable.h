@@ -25,7 +25,8 @@
 #import <AppKit/AppKit.h>
 #import "SPTableView.h"
 
-#define SP_MAX_CELL_WIDTH 200
+#define SP_MAX_CELL_WIDTH_MULTICOLUMN 200
+#define SP_MAX_CELL_WIDTH 400
 
 @class SPDataStorage;
 
@@ -115,7 +116,7 @@
 - (void)setTableData:(SPDataStorage *)theTableStorage;
 
 /*!
-	@method  autodetectColumnWidthsForFont:
+	@method  autodetectColumnWidths
 	@abstract  Autodetect and return column widths based on contents
 	@discussion  Support autocalculating column widths for the represented data.
 		This uses the underlying table storage, calculates string widths,
@@ -123,13 +124,12 @@
 		Suitable for calling on background threads, but ensure that the
 		data storage range in use (currently rows 1-200) won't be altered
 		while this accesses it.
-	@param  The font to use when calculating widths
 	@result A dictionary - mapped by column identifier - of the column widths to use
 */
-- (NSDictionary *) autodetectColumnWidthsForFont:(NSFont *)theFont;
+- (NSDictionary *) autodetectColumnWidths;
 
 /*!
-	@method  autodetectWidthForColumnDefinition:usingFont:maxRows:
+	@method  autodetectWidthForColumnDefinition:maxRows:
 	@abstract  Autodetect and return column width based on contents
 	@discussion  Support autocalculating column width for the represented data.
 		This uses the underlying table storage, and the supplied column definition,
@@ -138,7 +138,6 @@
 		Suitable for calling on background threads, but ensure that the data
 		storage range in use won't be altered while being accessed.
 	@param  A column definition for a represented column; the column to use is derived
-	@param  The font to use when calculating widths
 	@param  The maximum number of rows to process when looking at string lengths
 	@result A reasonable column width to use when displaying data
 */
@@ -146,7 +145,7 @@
  * Autodetect the column width for a specified column - derived from the supplied
  * column definition, using the stored data and the specified font.
  */
-- (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition usingFont:(NSFont *)theFont maxRows:(NSUInteger)rowsToCheck;
+- (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition maxRows:(NSUInteger)rowsToCheck;
 
 @end
 

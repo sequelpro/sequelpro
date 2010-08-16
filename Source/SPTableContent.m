@@ -691,14 +691,13 @@
 	NSUInteger i;
 	NSUInteger dataColumnsCount = [dataColumns count];
 	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
+	tableLoadTargetRowCount = targetRowCount;
 
 	// Set up the table updates timer
 	[[self onMainThread] initTableLoadTimer];
 
 	// Set the column count on the data store
 	[tableValues setColumnCount:dataColumnsCount];
-	
-	CGFloat relativeTargetRowCount = 100.0/targetRowCount;
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
@@ -734,16 +733,6 @@
 		tableRowsCount++;
 
 		pthread_mutex_unlock(&tableValuesLock);
-
-		// Update the task interface as necessary
-		if (!isFiltered) {
-			if (tableRowsCount < targetRowCount) {
-				[tableDocumentInstance setTaskPercentage:(tableRowsCount*relativeTargetRowCount)];
-			} else if (tableRowsCount == targetRowCount) {
-				[tableDocumentInstance setTaskPercentage:100.0];
-				[[tableDocumentInstance onMainThread] setTaskProgressToIndeterminateAfterDelay:YES];
-			}
-		}
 
 		// Drain and reset the autorelease pool every ~1024 rows
 		if (!(tableRowsCount % 1024)) {
@@ -1047,6 +1036,18 @@
  */
 - (void) tableLoadUpdate:(NSTimer *)theTimer
 {
+
+	// Update the task interface as necessary
+	if (!isFiltered && tableLoadTargetRowCount != NSUIntegerMax) {
+		if (tableRowsCount < tableLoadTargetRowCount) {
+			[tableDocumentInstance setTaskPercentage:(tableRowsCount*100/tableLoadTargetRowCount)];
+		} else if (tableRowsCount >= tableLoadTargetRowCount) {
+			[tableDocumentInstance setTaskPercentage:100.0];
+			[tableDocumentInstance setTaskProgressToIndeterminateAfterDelay:YES];
+			tableLoadTargetRowCount = NSUIntegerMax;
+		}
+	}
+	
 	if (tableLoadTimerTicksSinceLastUpdate < tableLoadInterfaceUpdateInterval) {
 		tableLoadTimerTicksSinceLastUpdate++;
 		return;
@@ -1064,7 +1065,7 @@
 
 	// Update column widths in two cases: on very first rows displayed, and once
 	// more than 200 rows are present.
-	if (tableLoadInterfaceUpdateInterval || (tableRowsCount >= 200 && tableLoadLastRowCount < 200)) {
+	if (tableLoadInterfaceUpdateInterval == 1 || (tableRowsCount >= 200 && tableLoadLastRowCount < 200)) {
 		[self autosizeColumns];
 	}
 
@@ -2823,7 +2824,9 @@
  */
 - (void)autosizeColumns
 {
-	NSDictionary *columnWidths = [tableContentView autodetectColumnWidthsForFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]]];
+	if (isWorking) pthread_mutex_lock(&tableValuesLock);
+	NSDictionary *columnWidths = [tableContentView autodetectColumnWidths];
+	if (isWorking) pthread_mutex_unlock(&tableValuesLock);
 	[tableContentView setDelegate:nil];
 	for (NSDictionary *columnDefinition in dataColumns) {
 
@@ -3255,7 +3258,7 @@
 	NSDictionary *columnDefinition = [dataColumns objectAtIndex:[[theColumn identifier] integerValue]];
 
 	// Get the column width
-	NSUInteger targetWidth = [tableContentView autodetectWidthForColumnDefinition:columnDefinition usingFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]] maxRows:500];
+	NSUInteger targetWidth = [tableContentView autodetectWidthForColumnDefinition:columnDefinition maxRows:500];
 
 	// Clear any saved widths for the column
 	NSString *dbKey = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];

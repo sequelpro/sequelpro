@@ -449,16 +449,45 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 /**
  * Autodetect column widths for a specified font.
  */
-- (NSDictionary *) autodetectColumnWidthsForFont:(NSFont *)theFont;
+- (NSDictionary *) autodetectColumnWidths
 {
 	NSMutableDictionary *columnWidths = [NSMutableDictionary dictionaryWithCapacity:[columnDefinitions count]];
 	NSUInteger columnWidth;
+	NSUInteger allColumnWidths = 0;
 
 	for (NSDictionary *columnDefinition in columnDefinitions) {
 		if ([[NSThread currentThread] isCancelled]) return nil;
 
-		columnWidth = [self autodetectWidthForColumnDefinition:columnDefinition usingFont:theFont maxRows:100];
+		columnWidth = [self autodetectWidthForColumnDefinition:columnDefinition maxRows:100];
 		[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
+		allColumnWidths += columnWidth;
+	}
+
+	// Compare the column widths to the table width.  If wider, narrow down wide columns as necessary
+	if (allColumnWidths > [self bounds].size.width) {
+		NSUInteger availableWidthToReduce = 0;
+
+		// Look for columns that are wider than the multi-column max
+		for (NSString *columnIdentifier in columnWidths) {
+			columnWidth = [[columnWidths objectForKey:columnIdentifier] unsignedIntegerValue];
+			if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) availableWidthToReduce += columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN;
+		}
+
+		// Determine how much width can be reduced
+		NSUInteger widthToReduce = allColumnWidths - [self bounds].size.width;
+		if (availableWidthToReduce < widthToReduce) widthToReduce = availableWidthToReduce;
+
+		// Proportionally decrease the column sizes
+		if (widthToReduce) {
+			NSArray *columnIdentifiers = [columnWidths allKeys];
+			for (NSString *columnIdentifier in columnIdentifiers) {
+				columnWidth = [[columnWidths objectForKey:columnIdentifier] unsignedIntegerValue];
+				if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) {
+					columnWidth -= ceil((double)(columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN) / availableWidthToReduce * widthToReduce);
+					[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:columnIdentifier];
+				}
+			}
+		}
 	}
 
 	return columnWidths;
@@ -468,15 +497,16 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
  * Autodetect the column width for a specified column - derived from the supplied
  * column definition, using the stored data and the specified font.
  */
-- (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition usingFont:(NSFont *)theFont maxRows:(NSUInteger)rowsToCheck
+- (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition maxRows:(NSUInteger)rowsToCheck
 {
 	CGFloat columnBaseWidth;
 	id contentString;
 	NSUInteger cellWidth, maxCellWidth, i;
 	NSRange linebreakRange;
 	double rowStep;
+	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 	NSUInteger columnIndex = [[columnDefinition objectForKey:@"datacolumnindex"] unsignedIntegerValue];
-	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:theFont forKey:NSFontAttributeName];
+	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName];
 
 	// Check the number of rows available to check, sampling every n rows
 	if ([tableStorage count] < rowsToCheck) {

@@ -101,7 +101,7 @@
 	NSInteger paginationViewHeight;
 
 	NSTimer *tableLoadTimer;
-	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount;
+	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount, tableLoadTargetRowCount;
 }
 
 // Table loading methods and information

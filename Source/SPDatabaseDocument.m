@@ -1387,10 +1387,14 @@
 	// Check the supplied progress.  Compare it to the display interval - how often
 	// the interface is updated - and update the interface if the value has changed enough.
 	taskProgressValue = taskPercentage;
-	if (taskProgressValue > taskDisplayLastValue + taskProgressValueDisplayInterval
-		|| taskProgressValue < taskDisplayLastValue - taskProgressValueDisplayInterval)
+	if (taskProgressValue >= taskDisplayLastValue + taskProgressValueDisplayInterval
+		|| taskProgressValue <= taskDisplayLastValue - taskProgressValueDisplayInterval)
 	{
-		[taskProgressIndicator performSelectorOnMainThread:@selector(setNumberValue:) withObject:[NSNumber numberWithDouble:taskProgressValue] waitUntilDone:NO];
+		if ([NSThread isMainThread]) {
+			[taskProgressIndicator setDoubleValue:taskProgressValue];
+		} else {
+			[taskProgressIndicator performSelectorOnMainThread:@selector(setNumberValue:) withObject:[NSNumber numberWithDouble:taskProgressValue] waitUntilDone:NO];
+		}
 		taskDisplayLastValue = taskProgressValue;
 	}
 }
