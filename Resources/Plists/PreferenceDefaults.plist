@@ -74,6 +74,8 @@
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMBhARmZmZmg3zv/T6DfO/9PoN87/0+AYY=</data>
 	<key>CustomQueryEditorHighlightQueryColor</key>
 	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMChARmZmZmgzMzcz+DMzNzP4MzM3M/AYY=</data>
+	<key>CustomQueryEditorSelectionColor</key>
+	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAdOU0NvbG9yAISECE5TT2JqZWN0AIWEAWMChARmZmZmg7a1NT+D1tVVPwEBhg==</data>
 	<key>CustomQueryHighlightCurrentQuery</key>
 	<true/>
 	<key>CustomQueryAutoIndent</key>

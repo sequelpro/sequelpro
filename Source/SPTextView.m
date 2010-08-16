@@ -168,11 +168,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
 	[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
 	[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
-	[self setTextColor:[self otherTextColor]];
-	[self setInsertionPointColor:[self otherTextColor]];
+	[self setTextColor:otherTextColor];
+	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
 	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
+	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]], NSBackgroundColorAttributeName, nil]];
 
 	// Register observers for the when editor background colors preference changes
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorSelectionColor options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorCaretColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorFont options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor options:NSKeyValueObservingOptionNew context:NULL];
@@ -208,6 +211,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorHighlightQueryColor]) {
 		[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorCaretColor]) {
+		[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		[self setNeedsDisplay:YES];
+	} else if ([keyPath isEqualToString:SPCustomQueryEditorSelectionColor]) {
+		[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]], NSBackgroundColorAttributeName, nil]];
 		[self setNeedsDisplay:YES];
 	} else if ([keyPath isEqualToString:SPCustomQueryHighlightCurrentQuery]) {
 		[self setShouldHiliteQuery:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
@@ -2743,7 +2752,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 																		  inTextContainer: [self textContainer]
 																				rectCount: &rectCount ];
 				[[self queryHiliteColor] setFill];
-				NSRectFillList(queryRects, rectCount);
+				NSRectFillListUsingOperation(queryRects, rectCount, NSCompositeSourceOver);
 			}
 
 			// Highlight snippets coming from the Query Favorite text macro

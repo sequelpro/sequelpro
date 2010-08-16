@@ -46,6 +46,7 @@ NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPFileExtensionDefault                 = @"spf";
 NSString *SPBundleFileExtension                  = @"spfs";
 NSString *SPFileExtensionSQL                     = @"sql";
+NSString *SPColorThemeFileExtension              = @"spTheme";
 
 // Filenames
 NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
@@ -107,6 +108,7 @@ NSString *SPCustomQueryEditorQuoteColor          = @"CustomQueryEditorQuoteColor
 NSString *SPCustomQueryEditorBacktickColor       = @"CustomQueryEditorBacktickColor";
 NSString *SPCustomQueryEditorVariableColor       = @"CustomQueryEditorVariableColor";
 NSString *SPCustomQueryEditorHighlightQueryColor = @"CustomQueryEditorHighlightQueryColor";
+NSString *SPCustomQueryEditorSelectionColor      = @"CustomQueryEditorSelectionColor";
 NSString *SPCustomQueryAutoIndent                = @"CustomQueryAutoIndent";
 NSString *SPCustomQueryAutoPairCharacters        = @"CustomQueryAutoPairCharacters";
 NSString *SPCustomQueryAutoUppercaseKeywords     = @"CustomQueryAutoUppercaseKeywords";

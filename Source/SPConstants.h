@@ -222,6 +222,7 @@ extern NSString *SPQueryFavortiesPasteboardDragType;
 extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
 extern NSString *SPBundleFileExtension;
+extern NSString *SPColorThemeFileExtension;
 
 // Filenames
 extern NSString *SPHTMLPrintTemplate;
@@ -284,6 +285,7 @@ extern NSString *SPCustomQueryEditorQuoteColor;
 extern NSString *SPCustomQueryEditorBacktickColor;
 extern NSString *SPCustomQueryEditorVariableColor;
 extern NSString *SPCustomQueryEditorHighlightQueryColor;
+extern NSString *SPCustomQueryEditorSelectionColor;
 extern NSString *SPCustomQueryAutoIndent;
 extern NSString *SPCustomQueryAutoPairCharacters;
 extern NSString *SPCustomQueryAutoUppercaseKeywords;

@@ -102,6 +102,9 @@
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseFavoritesSortOrder:(id)sender;
 - (IBAction)makeSelectedFavoriteDefault:(id)sender;
+- (IBAction)exportColorScheme:(id)sender;
+- (IBAction)importColorScheme:(id)sender;
+
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;
