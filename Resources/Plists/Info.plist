@@ -31,6 +31,28 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>spTheme</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>appicon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Sequel Pro Color Theme</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>theme</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.google.code.sequel-pro.spTheme</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>spfs</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
@@ -206,6 +228,27 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>sql</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeDescription</key>
+			<string>Sequel Pro Color Theme</string>
+			<key>UTTypeIconFile</key>
+			<string></string>
+			<key>UTTypeIdentifier</key>
+			<string>com.google.code.sequel-pro.spTheme</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>com.apple.ostype</key>
+				<string>theme</string>
+				<key>public.filename-extension</key>
+				<array>
+					<string>spTheme</string>
 				</array>
 			</dict>
 		</dict>
