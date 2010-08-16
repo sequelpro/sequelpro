@@ -106,15 +106,13 @@
 	NSUInteger i = 0;
 	
 	for (SPExportFile *file in files) 
-	{
-		SPExportFileHandleStatus status = [file exportFileHandleStatus];
-		
-		if (status == SPExportFileHandleExists) {
+	{		
+		if ([file exportFileHandleStatus] == SPExportFileHandleExists) {
 			i++;
 		}
 		// For file handles that we failed to create for some unknown reason, ignore them and remove any 
 		// exporters that are associated with them.
-		else if (status == SPExportFileHandleFailed) {
+		else if ([file exportFileHandleStatus] == SPExportFileHandleFailed) {
 			
 			for (SPExporter *exporter in exporters)
 			{

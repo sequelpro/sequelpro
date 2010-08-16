@@ -397,10 +397,8 @@
 	
 	// Create the actual file handles while dealing with errors (e.g. file already exists, etc) during creation
 	for (SPExportFile *exportFile in exportFiles)
-	{
-		SPExportFileHandleStatus status = [exportFile createExportFileHandle:NO];
-		
-		if (status == SPExportFileHandleCreated) {
+	{		
+		if ([exportFile createExportFileHandle:NO] == SPExportFileHandleCreated) {
 			if ([exportFile exportFileNeedsCSVHeader]) {
 				[self writeCSVHeaderToExportFile:exportFile];
 			}
