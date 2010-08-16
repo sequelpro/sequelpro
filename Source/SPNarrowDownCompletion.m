@@ -612,6 +612,12 @@
 	if([mutablePrefix length] > 0)
 	{
 		if(dictMode) {
+			NSPredicate* predicate;
+			if(caseSensitive)
+				predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH %@ OR (match == NULL AND display BEGINSWITH %@)", [self filterString], [self filterString]];
+			else
+				predicate = [NSPredicate predicateWithFormat:@"match BEGINSWITH[c] %@ OR (match == NULL AND display BEGINSWITH[c] %@)", [self filterString], [self filterString]];
+			[newFiltered addObjectsFromArray:[suggestions filteredArrayUsingPredicate:predicate]];
 			for(id w in [[NSSpellChecker sharedSpellChecker] completionsForPartialWordRange:NSMakeRange(0,[[self filterString] length]) inString:[self filterString] language:nil inSpellDocumentWithTag:0])
 				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", nil]];
 		} else {

@@ -549,8 +549,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Suppress auto-completion if the window isn't active anymore
 		if ([[NSApp keyWindow] firstResponder] != self) return;
 
+		BOOL useSpellChecker = NO;
+
+		// Check if caret is inside a quote to auto-complete by using spellChecker
+		NSColor *currentCharColor = [[self textStorage] attribute:NSForegroundColorAttributeName atIndex:r.location-1 effectiveRange:nil];
+		if(currentCharColor && currentCharColor == quoteColor)
+			useSpellChecker = YES;
+
 		// Trigger the completion
-		[self doCompletionByUsingSpellChecker:NO fuzzyMode:NO autoCompleteMode:YES];
+		[self doCompletionByUsingSpellChecker:useSpellChecker fuzzyMode:NO autoCompleteMode:YES];
 	}
 
 }
