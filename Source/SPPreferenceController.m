@@ -61,6 +61,7 @@
 		reverseFavoritesSort = NO;
 		
 		previousSortItem = SPFavoritesSortNameItem;
+		[NSColor setIgnoresAlpha:NO];
 	}
 
 	return self;
