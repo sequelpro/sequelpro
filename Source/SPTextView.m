@@ -552,8 +552,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		BOOL useSpellChecker = NO;
 
 		// Check if caret is inside a quote to auto-complete by using spellChecker
-		NSColor *currentCharColor = [[self textStorage] attribute:NSForegroundColorAttributeName atIndex:r.location-1 effectiveRange:nil];
-		if(currentCharColor && currentCharColor == quoteColor)
+		if([(NSString*)NSMutableAttributedStringAttributeAtIndex([self textStorage], kQuote, (r.location-1), nil) length])
 			useSpellChecker = YES;
 
 		// Trigger the completion
@@ -2478,9 +2477,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Otherwise show Help if caret is not inside quotes
 	NSUInteger cursorPosition = [self selectedRange].location;
 	if (cursorPosition >= [[self string] length]) cursorPosition--;
-	if(cursorPosition > -1 && (![[self textStorage] attribute:kQuote atIndex:cursorPosition effectiveRange:nil]||[[self textStorage] attribute:kSQLkeyword atIndex:cursorPosition effectiveRange:nil]))
+	if(cursorPosition >= 0 && ![(NSString*)NSMutableAttributedStringAttributeAtIndex([self textStorage], kQuote, cursorPosition, nil) length])
 		[customQueryInstance performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
-	
+
 }
 
 /*
@@ -2662,12 +2661,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		
 		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
 		
-		if(!allowToCheckForUpperCase) continue;
+		// if(!allowToCheckForUpperCase) continue;
 		
 		// Add an attribute to be used in the auto-pairing (keyDown:)
 		// to disable auto-pairing if caret is inside of any token found by lex.
 		// For discussion: maybe change it later (only for quotes not keywords?)
-		if(token < 6)
+		if(!allowToCheckForUpperCase && token < 6)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kLEXToken, kLEXTokenValue, tokenRange);
 		
 		// Mark each SQL keyword for auto-uppercasing and do it for the next textStorageDidProcessEditing: event.
@@ -2681,8 +2680,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSMutableAttributedStringAddAttributeValueRange(textStore, kQuote, kQuoteValue, tokenRange);
 		
 		//distinguish backtick quoted word for completion
-		else if(token == SPT_BACKTICK_QUOTED_TEXT)
-			NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
+		// else if(token == SPT_BACKTICK_QUOTED_TEXT)
+		// 	NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
 
@@ -3063,12 +3062,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			
 		}
-		if([[self textStorage] changeInLength] > 0)
+		if([textStore changeInLength] > 0)
 			textBufferSizeIncreased = YES;
 		else
 			textBufferSizeIncreased = NO;
 
-		if([[self textStorage] changeInLength] < SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+		if([textStore changeInLength] < SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 			[self doSyntaxHighlighting];
 
 	} else {
