@@ -3317,6 +3317,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
 }
 
+// Do nothing if NSColorPanel was opened from the NSTextView
+- (void)changeColor:(id)sender
+{
+	return;
+}
+
 - (void)changeFont:(id)sender
 {
 	if (prefs && [self font] != nil) {

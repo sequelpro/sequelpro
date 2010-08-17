@@ -106,9 +106,12 @@
 	}	
 
 
-	NSTableColumn* column;
-	SPColorWellCell* colorCell;
-
+	NSTableColumn *column;
+	SPColorWellCell *colorCell;
+	NSTextFieldCell *textCell;
+	column = [[colorSettingTableView tableColumns] objectAtIndex: 0];
+	textCell = [[[NSTextFieldCell alloc] init] autorelease];
+	[textCell setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 	column = [[colorSettingTableView tableColumns] objectAtIndex: 1];
 	colorCell = [[[SPColorWellCell alloc] init] autorelease];
 	[colorCell setEditable: YES];
@@ -857,6 +860,8 @@
 	if(tableView == colorSettingTableView && [[tableColumn identifier] isEqualToString:@"name"]) {
 		if ([cell isKindOfClass:[NSTextFieldCell class]]) {
 			[cell setDrawsBackground:YES];
+			NSFont *nf = [NSFont fontWithName:[[[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]] fontName] size:13.0f];
+			[cell setFont:nf];
 			switch(index) {
 				case 1:
 				[cell setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
@@ -1202,6 +1207,9 @@
 // -------------------------------------------------------------------------------
 - (void)windowWillClose:(NSNotification *)notification
 {
+
+	[[NSColorPanel sharedColorPanel] close];
+
 	// Mark the currently selected field in the window as having finished editing, to trigger saves.
 	if ([preferencesWindow firstResponder])
 		[preferencesWindow endEditingFor:[preferencesWindow firstResponder]];
@@ -1214,6 +1222,9 @@
 // -------------------------------------------------------------------------------
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize
 {
+
+	[[NSColorPanel sharedColorPanel] close];
+
 	if ([sender showsResizeIndicator])
 		return frameSize;
 	else
@@ -1364,6 +1375,7 @@
 // reset syntax highlighting colors
 - (IBAction)setDefaultColors:(id)sender
 {
+	[[NSColorPanel sharedColorPanel] close];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:SPCustomQueryEditorCommentColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:SPCustomQueryEditorQuoteColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:SPCustomQueryEditorSQLKeywordColor];
@@ -1393,6 +1405,7 @@
 
 - (void)colorChanged:(id)sender
 {
+
 	if(![[NSColorPanel sharedColorPanel] isVisible]) return;
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[sender color]] forKey:[editorColors objectAtIndex:colorRow]];
 	[colorSettingTableView reloadData];
@@ -1423,6 +1436,7 @@
 			[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [nf displayName], [nf pointSize]]];
 			break;
 	}
+	[colorSettingTableView reloadData];
 }
 
 /**
