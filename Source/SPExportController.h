@@ -230,15 +230,13 @@
  */
 @property(readwrite, assign) MCPConnection *connection;
 
-- (IBAction)export:(id)sender;
-
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
 
 // IB action methods
+- (IBAction)export:(id)sender;
 - (IBAction)closeSheet:(id)sender;
-- (IBAction)switchTab:(id)sender;
 - (IBAction)switchInput:(id)sender;
 - (IBAction)cancelExport:(id)sender;
 - (IBAction)changeExportOutputPath:(id)sender;

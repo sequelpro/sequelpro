@@ -38,6 +38,8 @@
 
 @interface SPExportController (PrivateAPI)
 
+- (void)_switchTab;
+
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable;
@@ -123,49 +125,6 @@
 }
 
 #pragma mark -
-#pragma mark IB action methods
-
-/**
- * Opens the export dialog selecting the appropriate export type and source based on the current context.
- * For example, if either the table content view or custom query editor views are active and there is 
- * data available, these options will be selected as the export source ('Filtered' or 'Query Result'). If 
- * either of these views are not active then the default source are the currently selected tables. If no 
- * tables are currently selected then all tables are checked. Note that in this instance the default export 
- * type is SQL where as in the case of filtered or query result export the default type is CSV.
- *
- * @param sender The caller (can be anything or nil as it is not currently used).
- */
-- (IBAction)export:(id)sender
-{
-	SPExportType exportType = SPSQLExport;
-	SPExportSource exportSource = SPTableExport;
-	
-	NSArray *tables = [tablesListInstance selectedTableItems];
-	
-	BOOL isCustomQuerySelected = ([tableDocumentInstance isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1)); 
-	BOOL isContentSelected     = ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
-	
-	if (isContentSelected) {
-		tables = nil;
-		exportType = SPCSVExport;
-		exportSource = SPFilteredExport;
-	}
-	else if (isCustomQuerySelected) {
-		tables = nil;
-		exportType = SPCSVExport;
-		exportSource = SPQueryExport;
-	}
-	else {
-		tables = ([tables count]) ? tables : nil; 
-	}
-	
-	[self exportTables:tables asFormat:exportType usingSource:exportSource];
-	
-	// Ensure UI validation
-	[self switchInput:exportInputPopUpButton];
-}
-
-#pragma mark -
 #pragma mark Export methods
 
 /**
@@ -219,7 +178,7 @@
 	}
 	
 	// Ensure interface validation
-	[self switchTab:self];
+	[self _switchTab];
 	
 	[NSApp beginSheet:[self window]
 	   modalForWindow:[tableDocumentInstance parentWindow]
@@ -257,6 +216,49 @@
 											  notificationName:@"Export Finished"];
 }
 
+#pragma mark -
+#pragma mark IB action methods
+
+/**
+ * Opens the export dialog selecting the appropriate export type and source based on the current context.
+ * For example, if either the table content view or custom query editor views are active and there is 
+ * data available, these options will be selected as the export source ('Filtered' or 'Query Result'). If 
+ * either of these views are not active then the default source are the currently selected tables. If no 
+ * tables are currently selected then all tables are checked. Note that in this instance the default export 
+ * type is SQL where as in the case of filtered or query result export the default type is CSV.
+ *
+ * @param sender The caller (can be anything or nil as it is not currently used).
+ */
+- (IBAction)export:(id)sender
+{
+	SPExportType exportType = SPSQLExport;
+	SPExportSource exportSource = SPTableExport;
+	
+	NSArray *tables = [tablesListInstance selectedTableItems];
+	
+	BOOL isCustomQuerySelected = ([tableDocumentInstance isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1)); 
+	BOOL isContentSelected     = ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
+	
+	if (isContentSelected) {
+		tables = nil;
+		exportType = SPCSVExport;
+		exportSource = SPFilteredExport;
+	}
+	else if (isCustomQuerySelected) {
+		tables = nil;
+		exportType = SPCSVExport;
+		exportSource = SPQueryExport;
+	}
+	else {
+		tables = ([tables count]) ? tables : nil; 
+	}
+	
+	[self exportTables:tables asFormat:exportType usingSource:exportSource];
+	
+	// Ensure UI validation
+	[self switchInput:exportInputPopUpButton];
+}
+
 /**
  * Closes the export dialog.
  */
@@ -279,64 +281,6 @@
 	
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
-}
-
-/**
- * Change the selected toolbar item.
- */
-- (IBAction)switchTab:(id)sender
-{		
-	// Selected export format
-	NSString *type = [[[exportTypeTabBar selectedTabViewItem] identifier] lowercaseString];
-			
-	// Determine the export type
-	exportType = [exportTypeTabBar indexOfTabViewItemWithIdentifier:type];
-		
-	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-	exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-	
-	[exportOptionsTabBar selectTabViewItemWithIdentifier:type];
-				
-	BOOL isSQL  = (exportType == SPSQLExport);
-	BOOL isCSV  = (exportType == SPCSVExport);
-	BOOL isXML  = (exportType == SPXMLExport);
-	BOOL isHTML = (exportType == SPHTMLExport);
-	BOOL isPDF  = (exportType == SPPDFExport);
-	BOOL isDot  = (exportType == SPDotExport);
-			
-	BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
-	
-	[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
-	[exportTableList setEnabled:(!isDot)];
-	[exportSelectAllTablesButton setEnabled:(!isDot)];
-	[exportDeselectAllTablesButton setEnabled:(!isDot)];
-	[exportRefreshTablesButton setEnabled:(!isDot)];
-	
-	[[[exportInputPopUpButton menu] itemAtIndex:SPTableExport] setEnabled:(!isDot)];
-	
-	[exportInputPopUpButton setEnabled:(!isDot)];
-			
-	// Enable/disable the 'filtered result' and 'query result' options
-	// Note that the result count check is always greater than one as the first row is always the field names
-	[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
-	[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];			
-			
-	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
-	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
-	
-	[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
-	
-	// Set the tooltip
-	[[exportTableList tableColumnWithIdentifier:@"content"] setHeaderToolTip:(enable) ? @"" : NSLocalizedString(@"Include content", @"include content table column tooltip")];
-	
-	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
-	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
-	
-	[self updateAvailableExportFilenameTokens];
-	
-	if (!showCustomFilenameView) [self updateDisplayedExportFilename];
-	
-	[self refreshTableList:self];
 }
 
 /**
@@ -428,12 +372,12 @@
  * Refreshes the table list.
  */
 - (IBAction)refreshTableList:(id)sender
-{	
+{		
 	[tables removeAllObjects];
 	
 	// For all modes, retrieve table and view names
 	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
-	
+		
 	for (id itemName in tablesAndViews) {
 		[tables addObject:[NSMutableArray arrayWithObjects:
 						   itemName, 
@@ -634,8 +578,8 @@
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	[tabViewItem setView:exporterView];
-	
-	[self switchTab:self];
+		
+	[self _switchTab];
 }
 
 #pragma mark -
@@ -706,6 +650,62 @@
 
 #pragma mark -
 #pragma mark Private API
+
+/**
+ * Changes the selected export format and updates the UI accordingly.
+ */
+- (void)_switchTab
+{		
+	// Selected export format
+	NSString *type = [[[exportTypeTabBar selectedTabViewItem] identifier] lowercaseString];
+	
+	// Determine the export type
+	exportType = [exportTypeTabBar indexOfTabViewItemWithIdentifier:type];
+	
+	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
+	exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
+	
+	[exportOptionsTabBar selectTabViewItemWithIdentifier:type];
+	
+	BOOL isSQL  = (exportType == SPSQLExport);
+	BOOL isCSV  = (exportType == SPCSVExport);
+	BOOL isXML  = (exportType == SPXMLExport);
+	BOOL isHTML = (exportType == SPHTMLExport);
+	BOOL isPDF  = (exportType == SPPDFExport);
+	BOOL isDot  = (exportType == SPDotExport);
+	
+	BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
+	
+	[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
+	[exportTableList setEnabled:(!isDot)];
+	[exportSelectAllTablesButton setEnabled:(!isDot)];
+	[exportDeselectAllTablesButton setEnabled:(!isDot)];
+	[exportRefreshTablesButton setEnabled:(!isDot)];
+	
+	[[[exportInputPopUpButton menu] itemAtIndex:SPTableExport] setEnabled:(!isDot)];
+	
+	[exportInputPopUpButton setEnabled:(!isDot)];
+	
+	// Enable/disable the 'filtered result' and 'query result' options
+	// Note that the result count check is always greater than one as the first row is always the field names
+	[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
+	[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];			
+	
+	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
+	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
+	
+	[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
+	
+	// Set the tooltip
+	[[exportTableList tableColumnWithIdentifier:@"content"] setHeaderToolTip:(enable) ? @"" : NSLocalizedString(@"Include content", @"include content table column tooltip")];
+	
+	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
+	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
+	
+	[self updateAvailableExportFilenameTokens];
+	
+	if (!showCustomFilenameView) [self updateDisplayedExportFilename];
+}
 
 /**
  * Enables or disables the export button based on the state of various interface controls. 
