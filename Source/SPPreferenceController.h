@@ -60,7 +60,12 @@
 	IBOutlet NSMenuItem *favoritesSortByMenuItem;
 
 	IBOutlet id tableCell;
-	
+
+	IBOutlet NSTableView *colorSettingTableView;
+	NSArray *editorColors;
+	NSArray *editorNameForColors;
+	NSUInteger colorRow;
+
 	IBOutlet NSTextField *editorFontName;
 	IBOutlet NSTextField *globalResultTableFontName;
 	
@@ -68,7 +73,7 @@
 
 	SPKeychain *keychain;
 	NSDictionary *currentFavorite;
-	
+
 	NSToolbar *toolbar;
 	
 	NSToolbarItem *generalItem;

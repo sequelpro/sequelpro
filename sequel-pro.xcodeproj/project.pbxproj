@@ -354,6 +354,7 @@
 		BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F15040F7C433C00579954 /* SPEditorTokens.h */; };
 		BC6D709E120C4C9F008027B5 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		BC85F5D012193B7D00E255B5 /* SPColorAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */; };
+		BC878A71121A836F00AE5066 /* SPColorWellCell.m in Sources */ = {isa = PBXBuildFile; fileRef = BC878A70121A836F00AE5066 /* SPColorWellCell.m */; };
 		BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */; };
 		BC8C8532100E0A8000D7A129 /* SPTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC8C8531100E0A8000D7A129 /* SPTableView.m */; };
 		BC93FBBD11514ADE005F1D9F /* Navigator.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC93FBBB11514ADE005F1D9F /* Navigator.xib */; };
@@ -988,6 +989,8 @@
 		BC675A16107203BA00C5ACD4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ContentFilterManager.xib; sourceTree = "<group>"; };
 		BC85F5CE12193B7D00E255B5 /* SPColorAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorAdditions.h; sourceTree = "<group>"; };
 		BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorAdditions.m; sourceTree = "<group>"; };
+		BC878A6F121A836F00AE5066 /* SPColorWellCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorWellCell.h; sourceTree = "<group>"; };
+		BC878A70121A836F00AE5066 /* SPColorWellCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorWellCell.m; sourceTree = "<group>"; };
 		BC8B0DAE104004F900FC02EC /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/EncodingPopupView.xib; sourceTree = "<group>"; };
 		BC8C8530100E0A8000D7A129 /* SPTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableView.h; sourceTree = "<group>"; };
 		BC8C8531100E0A8000D7A129 /* SPTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableView.m; sourceTree = "<group>"; };
@@ -1699,6 +1702,8 @@
 				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
 				584094CC1107BD0500260CFD /* SPAlertSheets.h */,
 				584095181107CB6600260CFD /* SPAlertSheets.m */,
+				BC878A6F121A836F00AE5066 /* SPColorWellCell.h */,
+				BC878A70121A836F00AE5066 /* SPColorWellCell.m */,
 			);
 			name = GUI;
 			sourceTree = "<group>";
@@ -2749,6 +2754,7 @@
 				17F90E481210B42700274C98 /* SPExportFile.m in Sources */,
 				17F90E4B1210B43A00274C98 /* SPExportFileUtilities.m in Sources */,
 				BC85F5D012193B7D00E255B5 /* SPColorAdditions.m in Sources */,
+				BC878A71121A836F00AE5066 /* SPColorWellCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

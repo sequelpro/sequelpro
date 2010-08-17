@@ -30,6 +30,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "SPColorAdditions.h"
+#import "SPColorWellCell.h"
 
 @interface SPPreferenceController (PrivateAPI)
 
@@ -103,6 +104,47 @@
 	if (currentSortItem > -1) {
 		[self _sortFavorites];
 	}	
+
+
+	NSTableColumn* column;
+	SPColorWellCell* colorCell;
+
+	column = [[colorSettingTableView tableColumns] objectAtIndex: 1];
+	colorCell = [[[SPColorWellCell alloc] init] autorelease];
+	[colorCell setEditable: YES];
+	[colorCell setTarget: self];
+	[colorCell setAction:@selector(colorClick:)];
+	[column setDataCell:colorCell];
+	
+	editorColors = [[NSArray arrayWithObjects:
+		SPCustomQueryEditorTextColor,
+		SPCustomQueryEditorBackgroundColor,
+		SPCustomQueryEditorCaretColor,
+		SPCustomQueryEditorCommentColor,
+		SPCustomQueryEditorSQLKeywordColor,
+		SPCustomQueryEditorNumericColor,
+		SPCustomQueryEditorQuoteColor,
+		SPCustomQueryEditorBacktickColor,
+		SPCustomQueryEditorVariableColor,
+		SPCustomQueryEditorHighlightQueryColor,
+		SPCustomQueryEditorSelectionColor,
+		nil
+		] retain];
+	editorNameForColors = [[NSArray arrayWithObjects:
+		NSLocalizedString(@"Text",@"text lable for color table"),
+		NSLocalizedString(@"Background",@"background lable for color table"),
+		NSLocalizedString(@"Caret",@"caret lable for color table"),
+		NSLocalizedString(@"Comment",@"comment lable for color table"),
+		NSLocalizedString(@"Keyword",@"keyword lable for color table"),
+		NSLocalizedString(@"Numeric",@"numeric lable for color table"),
+		NSLocalizedString(@"Quote",@"quote lable for color table"),
+		NSLocalizedString(@"Backtick Quote",@"backtick quote lable for color table"),
+		NSLocalizedString(@"Variable",@"variable lable for color table"),
+		NSLocalizedString(@"Query Background",@"query background lable for color table"),
+		NSLocalizedString(@"Selection",@"selection lable for color table"),
+		nil
+		] retain];
+
 }
 
 #pragma mark -
@@ -646,6 +688,9 @@
 // -------------------------------------------------------------------------------
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
+	if(aTableView == colorSettingTableView)
+		return [editorColors count];
+
 	return [[favoritesController arrangedObjects] count];
 }
 
@@ -654,13 +699,22 @@
 // -------------------------------------------------------------------------------
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	if ([[tableColumn identifier] isEqualToString:@"default"] && (rowIndex == [prefs integerForKey:SPDefaultFavorite])) {
-		return [NSImage imageNamed:@"blue-tick"];
+	if(tableView == colorSettingTableView) {
+		if ([[tableColumn identifier] isEqualToString:@"name"])
+			return [editorNameForColors objectAtIndex:rowIndex];
+		else
+			return [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:rowIndex]]];
+	} else {
+		if ([[tableColumn identifier] isEqualToString:@"default"] && (rowIndex == [prefs integerForKey:SPDefaultFavorite])) {
+			return [NSImage imageNamed:@"blue-tick"];
+		}
+		else {
+			return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+		}
 	}
-	else {
-		return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
-	}
+	return nil;
 }
+
 
 #pragma mark -
 #pragma mark TableView drag & drop delegate methods
@@ -670,6 +724,9 @@
 // -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
+
+	if(aTableView == colorSettingTableView) return;
+
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:nil];
 		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPFavoritesPasteboardDragType];
@@ -686,6 +743,9 @@
 // -------------------------------------------------------------------------------
 - (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
+
+	if(tv == colorSettingTableView) return NSDragOperationNone;
+
 	NSInteger originalRow;
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	
@@ -707,6 +767,9 @@
 // -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
 {
+
+	if(tv == colorSettingTableView) return NO;
+
 	NSInteger originalRow;
 	NSInteger destinationRow;
 	NSInteger lastFavoriteIndexCached;
@@ -763,20 +826,66 @@
 
 #pragma mark -
 #pragma mark TableView delegate methods
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if(aTableView == colorSettingTableView) {
+
+			NSColorPanel* panel;
+
+			colorRow = rowIndex;
+			panel = [NSColorPanel sharedColorPanel];
+			[panel setTarget:self];
+			[panel setAction:@selector(colorChanged:)];
+			[panel setColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:colorRow]]]];
+			[colorSettingTableView deselectAll:nil];
+			[panel makeKeyAndOrderFront:self];
+
+			return NO;
+
+	}
 	
+	return YES;
+}
+
 // -------------------------------------------------------------------------------
 // tableView:willDisplayCell:forTableColumn:row:
 // -------------------------------------------------------------------------------
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)index
 {
-	if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
-		[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
+
+	if(tableView == colorSettingTableView && [[tableColumn identifier] isEqualToString:@"name"]) {
+		if ([cell isKindOfClass:[NSTextFieldCell class]]) {
+			[cell setDrawsBackground:YES];
+			switch(index) {
+				case 1:
+				[cell setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+				[cell setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+				break;
+				case 9:
+				[cell setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+				[cell setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
+				break;
+				case 10:
+				[cell setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
+				[cell setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]]];
+				break;
+				default:
+				[cell setTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:index]]]];
+				[cell setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+			}
+		}
+	} else {
+
+		if ([cell isKindOfClass:[SPFavoriteTextFieldCell class]]) {
+			[cell setFavoriteName:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"name"]];
 		
-		if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] integerValue] == SPSocketConnection) {
-			[cell setFavoriteHost:@"localhost"];
-		} 
-		else {
-			[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
+			if ([[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"type"] integerValue] == SPSocketConnection) {
+				[cell setFavoriteHost:@"localhost"];
+			} 
+			else {
+				[cell setFavoriteHost:[[[favoritesController arrangedObjects] objectAtIndex:index] objectForKey:@"host"]];
+			}
 		}
 	}
 }
@@ -786,8 +895,11 @@
 // -------------------------------------------------------------------------------
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
+
+	if([notification object] == colorSettingTableView) return;
+
 	if ([[favoritesTableView selectedRowIndexes] count] > 0) {
-		[favoritesController setSelectionIndexes:[favoritesTableView selectedRowIndexes]];		
+		[favoritesController setSelectionIndexes:[favoritesTableView selectedRowIndexes]];
 	}
 
 	// If no selection is present, blank the password fields (which can't use bindings)
@@ -1263,6 +1375,28 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorTextColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
+	[colorSettingTableView reloadData];
+}
+
+- (void)colorClick:(id)sender
+{
+	NSColorPanel* panel;
+
+	colorRow = [sender clickedRow];
+	panel = [NSColorPanel sharedColorPanel];
+	[panel setTarget:self];
+	[panel setAction:@selector(colorChanged:)];
+	[panel setColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:colorRow]]]];
+	[colorSettingTableView deselectAll:nil];
+	[panel makeKeyAndOrderFront:self];
+}
+
+- (void)colorChanged:(id)sender
+{
+	if(![[NSColorPanel sharedColorPanel] isVisible]) return;
+	[prefs setObject:[NSArchiver archivedDataWithRootObject:[sender color]] forKey:[editorColors objectAtIndex:colorRow]];
+	[colorSettingTableView reloadData];
+
 }
 
 // Set font panel's valid modes
@@ -1530,6 +1664,7 @@
 				}
 
 				[theme release];
+				[colorSettingTableView reloadData];
 
 			} else {
 
@@ -1555,6 +1690,8 @@
  */
 - (void)dealloc
 {
+	if(editorColors) [editorColors release], editorColors = nil;
+	if(editorNameForColors) [editorNameForColors release], editorNameForColors = nil;
 	if (keychain) [keychain release], keychain = nil;
 	if (currentFavorite) [currentFavorite release];
 
