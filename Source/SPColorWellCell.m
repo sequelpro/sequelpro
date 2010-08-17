@@ -29,23 +29,37 @@
 
 - (void) drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView
 {
-	NSRect square = NSInsetRect (cellFrame, 0.5, 0.5);
 
-	if (square.size.height < square.size.width) {
-		square.size.width = square.size.height;
-		square.origin.x = square.origin.x + (cellFrame.size.width -
-			square.size.width) / 2.0;
-	} else {
-		square.size.height = square.size.width;
-		square.origin.y = square.origin.y + (cellFrame.size.height -
-			square.size.height) / 2.0;
-	}
+	// Set initial inset from cellFrame
+	NSRect rect = NSInsetRect (cellFrame, 0.5, 0.5);
 
+	// General inset for colored rect shown inside rect
+	CGFloat insetFactor = 2.0f;
+
+	// Draw border
+	[[NSColor darkGrayColor] set];
+	[NSBezierPath strokeRect: rect];
+	[[NSColor grayColor] set];
+	[NSBezierPath fillRect: NSInsetRect (rect, 1.0, 1.0)];
+
+	// The following rectangle and triangle are needed for displaying color with alpha values
+	// Draw black rectangle
 	[[NSColor blackColor] set];
-	[NSBezierPath strokeRect: square];
+	[NSBezierPath fillRect: NSInsetRect (rect, insetFactor, insetFactor)];
 
+	// Draw white triangle
+	[[NSColor whiteColor] set];
+	NSBezierPath *path = [NSBezierPath bezierPath];
+	[path moveToPoint: NSMakePoint(rect.origin.x - insetFactor + rect.size.width, rect.origin.y + insetFactor)];
+	[path lineToPoint: NSMakePoint(rect.origin.x - insetFactor + rect.size.width, rect.origin.y + rect.size.height - insetFactor)];
+	[path lineToPoint: NSMakePoint(rect.origin.x + insetFactor, rect.origin.y + rect.size.height - insetFactor)];
+	[path closePath];
+	[path fill];
+
+	// Draw the actual color as rect
 	[(NSColor*) [self objectValue] set];
-	[NSBezierPath fillRect: NSInsetRect (square, 2.0, 2.0)];
+	NSRectFillUsingOperation(NSInsetRect (rect, insetFactor, insetFactor), NSCompositeSourceOver);
+
 }
 
 @end
