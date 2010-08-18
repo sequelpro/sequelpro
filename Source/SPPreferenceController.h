@@ -102,6 +102,7 @@
 	SPFavoritesSortItem previousSortItem, currentSortItem;
 	
 	NSString *themePath;
+	NSInteger checkForUnsavedThemeSheetStatus;
 }
 
 - (void)applyRevisionChanges;
@@ -145,5 +146,7 @@
 - (BOOL)checkForUnsavedTheme;
 - (void)updateDisplayColorThemeName;
 - (NSArray *)getAvailableThemes;
+- (void)checkForUnsavedThemeDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+
 
 @end

@@ -1750,20 +1750,59 @@
 	if (error) [[NSAlert alertWithError:error] runModal];
 }
 
+- (void)checkForUnsavedThemeDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[[sheet window] orderOut:self];
+	checkForUnsavedThemeSheetStatus = returnCode;
+}
+
+
 - (BOOL)checkForUnsavedTheme
 {
 
 	if(![prefs objectForKey:SPCustomQueryEditorThemeName] || [[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:@"user-defined"]) {
 
+		[[NSColorPanel sharedColorPanel] close];
+
+		checkForUnsavedThemeSheetStatus = -1;
+
 		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
 		[alert addButtonWithTitle:NSLocalizedString(@"Proceed", @"proceed button")];
 		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
-		[alert setMessageText:NSLocalizedString(@"Current color theme is unsaved. Do you want to proceed without saving it?", @"Current color theme is unsaved. Do you want to proceed without saving it message")];
-		[alert setInformativeText:@""];
+		[alert addButtonWithTitle:nil];
+		[alert setMessageText:NSLocalizedString(@"Warning", @"warning")];
+		[alert setInformativeText:NSLocalizedString(@"Current color theme is unsaved. Do you want to proceed without saving it?", @"Current color theme is unsaved. Do you want to proceed without saving it message")];
 		[alert setAlertStyle:NSWarningAlertStyle];
-		NSInteger choice = [[alert onMainThread] runModal];
-		if(choice == NSAlertFirstButtonReturn) {
-			[[NSColorPanel sharedColorPanel] close];
+		[alert setShowsHelp:NO];
+		[alert setShowsSuppressionButton:NO];
+
+		[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:) contextInfo:nil];
+
+		// wait for the sheet
+		NSModalSession session = [NSApp beginModalSessionForWindow:[alert window]];
+		for (;;) {
+
+			if(checkForUnsavedThemeSheetStatus != -1)
+				break;
+
+			// Execute code on DefaultRunLoop
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
+									 beforeDate:[NSDate distantFuture]];
+
+			// Break the run loop if sheet was closed
+			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
+				|| ![[alert window] isVisible]) 
+				break;
+
+			// Execute code on DefaultRunLoop
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
+									 beforeDate:[NSDate distantFuture]];
+
+		}
+		[NSApp endModalSession:session];
+		[NSApp endSheet:[alert window]];
+
+		if(checkForUnsavedThemeSheetStatus == NSAlertFirstButtonReturn) {
 			return YES;
 		}
 
