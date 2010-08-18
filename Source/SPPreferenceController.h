@@ -59,9 +59,17 @@
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
 	IBOutlet NSMenuItem *favoritesSortByMenuItem;
 
+	IBOutlet NSWindow *enterNameWindow;
+	IBOutlet NSTextField *enterNameLabel;
+	IBOutlet NSTextField *enterNameInputField;
+	IBOutlet NSTextField *colorThemeName;
+	IBOutlet NSTextField *colorThemeNameLabel;
+	IBOutlet id themeNameSaveButton;
+
 	IBOutlet id tableCell;
 
 	IBOutlet NSTableView *colorSettingTableView;
+	IBOutlet NSMenu *themeSelectionMenu;
 	NSArray *editorColors;
 	NSArray *editorNameForColors;
 	NSUInteger colorRow;
@@ -92,6 +100,8 @@
 	
 	BOOL reverseFavoritesSort;
 	SPFavoritesSortItem previousSortItem, currentSortItem;
+	
+	NSString *themePath;
 }
 
 - (void)applyRevisionChanges;
@@ -109,6 +119,9 @@
 - (IBAction)makeSelectedFavoriteDefault:(id)sender;
 - (IBAction)exportColorScheme:(id)sender;
 - (IBAction)importColorScheme:(id)sender;
+- (IBAction)saveColorScheme:(id)sender;
+- (IBAction)loadColorScheme:(id)sender;
+- (IBAction)closePanelSheet:(id)sender;
 
 
 // Toolbar item IBAction methods
@@ -126,5 +139,11 @@
 - (void)changeFont:(id)sender;
 - (IBAction)favoriteTypeDidChange:(id)sender;
 - (void)updateFavoritePasswordsFromField:(NSControl *)passwordControl;
+- (void)updateColorSchemeSelectionMenu;
+- (void)saveColorThemeAtPath:(NSString*)path;
+- (BOOL)loadColorSchemeFromFile:(NSString*)filename;
+- (BOOL)checkForUnsavedTheme;
+- (void)updateDisplayColorThemeName;
+- (NSArray *)getAvailableThemes;
 
 @end

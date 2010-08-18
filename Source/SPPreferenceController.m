@@ -60,9 +60,13 @@
 		favoriteType = 0;
 		fontChangeTarget = 0;
 		reverseFavoritesSort = NO;
-		
+
 		previousSortItem = SPFavoritesSortNameItem;
+
 		[NSColor setIgnoresAlpha:NO];
+
+		themePath = [[[NSString stringWithString:@"~/Library/Application Support/Sequel Pro/Themes"] stringByExpandingTildeInPath] retain];
+
 	}
 
 	return self;
@@ -568,6 +572,10 @@
 
 - (IBAction)importColorScheme:(id)sender
 {
+
+	if(![self checkForUnsavedTheme]) return;
+
+
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
@@ -582,6 +590,39 @@
 				 didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
 					contextInfo:@"importColorScheme"];
 
+}
+
+- (IBAction)loadColorScheme:(id)sender
+{
+
+	if(![self checkForUnsavedTheme]) return;
+
+	if([self loadColorSchemeFromFile:[NSString stringWithFormat:@"%@/%@.%@", themePath, [sender title], SPColorThemeFileExtension]]) {
+		[prefs setObject:[sender title] forKey:SPCustomQueryEditorThemeName];
+		[self updateDisplayColorThemeName];
+	}
+
+}
+
+- (IBAction)saveColorScheme:(id)sender
+{
+
+	[[NSColorPanel sharedColorPanel] close];
+
+	[enterNameLabel setStringValue:NSLocalizedString(@"Theme Name:", @"theme name label")];
+
+	[NSApp beginSheet:enterNameWindow
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"saveTheme"];
+	
+}
+
+- (IBAction)closePanelSheet:(id)sender
+{
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 #pragma mark -
@@ -618,6 +659,10 @@
 // -------------------------------------------------------------------------------
 - (IBAction)displayEditorPreferences:(id)sender
 {
+
+	[self updateColorSchemeSelectionMenu];
+	[self updateDisplayColorThemeName];
+
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:NO];
 	
@@ -1041,6 +1086,27 @@
 - (void)controlTextDidChange:(NSNotification *)aNotification
 {
 	id field = [aNotification object];
+
+	// Validate 'Save' button for entering a valid theme name
+	if(field == enterNameInputField) {
+		NSString *name = [[enterNameInputField stringValue] lowercaseString];
+
+		if(![name length] || [name isEqualToString:@"default"] || [name isEqualToString:@"user-defined"]) {
+			[themeNameSaveButton setEnabled:NO];
+		} else {
+			BOOL enable = YES;
+			for(NSString* item in [self getAvailableThemes]) {
+				if([[item lowercaseString] isEqualToString:name]) {
+					enable = NO;
+					break;
+				}
+			}
+			[themeNameSaveButton setEnabled:enable];
+		}
+
+		return;
+
+	}
 	
 	BOOL nameFieldIsEmpty = (
 		[[favoritesController valueForKeyPath:@"selection.name"] isEqualToString:@""] 
@@ -1279,7 +1345,22 @@
 			
 			[self updateDefaultFavoritePopup];
 		}
+	} else if([contextInfo isEqualToString:@"saveTheme"]) {
+		if (returnCode == NSOKButton) {
+			NSFileManager *fm = [NSFileManager defaultManager];
+			if(![fm fileExistsAtPath:themePath isDirectory:nil]) {
+				if(![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:nil]) {
+					NSBeep();
+					return;
+				}
+			}
+			[self saveColorThemeAtPath:[NSString stringWithFormat:@"%@/%@.%@", themePath, [enterNameInputField stringValue], SPColorThemeFileExtension]];
+			[self updateColorSchemeSelectionMenu];
+			[prefs setObject:[enterNameInputField stringValue] forKey:SPCustomQueryEditorThemeName];
+			[self updateDisplayColorThemeName];
+		}
 	}
+	
 }
 
 - (void)setGrowlEnabled:(BOOL)value
@@ -1300,7 +1381,82 @@
 	return [prefs boolForKey:SPGrowlEnabled];
 }
 
+- (void)editThemeList
+{
+	NSAlert *alert = [NSAlert alertWithMessageText:@"Not yet implemented. Please be patient."
+		defaultButton:NSLocalizedString(@"OK", @"OK button") 
+		alternateButton:nil 
+		otherButton:nil 
+		informativeTextWithFormat:@""];
 
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	[alert runModal];
+}
+
+- (NSArray *)getAvailableThemes
+{
+	// Read ~/Library/Application Support/Sequel Pro/Themes
+	NSFileManager *fm = [NSFileManager defaultManager];
+	if([fm fileExistsAtPath:themePath isDirectory:nil]) {
+		NSArray *allItemsRaw = [fm contentsOfDirectoryAtPath:themePath error:NULL];
+		if(!allItemsRaw) return [NSArray array];
+
+		// Filter out all themes
+		NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH %@", [NSString stringWithFormat:@".%@", SPColorThemeFileExtension]];
+		NSMutableArray *allItems = [NSMutableArray arrayWithArray:allItemsRaw];
+		[allItems filterUsingPredicate:predicate];
+
+		allItemsRaw = [NSArray arrayWithArray:allItems];
+		[allItems removeAllObjects];
+
+		// Remove file extension
+		for(NSString* item in allItemsRaw)
+			[allItems addObject:[item substringToIndex:[item length]-[SPColorThemeFileExtension length]-1]];
+
+		return (NSArray *)allItems;
+	}
+	return [NSArray array];
+}
+
+- (void)updateColorSchemeSelectionMenu
+{
+
+	// Build theme selection submenu
+	[themeSelectionMenu removeAllItems];
+	[themeSelectionMenu setAutoenablesItems:YES];
+	[themeSelectionMenu setShowsStateColumn:YES];
+	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"default color scheme label") action:@selector(setDefaultColors:) keyEquivalent:@""];
+	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
+	
+	NSArray *foundThemes = [self getAvailableThemes];
+	if([foundThemes count]) {
+		for(NSString* item in foundThemes)
+			[themeSelectionMenu addItemWithTitle:item action:@selector(loadColorScheme:) keyEquivalent:@""];
+		[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
+	}
+	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Edit Theme List…", @"edit theme list label") action:@selector(editThemeList) keyEquivalent:@""];
+	
+}
+
+- (void)updateDisplayColorThemeName
+{
+
+	if(![prefs objectForKey:SPCustomQueryEditorThemeName]) {
+		[colorThemeName setHidden:YES];
+		[colorThemeNameLabel setHidden:YES];
+		return;
+	}
+
+	if([[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:@"user-defined"]) {
+		[colorThemeName setHidden:YES];
+		[colorThemeNameLabel setHidden:YES];
+		return;
+	}
+
+	[colorThemeName setHidden:NO];
+	[colorThemeNameLabel setHidden:NO];
+
+}
 // -------------------------------------------------------------------------------
 // updateDefaultFavoritePopup:
 //
@@ -1375,7 +1531,11 @@
 // reset syntax highlighting colors
 - (IBAction)setDefaultColors:(id)sender
 {
+
+	if(![self checkForUnsavedTheme]) return;
+
 	[[NSColorPanel sharedColorPanel] close];
+	[prefs setObject:@"Default" forKey:SPCustomQueryEditorThemeName];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:SPCustomQueryEditorCommentColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:SPCustomQueryEditorQuoteColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:SPCustomQueryEditorSQLKeywordColor];
@@ -1388,6 +1548,7 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
 	[colorSettingTableView reloadData];
+	[self updateDisplayColorThemeName];
 }
 
 - (void)colorClick:(id)sender
@@ -1409,6 +1570,8 @@
 	if(![[NSColorPanel sharedColorPanel] isVisible]) return;
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[sender color]] forKey:[editorColors objectAtIndex:colorRow]];
 	[colorSettingTableView reloadData];
+	[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+	[self updateDisplayColorThemeName];
 
 }
 
@@ -1473,6 +1636,244 @@
 	return YES;
 }
 
+- (void)saveColorThemeAtPath:(NSString*)path
+{
+	// Build plist dictionary
+	NSMutableDictionary *scheme = [NSMutableDictionary dictionary];
+	NSMutableDictionary *mainsettings = [NSMutableDictionary dictionary];
+	NSMutableArray *settings = [NSMutableArray array];
+
+	CGFloat red, green, blue, alpha;
+	NSInteger redInt, greenInt, blueInt, alphaInt;
+	NSString *redHexValue, *greenHexValue, *blueHexValue, *alphaHexValue;
+
+	[prefs synchronize];
+
+	NSColor *aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
+	[mainsettings setObject:[aColor rgbHexString] forKey:@"background"];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]];
+	[mainsettings setObject:[aColor rgbHexString] forKey:@"caret"];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]];
+	[mainsettings setObject:[aColor rgbHexString] forKey:@"foreground"];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]];
+	[mainsettings setObject:[aColor rgbHexString] forKey:@"lineHighlight"];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]];
+	[mainsettings setObject:[aColor rgbHexString] forKey:@"selection"];
+
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:mainsettings, @"settings", nil]];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]];
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	@"Comment", @"name",
+		[NSDictionary dictionaryWithObjectsAndKeys:
+	[aColor rgbHexString], @"foreground",
+		nil
+		], @"settings",
+		nil
+		]];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]];
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	@"String", @"name",
+		[NSDictionary dictionaryWithObjectsAndKeys:
+	[aColor rgbHexString], @"foreground",
+		nil
+		], @"settings",
+		nil
+		]];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]];
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	@"Keyword", @"name",
+		[NSDictionary dictionaryWithObjectsAndKeys:
+	[aColor rgbHexString], @"foreground",
+		nil
+		], @"settings",
+		nil
+		]];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]];
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	@"User-defined constant", @"name",
+		[NSDictionary dictionaryWithObjectsAndKeys:
+	[aColor rgbHexString], @"foreground",
+		nil
+		], @"settings",
+		nil
+		]];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]];
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	@"Number", @"name",
+		[NSDictionary dictionaryWithObjectsAndKeys:
+	[aColor rgbHexString], @"foreground",
+		nil
+		], @"settings",
+		nil
+		]];
+
+	aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]];
+	[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+	@"Variable", @"name",
+		[NSDictionary dictionaryWithObjectsAndKeys:
+	[aColor rgbHexString], @"foreground",
+		nil
+		], @"settings",
+		nil
+		]];
+
+	[scheme setObject:settings forKey:@"settings"];
+
+	NSString *err = nil;
+	NSData *plist = [NSPropertyListSerialization dataFromPropertyList:scheme
+		format:NSPropertyListXMLFormat_v1_0
+		errorDescription:&err];
+
+	if(err != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting color scheme data", @"error while converting color scheme data")]
+			defaultButton:NSLocalizedString(@"OK", @"OK button") 
+			alternateButton:nil 
+			otherButton:nil 
+			informativeTextWithFormat:err];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return;
+	}
+
+	NSError *error = nil;
+	[plist writeToFile:path options:NSAtomicWrite error:&error];
+	if (error) [[NSAlert alertWithError:error] runModal];
+}
+
+- (BOOL)checkForUnsavedTheme
+{
+
+	if(![prefs objectForKey:SPCustomQueryEditorThemeName] || [[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:@"user-defined"]) {
+
+		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+		[alert addButtonWithTitle:NSLocalizedString(@"Proceed", @"proceed button")];
+		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+		[alert setMessageText:NSLocalizedString(@"Current color theme is unsaved. Do you want to proceed without saving it?", @"Current color theme is unsaved. Do you want to proceed without saving it message")];
+		[alert setInformativeText:@""];
+		[alert setAlertStyle:NSWarningAlertStyle];
+		NSInteger choice = [[alert onMainThread] runModal];
+		if(choice == NSAlertFirstButtonReturn) {
+			[[NSColorPanel sharedColorPanel] close];
+			return YES;
+		}
+
+		return NO;
+	}
+	[[NSColorPanel sharedColorPanel] close];
+	return YES;
+}
+
+- (BOOL)loadColorSchemeFromFile:(NSString*)filename
+{
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+
+	NSDictionary *theme = nil;
+
+	NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
+
+	theme = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if(!theme || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		if (theme) [theme release];
+		return NO;
+	}
+
+	if([theme objectForKey:@"settings"] 
+		&& [[theme objectForKey:@"settings"] isKindOfClass:[NSArray class]] 
+		&& [[theme objectForKey:@"settings"] count] 
+		&& [[[theme objectForKey:@"settings"] objectAtIndex:0] isKindOfClass:[NSDictionary class]]
+		&& [[[theme objectForKey:@"settings"] objectAtIndex:0] objectForKey:@"settings"]) {
+
+		NSInteger counter = 0;
+		for(NSDictionary *dict in [theme objectForKey:@"settings"]) {
+			if(counter == 0) {
+				if([dict objectForKey:@"settings"]) {
+					NSDictionary *dic = [dict objectForKey:@"settings"];
+					if([dic objectForKey:@"background"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"background"]]] forKey:SPCustomQueryEditorBackgroundColor];
+					if([dic objectForKey:@"caret"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"caret"]]] forKey:SPCustomQueryEditorCaretColor];
+					if([dic objectForKey:@"foreground"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"foreground"]]] forKey:SPCustomQueryEditorTextColor];
+					if([dic objectForKey:@"lineHighlight"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"lineHighlight"]]] forKey:SPCustomQueryEditorHighlightQueryColor];
+					if([dic objectForKey:@"selection"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"selection"]]] forKey:SPCustomQueryEditorSelectionColor];
+				} else {
+					continue;
+				}
+			} else {
+				if([dict objectForKey:@"name"] && [dict objectForKey:@"settings"] && [[dict objectForKey:@"settings"] isKindOfClass:[NSDictionary class]] && [[dict objectForKey:@"settings"] objectForKey:@"foreground"]) {
+					if([[dict objectForKey:@"name"] isEqualToString:@"Comment"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:
+							[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
+							forKey:SPCustomQueryEditorCommentColor];
+					else if([[dict objectForKey:@"name"] isEqualToString:@"String"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:
+							[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
+							forKey:SPCustomQueryEditorQuoteColor];
+					else if([[dict objectForKey:@"name"] isEqualToString:@"Keyword"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:
+							[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
+							forKey:SPCustomQueryEditorSQLKeywordColor];
+					else if([[dict objectForKey:@"name"] isEqualToString:@"User-defined constant"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:
+							[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
+							forKey:SPCustomQueryEditorBacktickColor];
+					else if([[dict objectForKey:@"name"] isEqualToString:@"Number"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:
+							[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
+							forKey:SPCustomQueryEditorNumericColor];
+					else if([[dict objectForKey:@"name"] isEqualToString:@"Variable"])
+						[prefs setObject:[NSArchiver archivedDataWithRootObject:
+							[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
+							forKey:SPCustomQueryEditorVariableColor];
+				}
+			}
+			counter++;
+		}
+
+		[theme release];
+		[colorSettingTableView reloadData];
+
+	} else {
+
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"No color theme data found.", @"error that no color theme found")];
+
+		[alert setAlertStyle:NSInformationalAlertStyle];
+		[alert runModal];
+		[theme release];
+		return NO;
+
+	}
+	return YES;
+}
+
 /**
  * Save panel did end method.
  */
@@ -1481,218 +1882,14 @@
 
 	if([contextInfo isEqualToString:@"exportColorScheme"]) {
 		if (returnCode == NSOKButton) {
-
-			// Build plist dictionary
-			NSMutableDictionary *scheme = [NSMutableDictionary dictionary];
-			NSMutableDictionary *mainsettings = [NSMutableDictionary dictionary];
-			NSMutableArray *settings = [NSMutableArray array];
-
-			CGFloat red, green, blue, alpha;
-			NSInteger redInt, greenInt, blueInt, alphaInt;
-			NSString *redHexValue, *greenHexValue, *blueHexValue, *alphaHexValue;
-
-			[prefs synchronize];
-
-			NSColor *aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
-			[mainsettings setObject:[aColor rgbHexString] forKey:@"background"];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]];
-			[mainsettings setObject:[aColor rgbHexString] forKey:@"caret"];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]];
-			[mainsettings setObject:[aColor rgbHexString] forKey:@"foreground"];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]];
-			[mainsettings setObject:[aColor rgbHexString] forKey:@"lineHighlight"];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]];
-			[mainsettings setObject:[aColor rgbHexString] forKey:@"selection"];
-
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:mainsettings, @"settings", nil]];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]];
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-				@"Comment", @"name",
-				[NSDictionary dictionaryWithObjectsAndKeys:
-					[aColor rgbHexString], @"foreground",
-					nil
-				], @"settings",
-				nil
-			]];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]];
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-				@"String", @"name",
-				[NSDictionary dictionaryWithObjectsAndKeys:
-					[aColor rgbHexString], @"foreground",
-					nil
-				], @"settings",
-				nil
-			]];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]];
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-				@"Keyword", @"name",
-				[NSDictionary dictionaryWithObjectsAndKeys:
-					[aColor rgbHexString], @"foreground",
-					nil
-				], @"settings",
-				nil
-			]];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]];
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-				@"User-defined constant", @"name",
-				[NSDictionary dictionaryWithObjectsAndKeys:
-					[aColor rgbHexString], @"foreground",
-					nil
-				], @"settings",
-				nil
-			]];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]];
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-				@"Number", @"name",
-				[NSDictionary dictionaryWithObjectsAndKeys:
-					[aColor rgbHexString], @"foreground",
-					nil
-				], @"settings",
-				nil
-			]];
-
-			aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]];
-			[settings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-				@"Variable", @"name",
-				[NSDictionary dictionaryWithObjectsAndKeys:
-					[aColor rgbHexString], @"foreground",
-					nil
-				], @"settings",
-				nil
-			]];
-
-			[scheme setObject:settings forKey:@"settings"];
-
-			NSString *err = nil;
-			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:scheme
-				format:NSPropertyListXMLFormat_v1_0
-				errorDescription:&err];
-
-			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting color scheme data", @"error while converting color scheme data")]
-					defaultButton:NSLocalizedString(@"OK", @"OK button") 
-					alternateButton:nil 
-					otherButton:nil 
-					informativeTextWithFormat:err];
-
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-				return;
-			}
-
-			NSError *error = nil;
-			[plist writeToFile:[panel filename] options:NSAtomicWrite error:&error];
-			if (error) [[NSAlert alertWithError:error] runModal];
-
+			[self saveColorThemeAtPath:[panel filename]];
 		}
 	}
 	else if([contextInfo isEqualToString:@"importColorScheme"]) {
 		if (returnCode == NSOKButton) {
-			NSString *filename = [[panel filenames] objectAtIndex:0];
-			NSError *readError = nil;
-			NSString *convError = nil;
-			NSPropertyListFormat format;
-
-			NSDictionary *theme = nil;
-
-			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
-
-			theme = [[NSPropertyListSerialization propertyListFromData:pData 
-					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-			if(!theme || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
-
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-				if (theme) [theme release];
-				return;
-			}
-
-			if([theme objectForKey:@"settings"] 
-				&& [[theme objectForKey:@"settings"] isKindOfClass:[NSArray class]] 
-				&& [[theme objectForKey:@"settings"] count] 
-				&& [[[theme objectForKey:@"settings"] objectAtIndex:0] isKindOfClass:[NSDictionary class]]
-				&& [[[theme objectForKey:@"settings"] objectAtIndex:0] objectForKey:@"settings"]) {
-
-				NSInteger counter = 0;
-				for(NSDictionary *dict in [theme objectForKey:@"settings"]) {
-					if(counter == 0) {
-						if([dict objectForKey:@"settings"]) {
-							NSDictionary *dic = [dict objectForKey:@"settings"];
-							if([dic objectForKey:@"background"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"background"]]] forKey:SPCustomQueryEditorBackgroundColor];
-							if([dic objectForKey:@"caret"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"caret"]]] forKey:SPCustomQueryEditorCaretColor];
-							if([dic objectForKey:@"foreground"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"foreground"]]] forKey:SPCustomQueryEditorTextColor];
-							if([dic objectForKey:@"lineHighlight"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"lineHighlight"]]] forKey:SPCustomQueryEditorHighlightQueryColor];
-							if([dic objectForKey:@"selection"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithRGBHexString:[dic objectForKey:@"selection"]]] forKey:SPCustomQueryEditorSelectionColor];
-						} else {
-							continue;
-						}
-					} else {
-						if([dict objectForKey:@"name"] && [dict objectForKey:@"settings"] && [[dict objectForKey:@"settings"] isKindOfClass:[NSDictionary class]] && [[dict objectForKey:@"settings"] objectForKey:@"foreground"]) {
-							if([[dict objectForKey:@"name"] isEqualToString:@"Comment"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:
-									[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
-									forKey:SPCustomQueryEditorCommentColor];
-							else if([[dict objectForKey:@"name"] isEqualToString:@"String"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:
-									[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
-									forKey:SPCustomQueryEditorQuoteColor];
-							else if([[dict objectForKey:@"name"] isEqualToString:@"Keyword"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:
-									[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
-									forKey:SPCustomQueryEditorSQLKeywordColor];
-							else if([[dict objectForKey:@"name"] isEqualToString:@"User-defined constant"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:
-									[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
-									forKey:SPCustomQueryEditorBacktickColor];
-							else if([[dict objectForKey:@"name"] isEqualToString:@"Number"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:
-									[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
-									forKey:SPCustomQueryEditorNumericColor];
-							else if([[dict objectForKey:@"name"] isEqualToString:@"Variable"])
-								[prefs setObject:[NSArchiver archivedDataWithRootObject:
-									[NSColor colorWithRGBHexString:[[dict objectForKey:@"settings"] objectForKey:@"foreground"]]] 
-									forKey:SPCustomQueryEditorVariableColor];
-						}
-					}
-					counter++;
-				}
-
-				[theme release];
-				[colorSettingTableView reloadData];
-
-			} else {
-
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:NSLocalizedString(@"No color theme data found.", @"error that no color theme found")];
-
-				[alert setAlertStyle:NSInformationalAlertStyle];
-				[alert runModal];
-				[theme release];
-				return;
-
+			if([self loadColorSchemeFromFile:[[panel filenames] objectAtIndex:0]]) {
+				[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+				[self updateDisplayColorThemeName];
 			}
 		}
 	}
@@ -1704,6 +1901,7 @@
  */
 - (void)dealloc
 {
+	if(themePath) [themePath release], themePath = nil;
 	if(editorColors) [editorColors release], editorColors = nil;
 	if(editorNameForColors) [editorNameForColors release], editorNameForColors = nil;
 	if (keychain) [keychain release], keychain = nil;

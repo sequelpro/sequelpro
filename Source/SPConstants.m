@@ -119,6 +119,7 @@ NSString *SPCustomQueryEditorTabStopWidth        = @"CustomQueryEditorTabStopWid
 NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
 NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
 NSString *SPCustomQueryFunctionCompletionInsertsArguments = @"CustomQueryFunctionCompletionInsertsArguments";
+NSString *SPCustomQueryEditorThemeName           = @"CustomQueryEditorThemeName";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";

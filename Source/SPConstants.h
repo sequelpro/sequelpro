@@ -296,6 +296,7 @@ extern NSString *SPCustomQueryEditorTabStopWidth;
 extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
 extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
+extern NSString *SPCustomQueryEditorThemeName;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;
