@@ -202,7 +202,7 @@
 	for (NSString *filename in filenames) 
 	{
 		// Opens a sql file and insert its content into the Custom Query editor
-		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL]) {
+		if([[[filename pathExtension] lowercaseString] isEqualToString:[SPFileExtensionSQL lowercaseString]]) {
 
 			// Check size and NSFileType
 			NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES];
@@ -280,7 +280,7 @@
 			break; // open only the first SQL file
 
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPFileExtensionDefault lowercaseString]]) {
 
 			SPWindowController *frontController = nil;
 
@@ -302,7 +302,7 @@
 
 			[[self frontDocument] initWithConnectionFile:filename];
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:SPBundleFileExtension]) {
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPBundleFileExtension lowercaseString]]) {
 
 			NSError *readError = nil;
 			NSString *convError = nil;
@@ -423,8 +423,35 @@
 
 			[spfs release];
 		}
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) {
+			NSFileManager *fm = [NSFileManager defaultManager];
+			NSString *themePath = [[NSString stringWithString:@"~/Library/Application Support/Sequel Pro/Themes"] stringByExpandingTildeInPath];
+			if(![fm fileExistsAtPath:themePath isDirectory:nil]) {
+				if(![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:nil]) {
+					NSBeep();
+					return;
+				}
+			}
+			NSString *newPath = [NSString stringWithFormat:@"%@/%@", themePath, [filename lastPathComponent]];
+			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
+				if(![fm copyItemAtPath:filename toPath:newPath error:nil]) {
+					NSBeep();
+					return;
+				}
+			} else {
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing color theme file", @"error while installing color theme file")]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The color theme ‘%@’ already exists.", @"the color theme ‘%@’ already exists."), [filename lastPathComponent]]];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				return;
+			}
+		}
 		else {
-			NSLog(@"Only files with the extensions ‘spf’ or ‘sql’ are allowed.");
+			NSLog(@"Only files with the extensions ‘%@’, ‘%@’, ‘%@’ or ‘%@’ are allowed.", SPFileExtensionDefault, SPBundleFileExtension, SPColorThemeFileExtension, SPFileExtensionSQL);
 		}
 	}
 }
