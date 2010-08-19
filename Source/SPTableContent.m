@@ -31,7 +31,7 @@
 #import "SPTableInfo.h"
 #import "SPTablesList.h"
 #import "SPImageView.h"
-#import "CMCopyTable.h"
+#import "SPCopyTable.h"
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 #import "SPQueryController.h"
@@ -2898,7 +2898,7 @@
 	return tableRowsCount;
 }
 
-- (id)tableView:(CMCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (id)tableView:(SPCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 	id theValue = nil;
@@ -2934,7 +2934,7 @@
 /**
  * This function changes the text color of text/blob fields which are null or not yet loaded to gray
  */
-- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(SPCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {
 	if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 

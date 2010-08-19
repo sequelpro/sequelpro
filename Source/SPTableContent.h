@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class CMCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage;
+@class SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage;
 
 @interface SPTableContent : NSObject 
 {	
@@ -40,7 +40,7 @@
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 	
-	IBOutlet CMCopyTable *tableContentView;
+	IBOutlet SPCopyTable *tableContentView;
 	IBOutlet NSPopUpButton *fieldField;
 	IBOutlet id compareField;
 	IBOutlet id argumentField;

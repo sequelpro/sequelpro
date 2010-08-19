@@ -27,7 +27,7 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-#import "CMCopyTable.h"
+#import "SPCopyTable.h"
 #import "SPTextView.h"
 #import "RegexKitLite.h"
 
@@ -76,7 +76,7 @@
 	IBOutlet NSPopUpButton *encodingPopUp;
 	
 	IBOutlet SPTextView *textView;
-	IBOutlet CMCopyTable *customQueryView;
+	IBOutlet SPCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
 	IBOutlet id affectedRowsText;

@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CMCopyTable.h
+//  SPCopyTable.h
 //  sequel-pro
 //
 //  Created by Stuart Glenn on Wed Apr 21 2004.
@@ -38,7 +38,7 @@
 		is in similar format. The values for each cell are obtained via the
 		objects description method
 */
-@interface CMCopyTable : SPTableView 
+@interface SPCopyTable : SPTableView 
 {
 	id tableInstance;				// the table content view instance
 	id mySQLConnection;				// current MySQL connection

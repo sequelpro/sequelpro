@@ -1663,7 +1663,7 @@
 /**
  * This function changes the text color of text/blob fields whose content is NULL.
  */
-- (void)tableView:(CMCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(SPCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {	
 	if (aTableView == customQueryView) {
 

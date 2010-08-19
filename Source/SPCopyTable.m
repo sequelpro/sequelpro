@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  CMCopyTable.m
+//  SPCopyTable.m
 //  sequel-pro
 //
 //  Created by Stuart Glenn on Wed Apr 21 2004.
@@ -24,7 +24,7 @@
 
 #import <MCPKit/MCPKit.h>
 
-#import "CMCopyTable.h"
+#import "SPCopyTable.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPTableContent.h"
@@ -39,7 +39,7 @@ NSInteger MENU_EDIT_COPY             = 2001;
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
 NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
-@implementation CMCopyTable
+@implementation SPCopyTable
 
 - (void)copy:(id)sender
 {

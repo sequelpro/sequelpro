@@ -26,7 +26,7 @@
 #import <MCPKit/MCPKit.h>
 
 #import "NoodleLineNumberView.h"
-#import "CMCopyTable.h"
+#import "SPCopyTable.h"
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 

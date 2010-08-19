@@ -435,8 +435,8 @@
 - (void) magnifyWithEvent:(NSEvent *)anEvent
 {
 
-	//Avoid font resizing for NSTextViews in CMCopyTable or NSTableView
-	if([[[[self delegate] class] description] isEqualToString:@"CMCopyTable"] 
+	//Avoid font resizing for NSTextViews in SPCopyTable or NSTableView
+	if([[[[self delegate] class] description] isEqualToString:@"SPCopyTable"] 
 		|| [[[[self delegate] class] description] isEqualToString:@"NSTableView"]) return;
 
 	if([anEvent deltaZ]>5.0)
