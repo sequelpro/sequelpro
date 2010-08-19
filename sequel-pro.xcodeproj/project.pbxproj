@@ -1579,8 +1579,6 @@
 		17E641420EF01E8A001BC333 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				BC398A2B121D526200BE3EF4 /* SPCopyTable.h */,
-				BC398A2C121D526200BE3EF4 /* SPCopyTable.m */,
 				17E641440EF01EB5001BC333 /* main.m */,
 				17E641450EF01EB5001BC333 /* Sequel-Pro.pch */,
 				17E641470EF01EB8001BC333 /* Controllers */,
@@ -1688,6 +1686,8 @@
 		17E641710EF01F5C001BC333 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
+				BC398A2B121D526200BE3EF4 /* SPCopyTable.h */,
+				BC398A2C121D526200BE3EF4 /* SPCopyTable.m */,
 				17E6417E0EF01FA8001BC333 /* SPImageView.h */,
 				17E6417F0EF01FA8001BC333 /* SPImageView.m */,
 				17E641800EF01FA8001BC333 /* SPTextView.h */,
