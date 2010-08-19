@@ -610,6 +610,7 @@
 	[[NSColorPanel sharedColorPanel] close];
 
 	[enterNameAlertField setHidden:YES];
+	[enterNameInputField setStringValue:@""];
 	[enterNameLabel setStringValue:NSLocalizedString(@"Theme Name:", @"theme name label")];
 
 	[NSApp beginSheet:enterNameWindow
