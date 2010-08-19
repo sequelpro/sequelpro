@@ -424,14 +424,20 @@
 			[spfs release];
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) {
+
 			NSFileManager *fm = [NSFileManager defaultManager];
-			NSString *themePath = [[NSString stringWithString:@"~/Library/Application Support/Sequel Pro/Themes"] stringByExpandingTildeInPath];
+
+			NSString *themePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder error:nil];
+
+			if(!themePath) return;
+
 			if(![fm fileExistsAtPath:themePath isDirectory:nil]) {
 				if(![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:nil]) {
 					NSBeep();
 					return;
 				}
 			}
+
 			NSString *newPath = [NSString stringWithFormat:@"%@/%@", themePath, [filename lastPathComponent]];
 			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
 				if(![fm copyItemAtPath:filename toPath:newPath error:nil]) {

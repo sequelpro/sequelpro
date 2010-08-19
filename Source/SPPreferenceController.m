@@ -31,6 +31,7 @@
 #import "SPConnectionController.h"
 #import "SPColorAdditions.h"
 #import "SPColorWellCell.h"
+#import "SPFileManagerAdditions.h"
 
 @interface SPPreferenceController (PrivateAPI)
 
@@ -65,8 +66,10 @@
 
 		[NSColor setIgnoresAlpha:NO];
 
-		themePath = [[[NSString stringWithString:@"~/Library/Application Support/Sequel Pro/Themes"] stringByExpandingTildeInPath] retain];
+		themePath = [[[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder error:nil] retain];
+
 		editThemeListItems = [[NSArray arrayWithArray:[self getAvailableThemes]] retain];
+
 	}
 
 	return self;

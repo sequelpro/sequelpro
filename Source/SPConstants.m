@@ -48,10 +48,13 @@ NSString *SPBundleFileExtension                  = @"spfs";
 NSString *SPFileExtensionSQL                     = @"sql";
 NSString *SPColorThemeFileExtension              = @"spTheme";
 
-// Filenames
+// File names
 NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
 NSString *SPHTMLTableInfoPrintTemplate           = @"sequel-pro-table-info-print-template";
 NSString *SPHTMLHelpTemplate                     = @"sequel-pro-mysql-help-template";
+
+// Folder names
+NSString *SPThemesSupportFolder                  = @"Themes";
 
 // Preference key constants
 // General Prefpane

@@ -345,6 +345,7 @@
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
 		BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */; };
+		BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC32F241121D66260067305E /* SPFileManagerAdditions.m */; };
 		BC398A2D121D526200BE3EF4 /* SPCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = BC398A2C121D526200BE3EF4 /* SPCopyTable.m */; };
 		BC4DF1981158FB280059FABD /* SPNavigatorOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */; };
 		BC5AD7FF10FB262F008769E3 /* field-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC5AD7FE10FB262F008769E3 /* field-small-square.tiff */; };
@@ -978,6 +979,8 @@
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
 		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = "sequel-pro-mysql-help-template.html"; path = "Templates/sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
 		BC30C010111C98BD002701C9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DataMigrationDialog.xib; sourceTree = "<group>"; };
+		BC32F240121D66260067305E /* SPFileManagerAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFileManagerAdditions.h; sourceTree = "<group>"; };
+		BC32F241121D66260067305E /* SPFileManagerAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFileManagerAdditions.m; sourceTree = "<group>"; };
 		BC398A2B121D526200BE3EF4 /* SPCopyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCopyTable.h; sourceTree = "<group>"; };
 		BC398A2C121D526200BE3EF4 /* SPCopyTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCopyTable.m; sourceTree = "<group>"; };
 		BC4DF1961158FB280059FABD /* SPNavigatorOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNavigatorOutlineView.h; sourceTree = "<group>"; };
@@ -2140,6 +2143,8 @@
 				589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */,
 				BC85F5CE12193B7D00E255B5 /* SPColorAdditions.h */,
 				BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */,
+				BC32F240121D66260067305E /* SPFileManagerAdditions.h */,
+				BC32F241121D66260067305E /* SPFileManagerAdditions.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -2755,6 +2760,7 @@
 				BC85F5D012193B7D00E255B5 /* SPColorAdditions.m in Sources */,
 				BC878A71121A836F00AE5066 /* SPColorWellCell.m in Sources */,
 				BC398A2D121D526200BE3EF4 /* SPCopyTable.m in Sources */,
+				BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
