@@ -1563,6 +1563,33 @@
 		return;
 	}
 
+	NSString *currentThemeName = [[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString];
+	if([currentThemeName isEqualToString:@"default"]) {
+		[colorThemeName setHidden:NO];
+		[colorThemeNameLabel setHidden:NO];
+		return;
+	}
+
+	BOOL nameValid = NO;
+	for(NSString* item in [self getAvailableThemes]) {
+		if([[item lowercaseString] isEqualToString:currentThemeName]) {
+			nameValid = YES;
+			break;
+		}
+	}
+
+	if(nameValid) {
+		[colorThemeName setHidden:NO];
+		[colorThemeNameLabel setHidden:NO];
+		return;
+	} else {
+		[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+		[colorThemeName setHidden:YES];
+		[colorThemeNameLabel setHidden:YES];
+		[self updateColorSchemeSelectionMenu];
+		return;
+	}
+
 	[colorThemeName setHidden:NO];
 	[colorThemeNameLabel setHidden:NO];
 
@@ -1945,6 +1972,7 @@
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		if (theme) [theme release];
+		[self updateDisplayColorThemeName];
 		return NO;
 	}
 
