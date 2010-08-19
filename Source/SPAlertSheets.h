@@ -33,3 +33,18 @@ void SPBeginAlertSheet(
 		void *contextInfo,
 	NSString *msg
 );
+
+void SPBeginWaitingAlertSheet(
+	NSString *title,
+	NSString *defaultButton,
+	NSString *alternateButton,
+	NSString *otherButton,
+NSAlertStyle alertStyle,
+	NSWindow *docWindow,
+		  id modalDelegate,
+		 SEL didEndSelector,
+		void *contextInfo,
+	NSString *msg,
+	NSString *infoText,
+   NSInteger *returnCode
+);

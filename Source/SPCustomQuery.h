@@ -159,6 +159,7 @@
 
 	NSTimer *queryLoadTimer;
 	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
+	NSInteger runAllContinueStopSheetReturnCode;
 }
 
 // IBAction methods

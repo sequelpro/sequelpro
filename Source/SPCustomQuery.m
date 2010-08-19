@@ -659,18 +659,21 @@
 
 					// ask the user to continue after detecting an error
 					if (![mySQLConnection queryCancelled]) {
-						NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-						[alert addButtonWithTitle:NSLocalizedString(@"Run All", @"run all button")];
-						[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
-						[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
-						[alert setMessageText:NSLocalizedString(@"MySQL Error", @"mysql error message")];
-						[alert setInformativeText:[mySQLConnection getLastErrorMessage]];
-						[alert setAlertStyle:NSWarningAlertStyle];
-						NSInteger choice = [[alert onMainThread] runModal];
-						switch (choice){
-							case NSAlertFirstButtonReturn:
+
+						SPBeginWaitingAlertSheet(@"title",
+							NSLocalizedString(@"Run All", @"run all button"), NSLocalizedString(@"Continue", @"continue button"), NSLocalizedString(@"Stop", @"stop button"),
+							NSWarningAlertStyle, [tableDocumentInstance parentWindow], self,
+							@selector(sheetDidEnd:returnCode:contextInfo:),
+							@"runAllContinueStopSheet",
+							NSLocalizedString(@"MySQL Error", @"mysql error message"),
+							[mySQLConnection getLastErrorMessage],
+							runAllContinueStopSheetReturnCode
+						);
+
+						switch (runAllContinueStopSheetReturnCode) {
+							case NSAlertDefaultReturn:
 								suppressErrorSheet = YES;
-							case NSAlertSecondButtonReturn:
+							case NSAlertAlternateReturn:
 								break;
 							default:
 								if(i < queryCount-1) // output that message only if it was not the last one
@@ -3141,6 +3144,11 @@
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+
+	if ([contextInfo isEqualToString:@"runAllContinueStopSheet"]) {
+		runAllContinueStopSheetReturnCode = returnCode;
+		return;
+	}
 
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
 		if (returnCode == NSOKButton) {
