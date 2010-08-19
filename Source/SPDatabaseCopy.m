@@ -47,11 +47,11 @@
 
 - (BOOL)copyDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent 
 {
+	NSArray *tables = nil;
+	
 	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
 	
-	// Check, whether the source database exists and the target database doesn't.
-	NSArray *tables = [NSArray array]; 
-	
+	// Check, whether the source database exists and the target database doesn't.	
 	BOOL sourceExists = [databaseInfo databaseExists:sourceDatabaseName];
 	BOOL targetExists = [databaseInfo databaseExists:targetDatabaseName];
 	

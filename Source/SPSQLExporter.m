@@ -199,6 +199,8 @@
 	{
 		// Check for cancellation flag
 		if ([self isCancelled]) {
+			[errors release];
+			[sqlString release];
 			[pool release];
 			return;
 		}
@@ -337,6 +339,7 @@
 					if ([self isCancelled]) {
 						[connection cancelCurrentQuery];
 						[streamingResult cancelResultLoad];
+						[streamingResult release];
 						[sqlExportPool release];
 						[pool release];
 						

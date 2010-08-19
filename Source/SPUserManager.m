@@ -78,11 +78,11 @@
 								@"Replication_slave_priv", @"Repl_slave_priv", 
 								@"Replication_client_priv", @"Repl_client_priv",
 								nil];
-	}
 	
-	schemas = [[NSMutableArray alloc] init];
-	availablePrivs = [[NSMutableArray alloc] init];
-	grantedSchemaPrivs = [[NSMutableArray alloc] init]; 
+		schemas = [[NSMutableArray alloc] init];
+		availablePrivs = [[NSMutableArray alloc] init];
+		grantedSchemaPrivs = [[NSMutableArray alloc] init];
+	}
 	
 	return self;
 }

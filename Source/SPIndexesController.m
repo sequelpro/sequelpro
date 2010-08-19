@@ -34,7 +34,6 @@
 
 @end
 
-
 @implementation SPIndexesController
 
 @synthesize table;

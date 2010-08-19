@@ -50,7 +50,7 @@
 	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
 
 	// Check, whether the source database exists and the target database doesn't.
-	NSArray *tables = [NSArray array]; 
+	NSArray *tables = nil; 
 	
 	BOOL sourceExists = [databaseInfo databaseExists:sourceDatabaseName];
 	BOOL targetExists = [databaseInfo databaseExists:targetDatabaseName];

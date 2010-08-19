@@ -53,7 +53,11 @@
 
 		[connection queryString:createTableStatement];		
 	
-		if ([connection queryErrored]) return NO;
+		if ([connection queryErrored]) {
+			[createTableStatement release];
+			
+			return NO;
+		}
 		
 		return YES;
 	}

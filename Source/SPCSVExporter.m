@@ -182,7 +182,7 @@
 	
 	if ([self csvTableName] && (![self csvDataArray])) {
 		
-		NSDictionary *tableDetails;
+		NSDictionary *tableDetails = nil;
 		
 		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
 		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
