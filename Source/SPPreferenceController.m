@@ -66,7 +66,7 @@
 		[NSColor setIgnoresAlpha:NO];
 
 		themePath = [[[NSString stringWithString:@"~/Library/Application Support/Sequel Pro/Themes"] stringByExpandingTildeInPath] retain];
-
+		editThemeListItems = [[NSArray arrayWithArray:[self getAvailableThemes]] retain];
 	}
 
 	return self;
@@ -604,11 +604,12 @@
 
 }
 
-- (IBAction)saveColorScheme:(id)sender
+- (IBAction)saveAsColorScheme:(id)sender
 {
 
 	[[NSColorPanel sharedColorPanel] close];
 
+	[enterNameAlertField setHidden:YES];
 	[enterNameLabel setStringValue:NSLocalizedString(@"Theme Name:", @"theme name label")];
 
 	[NSApp beginSheet:enterNameWindow
@@ -616,7 +617,61 @@
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"saveTheme"];
+
+}
+
+- (IBAction)duplicateTheme:(id)sender
+{
+	if([editThemeListTable numberOfSelectedRows] != 1) return;
 	
+	NSString *selectedPath = [NSString stringWithFormat:@"%@/%@_copy.%@", themePath, [editThemeListItems objectAtIndex:[editThemeListTable selectedRow]], SPColorThemeFileExtension];
+
+	NSFileManager *fm = [NSFileManager defaultManager];
+	if(![fm fileExistsAtPath:selectedPath isDirectory:nil]) {
+		if([fm copyItemAtPath:[NSString stringWithFormat:@"%@/%@.%@", themePath, [editThemeListItems objectAtIndex:[editThemeListTable selectedRow]], SPColorThemeFileExtension] toPath:selectedPath error:nil]) {
+			
+			if(editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+			editThemeListItems = [[NSArray arrayWithArray:[self getAvailableThemes]] retain];
+			[editThemeListTable reloadData];
+			[self updateDisplayColorThemeName];
+			[self updateColorSchemeSelectionMenu];
+			return;
+
+		}
+	}
+
+	NSBeep();
+	[editThemeListTable reloadData];
+
+}
+
+- (IBAction)removeTheme:(id)sender
+{
+	if([editThemeListTable numberOfSelectedRows] != 1) return;
+	
+	NSString *selectedPath = [NSString stringWithFormat:@"%@/%@.%@", themePath, [editThemeListItems objectAtIndex:[editThemeListTable selectedRow]], SPColorThemeFileExtension];
+	NSFileManager *fm = [NSFileManager defaultManager];
+	if([fm fileExistsAtPath:selectedPath isDirectory:nil]) {
+		if([fm removeItemAtPath:selectedPath error:nil]) {
+
+			// Refresh current color theme setting name
+			if([[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:[[editThemeListItems objectAtIndex:[editThemeListTable selectedRow]] lowercaseString]]) {
+				[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+			}
+
+			if(editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+			editThemeListItems = [[NSArray arrayWithArray:[self getAvailableThemes]] retain];
+			[editThemeListTable reloadData];
+			[self updateDisplayColorThemeName];
+			[self updateColorSchemeSelectionMenu];
+			return;
+
+		}
+	}
+
+	NSBeep();
+	[editThemeListTable reloadData];
+
 }
 
 - (IBAction)closePanelSheet:(id)sender
@@ -738,6 +793,8 @@
 {
 	if(aTableView == colorSettingTableView)
 		return [editorColors count];
+	else if(aTableView == editThemeListTable)
+		return [editThemeListItems count];
 
 	return [[favoritesController arrangedObjects] count];
 }
@@ -752,6 +809,8 @@
 			return [editorNameForColors objectAtIndex:rowIndex];
 		else
 			return [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:rowIndex]]];
+	} else if(tableView == editThemeListTable) {
+		return [editThemeListItems objectAtIndex:rowIndex];
 	} else {
 		if ([[tableColumn identifier] isEqualToString:@"default"] && (rowIndex == [prefs integerForKey:SPDefaultFavorite])) {
 			return [NSImage imageNamed:@"blue-tick"];
@@ -763,6 +822,51 @@
 	return nil;
 }
 
+- (void)tableView:(NSTableView *)tableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if(tableView == editThemeListTable) {
+
+		// Theme name editing
+		NSString *newName = (NSString*)anObject;
+
+		// Check for non-valid names
+		if(![newName length] || [[newName lowercaseString] isEqualToString:@"default"] || [[newName lowercaseString] isEqualToString:@"user-defined"]) {
+			NSBeep();
+			[editThemeListTable reloadData];
+			return;
+		}
+
+		// Check if new name already exists
+		for(NSString* item in editThemeListItems) {
+			if([[item lowercaseString] isEqualToString:newName]) {
+				NSBeep();
+				[editThemeListTable reloadData];
+				return;
+			}
+		}
+
+		// Rename theme file
+		NSFileManager *fm = [NSFileManager defaultManager];
+		if(![fm moveItemAtPath:[NSString stringWithFormat:@"%@/%@.%@", themePath, [editThemeListItems objectAtIndex:rowIndex], SPColorThemeFileExtension] toPath:[NSString stringWithFormat:@"%@/%@.%@", themePath, newName, SPColorThemeFileExtension] error:nil]) {
+			NSBeep();
+			[editThemeListTable reloadData];
+			return;
+		}
+
+		// Refresh current color theme setting name
+		if([[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:[[editThemeListItems objectAtIndex:rowIndex] lowercaseString]]) {
+			[prefs setObject:newName forKey:SPCustomQueryEditorThemeName];
+		}
+
+		// Reload everything needed
+		if(editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+		editThemeListItems = [[NSArray arrayWithArray:[self getAvailableThemes]] retain];
+		[editThemeListTable reloadData];
+		[self updateDisplayColorThemeName];
+		[self updateColorSchemeSelectionMenu];
+		
+	}
+}
 
 #pragma mark -
 #pragma mark TableView drag & drop delegate methods
@@ -1094,14 +1198,15 @@
 		if(![name length] || [name isEqualToString:@"default"] || [name isEqualToString:@"user-defined"]) {
 			[themeNameSaveButton setEnabled:NO];
 		} else {
-			BOOL enable = YES;
+			BOOL hide = YES;
 			for(NSString* item in [self getAvailableThemes]) {
 				if([[item lowercaseString] isEqualToString:name]) {
-					enable = NO;
+					hide = NO;
 					break;
 				}
 			}
-			[themeNameSaveButton setEnabled:enable];
+			[enterNameAlertField setHidden:hide];
+			[themeNameSaveButton setEnabled:YES];
 		}
 
 		return;
@@ -1383,14 +1488,18 @@
 
 - (void)editThemeList
 {
-	NSAlert *alert = [NSAlert alertWithMessageText:@"Not yet implemented. Please be patient."
-		defaultButton:NSLocalizedString(@"OK", @"OK button") 
-		alternateButton:nil 
-		otherButton:nil 
-		informativeTextWithFormat:@""];
+	[[NSColorPanel sharedColorPanel] close];
 
-	[alert setAlertStyle:NSCriticalAlertStyle];
-	[alert runModal];
+	if(editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+	editThemeListItems = [[NSArray arrayWithArray:[self getAvailableThemes]] retain];
+	[editThemeListTable reloadData];
+
+	[NSApp beginSheet:editThemeListWindow
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+
 }
 
 - (NSArray *)getAvailableThemes
@@ -1941,6 +2050,7 @@
 - (void)dealloc
 {
 	if(themePath) [themePath release], themePath = nil;
+	if(editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
 	if(editorColors) [editorColors release], editorColors = nil;
 	if(editorNameForColors) [editorNameForColors release], editorNameForColors = nil;
 	if (keychain) [keychain release], keychain = nil;

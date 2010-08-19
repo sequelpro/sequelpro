@@ -62,9 +62,15 @@
 	IBOutlet NSWindow *enterNameWindow;
 	IBOutlet NSTextField *enterNameLabel;
 	IBOutlet NSTextField *enterNameInputField;
+	IBOutlet NSTextField *enterNameAlertField;
 	IBOutlet NSTextField *colorThemeName;
 	IBOutlet NSTextField *colorThemeNameLabel;
 	IBOutlet id themeNameSaveButton;
+	IBOutlet NSTableView *editThemeListTable;
+	IBOutlet NSWindow *editThemeListWindow;
+	IBOutlet id removeThemeButton;
+	IBOutlet id duplicateThemeButton;
+	IBOutlet NSMenuItem *saveThemeMenuItem;
 
 	IBOutlet id tableCell;
 
@@ -103,6 +109,7 @@
 	
 	NSString *themePath;
 	NSInteger checkForUnsavedThemeSheetStatus;
+	NSArray *editThemeListItems;
 }
 
 - (void)applyRevisionChanges;
@@ -120,9 +127,11 @@
 - (IBAction)makeSelectedFavoriteDefault:(id)sender;
 - (IBAction)exportColorScheme:(id)sender;
 - (IBAction)importColorScheme:(id)sender;
-- (IBAction)saveColorScheme:(id)sender;
+- (IBAction)saveAsColorScheme:(id)sender;
 - (IBAction)loadColorScheme:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
+- (IBAction)duplicateTheme:(id)sender;
+- (IBAction)removeTheme:(id)sender;
 
 
 // Toolbar item IBAction methods
