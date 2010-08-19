@@ -596,10 +596,14 @@
  */
 - (BOOL)windowShouldClose:(id)sender
 {
-	for (NSTabViewItem *eachItem in [tabView tabViewItems]) {
-		SPDatabaseDocument *eachDocument = [eachItem identifier];
-		if (![eachDocument parentTabShouldClose]) return NO;
-	}
+
+	// Iterate through all tabs if more than one tab is opened only otherwise
+	// [... parentTabShouldClose] will be called twice [see self closeTab:(id)sender]
+	if([[tabView tabViewItems] count] > 1)
+		for (NSTabViewItem *eachItem in [tabView tabViewItems]) {
+			SPDatabaseDocument *eachDocument = [eachItem identifier];
+			if (![eachDocument parentTabShouldClose]) return NO;
+		}
 
 	// Remove global session data if the last window of a session will be closed
 	if([[NSApp delegate] sessionURL] && [[[NSApp delegate] orderedDatabaseConnectionWindows] count] == 1) {

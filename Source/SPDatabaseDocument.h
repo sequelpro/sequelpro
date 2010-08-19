@@ -180,6 +180,8 @@
 	
 	id statusValues;
 
+	NSInteger saveDocPrefSheetStatus;
+
 	// Properties
 	SPWindowController *parentWindowController;
 	NSWindow *parentWindow;

@@ -72,11 +72,10 @@ void SPBeginAlertSheet(
 	[[docWindow onMainThread] makeKeyWindow];
 }
 
-
 /**
- * Provide a simple alias of NSBeginAlertSheet which waits for a in calling class globally 
- * declared returnCode by reference which must be changed in the didEndSelector 
- * of the calling class, with a few differences:
+ * Provide a simple alias of a NSApp-wide modal NSBeginAlertSheet which waits 
+ * for a in calling class globally declared returnCode by reference which must 
+ * be changed in the didEndSelector of the calling class, with a few differences:
  *  - printf-type format strings are no longer supported within the "msg"
  *    message text argument, preventing access of random stack areas for
  *    error text which contains inadvertant printf formatting.

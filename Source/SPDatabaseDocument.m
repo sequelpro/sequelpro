@@ -1077,6 +1077,11 @@
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
+	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
+		saveDocPrefSheetStatus = returnCode;
+		return;
+	}
+
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
@@ -3202,16 +3207,19 @@
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError]];
 
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-										   alternateButton:NSLocalizedString(@"Ignore", @"ignore button") 
-											  otherButton:nil 
-								informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]];
 
-			[alert setAlertStyle:NSCriticalAlertStyle];
-			NSInteger returnCode = [alert runModal];
+			SPBeginWaitingAlertSheet(@"title",
+				NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Ignore", @"ignore button"), nil,
+				NSCriticalAlertStyle, parentWindow, self,
+				@selector(sheetDidEnd:returnCode:contextInfo:),
+				@"saveDocPrefSheetStatus",
+				[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")],
+				[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]],
+				saveDocPrefSheetStatus
+			);
+
 			if (spf) [spf release];
-			if(returnCode == NSAlertAlternateReturn)
+			if(saveDocPrefSheetStatus == NSAlertAlternateReturn)
 				return YES;
 
 			return NO;
