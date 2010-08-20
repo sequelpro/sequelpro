@@ -997,21 +997,21 @@
 
 	for (NSManagedObject *user in deletedUsers)
 	{
-        if (![[[user entity] name] isEqualToString:@"Privileges"] && [user valueForKey:@"host"] != nil)
+		if (![[[user entity] name] isEqualToString:@"Privileges"] && [user valueForKey:@"host"] != nil)
 		{
-			[droppedUsers appendString:[NSString stringWithFormat:@"%@@%@, ", 
-										[[user valueForKey:@"user"] tickQuotedString], 
-										[[user valueForKey:@"host"] tickQuotedString]]];
+			[droppedUsers appendFormat:@"%@@%@, ", 
+				[[user valueForKey:@"user"] tickQuotedString], 
+				[[user valueForKey:@"host"] tickQuotedString]];
 		}
-		
+
 	}
 
-    if ([droppedUsers length] > 2) {
-        droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
-        [self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
-        [droppedUsers release];        
-    }
-	
+	if ([droppedUsers length] > 2) {
+		droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
+		[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+		[droppedUsers release];
+	}
+
 	return TRUE;
 }
 

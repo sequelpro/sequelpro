@@ -1668,9 +1668,9 @@
 					id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
 
 					if([keyValue isKindOfClass:[NSData class]])
-						[deleteQuery appendString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]]];
+						[deleteQuery appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]];
 					else
-						[deleteQuery appendString:[NSString stringWithFormat:@"'%@'", [keyValue description]]];
+						[deleteQuery appendFormat:@"'%@'", [keyValue description]];
 
 					// Split deletion query into 256k chunks
 					if([deleteQuery length] > 256000) {
@@ -2251,10 +2251,10 @@
 			if (firstCellOutput) [queryString appendString:@", "];
 			else firstCellOutput = YES;
 
-			[queryString appendString:[NSString stringWithFormat:@"%@ = %@",
-									   [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] backtickQuotedString], [fieldValues objectAtIndex:i]]];
+			[queryString appendFormat:@"%@ = %@",
+									   [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] backtickQuotedString], [fieldValues objectAtIndex:i]];
 		}
-		[queryString appendString:[NSString stringWithFormat:@" WHERE %@", [self argumentForRow:-2]]];
+		[queryString appendFormat:@" WHERE %@", [self argumentForRow:-2]];
 	}
 	
 	// If UTF-8 via Latin1 view encoding is set convert the queryString into Latin1 and
@@ -2461,13 +2461,13 @@
 		}
 
 		if ([tempValue isNSNull]) {
-			[argument appendString:[NSString stringWithFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]]];
+			[argument appendFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]];
 		} 
 		else if ([tempValue isSPNotLoaded]) {
 			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
 			return @"";
 		} 
-		else {					
+		else {
 			// If the field is of type BIT then it needs a binary prefix
 			if ([[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"type"] isEqualToString:@"BIT"]) {
 				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection prepareString:tempValue]]];
@@ -2478,7 +2478,7 @@
 			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
 			
-			[argument appendString:[NSString stringWithFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value]];
+			[argument appendFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value];
 		}
 	}
 		

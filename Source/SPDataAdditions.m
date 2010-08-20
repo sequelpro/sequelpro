@@ -285,7 +285,7 @@ static char base64encodingTable[64] = {
 		NSUInteger buffLength = bytesPerLine;
 
 		// add hex value of location
-		[location appendString:[NSString stringWithFormat:@"%X", i]];
+		[location appendFormat:@"%X", i];
 		
 		// pad it
 		while( longest > [location length] ) {
@@ -304,7 +304,7 @@ static char base64encodingTable[64] = {
 		// build the hex string
 		for ( j = 0; j < buffLength; j++ ) {
 
-			[hex appendString:[NSString stringWithFormat:@"%02X ", *(buffer + j)]];
+			[hex appendFormat:@"%02X ", *(buffer + j)];
 
 			// Replace non-displayed bytes by '.'
 			// non-displayed bytes are all bytes whose hex code is less than 0x20
@@ -320,7 +320,7 @@ static char base64encodingTable[64] = {
 		}
 
 		// build line
-		[retVal appendFormat:@"%@  %@ %@\n", location, hex, [NSString stringWithFormat:@"%s", buffer]];
+		[retVal appendFormat:@"%@  %@ %s\n", location, hex, buffer];
 		
 		// clean up
 		[hex release];
@@ -338,20 +338,19 @@ static char base64encodingTable[64] = {
  */
 - (NSString *) shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding
 {
-	NSString *tmp = [[NSString alloc] initWithData:self encoding:encoding];
-	NSString *shortString;
+	NSString *tmp = [[[NSString alloc] initWithData:self encoding:encoding] autorelease];
+
 	if (tmp == nil)
 		tmp = [[NSString alloc] initWithData:self encoding:NSASCIIStringEncoding];
 	if (tmp == nil)
 		return @"- cannot be displayed -";
 	else {
-		if([tmp length]>255)
-			shortString = [[NSString stringWithString:tmp] substringToIndex:255];
+		if([tmp length] > 255)
+			return [tmp substringToIndex:255];
 		else
-			shortString = [NSString stringWithString:tmp];
+			return tmp;
 	}
-	[tmp release];
-	return shortString;
+	return @"- cannot be displayed -";
 }
 
 @end

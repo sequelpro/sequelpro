@@ -169,7 +169,7 @@
 			
 			for (NSDictionary *variable in variablesFiltered) 
 			{
-				[variablesString appendString:[NSString stringWithFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]]];
+				[variablesString appendFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]];
 			}
 			
 			[variablesString writeToFile:[panel filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];

@@ -217,24 +217,17 @@ static SPQueryController *sharedQueryController = nil;
 		{
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
-								
+
 				// If the timestamp column is not hidden we need to include them in the copy
-				if (!dateColumnIsHidden) {
-					[string appendString:@"/* "];
-					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
-					if (connectionColumnIsHidden) [string appendString:@" */ "];
-					else [string appendString:@" "];				
-				}
+				if (!dateColumnIsHidden)
+					[string appendFormat:@"/* %@ %@ ", [dateFormatter stringFromDate:[message messageDate]], (connectionColumnIsHidden) ? @"*/ ": @""];
+
 				
 				// If the connection column is not hidden we need to include them in the copy
-				if (!connectionColumnIsHidden) {
-					if (dateColumnIsHidden) [string appendString:@"/* "];
-					[string appendString:[message messageConnection]];
-					[string appendString:@" */ "];
-				}
-				
-				[string appendString:[message message]];
-				[string appendString:@"\n"];
+				if (!connectionColumnIsHidden)
+					[string appendFormat:@"%@%@ */ ",(dateColumnIsHidden) ? @"/* " : @"", [message messageConnection]];
+
+				[string appendFormat:@"%@\n", [message message]];
 			}
 			
 			i = [rows indexGreaterThanIndex:i];
@@ -916,22 +909,18 @@ static SPQueryController *sharedQueryController = nil;
 		if (timeStamps || connections) [consoleString appendString:@"/* "];
 		
 		// If the timestamp column is not hidden we need to include them in the copy
-		if (timeStamps) {
-			[consoleString appendString:[dateFormatter stringFromDate:[message messageDate]]];
-			[consoleString appendString:@" "];					
-		}
-		
+		if (timeStamps)
+			[consoleString appendFormat:@"%@ ", [dateFormatter stringFromDate:[message messageDate]]];
+
 		// If the connection column is not hidden we need to include them in the copy
-		if (connections) {
-			[consoleString appendString:[message messageConnection]];
-			[consoleString appendString:@" "];
-		}
-			
+		if (connections)
+			[consoleString appendFormat:@"%@ ", [message messageConnection]];
+
 		// Close the comment
 		if (timeStamps || connections) [consoleString appendString:@"*/ "];
 		
-		[consoleString appendString:[message message]];
-		[consoleString appendString:@"\n"];		
+		[consoleString appendFormat:@"%@\n", [message message]];
+
 	}
 	
 	return consoleString;

@@ -175,11 +175,11 @@
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# Sequel Pro SQL dump\n"];
-	[metaString appendString:[NSString stringWithFormat:@"# Version %@\n#\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]]];
-	[metaString appendString:[NSString stringWithFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL]];
-	[metaString appendString:[NSString stringWithFormat:@"# Host: %@ (MySQL %@)\n", [self sqlDatabaseHost], [self sqlDatabaseVersion]]];
-	[metaString appendString:[NSString stringWithFormat:@"# Database: %@\n", [self sqlDatabaseName]]];
-	[metaString appendString:[NSString stringWithFormat:@"# Generation Time: %@\n", [NSDate date]]];
+	[metaString appendFormat:@"# Version %@\n#\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
+	[metaString appendFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
+	[metaString appendFormat:@"# Host: %@ (MySQL %@)\n", [self sqlDatabaseHost], [self sqlDatabaseVersion]];
+	[metaString appendFormat:@"# Database: %@\n", [self sqlDatabaseName]];
+	[metaString appendFormat:@"# Generation Time: %@\n", [NSDate date]];
 	[metaString appendString:@"# ************************************************************\n\n\n"];
 	
 	// Add commands to store the client encodings used when importing and set to UTF8 to preserve data
@@ -245,7 +245,7 @@
 		}
 					
 		if ([connection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
+			[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
 			
 			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 			
@@ -296,7 +296,7 @@
 			NSArray *rowArray = [[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray];
 			
 			if ([connection queryErrored] || ![rowArray count]) {
-				[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
+				[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
 				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				continue;
@@ -317,8 +317,7 @@
 				
 				// Lock the table for writing and disable keys if supported
 				[metaString setString:@""];
-				[metaString appendString:[NSString stringWithFormat:@"LOCK TABLES %@ WRITE;\n", [tableName backtickQuotedString]]];
-				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n\n", [tableName backtickQuotedString]]];
+				[metaString appendFormat:@"LOCK TABLES %@ WRITE;\n/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n\n", [tableName backtickQuotedString], [tableName backtickQuotedString]];
 				
 				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 				
@@ -380,16 +379,13 @@
 						} 
 						// If the field is off type BIT, the values need a binary prefix of b'x'.
 						else if ([[NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], t) objectForKey:@"type"] isEqualToString:@"BIT"]) {
-							[sqlString appendString:@"b'"];
-							[sqlString appendString:[object description]];
-							[sqlString appendString:@"'"];
+							[sqlString appendFormat:@"b'%@'", [object description]];
 						}
 						// Add data types directly as hex data
 						else if ([object isKindOfClass:[NSData class]]) {
 							
 							if ([self sqlOutputEncodeBLOBasHex]) {
-								[sqlString appendString:@"X'"];
-								[sqlString appendString:[connection prepareBinaryData:object]];
+								[sqlString appendFormat:@"X'%@", [connection prepareBinaryData:object]];
 							}
 							else {
 								[sqlString appendString:@"'"];
@@ -469,8 +465,7 @@
 				
 				// Unlock the table and re-enable keys if supported
 				[metaString setString:@""];
-				[metaString appendString:[NSString stringWithFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\n", [tableName backtickQuotedString]]];
-				[metaString appendString:@"UNLOCK TABLES;\n"];
+				[metaString appendFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\nUNLOCK TABLES;\n", [tableName backtickQuotedString]];
 				
 				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 				
@@ -479,7 +474,7 @@
 			}
 			
 			if ([connection queryErrored]) {
-				[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
+				[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
 				
 				if ([self sqlOutputIncludeErrors]) {
 					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
@@ -513,33 +508,27 @@
 				// Definer is user@host but we need to escape it to `user`@`host`
 				NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
 				
-				NSString *escapedDefiner = [NSString stringWithFormat:@"%@@%@", 
-											[NSArrayObjectAtIndex(triggersDefiner, 0) backtickQuotedString],
-											[NSArrayObjectAtIndex(triggersDefiner, 1) backtickQuotedString]
-											];
-				
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n", [triggers objectForKey:@"sql_mode"]]];
-				[metaString appendString:@"/*!50003 CREATE */ "];
-				[metaString appendString:[NSString stringWithFormat:@"/*!50017 DEFINER=%@ */ ", escapedDefiner]];
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
+				[metaString appendFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\" */;;\n/*!50003 CREATE */ ", [triggers objectForKey:@"sql_mode"]];
+				[metaString appendFormat:@"/*!50017 DEFINER=%@@%@ */ /*!50003 TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@ */;;\n",
+										  [NSArrayObjectAtIndex(triggersDefiner, 0) backtickQuotedString],
+										  [NSArrayObjectAtIndex(triggersDefiner, 1) backtickQuotedString],
 										  [[triggers objectForKey:@"Trigger"] backtickQuotedString],
 										  [triggers objectForKey:@"Timing"],
 										  [triggers objectForKey:@"Event"],
 										  [[triggers objectForKey:@"Table"] backtickQuotedString],
 										  [triggers objectForKey:@"Statement"]
-										  ]];
+										  ];
 				
 				[triggers release];
 			}
 			
-			[metaString appendString:@"DELIMITER ;\n"];
-			[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
+			[metaString appendString:@"DELIMITER ;\n/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
 			
 			[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 		
 		if ([connection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
+			[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
 			
 			if ([self sqlOutputIncludeErrors]) {
 				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
@@ -595,12 +584,9 @@
 		if ([queryResult numOfRows]) {
 			
 			[metaString setString:@"\n"];
-			[metaString appendString:@"--\n"];
-			[metaString appendString:[NSString stringWithFormat:@"-- Dumping routines (%@) for database %@\n", procedureType,
-									  [[self sqlDatabaseName] tickQuotedString]]];
+			[metaString appendFormat:@"--\n-- Dumping routines (%@) for database %@\n--\nDELIMITER ;;\n\n", procedureType,
+									  [[self sqlDatabaseName] tickQuotedString]];
 			
-			[metaString appendString:@"--\n"];
-			[metaString appendString:@"DELIMITER ;;\n\n"];
 			
 			// Loop through the definitions, exporting if enabled
 			for (s = 0; s < [queryResult numOfRows]; s++) 
@@ -643,8 +629,8 @@
 
 				// Add the 'DROP' command if required
 				if (sqlOutputIncludeDropSyntax) {
-					[metaString appendString:[NSString stringWithFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", procedureType,
-											  [procedureName backtickQuotedString]]];
+					[metaString appendFormat:@"/*!50003 DROP %@ IF EXISTS %@ */;;\n", procedureType,
+											  [procedureName backtickQuotedString]];
 				}
 				
 				// Only continue if the 'CREATE SYNTAX' is required
@@ -665,7 +651,7 @@
 																			[procedureName backtickQuotedString]]];
 				[createProcedureResult setReturnDataAsStrings:YES];
 				if ([connection queryErrored]) {
-					[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
+					[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
 					
 					if ([self sqlOutputIncludeErrors]) {
 						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -676,7 +662,7 @@
 				
 				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
 				
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", [procedureInfo objectForKey:@"sql_mode"]]];
+				[metaString appendFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", [procedureInfo objectForKey:@"sql_mode"]];
 				
 				NSString *createProcedure = [procedureInfo objectForKey:[NSString stringWithFormat:@"Create %@", [procedureType capitalizedString]]];
 				
@@ -701,12 +687,11 @@
 				// END */;;
 				//
 				// Build the CREATE PROCEDURE string to include MySQL Version limiters
-				[metaString appendString:[NSString stringWithFormat:@"/*!50003 CREATE*/ /*!50020 DEFINER=%@*/ /*!50003 %@ */;;\n\n", escapedDefiner, procedureBody]];
+				[metaString appendFormat:@"/*!50003 CREATE*/ /*!50020 DEFINER=%@*/ /*!50003 %@ */;;\n\n/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;;\n", escapedDefiner, procedureBody];
 				
 				[procedureInfo release];
 				[proceduresList release];
 				
-				[metaString appendString:@"/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;;\n"];
 			}
 			
 			[metaString appendString:@"DELIMITER ;\n"];
@@ -715,7 +700,7 @@
 		}
 		
 		if ([connection queryErrored]) {
-			[errors appendString:[NSString stringWithFormat:@"%@\n", [connection getLastErrorMessage]]];
+			[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
 			
 			if ([self sqlOutputIncludeErrors]) {
 				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];

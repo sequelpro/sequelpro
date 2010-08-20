@@ -784,11 +784,11 @@ closes the keySheet
 		// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
 		// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
 		else if ([[theRow objectForKey:@"Type"] isEqualToString:@"bit"]) {
-			[queryString appendString:[NSString stringWithFormat:@" DEFAULT %@ ", [theRow objectForKey:@"Default"]]];
+			[queryString appendFormat:@" DEFAULT %@ ", [theRow objectForKey:@"Default"]];
 		}
 		// Otherwise, use the provided default
 		else {
-			[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"Default"]]]];
+			[queryString appendFormat:@" DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"Default"]]];
 		}
 	}
 	
@@ -809,7 +809,7 @@ closes the keySheet
 
 		// Any column comments
 		if ([originalColumnDetails objectForKey:@"comment"] && [(NSString *)[originalColumnDetails objectForKey:@"comment"] length]) {
-			[queryString appendString:[NSString stringWithFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]]];
+			[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]];
 		}
 
 		// Unparsed details - column formats, storage, reference definitions
@@ -842,22 +842,22 @@ closes the keySheet
 				
 				// Add AFTER ... only if the user added a new field
 				if (isEditingNewRow) {
-					[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
+					[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]];
 				}
 			} 
 			else {
 				// Add AFTER ... only if the user added a new field
 				if (isEditingNewRow) {
-					[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
+					[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]];
 				} 
 				
-				[queryString appendString:[NSString stringWithFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]]];
+				[queryString appendFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"Field"] backtickQuotedString]];
 			}
 		}
 	} 
 	// Add AFTER ... only if the user added a new field
 	else if (isEditingNewRow) {
-		[queryString appendString:[NSString stringWithFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]]];
+		[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"Field"] backtickQuotedString]];
 	}
 	
 	// Execute query
@@ -1344,7 +1344,7 @@ would result in a position change.
 
 	// Add the length parameter if necessary
 	if ( [originalRow objectForKey:@"Length"] && ![[originalRow objectForKey:@"Length"] isEqualToString:@""]) {
-		[queryString appendString:[NSString stringWithFormat:@"(%@)", [originalRow objectForKey:@"Length"]]];
+		[queryString appendFormat:@"(%@)", [originalRow objectForKey:@"Length"]];
 	}
 
 	// Add unsigned, zerofill, binary, not null if necessary
@@ -1377,7 +1377,7 @@ would result in a position change.
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 	} 
 	else {
-		[queryString appendString:[NSString stringWithFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"Default"]]]];
+		[queryString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"Default"]]];
 	}
 
 	// Add details not provided via the SHOW COLUMNS query from the table data cache so column details aren't lost
@@ -1385,7 +1385,7 @@ would result in a position change.
 
 	// Any column comments
 	if ([originalColumnDetails objectForKey:@"comment"] && [(NSString *)[originalColumnDetails objectForKey:@"comment"] length]) {
-		[queryString appendString:[NSString stringWithFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]]];
+		[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalColumnDetails objectForKey:@"comment"]]];
 	}
 
 	// Unparsed details - column formats, storage, reference definitions
@@ -1397,8 +1397,8 @@ would result in a position change.
 	if ( destinationRowIndex == 0 ){
 		[queryString appendString:@" FIRST"];
 	} else {
-		[queryString appendString:[NSString stringWithFormat:@" AFTER %@",
-						[[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"] backtickQuotedString]]];
+		[queryString appendFormat:@" AFTER %@",
+						[[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"Field"] backtickQuotedString]];
 	}
 
 	// Run the query; report any errors, or reload the table on success

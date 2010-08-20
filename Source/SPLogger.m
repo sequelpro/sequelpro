@@ -240,7 +240,7 @@ int isSPLeaksLog(struct direct *entry)
 			NSString *bundleName = [fileManager displayNameAtPath:[[NSBundle mainBundle] bundlePath]];
 			NSMutableString *logStart = [NSMutableString stringWithString:@"\n\n\n==========================================================================\n\n"];
 			
-			[logStart appendString:[NSString stringWithFormat:@"%@ (r%ld)\n", bundleName, (long)[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] integerValue]]];
+			[logStart appendFormat:@"%@ (r%ld)\n", bundleName, (long)[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] integerValue]];
 			[logFileHandle writeData:[logStart dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 	}

@@ -635,11 +635,11 @@
 						c = [[self filterString] characterAtIndex:i];
 						if(c != '`') {
 							if(c == '.')
-								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%@",SPUniqueSchemaDelimiter]];
+								[fuzzyRegexp appendFormat:@".*?%@",SPUniqueSchemaDelimiter];
 							else if (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
-								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?\\%c",c]];
+								[fuzzyRegexp appendFormat:@".*?\\%c",c];
 							else
-								[fuzzyRegexp appendString:[NSString stringWithFormat:@".*?%c",c]];
+								[fuzzyRegexp appendFormat:@".*?%c",c];
 						}
 					}
 

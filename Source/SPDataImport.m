@@ -549,7 +549,7 @@
 
 			// Check for any errors
 			if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-				[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
+				[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]];
 			}
 
 			// Increment the processed queries count
@@ -584,7 +584,7 @@
 
 		// Check for any errors
 		if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-			[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]]];
+			[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]];
 		}
 
 		// Increment the processed queries count
@@ -972,9 +972,9 @@
 
 						if ([mySQLConnection queryErrored]) {
 							[tableDocumentInstance showConsole:nil];
-							[errors appendString:[NSString stringWithFormat:
+							[errors appendFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
-								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
+								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
 						}
 
 						if ( insertRemainingRowsAfterUpdate && ![mySQLConnection affectedRows]) {
@@ -989,9 +989,9 @@
 							[query release];
 
 							if ([mySQLConnection queryErrored]) {
-								[errors appendString:[NSString stringWithFormat:
+								[errors appendFormat:
 									NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
-									(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
+									(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
 							}
 						}
 
@@ -1019,9 +1019,9 @@
 						[query release];
 
 						if ([mySQLConnection queryErrored]) {
-							[errors appendString:[NSString stringWithFormat:
+							[errors appendFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
-								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]]];
+								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
 						}
 						rowsImported++;
 						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];

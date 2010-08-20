@@ -125,9 +125,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	if (withHeaders) {
 		NSUInteger i;
 		for( i = 0; i < numColumns; i++ ){
-			[result appendString:[NSString stringWithFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]]];
+			[result appendFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]];
 		}
-		[result appendString:[NSString stringWithFormat:@"\n"]];
+		[result appendString:@"\n"];
 	}
 
 	NSUInteger c;
@@ -141,6 +141,8 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
+	NSString * nullString = [prefs objectForKey:SPNullValue];
+	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	while ( rowIndex != NSNotFound )
 	{ 
 		for ( c = 0; c < numColumns; c++) {
@@ -150,19 +152,18 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			// and the string representation of any blobs or binary texts.
 			if (cellData) {
 				if ([cellData isNSNull])
-					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
+					[result appendFormat:@"%@\t", nullString];
 				else if ([cellData isSPNotLoaded])
-					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
+					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
-					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection encoding]];
+					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:connectionEncoding];
 					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
 					if (displayString) {
-						[result appendString:displayString];
+						[result appendFormat:@"%@\t", displayString];
 						[displayString release];
-						[result appendString:@"\t"];
 					}
 				} else
-					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
+					[result appendFormat:@"%@\t", [cellData description]];
 			} else {
 				[result appendString:@"\t"];
 			}
@@ -172,7 +173,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		if ([result length]){
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
-		[result appendString:[NSString stringWithFormat:@"\n"]];
+		[result appendString:@"\n"];
 
 		// Select the next row index
 		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
@@ -240,10 +241,12 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	}
 
 	// Begin the SQL string
-	[result appendString:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
-		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
+	[result appendFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
+		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]];
 
 	NSUInteger rowIndex = [selectedRows firstIndex];
+	Class spTableContentClass = [SPTableContent class];
+	Class nsDataClass = [NSData class];
 	while ( rowIndex != NSNotFound )
 	{
 		[value appendString:@"\t("];
@@ -254,10 +257,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// If the data is not loaded, attempt to fetch the value
-			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:[SPTableContent class]]) {
+			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:spTableContentClass]) {
 
 				// Abort if no table name given, not table content, or if there are no indices on this table
-				if (!selectedTable || ![[self delegate] isKindOfClass:[SPTableContent class]] || ![[tableInstance argumentForRow:rowIndex] length]) {
+				if (!selectedTable || ![[self delegate] isKindOfClass:spTableContentClass] || ![[tableInstance argumentForRow:rowIndex] length]) {
 					NSBeep();
 					free(columnMappings);
 					free(columnTypes);
@@ -268,7 +271,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				// TODO - this could be preloaded for all selected rows rather than cell-by-cell
 				cellData = [mySQLConnection getFirstFieldFromQuery:
 							[NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@",
-								[[tbHeader objectAtIndex:columnMappings[c]] backtickQuotedString],
+								[NSArrayObjectAtIndex(tbHeader, columnMappings[c]) backtickQuotedString],
 								[selectedTable backtickQuotedString],
 								[tableInstance argumentForRow:rowIndex]]];
 			}
@@ -285,16 +288,16 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 					// Convert numeric types to unquoted strings
 					case 0:
-						[value appendString:[NSString stringWithFormat:@"%@, ", [cellData description]]];
+						[value appendFormat:@"%@, ", [cellData description]];
 						break;
 
 					// Quote string, text and blob types appropriately
 					case 1:
 					case 2:
-						if ([cellData isKindOfClass:[NSData class]]) {
-							[value appendString:[NSString stringWithFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:cellData]]];
+						if ([cellData isKindOfClass:nsDataClass]) {
+							[value appendFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:cellData]];
 						} else {
-							[value appendString:[NSString stringWithFormat:@"'%@', ", [mySQLConnection prepareString:[cellData description]]]];
+							[value appendFormat:@"'%@', ", [mySQLConnection prepareString:[cellData description]]];
 						}
 						break;
 
@@ -326,9 +329,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 			// Add a new INSERT starter command every ~250k of data.
 			if ( valueLength > 250000 ) {
-				[result appendString:value];
-				[result appendString:[NSString stringWithFormat:@");\n\nINSERT INTO %@ (%@)\nVALUES\n", 
-					[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]]];
+				[result appendFormat:@"%@);\n\nINSERT INTO %@ (%@)\nVALUES\n", value, [(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]];
 				[value setString:@""];
 				valueLength = 0;
 			} else {
@@ -378,6 +379,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
+	NSString *nullString = [prefs objectForKey:SPNullValue];
+	Class nsDataClass = [NSData class];
+	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	while ( rowIndex != NSNotFound )
 	{ 
 		for ( c = 0; c < numColumns; c++) {
@@ -387,18 +391,18 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			// and the string representation of any blobs or binary texts.
 			if (cellData) {
 				if ([cellData isNSNull])
-					[result appendString:[NSString	stringWithFormat:@"%@\t", [prefs objectForKey:SPNullValue]]];
+					[result appendFormat:@"%@\t", nullString];
 				else if ([cellData isSPNotLoaded])
-					[result appendString:[NSString	stringWithFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")]];
-				else if ([cellData isKindOfClass:[NSData class]]) {
-					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection encoding]];
+					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
+				else if ([cellData isKindOfClass:nsDataClass]) {
+					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:connectionEncoding];
 					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
 					if (displayString) {
 						[result appendString:displayString];
 						[displayString release];
 					}
 				} else
-					[result appendString:[NSString stringWithFormat:@"%@\t", [cellData description]]];
+					[result appendFormat:@"%@\t", [cellData description]];
 			} else {
 				[result appendString:@"\t"];
 			}
@@ -408,7 +412,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
 		
-		[result appendString:[NSString stringWithFormat:@"\n"]];
+		[result appendString:@"\n"];
 
 		// Retrieve the next selected row index
 		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];

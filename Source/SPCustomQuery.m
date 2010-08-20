@@ -652,9 +652,9 @@
 				if(!suppressErrorSheet)
 				{
 					// Update error text for the user
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
 										(long)(i+1),
-										errorString]];
+										errorString];
 					[[errorText onMainThread] setStringValue:errors];
 
 					// ask the user to continue after detecting an error
@@ -682,9 +682,9 @@
 						}
 					}
 				} else {
-					[errors appendString:[NSString stringWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
 											(long)(i+1),
-											errorString]];
+											errorString];
 				}
 			} else {
 				[errors setString:errorString];
@@ -2818,18 +2818,14 @@
 			// 		break;
 			// }
 
-			[theHelp appendString:@"<pre class='description'>"];
-			[theHelp appendString:desc];
-			[theHelp appendString:@"</pre>"];
+			[theHelp appendFormat:@"<pre class='description'>%@</pre>", desc];
 		}
 		// are examples available?
 		if([tableDetails objectForKey:@"example"]){
 			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
-			if([examples length]){
-				[theHelp appendString:@"<br><i><b>Example:</b></i><br><pre class='example'>"];
-				[theHelp appendString:examples];
-				[theHelp appendString:@"</pre>"];
-			}
+			if([examples length])
+				[theHelp appendFormat:@"<br><i><b>Example:</b></i><br><pre class='example'>%@</pre>", examples];
+
 		}
 	} else { // list all found topics
 		NSInteger i;
@@ -2837,17 +2833,17 @@
 		if (r) [theResult dataSeek:0];
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
-			[theHelp appendString:[NSString stringWithFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString]];
+			[theHelp appendFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString];
 		else
-			[theHelp appendString:[NSString stringWithFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), searchString]];
+			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), searchString];
 
 		// iterate through all found rows and print them as HTML ul/li list
 		[theHelp appendString:@"<ul>"];
 		for ( i = 0 ; i < r ; i++ ) {
 			NSArray *anArray = [theResult fetchRowAsArray];
 			NSString *topic = [anArray objectAtIndex:[anArray count]-2];
-			[theHelp appendString:
-				[NSString stringWithFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic]];
+			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>", 
+				NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic];
 		}
 		[theHelp appendString:@"</ul>"];
 	}
