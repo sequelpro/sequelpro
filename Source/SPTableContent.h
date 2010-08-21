@@ -102,6 +102,10 @@
 
 	NSTimer *tableLoadTimer;
 	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount, tableLoadTargetRowCount;
+
+	NSArray *cqColumnDefinition;
+	NSString *fieldIDQueryString;
+
 }
 
 // Table loading methods and information
@@ -150,6 +154,7 @@
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(NSInteger)row;
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)updateNumberOfRows;
