@@ -105,6 +105,7 @@
 
 	NSArray *cqColumnDefinition;
 	NSString *fieldIDQueryString;
+	BOOL isFirstChangeInView;
 
 }
 
@@ -182,5 +183,7 @@
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
 - (void)makeContentFilterHaveFocus;
+
+- (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
 @end

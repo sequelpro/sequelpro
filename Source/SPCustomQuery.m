@@ -1766,7 +1766,8 @@
 		NSString *columnName = [columnDefinition objectForKey:@"org_name"];
 
 		// NSString *fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn];
-		
+		fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
+
 		// Check if the IDstring identifies the current field bijectively
 		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
 		if(numberOfPossibleUpdateRows == 1) {
@@ -2149,36 +2150,40 @@
 		 	[errorText setStringValue:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
 		}
 
+		// if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 
-		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 
-		// Remember edited row for reselecting and setting the scroll view after reload
-		editedRow = rowIndex;
-		editedScrollViewRect = [customQueryScrollView documentVisibleRect];
+			// Remember edited row for reselecting and setting the scroll view after reload
+			editedRow = rowIndex;
+			editedScrollViewRect = [customQueryScrollView documentVisibleRect];
 
-		// Set max text length
-		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
-		 && [columnDefinition valueForKey:@"char_length"])
-			[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
+			// Set max text length
+			if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
+			 && [columnDefinition valueForKey:@"char_length"])
+				[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
 
-		id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
-		if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
+			id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+			if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
 
-		id editData = [[fieldEditor editWithObject:originalData
-								fieldName:[columnDefinition objectForKey:@"name"]
-								usingEncoding:[mySQLConnection encoding] 
-								isObjectBlob:isBlob 
-								isEditable:isFieldEditable 
-								withWindow:[tableDocumentInstance parentWindow]] retain];
+			id editData = [[fieldEditor editWithObject:originalData
+									fieldName:[columnDefinition objectForKey:@"name"]
+									usingEncoding:[mySQLConnection encoding] 
+									isObjectBlob:isBlob 
+									isEditable:isFieldEditable 
+									withWindow:[tableDocumentInstance parentWindow]] retain];
 
-		if ( editData )
-			[self tableView:aTableView setObjectValue:[editData copy] forTableColumn:aTableColumn row:rowIndex];
+			if ( editData )
+				[self tableView:aTableView setObjectValue:[editData copy] forTableColumn:aTableColumn row:rowIndex];
 
-		[fieldEditor release];
+			[fieldEditor release];
 
-		if ( editData ) [editData release];
+			if ( editData ) [editData release];
 
-		return NO;
+			return NO;
+
+		// }
+		return isFieldEditable;
 
 	} else {
 		return YES;

@@ -91,6 +91,7 @@
 		secondBetweenValueToRestore = nil;
 		tableRowsSelectable = YES;
 		contentFilterManager = nil;
+		isFirstChangeInView = YES;
 
 		isFiltered = NO;
 		isLimited = NO;
@@ -519,7 +520,7 @@
 	[[tableDocumentInstance parentWindow] makeFirstResponder:currentFirstResponder];
 
 	// Set the state of the table buttons
-	[addButton setEnabled:enableInteraction];
+	[addButton setEnabled:(enableInteraction && [tablesListInstance tableType] == SPTableTypeTable)];
 	[copyButton setEnabled:NO];
 	[removeButton setEnabled:NO];
 
@@ -2624,6 +2625,60 @@
 }
 
 /*
+ * Check if table cell is editable
+ * Returns the number of possible changes or
+ * -1 if no table name can be found or multiple table origins
+ */
+- (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
+{
+	NSDictionary *columnDefinition;
+
+	// Retrieve the column defintion
+	for(id c in cqColumnDefinition) {
+		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:columnIndex]) {
+			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+			break;
+		}
+	}
+
+	// Resolve the original table name for current column if AS was used
+	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
+
+	// Get the database name which the field belongs to
+	NSString *dbForColumn = [columnDefinition objectForKey:@"db"];
+
+	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
+	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
+	if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
+		return -1;
+
+	// if table and database name are given check if field can be identified unambiguously
+	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
+	if(!fieldIDQueryStr)
+		return -1;
+
+	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
+
+	// Actual check whether field can be identified bijectively
+	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", 
+		[[columnDefinition objectForKey:@"db"] backtickQuotedString], 
+		[tableForColumn backtickQuotedString], 
+		fieldIDQueryStr]];
+
+	[tableDocumentInstance endTask];
+
+	if ([mySQLConnection queryErrored])
+		return -1;
+
+	NSArray *tempRow = [tempResult fetchRowAsArray];
+
+	if(![tempRow count])
+		return -1;
+		
+	return [[tempRow objectAtIndex:0] integerValue];
+
+}
+/*
  * Close an open sheet.
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
@@ -3095,15 +3150,14 @@
 			NSBeep();
 			return;
 		}
+
 		// Resolve the original column name if AS was used
 		NSString *columnName = [columnDefinition objectForKey:@"org_name"];
 
 		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Updating field data...", @"updating field task description")];
-
-		NSString *fieldIDQueryStringB = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
-
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
+		NSString *fieldIDQueryStringB = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 
 		// Check if the IDstring identifies the current field bijectively
 		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryStringB]] fetchRowAsArray] objectAtIndex:0] integerValue];
@@ -3138,13 +3192,12 @@
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryStringB]];
 
 
-			[tableDocumentInstance endTask];
-
 			// Check for errors while UPDATE
 			if ([mySQLConnection queryErrored]) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
 
+				[tableDocumentInstance endTask];
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 				return;
 			}
@@ -3158,6 +3211,7 @@
 				} else {
 					NSBeep();
 				}
+				[tableDocumentInstance endTask];
 				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 				return;
 			}
@@ -3172,12 +3226,25 @@
 			return;
 
 		}
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-		[tableDocumentInstance endTask];
 
 		// Reload table after each editing due to complex declarations
-		[self reloadTable:self];
+		if(isFirstChangeInView) {
+			// Set up the table details for the new table, and trigger an interface update
+			// if the view was modified for the very first time
+			NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+											tableForColumn, @"name",
+											[tableDataInstance columns], @"columns",
+											[tableDataInstance columnNames], @"columnNames",
+											[tableDataInstance getConstraints], @"constraints",
+											nil];
+			[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
+			isFirstChangeInView = NO;
+		}
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[tableDocumentInstance endTask];
+
+		[self loadTableValues];
 
 		return;
 
@@ -3277,6 +3344,12 @@
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
+	isFirstChangeInView = YES;
+
+
+	[addButton setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
+
+
 	// Check our notification object is our table content view
 	if ([aNotification object] != tableContentView) return;
 
@@ -3284,14 +3357,18 @@
 	if (isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
 	
 	if (![tableDocumentInstance isWorking]) {
-
 		// Update the row selection count
 		// and update the status of the delete/duplicate buttons
-		if ([tableContentView numberOfSelectedRows] > 0) {
-			[copyButton setEnabled:YES];
-			[removeButton setEnabled:YES];
-		} 
-		else {
+		if([tablesListInstance tableType] == SPTableTypeTable) {
+			if ([tableContentView numberOfSelectedRows] > 0) {
+				[copyButton setEnabled:([tableContentView numberOfSelectedRows] == 1)];
+				[removeButton setEnabled:YES];
+			} 
+			else {
+				[copyButton setEnabled:NO];
+				[removeButton setEnabled:NO];
+			}
+		} else {
 			[copyButton setEnabled:NO];
 			[removeButton setEnabled:NO];
 		}
@@ -3375,72 +3452,48 @@
 	// If a data come from a view check if the clicked table field is editable
 	if([tablesListInstance tableType] == SPTableTypeView) {
 
-		NSDictionary *columnDefinition;
-		BOOL noTableName = NO;
-		BOOL otherErrorWasDisplayed = NO;
-		isFieldEditable = NO;
-		NSInteger numberOfPossibleUpdateRows = -1;
-
-		// Retrieve the column defintion
-		for(id c in cqColumnDefinition) {
-			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
-				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-				break;
-			}
-		}
-
-		// Resolve the original table name for current column if AS was used
-		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
-
-		// Get the database name which the field belongs to
-		NSString *dbForColumn = [columnDefinition objectForKey:@"db"];
-
-		// No table/database name found indicates that the field's column contains data from more than one table as for UNION
-		// or the field data are not bound to any table as in SELECT 1 or if column database is unset
-		if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
-			noTableName = YES;
-
-		if(!noTableName) {
-			// if table and database name are given check if field can be identified unambiguously
-			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
-
-			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
-
-			// Actual check whether field can be identified bijectively
-			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
-
-			[tableDocumentInstance endTask];
-
-			isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
-
-			if(!isFieldEditable) {
-				fieldIDQueryString = nil;
-				otherErrorWasDisplayed = YES;
-				NSPoint pos = [NSEvent mouseLocation];
-				pos.y -= 20;
-					if(numberOfPossibleUpdateRows == 0)
-						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), tableForColumn] 
-								atLocation:pos 
-								ofType:@"text"];
-					else
-						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""] 
-								atLocation:pos 
-								ofType:@"text"];
-				// Allow to display blobs even it's not editable
-				if(!isBlob && [multipleLineEditingButton state] == NSOffState)
-					return NO;
-			}
-		}
-		if(!isFieldEditable && !otherErrorWasDisplayed) {
-			NSPoint pos = [NSEvent mouseLocation];
-			pos.y -= 20;
+		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+		isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
+		NSPoint pos = [NSEvent mouseLocation];
+		pos.y -= 20;
+		switch(numberOfPossibleUpdateRows) {
+			case -1:
 			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database") 
 					atLocation:pos 
 					ofType:@"text"];
-			
+			isFieldEditable = NO;
 			// Allow to display blobs even it's not editable
 			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
 				return NO;
+			break;
+
+			case 0:
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), selectedTable] 
+					atLocation:pos 
+					ofType:@"text"];
+
+			isFieldEditable = NO;
+			// Allow to display blobs even it's not editable
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return NO;
+			break;
+
+			case 1:
+			isFieldEditable = YES;
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return YES;
+			break;
+
+			default:
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""] 
+					atLocation:pos 
+					ofType:@"text"];
+
+			isFieldEditable = NO;
+			// Allow to display blobs even it's not editable
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return NO;
+
 		}
 
 	}
@@ -3463,7 +3516,7 @@
 									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 		if (editData) {
-			if (!isEditingRow) {
+			if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
 				[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
 				isEditingRow = YES;
 				currentlyEditingRow = rowIndex;
@@ -3629,13 +3682,15 @@
 		return;
 
 	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) {
-		[addButton setEnabled:YES];
+		[addButton setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
 		[self updatePaginationState];
 		[reloadButton setEnabled:YES];
 	}
 	if ([tableContentView numberOfSelectedRows] > 0) {
-		[removeButton setEnabled:YES];
-		[copyButton setEnabled:YES];
+		if([tablesListInstance tableType] == SPTableTypeTable) {
+			[removeButton setEnabled:YES];
+			[copyButton setEnabled:YES];
+		}
 	}
 	[filterButton setEnabled:[fieldField isEnabled]];
 	tableRowsSelectable = YES;
@@ -3651,8 +3706,6 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 
-	if([tablesListInstance tableType] == SPTableTypeView) return;
-
 	NSString *fieldType;
 	NSUInteger row, column, i;
 	
@@ -3664,73 +3717,98 @@
 	{
 		[[control window] makeFirstResponder:control];
 
-		// Save the current line if it's the last field in the table
-		if ( column == ( [tableContentView numberOfColumns] - 1 ) ) {
-			[self addRowToDB];
-		} else {
+		if([tablesListInstance tableType] == SPTableTypeView) {
+			// Check if next column is a blob column or not editable, and skip to the next non-blob column and editable field
+			if ( column != ( [tableContentView numberOfColumns] - 1 ) ) {
+				i = 1;
+				while (
+					(fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) headerCell] stringValue]] objectForKey:@"typegrouping"])
+					&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
+					|| [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] != 1
+				) {
+					i++;
 
-			// Check if next column is a blob column, and skip to the next non-blob column
-			i = 1;
-			while (
-				(fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) headerCell] stringValue]] objectForKey:@"typegrouping"])
-				&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
-			) {
-				i++;
-
-				// If there are no columns after the latest blob or text column, save the current line.
-				if ( (column+i) >= [tableContentView numberOfColumns] ) {
-					[self addRowToDB];
-					return TRUE;
+					// If there are no columns after the latest blob or text column, save the current line.
+					if ( (column+i) >= [tableContentView numberOfColumns] ) {
+						return TRUE;
+					}
 				}
-			}
 
-			// Edit the column after the blob column
-			[tableContentView editColumn:column+i row:row withEvent:nil select:YES];
+				[tableContentView editColumn:column+i row:row withEvent:nil select:YES];
+
+			}
+		} else {
+			// Save the current line if it's the last field in the table
+			if ( column == ( [tableContentView numberOfColumns] - 1 ) ) {
+				[self addRowToDB];
+			} else {
+
+				// Check if next column is a blob column, and skip to the next non-blob column
+				i = 1;
+				while (
+					(fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) headerCell] stringValue]] objectForKey:@"typegrouping"])
+					&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
+				) {
+					i++;
+
+					// If there are no columns after the latest blob or text column, save the current line.
+					if ( (column+i) >= [tableContentView numberOfColumns] ) {
+						[self addRowToDB];
+						return TRUE;
+					}
+				}
+
+				// Edit the column after the blob column
+				[tableContentView editColumn:column+i row:row withEvent:nil select:YES];
+			}
 		}
 		return TRUE;
 	}
-    
-    // Trap enter key
-    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
-    {
-        [[control window] makeFirstResponder:control];
-        [self addRowToDB];
-		return TRUE;
-    }
-    
-    // Trap down arrow key
-    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
-    {
-        NSUInteger newRow = row+1;
-        if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
 
-        [[control window] makeFirstResponder:control];
-        [self addRowToDB];
-        
-        if (newRow>=tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
-        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
-        
-        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
-        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
+	// Trap enter key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+	{
+		[[control window] makeFirstResponder:control];
+		if([tablesListInstance tableType] != SPTableTypeView)
+			[self addRowToDB];
 		return TRUE;
-    }
-    
-    // Trap up arrow key
-    else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
-    {
-        if (row==0) return TRUE; //already at the beginning of the list
-        NSUInteger newRow = row-1;
-        
-        [[control window] makeFirstResponder:control];
-        [self addRowToDB];
-        
-        if (newRow>=tableRowsCount) return TRUE; // addRowToDB could reload the table and change the number of rows
-        if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
-        
-        [tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
-        [tableContentView editColumn:column row:newRow withEvent:nil select:YES];
+	}
+
+	// Trap down arrow key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
+	{
+		NSUInteger newRow = row+1;
+		if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
+
+		[[control window] makeFirstResponder:control];
+		if([tablesListInstance tableType] != SPTableTypeView)
+			[self addRowToDB];
+
+		if (newRow>=tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
+		if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
+
+		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+		[tableContentView editColumn:column row:newRow withEvent:nil select:YES];
 		return TRUE;
-    }
+	}
+
+	// Trap up arrow key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
+	{
+		if (row==0) return TRUE; //already at the beginning of the list
+		NSUInteger newRow = row-1;
+
+		[[control window] makeFirstResponder:control];
+		if([tablesListInstance tableType] != SPTableTypeView)
+			[self addRowToDB];
+
+		if (newRow>=tableRowsCount) return TRUE; // addRowToDB could reload the table and change the number of rows
+		if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
+
+		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+		[tableContentView editColumn:column row:newRow withEvent:nil select:YES];
+		return TRUE;
+	}
     
 	// Trap the escape key
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
@@ -3786,12 +3864,12 @@
 	if ([menuItem action] == @selector(removeRow:)) {
 		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? @"Delete Rows" : @"Delete Row"];
 		
-		return ([tableContentView numberOfSelectedRows] > 0);
+		return ([tableContentView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable);
 	}
 	
 	// Duplicate row
 	if ([menuItem action] == @selector(copyRow:)) {
-		return ([tableContentView numberOfSelectedRows] == 1);
+		return ([tableContentView numberOfSelectedRows] == 1 && [tablesListInstance tableType] == SPTableTypeTable);
 	}
 	
 	return YES;
