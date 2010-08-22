@@ -1493,6 +1493,18 @@
 {
 
 	if([tablesListView selectedRow] < 0) {
+		// Reset all
+		if (selectedTableName) [selectedTableName release];
+		selectedTableName = nil;
+		selectedTableType = SPTableTypeNone;
+		[tableSourceInstance loadTable:nil];
+		[tableContentInstance loadTable:nil];
+		[extendedTableInfoInstance loadTable:nil];
+		[tableTriggersInstance loadTriggers];
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
+		triggersLoaded = NO;
 		[self updateSelectionWithTaskString:NSLocalizedString(@"Reloading...", @"Reloading table task string")];
 		return;
 	}
@@ -2075,10 +2087,6 @@
 	
 	[tablesListView reloadData];
 
-	// Reset selectedTableName and selectedTableType
-	if (selectedTableName) [selectedTableName release];
-	selectedTableName = nil;
-	selectedTableType = SPTableTypeNone;
 	[tablesListView deselectAll:self];
 
 	// set window title
