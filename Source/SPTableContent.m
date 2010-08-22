@@ -3087,7 +3087,11 @@
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
 		if(!tableForColumn || ![tableForColumn length]) {
-			// [errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
+			NSPoint pos = [NSEvent mouseLocation];
+			pos.y -= 20;
+			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database") 
+					atLocation:pos 
+					ofType:@"text"];
 			NSBeep();
 			return;
 		}
@@ -3163,9 +3167,18 @@
 							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
 										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
 
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+			[tableDocumentInstance endTask];
+			return;
+
 		}
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+
+		[tableDocumentInstance endTask];
+
+		// Reload table after each editing due to complex declarations
 		[self reloadTable:self];
+
 		return;
 
 	}
@@ -3404,11 +3417,11 @@
 				NSPoint pos = [NSEvent mouseLocation];
 				pos.y -= 20;
 					if(numberOfPossibleUpdateRows == 0)
-						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found. Reload table or try to add a primary key field or more fields in the view declaration of '%@' to identify field origin unambiguously.", @"Table Content result editing error - could not identify original row"), tableForColumn] 
+						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), tableForColumn] 
 								atLocation:pos 
 								ofType:@"text"];
 					else
-						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Custom Query result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""] 
+						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""] 
 								atLocation:pos 
 								ofType:@"text"];
 				return NO;
