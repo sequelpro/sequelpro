@@ -2074,11 +2074,16 @@
 	}
 	
 	[tablesListView reloadData];
-	
+
+	// Reset selectedTableName and selectedTableType
+	if (selectedTableName) [selectedTableName release];
+	selectedTableName = nil;
+	selectedTableType = SPTableTypeNone;
+	[tablesListView deselectAll:self];
+
 	// set window title
 	[tableDocumentInstance updateWindowTitle:self];
 
-	[tablesListView deselectAll:self];
 
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
