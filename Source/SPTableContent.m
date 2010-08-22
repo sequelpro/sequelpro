@@ -3377,6 +3377,7 @@
 
 		NSDictionary *columnDefinition;
 		BOOL noTableName = NO;
+		BOOL otherErrorWasDisplayed = NO;
 		isFieldEditable = NO;
 		NSInteger numberOfPossibleUpdateRows = -1;
 
@@ -3414,6 +3415,7 @@
 
 			if(!isFieldEditable) {
 				fieldIDQueryString = nil;
+				otherErrorWasDisplayed = YES;
 				NSPoint pos = [NSEvent mouseLocation];
 				pos.y -= 20;
 					if(numberOfPossibleUpdateRows == 0)
@@ -3424,17 +3426,21 @@
 						[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""] 
 								atLocation:pos 
 								ofType:@"text"];
-				return NO;
+				// Allow to display blobs even it's not editable
+				if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+					return NO;
 			}
 		}
-		if(!isFieldEditable) {
+		if(!isFieldEditable && !otherErrorWasDisplayed) {
 			NSPoint pos = [NSEvent mouseLocation];
 			pos.y -= 20;
 			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database") 
 					atLocation:pos 
 					ofType:@"text"];
 			
-			return NO;
+			// Allow to display blobs even it's not editable
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return NO;
 		}
 
 	}
@@ -3453,7 +3459,7 @@
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
 								 usingEncoding:[mySQLConnection encoding] 
 								  isObjectBlob:isBlob 
-									isEditable:YES 
+									isEditable:isFieldEditable 
 									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 		if (editData) {
@@ -3470,13 +3476,15 @@
 				[editData release];
 				editData = [[NSNull null] retain];
 			}
-			if([tablesListInstance tableType] == SPTableTypeView) {
-				// since in a view we're editing a field rather than a row
-				isEditingRow = NO;
-				// update the field and refresh the table
-				[self tableView:aTableView setObjectValue:[[editData copy] autorelease] forTableColumn:aTableColumn row:rowIndex];
-			} else {
-				[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
+			if(isFieldEditable) {
+				if([tablesListInstance tableType] == SPTableTypeView) {
+					// since in a view we're editing a field rather than a row
+					isEditingRow = NO;
+					// update the field and refresh the table
+					[self tableView:aTableView setObjectValue:[[editData copy] autorelease] forTableColumn:aTableColumn row:rowIndex];
+				} else {
+					[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
+				}
 			}
 		}
 
