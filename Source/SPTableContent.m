@@ -761,13 +761,13 @@
 	}
 
 	// Ensure the table is aware of changes
-    if ([NSThread isMainThread]) {
-        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
-    } else {
-        [tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
-        [tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
-    }
-	
+	if ([NSThread isMainThread]) {
+		[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+	} else {
+		[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
+		[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+	}
+
 	// Clean up the autorelease pool and reset the progress indicator
 	[dataLoadingPool drain];
 	[dataLoadingIndicator setIndeterminate:YES];
@@ -2631,7 +2631,7 @@
  */
 - (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
 {
-	NSDictionary *columnDefinition;
+	NSDictionary *columnDefinition = nil;
 
 	// Retrieve the column defintion
 	for(id c in cqColumnDefinition) {
@@ -2641,6 +2641,9 @@
 		}
 	}
 
+	if(!columnDefinition)
+		return -2;
+
 	// Resolve the original table name for current column if AS was used
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
@@ -2649,7 +2652,7 @@
 
 	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
 	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
-	if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
+	if(!tableForColumn || ![tableForColumn length] || !dbForColumn || ![dbForColumn length])
 		return -1;
 
 	// if table and database name are given check if field can be identified unambiguously
@@ -3157,10 +3160,12 @@
 		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Updating field data...", @"updating field task description")];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
-		NSString *fieldIDQueryStringB = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
+		[self storeCurrentDetailsForRestoration];
+
+		NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 
 		// Check if the IDstring identifies the current field bijectively
-		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryStringB]] fetchRowAsArray] objectAtIndex:0] integerValue];
+		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryStr]] fetchRowAsArray] objectAtIndex:0] integerValue];
 
 		if(numberOfPossibleUpdateRows == 1) {
 
@@ -3189,7 +3194,7 @@
 			[mySQLConnection queryString:
 				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1", 
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
-					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryStringB]];
+					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryStr]];
 
 
 			// Check for errors while UPDATE
@@ -3545,6 +3550,8 @@
 
 		if (editData) [editData release];
 
+		[tableContentView makeFirstResponder];
+
 		return NO;
 	}
 
@@ -3699,6 +3706,42 @@
 #pragma mark -
 #pragma mark Other methods
 
+
+/*
+ * If user selected a table cell which is a blob field and tried to edit it
+ * cancel the fieldEditor, display the field editor sheet instead for editing
+ * and re-enable the fieldEditor after editing.
+ */
+- (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
+{
+
+	NSString *fieldType;
+	NSUInteger row, column;
+
+	row = [tableContentView editedRow];
+	column = [tableContentView editedColumn];
+
+	// Check if current edited field is a blob
+	if ((fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"])
+		&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"]))
+	{
+		// Cancel editing
+		[control abortEditing];
+
+		// Call the field editor sheet
+		[self tableView:tableContentView shouldEditTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], column) row:row];
+
+		// Reset the field editor
+		[tableContentView editColumn:column row:row withEvent:nil select:YES];
+
+		return NO;
+
+	}
+	
+	return YES;
+	
+}
+
 /*
  * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
@@ -3713,19 +3756,16 @@
 	column = [tableContentView editedColumn];
 
 	// Trap tab key
+	// -- for handling of blob fields look at [self control:textShouldBeginEditing:]
 	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
 	{
 		[[control window] makeFirstResponder:control];
 
 		if([tablesListInstance tableType] == SPTableTypeView) {
-			// Check if next column is a blob column or not editable, and skip to the next non-blob column and editable field
+			// Look for the next editable field
 			if ( column != ( [tableContentView numberOfColumns] - 1 ) ) {
 				i = 1;
-				while (
-					(fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) headerCell] stringValue]] objectForKey:@"typegrouping"])
-					&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
-					|| [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] != 1
-				) {
+				while ([self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] != 1) {
 					i++;
 
 					// If there are no columns after the latest blob or text column, save the current line.
@@ -3738,31 +3778,56 @@
 
 			}
 		} else {
+
 			// Save the current line if it's the last field in the table
 			if ( column == ( [tableContentView numberOfColumns] - 1 ) ) {
 				[self addRowToDB];
+				return YES;
 			} else {
+				// Select the next field for editing
+				[tableContentView editColumn:column+1 row:row withEvent:nil select:YES];
+				return YES;
+			}
 
-				// Check if next column is a blob column, and skip to the next non-blob column
+		}
+		return YES;
+	}
+
+	// Trap shift-tab key
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] )
+	{
+		[[control window] makeFirstResponder:control];
+
+		if([tablesListInstance tableType] == SPTableTypeView) {
+			// Look for the next editable field backwards
+			if ( column > 0 ) {
 				i = 1;
-				while (
-					(fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) headerCell] stringValue]] objectForKey:@"typegrouping"])
-					&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])
-				) {
+				while ([self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column-i) identifier]] != 1) {
 					i++;
 
-					// If there are no columns after the latest blob or text column, save the current line.
-					if ( (column+i) >= [tableContentView numberOfColumns] ) {
-						[self addRowToDB];
+					// If there are no columns before the latestone, return.
+					if ( column == i ) {
 						return TRUE;
 					}
 				}
 
-				// Edit the column after the blob column
-				[tableContentView editColumn:column+i row:row withEvent:nil select:YES];
+				[tableContentView editColumn:column-i row:row withEvent:nil select:YES];
+
 			}
+		} else {
+
+			// Save the current line if it's the last field in the table
+			if ( column < 1 ) {
+				[self addRowToDB];
+				return YES;
+			} else {
+				// Select the previous field for editing
+				[tableContentView editColumn:column-1 row:row withEvent:nil select:YES];
+				return YES;
+			}
+
 		}
-		return TRUE;
+		return YES;
 	}
 
 	// Trap enter key
@@ -3829,6 +3894,10 @@
 			[tableContentView reloadData];
 		}
 		currentlyEditingRow = -1;
+
+		// Preserve the focus
+		[tableContentView makeFirstResponder];
+
 		return TRUE;
 	}
 	else
