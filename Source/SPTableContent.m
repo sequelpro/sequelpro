@@ -3833,15 +3833,22 @@
 	// Trap enter key
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
 	{
+
 		[[control window] makeFirstResponder:control];
 		if([tablesListInstance tableType] != SPTableTypeView)
 			[self addRowToDB];
 		return TRUE;
+
 	}
 
 	// Trap down arrow key
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
 	{
+
+		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
+		if([fieldType isEqualToString:@"enum"])
+			return NO;
+
 		NSUInteger newRow = row+1;
 		if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
 
@@ -3860,6 +3867,11 @@
 	// Trap up arrow key
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
 	{
+
+		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
+		if([fieldType isEqualToString:@"enum"])
+			return NO;
+
 		if (row==0) return TRUE; //already at the beginning of the list
 		NSUInteger newRow = row-1;
 
