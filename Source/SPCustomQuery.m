@@ -1586,6 +1586,64 @@
 #pragma mark Field Editing
 
 /*
+ * Check if table cell is editable
+ * Returns the number of possible changes or
+ * -1 if no table name can be found or multiple table origins
+ */
+- (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
+{
+	NSDictionary *columnDefinition = nil;
+
+	// Retrieve the column defintion
+	for(id c in cqColumnDefinition) {
+		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:columnIndex]) {
+			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+			break;
+		}
+	}
+
+	if(!columnDefinition)
+		return -2;
+
+	// Resolve the original table name for current column if AS was used
+	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
+
+	// Get the database name which the field belongs to
+	NSString *dbForColumn = [columnDefinition objectForKey:@"db"];
+
+	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
+	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
+	if(!tableForColumn || ![tableForColumn length] || !dbForColumn || ![dbForColumn length])
+		return -1;
+
+	// if table and database name are given check if field can be identified unambiguously
+	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
+	if(!fieldIDQueryStr)
+		return -1;
+
+	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
+
+	// Actual check whether field can be identified bijectively
+	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
+		[[columnDefinition objectForKey:@"db"] backtickQuotedString],
+		[tableForColumn backtickQuotedString],
+		fieldIDQueryStr]];
+
+	[tableDocumentInstance endTask];
+
+	if ([mySQLConnection queryErrored])
+		return -1;
+
+	NSArray *tempRow = [tempResult fetchRowAsArray];
+
+	if(![tempRow count])
+		return -1;
+
+	return [[tempRow objectAtIndex:0] integerValue];
+
+}
+
+/*
  * Collect all columns for a given 'tableForColumn' table and
  * return a WHERE clause for identifying the field in quesyion.
  */
@@ -2186,7 +2244,7 @@
 		 	[errorText setStringValue:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
 		}
 
-		// if ([multipleLineEditingButton state] == NSOnState || isBlob) {
+		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 
 			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 
@@ -2218,7 +2276,7 @@
 
 			return NO;
 
-		// }
+		}
 		return isFieldEditable;
 
 	} else {
@@ -3388,20 +3446,73 @@
 	}
 }
 
+/*
+ * If user selected a table cell which is a blob field and tried to edit it
+ * cancel the fieldEditor, display the field editor sheet instead for editing
+ * and re-enable the fieldEditor after editing.
+ */
+- (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
+{
+
+	NSString *fieldType;
+	NSUInteger row, column;
+
+	row = [customQueryView editedRow];
+	column = [customQueryView editedColumn];
+
+	NSDictionary *columnDefinition = nil;
+
+	// Retrieve the column defintion
+	for(id c in cqColumnDefinition) {
+		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[NSNumber numberWithInteger:column]]) {
+			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+			break;
+		}
+	}
+
+	if(!columnDefinition) return NO;
+
+	BOOL isBlob = NO;
+
+	// Check if current field is a blob
+	if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
+		|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
+		isBlob = YES;
+	else
+		isBlob = NO;
+
+	// Check if current edited field is a blob
+	if (isBlob)
+	{
+		// Cancel editing
+		[control abortEditing];
+
+		// Call the field editor sheet
+		[self tableView:customQueryView shouldEditTableColumn:NSArrayObjectAtIndex([customQueryView tableColumns], column) row:row];
+
+		return NO;
+
+	}
+
+	return YES;
+
+}
+
 /**
  * Abort editing of the Favorite and History search field editors if user presses ARROW UP or DOWN
  * to allow to navigate through the menu item list.
  */
-- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView doCommandBySelector:(SEL)commandSelector
+- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView doCommandBySelector:(SEL)command
 {
+
 	if(control == queryHistorySearchField || control == queryFavoritesSearchField) {
-		if(commandSelector == @selector(moveDown:) || commandSelector == @selector(moveUp:)) {
+		if(command == @selector(moveDown:) || command == @selector(moveUp:)) {
 			[queryHistorySearchField abortEditing];
 			[queryFavoritesSearchField abortEditing];
 
 			// Send moveDown/Up to the popup menu
 			NSEvent *arrowEvent;
-			if(commandSelector == @selector(moveDown:))
+			if(command == @selector(moveDown:))
 				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7D];
 			else
 				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7E];
@@ -3410,6 +3521,29 @@
 
 		}
 	}
+
+	else {
+
+		// Check firstly if SPCopyTable can handle command
+		if([customQueryView control:control textView:textView doCommandBySelector:(SEL)command])
+			return YES;
+
+		// Trap the escape key
+		if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
+		{
+
+			// Abort editing
+			[control abortEditing];
+
+			// Preserve the focus
+			[customQueryView makeFirstResponder];
+
+			return TRUE;
+		}
+
+
+	}
+
 	return NO;
 }
 // - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item

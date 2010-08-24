@@ -2681,6 +2681,7 @@
 	return [[tempRow objectAtIndex:0] integerValue];
 
 }
+
 /*
  * Close an open sheet.
  */
@@ -3764,154 +3765,15 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 
-	NSString *fieldType;
-	NSUInteger row, column, i;
-
-	row = [tableContentView editedRow];
-	column = [tableContentView editedColumn];
-
-	// Trap tab key
-	// -- for handling of blob fields look at [self control:textShouldBeginEditing:]
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
-	{
-		[[control window] makeFirstResponder:control];
-
-		if([tablesListInstance tableType] == SPTableTypeView) {
-			// Look for the next editable field
-			if ( column != ( [tableContentView numberOfColumns] - 1 ) ) {
-				i = 1;
-				while ([self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column+i) identifier]] != 1) {
-					i++;
-
-					// If there are no columns after the latest blob or text column, save the current line.
-					if ( (column+i) >= [tableContentView numberOfColumns] ) {
-						return TRUE;
-					}
-				}
-
-				[tableContentView editColumn:column+i row:row withEvent:nil select:YES];
-
-			}
-		} else {
-
-			// Save the current line if it's the last field in the table
-			if ( column == ( [tableContentView numberOfColumns] - 1 ) ) {
-				[self addRowToDB];
-				return YES;
-			} else {
-				// Select the next field for editing
-				[tableContentView editColumn:column+1 row:row withEvent:nil select:YES];
-				return YES;
-			}
-
-		}
+	// Check firstly if SPCopyTable can handle command
+	if([tableContentView control:control textView:textView doCommandBySelector:(SEL)command])
 		return YES;
-	}
-
-	// Trap shift-tab key
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] )
-	{
-		[[control window] makeFirstResponder:control];
-
-		if([tablesListInstance tableType] == SPTableTypeView) {
-			// Look for the next editable field backwards
-			if ( column > 0 ) {
-				i = 1;
-				while ([self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column-i) identifier]] != 1) {
-					i++;
-
-					// If there are no columns before the latestone, return.
-					if ( column == i ) {
-						return TRUE;
-					}
-				}
-
-				[tableContentView editColumn:column-i row:row withEvent:nil select:YES];
-
-			}
-		} else {
-
-			// Save the current line if it's the last field in the table
-			if ( column < 1 ) {
-				[self addRowToDB];
-				return YES;
-			} else {
-				// Select the previous field for editing
-				[tableContentView editColumn:column-1 row:row withEvent:nil select:YES];
-				return YES;
-			}
-
-		}
-		return YES;
-	}
-
-	// Trap enter key
-	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
-	{
-		// If enum field is edited RETURN selects the new value instead of saving the entire row
-		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
-		if([fieldType isEqualToString:@"enum"])
-			return YES;
-
-		[[control window] makeFirstResponder:control];
-		if([tablesListInstance tableType] != SPTableTypeView)
-			[self addRowToDB];
-		return TRUE;
-
-	}
-
-	// Trap down arrow key
-	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
-	{
-
-		// If enum field is edited ARROW key navigates through the popup list
-		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
-		if([fieldType isEqualToString:@"enum"])
-			return NO;
-
-		NSUInteger newRow = row+1;
-		if (newRow>=tableRowsCount) return TRUE; //check if we're already at the end of the list
-
-		[[control window] makeFirstResponder:control];
-		if([tablesListInstance tableType] != SPTableTypeView)
-			[self addRowToDB];
-
-		if (newRow>=tableRowsCount) return TRUE; //check again. addRowToDB could reload the table and change the number of rows
-		if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
-
-		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
-		[tableContentView editColumn:column row:newRow withEvent:nil select:YES];
-		return TRUE;
-	}
-
-	// Trap up arrow key
-	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
-	{
-
-		// If enum field is edited ARROW key navigates through the popup list
-		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
-		if([fieldType isEqualToString:@"enum"])
-			return NO;
-
-		if (row==0) return TRUE; //already at the beginning of the list
-		NSUInteger newRow = row-1;
-
-		[[control window] makeFirstResponder:control];
-		if([tablesListInstance tableType] != SPTableTypeView)
-			[self addRowToDB];
-
-		if (newRow>=tableRowsCount) return TRUE; // addRowToDB could reload the table and change the number of rows
-		if (column>=[tableValues columnCount]) return TRUE; //the column count could change too
-
-		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
-		[tableContentView editColumn:column row:newRow withEvent:nil select:YES];
-		return TRUE;
-	}
 
 	// Trap the escape key
-	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
-			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
+	if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
 	{
+
+		NSUInteger row = [tableContentView editedRow];
 
 		// Abort editing
 		[control abortEditing];
@@ -3933,10 +3795,9 @@
 
 		return TRUE;
 	}
-	else
-	{
-		return FALSE;
-	}
+
+	return FALSE;
+
 }
 
 /**

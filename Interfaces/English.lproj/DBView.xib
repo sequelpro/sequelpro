@@ -24,7 +24,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="6225"/>
-			<integer value="7223"/>
+			<integer value="7168"/>
 			<integer value="7467"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -3119,7 +3119,7 @@
 																</object>
 																<object class="NSButton" id="67603994">
 																	<reference key="NSNextResponder" ref="556476514"/>
-																	<int key="NSvFlags">-2147483356</int>
+																	<int key="NSvFlags">292</int>
 																	<string key="NSFrame">{{62, -1}, {32, 25}}</string>
 																	<reference key="NSSuperview" ref="556476514"/>
 																	<bool key="NSEnabled">YES</bool>
@@ -23136,7 +23136,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{-142, 249}, {943, 549}}</string>
+					<string>{{0, 249}, {943, 549}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

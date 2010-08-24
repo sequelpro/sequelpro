@@ -44,16 +44,16 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 - (void)copy:(id)sender
 {
 	NSString *tmp = nil;
-	
+
 	if([sender tag] == MENU_EDIT_COPY_AS_SQL) {
 		tmp = [self selectedRowsAsSqlInserts];
 		if ( nil != tmp )
 		{
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
-		
+
 			[pb declareTypes:[NSArray arrayWithObjects: NSStringPboardType, nil]
 					   owner:nil];
-		
+
 			[pb setString:tmp forType:NSStringPboardType];
 		}
 	} else {
@@ -61,16 +61,182 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		if ( nil != tmp )
 		{
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
-		
-			[pb declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
+
+			[pb declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType,
 				NSStringPboardType, nil]
 					   owner:nil];
-		
+
 			[pb setString:tmp forType:NSStringPboardType];
 			[pb setString:tmp forType:NSTabularTextPboardType];
 		}
 	}
 }
+
+/*
+ * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
+ * only within the current row.
+ */
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+{
+
+	NSUInteger row, column, i;
+
+	row = [self editedRow];
+	column = [self editedColumn];
+	BOOL isCellEditing = NO;
+
+	// cell editing for views in SPTableContent or in SPCustomQuery
+	if([[self delegate] isKindOfClass:[SPCustomQuery class]] || ([[self delegate] isKindOfClass:[SPTableContent class]] && [[self delegate] valueForKeyPath:@"tablesListInstance"] && [[[self delegate] valueForKeyPath:@"tablesListInstance"] tableType] == SPTableTypeView))
+		isCellEditing = YES;
+
+	// Trap tab key
+	// -- for handling of blob fields look at [self control:textShouldBeginEditing:]
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	{
+		[[control window] makeFirstResponder:control];
+
+		if(isCellEditing) {
+			// Look for the next editable field
+			if ( column != ( [self numberOfColumns] - 1 ) ) {
+				i = 1;
+				while ([[self delegate] fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([self tableColumns], column+i) identifier]] != 1) {
+					i++;
+
+					// If there are no columns after the latest blob or text column, save the current line.
+					if ( (column+i) >= [self numberOfColumns] )
+						return YES;
+
+				}
+
+				[self editColumn:column+i row:row withEvent:nil select:YES];
+
+			}
+
+		} else {
+
+			// Save the current line if it's the last field in the table
+			if ( column == ( [self numberOfColumns] - 1 ) ) {
+				if([[self delegate] respondsToSelector:@selector(addRowToDB)])
+					[[self delegate] addRowToDB];
+			} else {
+				// Select the next field for editing
+				[self editColumn:column+1 row:row withEvent:nil select:YES];
+			}
+
+		}
+
+		return YES;
+	}
+
+	// Trap shift-tab key
+	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] )
+	{
+		[[control window] makeFirstResponder:control];
+
+		if(isCellEditing) {
+			// Look for the next editable field backwards
+			if ( column > 0 ) {
+				i = 1;
+				while ([[self delegate] fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([self tableColumns], column-i) identifier]] != 1) {
+					i++;
+
+					// If there are no columns before the latestone, return.
+					if ( column == i ) {
+						[[self onMainThread] makeFirstResponder];
+						return TRUE;
+					}
+				}
+
+				[self editColumn:column-i row:row withEvent:nil select:YES];
+
+			}
+		} else {
+
+			// Save the current line if it's the last field in the table
+			if ( column < 1 ) {
+				if([[self delegate] respondsToSelector:@selector(addRowToDB)])
+					[[self delegate] addRowToDB];
+				[[self onMainThread] makeFirstResponder];
+			} else {
+				// Select the previous field for editing
+				[self editColumn:column-1 row:row withEvent:nil select:YES];
+			}
+
+		}
+		return YES;
+	}
+
+	// Trap enter key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+	{
+		// If enum field is edited RETURN selects the new value instead of saving the entire row
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && [[self delegate] valueForKeyPath:@"tableDataInstance"]) {
+			NSString *fieldType = [[[[self delegate] valueForKeyPath:@"tableDataInstance"] columnWithName:[[NSArrayObjectAtIndex([self tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
+			if([fieldType isEqualToString:@"enum"])
+				return YES;
+		}
+		[[control window] makeFirstResponder:control];
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && !isCellEditing && [[self delegate] respondsToSelector:@selector(addRowToDB)])
+			[[self delegate] addRowToDB];
+		return YES;
+
+	}
+
+	// Trap down arrow key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
+	{
+
+		// If enum field is edited ARROW key navigates through the popup list
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && [[self delegate] valueForKeyPath:@"tableDataInstance"]) {
+			NSString *fieldType = [[[[self delegate] valueForKeyPath:@"tableDataInstance"] columnWithName:[[NSArrayObjectAtIndex([self tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
+			if([fieldType isEqualToString:@"enum"])
+				return NO;
+		}
+
+		NSUInteger newRow = row+1;
+		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
+
+		[[control window] makeFirstResponder:control];
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && !isCellEditing && [[self delegate] respondsToSelector:@selector(addRowToDB)])
+			[[self delegate] addRowToDB];
+
+		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. addRowToDB could reload the table and change the number of rows
+		if (column>=[tableStorage columnCount]) return YES; //the column count could change too
+
+		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+		[self editColumn:column row:newRow withEvent:nil select:YES];
+		return YES;
+	}
+
+	// Trap up arrow key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
+	{
+
+		// If enum field is edited ARROW key navigates through the popup list
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && [[self delegate] valueForKeyPath:@"tableDataInstance"]) {
+			NSString *fieldType = [[[[self delegate] valueForKeyPath:@"tableDataInstance"] columnWithName:[[NSArrayObjectAtIndex([self tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
+			if([fieldType isEqualToString:@"enum"])
+				return NO;
+		}
+
+		if (row==0) return TRUE; //already at the beginning of the list
+		NSUInteger newRow = row-1;
+
+		[[control window] makeFirstResponder:control];
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && !isCellEditing && [[self delegate] respondsToSelector:@selector(addRowToDB)])
+			[[self delegate] addRowToDB];
+
+		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // addRowToDB could reload the table and change the number of rows
+		if (column>=[tableStorage columnCount]) return YES; //the column count could change too
+
+		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+		[self editColumn:column row:newRow withEvent:nil select:YES];
+		return YES;
+	}
+
+	return NO;
+}
+
 
 //allow for drag-n-drop out of the application as a copy
 - (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal
@@ -82,7 +248,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
  * Only have the copy menu item enabled when row(s) are selected in
  * supported tables.
  */
-- (BOOL)validateMenuItem:(NSMenuItem*)anItem 
+- (BOOL)validateMenuItem:(NSMenuItem*)anItem
 {
 	NSInteger menuItemTag = [anItem tag];
 
@@ -114,11 +280,11 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 - (NSString *)selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders
 {
 	if ([self numberOfSelectedRows] == 0) return nil;
-	
+
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 
 	NSArray *columns = [self tableColumns];
-	NSUInteger numColumns = [columns count];	
+	NSUInteger numColumns = [columns count];
 	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 
 	// Add the table headers if requested to do so
@@ -144,7 +310,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSString * nullString = [prefs objectForKey:SPNullValue];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	while ( rowIndex != NSNotFound )
-	{ 
+	{
 		for ( c = 0; c < numColumns; c++) {
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
@@ -189,7 +355,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	return result;
 }
 
-/* 
+/*
  * Return selected rows as SQL INSERT INTO `foo` VALUES (baz) string.
  * If no selected table name is given `<table>` will be used instead.
  */
@@ -205,7 +371,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
 
 	id cellData = nil;
-	
+
 	NSUInteger rowCounter = 0;
 	NSUInteger penultimateRowIndex = [selectedRows count];
 	NSUInteger c;
@@ -226,11 +392,11 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		columnMappings[c] = [[[columns objectAtIndex:c] identifier] unsignedIntValue];
 
 		NSString *t = [[columnDefinitions objectAtIndex:columnMappings[c]] objectForKey:@"typegrouping"];
-		
+
 		// Numeric data
 		if ([t isEqualToString:@"bit"] || [t isEqualToString:@"integer"] || [t isEqualToString:@"float"])
 			columnTypes[c] = 0;
-		
+
 		// Blob data or long text data
 		else if ([t isEqualToString:@"blobdata"] || [t isEqualToString:@"textdata"])
 			columnTypes[c] = 2;
@@ -241,7 +407,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	}
 
 	// Begin the SQL string
-	[result appendFormat:@"INSERT INTO %@ (%@)\nVALUES\n", 
+	[result appendFormat:@"INSERT INTO %@ (%@)\nVALUES\n",
 		[(selectedTable == nil)?@"<table>":selectedTable backtickQuotedString], [tbHeader componentsJoinedAndBacktickQuoted]];
 
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -282,7 +448,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				continue;
 
 			} else if (cellData) {
-			
+
 				// Check column type and insert the data accordingly
 				switch(columnTypes[c]) {
 
@@ -345,7 +511,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 
 	}
-	
+
 	// Remove the trailing ",\n" from the query string
 	if ( [result length] > 3 )
 		[result deleteCharactersInRange:NSMakeRange([result length]-2, 2)];
@@ -354,7 +520,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 	free(columnMappings);
 	free(columnTypes);
-	
+
 	return result;
 }
 
@@ -366,11 +532,11 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSArray *columns = [self tableColumns];
 	NSUInteger numColumns = [columns count];
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
-	
+
 	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 	NSUInteger c;
 	id cellData = nil;
-	
+
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++) {
@@ -383,10 +549,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	Class nsDataClass = [NSData class];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	while ( rowIndex != NSNotFound )
-	{ 
+	{
 		for ( c = 0; c < numColumns; c++) {
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
-			
+
 			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
 			// and the string representation of any blobs or binary texts.
 			if (cellData) {
@@ -411,7 +577,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		if ([result length]) {
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
-		
+
 		[result appendString:@"\n"];
 
 		// Retrieve the next selected row index
@@ -437,7 +603,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	mySQLConnection   = aMySqlConnection;
 	tableInstance     = anInstance;
 	tableStorage	  = theTableStorage;
-	
+
 	if (columnDefinitions) [columnDefinitions release];
 	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
@@ -582,32 +748,25 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 - (void)keyDown:(NSEvent *)theEvent
 {
+
 	// RETURN or ENTER invoke editing mode for selected row
 	// by calling tableView:shouldEditTableColumn: to validate
-	if([[[[self delegate] class] description] isEqualToString:@"SPTableContent"]) {
+	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 
-		id tableContentView = [[self delegate] valueForKeyPath:@"tableContentView"];
-		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
-			if([[self delegate] tableView:tableContentView shouldEditTableColumn:[[tableContentView tableColumns] objectAtIndex:0] row:[tableContentView selectedRow]]) {
+		NSUInteger i = 0;
+
+		for(id item in [self tableColumns]) {
+			// Run in fieldEditorMode?
+			if(![[self delegate] tableView:self shouldEditTableColumn:item row:[self selectedRow]])
+				;
+			else {
+				// if not in fieldEditorMode select the first item
 				[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
-				return;
+				break;
 			}
 		}
-	}
-	if([[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"]) {
-		id tableContentView = [[self delegate] valueForKeyPath:@"customQueryView"];
-		if([tableContentView numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 
-			// TODO: this works until the user presses OK in the Field Editor Sheet!!
-			// in the future we should store the new row data temporarily and then
-			// after editing the last column update the db field by field (ask HansJB)
-			NSInteger colNum = [[tableContentView tableColumns] count];
-			NSInteger i;
-			for(i=0; i<colNum; i++) {
-				[[self delegate] tableView:tableContentView shouldEditTableColumn:[[tableContentView tableColumns] objectAtIndex:i] row:[tableContentView selectedRow]];
-			}
-			return;
-		}
+		return;
 	}
 
 	[super keyDown:theEvent];

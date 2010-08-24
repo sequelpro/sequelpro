@@ -49,7 +49,7 @@
 
 @class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView;
 
-@interface SPCustomQuery : NSObject 
+@interface SPCustomQuery : NSObject
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
@@ -74,7 +74,7 @@
 	IBOutlet NSMenuItem *saveHistoryMenuItem;
 	IBOutlet NSMenuItem *copyHistoryMenuItem;
 	IBOutlet NSPopUpButton *encodingPopUp;
-	
+
 	IBOutlet SPTextView *textView;
 	IBOutlet SPCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
@@ -107,7 +107,7 @@
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
-	
+
 	IBOutlet NSButton *queryInfoButton;
 	IBOutlet BWSplitView *queryInfoPaneSplitView;
 
@@ -236,6 +236,7 @@
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
+- (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 - (NSUInteger)numberOfQueries;
 
 - (NSString *)buildHistoryString;
