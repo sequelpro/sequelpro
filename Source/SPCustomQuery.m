@@ -44,6 +44,7 @@
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
+#import "SPCopyTable.h"
 
 #import <BWToolkitFramework/BWToolkitFramework.h>
 

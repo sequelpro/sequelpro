@@ -47,7 +47,7 @@
 #define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
-@class SPQueryFavoriteManager, SPDataStorage, BWSplitView;
+@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView;
 
 @interface SPCustomQuery : NSObject 
 {
