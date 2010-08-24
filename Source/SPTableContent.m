@@ -3833,6 +3833,10 @@
 	// Trap enter key
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
 	{
+		// If enum field is edited RETURN selects the new value instead of saving the entire row
+		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
+		if([fieldType isEqualToString:@"enum"])
+			return YES;
 
 		[[control window] makeFirstResponder:control];
 		if([tablesListInstance tableType] != SPTableTypeView)
@@ -3845,6 +3849,7 @@
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
 	{
 
+		// If enum field is edited ARROW key navigates through the popup list
 		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
 		if([fieldType isEqualToString:@"enum"])
 			return NO;
@@ -3868,6 +3873,7 @@
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
 	{
 
+		// If enum field is edited ARROW key navigates through the popup list
 		NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
 		if([fieldType isEqualToString:@"enum"])
 			return NO;
