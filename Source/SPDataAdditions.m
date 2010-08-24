@@ -80,11 +80,11 @@ static char base64encodingTable[64] = {
 		ctcopy = 4;
 
 		switch( ctremaining ) {
-			case 1: 
-			ctcopy = 2; 
+			case 1:
+			ctcopy = 2;
 			break;
-			case 2: 
-			ctcopy = 3; 
+			case 2:
+			ctcopy = 3;
 			break;
 		}
 
@@ -116,60 +116,60 @@ static char base64encodingTable[64] = {
 	unsigned char iv[16];
 	for (ivIndex = 0; ivIndex < 16; ivIndex++)
 		iv[ivIndex] = rand() & 0xff;
-		
+
 	// Calculate the 16-byte AES block padding
 	NSInteger dataLength = [self length];
 	NSInteger paddedLength = dataLength + (32 - (dataLength % 16));
 	NSInteger totalLength = paddedLength + 16; // Data plus IV
-	
+
 	// Allocate enough space for the IV + ciphertext
 	unsigned char *encryptedBytes = calloc(1, totalLength);
 	// The first block of the ciphertext buffer is the IV
 	memcpy(encryptedBytes, iv, 16);
-	
+
 	unsigned char *paddedBytes = calloc(1, paddedLength);
 	memcpy(paddedBytes, [self bytes], dataLength);
-	
+
 	// The last 32-bit chunk is the size of the plaintext, which is encrypted with the plaintext
 	NSInteger bigIntDataLength = NSSwapHostIntToBig(dataLength);
 	memcpy(paddedBytes + (paddedLength - 4), &bigIntDataLength, 4);
-	
+
 	// Create the key from first 128-bits of the 160-bit password hash
 	unsigned char passwordDigest[20];
 	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
 	AES_KEY aesKey;
 	AES_set_encrypt_key(passwordDigest, 128, &aesKey);
-	
+
 	// AES-128-cbc encrypt the data, filling in the buffer after the IV
 	AES_cbc_encrypt(paddedBytes, encryptedBytes + 16, paddedLength, &aesKey, iv, AES_ENCRYPT);
 	free(paddedBytes);
-    
+
 	return [NSData dataWithBytesNoCopy:encryptedBytes length:totalLength];
 }
 
 - (NSData *)dataDecryptedWithPassword:(NSString *)password
 {
-	
+
 	// Create the key from the password hash
 	unsigned char passwordDigest[20];
 	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
-	
+
 	// AES-128-cbc decrypt the data
 	AES_KEY aesKey;
 	AES_set_decrypt_key(passwordDigest, 128, &aesKey);
-	
+
 	// Total length = encrypted length + IV
 	NSInteger totalLength = [self length];
 	NSInteger encryptedLength = totalLength - 16;
-	
+
 	// Take the IV from the first 128-bit block
 	unsigned char iv[16];
 	memcpy(iv, [self bytes], 16);
-	
+
 	// Decrypt the data
 	unsigned char *decryptedBytes = (unsigned char*)malloc(encryptedLength);
 	AES_cbc_encrypt([self bytes] + 16, decryptedBytes, encryptedLength, &aesKey, iv, AES_DECRYPT);
-	
+
 	// If decryption was successful, these blocks will be zeroed
 	if ( *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 4)) ||
 		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
@@ -177,11 +177,11 @@ static char base64encodingTable[64] = {
 	{
 		return nil;
 	}
-	
+
 	// Get the size of the data from the last 32-bit chunk
 	NSInteger bigIntDataLength = *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 1));
 	NSInteger dataLength = NSSwapBigIntToHost(bigIntDataLength);
-	
+
 	return [NSData dataWithBytesNoCopy:decryptedBytes length:dataLength];
 }
 
@@ -223,10 +223,10 @@ static char base64encodingTable[64] = {
 		[unzipData setLength: zlibStream.total_out];
 		return [NSData dataWithData: unzipData];
 	}
-	else 
+	else
 		return nil;
 }
- 
+
 - (NSData *)compress
 {
 	if ([self length] == 0) return self;
@@ -253,7 +253,7 @@ static char base64encodingTable[64] = {
 		zlibStream.next_out = [zipData mutableBytes] + zlibStream.total_out;
 		zlibStream.avail_out = [zipData length] - zlibStream.total_out;
 
-		deflate(&zlibStream, Z_FINISH);  
+		deflate(&zlibStream, Z_FINISH);
 
 	} while(zlibStream.avail_out == 0);
 
@@ -286,12 +286,12 @@ static char base64encodingTable[64] = {
 
 		// add hex value of location
 		[location appendFormat:@"%X", i];
-		
+
 		// pad it
 		while( longest > [location length] ) {
 			[location insertString:@"0" atIndex:0];
 		}
-		
+
 		// get the chars from the NSData obj
 		if ( i + buffLength >= totalLength ) {
 			buffLength = totalLength - i;
@@ -300,7 +300,7 @@ static char base64encodingTable[64] = {
 		buffer = (unsigned char*) malloc( sizeof(unsigned char) * buffLength + 1);
 
 		[self getBytes:buffer range:NSMakeRange(i, buffLength)];
-		
+
 		// build the hex string
 		for ( j = 0; j < buffLength; j++ ) {
 
@@ -321,7 +321,7 @@ static char base64encodingTable[64] = {
 
 		// build line
 		[retVal appendFormat:@"%@  %@ %s\n", location, hex, buffer];
-		
+
 		// clean up
 		[hex release];
 		[location release];
@@ -332,7 +332,7 @@ static char base64encodingTable[64] = {
 }
 
 /*
- * Convert data objects to their string representation (max 255 chars) 
+ * Convert data objects to their string representation (max 255 chars)
  * in the current encoding, falling back to ascii. (Mainly used for displaying
  * large blob data in a tableView)
  */
@@ -341,7 +341,7 @@ static char base64encodingTable[64] = {
 	NSString *tmp = [[[NSString alloc] initWithData:self encoding:encoding] autorelease];
 
 	if (tmp == nil)
-		tmp = [[NSString alloc] initWithData:self encoding:NSASCIIStringEncoding];
+		tmp = [[[NSString alloc] initWithData:self encoding:NSASCIIStringEncoding] autorelease];
 	if (tmp == nil)
 		return @"- cannot be displayed -";
 	else {

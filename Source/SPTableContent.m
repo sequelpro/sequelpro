@@ -6,7 +6,7 @@
 //
 //  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
-//  
+//
 //  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -70,7 +70,7 @@
 		previousTableRowsCount = 0;
 		dataColumns    = [[NSMutableArray alloc] init];
 		oldRow         = [[NSMutableArray alloc] init];
-		
+
 		selectedTable = nil;
 		sortCol       = nil;
 		isDesc		  = NO;
@@ -96,13 +96,13 @@
 		isFiltered = NO;
 		isLimited = NO;
 		isInterruptedLoad = NO;
-		
+
 		prefs = [NSUserDefaults standardUserDefaults];
-		
+
 		usedQuery = [[NSString alloc] initWithString:@""];
 
 		tableLoadTimer = nil;
-		
+
 		// Init default filters for Content Browser
 		contentFilters = nil;
 		contentFilters = [[NSMutableDictionary alloc] init];
@@ -111,10 +111,10 @@
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
-		NSData *defaultFilterData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
+		NSData *defaultFilterData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]]
 			options:NSMappedRead error:&readError];
 
-		[contentFilters setDictionary:[NSPropertyListSerialization propertyListFromData:defaultFilterData 
+		[contentFilters setDictionary:[NSPropertyListSerialization propertyListFromData:defaultFilterData
 				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
 		if(contentFilters == nil || readError != nil || convError != nil) {
 			NSLog(@"Error while reading 'ContentFilters.plist':\n%@\n%@", [readError localizedDescription], convError);
@@ -124,10 +124,10 @@
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
 		}
-		
+
 
 	}
-	
+
 	return self;
 }
 
@@ -161,7 +161,7 @@
 	paginationViewFrame.size.height = 0;
 	[paginationView setFrame:paginationViewFrame];
 	[contentViewPane addSubview:paginationView];
-	
+
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -233,10 +233,10 @@
 		[tableContentView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 		tableRowsSelectable = previousTableRowsSelectable;
 	}
-	
+
 	// Update display if necessary
 	[[tableContentView onMainThread] setNeedsDisplay:YES];
-	
+
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
@@ -330,12 +330,12 @@
 		[secondBetweenField setStringValue:@""];
 		[argumentField setStringValue:@""];
 		[filterButton setEnabled:NO];
-		
+
 		// Hide BETWEEN operator controls
 		[firstBetweenField setHidden:YES];
 		[secondBetweenField setHidden:YES];
 		[betweenTextField setHidden:YES];
-		
+
 		// Disable pagination
 		[paginationPreviousButton setEnabled:NO];
 		[paginationButton setEnabled:NO];
@@ -364,16 +364,16 @@
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
 	[dataColumns addObjectsFromArray:[tableDetails objectForKey:@"columns"]];
 	columnNames = [tableDetails objectForKey:@"columnNames"];
-	
+
 	// Retrieve the constraints, and loop through them to add up to one foreign key to each column
 	NSArray *constraints = [tableDetails objectForKey:@"constraints"];
-	
-	for (NSDictionary *constraint in constraints) 
+
+	for (NSDictionary *constraint in constraints)
 	{
 		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
 		NSString *firstRefColumn = [[[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","] objectAtIndex:0];
 		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
-				
+
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
 			NSDictionary *refDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 											[constraint objectForKey:@"ref_table"], @"table",
@@ -384,7 +384,7 @@
 			[dataColumns replaceObjectAtIndex:columnIndex withObject:rowDictionary];
 		}
 	}
-	
+
 	NSString *nullValue = [prefs objectForKey:SPNullValue];
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
@@ -392,12 +392,12 @@
 	// Add the new columns to the table
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		columnDefinition = NSArrayObjectAtIndex(dataColumns, i);
-		
+
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
 		[theCol setEditable:YES];
-		
+
 		// Set up the data cell depending on the column type
 		id dataCell;
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"]) {
@@ -416,7 +416,7 @@
 		} else if ([columnDefinition objectForKey:@"foreignkeyreference"]) {
 			dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 			[dataCell setTarget:self action:@selector(clickLinkArrow:)];
-		
+
 		// Otherwise instantiate a text-only cell
 		} else {
 			dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
@@ -431,29 +431,29 @@
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
 			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"length"] integerValue]];
 		}
-		
+
 		// Set the data cell font according to the preferences
 		[dataCell setFont:tableFont];
 
 		// Assign the data cell
 		[theCol setDataCell:dataCell];
-		
+
 		// Set the width of this column to saved value if exists
 		colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]];
 		if ( colWidth ) {
 			[theCol setWidth:[colWidth doubleValue]];
 		}
-		
+
 		// Set the column to be reselected for sorting if appropriate
 		if (sortColumnToRestore && [sortColumnToRestore isEqualToString:[columnDefinition objectForKey:@"name"]])
 			sortColumnNumberToRestore = [columnDefinition objectForKey:@"datacolumnindex"];
-		
+
 		// Add the column to the table
 		[tableContentView addTableColumn:theCol];
 		[theCol release];
 	}
 
-	// If the table has been reloaded and the previously selected sort column is still present, reselect it. 
+	// If the table has been reloaded and the previously selected sort column is still present, reselect it.
 	if (sortColumnNumberToRestore) {
 		theCol = [tableContentView tableColumnWithIdentifier:sortColumnNumberToRestore];
 		if (sortCol) [sortCol release];
@@ -465,7 +465,7 @@
 		} else {
 			[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:theCol];
 		}
-	
+
 	// Otherwise, clear sorting
 	} else {
 		if (sortCol) {
@@ -477,7 +477,7 @@
 
 	// Store the current first responder so filter field doesn't steal focus
 	id currentFirstResponder = [[tableDocumentInstance parentWindow] firstResponder];
-	
+
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
 	[fieldField removeAllItems];
@@ -490,7 +490,7 @@
 	[argumentField setEnabled:YES];
 	[argumentField setStringValue:@""];
 	[filterButton setEnabled:enableInteraction];
-	
+
 	// Restore preserved filter settings if appropriate and valid
 	if (filterFieldToRestore) {
 		[fieldField selectItemWithTitle:filterFieldToRestore];
@@ -509,7 +509,7 @@
 				if (filterValueToRestore) [argumentField setStringValue:filterValueToRestore];
 			}
 			[self toggleFilterField:self];
-			
+
 		}
 	}
 
@@ -529,7 +529,7 @@
 	if (!previousTableRowsCount) {
 		[self clearTableValues];
 	}
-	
+
 }
 
 /**
@@ -549,7 +549,7 @@
 	pthread_mutex_unlock(&tableValuesLock);
 	[tableValuesTransition release];
 }
- 
+
 /**
  * Reload the table data without reconfiguring the tableView,
  * using filters and limits as appropriate.
@@ -571,13 +571,13 @@
 
 	// Notify any listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-	
+
 	// Start construction of the query string
 	queryString = [NSMutableString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 
 	// Add a filter string if appropriate
 	filterString = [self tableFilterString];
-	
+
 	if (filterString) {
 		[queryString appendFormat:@" WHERE %@", filterString];
 		isFiltered = YES;
@@ -618,7 +618,7 @@
 	[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Stop", @"stop button") callbackObject:nil callbackFunction:NULL];
 
 	// Perform and process the query
-	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES]; 
+	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	[self setUsedQuery:queryString];
 	streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 
@@ -652,7 +652,7 @@
 
 	if ([mySQLConnection queryCancelled] || [mySQLConnection queryErrored])
 		isInterruptedLoad = YES;
-	else 
+	else
 		isInterruptedLoad = NO;
 
 	// End cancellation ability
@@ -786,7 +786,7 @@
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
 	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 	// replaced by @"".
-	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags] 
+	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
 
 	NSString *filterString;
@@ -831,7 +831,7 @@
 	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:[firstBetweenField stringValue]];
 	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:[secondBetweenField stringValue]];
 
-	// If filter requires two arguments and either of the argument fields are empty 
+	// If filter requires two arguments and either of the argument fields are empty
 	// return nil.
 	if (numberOfArguments == 2) {
 		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
@@ -881,8 +881,8 @@
 
 	if(suppressLeadingTablePlaceholder) {
 		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:clause, 
-					[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+			filterString = [NSString stringWithFormat:clause,
+					[self escapeFilterArgument:firstBetweenArgument againstClause:clause],
 					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]];
 		} else if (numberOfArguments == 1) {
 			filterString = [NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]];
@@ -895,17 +895,17 @@
 		}
 	} else {
 		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:@"%@ %@", 
-				[[fieldField titleOfSelectedItem] backtickQuotedString], 
-				[NSString stringWithFormat:clause, 
-					[self escapeFilterArgument:firstBetweenArgument againstClause:clause], 
+			filterString = [NSString stringWithFormat:@"%@ %@",
+				[[fieldField titleOfSelectedItem] backtickQuotedString],
+				[NSString stringWithFormat:clause,
+					[self escapeFilterArgument:firstBetweenArgument againstClause:clause],
 					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
 		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:@"%@ %@", 
-				[[fieldField titleOfSelectedItem] backtickQuotedString], 
+			filterString = [NSString stringWithFormat:@"%@ %@",
+				[[fieldField titleOfSelectedItem] backtickQuotedString],
 				[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
 		} else {
-			filterString = [NSString stringWithFormat:@"%@ %@", 
+			filterString = [NSString stringWithFormat:@"%@ %@",
 				[[fieldField titleOfSelectedItem] backtickQuotedString], clause];
 				if(numberOfArguments > 2) {
 					NSLog(@"Filter with more than 2 arguments is not yet supported.");
@@ -933,7 +933,7 @@
 	[arg flushCachedRegexData];
 	[arg replaceOccurrencesOfRegex:@"(\\\\)(?=[nrt])" withString:@"\\\\\\"];
 	[arg flushCachedRegexData];
-	
+
 	// Get quote sign for escaping - this should work for 99% of all cases
 	NSString *quoteSign = [clause stringByMatching:@"([\"'])[^\\1]*?%@[^\\1]*?\\1" capture:1L];
 	// Esape argument
@@ -968,7 +968,7 @@
 			[countString appendFormat:NSLocalizedString(@"%@ row in partial load", @"text showing a single row a partially loaded result"), tableCountString];
 		else
 			[countString appendFormat:NSLocalizedString(@"%@ rows in partial load", @"text showing how many rows are in a partially loaded result"), tableCountString];
-		
+
 	// If no filter or limit is active, show just the count of rows in the table
 	} else if (!isFiltered && !isLimited) {
 		if (tableRowsCount == 1)
@@ -1053,7 +1053,7 @@
 			tableLoadTargetRowCount = NSUIntegerMax;
 		}
 	}
-	
+
 	if (tableLoadTimerTicksSinceLastUpdate < tableLoadInterfaceUpdateInterval) {
 		tableLoadTimerTicksSinceLastUpdate++;
 		return;
@@ -1101,7 +1101,7 @@
 - (IBAction)reloadTable:(id)sender
 {
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
-		
+
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(reloadTableTask) toTarget:self withObject:nil];
 	} else {
@@ -1128,7 +1128,7 @@
 	[self loadTable:[tablesListInstance tableName]];
 
 	[tableDocumentInstance endTask];
-	
+
 	[reloadPool drain];
 }
 
@@ -1299,7 +1299,7 @@
 		[[tableDocumentInstance parentWindow] makeFirstResponder:paginationPageField];
 	} else {
 		if (paginationViewFrame.size.height == 0) return;
-		paginationViewFrame.size.height = 0;	
+		paginationViewFrame.size.height = 0;
 		[paginationButton setState:NSOffState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
 		if ([[tableDocumentInstance parentWindow] firstResponder] == paginationPageField
@@ -1312,7 +1312,7 @@
 		}
 	}
 
-	[[paginationView animator] setFrame:paginationViewFrame]; 
+	[[paginationView animator] setFrame:paginationViewFrame];
 }
 
 /**
@@ -1325,7 +1325,7 @@
 		maxPage = contentPage;
 	}
 	BOOL enabledMode = ![tableDocumentInstance isWorking];
-	
+
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
@@ -1379,7 +1379,7 @@
 	dataRow = [tableValues rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	if ([theResult numOfRows]) [theResult dataSeek:0];
@@ -1390,17 +1390,17 @@
 			for(field in columnsForFieldTableName) {
 				id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
 				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
-					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)", 
-						[database backtickQuotedString], 
-						[tableForColumn backtickQuotedString], 
-						[[theRow objectForKey:@"Field"] backtickQuotedString], 
+					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)",
+						[database backtickQuotedString],
+						[tableForColumn backtickQuotedString],
+						[[theRow objectForKey:@"Field"] backtickQuotedString],
 						[aValue description]];
 					return fieldIDQueryStr;
 				}
 			}
 		}
 	}
-	
+
 	// If there is no primary key, all found fields belonging to the same table are used in the argument
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
@@ -1417,13 +1417,13 @@
 			else
 				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
 		}
-		
+
 		[fieldIDQueryStr appendString:@" AND "];
 	}
 	// Remove last " AND "
 	if([fieldIDQueryStr length]>12)
 		[fieldIDQueryStr replaceCharactersInRange:NSMakeRange([fieldIDQueryStr length]-5,5) withString:@")"];
-	
+
 	return fieldIDQueryStr;
 }
 
@@ -1470,7 +1470,7 @@
 	NSDictionary *row;
 	NSArray *dbDataRow = nil;
 	NSUInteger i;
-	
+
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
@@ -1480,10 +1480,10 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
 		return;
 	}
-	
+
 	//copy row
 	tempRow = [tableValues rowContentsAtIndex:[tableContentView selectedRow]];
-	
+
 	//if we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
 		// Abort if there are no indices on this table - argumentForRow will display an error.
@@ -1494,7 +1494,7 @@
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
 		dbDataRow = [queryResult fetchRowAsArray];
 	}
-	
+
 	//set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 	[queryResult setReturnDataAsStrings:YES];
@@ -1507,11 +1507,11 @@
 			[tempRow replaceObjectAtIndex:i withObject:[dbDataRow objectAtIndex:i]];
 		}
 	}
-	
+
 	//insert the copied row
 	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
 	tableRowsCount++;
-	
+
 	//select row and go in edit mode
 	[tableContentView reloadData];
 	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView selectedRow]+1] byExtendingSelection:NO];
@@ -1528,26 +1528,26 @@
 - (IBAction)removeRow:(id)sender
 {
 	// Check whether a save of the current row is required.
-	// if (![self saveRowOnDeselect]) 
+	// if (![self saveRowOnDeselect])
 	//	return;
 
 	// cancel editing (maybe this is not the ideal method -- see xcode docs for that method)
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
-	
+
 	if (![tableContentView numberOfSelectedRows])
 		return;
-	
+
 	NSAlert *alert = [NSAlert alertWithMessageText:@""
-									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
-								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
-									   otherButton:nil 
+									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+									   otherButton:nil
 						 informativeTextWithFormat:@""];
-	
+
 	[alert setAlertStyle:NSCriticalAlertStyle];
-	
+
 	NSArray *buttons = [alert buttons];
-	
+
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
@@ -1557,11 +1557,11 @@
 	[[alert suppressionButton] setState:NSOffState];
 
 	NSString *contextInfo = @"removerow";
-	
+
 	if (([tableContentView numberOfSelectedRows] == [tableContentView numberOfRows]) && !isFiltered && !isLimited && !isInterruptedLoad && !isEditingNewRow) {
 
 		contextInfo = @"removeallrows";
-		
+
 		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
 		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
 			[alert setShowsSuppressionButton:YES];
@@ -1573,16 +1573,16 @@
 
 		[alert setMessageText:NSLocalizedString(@"Delete all rows?", @"delete all rows message")];
 		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete all the rows from this table? This action cannot be undone.", @"delete all rows informative message")];
-	} 
+	}
 	else if ([tableContentView numberOfSelectedRows] == 1) {
 		[alert setMessageText:NSLocalizedString(@"Delete selected row?", @"delete selected row message")];
 		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete the selected row from this table? This action cannot be undone.", @"delete selected row informative message")];
-	} 
+	}
 	else {
 		[alert setMessageText:NSLocalizedString(@"Delete rows?", @"delete rows message")];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.", @"delete rows informative message"), (long)[tableContentView numberOfSelectedRows]]];
 	}
-	
+
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
@@ -1608,10 +1608,10 @@
 				//cancel the edit
 				isEditingRow = NO;
 				// in case the delete fails, make sure we at least stay in a somewhat consistent state
-				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
+				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
 				currentlyEditingRow = -1;
 			}
-			
+
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( ![mySQLConnection queryErrored] ) {
 
@@ -1655,7 +1655,7 @@
 					currentlyEditingRow = -1;
 					[self updateCountText];
 					[tableContentView reloadData];
-					
+
 					//deselect the row
 					[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
@@ -1665,13 +1665,13 @@
 					//cancel the edit
 					isEditingRow = NO;
 					// in case the delete fails, make sure we at least stay in a somewhat consistent state
-					[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];	
-					currentlyEditingRow = -1;				
+					[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+					currentlyEditingRow = -1;
 				}
 
 			}
 			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-			
+
 			errors = 0;
 
 			// Disable updating of the Console Log window for large number of queries
@@ -1721,7 +1721,7 @@
 
 						// Check for errors
 						if ( ![mySQLConnection affectedRows] || [mySQLConnection queryErrored]) {
-							// If error delete that index from selectedRows for reloading table if 
+							// If error delete that index from selectedRows for reloading table if
 							// "ReloadAfterRemovingRow" is disbaled
 							if(!reloadAfterRemovingRow)
 								[selectedRows removeIndex:index];
@@ -1775,24 +1775,24 @@
 					// Remember affected rows for error checking
 					affectedRows += [mySQLConnection affectedRows];
 				}
-				
+
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
 			} else {
 				// if table has more than one PRIMARY KEY
 				// delete the row by using all PRIMARY KEYs in an OR clause
 				NSMutableString *deleteQuery = [NSMutableString string];
 				NSInteger affectedRows = 0;
-				
+
 				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
-				
+
 				while (index != NSNotFound) {
-					
+
 					// Build the AND clause of PRIMARY KEYS
 					[deleteQuery appendString:@"("];
 					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
 
 						id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
-						
+
 						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
 						if ([keyValue isKindOfClass:[NSData class]]) {
 							[deleteQuery appendString:@"=X'"];
@@ -1803,11 +1803,11 @@
 						}
 						[deleteQuery appendString:@"' AND "];
 					}
-					
+
 					// Remove the trailing AND and add the closing bracket
 					[deleteQuery deleteCharactersInRange:NSMakeRange([deleteQuery length]-5, 5)];
 					[deleteQuery appendString:@")"];
-					
+
 					// Split deletion query into 64k chunks
 					if([deleteQuery length] > 64000) {
 						[mySQLConnection queryString:deleteQuery];
@@ -1818,10 +1818,10 @@
 					} else {
 						[deleteQuery appendString:@" OR "];
 					}
-					
+
 					index = [selectedRows indexGreaterThanIndex:index];
 				}
-				
+
 				// Check if deleteQuery's maximal length was reached for the last index
 				// if yes omit the empty query
 				if(![deleteQuery hasSuffix:@"WHERE "]) {
@@ -1831,13 +1831,13 @@
 					// Remember affected rows for error checking
 					affectedRows += [mySQLConnection affectedRows];
 				}
-				
+
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
 			}
-						
+
 			// Restore Console Log window's updating bahaviour
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
-			
+
 			if (errors) {
 				NSArray *message;
 				//TODO: The following three messages are NOT localisable!
@@ -1845,7 +1845,7 @@
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
 							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
 							   nil];
-				} 
+				}
 				else {
 					if (primaryKeyFieldNames == nil)
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
@@ -1856,7 +1856,7 @@
 								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
 								   nil];
 				}
-				
+
 				[self performSelector:@selector(showErrorSheetWith:)
 						   withObject:message
 						   afterDelay:0.3];
@@ -1886,7 +1886,7 @@
 // Accessors
 
 /**
- * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * Returns the current result (as shown in table content view) as array, the first object containing the field
  * names as array, the following objects containing the rows as array.
  */
 - (NSArray *)currentDataResult
@@ -1897,21 +1897,21 @@
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
 	NSUInteger i;
-	
+
 	//load table if not already done
 	if ( ![tablesListInstance contentLoaded] ) {
 		[self loadTable:[tablesListInstance tableName]];
 	}
-	
+
 	tableColumns = [tableContentView tableColumns];
 	enumerator = [tableColumns objectEnumerator];
-	
+
 	//set field names as first line
 	while ( (tableColumn = [enumerator nextObject]) ) {
 		[tempRow addObject:[[tableColumn headerCell] stringValue]];
 	}
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
-	
+
 	//add rows
 	for ( i = 0 ; i < [self numberOfRowsInTableView:nil] ; i++) {
 		[tempRow removeAllObjects];
@@ -1930,8 +1930,8 @@
 					NSInteger imageWidth = [image size].width;
 					if (imageWidth > 100) imageWidth = 100;
 					[tempRow addObject:[NSString stringWithFormat:
-						@"<IMG WIDTH='%ld' SRC=\"data:image/auto;base64,%@\">", 
-						(long)imageWidth, 
+						@"<IMG WIDTH='%ld' SRC=\"data:image/auto;base64,%@\">",
+						(long)imageWidth,
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0]]];
 				} else {
 					[tempRow addObject:@"&lt;BLOB&gt;"];
@@ -1945,7 +1945,7 @@
 }
 
 /**
- * Returns the current result (as shown in table content view) as array, the first object containing the field 
+ * Returns the current result (as shown in table content view) as array, the first object containing the field
  * names as array, the following objects containing the rows as array.
  */
 - (NSArray *)currentResult
@@ -1956,21 +1956,21 @@
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
 	NSUInteger i;
-	
+
 	//load table if not already done
 	if ( ![tablesListInstance contentLoaded] ) {
 		[self loadTable:[tablesListInstance tableName]];
 	}
-	
+
 	tableColumns = [tableContentView tableColumns];
 	enumerator = [tableColumns objectEnumerator];
-	
+
 	//set field names as first line
 	while ( (tableColumn = [enumerator nextObject]) ) {
 		[tempRow addObject:[[tableColumn headerCell] stringValue]];
 	}
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
-	
+
 	//add rows
 	for ( i = 0 ; i < [self numberOfRowsInTableView:nil] ; i++) {
 		[tempRow removeAllObjects];
@@ -1980,19 +1980,19 @@
 		}
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 	}
-		
+
 	return currentResult;
 }
 
 // Additional methods
 
 /**
- * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
 - (void)setConnection:(MCPConnection *)theConnection
 {
 	mySQLConnection = theConnection;
-	
+
 	[tableContentView setVerticalMotionCanBeginDrag:NO];
 }
 
@@ -2074,7 +2074,7 @@
 	// If the same table is the target, trigger a filter task on the main thread
 	if (tableFilterRequired)
 		[self performSelectorOnMainThread:@selector(filterTable:) withObject:self waitUntilDone:NO];
-	
+
 	// Empty the loading pool and exit the thread
 	[linkPool drain];
 }
@@ -2085,7 +2085,7 @@
 - (IBAction)setCompareTypes:(id)sender
 {
 
-	if(contentFilters == nil 
+	if(contentFilters == nil
 		|| ![contentFilters objectForKey:@"number"]
 		|| ![contentFilters objectForKey:@"string"]
 		|| ![contentFilters objectForKey:@"date"]) {
@@ -2144,7 +2144,7 @@
 		NSBeep();
 		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"type"], fieldTypeGrouping);
 	}
-	
+
 	// Add IS NULL and IS NOT NULL as they should always be available
 	// [compareField addItemWithTitle:@"IS NULL"];
 	// [compareField addItemWithTitle:@"IS NOT NULL"];
@@ -2159,7 +2159,7 @@
 	}
 
 	// Load global user-defined content filters
-	if([prefs objectForKey:SPContentFilters] 
+	if([prefs objectForKey:SPContentFilters]
 		&& [contentFilters objectForKey:compareType]
 		&& [[prefs objectForKey:SPContentFilters] objectForKey:compareType])
 	{
@@ -2219,17 +2219,17 @@
 - (void)openContentFilterManager
 {
 	[compareField selectItemWithTag:lastSelectedContentFilterIndex];
-	
+
 	// init query favorites controller
 	[prefs synchronize];
 	if(contentFilterManager) [contentFilterManager release];
 	contentFilterManager = [[SPContentFilterManager alloc] initWithDelegate:self forFilterType:compareType];
 
 	// Open query favorite manager
-	[NSApp beginSheet:[contentFilterManager window] 
-	   modalForWindow:[tableDocumentInstance parentWindow] 
+	[NSApp beginSheet:[contentFilterManager window]
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:contentFilterManager
-	   didEndSelector:nil 
+	   didEndSelector:nil
 		  contextInfo:nil];
 }
 
@@ -2249,7 +2249,7 @@
 	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
 	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:SPLoadBlobsAsNeeded];
 	NSInteger i;
-	
+
 	if ( !isEditingRow || currentlyEditingRow == -1) {
 		return YES;
 	}
@@ -2316,11 +2316,11 @@
 		}
 		[fieldValues addObject:[NSString stringWithString:rowValue]];
 	}
-		
+
 	// Use INSERT syntax when creating new rows - no need to do not loaded checking, as all values have been entered
 	if ( isEditingNewRow ) {
 		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
-					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];		
+					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
 	// Use UPDATE syntax otherwise
 	} else {
 		BOOL firstCellOutput = NO;
@@ -2329,7 +2329,7 @@
 
 			// If data column loading is deferred and the value is the not loaded string, skip this cell
 			if (prefsLoadBlobsAsNeeded && [[fieldValues objectAtIndex:i] isSPNotLoaded]) continue;
-			
+
 			if (firstCellOutput) [queryString appendString:@", "];
 			else firstCellOutput = YES;
 
@@ -2338,7 +2338,7 @@
 		}
 		[queryString appendFormat:@" WHERE %@", [self argumentForRow:-2]];
 	}
-	
+
 	// If UTF-8 via Latin1 view encoding is set convert the queryString into Latin1 and
 	// set the MySQL connection to Latin1 before executing this query to allow editing.
 	// After executing reset all.
@@ -2357,10 +2357,10 @@
 	} else {
 		[mySQLConnection queryString:queryString];
 	}
-		
+
 	[fieldValues release];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-	
+
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
 		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
@@ -2408,7 +2408,7 @@
 			}
 		}
 		currentlyEditingRow = -1;
-		
+
 		return YES;
 
 	// Report errors which have occurred
@@ -2494,10 +2494,10 @@
 	NSMutableString *argument = [NSMutableString string];
 	NSArray *columnNames;
 	NSInteger i;
-	
+
 	if ( row == -1 )
 		return @"";
-	
+
 	// Retrieve the field names for this table from the data cache.  This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
 	columnNames = [tableDataInstance columnNames];
@@ -2516,12 +2516,12 @@
 			}
 		}
 	}
-	
+
 	// If there is no primary key, all the fields are used in the argument.
 	if ( ![keys count] ) {
 		[keys setArray:columnNames];
 		setLimit = YES;
-		
+
 		// When the option to not show blob or text options is set, we have a problem - we don't have
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
 		if ( [prefs boolForKey:SPLoadBlobsAsNeeded] && [self tableContainsBlobOrTextColumns] ) {
@@ -2543,18 +2543,18 @@
 			tempValue = [tableValues cellDataAtRow:row column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 
 		// Otherwise use the oldRow
-		} 
+		}
 		else {
 			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 		}
 
 		if ([tempValue isNSNull]) {
 			[argument appendFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]];
-		} 
+		}
 		else if ([tempValue isSPNotLoaded]) {
 			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
 			return @"";
-		} 
+		}
 		else {
 			// If the field is of type BIT then it needs a binary prefix
 			if ([[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"type"] isEqualToString:@"BIT"]) {
@@ -2565,13 +2565,13 @@
 				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
-			
+
 			[argument appendFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value];
 		}
 	}
-		
+
 	if (setLimit) [argument appendString:@" LIMIT 1"];
-	
+
 	return argument;
 }
 
@@ -2601,16 +2601,16 @@
 {
 	NSInteger i;
 	NSMutableArray *fields = [NSMutableArray array];
-		
+
 	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && ([dataColumns count] > 0)) {
-		
+
 		NSArray *columnNames = [tableDataInstance columnNames];
-		
-		for (i = 0 ; i < [columnNames count]; i++) 
+
+		for (i = 0 ; i < [columnNames count]; i++)
 		{
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
 					[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
-			} 
+			}
 			else {
 				// For blob/text fields, select a null placeholder so the column count is still correct
 				[fields addObject:@"NULL"];
@@ -2618,7 +2618,7 @@
 		}
 
 		return [fields componentsJoinedByString:@","];
-	} 
+	}
 	else {
 		return @"*";
 	}
@@ -2663,9 +2663,9 @@
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
 	// Actual check whether field can be identified bijectively
-	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", 
-		[[columnDefinition objectForKey:@"db"] backtickQuotedString], 
-		[tableForColumn backtickQuotedString], 
+	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
+		[[columnDefinition objectForKey:@"db"] backtickQuotedString],
+		[tableForColumn backtickQuotedString],
 		fieldIDQueryStr]];
 
 	[tableDocumentInstance endTask];
@@ -2677,7 +2677,7 @@
 
 	if(![tempRow count])
 		return -1;
-		
+
 	return [[tempRow objectAtIndex:0] integerValue];
 
 }
@@ -2696,7 +2696,7 @@
 -(void)showErrorSheetWith:(id)error
 {
 	// error := first object is the title , second the message, only one button OK
-	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
+	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"),
 			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[error objectAtIndex:1]);
 }
@@ -2839,7 +2839,7 @@
 				[firstBetweenField setEnabled:YES];
 				[secondBetweenField setEnabled:YES];
 			}
-			
+
 			filterComparisonToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterComparison"]];
 		}
 		if([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]) {
@@ -2930,7 +2930,7 @@
 
 	// Check whether the estimated count requires updating, ie if the retrieved count exceeds it
 	if (checkStatusCount) {
-		NSInteger foundMaxRows; 
+		NSInteger foundMaxRows;
 		if ([prefs boolForKey:SPLimitResults]) {
 			foundMaxRows = ((contentPage - 1) * [prefs integerForKey:SPLimitResultsValue]) + tableRowsCount;
 			if (foundMaxRows > maxNumRows) {
@@ -3004,7 +3004,7 @@
 
 	NSPoint pos = [NSEvent mouseLocation];
 	pos.y -= 20;
-	
+
 	// Try to get the original data. If not possible return nil.
 	// @try clause is used due to the multifarious cases of
 	// possible exceptions (eg for reloading tables etc.)
@@ -3027,12 +3027,12 @@
 
 	// Show the cell string value as tooltip (including line breaks and tabs)
 	// by using the cell's font
-	[SPTooltip showWithObject:[aCell stringValue] 
-			atLocation:pos 
-				ofType:@"text" 
+	[SPTooltip showWithObject:[aCell stringValue]
+			atLocation:pos
+				ofType:@"text"
 		displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
-					[[aCell font] familyName], @"fontname", 
-					[NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize", 
+					[[aCell font] familyName], @"fontname",
+					[NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize",
 					nil]];
 
 	return nil;
@@ -3106,8 +3106,8 @@
 
 	// If user wants to edit 'cell' set text color to black and return to avoid
 	// writing in gray if value was NULL
-	if ([aTableView editedColumn] != -1 
-		&& [aTableView editedRow] == rowIndex 
+	if ([aTableView editedColumn] != -1
+		&& [aTableView editedRow] == rowIndex
 		&& [[NSArrayObjectAtIndex([aTableView tableColumns], [aTableView editedColumn]) identifier] integerValue] == columnIndex) {
 		[cell setTextColor:[NSColor blackColor]];
 		return;
@@ -3126,7 +3126,7 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
-	// If table data come from a view 
+	// If table data come from a view
 	if([tablesListInstance tableType] == SPTableTypeView) {
 
 		// Field editing
@@ -3147,8 +3147,8 @@
 		if(!tableForColumn || ![tableForColumn length]) {
 			NSPoint pos = [NSEvent mouseLocation];
 			pos.y -= 20;
-			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database") 
-					atLocation:pos 
+			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
+					atLocation:pos
 					ofType:@"text"];
 			NSBeep();
 			return;
@@ -3192,7 +3192,7 @@
 			}
 
 			[mySQLConnection queryString:
-				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1", 
+				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1",
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryStr]];
 
@@ -3223,7 +3223,7 @@
 
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
+							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"),
 										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
 
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -3265,7 +3265,7 @@
 	}
 
 	NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]);
-	
+
 	if (anObject) {
 
 		// Restore NULLs if necessary
@@ -3291,7 +3291,7 @@
 
 	if ( [selectedTable isEqualToString:@""] || !selectedTable )
 		return;
-	
+
 	// Prevent sorting while the table is still loading
 	if ([tableDocumentInstance isWorking]) return;
 
@@ -3360,7 +3360,7 @@
 
 	// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
 	if (isEditingRow && [tableContentView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
-	
+
 	if (![tableDocumentInstance isWorking]) {
 		// Update the row selection count
 		// and update the status of the delete/duplicate buttons
@@ -3368,7 +3368,7 @@
 			if ([tableContentView numberOfSelectedRows] > 0) {
 				[copyButton setEnabled:([tableContentView numberOfSelectedRows] == 1)];
 				[removeButton setEnabled:YES];
-			} 
+			}
 			else {
 				[copyButton setEnabled:NO];
 				[removeButton setEnabled:NO];
@@ -3390,11 +3390,11 @@
 	// sometimes the column has no identifier. I can't figure out what is causing it, so we just skip over this item
 	if (![[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier])
 		return;
-	
+
 	NSMutableDictionary *tableColumnWidths;
 	NSString *database = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
 	NSString *table = [tablesListInstance tableName];
-	
+
 	// get tableColumnWidths object
 	if ( [prefs objectForKey:SPTableColumnWidths] != nil ) {
 		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
@@ -3450,7 +3450,7 @@
 		[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
 		[tableContentView reloadData];
 	}
-	
+
 	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
 	BOOL isFieldEditable = YES;
 
@@ -3463,8 +3463,8 @@
 		pos.y -= 20;
 		switch(numberOfPossibleUpdateRows) {
 			case -1:
-			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database") 
-					atLocation:pos 
+			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
+					atLocation:pos
 					ofType:@"text"];
 			isFieldEditable = NO;
 			// Allow to display blobs even it's not editable
@@ -3473,8 +3473,8 @@
 			break;
 
 			case 0:
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), selectedTable] 
-					atLocation:pos 
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), selectedTable]
+					atLocation:pos
 					ofType:@"text"];
 
 			isFieldEditable = NO;
@@ -3490,8 +3490,8 @@
 			break;
 
 			default:
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""] 
-					atLocation:pos 
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+					atLocation:pos
 					ofType:@"text"];
 
 			isFieldEditable = NO;
@@ -3505,19 +3505,19 @@
 
 	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
 	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
-				
+
 		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
-		
+
 		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
-		
+
 		id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
-		
+
 		id editData = [[fieldEditor editWithObject:cellValue
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
-								 usingEncoding:[mySQLConnection encoding] 
-								  isObjectBlob:isBlob 
-									isEditable:isFieldEditable 
+								 usingEncoding:[mySQLConnection encoding]
+								  isObjectBlob:isBlob
+									isEditable:isFieldEditable
 									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 		if (editData) {
@@ -3550,7 +3550,7 @@
 
 		if (editData) [editData release];
 
-		[tableContentView makeFirstResponder];
+		[[tableContentView onMainThread] makeFirstResponder];
 
 		return NO;
 	}
@@ -3565,20 +3565,20 @@
 {
 	if (aTableView == tableContentView) {
 		NSString *tmp;
-		
+
 		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
 		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
 			tmp = [tableContentView selectedRowsAsSqlInserts];
 		else
 			tmp = [tableContentView draggedRowsAsTabString];
-		
+
 		if ( nil != tmp && [tmp length] )
 		{
-			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
+			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType,
 								  NSStringPboardType, nil]
 						   owner:nil];
-			
+
 			[pboard setString:tmp forType:NSStringPboardType];
 			[pboard setString:tmp forType:NSTabularTextPboardType];
 			return YES;
@@ -3737,9 +3737,9 @@
 		return NO;
 
 	}
-	
+
 	return YES;
-	
+
 }
 
 /*
@@ -3751,7 +3751,7 @@
 
 	NSString *fieldType;
 	NSUInteger row, column, i;
-	
+
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
 
@@ -3886,7 +3886,7 @@
 		[tableContentView editColumn:column row:newRow withEvent:nil select:YES];
 		return TRUE;
 	}
-    
+
 	// Trap the escape key
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
 			 [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
@@ -3922,7 +3922,7 @@
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
+{
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -3944,15 +3944,15 @@
 	// Remove row
 	if ([menuItem action] == @selector(removeRow:)) {
 		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? @"Delete Rows" : @"Delete Row"];
-		
+
 		return ([tableContentView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable);
 	}
-	
+
 	// Duplicate row
 	if ([menuItem action] == @selector(copyRow:)) {
 		return ([tableContentView numberOfSelectedRows] == 1 && [tablesListInstance tableType] == SPTableTypeTable);
 	}
-	
+
 	return YES;
 }
 
