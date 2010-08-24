@@ -1979,21 +1979,17 @@
 	[self performQueries:[NSArray arrayWithObject:queryString] withCallback:@selector(tableSortCallback)];
 }
 
-- (void) tableSortCallback
+- (void)tableSortCallback
 {
 	queryIsTableSorter = NO;
 
 	if ([mySQLConnection queryErrored]) {
 		sortColumn = nil;
+		if(sortField) [sortField release], sortField = nil;
 		return;
 	}
 
-	//sets highlight and indicatorImage
-	[customQueryView setHighlightedTableColumn:sortColumn];
-	if ( isDesc )
-		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:sortColumn];
-	else
-		[customQueryView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:sortColumn];
+	[[customQueryView onMainThread] setNeedsDisplay:YES];
 
 }
 
