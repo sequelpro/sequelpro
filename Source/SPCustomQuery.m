@@ -68,6 +68,11 @@
 		return;
 	}
 
+	// Re-init sort order
+	isDesc = NO;
+	sortColumn = nil;
+	if(sortField) [sortField release], sortField = nil;
+
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 	[queryParser setDelimiterSupport:YES];
@@ -134,6 +139,11 @@
 	// Prevent multiple runs by holding the keys down
 	if ([tableDocumentInstance isWorking]) return;
 
+	// Re-init sort order
+	isDesc = NO;
+	sortColumn = nil;
+	if(sortField) [sortField release], sortField = nil;
+
 	// If the current selection is a single caret position, run the current query.
 	if (selectedRange.length == 0) {
 		// BOOL doLookBehind = YES;
@@ -192,7 +202,7 @@
 - (IBAction)chooseQueryFavorite:(id)sender
 {
 	if ([queryFavoritesButton indexOfSelectedItem] == 1) {
-		
+
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
 		// only be enabled if the query text view has at least one character present.
 		if ([[textView string] isEqualToString:@""]) {
@@ -202,15 +212,15 @@
 		}
 
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
-		[NSApp beginSheet:queryFavoritesSheet 
-		   modalForWindow:[tableDocumentInstance parentWindow] 
-			modalDelegate:self 
-		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		[NSApp beginSheet:queryFavoritesSheet
+		   modalForWindow:[tableDocumentInstance parentWindow]
+			modalDelegate:self
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 			  contextInfo:@"addSelectionToNewQueryFavorite"];
 
 	}
 	if ([queryFavoritesButton indexOfSelectedItem] == 2) {
-		
+
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
 		// only be enabled if the query text view has at least one character present.
 		if ([[textView string] isEqualToString:@""]) {
@@ -220,10 +230,10 @@
 		}
 
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
-		[NSApp beginSheet:queryFavoritesSheet 
-		   modalForWindow:[tableDocumentInstance parentWindow] 
-			modalDelegate:self 
-		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+		[NSApp beginSheet:queryFavoritesSheet
+		   modalForWindow:[tableDocumentInstance parentWindow]
+			modalDelegate:self
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 			  contextInfo:@"addAllToNewQueryFavorite"];
 	}
 	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {
@@ -234,12 +244,12 @@
 		favoritesManager = [[SPQueryFavoriteManager alloc] initWithDelegate:self];
 
 		// Open query favorite manager
-		[NSApp beginSheet:[favoritesManager window] 
-		   modalForWindow:[tableDocumentInstance parentWindow] 
+		[NSApp beginSheet:[favoritesManager window]
+		   modalForWindow:[tableDocumentInstance parentWindow]
 			modalDelegate:favoritesManager
-		   didEndSelector:nil 
+		   didEndSelector:nil
 			  contextInfo:nil];
-	} 
+	}
 	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite
 		BOOL replaceContent = [prefs boolForKey:SPQueryFavoriteReplacesContent];
@@ -339,14 +349,14 @@
 		[textView shiftSelectionLeft];
 	}
 
-	// "Comment Line/Selection" menu item - Add or remove "-- " for each line 
-	// in a line or selection resp. or wrap the selection into /* */ 
+	// "Comment Line/Selection" menu item - Add or remove "-- " for each line
+	// in a line or selection resp. or wrap the selection into /* */
 	// if the selection does not end at the end of a line (in-line comment)
 	if (sender == commentLineOrSelectionMenuItem) {
 		[self commentOut];
 	}
 
-	// "Comment Current Query" menu item - Add or remove "-- " for each line 
+	// "Comment Current Query" menu item - Add or remove "-- " for each line
 	// in the current query
 	if (sender == commentCurrentQueryMenuItem) {
 		[self commentOutCurrentQueryTakingSelection:NO];
@@ -408,18 +418,18 @@
 - (IBAction)saveQueryHistory:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
+
 	[panel setRequiredFileType:SPFileExtensionSQL];
-	
+
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
-	
+
 	[encodingPopUp setEnabled:YES];
-	
+
 	[panel beginSheetForDirectory:nil file:@"history" modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveHistory"];
 }
 
@@ -444,24 +454,24 @@
 	else
 		infoString = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to clear the history list for “%@”? This action cannot be undone.", @"clear history list for “%@” informative message"), [tableDocumentInstance displayName]];
 
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Clear History?", @"clear history message") 
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Clear History?", @"clear history message")
 									 defaultButton:NSLocalizedString(@"Clear", @"clear button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
 						 informativeTextWithFormat:infoString];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
-	
+
 	NSArray *buttons = [alert buttons];
-	
+
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
-					  modalDelegate:self 
-					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						contextInfo:@"clearHistory"];
 
 }
@@ -480,7 +490,7 @@
 - (IBAction)toggleQueryInfoPaneCollapse:(id)sender
 {
 	[queryInfoPaneSplitView toggleCollapse:sender];
-	
+
 	[sender setToolTip:([sender state] == NSOffState) ? NSLocalizedString(@"Show Query Information", @"Show Query Information") : NSLocalizedString(@"Hide Query Information", @"Hide Query Information")];
 }
 
@@ -507,7 +517,7 @@
 	if (customQueryCallbackMethod)
 		encodedCallbackMethod = [NSValue valueWithBytes:&customQueryCallbackMethod objCType:@encode(SEL)];
 	NSDictionary *taskArguments = [NSDictionary dictionaryWithObjectsAndKeys:queries, @"queries", encodedCallbackMethod, @"callback", nil];
-	
+
 	// If a helper thread is already running, execute inline - otherwise detach a new thread for the queries
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
@@ -524,7 +534,7 @@
 	NSMutableString		*errors     = [NSMutableString string];
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
-	
+
 	NSInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
 	NSInteger firstErrorOccuredInQuery = -1;
@@ -532,7 +542,7 @@
 	BOOL tableListNeedsReload = NO;
 	BOOL databaseWasChanged = NO;
 	// BOOL queriesSeparatedByDelimiter = NO;
-	
+
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
 
@@ -714,22 +724,22 @@
 		[tablesListInstance updateTables:self];
 
 	}
-	
+
 	if(usedQuery)
 		[usedQuery release];
-	
+
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
-	
+
 	lastExecutedQuery = [[tempQueries lastObject] retain];
-	
+
 	// Perform empty query if no query is given
 	if ( !queryCount ) {
 		streamingResult = [mySQLConnection streamingQueryString:@""];
 		[streamingResult cancelResultLoad];
 		[errors setString:[mySQLConnection getLastErrorMessage]];
 	}
-	
+
 	// add query to history
 	if(!reloadingExistingResult && [usedQuery length])
 		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
@@ -740,7 +750,7 @@
 									[NSNumber numberWithInteger:firstErrorOccuredInQuery], @"firstErrorQueryNumber",
 									nil];
 	[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
-	
+
 	// Set up the status string
 	if ( [mySQLConnection queryCancelled] ) {
 		if (totalQueriesRun > 1) {
@@ -786,7 +796,7 @@
 	[mySQLConnection setAllowQueryRetries:YES];
 
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-	
+
 	// If no results were returned, redraw the empty table and post notifications before returning.
 	if ( !resultDataCount ) {
 		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
@@ -796,7 +806,7 @@
 
 		// Perform the Growl notification for query completion
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
+                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]]
 														  document:tableDocumentInstance
                                                   notificationName:@"Query Finished"];
 
@@ -832,10 +842,10 @@
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-	
-	// Query finished Growl notification    
+
+	// Query finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]] 
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]]
 													  document:tableDocumentInstance
                                               notificationName:@"Query Finished"];
 
@@ -896,13 +906,13 @@
 
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
 	[customQueryView setNeedsDisplay:YES];
-	
+
 	// Clean up the autorelease pool
 	[dataLoadingPool drain];
 }
 
 /*
- * Retrieve the range of the query at a position specified 
+ * Retrieve the range of the query at a position specified
  * within the custom query text view.
  */
 - (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind
@@ -911,7 +921,7 @@
 	NSArray     *queries;
 	NSString    *query = nil;
 	NSRange     queryRange;
-	
+
 	NSUInteger i, j, queryPosition = 0;
 	NSUInteger queryCount;
 
@@ -948,7 +958,7 @@
 		queryStartPosition = queryRange.location;
 
 		if (queryPosition >= position) {
-		
+
 			// If lookbehind is enabled, check whether the current position could be considered to
 			// be within the previous query.  A position just after a semicolon is always considered
 			// to be within the previous query; otherwise, if there is only whitespace *and newlines*
@@ -958,10 +968,10 @@
 
 				// If the caret is at the very start of the string, always associate
 				if (position == queryStartPosition) positionAssociatedWithPreviousQuery = YES;
-				
+
 				// If the caret is in between a user-defined delimiter whose length is >1, always associate
 				if (!positionAssociatedWithPreviousQuery && i && NSMaxRange([NSArrayObjectAtIndex(queries, i-1) rangeValue]) < position && position < queryStartPosition) positionAssociatedWithPreviousQuery = YES;
-				
+
 				// Otherwise associate if only whitespace since previous, and a newline before next.
 				if (!positionAssociatedWithPreviousQuery) {
 					@try{
@@ -996,12 +1006,12 @@
 	if (*doLookBehind && position == [[textView string] length])
 	{
 		queryRange = [[queries lastObject] rangeValue];
-	} 
+	}
 
 	[queries release];
 
-	
-	queryRange = NSIntersectionRange(queryRange, NSMakeRange(0, [[textView string] length])); 
+
+	queryRange = NSIntersectionRange(queryRange, NSMakeRange(0, [[textView string] length]));
 	if (!queryRange.length) {
 		return NSMakeRange(NSNotFound, 0);
 	}
@@ -1027,7 +1037,7 @@
 
 /*
  * Retrieve the range of the query for the passed index seen from a start position
- * specified within the custom query text view.  
+ * specified within the custom query text view.
  */
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position
 {
@@ -1054,9 +1064,9 @@
 
 	NSRange theQueryRange = [[queries objectAtIndex:anIndex] rangeValue];
 	NSString *theQueryString = [[textView string] substringWithRange:theQueryRange];
-	
+
 	[queries release];
-	
+
 	// Remove all leading and trailing white spaces
 	NSInteger offset = [theQueryString rangeOfRegex:@"^(\\s*)"].length;
 	theQueryRange.location += offset;
@@ -1079,7 +1089,7 @@
 	BOOL lookBehind = *doLookBehind;
 	NSRange queryRange = [self queryRangeAtPosition:position lookBehind:&lookBehind];
 	*doLookBehind = lookBehind;
-	
+
 	return (queryRange.length) ? [[textView string] substringWithRange:queryRange] : nil;
 }
 
@@ -1099,7 +1109,7 @@
 	BOOL isUncomment = NO;
 
 	NSRange oldRange = [textView selectedRange];
-	
+
 	NSRange workingRange = oldRange;
 	if(!takeSelection)
 		workingRange = currentQueryRange;
@@ -1113,14 +1123,14 @@
 		[n replaceOccurrencesOfRegex:@"\\n\\Z" withString:@""];
 	}
 
-	// Escape given */ by *\/ 
+	// Escape given */ by *\/
 	[n replaceOccurrencesOfRegex:@"\\*/(?=.)" withString:@"*\\\\/"];
 	[n replaceOccurrencesOfRegex:@"\\*/(?=\\n)" withString:@"*\\\\/"];
 
 	// Wrap current query into /* */
 	[n replaceOccurrencesOfRegex:@"^" withString:@"/* "];
 	[n appendString:@" */"];
-	
+
 	// Check if current query/selection is already commented out, if so uncomment it
 	if([n isMatchedByRegex:@"^/\\* \\s*/\\*\\s*(.|\\n)*?\\s*\\*/ \\*/\\s*$"]) {
 		[n replaceOccurrencesOfRegex:@"^/\\* \\s*/\\*\\s*" withString:@""];
@@ -1133,8 +1143,8 @@
 	// Replace current query/selection by (un)commented string
 	[textView setSelectedRange:workingRange];
 	[textView insertText:n];
-	
-	// If commenting out locate the caret just after the first /* to allow to enter 
+
+	// If commenting out locate the caret just after the first /* to allow to enter
 	// something like /*!400000 or similar
 	if(!isUncomment)
 		[textView setSelectedRange:NSMakeRange(workingRange.location+2,0)];
@@ -1150,11 +1160,11 @@
 {
 
 	NSRange oldRange = [textView selectedRange];
-	
+
 	if(oldRange.length) { // (un)comment selection
 		[self commentOutCurrentQueryTakingSelection:YES];
 	} else { // single line
-		
+
 		// get the current line range
 		NSRange lineRange = [[textView string] lineRangeForRange:oldRange];
 		NSMutableString *n = [NSMutableString string];
@@ -1165,27 +1175,27 @@
 		// Check if current line is already commented out, if so uncomment it
 		// and preserve the original indention via regex:@"^-- (\\s*)"
 		if([n isMatchedByRegex:@"^-- \\s*(--\\s|#)"]) {
-			[n replaceOccurrencesOfRegex:@"^-- \\s*(--\\s|#)" 
-				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
-													options:RKLNoOptions 
-													inRange:NSMakeRange(0,[n length]) 
+			[n replaceOccurrencesOfRegex:@"^-- \\s*(--\\s|#)"
+				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)"
+													options:RKLNoOptions
+													inRange:NSMakeRange(0,[n length])
 													capture:1
 													error: nil]]];
 		} else if ([n isMatchedByRegex:@"^-- \\s*/\\*.*? ?\\*/\\s*$"]) {
-			[n replaceOccurrencesOfRegex:@"^-- \\s*/\\* ?" 
-				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)" 
-													options:RKLNoOptions 
-													inRange:NSMakeRange(0,[n length]) 
+			[n replaceOccurrencesOfRegex:@"^-- \\s*/\\* ?"
+				withString:[n substringWithRange:[n rangeOfRegex:@"^-- (\\s*)"
+													options:RKLNoOptions
+													inRange:NSMakeRange(0,[n length])
 													capture:1
 													error: nil]]];
-			[n replaceOccurrencesOfRegex:@" ?\\*/\\s*$" 
-				withString:[n substringWithRange:[n rangeOfRegex:@" ?\\*/(\\s*)$" 
-													options:RKLNoOptions 
-													inRange:NSMakeRange(0,[n length]) 
+			[n replaceOccurrencesOfRegex:@" ?\\*/\\s*$"
+				withString:[n substringWithRange:[n rangeOfRegex:@" ?\\*/(\\s*)$"
+													options:RKLNoOptions
+													inRange:NSMakeRange(0,[n length])
 													capture:1
 													error: nil]]];
 		}
-		
+
 		// Replace current line by (un)commented string
 		// The caret will be placed at the beginning of the next line if present to
 		// allow a fast (un)commenting of lines
@@ -1249,7 +1259,7 @@
 				[textView selectLineNumber:errorAtLine+lineOffset ignoreLeadingNewLines:YES];
 			}
 		} else { // Select first erroneous query entirely
-			
+
 			NSRange queryRange;
 			if(firstErrorOccuredInQuery == -1) // for current or previous query
 			{
@@ -1351,8 +1361,8 @@
 #pragma mark Accessors
 
 /*
- * Returns the current result (as shown in custom result view) as array, 
- * the first object containing the field names as array, 
+ * Returns the current result (as shown in custom result view) as array,
+ * the first object containing the field names as array,
  * the following objects containing the rows as array
  */
 - (NSArray *)currentResult
@@ -1363,13 +1373,13 @@
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
 	NSInteger i;
-	
+
 	//set field names as first line
 	while ( (tableColumn = [enumerator nextObject]) ) {
 		[tempRow addObject:[[tableColumn headerCell] stringValue]];
 	}
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
-	
+
 	//add rows
 	for ( i = 0 ; i < [self numberOfRowsInTableView:customQueryView] ; i++) {
 		[tempRow removeAllObjects];
@@ -1386,7 +1396,7 @@
 #pragma mark Additional methods
 
 /*
- * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once 
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
 - (void)setConnection:(MCPConnection *)theConnection
 {
@@ -1406,7 +1416,7 @@
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
-	
+
 	// Disable runSelectionMenuItem in the gear menu
 	[runSelectionMenuItem setEnabled:NO];
 }
@@ -1599,7 +1609,7 @@
 	dataRow = [resultData rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@", 
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	if ([theResult numOfRows]) [theResult dataSeek:0];
@@ -1610,17 +1620,17 @@
 			for(field in columnsForFieldTableName) {
 				id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
 				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
-					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)", 
-						[database backtickQuotedString], 
-						[tableForColumn backtickQuotedString], 
-						[[theRow objectForKey:@"Field"] backtickQuotedString], 
+					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)",
+						[database backtickQuotedString],
+						[tableForColumn backtickQuotedString],
+						[[theRow objectForKey:@"Field"] backtickQuotedString],
 						[aValue description]];
 					return fieldIDQueryStr;
 				}
 			}
 		}
 	}
-	
+
 	// If there is no primary key, all found fields belonging to the same table are used in the argument
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
@@ -1637,13 +1647,13 @@
 			else
 				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
 		}
-		
+
 		[fieldIDQueryStr appendString:@" AND "];
 	}
 	// Remove last " AND "
 	if([fieldIDQueryStr length]>12)
 		[fieldIDQueryStr replaceCharactersInRange:NSMakeRange([fieldIDQueryStr length]-5,5) withString:@")"];
-	
+
 	return fieldIDQueryStr;
 }
 
@@ -1657,7 +1667,7 @@
 {
 	if (aTableView == customQueryView) {
 		return (resultData == nil) ? 0 : resultDataCount;
-	} 
+	}
 	else {
 		return 0;
 	}
@@ -1667,10 +1677,10 @@
  * This function changes the text color of text/blob fields whose content is NULL.
  */
 - (void)tableView:(SPCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
-{	
+{
 	if (aTableView == customQueryView) {
 
-		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values 
+		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
 			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 			id theValue = nil;
@@ -1692,7 +1702,7 @@
 			} else {
 				theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 			}
-			
+
 			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
 		}
 	}
@@ -1722,7 +1732,7 @@
 		} else {
 			theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 		}
-		
+
 		if ([theValue isKindOfClass:[NSData class]])
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
 
@@ -1772,7 +1782,7 @@
 		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
 		if(numberOfPossibleUpdateRows == 1) {
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-			
+
 			NSString *newObject = nil;
 			if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
 				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
@@ -1796,10 +1806,10 @@
 			}
 
 			[mySQLConnection queryString:
-				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1", 
+				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1",
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
 					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
-			
+
 			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 			// Check for errors while UPDATE
@@ -1821,7 +1831,7 @@
 				}
 				return;
 			}
-			
+
 			// On success reload table data by executing the last query if reloading is enabled
 			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
 				reloadingExistingResult = YES;
@@ -1834,7 +1844,7 @@
 			}
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"), 
+							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"),
 										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
 
 		}
@@ -1854,20 +1864,46 @@
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
-	//sets order descending if a header is clicked twice
-	if ( sortField && [[tableColumn identifier] isEqualToNumber:sortField] ) {
-		isDesc = !isDesc;
+	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
+	// header is clicked several times
+	if (sortField && [[tableColumn identifier] isEqualToNumber:sortField]) {
+		if(isDesc) {
+			[sortField release];
+			sortField = nil;
+		} else {
+			if (sortField) [sortField release];
+			sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
+			isDesc = !isDesc;
+		}
 	} else {
 		isDesc = NO;
-		if (sortField) [customQueryView setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
+		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
+		if (sortField) [sortField release];
+		sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 	}
 
-	if (sortField) [sortField release];
-	sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
+	if(sortField) {
+		// Set the highlight and indicatorImage
+		[[customQueryView onMainThread] setHighlightedTableColumn:tableColumn];
+		if (isDesc) {
+			[[customQueryView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+		} else {
+			[[customQueryView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+		}
+	} else {
+		// If no sort order deselect column header and
+		// remove indicator image
+		[[customQueryView onMainThread] setHighlightedTableColumn:nil];
+		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:tableColumn];
+	}
 
-	// Order by the column position number to avoid ambiguous name errors
-	NSString* newOrder = [NSString stringWithFormat:@" ORDER BY %ld %@ ", (long)([[tableColumn identifier] integerValue]+1), (isDesc)?@"DESC":@"ASC"];
-	
+	// Order by the column position number to avoid ambiguous name errors if any
+	NSString* newOrder;
+	if(sortField)
+		newOrder = [NSString stringWithFormat:@" ORDER BY %ld %@ ", (long)([[tableColumn identifier] integerValue]+1), (isDesc)?@"DESC":@"ASC"];
+	else
+		newOrder = @"";
+
 	// Remove any comments
 	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
 	[queryString replaceOccurrencesOfRegex:@"--.*?$" withString:@""];
@@ -1935,7 +1971,10 @@
 	reloadingExistingResult = YES;
 	[self storeCurrentResultViewForRestoration];
 	queryIsTableSorter = YES;
-	sortColumn = tableColumn;
+	if(sortField)
+		sortColumn = tableColumn;
+	else
+		sortColumn = nil;
 	[self performQueries:[NSArray arrayWithObject:queryString] withCallback:@selector(tableSortCallback)];
 }
 
@@ -1967,7 +2006,7 @@
 		NSString *tmp = [customQueryView draggedRowsAsTabString];
 		if ( nil != tmp )
 		{
-			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
+			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType,
 				NSStringPboardType, nil]
 						   owner:nil];
 			[pboard setString:tmp forType:NSStringPboardType];
@@ -1992,7 +2031,7 @@
 			if ([[pboardTypes objectAtIndex:0] isEqualToString:@"SequelProPasteboard"]==YES && operation==NSTableViewDropAbove)
 			{
 				originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
-	
+
 				if (row != originalRow && row != (originalRow+1))
 				{
 					return NSDragOperationMove;
@@ -2014,17 +2053,17 @@
 	if ( aTableView == queryFavoritesView ) {
 		originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
 		destinationRow = row;
-	
+
 		if ( destinationRow > originalRow )
 			destinationRow--;
-	
+
 		draggedRow = [queryFavorites objectAtIndex:originalRow];
 		[queryFavorites removeObjectAtIndex:originalRow];
 		[queryFavorites insertObject:draggedRow atIndex:destinationRow];
-		
+
 		[queryFavoritesView reloadData];
 		[queryFavoritesView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRow] byExtendingSelection:NO];
-	
+
 		return YES;
 	} else {
 		return NO;
@@ -2072,12 +2111,12 @@
 
 	// Show the cell string value as tooltip (including line breaks and tabs)
 	// by using the cell's font
-	[SPTooltip showWithObject:[aCell stringValue] 
-			atLocation:pos 
-				ofType:@"text" 
+	[SPTooltip showWithObject:[aCell stringValue]
+			atLocation:pos
+				ofType:@"text"
 		displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
-					[[aCell font] familyName], @"fontname", 
-					[NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize", 
+					[[aCell font] familyName], @"fontname",
+					[NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize",
 					nil]];
 
 	return nil;
@@ -2127,11 +2166,11 @@
 		// or the field data are not bound to any table as in SELECT 1 or if column database is unset
 		if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
 			noTableName = YES;
-	
+
 		if(!noTableName) {
 			// if table and database name are given check if field can be identified unambiguously
 			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
-	
+
 			// Actual check whether field can be identified bijectively
 			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
 
@@ -2168,9 +2207,9 @@
 
 			id editData = [[fieldEditor editWithObject:originalData
 									fieldName:[columnDefinition objectForKey:@"name"]
-									usingEncoding:[mySQLConnection encoding] 
-									isObjectBlob:isBlob 
-									isEditable:isFieldEditable 
+									usingEncoding:[mySQLConnection encoding]
+									isObjectBlob:isBlob
+									isEditable:isFieldEditable
 									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 			if ( editData )
@@ -2221,7 +2260,7 @@
 	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
 	NSString *table = [columnDefinition objectForKey:@"org_table"];
 	NSString *col = [columnDefinition objectForKey:@"org_name"];
-	
+
 	// Retrieve or instantiate the tableColumnWidths object
 	if ([prefs objectForKey:SPTableColumnWidths] != nil) {
 		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
@@ -2235,7 +2274,7 @@
 	} else {
 		[tableColumnWidths setObject:[NSMutableDictionary dictionaryWithDictionary:[tableColumnWidths objectForKey:host_db]] forKey:host_db];
 	}
-	
+
 	// Edit or create table object
 	if  ([[tableColumnWidths objectForKey:host_db] objectForKey:table] == nil) {
 		[[tableColumnWidths objectForKey:host_db] setObject:[NSMutableDictionary dictionary] forKey:table];
@@ -2304,7 +2343,7 @@
 		} else {
 			return NO;
 		}
-		
+
 	} else if ( aTextView == valueTextField ) {
 		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] )
 		{
@@ -2467,7 +2506,7 @@
 {
 	mySQLversion = [[theVersion substringToIndex:3] retain];
 	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] integerValue]];
-	
+
 }
 
 /*
@@ -2498,7 +2537,7 @@
 	{
 		// set title of the Help window
 		[helpWebViewWindow setTitle:[NSString stringWithFormat:@"%@ (%@ %@)", NSLocalizedString(@"MySQL Help", @"mysql help"), NSLocalizedString(@"version", @"version"), mySQLversion]];
-	
+
 		// init goback/forward buttons
 		if([[helpWebView backForwardList] backListCount] < 1)
 		{
@@ -2517,15 +2556,15 @@
 		// order out Help window if Help is available
 		if(![helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
 			[helpWebViewWindow orderFront:helpWebView];
-			
+
 	}
 
 	// close Help window if no Help available
 	if([helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
 		[helpWebViewWindow close];
-	
+
 	if(![helpString length]) return;
-	
+
 	// add searchString to history list
 	if(addToHistory)
 	{
@@ -2537,10 +2576,10 @@
 	// validate goback/forward buttons
 	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
 	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
-	
+
 	// load HTML formatted help into the webview
 	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil];
-	
+
 }
 
 
@@ -2635,7 +2674,7 @@
 	// validate goback and goforward buttons according history
 	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
 	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
-	
+
 }
 
 /*
@@ -2730,14 +2769,14 @@
 {
 
 	if(![searchString length]) return @"";
-	
+
 	NSRange         aRange;
 	MCPResult     *theResult = nil;
 	NSDictionary    *tableDetails;
 	NSMutableString *theHelp = [NSMutableString string];
 
 	[theHelp setString:@""];
-	
+
 	// search via: HELP 'searchString'
 	theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 	if ([mySQLConnection queryErrored])
@@ -2771,7 +2810,7 @@
 			NSMutableString *desc = [NSMutableString string];
 			NSError *err1 = NULL;
 			NSString *aUrl;
-			
+
 			[desc setString:[[[tableDetails objectForKey:@"description"] copy] autorelease]];
 
 			//[desc replaceOccurrencesOfString:[searchString uppercaseString] withString:[NSString stringWithFormat:@"<span class='searchstring'>%@</span>", [searchString uppercaseString]] options:NSLiteralSearch range:NSMakeRange(0,[desc length])];
@@ -2847,14 +2886,14 @@
 		for ( i = 0 ; i < r ; i++ ) {
 			NSArray *anArray = [theResult fetchRowAsArray];
 			NSString *topic = [anArray objectAtIndex:[anArray count]-2];
-			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>", 
+			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>",
 				NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic];
 		}
 		[theHelp appendString:@"</ul>"];
 	}
 
 	[tableDetails release];
-	
+
 	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
 
 }
@@ -2908,10 +2947,10 @@
 {
 
 	NSMutableArray *webViewMenuItems = [[defaultMenuItems mutableCopy] autorelease];
-	
+
 	if (webViewMenuItems)
 	{
-		// Remove all needless default menu items 
+		// Remove all needless default menu items
 		NSEnumerator *itemEnumerator = [defaultMenuItems objectEnumerator];
 		NSMenuItem *menuItem = nil;
 		while (menuItem = [itemEnumerator nextObject])
@@ -2943,8 +2982,8 @@
 	}
 
 	// Add two menu items for a selection if no link is given
-	if(webViewMenuItems 
-		&& [[element objectForKey:@"WebElementIsSelected"] boolValue] 
+	if(webViewMenuItems
+		&& [[element objectForKey:@"WebElementIsSelected"] boolValue]
 		&& ![[element objectForKey:@"WebElementLinkIsLive"] boolValue])
 	{
 
@@ -2986,7 +3025,7 @@
 	NSMenu* historyMenu = [queryHistoryButton menu];
 	while([queryHistoryButton numberOfItems] > 7)
 		[queryHistoryButton removeItemAtIndex:[queryHistoryButton numberOfItems]-1];
-	
+
 	NSUInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
 	if(numberOfHistoryItems>0)
 		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
@@ -3003,13 +3042,13 @@
 	// Remove all favorites beginning from the end
 	while([queryFavoritesButton numberOfItems] > 7)
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
-	
+
 	// Build document-based list
 	headerMenuItem = [[NSMenuItem alloc] initWithTitle:
-		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent] 
+		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent]
 		action:NULL keyEquivalent:@""];
 	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:[NSString stringWithFormat:@"‘%@’ based favorites", 
+	[headerMenuItem setToolTip:[NSString stringWithFormat:@"‘%@’ based favorites",
 		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent]]];
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
@@ -3126,7 +3165,7 @@
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
+{
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [customQueryView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -3161,7 +3200,7 @@
 
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
 		if (returnCode == NSOKButton) {
-			
+
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
 			NSMutableArray *favorites = [NSMutableArray arrayWithArray:[prefs objectForKey:SPQueryFavorites]];
@@ -3182,16 +3221,16 @@
 			} else {
 				queryToBeAddded = [textView string];
 			}
-			
+
 			if([saveQueryFavoriteGlobal state] == NSOnState) {
 				[favorites addObject:[NSMutableDictionary dictionaryWithObjects:
-					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil] 
+					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil]
 							forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
-			
+
 				[prefs setObject:favorites forKey:SPQueryFavorites];
 			} else {
 				[[SPQueryController sharedQueryController] addFavorite:[NSMutableDictionary dictionaryWithObjects:
-					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [[queryToBeAddded mutableCopy] autorelease], nil] 
+					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [[queryToBeAddded mutableCopy] autorelease], nil]
 						forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]] forFileURL:[tableDocumentInstance fileURL]];
 			}
 
@@ -3201,7 +3240,7 @@
 
 		}
 	}
-	
+
 	[queryFavoriteNameTextField setStringValue:@""];
 }
 
@@ -3210,15 +3249,15 @@
 	if([contextInfo isEqualToString:@"saveHistory"]) {
 		if (returnCode == NSOKButton) {
 			NSError *error = nil;
-		
+
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
-		
-			[[self buildHistoryString] writeToFile:[panel filename] 
-										atomically:YES 
-										  encoding:[[encodingPopUp selectedItem] tag] 
+
+			[[self buildHistoryString] writeToFile:[panel filename]
+										atomically:YES
+										  encoding:[[encodingPopUp selectedItem] tag]
 											 error:&error];
-		
+
 			if (error) [[NSAlert alertWithError:error] runModal];
 		}
 	}
@@ -3271,7 +3310,7 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		
+
 		usedQuery = [[NSString stringWithString:@""] retain];
 
 		sortField = nil;
@@ -3287,22 +3326,22 @@
 
 		// init helpHTMLTemplate
 		NSError *error;
-		
+
 		helpHTMLTemplate = [[NSString alloc]
 							initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SPHTMLHelpTemplate ofType:@"html"]
 							encoding:NSUTF8StringEncoding
 							error:&error];
-		
+
 		// an error occurred while reading
 		if (helpHTMLTemplate == nil) {
 			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “%@.html”!<br>%@", SPHTMLHelpTemplate, [error localizedFailureReason]]);
 			NSBeep();
 		}
-		
+
 		// init search history
 		[helpWebView setMaintainsBackForwardList:YES];
 		[[helpWebView backForwardList] setCapacity:20];
-		
+
 		// init tableView's data source
 		resultDataCount = 0;
 		resultData = [[SPDataStorage alloc] init];
@@ -3328,10 +3367,10 @@
 	NSUInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
 	NSString *searchPattern = [queryFavoritesSearchField stringValue];
-	
+
 	for (i = 7; i < [menu numberOfItems]; i++)
 	{
-		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG 
+		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG
 										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
 	}
 }
@@ -3384,7 +3423,7 @@
 // 	if(item == queryHistorySearchMenuItem) {
 // 		[queryHistorySearchField selectText:nil];
 // 	}
-// 
+//
 // }
 
 /**
@@ -3392,13 +3431,13 @@
  */
 - (void)awakeFromNib
 {
-	// Set pre-defined menu tags 
+	// Set pre-defined menu tags
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
 
 	// Set the structure and index view's vertical gridlines if required
-	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];	
-	
+	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -3415,7 +3454,7 @@
 	/*if ([queryInfoPaneSplitView collapsibleSubview]) {
 		[queryInfoButton setNextState];
 		[queryInfoButton setToolTip:NSLocalizedString(@"Show Query Information", @"Show Query Information")];
-		
+
 		[queryInfoPaneSplitView setValue:[NSNumber numberWithFloat:[queryInfoPaneSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
 		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:NO];
 		[[queryInfoPaneSplitView collapsibleSubview] setFrameSize:NSMakeSize([queryInfoPaneSplitView collapsibleSubview].frame.size.width, 0)];
@@ -3437,15 +3476,15 @@
 	[usedQuery release];
 	[resultData release];
 	[favoritesManager release];
-	
+
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 	if (mySQLversion) [mySQLversion release];
 	if (sortField) [sortField release];
 	if (cqColumnDefinition) [cqColumnDefinition release];
 	if (selectionIndexToRestore) [selectionIndexToRestore release];
 	if (currentQueryRanges) [currentQueryRanges release];
-	
+
 	[super dealloc];
 }
-	
+
 @end

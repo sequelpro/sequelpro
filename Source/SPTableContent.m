@@ -3313,22 +3313,37 @@
 		return;
 	}
 
-	// Sets order descending if a header is clicked twice
+	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
+	// header is clicked several times
 	if ([[tableColumn identifier] isEqualTo:sortCol]) {
-		isDesc = !isDesc;
+		if(isDesc) {
+			[sortCol release];
+			sortCol = nil;
+		} else {
+			if (sortCol) [sortCol release];
+			sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
+			isDesc = !isDesc;
+		}
 	} else {
 		isDesc = NO;
 		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
+		if (sortCol) [sortCol release];
+		sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 	}
-	if (sortCol) [sortCol release];
-	sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 
-	// Set the highlight and indicatorImage
-	[[tableContentView onMainThread] setHighlightedTableColumn:tableColumn];
-	if (isDesc) {
-		[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+	if(sortCol) {
+		// Set the highlight and indicatorImage
+		[[tableContentView onMainThread] setHighlightedTableColumn:tableColumn];
+		if (isDesc) {
+			[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+		} else {
+			[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+		}
 	} else {
-		[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+		// If no sort order deselect column header and
+		// remove indicator image
+		[[tableContentView onMainThread] setHighlightedTableColumn:nil];
+		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:tableColumn];
 	}
 
 	// Update data using the new sort order
