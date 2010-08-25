@@ -235,7 +235,10 @@
 	}
 
 	// Update display if necessary
-	[[tableContentView onMainThread] setNeedsDisplay:YES];
+	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect))
+		[[tableContentView onMainThread] setNeedsDisplayInRect:selectionViewportToRestore];
+	else
+		[[tableContentView onMainThread] setNeedsDisplay:YES];
 
 	// Post the notification that the query is finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -3734,9 +3737,34 @@
 
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
+	NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
+	if([tableContentView isCellEditingMode] && numberOfPossibleUpdateRows != 1) {
+		NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
+		pos.y -= 20;
+		switch(numberOfPossibleUpdateRows) {
+			case -1:
+			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
+					atLocation:pos
+					ofType:@"text"];
+			break;
+			case 0:
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), selectedTable]
+					atLocation:pos
+					ofType:@"text"];
+			break;
 
-	if([tableContentView isCellEditingMode] && [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]] != 1)
+			case 1:
+			break;
+
+			default:
+			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+					atLocation:pos
+					ofType:@"text"];
+		}
+
 		return NO;
+
+	}
 
 	NSString *fieldType;
 
