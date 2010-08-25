@@ -51,22 +51,12 @@
 /**
  *
  */
-- (BOOL)connectionEncodingViaLatin1:(id)connection;
-
-/**
- *
- */
 - (NSString *)keychainPasswordForConnection:(id)connection;
 
 /**
  *
  */
 - (NSString *)onReconnectShouldSelectDatabase:(id)connection;
-
-/**
- *
- */
-- (NSString *)onReconnectShouldUseEncoding:(id)connection;
 
 /**
  *
@@ -87,11 +77,6 @@
  *
  */
 - (NSString *)database;
-
-/**
- *
- */
-- (NSString *)connectionEncoding;
 
 /**
  *
@@ -153,7 +138,11 @@
 	NSString *connectionSocket;
 	NSInteger maxAllowedPacketSize;
 	unsigned long connectionThreadId;
-	
+
+	NSString *encoding, *previousEncoding;
+	NSStringEncoding *stringEncoding;
+	BOOL encodingUsesLatin1Transport, previousEncodingUsesLatin1Transport;
+
 	NSInteger currentProxyState;
 	
 	double lastQueryExecutionTime;
@@ -318,8 +307,13 @@ void performThreadedKeepAlive(void *ptr);
 - (NSString *)findSocketPath;
 
 // Encoding
-- (void)setEncoding:(NSStringEncoding)theEncoding;
-- (NSStringEncoding)encoding;
+- (BOOL)setEncoding:(NSString *)theEncoding;
+- (NSString *)encoding;
+- (NSStringEncoding)stringEncoding;
+- (BOOL)setEncodingUsesLatin1Transport:(BOOL)useLatin1;
+- (BOOL)encodingUsesLatin1Transport;
+- (void)storeEncodingForRestoration;
+- (void)restoreStoredEncoding;
 
 // Time zone
 - (void)setTimeZone:(NSTimeZone *)iTimeZone;

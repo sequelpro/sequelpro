@@ -198,12 +198,12 @@
 	 * User defaults
 	 */
 	NSUserDefaults *prefs;
-	
+
 	/**
 	 * Previous connection encoding
 	 */
 	NSString *sqlPreviousConnectionEncoding;
-	
+
 	/**
 	 * Previous connection encoding was via Latin1
 	 */

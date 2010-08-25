@@ -337,6 +337,7 @@
 	NSString *encodingString = nil;
 	NSUInteger i, stringStart;
 	unichar quoteCharacter;
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
@@ -344,6 +345,12 @@
 	
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
+
+	// Ensure the encoding is set to UTF8
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
+	}
 
 	// Retrieve the CREATE TABLE syntax for the table
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
@@ -361,6 +368,7 @@
 				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
 				[tableListInstance updateTables:self];
 			}
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		
 		return nil;
@@ -384,6 +392,7 @@
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:[NSApp mainWindow]
 						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		return nil;
 	}
 
@@ -637,6 +646,8 @@
 	[encodingString release];
 	[tableColumns release];
 
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
 	return tableData;
 }
 
@@ -689,9 +700,16 @@
 	NSDictionary *resultRow;
 	NSMutableDictionary *tableColumn, *viewData;
 	NSUInteger i;
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected views and return nil
 	if ([viewName isEqualToString:@""] || !viewName) return nil;
+
+	// Ensure that queries are made in UTF8
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
+	}
 
 	// Retrieve the CREATE TABLE syntax for the table
 	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
@@ -706,6 +724,7 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		return nil;
 	}
@@ -722,6 +741,7 @@
 			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
 			  beginSheetModalForWindow:[NSApp mainWindow]
 						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		return nil;
 	}
 
@@ -738,6 +758,7 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		return nil;
 	}
@@ -787,6 +808,8 @@
 
 	[tableColumns release];
 
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
 	return viewData;
 }
 
@@ -797,6 +820,7 @@
  */
 - (BOOL)updateStatusInformationForCurrentTable
 {
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected tables and return false
 	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName])
@@ -807,6 +831,12 @@
 	if ([tableListInstance tableType] == SPTableTypeView) {
 		[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"View", @"Engine", @"No status information is available for views.", @"Comment", [tableListInstance tableName], @"Name", nil]];
 		return TRUE;
+	}
+
+	// Ensure queries are run as UTF8
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
 	}
 
 	// Run the status query and retrieve as a dictionary.
@@ -837,6 +867,7 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		return FALSE;
 	}
@@ -854,6 +885,7 @@
 		// If the "Engine" key is NULL, a problem occurred when retrieving the table information.
 		if ([[status objectForKey:@"Engine"] isNSNull]) {
 			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:NSLocalizedString(@"An error occurred retrieving table information.  MySQL said: %@", @"MySQL table info retrieval error message"), [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 			return FALSE;
 		}
 
@@ -874,6 +906,8 @@
 		}
 	}
 
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
 	return TRUE;
 }
 
@@ -882,6 +916,14 @@
  */
 - (BOOL) updateTriggersForCurrentTable
 {
+
+	// Ensure queries are made in UTF8
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
+	}
+
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
 											  [[tableListInstance tableName] tickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
@@ -894,6 +936,7 @@
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							  [tableListInstance tableName], [mySQLConnection getLastErrorMessage]]);
 			if (triggers) [triggers release], triggers = nil;
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
 		return NO;
@@ -904,6 +947,8 @@
 	for (int i=0; i<[theResult numOfRows]; i++) {
 		[triggers addObject:[theResult fetchRowAsDictionary]];
 	}
+
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	return YES;
 }
@@ -1109,6 +1154,13 @@
 - (NSArray *)primaryKeyColumnNames
 {
 
+	// Ensure that identifier queries occur over UTF8
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
+	}
+
 	NSString *selectedTable = [tableListInstance tableName];
 	if(![selectedTable length]) return nil;
 
@@ -1122,11 +1174,16 @@
 	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ /*!50003 WHERE `key` = 'PRI'*/", [selectedTable backtickQuotedString]]];
 	[r setReturnDataAsStrings:YES];
 
-	if([r numOfRows] < 1) return nil;
+	if([r numOfRows] < 1) {
+		if (changeEncoding && [mySQLConnection isConnected]) [mySQLConnection restoreStoredEncoding];
+		return nil;
+	}
 
 	if ([mySQLConnection queryErrored]) {
-		if ([mySQLConnection isConnected])
+		if ([mySQLConnection isConnected]) {
 			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the PRIMARY KEY data:\n\n%@",@"message when the query that fetches the primary keys fails"), [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+		}
 		return nil;
 	}
 
@@ -1138,6 +1195,8 @@
 			[keyColumns addObject:[[resultRow objectAtIndex:0] description]];
 		}
 	}
+
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	if([keyColumns count]) return keyColumns;
 

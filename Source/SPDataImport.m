@@ -233,7 +233,7 @@
 	if ([[[importFormatPopup selectedItem] title] isEqualToString:@"SQL"])
 		encoding = NSUTF8StringEncoding;
 	else
-		encoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
+		encoding = [mySQLConnection stringEncoding];
 
 	if(![[[NSPasteboard generalPasteboard] stringForType:NSStringPboardType] writeToFile:importFileName atomically:NO encoding:encoding error:nil]) {
 		NSBeep();
@@ -406,7 +406,7 @@
 			sqlEncoding = [fileEncodingDetector encoding];
 			[fileEncodingDetector release];
 			if ([MCPConnection mySQLEncodingForStringEncoding:sqlEncoding]) {
-				connectionEncodingToRestore = [tableDocumentInstance connectionEncoding];
+				connectionEncodingToRestore = [mySQLConnection encoding];
 				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [MCPConnection mySQLEncodingForStringEncoding:sqlEncoding]]];
 			}
 		}
@@ -673,7 +673,7 @@
 	BOOL allDataRead = NO;
 	BOOL insertBaseStringHasEntries;
 	
-	NSStringEncoding csvEncoding = [MCPConnection encodingForMySQLEncoding:[[tableDocumentInstance connectionEncoding] UTF8String]];
+	NSStringEncoding csvEncoding = [mySQLConnection stringEncoding];
 
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;

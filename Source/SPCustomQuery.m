@@ -1792,7 +1792,7 @@
 		}
 
 		if ([theValue isKindOfClass:[NSData class]])
-			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 
 		if ([theValue isNSNull])
 			return [prefs objectForKey:SPNullValue];
@@ -2262,9 +2262,9 @@
 
 			id editData = [[fieldEditor editWithObject:originalData
 									fieldName:[columnDefinition objectForKey:@"name"]
-									usingEncoding:[mySQLConnection encoding]
-									isObjectBlob:isBlob
-									isEditable:isFieldEditable
+									usingEncoding:[mySQLConnection stringEncoding] 
+									isObjectBlob:isBlob 
+									isEditable:isFieldEditable 
 									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 			if ( editData )

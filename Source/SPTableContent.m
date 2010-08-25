@@ -2342,24 +2342,7 @@
 		[queryString appendFormat:@" WHERE %@", [self argumentForRow:-2]];
 	}
 
-	// If UTF-8 via Latin1 view encoding is set convert the queryString into Latin1 and
-	// set the MySQL connection to Latin1 before executing this query to allow editing.
-	// After executing reset all.
-	if([tableDocumentInstance connectionEncodingViaLatin1:mySQLConnection]) {
-
-		NSStringEncoding currentEncoding = [mySQLConnection encoding];
-		NSString *latin1String = [[NSString alloc] initWithCString:[queryString UTF8String] encoding:NSISOLatin1StringEncoding];
-		[mySQLConnection setEncoding:NSISOLatin1StringEncoding];
-		[mySQLConnection queryString:@"SET NAMES 'latin1'"];
-		[mySQLConnection queryString:latin1String];
-		[mySQLConnection setEncoding:currentEncoding];
-		[mySQLConnection queryString:@"SET NAMES 'utf8'"];
-		[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
-		[latin1String release];
-
-	} else {
-		[mySQLConnection queryString:queryString];
-	}
+	[mySQLConnection queryString:queryString];
 
 	[fieldValues release];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -3072,7 +3055,7 @@
 		return [prefs objectForKey:SPNullValue];
 
 	if ([theValue isKindOfClass:[NSData class]])
-		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+		return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 
 	if ([theValue isSPNotLoaded])
 		return NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
@@ -3534,9 +3517,9 @@
 
 		id editData = [[fieldEditor editWithObject:cellValue
 								 	 fieldName:[[aTableColumn headerCell] stringValue]
-								 usingEncoding:[mySQLConnection encoding]
-								  isObjectBlob:isBlob
-									isEditable:isFieldEditable
+								 usingEncoding:[mySQLConnection stringEncoding]
+								  isObjectBlob:isBlob 
+									isEditable:isFieldEditable 
 									withWindow:[tableDocumentInstance parentWindow]] retain];
 
 		if (editData) {

@@ -348,9 +348,11 @@
 	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields]];
 	
 	// Set comments
+	NSString *commentText = [statusFields objectForKey:@"Comment"];
+	if (!commentText) commentText = @"";
 	[tableCommentsTextView setEditable:YES];
-	[tableCommentsTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:[statusFields objectForKey:@"Comment"]];
-	[tableCommentsTextView setString:[statusFields objectForKey:@"Comment"]];
+	[tableCommentsTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:commentText];
+	[tableCommentsTextView setString:commentText];
 	[tableCommentsTextView didChangeText];
 	[tableCommentsTextView setEditable:enableInteraction];
 			

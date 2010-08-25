@@ -83,7 +83,6 @@
 	if ((self = [super init])) {
 
 		_mainNibLoaded = NO;
-		_encoding = [[NSString alloc] initWithString:@"utf8"];
 		_isConnected = NO;
 		_isWorkingLevel = 0;
 		_isSavedInBundle = NO;
@@ -552,7 +551,7 @@
 		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
 
 	// Reset database view encoding if differs from default
-	if([spfSession objectForKey:@"connectionEncoding"] && ![[self connectionEncoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
+	if([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
 		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
 
 	if(isSelectedTableDefined) {
@@ -658,14 +657,6 @@
 	// ...but hide the icon while the document is temporary
 	if ([self isUntitled]) [[parentWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
 
-	// Set the connection encoding
-	NSNumber *encodingType = [prefs objectForKey:SPDefaultEncoding];
-	if ( [encodingType intValue] == SPEncodingAutodetect ) {
-		[self setConnectionEncoding:[self databaseEncoding] reloadingViews:NO];
-	} else {
-		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
-	}
-
 	// Get the mysql version
 	mySQLVersion = [[NSString alloc] initWithString:[mySQLConnection serverVersionString]];
 
@@ -676,12 +667,24 @@
 		[spHistoryControllerInstance updateHistoryEntries];
 	}
 
+	// Ensure the connection encoding is set to utf8 for database/table name retrieval
+	[mySQLConnection setEncoding:@"utf8"];
+
 	// Update the database list
 	[self setDatabases:self];
 	[chooseDatabaseButton setEnabled:!_isWorkingLevel];
 
-	// For each of the main controllers, assign the current connection
+	// Set the connection on the tables list instance - this updates the table list while the connection
+	// is still UTF8
 	[tablesListInstance setConnection:mySQLConnection];
+
+	// Set the connection encoding if necessary
+	NSNumber *encodingType = [prefs objectForKey:SPDefaultEncoding];
+	if ( [encodingType intValue] != SPEncodingAutodetect ) {
+		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
+	}
+
+	// For each of the main controllers, assign the current connection
 	[tableSourceInstance setConnection:mySQLConnection];
 	[tableContentInstance setConnection:mySQLConnection];
 	[tableRelationsInstance setConnection:mySQLConnection];
@@ -692,9 +695,8 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	[databaseDataInstance setConnection:mySQLConnection];
-//	userManagerInstance.mySqlConnection = mySQLConnection;
 
-	// Set the cutom query editor's MySQL version
+	// Set the custom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
 	[self updateWindowTitle:self];
@@ -1561,63 +1563,37 @@
  */
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews
 {
-	_encodingViaLatin1 = NO;
+	BOOL useLatin1Transport = NO;
 
 	// Special-case UTF-8 over latin 1 to allow viewing/editing of mangled data.
 	if ([mysqlEncoding isEqualToString:@"utf8-"]) {
-		_encodingViaLatin1 = YES;
+		useLatin1Transport = YES;
 		mysqlEncoding = @"utf8";
 	}
 
-	// set encoding of connection and client
-	[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", mysqlEncoding]];
-
-	if (![mySQLConnection queryErrored]) {
-		if (_encodingViaLatin1)
-			[mySQLConnection queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
-		[mySQLConnection setEncoding:[MCPConnection encodingForMySQLEncoding:[mysqlEncoding UTF8String]]];
-		[_encoding release];
-		_encoding = [[NSString alloc] initWithString:mysqlEncoding];
-	} else {
-		[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [self databaseEncoding]]];
-		_encodingViaLatin1 = NO;
-		if ([mySQLConnection queryErrored]) {
-			NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
-			return;
-		}
+	// Set the connection encoding
+	if (![mySQLConnection setEncoding:mysqlEncoding]) {
+		NSLog(@"Error: could not set encoding to %@ nor fall back to database encoding on MySQL %@", mysqlEncoding, [self mySQLVersion]);
+		return;
 	}
+	[mySQLConnection setEncodingUsesLatin1Transport:useLatin1Transport];
 
-	// update the selected menu item
-	if (_encodingViaLatin1) {
+	// Update the selected menu item
+	if (useLatin1Transport) {
 		[self updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
 	} else {
 		[self updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:mysqlEncoding]];
 	}
 
+	// Update the stored connection encoding to prevent switches
+	[mySQLConnection storeEncodingForRestoration];
+
 	// Reload stuff as appropriate
-	[tableDataInstance resetAllData];
 	if (reloadViews) {
 		if ([tablesListInstance structureLoaded]) [tableSourceInstance reloadTable:self];
 		if ([tablesListInstance contentLoaded]) [tableContentInstance reloadTable:self];
 		if ([tablesListInstance statusLoaded]) [extendedTableInfoInstance reloadTable:self];
 	}
-}
-
-/**
- * returns the current mysql encoding for this object
- */
-- (NSString *)connectionEncoding
-{
-	return _encoding;
-}
-
-/**
- * Returns whether the current encoding should display results via Latin1 transport for backwards compatibility.
- * This is a delegate method of MCPKit's MCPConnection class.
- */
-- (BOOL)connectionEncodingViaLatin1:(id)connection
-{
-	return _encodingViaLatin1;
 }
 
 /**
@@ -1707,26 +1683,29 @@
 }
 
 /**
- * Detect and return the database connection encoding.
- * TODO: See http://code.google.com/p/sequel-pro/issues/detail?id=134 - some question over why this [historically] uses _connection not _database...
+ * Detect and return the database encoding.
+ * Falls back to Latin1.
  */
 - (NSString *)databaseEncoding
 {
 	MCPResult *charSetResult;
-	NSString *mysqlEncoding;
+	NSString *mysqlEncoding = nil;
 
-	// MySQL > 4.0
-	charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_connection'"];
-	[charSetResult setReturnDataAsStrings:YES];
-	mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
-	_supportsEncoding = (mysqlEncoding != nil);
+	// MySQL >= 4.1
+	if ([mySQLConnection serverMajorVersion] > 4
+		|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1))
+	{
+		charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_database'"];
+		[charSetResult setReturnDataAsStrings:YES];
+		mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
+		_supportsEncoding = (mysqlEncoding != nil);
 
 	// mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
-	if ( !mysqlEncoding ) {
+	} else {
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
 
-	// older version? -> set encoding to mysql default encoding latin1
+	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
@@ -3380,7 +3359,7 @@
 		[session setObject:aString forKey:@"view"];
 
 		[session setObject:[NSNumber numberWithBool:[[parentWindow toolbar] isVisible]] forKey:@"isToolbarVisible"];
-		[session setObject:[self connectionEncoding] forKey:@"connectionEncoding"];
+		[session setObject:[mySQLConnection encoding] forKey:@"connectionEncoding"];
 
 		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
 		[session setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
@@ -4675,7 +4654,6 @@
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	[nibObjectsToRelease release];
 
-	[_encoding release];
 	[allDatabases release];
 	[allSystemDatabases release];
 	[printWebView release];
@@ -4773,6 +4751,9 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
+
+	// As we're amending identifiers, ensure UTF8
+	if (![[mySQLConnection encoding] isEqualToString:@"utf8"]) [mySQLConnection setEncoding:@"utf8"];
 	
 	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
 	

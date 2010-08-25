@@ -70,6 +70,7 @@
 	NSInteger i;
 	NSString *previousSelectedTable = nil;
 	BOOL previousTableListIsSelectable = tableListIsSelectable;
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	if (selectedTableName) previousSelectedTable = [[NSString alloc] initWithString:selectedTableName];
 	if (isTableListFiltered) {
@@ -92,6 +93,12 @@
 		// Notify listeners that a query has started
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
+		// Use UTF8 for identifier-based queries
+		if (changeEncoding) {
+			[mySQLConnection storeEncodingForRestoration];
+			[mySQLConnection setEncoding:@"utf8"];
+		}
+
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
 		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
@@ -104,7 +111,8 @@
 		} else {
 			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 				resultRow = [theResult fetchRowAsArray];
-				[tables addObject:[resultRow objectAtIndex:0]];
+				NSString *tableName = [NSString stringWithUTF8String:[[resultRow objectAtIndex:0] cStringUsingEncoding:[mySQLConnection stringEncoding]]];
+				[tables addObject:tableName];
 				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
 					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeView]];
 					tableListContainsViews = YES;
@@ -206,7 +214,11 @@
 				}	
 			}
 		}
-		*/		
+		*/
+
+		// Restore encoding if appropriate
+		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
 		// Notify listeners that the query has finished
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	}
@@ -695,6 +707,12 @@
 {
 	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
 	NSString *tableEncoding = nil;
+	NSString *previousEncoding = [mySQLConnection encoding];
+	BOOL changeEncoding = ![previousEncoding isEqualToString:@"utf8"];
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
+	}
 
 	// Update selection variables and interface
 	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -702,8 +720,11 @@
 										[filteredTableTypes objectAtIndex:[tablesListView selectedRow]], @"type",
 										nil];
 	[self performSelectorOnMainThread:@selector(setSelection:) withObject:selectionDetails waitUntilDone:YES];
-		
-	// Check the encoding if appropriate to determine if an encoding change and reset is required
+
+	// Ensure status information is cached on the working thread	
+	[tableDataInstance updateStatusInformationForCurrentTable];
+
+	// Check the encoding if appropriate to determine if an encoding change is required
 	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 
 		// tableEncoding == nil indicates that there was an error while retrieving table data
@@ -712,16 +733,14 @@
 		// If encoding is set to Autodetect, update the connection character set encoding
 		// based on the newly selected table's encoding - but only if it differs from the current encoding.
 		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] intValue] == SPEncodingAutodetect) {
-			if (tableEncoding != nil && ![tableEncoding isEqualToString:[tableDocumentInstance connectionEncoding]]) {
+			if (tableEncoding != nil && ![tableEncoding isEqualToString:previousEncoding]) {
 				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
-				[tableDataInstance resetAllData];
-				tableEncoding = [tableDataInstance tableEncoding];
+				changeEncoding = NO;
 			}
 		}
 	}
 
-	// Ensure status information is cached on the working thread	
-	[tableDataInstance updateStatusInformationForCurrentTable];
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	// Notify listeners of the table change now that the state is fully set up.
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
@@ -2154,6 +2173,13 @@
 	
 	NSString *tableType = [tableTypeButton title];
 	NSString *tableName = [tableNameField stringValue];
+
+	// Ensure the use of UTF8 when creating new tables
+	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
+	if (changeEncoding) {
+		[mySQLConnection storeEncodingForRestoration];
+		[mySQLConnection setEncoding:@"utf8"];
+	}
 		
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableEncodingButton indexOfSelectedItem] > 0) {
@@ -2226,7 +2252,8 @@
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), @"addRow",
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
-		
+
+		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		[tablesListView reloadData];
 	}
 	

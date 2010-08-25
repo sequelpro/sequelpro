@@ -70,15 +70,6 @@
 }
 
 /**
- * Invoked when the framework is in the process of reconnecting to the server and needs to know 
- * what encoding to use for the connection.
- */
-- (NSString *)onReconnectShouldUseEncoding:(id)connection
-{
-	return _encoding;
-}
-
-/**
  * Invoked when the current connection needs a password from the Keychain.
  */
 - (NSString *)keychainPasswordForConnection:(MCPConnection *)connection

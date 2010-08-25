@@ -295,7 +295,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				else if ([cellData isSPNotLoaded])
 					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
-					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:connectionEncoding];
+					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
 					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
 					if (displayString) {
 						[result appendFormat:@"%@\t", displayString];
@@ -520,7 +520,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
 	Class nsDataClass = [NSData class];
-	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
+	NSStringEncoding connectionEncoding = [mySQLConnection stringEncoding];
 	while ( rowIndex != NSNotFound )
 	{
 		for ( c = 0; c < numColumns; c++) {
@@ -681,7 +681,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 			// Otherwise, ensure the cell is represented as a short string
 			if ([contentString isKindOfClass:[NSData class]]) {
-				contentString = [contentString shortStringRepresentationUsingEncoding:[mySQLConnection encoding]];
+				contentString = [contentString shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 			} else if ([contentString length] > 500) {
 				contentString = [contentString substringToIndex:500];
 			}

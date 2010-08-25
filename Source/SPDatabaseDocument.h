@@ -139,8 +139,6 @@
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
-	NSString *_encoding;
-	BOOL _encodingViaLatin1;
 	BOOL _isConnected;
 	NSInteger _isWorkingLevel;
 	BOOL _mainNibLoaded;
@@ -238,8 +236,6 @@
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
-- (NSString *)connectionEncoding;
-- (BOOL)connectionEncodingViaLatin1:(id)connection;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSNumber *)encodingTag;

@@ -65,7 +65,7 @@
 					  NSLocalizedString(@"Table", @"csv export table heading"),
 					  [[tables objectAtIndex:0] objectAtIndex:0],
 					  lineEnding, 
-					  lineEnding] dataUsingEncoding:[connection encoding]]];
+					  lineEnding] dataUsingEncoding:[connection stringEncoding]]];
 }
 
 /**

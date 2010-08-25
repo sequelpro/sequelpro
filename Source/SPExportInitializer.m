@@ -269,8 +269,8 @@
 		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
-		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
+		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+		sqlPreviousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
 				
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 				
@@ -354,8 +354,8 @@
 		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[tableDocumentInstance connectionEncoding]];
-		sqlPreviousConnectionEncodingViaLatin1 = [tableDocumentInstance connectionEncodingViaLatin1:nil];
+		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+		sqlPreviousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
 		
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 		
@@ -386,7 +386,7 @@
 	for (SPExporter *exporter in exporters)
 	{
 		[exporter setConnection:connection];
-		[exporter setExportOutputEncoding:[connection encoding]];
+		[exporter setExportOutputEncoding:[connection stringEncoding]];
 		[exporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
 		[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
 		[exporter setExportOutputCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];

@@ -94,7 +94,11 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			return nil;
 		}
 		
-		mEncoding = NSISOLatin1StringEncoding;
+		encoding = [[NSString alloc] initWithString:@"latin1"];
+		previousEncoding = nil;
+		stringEncoding = NSISOLatin1StringEncoding;
+		encodingUsesLatin1Transport = NO;
+		previousEncodingUsesLatin1Transport = NO;
 		mConnectionFlags = kMCPConnectionDefaultOption;
         
         // Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings
@@ -401,7 +405,11 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	lastKeepAliveTime = 0;
 	automaticReconnectAttempts = 0;
 	pingFailureCount = 0;
-	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	const char *mysqlStringEncoding = mysql_character_set_name(mConnection);
+	[encoding release];
+	encoding = [[NSString alloc] initWithUTF8String:mysqlStringEncoding];
+	stringEncoding = [MCPConnection encodingForMySQLEncoding:mysqlStringEncoding];
+	encodingUsesLatin1Transport = NO;
 	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
 	[self timeZone]; // Getting the timezone used by the server.
@@ -469,21 +477,13 @@ static BOOL sTruncateLongFieldInLogs = YES;
 - (BOOL)reconnect
 {
 	NSAutoreleasePool *reconnectionPool = [[NSAutoreleasePool alloc] init];
-	NSString *currentEncoding = nil;
-	BOOL currentEncodingUsesLatin1Transport = NO;
+	NSString *currentEncoding = [NSString stringWithString:encoding];
+	BOOL currentEncodingUsesLatin1Transport = encodingUsesLatin1Transport;
 	NSString *currentDatabase = nil;
 	
-	// Store the currently selected database and encoding so they can be re-set if reconnection was successful
+	// Store the currently selected database so it can be re-set if reconnection was successful
 	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldSelectDatabase:)] && [delegate onReconnectShouldSelectDatabase:self]) {
 		currentDatabase = [NSString stringWithString:[delegate onReconnectShouldSelectDatabase:self]];
-	}
-	
-	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
-		currentEncoding = [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]];
-	}
-	
-	if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
-		currentEncodingUsesLatin1Transport = [delegate connectionEncodingViaLatin1:self];
 	}
 	
 	// Close the connection if it exists.
@@ -579,11 +579,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		}
 		
 		if (currentEncoding) {
-			[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", currentEncoding]];
-			[self setEncoding:[MCPConnection encodingForMySQLEncoding:[currentEncoding UTF8String]]];
-			if (currentEncodingUsesLatin1Transport) {
-				[self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
-			}
+			[self setEncoding:currentEncoding];
+			[self setEncodingUsesLatin1Transport:currentEncodingUsesLatin1Transport];
 		}
 	}
 	else {
@@ -653,7 +650,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		// Note that a return of "NO" here has already asked the user, so if reconnect fails,
 		// return failure.
 		if ([self reconnect]) {
-			[self restoreConnectionDetails];
 			return YES;
 		}
 		return NO;
@@ -851,12 +847,8 @@ void performThreadedKeepAlive(void *ptr)
 	connectionStartTime = mach_absolute_time();
 	[self fetchMaxAllowedPacket];
 
-	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldUseEncoding:)]) {
-		[self queryString:[NSString stringWithFormat:@"/*!40101 SET NAMES '%@' */", [NSString stringWithString:[delegate onReconnectShouldUseEncoding:self]]]];
-		if (delegate && [delegate respondsToSelector:@selector(connectionEncodingViaLatin1:)]) {
-			if ([delegate connectionEncodingViaLatin1:self]) [self queryString:@"/*!40101 SET CHARACTER_SET_RESULTS=latin1 */"];
-		}
-	}
+	[self setEncoding:encoding];
+	[self setEncodingUsesLatin1Transport:encodingUsesLatin1Transport];
 }
 
 /**
@@ -1241,7 +1233,11 @@ void performThreadedKeepAlive(void *ptr)
 	}
 	
 	mConnected = YES;
-	mEncoding = [MCPConnection encodingForMySQLEncoding:mysql_character_set_name(mConnection)];
+	const char *mysqlStringEncoding = mysql_character_set_name(mConnection);
+	[encoding release];
+	encoding = [[NSString alloc] initWithUTF8String:mysqlStringEncoding];
+	stringEncoding = [MCPConnection encodingForMySQLEncoding:mysqlStringEncoding];
+	encodingUsesLatin1Transport = NO;
 	
 	// Getting the timezone used by the server.
 	[self timeZone]; 
@@ -1267,6 +1263,14 @@ void performThreadedKeepAlive(void *ptr)
 	if (dbName == nil) return NO;
 	
 	if (mConnected) {
+
+		// Ensure the change is made in UTF8 to avoid encoding problems
+		BOOL changeEncoding = ![[self encoding] isEqualToString:@"utf8"];
+		if (changeEncoding) {
+			[self storeEncodingForRestoration];
+			[self setEncoding:@"utf8"];
+		}
+
 		const char	 *theDBName = [self cStringFromString:dbName];
 		[self lockConnection];
 		if (0 == mysql_select_db(mConnection, theDBName)) {
@@ -1274,6 +1278,8 @@ void performThreadedKeepAlive(void *ptr)
 			return YES;
 		}
 		[self unlockConnection];
+
+		if (changeEncoding) [self restoreStoredEncoding];
 	}
 	
 	[self setLastErrorMessage:nil];
@@ -1391,7 +1397,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (NSString *)prepareString:(NSString *)theString
 {
-	NSData				*theCData = [theString dataUsingEncoding:mEncoding allowLossyConversion:YES];
+	NSData				*theCData = [theString dataUsingEncoding:stringEncoding allowLossyConversion:YES];
 	unsigned long		theLength = [theCData length];
 	// const char			*theCStringBuffer = [self cStringFromString:theString];
 	// unsigned long		theLength = [theString length];
@@ -1407,7 +1413,7 @@ void performThreadedKeepAlive(void *ptr)
 	// theLength = strlen(theCStringBuffer);
 	theCEscBuffer = (char *)calloc(sizeof(char),(theLength * 2) + 1);
 	theEscapedLength = mysql_real_escape_string(mConnection, theCEscBuffer, [theCData bytes], theLength);
-	theReturn = [[NSString alloc] initWithData:[NSData dataWithBytes:theCEscBuffer length:theEscapedLength] encoding:mEncoding];
+	theReturn = [[NSString alloc] initWithData:[NSData dataWithBytes:theCEscBuffer length:theEscapedLength] encoding:stringEncoding];
 	// theReturn = [self stringWithCString:theCEscBuffer];
 	free(theCEscBuffer);
 	
@@ -1456,7 +1462,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPResult *)queryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:MCPStreamingNone];
+	return [self queryString:query usingEncoding:stringEncoding streamingResult:MCPStreamingNone];
 }
 
 /**
@@ -1466,7 +1472,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:MCPStreamingFast];
+	return [self queryString:query usingEncoding:stringEncoding streamingResult:MCPStreamingFast];
 }
 
 /**
@@ -1478,7 +1484,7 @@ void performThreadedKeepAlive(void *ptr)
  */
 - (MCPStreamingResult *)streamingQueryString:(NSString *)query useLowMemoryBlockingStreaming:(BOOL)fullStream
 {
-	return [self queryString:query usingEncoding:mEncoding streamingResult:(fullStream?MCPStreamingLowMem:MCPStreamingFast)];
+	return [self queryString:query usingEncoding:stringEncoding streamingResult:(fullStream?MCPStreamingLowMem:MCPStreamingFast)];
 }
 
 /**
@@ -1603,16 +1609,16 @@ void performThreadedKeepAlive(void *ptr)
 				
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCPStreamingNone) {
-					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:stringEncoding timeZone:mTimeZone];
 					if (!queryCancelled || !queryCancelUsedReconnect) {
                         [self unlockConnection];
                     }
 				
 				// For streaming result sets, fetch the result pointer and leave the connection locked
 				} else if (streamResultType == MCPStreamingFast) {
-					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:NO];
+					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:stringEncoding timeZone:mTimeZone connection:self withFullStreaming:NO];
 				} else if (streamResultType == MCPStreamingLowMem) {
-					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone connection:self withFullStreaming:YES];
+					theResult = [[MCPStreamingResult alloc] initWithMySQLPtr:mConnection encoding:stringEncoding timeZone:mTimeZone connection:self withFullStreaming:YES];
 				}
 				
 				// Ensure no problem occurred during the result fetch
@@ -1922,11 +1928,16 @@ void performThreadedKeepAlive(void *ptr)
 	MYSQL_RES *theResPtr;
 	
 	if (![self checkConnection]) return [[[MCPResult alloc] init] autorelease];
-	
+
+	// Ensure UTF8 - where supported - when getting database list.
+	NSString *currentEncoding = [NSString stringWithString:encoding];
+	BOOL currentEncodingUsesLatin1Transport = encodingUsesLatin1Transport;
+	[self setEncoding:@"utf8"];
+
 	[self lockConnection];
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_dbs(mConnection, NULL)) {
-			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
 			theResult = [[MCPResult alloc] init];
@@ -1936,13 +1947,17 @@ void performThreadedKeepAlive(void *ptr)
 		const char *theCDBsName = (const char *)[self cStringFromString:dbsName];
 		
 		if (theResPtr = mysql_list_dbs(mConnection, theCDBsName)) {
-			theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
 			theResult = [[MCPResult alloc] init];
 		}        
 	}
 	[self unlockConnection];
+
+	// Restore the connection encoding if necessary
+	[self setEncoding:currentEncoding];
+	[self setEncodingUsesLatin1Transport:currentEncodingUsesLatin1Transport];
 	
 	if (theResult) {
 		[theResult autorelease];
@@ -1979,7 +1994,7 @@ void performThreadedKeepAlive(void *ptr)
 	[self lockConnection];
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
 		if (theResPtr = mysql_list_tables(mConnection, NULL)) {
-			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
 			theResult = [[MCPResult alloc] init];
@@ -1988,7 +2003,7 @@ void performThreadedKeepAlive(void *ptr)
 	else {
 		const char	*theCTablesName = (const char *)[self cStringFromString:tablesName];
 		if (theResPtr = mysql_list_tables(mConnection, theCTablesName)) {
-			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding: mEncoding timeZone:mTimeZone];
+			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
 			theResult = [[MCPResult alloc] init];
@@ -2276,7 +2291,7 @@ void performThreadedKeepAlive(void *ptr)
 			unsigned long queryCStringLength;
 
 			// Get the doc encoding due to pref settings etc, defaulting to UTF8
-			NSString *docEncoding = [[self delegate] connectionEncoding];
+			NSString *docEncoding = [self encoding];
 			if (!docEncoding) docEncoding = @"utf8";
 			NSStringEncoding theConnectionEncoding = [MCPConnection encodingForMySQLEncoding:[self cStringFromString:docEncoding]];
 
@@ -2559,7 +2574,7 @@ void performThreadedKeepAlive(void *ptr)
 	
 	if (mConnected && (mConnection != NULL)) {
 		if (theResPtr = mysql_list_processes(mConnection)) {
-			result = [[MCPResult alloc] initWithResPtr:theResPtr encoding:mEncoding timeZone:mTimeZone];
+			result = [[MCPResult alloc] initWithResPtr:theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		} 
 		else {
 			result = [[MCPResult alloc] init];
@@ -2619,23 +2634,118 @@ void performThreadedKeepAlive(void *ptr)
 #pragma mark Encoding
 
 /**
- * Sets the encoding used by the server for data transfer.
- * Used to make sure the output of the query result is ok even for non-ascii characters
- * The character set (encoding) used by the db is passed to the MCPConnection object upon connection,
- * so most likely the encoding (from -encoding) method is already the proper one.
- * That is to say : It's unlikely you will need to call this method directly, and #{if ever you use it, do it at your own risks}.
+ * Sets the encoding for the database connection.
+ * This sends a "SET NAMES" command to the server, as appropriate, and
+ * also updates the class to decode the returned strings correctly.
+ * If an encoding name unsupported by MySQL is encountered, a FALSE
+ * status will be returned, and errors will be updated.
+ * If an encoding name not supported by this class is encountered, a
+ * warning will be logged to console but the MySQL connection will still
+ * be updated.
+ * This resets any setting to use Latin1 transport for the connection.
  */
-- (void)setEncoding:(NSStringEncoding)theEncoding
+- (BOOL)setEncoding:(NSString *)theEncoding
 {
-	mEncoding = theEncoding;
+	if ([theEncoding isEqualToString:encoding] && !encodingUsesLatin1Transport) return YES;
+
+	// MySQL < 4.1 will fail
+	if ([self serverMajorVersion] < 4
+		|| ([self serverMinorVersion] == 4 && [self serverMinorVersion] < 1))
+	{
+		return NO;
+	}
+
+	// Attempt to set the encoding of the connection, restoring the connection on failure
+	[self queryString:[NSString stringWithFormat:@"SET NAMES %@", [theEncoding tickQuotedString]]];
+	if ([self queryErrored]) {
+		[self queryString:[NSString stringWithFormat:@"SET NAMES %@", [encoding tickQuotedString]]];
+		if (encodingUsesLatin1Transport) [self queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
+		return NO;
+	}
+
+	// The connection set was successful - update stored details
+	[encoding release];
+	encoding = [[NSString alloc] initWithString:theEncoding];
+	stringEncoding = [MCPConnection encodingForMySQLEncoding:[encoding UTF8String]];
+	encodingUsesLatin1Transport = NO;
+	return YES;
 }
 
 /**
- * Gets the encoding for the connection
+ * Returns the currently active encoding.
  */
-- (NSStringEncoding)encoding
+- (NSString *)encoding
 {
-	return mEncoding;
+	return [NSString stringWithString:encoding];
+}
+
+/**
+ * Gets the string encoding for the connection
+ */
+- (NSStringEncoding)stringEncoding
+{
+	return stringEncoding;
+}
+
+/**
+ * Sets whether the connection encoding should be transmitted via Latin1.
+ * This is a method purely for backwards compatibility: old codebases or
+ * applications often believed they stored UTF8 data in UTF8 tables, but
+ * for the purposes of storing and reading the data, the MySQL connecttion
+ * was never changed from the default Latin1.  UTF8 data was therefore
+ * altered during transit and stored as UTF8 encoding Latin1 pairs which
+ * together make up extended UTF8 characters.  Reading these characters back
+ * over Latin1 makes the data editable in a compatible fashion.
+ */
+- (BOOL)setEncodingUsesLatin1Transport:(BOOL)useLatin1
+{
+	if (encodingUsesLatin1Transport == useLatin1) return YES;
+
+	// If disabling Latin1 transport, restore the connection encoding
+	if (!useLatin1) return [self setEncoding:encoding];
+
+	// Otherwise attempt to set Latin1 transport
+	[self queryString:@"SET CHARACTER_SET_RESULTS=latin1"];
+	if ([self queryErrored]) return NO;
+	[self queryString:@"SET CHARACTER_SET_CLIENT=latin1"];
+	if ([self queryErrored]) {
+		[self setEncoding:encoding];
+		return NO;
+	}
+	encodingUsesLatin1Transport = YES;
+	return YES;
+}
+
+/**
+ * Return whether the current connection is set to use Latin1 tranport.
+ */
+- (BOOL)encodingUsesLatin1Transport
+{
+	return encodingUsesLatin1Transport;
+}
+
+/**
+ * Store a previous encoding setting.  This allows easy restoration
+ * later - useful if certain tasks require the encoding to be
+ * temporarily changed.
+ */
+- (void)storeEncodingForRestoration
+{
+	if (previousEncoding) [previousEncoding release];
+	previousEncoding = [[NSString alloc] initWithString:encoding];
+	previousEncodingUsesLatin1Transport = encodingUsesLatin1Transport;
+}
+
+/**
+ * Restore a previously stored encoding setting, if one is stored.
+ * Useful if certain tasks required the encoding to be temporarily changed.
+ */
+- (void)restoreStoredEncoding
+{
+	if (!previousEncoding || !mConnected) return;
+
+	[self setEncoding:previousEncoding];
+	[self setEncodingUsesLatin1Transport:previousEncodingUsesLatin1Transport];
 }
 
 #pragma mark -
@@ -2734,7 +2844,7 @@ void performThreadedKeepAlive(void *ptr)
 	[self lockConnection];
 	if (0 == mysql_query(mConnection, queryString)) {
 		if (mysql_field_count(mConnection) != 0) {
-			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:mEncoding timeZone:mTimeZone];
+			MCPResult *r = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:stringEncoding timeZone:mTimeZone];
 			[r setReturnDataAsStrings:YES];
 			NSArray *a = [r fetchRowAsArray];
 			[r autorelease];
@@ -2757,7 +2867,7 @@ void performThreadedKeepAlive(void *ptr)
 - (NSInteger)getMaxAllowedPacket
 {
 	MCPResult *r;
-	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:mEncoding streamingResult:NO];
+	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:stringEncoding streamingResult:NO];
 	if (![[self getLastErrorMessage] isEqualToString:@""]) {
 		if ([self isConnected]) {
 			NSString *errorMessage = [NSString stringWithFormat:@"An error occured while retrieving max_allowed_packet size:\n\n%@", [self getLastErrorMessage]];
@@ -2828,7 +2938,7 @@ void performThreadedKeepAlive(void *ptr)
 		return (const char *)NULL;
 	}
 	
-	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:mEncoding allowLossyConversion:YES]];
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:stringEncoding allowLossyConversion:YES]];
 	[theData increaseLengthBy:1];
 	
 	return (const char *)[theData bytes];
@@ -2864,7 +2974,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (theCString == NULL) return @"";
 	
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
-	theString = [[NSString alloc] initWithData:theData encoding:mEncoding];
+	theString = [[NSString alloc] initWithData:theData encoding:stringEncoding];
 	
 	if (theString) {
 		[theString autorelease];
@@ -2922,7 +3032,7 @@ void performThreadedKeepAlive(void *ptr)
 	
 	if (theTextData == nil) return nil;
 	
-	theString = [[NSString alloc] initWithData:theTextData encoding:mEncoding];
+	theString = [[NSString alloc] initWithData:theTextData encoding:stringEncoding];
 	
 	if (theString) {
 		[theString autorelease];
@@ -2951,6 +3061,8 @@ void performThreadedKeepAlive(void *ptr)
 		[connectionProxy disconnect];
 	}
 
+	[encoding release];
+	if (previousEncoding) [previousEncoding release];
 	[keepAliveTimer invalidate];
 	[keepAliveTimer release];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
