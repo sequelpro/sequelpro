@@ -120,6 +120,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		if ( [self numberOfColumns] - 1 == column) {
 			if([[self delegate] respondsToSelector:@selector(addRowToDB)])
 				[[self delegate] addRowToDB];
+			[[self onMainThread] makeFirstResponder];
 		} else {
 			// Select the next field for editing
 			[self editColumn:column+1 row:row withEvent:nil select:YES];

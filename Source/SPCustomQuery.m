@@ -833,14 +833,6 @@
 		[customQueryView scrollRectToVisible:selectionViewportToRestore];
 	}
 
-	// Restore selection indexes if appropriate
-	if (selectionIndexToRestore) {
-		BOOL previousTableRowsSelectable = tableRowsSelectable;
-		tableRowsSelectable = YES;
-		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-		tableRowsSelectable = previousTableRowsSelectable;
-	}
-
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
@@ -857,7 +849,14 @@
 	}
 
 	[tableDocumentInstance endTask];
+
+	[customQueryView makeFirstResponder];
+	// Restore selection indexes if appropriate
+	if (selectionIndexToRestore)
+		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+
 	[queryRunningPool release];
+
 }
 
 /*
@@ -1897,6 +1896,7 @@
 				[self storeCurrentResultViewForRestoration];
 
 				[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
+				
 			} else {
 				// otherwise, just update the data in the data storage
 				SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
@@ -2273,6 +2273,11 @@
 			[fieldEditor release];
 
 			if ( editData ) [editData release];
+
+			// Preserve focus and restore selection indexes if appropriate
+			[customQueryView makeFirstResponder];
+			if (selectionIndexToRestore)
+				[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 
 			return NO;
 
