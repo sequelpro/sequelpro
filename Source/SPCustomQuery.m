@@ -3454,11 +3454,15 @@
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
 {
 
-	NSString *fieldType;
 	NSUInteger row, column;
 
 	row = [customQueryView editedRow];
 	column = [customQueryView editedColumn];
+
+	if([self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier]] != 1)
+		return NO;
+
+	NSString *fieldType;
 
 	NSDictionary *columnDefinition = nil;
 

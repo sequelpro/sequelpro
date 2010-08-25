@@ -3722,7 +3722,6 @@
 #pragma mark -
 #pragma mark Other methods
 
-
 /*
  * If user selected a table cell which is a blob field and tried to edit it
  * cancel the fieldEditor, display the field editor sheet instead for editing
@@ -3731,11 +3730,15 @@
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
 {
 
-	NSString *fieldType;
 	NSUInteger row, column;
 
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
+
+	if([tableContentView isCellEditingMode] && [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]] != 1)
+		return NO;
+
+	NSString *fieldType;
 
 	// Check if current edited field is a blob
 	if ((fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"])

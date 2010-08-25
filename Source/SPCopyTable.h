@@ -47,6 +47,7 @@
 	SPDataStorage* tableStorage;	// the underlying storage array holding the table data
 
 	NSUserDefaults *prefs;
+
 }
 
 /*!
@@ -146,6 +147,9 @@
  * column definition, using the stored data and the specified font.
  */
 - (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition maxRows:(NSUInteger)rowsToCheck;
+
+- (BOOL)isCellEditingMode;
+- (BOOL)isCellComplex;
 
 @end
 
