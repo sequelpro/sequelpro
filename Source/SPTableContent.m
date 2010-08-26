@@ -3744,6 +3744,7 @@
 			break;
 
 			case 1:
+			return YES;
 			break;
 
 			default:
