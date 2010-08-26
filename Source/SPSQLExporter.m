@@ -135,7 +135,7 @@
 	
 	// Clear errors
 	[self setSqlExportErrors:@""];
-			
+
 	// Copy over the selected item names into tables in preparation for iteration
 	NSMutableArray *targetArray;
 	

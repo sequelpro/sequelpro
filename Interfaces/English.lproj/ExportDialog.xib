@@ -21,12 +21,15 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1183"/>
+			<integer value="1086"/>
+			<integer value="441"/>
+			<integer value="1299"/>
+			<integer value="294"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.brandonwalkin.BWToolkit</string>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+			<string>com.brandonwalkin.BWToolkit</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -56,10 +59,10 @@
 				<string key="NSWindowTitle">Export</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{449, 480}</string>
 				<object class="NSView" key="NSWindowView" id="13817034">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -85,7 +88,7 @@
 										<string key="NSColorName">controlColor</string>
 										<object class="NSColor" key="NSColor" id="1056664274">
 											<int key="NSColorSpace">3</int>
-											<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+											<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 										</object>
 									</object>
 									<reference key="NSTabView" ref="109227463"/>
@@ -251,7 +254,7 @@
 												<object class="NSPopUpButton" id="257072199">
 													<reference key="NSNextResponder" ref="906049809"/>
 													<int key="NSvFlags">268</int>
-													<string key="NSFrame">{{134, 10}, {94, 22}}</string>
+													<string key="NSFrame">{{134, 10}, {232, 22}}</string>
 													<reference key="NSSuperview" ref="906049809"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSPopUpButtonCell" key="NSCell" id="148052048">
@@ -291,7 +294,7 @@
 																<reference ref="422399506"/>
 																<object class="NSMenuItem" id="856388568">
 																	<reference key="NSMenu" ref="58358184"/>
-																	<string key="NSTitle">Gzip</string>
+																	<string key="NSTitle">Gzip (Very fast, good compression)</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSKeyEquivModMask">1048576</int>
 																	<int key="NSMnemonicLoc">2147483647</int>
@@ -303,7 +306,7 @@
 																</object>
 																<object class="NSMenuItem" id="846378668">
 																	<reference key="NSMenu" ref="58358184"/>
-																	<string key="NSTitle">Bzip2</string>
+																	<string key="NSTitle">Bzip2 (Slower, very good compression)</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSKeyEquivModMask">1048576</int>
 																	<int key="NSMnemonicLoc">2147483647</int>
@@ -430,10 +433,11 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{449, 480}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{449, 502}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">SPExportWindow</string>
 			</object>
 			<object class="NSWindowTemplate" id="480162967">
@@ -446,10 +450,10 @@
 				<object class="NSMutableString" key="NSViewClass">
 					<characters key="NS.bytes">View</characters>
 				</object>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{213, 50}</string>
 				<object class="NSView" key="NSWindowView" id="217849587">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -567,10 +571,11 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{379, 139}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{213, 72}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSWindowTemplate" id="172544148">
 				<int key="NSWindowStyleMask">9</int>
@@ -582,10 +587,10 @@
 				<object class="NSMutableString" key="NSViewClass">
 					<characters key="NS.bytes">View</characters>
 				</object>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{213, 107}</string>
 				<object class="NSView" key="NSWindowView" id="487307915">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -766,10 +771,11 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{405, 267}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{213, 129}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSCustomView" id="1039688935">
 				<reference key="NSNextResponder"/>
@@ -1884,16 +1890,15 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 												<object class="NSComboTableView" key="NSTableView" id="343222687">
 													<reference key="NSNextResponder"/>
 													<int key="NSvFlags">274</int>
-													<string key="NSFrameSize">{31, 54}</string>
+													<string key="NSFrameSize">{13, 54}</string>
 													<reference key="NSSuperview"/>
 													<reference key="NSWindow"/>
-													<reference key="NSNextKeyView"/>
 													<bool key="NSEnabled">YES</bool>
 													<object class="NSMutableArray" key="NSTableColumns">
 														<bool key="EncodedWithXMLCoder">YES</bool>
 														<object class="NSTableColumn">
 															<integer value="0" key="NSIdentifier"/>
-															<double key="NSWidth">28</double>
+															<double key="NSWidth">10</double>
 															<double key="NSMinWidth">10</double>
 															<double key="NSMaxWidth">1000</double>
 															<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -1947,7 +1952,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 													</object>
 													<double key="NSRowHeight">16</double>
 													<string key="NSAction">tableViewAction:</string>
-													<int key="NSTvFlags">-767524864</int>
+													<int key="NSTvFlags">-765427712</int>
 													<reference key="NSDelegate" ref="24725207"/>
 													<reference key="NSDataSource" ref="24725207"/>
 													<reference key="NSTarget" ref="24725207"/>
@@ -2650,7 +2655,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<reference key="NSBackgroundColor" ref="985041161"/>
 										<reference key="NSGridColor" ref="60183875"/>
 										<double key="NSRowHeight">17</double>
-										<int key="NSTvFlags">306184192</int>
+										<int key="NSTvFlags">314572800</int>
 										<reference key="NSDelegate"/>
 										<reference key="NSDataSource"/>
 										<int key="NSColumnAutoresizingStyle">5</int>
@@ -5385,7 +5390,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{475, 44}, {94, 54}}</string>
+					<string>{{537, 168}, {267, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5731,7 +5736,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
 							<string>switchInput:</string>
-							<string>switchTab:</string>
 							<string>toggleAdvancedExportOptionsView:</string>
 							<string>toggleCustomFilenameFormatView:</string>
 							<string>toggleSQLIncludeContent:</string>
@@ -5740,7 +5744,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5770,7 +5773,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>refreshTableList:</string>
 							<string>selectDeselectAllTables:</string>
 							<string>switchInput:</string>
-							<string>switchTab:</string>
 							<string>toggleAdvancedExportOptionsView:</string>
 							<string>toggleCustomFilenameFormatView:</string>
 							<string>toggleSQLIncludeContent:</string>
@@ -5813,10 +5815,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">switchInput:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">switchTab:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -6233,6 +6231,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPExportController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPExportFileUtilities.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -6752,6 +6757,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Print.framework/Headers/PDEPluginInterface.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">PrintCore.framework/Headers/PDEPluginInterface.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

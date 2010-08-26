@@ -397,8 +397,11 @@
 	
 	// Create the actual file handles while dealing with errors (e.g. file already exists, etc) during creation
 	for (SPExportFile *exportFile in exportFiles)
-	{		
+	{
 		if ([exportFile createExportFileHandle:NO] == SPExportFileHandleCreated) {
+
+			// TODO: these will not currently get triggered if there's an error in creating the files - eg when the user later chooses "overwrite".
+			[exportFile setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 			if ([exportFile exportFileNeedsCSVHeader]) {
 				[self writeCSVHeaderToExportFile:exportFile];
 			}

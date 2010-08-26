@@ -168,6 +168,22 @@
 	return exportFileHandleStatus;
 }
 
+/**
+ * Sets the compression level on the newly created file. Throws an exception
+ * if attempting to set the compression level when no file handle exists.
+ *
+ * @param fileCompressionFormat The compression level to support, from the SPFileCompressionFormat enum.
+ */
+- (void)setCompressionFormat:(SPFileCompressionFormat)fileCompressionFormat
+{
+	if (![self exportFileHandle]) {
+		[NSException raise:NSInternalInconsistencyException format:@"Attempting to set compression level of an uninitialized file handle."];
+		return;
+	}
+
+	[[self exportFileHandle] setShouldWriteWithCompressionFormat:fileCompressionFormat];
+}
+
 #pragma mark -
 #pragma mark Private API
 
