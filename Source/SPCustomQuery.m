@@ -1808,9 +1808,6 @@
 {
 	if (aTableView == customQueryView) {
 
-		// Field editing
-		if (fieldIDQueryString == nil) return;
-
 		NSDictionary *columnDefinition;
 
 		// Retrieve the column defintion
@@ -1837,9 +1834,8 @@
 		fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
 
 		// Check if the IDstring identifies the current field bijectively
-		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
+		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
 		if(numberOfPossibleUpdateRows == 1) {
-			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 			NSString *newObject = nil;
 			if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
@@ -1865,10 +1861,8 @@
 
 			[mySQLConnection queryString:
 				[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1",
-					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
-					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
-
-			// [[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [[columnDefinition objectForKey:@"org_table"] backtickQuotedString],
+					[[columnDefinition objectForKey:@"db"] backtickQuotedString], [[columnDefinition objectForKey:@"org_table"] backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryString]];
 
 			// Check for errors while UPDATE
 			if ([mySQLConnection queryErrored]) {
@@ -1877,7 +1871,6 @@
 
 				return;
 			}
-
 
 			// This shouldn't happen – for safety reasons
 			if ( ![mySQLConnection affectedRows] ) {
@@ -1894,17 +1887,15 @@
 			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
 				reloadingExistingResult = YES;
 				[self storeCurrentResultViewForRestoration];
-
 				[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
-				
 			} else {
 				// otherwise, just update the data in the data storage
 				SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
 			}
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"),
-										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
+							  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field of table `%@` was changed.", @"message of panel when error while updating field to db after enabling it"),
+										(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", [columnDefinition objectForKey:@"org_table"]]);
 
 		}
 
@@ -2189,12 +2180,9 @@
 	// Check if the field can identified bijectively
 	if ( aTableView == customQueryView ) {
 
-
 		NSDictionary *columnDefinition;
-		BOOL noTableName = NO;
-		BOOL isFieldEditable;
-		BOOL isBlob;
-		NSInteger numberOfPossibleUpdateRows = -1;
+		BOOL isFieldEditable = NO;
+		BOOL isBlob = NO;
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
@@ -2211,38 +2199,51 @@
 		else
 			isBlob = NO;
 
-		// Resolve the original table name for current column if AS was used
-		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
-
-		// Get the database name which the field belongs to
-		NSString *dbForColumn = [columnDefinition objectForKey:@"db"];
-
-		// No table/database name found indicates that the field's column contains data from more than one table as for UNION
-		// or the field data are not bound to any table as in SELECT 1 or if column database is unset
-		if(!tableForColumn || ![tableForColumn length] || ![dbForColumn length])
-			noTableName = YES;
-
-		if(!noTableName) {
-			// if table and database name are given check if field can be identified unambiguously
-			fieldIDQueryString = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
-
-			// Actual check whether field can be identified bijectively
-			numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryString]] fetchRowAsArray] objectAtIndex:0] integerValue];
-
-			isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
-
-			if(!isFieldEditable)
-				if(numberOfPossibleUpdateRows == 0)
-					[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found. Try to add the primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row"), tableForColumn]];
-				else
-			 		[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Custom Query result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]];
-
-		} else {
-			// no table/databse name are given
+		// Check if the clicked table field is editable
+		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+		isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
+		NSPoint pos = [NSEvent mouseLocation];
+		pos.y -= 20;
+		switch(numberOfPossibleUpdateRows) {
+			case -1:
 			isFieldEditable = NO;
 			fieldIDQueryString = nil;
-		 	[errorText setStringValue:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")];
+			[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
+					atLocation:pos
+					ofType:@"text"];
+			isFieldEditable = NO;
+			// Allow to display blobs even it's not editable
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return NO;
+			break;
+
+			case 0:
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, [columnDefinition objectForKey:@"org_table"]]
+					atLocation:pos
+					ofType:@"text"];
+			isFieldEditable = NO;
+			// Allow to display blobs even it's not editable
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return NO;
+			break;
+
+			case 1:
+			isFieldEditable = YES;
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return YES;
+			break;
+
+			default:
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+					atLocation:pos
+					ofType:@"text"];
+			isFieldEditable = NO;
+			// Allow to display blobs even it's not editable
+			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
+				return NO;
+
 		}
+
 
 		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 
@@ -3414,6 +3415,10 @@
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
+		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found. Reload data, check encoding, or try to add a primary key field or more fields in your SELECT statement for table '%@' to identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row");
+		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
+		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Custom Query result editing error - could not match row being edited uniquely");
+
 	}
 
 	return self;
@@ -3460,16 +3465,10 @@
 {
 
 	NSUInteger row, column;
+	NSDictionary *columnDefinition = nil;
 
 	row = [customQueryView editedRow];
 	column = [customQueryView editedColumn];
-
-	if([self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier]] != 1)
-		return NO;
-
-	NSString *fieldType;
-
-	NSDictionary *columnDefinition = nil;
 
 	// Retrieve the column defintion
 	for(id c in cqColumnDefinition) {
@@ -3480,6 +3479,35 @@
 	}
 
 	if(!columnDefinition) return NO;
+
+	NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier]];
+	NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[customQueryView convertPoint:[customQueryView frameOfCellAtColumn:column row:row].origin toView:nil]];
+	pos.y -= 20;
+	switch(numberOfPossibleUpdateRows) {
+		case -1:
+		[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
+				atLocation:pos
+				ofType:@"text"];
+		return NO;
+		break;
+		case 0:
+		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, [columnDefinition objectForKey:@"org_table"]]
+				atLocation:pos
+				ofType:@"text"];
+		return NO;
+		break;
+
+		case 1:
+		break;
+
+		default:
+		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+				atLocation:pos
+				ofType:@"text"];
+		return NO;
+	}
+
+	NSString *fieldType;
 
 	BOOL isBlob = NO;
 
@@ -3505,6 +3533,9 @@
 		return NO;
 
 	}
+
+	// Set editing color to black for NULL values while editing
+	[fieldEditor setTextColor:[NSColor blackColor]];
 
 	return YES;
 

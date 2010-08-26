@@ -160,6 +160,11 @@
 	NSTimer *queryLoadTimer;
 	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
 	NSInteger runAllContinueStopSheetReturnCode;
+
+	NSString *kCellEditorErrorNoMatch;
+	NSString *kCellEditorErrorNoMultiTabDb;
+	NSString *kCellEditorErrorTooManyMatches;
+
 }
 
 // IBAction methods

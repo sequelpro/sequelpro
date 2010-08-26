@@ -125,6 +125,9 @@
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
 		}
 
+		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row");
+		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
+		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely");
 
 	}
 
@@ -3465,7 +3468,7 @@
 		pos.y -= 20;
 		switch(numberOfPossibleUpdateRows) {
 			case -1:
-			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
+			[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
 					atLocation:pos
 					ofType:@"text"];
 			isFieldEditable = NO;
@@ -3475,7 +3478,7 @@
 			break;
 
 			case 0:
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), selectedTable]
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, selectedTable]
 					atLocation:pos
 					ofType:@"text"];
 
@@ -3492,7 +3495,7 @@
 			break;
 
 			default:
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
 					atLocation:pos
 					ofType:@"text"];
 
@@ -3552,7 +3555,7 @@
 
 		if (editData) [editData release];
 
-		[[tableContentView onMainThread] makeFirstResponder];
+		[tableContentView makeFirstResponder];
 
 		return NO;
 	}
@@ -3720,18 +3723,22 @@
 
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
-	NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
-	if([tableContentView isCellEditingMode] && numberOfPossibleUpdateRows != 1) {
+
+	// If cell editing mode and editing request comes 
+	// from the keyboard show an error tooltip
+	// or bypass if numberOfPossibleUpdateRows == 1
+	if([tableContentView isCellEditingMode]) {
+		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
 		NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
 		pos.y -= 20;
 		switch(numberOfPossibleUpdateRows) {
 			case -1:
-			[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
+			[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
 					atLocation:pos
 					ofType:@"text"];
 			break;
 			case 0:
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. No matching record found.\nReload table or try to add a primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row"), selectedTable]
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, selectedTable]
 					atLocation:pos
 					ofType:@"text"];
 			break;
@@ -3740,7 +3747,7 @@
 			break;
 
 			default:
-			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Table Content result editing error - could not match row being edited uniquely"), (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
 					atLocation:pos
 					ofType:@"text"];
 		}

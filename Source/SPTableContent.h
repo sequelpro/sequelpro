@@ -107,6 +107,10 @@
 	NSString *fieldIDQueryString;
 	BOOL isFirstChangeInView;
 
+	NSString *kCellEditorErrorNoMatch;
+	NSString *kCellEditorErrorNoMultiTabDb;
+	NSString *kCellEditorErrorTooManyMatches;
+
 }
 
 // Table loading methods and information
