@@ -180,7 +180,16 @@
 		{
 			if ([file exportFileHandleStatus] == SPExportFileHandleExists) {
 				
-				[file createExportFileHandle:YES];
+				if ([file createExportFileHandle:YES] == SPExportFileHandleCreated) {
+					[file setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+					
+					if ([file exportFileNeedsCSVHeader]) {
+						[self writeCSVHeaderToExportFile:file];
+					}
+					else if ([file exportFileNeedsXMLHeader]) {
+						[self writeXMLHeaderToExportFile:file];
+					}
+				}
 			}
 		}
 		
