@@ -144,6 +144,7 @@
 	BOOL reloadingExistingResult;
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
+	BOOL isFieldEditable;
 	NSNumber *sortField;
 
 	NSIndexSet *selectionIndexToRestore;
@@ -240,8 +241,8 @@
 - (void)commentOut;
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database;
-- (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 - (NSUInteger)numberOfQueries;
 
 - (NSString *)buildHistoryString;

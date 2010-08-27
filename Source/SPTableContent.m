@@ -3462,47 +3462,42 @@
 	// If a data come from a view check if the clicked table field is editable
 	if([tablesListInstance tableType] == SPTableTypeView) {
 
+		// Show tooltips only here if edit request came from mouse event
+		BOOL requestCameFromMouse = ([[NSApp currentEvent] type] == NSKeyDown) ? NO : YES;
+
 		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
 		isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
 		NSPoint pos = [NSEvent mouseLocation];
 		pos.y -= 20;
 		switch(numberOfPossibleUpdateRows) {
 			case -1:
-			[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
+			if(requestCameFromMouse)
+				[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
 					atLocation:pos
 					ofType:@"text"];
 			isFieldEditable = NO;
-			// Allow to display blobs even it's not editable
-			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
-				return NO;
 			break;
 
 			case 0:
-			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, selectedTable]
+			if(requestCameFromMouse)
+				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, selectedTable]
 					atLocation:pos
 					ofType:@"text"];
 
 			isFieldEditable = NO;
-			// Allow to display blobs even it's not editable
-			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
-				return NO;
 			break;
 
 			case 1:
 			isFieldEditable = YES;
-			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
-				return YES;
 			break;
 
 			default:
-			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+			if(requestCameFromMouse)
+				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
 					atLocation:pos
 					ofType:@"text"];
 
 			isFieldEditable = NO;
-			// Allow to display blobs even it's not editable
-			if(!isBlob && [multipleLineEditingButton state] == NSOffState)
-				return NO;
 
 		}
 
@@ -3720,6 +3715,7 @@
 {
 
 	NSUInteger row, column;
+	BOOL shouldBeginEditing = YES;
 
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
@@ -3736,24 +3732,25 @@
 			[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
 					atLocation:pos
 					ofType:@"text"];
+			shouldBeginEditing = NO;
 			break;
 			case 0:
 			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, selectedTable]
 					atLocation:pos
 					ofType:@"text"];
+			shouldBeginEditing = NO;
 			break;
 
 			case 1:
-			return YES;
+			shouldBeginEditing = YES;
 			break;
 
 			default:
 			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
 					atLocation:pos
 					ofType:@"text"];
+			shouldBeginEditing = NO;
 		}
-
-		return NO;
 
 	}
 
@@ -3776,7 +3773,7 @@
 
 	}
 
-	return YES;
+	return shouldBeginEditing;
 
 }
 
