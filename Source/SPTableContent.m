@@ -1364,7 +1364,7 @@
  * Collect all columns for a given 'tableForColumn' table and
  * return a WHERE clause for identifying the field in quesyion.
  */
-- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database
+- (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs
 {
 	NSArray *dataRow;
 	NSDictionary *theRow;
@@ -1411,20 +1411,25 @@
 	for(field in columnsForFieldTableName) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
-			[fieldIDQueryStr appendFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			[fieldIDQueryStr appendFormat:@"%@ IS NULL AND ", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
-			[fieldIDQueryStr appendFormat:@"%@=", [[field objectForKey:@"org_name"] backtickQuotedString]];
-			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"])
-				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-				[fieldIDQueryStr appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:aValue]];
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"])
-				[fieldIDQueryStr appendFormat:@"%@", [aValue description]];
-			else
-				[fieldIDQueryStr appendFormat:@"'%@'", [mySQLConnection prepareString:aValue]];
+			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"]) {
+				if(includeBlobs) {
+					[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
+				}
+			}
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
+				if(includeBlobs) {
+					[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
+				}
+			}
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"]) {
+				[fieldIDQueryStr appendFormat:@"%@=%@ AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
+			}
+			else {
+				[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
+			}
 		}
-
-		[fieldIDQueryStr appendString:@" AND "];
 	}
 	// Remove last " AND "
 	if([fieldIDQueryStr length]>12)
@@ -2615,10 +2620,12 @@
 
 /*
  * Check if table cell is editable
- * Returns the number of possible changes or
+ * Returns as array the minimum number of possible changes or
  * -1 if no table name can be found or multiple table origins
+ * -2 for other errors
+ * and the used WHERE clause to identify
  */
-- (NSInteger)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
 {
 	NSDictionary *columnDefinition = nil;
 
@@ -2631,7 +2638,7 @@
 	}
 
 	if(!columnDefinition)
-		return -2;
+		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-2], @"", nil];
 
 	// Resolve the original table name for current column if AS was used
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
@@ -2642,32 +2649,62 @@
 	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
 	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
 	if(!tableForColumn || ![tableForColumn length] || !dbForColumn || ![dbForColumn length])
-		return -1;
+		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 
 	// if table and database name are given check if field can be identified unambiguously
-	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
+	// first without blob data
+	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:NO];
 	if(!fieldIDQueryStr)
-		return -1;
+		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
-	// Actual check whether field can be identified bijectively
+	// Actual check whether field can be identified bijectively 
 	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
 		[[columnDefinition objectForKey:@"db"] backtickQuotedString],
 		[tableForColumn backtickQuotedString],
 		fieldIDQueryStr]];
 
-	[tableDocumentInstance endTask];
-
-	if ([mySQLConnection queryErrored])
-		return -1;
+	if ([mySQLConnection queryErrored]) {
+		[tableDocumentInstance endTask];
+		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+	}
 
 	NSArray *tempRow = [tempResult fetchRowAsArray];
 
-	if(![tempRow count])
-		return -1;
+	if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] > 1) {
+		// try to identify the cell by using blob data
+		fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:YES];
+		if(!fieldIDQueryStr) {
+			[tableDocumentInstance endTask];
+			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		}
 
-	return [[tempRow objectAtIndex:0] integerValue];
+		tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
+			[[columnDefinition objectForKey:@"db"] backtickQuotedString],
+			[tableForColumn backtickQuotedString],
+			fieldIDQueryStr]];
+
+		if ([mySQLConnection queryErrored]) {
+			[tableDocumentInstance endTask];
+			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		}
+
+		tempRow = [tempResult fetchRowAsArray];
+
+		if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] < 1) {
+			[tableDocumentInstance endTask];
+			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		}
+		
+	}
+
+	[tableDocumentInstance endTask];
+
+	if(fieldIDQueryStr == nil)
+		fieldIDQueryStr = @"";
+
+	return [NSArray arrayWithObjects:[NSNumber numberWithInteger:[[tempRow objectAtIndex:0] integerValue]], fieldIDQueryStr, nil];
 
 }
 
@@ -3152,10 +3189,10 @@
 
 		[self storeCurrentDetailsForRestoration];
 
-		NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"]];
-
-		// Check if the IDstring identifies the current field bijectively
-		NSInteger numberOfPossibleUpdateRows = [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@", [[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], fieldIDQueryStr]] fetchRowAsArray] objectAtIndex:0] integerValue];
+		// Check if the IDstring identifies the current field bijectively and get the WHERE clause
+		NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+		NSString *fieldIDQueryStr = [editStatus objectAtIndex:1];
+		NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 
 		if(numberOfPossibleUpdateRows == 1) {
 
@@ -3433,128 +3470,93 @@
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
-	// Ensure that row is editable since it could contain "(not loaded)" columns together with
-	// issue that the table has no primary key
-	NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
-	if ([wherePart length] == 0) return NO;
+	if ( aTableView == tableContentView ) {
+		
+		// Ensure that row is editable since it could contain "(not loaded)" columns together with
+		// issue that the table has no primary key
+		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
+		if ([wherePart length] == 0) return NO;
 
-	// If the selected cell hasn't been loaded, load it.
-	if ([[tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]] isSPNotLoaded]) {
+		// If the selected cell hasn't been loaded, load it.
+		if ([[tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]] isSPNotLoaded]) {
 
-		// Only get the data for the selected column, not all of them
-		NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
+			// Only get the data for the selected column, not all of them
+			NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
 
-		MCPResult *tempResult = [mySQLConnection queryString:query];
-		if (![tempResult numOfRows]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
+			MCPResult *tempResult = [mySQLConnection queryString:query];
+			if (![tempResult numOfRows]) {
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
+				return NO;
+			}
+
+			NSArray *tempRow = [tempResult fetchRowAsArray];
+			[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
+			[tableContentView reloadData];
+		}
+
+		BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
+		BOOL isFieldEditable = YES;
+
+
+		// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
+		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
+
+			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+			isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
+
+			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+
+			[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
+
+			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+			if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+
+			id editData = [[fieldEditor editWithObject:cellValue
+									 	 fieldName:[[aTableColumn headerCell] stringValue]
+									 usingEncoding:[mySQLConnection stringEncoding]
+									  isObjectBlob:isBlob 
+										isEditable:isFieldEditable 
+										withWindow:[tableDocumentInstance parentWindow]] retain];
+
+			if (editData) {
+				if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
+					[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
+					isEditingRow = YES;
+					currentlyEditingRow = rowIndex;
+				}
+
+				if ([editData isKindOfClass:[NSString class]]
+					&& [editData isEqualToString:[prefs objectForKey:SPNullValue]]
+					&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]) objectForKey:@"null"] boolValue])
+				{
+					[editData release];
+					editData = [[NSNull null] retain];
+				}
+				if(isFieldEditable) {
+					if([tablesListInstance tableType] == SPTableTypeView) {
+						// since in a view we're editing a field rather than a row
+						isEditingRow = NO;
+						// update the field and refresh the table
+						[self tableView:aTableView setObjectValue:[[editData copy] autorelease] forTableColumn:aTableColumn row:rowIndex];
+					} else {
+						[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
+					}
+				}
+			}
+
+			[fieldEditor release];
+
+			if (editData) [editData release];
+
+			[tableContentView makeFirstResponder];
+
 			return NO;
 		}
 
-		NSArray *tempRow = [tempResult fetchRowAsArray];
-		[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
-		[tableContentView reloadData];
+		return YES;
 	}
-
-	BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
-	BOOL isFieldEditable = YES;
-
-	// If a data come from a view check if the clicked table field is editable
-	if([tablesListInstance tableType] == SPTableTypeView) {
-
-		// Show tooltips only here if edit request came from mouse event
-		BOOL requestCameFromMouse = ([[NSApp currentEvent] type] == NSKeyDown) ? NO : YES;
-
-		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
-		isFieldEditable = (numberOfPossibleUpdateRows == 1) ? YES : NO;
-		NSPoint pos = [NSEvent mouseLocation];
-		pos.y -= 20;
-		switch(numberOfPossibleUpdateRows) {
-			case -1:
-			if(requestCameFromMouse)
-				[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
-					atLocation:pos
-					ofType:@"text"];
-			isFieldEditable = NO;
-			break;
-
-			case 0:
-			if(requestCameFromMouse)
-				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, selectedTable]
-					atLocation:pos
-					ofType:@"text"];
-
-			isFieldEditable = NO;
-			break;
-
-			case 1:
-			isFieldEditable = YES;
-			break;
-
-			default:
-			if(requestCameFromMouse)
-				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
-					atLocation:pos
-					ofType:@"text"];
-
-			isFieldEditable = NO;
-
-		}
-
-	}
-
-	// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-	if ([multipleLineEditingButton state] == NSOnState || isBlob) {
-
-		SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
-
-		[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
-
-		id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
-		if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
-
-		id editData = [[fieldEditor editWithObject:cellValue
-								 	 fieldName:[[aTableColumn headerCell] stringValue]
-								 usingEncoding:[mySQLConnection stringEncoding]
-								  isObjectBlob:isBlob 
-									isEditable:isFieldEditable 
-									withWindow:[tableDocumentInstance parentWindow]] retain];
-
-		if (editData) {
-			if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
-				[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
-				isEditingRow = YES;
-				currentlyEditingRow = rowIndex;
-			}
-
-			if ([editData isKindOfClass:[NSString class]]
-				&& [editData isEqualToString:[prefs objectForKey:SPNullValue]]
-				&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]) objectForKey:@"null"] boolValue])
-			{
-				[editData release];
-				editData = [[NSNull null] retain];
-			}
-			if(isFieldEditable) {
-				if([tablesListInstance tableType] == SPTableTypeView) {
-					// since in a view we're editing a field rather than a row
-					isEditingRow = NO;
-					// update the field and refresh the table
-					[self tableView:aTableView setObjectValue:[[editData copy] autorelease] forTableColumn:aTableColumn row:rowIndex];
-				} else {
-					[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
-				}
-			}
-		}
-
-		[fieldEditor release];
-
-		if (editData) [editData release];
-
-		[tableContentView makeFirstResponder];
-
-		return NO;
-	}
-
+	
 	return YES;
 }
 
@@ -3724,7 +3726,8 @@
 	// from the keyboard show an error tooltip
 	// or bypass if numberOfPossibleUpdateRows == 1
 	if([tableContentView isCellEditingMode]) {
-		NSInteger numberOfPossibleUpdateRows = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
+		NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
+		NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 		NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
 		pos.y -= 20;
 		switch(numberOfPossibleUpdateRows) {
