@@ -235,7 +235,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 }
 
 /**
- * Ask the delegate for the connection lost decision, on the main thread.
+ * Ask the delegate for the connection lost decision.  This can be called from
+ * any thread, and will call itself on the main thread if necessary, updating a global
+ * variable which is then returned on the child thread.
  */
 - (MCPConnectionCheck)delegateDecisionForLostConnection
 {
@@ -245,8 +247,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 	lastDelegateDecisionForLostConnection = NSNotFound;
 
-	// If on the main thread, ask the delegate directly.  Perform this in an NSLock to confirm thread safety,
-	// as this method may be called within itself.
+	// If on the main thread, ask the delegate directly.
+	// This is wrapped in a NSLock to ensure variables are completely committed for
+	// thread-safe access, even though the lock is constrained to this code block.
 	if ([NSThread isMainThread]) {
 		NSLock *delegateDecisionLock = [[NSLock alloc] init];
 		[delegateDecisionLock lock];
@@ -256,6 +259,10 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 	// Otherwise call ourself on the main thread, waiting until the reply is received.
 	} else {
+
+		// First check whether the application is in a modal state; if so, wait
+		while ([NSApp modalWindow]) usleep(100000);
+
 		[self performSelectorOnMainThread:@selector(delegateDecisionForLostConnection) withObject:nil waitUntilDone:YES];
 	}
 
