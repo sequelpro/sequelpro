@@ -456,7 +456,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		// Small pause for cleanup.
 		usleep(100000);
-		mysql_close(mConnection);
+		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
@@ -495,7 +495,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	// Close the connection if it exists.
 	if (mConnected) {
-		mysql_close(mConnection);
+		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
@@ -1220,7 +1220,7 @@ void performThreadedKeepAlive(void *ptr)
 	
 	if (mConnected) {
 		// Disconnect if it was already connected
-		mysql_close(mConnection);
+		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 		mConnected = NO;
 		[self init];
