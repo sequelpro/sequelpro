@@ -62,7 +62,7 @@
 	[mySQLConnection retain];
 }
 
- 
+
 /*
  * Retrieve the encoding for the current table, using or refreshing the cache as appropriate.
  */
@@ -86,7 +86,7 @@
 	if (tableCreateSyntax == nil) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
-		} 
+		}
 		else {
 			[self updateInformationForCurrentTable];
 		}
@@ -141,7 +141,7 @@
  * Retrieve a column with a specified name, using or refreshing the cache as appropriate.
  */
 - (NSDictionary *) columnWithName:(NSString *)colName
-{	
+{
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -159,7 +159,7 @@
  * Retrieve column names for the current table as an array, using or refreshing the cache as appropriate.
  */
 - (NSArray *) columnNames
-{	
+{
 	if ([columnNames count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -175,7 +175,7 @@
  * Retrieve a specified column for the current table as a dictionary, using or refreshing the cache as appropriate.
  */
 - (NSDictionary *) columnAtIndex:(NSInteger)index
-{	
+{
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -186,13 +186,13 @@
 	return [columns objectAtIndex:index];
 }
 
-/* 
+/*
  * Checks if this column is type text or blob.
  * Used to determine if we have to show a popup when we edit a value from this column.
  */
 
 - (BOOL) columnIsBlobOrText:(NSString *)colName
-{	
+{
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -200,7 +200,7 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	
+
 	return (BOOL) ([[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"textdata" ] || [[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
 }
 
@@ -221,7 +221,7 @@
  * via other means and are subsequently more accurate than the value currently set.
  */
 - (void)setStatusValue:(NSString *)value forKey:(NSString *)key
-{		
+{
 	[status setValue:value forKey:key];
 }
 
@@ -246,17 +246,17 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[status removeAllObjects];
-	
+
 	if (triggers != nil) {
 		[triggers release];
 		triggers = nil;
 	}
-	
+
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 		tableEncoding = nil;
 	}
-	
+
 	if (tableCreateSyntax != nil) {
 		[tableCreateSyntax release];
 		tableCreateSyntax = nil;
@@ -292,15 +292,15 @@
 	NSDictionary *tableData = nil;
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
-	
+
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
 
-	if( [tableListInstance tableType] == SPTableTypeTable || [tableListInstance tableType] == SPTableTypeView ) {		
+	if( [tableListInstance tableType] == SPTableTypeTable || [tableListInstance tableType] == SPTableTypeView ) {
 		tableData = [self informationForTable:[tableListInstance tableName]];
 	}
-	
+
 	if (tableData == nil ) {
 		return FALSE;
 	}
@@ -311,7 +311,7 @@
 	while (columnData = [enumerator nextObject]) {
 		[columnNames addObject:[NSString stringWithString:[columnData objectForKey:@"name"]]];
 	}
-	
+
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 	}
@@ -330,7 +330,7 @@
  * Returns a boolean indicating success.
  */
 - (NSDictionary *) informationForTable:(NSString *)tableName
-{	
+{
 	SPSQLParser *createTableParser, *fieldsParser, *fieldParser;
 	NSMutableArray *tableColumns, *fieldStrings;
 	NSMutableDictionary *tableColumn, *tableData;
@@ -342,7 +342,7 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
-	
+
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
 
@@ -355,11 +355,11 @@
 	// Retrieve the CREATE TABLE syntax for the table
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
-	
+
 	// Check for any errors, but only display them if a connection still exists
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
@@ -370,18 +370,18 @@
 			}
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
-		
+
 		return nil;
 	}
 
 	// Retrieve the table syntax string
 	NSArray *syntaxResult = [theResult fetchRowAsArray];
 	NSArray *resultFieldNames = [theResult fetchFieldNames];
-	
-	// Only continue if syntaxResult is not nil. This accommodates causes where the above query caused the 
+
+	// Only continue if syntaxResult is not nil. This accommodates causes where the above query caused the
 	// connection reconnect dialog to appear and the user chose to close the connection.
 	if (!syntaxResult) return nil;
-	
+
 	if (tableCreateSyntax != nil) [tableCreateSyntax release], tableCreateSyntax = nil;
 
 	// A NULL value indicates that the user does not have permission to view the syntax
@@ -410,7 +410,7 @@
 	tableColumns = [[NSMutableArray alloc] init];
 	tableColumn = [[NSMutableDictionary alloc] init];
 	fieldParser = [[SPSQLParser alloc] init];
-	
+
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
 	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
@@ -461,18 +461,18 @@
 																];
 			}
 			[fieldsParser setIgnoreCommentStrings:NO];
-			
+
 			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
 			[tableColumn addEntriesFromDictionary:[self parseFieldDefinitionStringParts:[fieldsParser splitStringByCharacter:' ' skippingBrackets:YES]]];
-			
+
 			//if column is not null, but doesn't have a default value, set empty string
 			if([[tableColumn objectForKey:@"null"] integerValue] == 0 && [[tableColumn objectForKey:@"autoincrement"] integerValue] == 0 && ![tableColumn objectForKey:@"default"]) {
 				[tableColumn setObject:@"" forKey:@"default"];
 			}
-			
+
 			// Store the column.
 			NSMutableDictionary *d = [NSMutableDictionary dictionaryWithCapacity:1];
 			[d setDictionary:tableColumn];
@@ -492,13 +492,13 @@
 
 				NSMutableArray *keyColumns = [NSMutableArray array];
 				NSArray *keyColumnStrings = [[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
-				
+
 				for (NSString *keyColumn in keyColumnStrings)
 				{
 					[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
 					[keyColumns addObject:[fieldsParser unquotedString]];
 				}
-				
+
 				[constraintDetails setObject:keyColumns forKey:@"columns"];
 
 				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
@@ -523,7 +523,7 @@
 							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
 												  forKey:@"update"];
 						}
-					} 
+					}
 					else if( [NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"] ) {
 						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
@@ -551,7 +551,7 @@
 							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
 												  forKey:@"update"];
 						}
-					} 
+					}
 					else if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"DELETE"] ) {
 						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
@@ -597,7 +597,7 @@
 								break;
 							}
 					}
-					
+
 				}
 			}
 			// who knows
@@ -635,7 +635,7 @@
 
 	[createTableParser release];
 	[fieldParser release];
-	
+
 
 	// this will be 'Table' or 'View'
 	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
@@ -675,7 +675,7 @@
 	while (columnData = [enumerator nextObject]) {
 		[columnNames addObject:[NSString stringWithString:[columnData objectForKey:@"name"]]];
 	}
-	
+
 	if (tableEncoding != nil) {
 		[tableEncoding release];
 	}
@@ -720,7 +720,7 @@
 	// Check for any errors, but only display them if a connection still exists
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
@@ -754,7 +754,7 @@
 	// Check for any errors, but only display them if a connection still exists
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
@@ -826,13 +826,6 @@
 	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName])
 		return FALSE;
 
-	// When views are selected, populate the table with a default dictionary - all values, including comment, return no
-	// meaningful information for views so we may as well skip the query.
-	if ([tableListInstance tableType] == SPTableTypeView) {
-		[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"View", @"Engine", @"No status information is available for views.", @"Comment", [tableListInstance tableName], @"Name", nil]];
-		return TRUE;
-	}
-
 	// Ensure queries are run as UTF8
 	if (changeEncoding) {
 		[mySQLConnection storeEncodingForRestoration];
@@ -855,6 +848,11 @@
 		[escapedDatabaseName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedDatabaseName length])];
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.ROUTINES AS r WHERE r.SPECIFIC_NAME = '%@' AND r.ROUTINE_SCHEMA = '%@' AND r.ROUTINE_TYPE = 'FUNCTION'", escapedTableName, escapedDatabaseName]];
 	}
+	else if ([tableListInstance tableType] == SPTableTypeView) {
+		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];
+		[escapedDatabaseName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedDatabaseName length])];
+		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.VIEWS AS r WHERE r.TABLE_NAME = '%@' AND r.TABLE_SCHEMA = '%@'", escapedTableName, escapedDatabaseName]];
+	}
 	else if ([tableListInstance tableType] == SPTableTypeTable) {
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
 		[tableStatusResult setReturnDataAsStrings:YES];
@@ -863,7 +861,7 @@
 	// Check for any errors, only displaying them if the connection hasn't been terminated
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
@@ -904,6 +902,18 @@
 				[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 				[status setObject:@"y" forKey:@"RowsCountAccurate"];
 		}
+
+	}
+
+	// When views are selected, populate the table by adding some default information.
+	else if ([tableListInstance tableType] == SPTableTypeView) {
+		[status addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
+			@"View", @"Engine",
+			@"No status information is available for views.", @"Comment",
+			[tableListInstance tableName], @"Name",
+			[status objectForKey:@"COLLATION_CONNECTION"], @"Collation",
+			[status objectForKey:@"CHARACTER_SET_CLIENT"], @"CharacterSetClient",
+			nil]];
 	}
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -924,14 +934,14 @@
 		[mySQLConnection setEncoding:@"utf8"];
 	}
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", 
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */",
 											  [[tableListInstance tableName] tickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
-	
+
 	// Check for any errors, but only display them if a connection still exists
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"), NSLocalizedString(@"OK", @"OK button"), 
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"), NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							  [tableListInstance tableName], [mySQLConnection getLastErrorMessage]]);
@@ -1127,14 +1137,14 @@
 					&& [[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
-		
+
 		// Column comments
 		} else if ([detailString isEqualToString:@"COMMENT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
 			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
 			[fieldDetails setValue:[detailParser unquotedString] forKey:@"comment"];
 			[detailParser release];
 			definitionPartsIndex++;
-			
+
 		// Preserve unhandled details to avoid losing information when rearranging columns etc
 		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COLUMN_FORMAT bar | STORAGE q | REFERENCES...
 		} else {
@@ -1187,7 +1197,7 @@
 		return nil;
 	}
 
-	
+
 	for( i = 0; i < [r numOfRows]; i++ ) {
 		resultRow = [r fetchRowAsArray];
 		// check if the row is indeed a key (for MySQL servers before 5.0.3)
@@ -1211,7 +1221,7 @@
 	[columnNames release];
 	[constraints release];
 	[status release];
-	
+
 	if (triggers) [triggers release];
 	if (tableEncoding) [tableEncoding release];
 	if (tableCreateSyntax) [tableCreateSyntax release];

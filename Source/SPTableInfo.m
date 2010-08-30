@@ -50,8 +50,8 @@
 - (void)awakeFromNib
 {
 	[[NSNotificationCenter defaultCenter] addObserver:self
-		selector:@selector(tableChanged:) 
-		name:SPTableChangedNotification 
+		selector:@selector(tableChanged:)
+		name:SPTableChangedNotification
 		object:tableDocumentInstance];
 
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
@@ -81,20 +81,12 @@
 
 	[info removeAllObjects];
 
-	// For views, no information can be displayed.
-	if ([tableListInstance tableType] == SPTableTypeView) {
-		[info addObject:NSLocalizedString(@"VIEW INFORMATION", @"header for view info pane")];
-		[info addObject:NSLocalizedString(@"no information available", @"no information available")];
-		[infoTable reloadData];
-		return;
-	}
-
 	if ([[tableListInstance tableName] isEqualToString:@""]) {
 		[info addObject:NSLocalizedString(@"INFORMATION", @"header for blank info pane")];
 		[info addObject:NSLocalizedString(@"multiple selection", @"multiple selection")];
 		[infoTable reloadData];
 		return;
-	} 
+	}
 
 	// Get TABLE information
 	if ([tableListInstance tableType] == SPTableTypeTable) {
@@ -130,7 +122,7 @@
 			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
 				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? NSLocalizedString(@"rows: %@", @"rows: %@") : NSLocalizedString(@"rows: ~%@", @"rows: ~%@"),
 					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
-			} 
+			}
 
 			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"size: %@"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
 			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %@", @"encoding: %@"), [tableDataInstance tableEncoding]]];
@@ -142,7 +134,7 @@
 
 		}
 	}
-	
+
 	// Get PROC/FUNC information
 	else if ([tableListInstance tableType] == SPTableTypeProc || [tableListInstance tableType] == SPTableTypeFunc) {
 
@@ -150,7 +142,7 @@
 			[info addObject:NSLocalizedString(@"PROCEDURE INFORMATION", @"header for procedure info pane")];
 		else
 			[info addObject:NSLocalizedString(@"FUNCTION INFORMATION", @"header for function info pane")];
-			
+
 		if ([tableListInstance tableName]) {
 
 			// Retrieve the table status information via the data cache
@@ -171,7 +163,7 @@
 
 			// Check for 'LAST_ALTERED'
 			if (![[tableStatus objectForKey:@"LAST_ALTERED"] isNSNull]) {
-			
+
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"updated: %@", @"updated: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"LAST_ALTERED"]]]];
 			}
@@ -199,6 +191,57 @@
 			}
 
 		}
+	}
+	// Get VIEW information
+	else if ([tableListInstance tableType] == SPTableTypeView) {
+
+		[info addObject:NSLocalizedString(@"VIEW INFORMATION", @"header for view info pane")];
+
+		if ([tableListInstance tableName]) {
+
+			// Retrieve the table status information via the data cache
+			tableStatus = [tableDataInstance statusValues];
+
+			// Check for errors
+			if (![tableStatus count]) {
+				[info addObject:NSLocalizedString(@"error occurred", @"error occurred")];
+				return;
+			}
+
+			// Check for 'CREATED' == NULL
+			if (![[tableStatus objectForKey:@"DEFINER"] isNSNull]) {
+
+				// Add the creation date to the infoTable
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"definer: %@", @"definer: %@"), [tableStatus objectForKey:@"DEFINER"]]];
+
+				// Check for 'SECURITY_TYPE'
+				if (![[tableStatus objectForKey:@"SECURITY_TYPE"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"execution privilege: %@", @"execution privilege: %@"), [tableStatus objectForKey:@"SECURITY_TYPE"]]];
+				}
+
+				// Check for 'IS_UPDATABLE'
+				if (![[tableStatus objectForKey:@"IS_UPDATABLE"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"is updatable: %@", @"is updatable: %@"), [tableStatus objectForKey:@"IS_UPDATABLE"]]];
+				}
+
+				// Check for 'CHECK_OPTION'
+				if (![[tableStatus objectForKey:@"CHECK_OPTION"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"check option: %@", @"check option: %@"), [tableStatus objectForKey:@"CHECK_OPTION"]]];
+				}
+
+				// Check for 'CHARACTER_SET_CLIENT'
+				if (![[tableStatus objectForKey:@"CHARACTER_SET_CLIENT"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"character set client: %@", @"character set client: %@"), [tableStatus objectForKey:@"CHARACTER_SET_CLIENT"]]];
+				}
+
+				// Check for 'COLLATION_CONNECTION'
+				if (![[tableStatus objectForKey:@"COLLATION_CONNECTION"] isNSNull]) {
+					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"collation connection: %@", @"collation connection: %@"), [tableStatus objectForKey:@"COLLATION_CONNECTION"]]];
+				}
+
+			}
+		}
+
 	}
 
 	[infoTable reloadData];
