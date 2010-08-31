@@ -199,6 +199,7 @@
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
 {
+
 	for (NSString *filename in filenames) 
 	{
 		// Opens a sql file and insert its content into the Custom Query editor
@@ -889,7 +890,7 @@
 // }
 // - (void)handleOpenEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 // {
-// 	NSLog(@"OPEN %@", [event description]);
+// 	NSLog(@"OPEN ");
 // }
 // 
 // - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
@@ -898,7 +899,7 @@
 // 	[aeManager setEventHandler:self andSelector:@selector(handleQuitEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
 // 	[aeManager setEventHandler:self andSelector:@selector(handleOpenEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenApplication];
 // }
-// 
+
 
 /**
  * Is needed to interact with AppleScript for set/get internal SP variables
@@ -933,12 +934,12 @@
 - (void)insertInOrderedDocuments:(SPDatabaseDocument *)doc 
 {
 	[self newWindow:self];
-/*	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault])
-		[doc setShouldAutomaticallyConnect:YES];
-	
-	[[NSDocumentController sharedDocumentController] addDocument:doc];
-	[doc makeWindowControllers];
-	[doc showWindows];*/
+
+	// Set autoconnection if appropriate
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
+		[[self frontDocument] connect];
+	}
+
 }
 
 /**
@@ -957,6 +958,26 @@
 {
 	[NSApp terminate:self];
 	return nil;
+}
+
+/**
+ * AppleScript handler
+ * This handler is needed to catch an 'open' command if no argument was passed which would cause a crash
+ */
+- (id)handleOpenScriptCommand:(NSScriptCommand *)command
+{
+	return nil;
+}
+
+/**
+ * AppleScript handler for print
+ * This handler prints the active view
+ */
+- (id)handlePrintScriptCommand:(NSScriptCommand *)command
+{
+	SPDatabaseDocument *frontDoc = [self frontDocument];
+	if (frontDoc && ![frontDoc isWorking] && ![[frontDoc connectionID] isEqualToString:@"_"])
+		[frontDoc startPrintDocumentOperation];
 }
 
 #pragma mark -

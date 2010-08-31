@@ -8,10 +8,12 @@
 			"Superclass" = "NSCoreSuite.NSApplication";
 			"SupportedCommands" = {
 				"NSCoreSuite.Quit" = "handleQuitScriptCommand:";
+				"NSCoreSuite.Open" = "handleOpenScriptCommand:";
+				"NSCoreSuite.Print" = "handlePrintScriptCommand:";
 			};
 			"ToManyRelationships" = {
 				"orderedDocuments" = {
-					"Type" = "TableDocument";
+					"Type" = "SPDatabaseDocument";
 					"AppleEventCode" = "docu";
 				};
 				"orderedWindows" = {
@@ -20,7 +22,7 @@
 				};
 			};
 		};
-		"TableDocument" = {
+		"SPDatabaseDocument" = {
 			"Superclass" = "NSCoreSuite.NSDocument";
 			"AppleEventCode" = "docu";
 		};
