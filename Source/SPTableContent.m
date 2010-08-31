@@ -1419,7 +1419,7 @@
 					[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
 				}
 			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"] || [[field objectForKey:@"type"] isEqualToString:@"BINARY"]) {
 				if(includeBlobs) {
 					[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
 				}
@@ -3503,8 +3503,14 @@
 		// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
 		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 
-			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
-			isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
+			// A table is per definitionem editable
+			isFieldEditable = YES;
+
+			// Check for Views if field is editable
+			if([tablesListInstance tableType] == SPTableTypeView) {
+				NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+				isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
+			}
 
 			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 

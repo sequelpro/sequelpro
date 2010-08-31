@@ -1732,7 +1732,7 @@
 					[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
 				}
 			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]) {
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"] || [[field objectForKey:@"type"] isEqualToString:@"BINARY"]) {
 				if(includeBlobs) {
 					[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
 				}
