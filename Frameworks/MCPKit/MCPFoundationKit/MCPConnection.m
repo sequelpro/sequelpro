@@ -642,7 +642,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 - (BOOL)checkConnection
 {
 	if (!mConnected) return NO;
-	
+
 	BOOL connectionVerified = FALSE;
 	
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
@@ -1389,10 +1389,28 @@ void performThreadedKeepAlive(void *ptr)
 	unsigned long		theLength = [theData length];
 	char					*theCEscBuffer = (char *)calloc(sizeof(char),(theLength*2) + 1);
 	NSString				*theReturn;
-//	unsigned long		theEscapedLength;
 
-// Using the mysql_hex_string function : (NO other solution found to be able to support blobs while using UTF-8 charset).
-//	theEscapedLength = mysql_hex_string(theCEscBuffer, theCDataBuffer, theLength);
+	// mysql_hex_string requires an active connection.
+	// If no connection is present, and no automatic reconnections can be made, return nil.
+	if (!mConnected && ![self checkConnection]) {
+		
+		// Inform the delegate that there is no connection available
+		if (delegate && [delegate respondsToSelector:@selector(noConnectionAvailable:)]) {
+			[delegate noConnectionAvailable:self];
+		}
+		
+		return nil;
+	}
+	
+	// If thirty seconds have elapsed since the last query, check the connection.
+	// This minimises the impact of continuous additional connection checks, but handles
+	// most network issues and keeps high read/write timeouts for long queries.
+	if ([self timeConnected] - lastQueryExecutedAtTime > 30) {
+		if (![self checkConnection]) return nil;
+		lastQueryExecutedAtTime = [self timeConnected];
+	}
+
+	// Using the mysql_hex_string function : (NO other solution found to be able to support blobs while using UTF-8 charset).
 	mysql_hex_string(theCEscBuffer, theCDataBuffer, theLength);
 	theReturn = [NSString stringWithFormat:@"%s", theCEscBuffer];
 	free (theCEscBuffer);
@@ -1406,8 +1424,6 @@ void performThreadedKeepAlive(void *ptr)
 {
 	NSData				*theCData = [theString dataUsingEncoding:stringEncoding allowLossyConversion:YES];
 	unsigned long		theLength = [theCData length];
-	// const char			*theCStringBuffer = [self cStringFromString:theString];
-	// unsigned long		theLength = [theString length];
 	char					*theCEscBuffer;
 	NSString				*theReturn;
 	unsigned long		theEscapedLength;
@@ -1416,12 +1432,30 @@ void performThreadedKeepAlive(void *ptr)
 		// In the mean time, no one should call this method on a nil string, the test should be done before by the user of this method.
 		return @"";
 	}
+
+	// mysql_real_escape_string requires an active connection.
+	// If no connection is present, and no automatic reconnections can be made, return nil.
+	if (!mConnected && ![self checkConnection]) {
+		
+		// Inform the delegate that there is no connection available
+		if (delegate && [delegate respondsToSelector:@selector(noConnectionAvailable:)]) {
+			[delegate noConnectionAvailable:self];
+		}
+		
+		return nil;
+	}
 	
-	// theLength = strlen(theCStringBuffer);
+	// If thirty seconds have elapsed since the last query, check the connection.
+	// This minimises the impact of continuous additional connection checks, but handles
+	// most network issues and keeps high read/write timeouts for long queries.
+	if ([self timeConnected] - lastQueryExecutedAtTime > 30) {
+		if (![self checkConnection]) return nil;
+		lastQueryExecutedAtTime = [self timeConnected];
+	}
+
 	theCEscBuffer = (char *)calloc(sizeof(char),(theLength * 2) + 1);
 	theEscapedLength = mysql_real_escape_string(mConnection, theCEscBuffer, [theCData bytes], theLength);
 	theReturn = [[NSString alloc] initWithData:[NSData dataWithBytes:theCEscBuffer length:theEscapedLength] encoding:stringEncoding];
-	// theReturn = [self stringWithCString:theCEscBuffer];
 	free(theCEscBuffer);
 	
 	return [theReturn autorelease];    
@@ -1515,8 +1549,8 @@ void performThreadedKeepAlive(void *ptr)
 	// Reset the query cancelled boolean
 	queryCancelled = NO;
 
-	// If no connection is present, return nil.
-	if (!mConnected) {
+	// If no connection is present, and no automatic reconnections can be made, return nil.
+	if (!mConnected && ![self checkConnection]) {
 		// Write a log entry
 		if ([delegate respondsToSelector:@selector(queryGaveError:connection:)]) [delegate queryGaveError:@"No connection available!" connection:self];
 		
@@ -1536,13 +1570,14 @@ void performThreadedKeepAlive(void *ptr)
 		[delegate willQueryString:query connection:self];
 	}
 	
-	// If thirty seconds have elapsed since the last query, check the connection.  This provides
-	// a balance between keeping high read/write timeouts for long queries, network issues, and
-	// minimising the impact of performing lots of additional checks.
+	// If thirty seconds have elapsed since the last query, check the connection.
+	// This minimises the impact of continuous additional connection checks, but handles
+	// most network issues and keeps high read/write timeouts for long queries.
 	if ([self timeConnected] - lastQueryExecutedAtTime > 30
-		&& ![self checkConnection]) {
-			return nil;
-			}
+		&& ![self checkConnection])
+	{
+		return nil;
+	}
 
 	// Derive the query string in the correct encoding
 	NSData *d = NSStringDataUsingLossyEncoding(query, encoding, 1);
