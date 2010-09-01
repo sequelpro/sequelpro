@@ -3896,6 +3896,10 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+	// Cancel previous performSelector: requests on ourselves and the table view
+	// to prevent crashes for deferred actions
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:tableContentView];
 
 	[self clearTableLoadTimer];
