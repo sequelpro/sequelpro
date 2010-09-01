@@ -850,7 +850,6 @@
 
 	[tableDocumentInstance endTask];
 
-	[customQueryView makeFirstResponder];
 	// Restore selection indexes if appropriate
 	if (selectionIndexToRestore)
 		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
