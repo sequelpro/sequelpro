@@ -1734,66 +1734,123 @@
 #pragma mark Table Methods
 
 /**
- * Displays the CREATE TABLE syntax of the selected table to the user via a HUD panel.
+ * Copies if sender == self or displays or the CREATE TABLE syntax of the selected table(s) to the user .
  */
 - (IBAction)showCreateTableSyntax:(id)sender
 {
-	//Create the query and get results
+
 	NSInteger colOffs = 1;
 	NSString *query = nil;
 	NSString *typeString = @"";
+	NSString *header = @"";
+	NSMutableString *createSyntax = [NSMutableString string];
 
-	if( [tablesListInstance tableType] == SPTableTypeTable ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
-		typeString = @"table";
-	}
-	else if( [tablesListInstance tableType] == SPTableTypeView ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
-		typeString = @"view";
-	}
-	else if( [tablesListInstance tableType] == SPTableTypeProc ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
-		typeString = @"procedure";
-		colOffs = 2;
-	}
-	else if( [tablesListInstance tableType] == SPTableTypeFunc ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
-		typeString = @"function";
-		colOffs = 2;
-	}
+	NSIndexSet *indexes = [[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes];
 
-	if (query == nil) return;
+	NSUInteger currentIndex = [indexes firstIndex];
+	NSInteger counter = 0;
+	NSInteger type;
 
-	MCPResult *theResult = [mySQLConnection queryString:query];
-	[theResult setReturnDataAsStrings:YES];
+	NSArray *types = [tablesListInstance selectedTableTypes];
+	NSArray *items = [tablesListInstance selectedTableItems];
 
-	// Check for errors, only displaying if the connection hasn't been terminated
-	if ([mySQLConnection queryErrored]) {
-		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"),[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+	while (currentIndex != NSNotFound)
+	{
+
+		type = [[types objectAtIndex:counter] intValue];
+		query = nil;
+
+		if( type == SPTableTypeTable ) {
+			query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[items objectAtIndex:counter] backtickQuotedString]];
+			typeString = @"TABLE";
+		}
+		else if( type == SPTableTypeView ) {
+			query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[items objectAtIndex:counter] backtickQuotedString]];
+			typeString = @"VIEW";
+		}
+		else if( type == SPTableTypeProc ) {
+			query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[items objectAtIndex:counter] backtickQuotedString]];
+			typeString = @"PROCEDURE";
+			colOffs = 2;
+		}
+		else if( type == SPTableTypeFunc ) {
+			query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[items objectAtIndex:counter] backtickQuotedString]];
+			typeString = @"FUNCTION";
+			colOffs = 2;
 		}
 
-		return;
+		if (query == nil) {
+			NSLog(@"Unknown type for selected item while getting the create syntax for '%@'", [items objectAtIndex:counter]);
+			NSBeep();
+			return;
+		}
+
+		MCPResult *theResult = [mySQLConnection queryString:query];
+		[theResult setReturnDataAsStrings:YES];
+
+		// Check for errors, only displaying if the connection hasn't been terminated
+		if ([mySQLConnection queryErrored]) {
+			if ([mySQLConnection isConnected]) {
+				NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"),[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			}
+
+			return;
+		}
+
+		NSString *tableSyntax;
+		if( type == SPTableTypeProc )
+			tableSyntax = [NSString stringWithFormat:@"DELIMITER ;;\n%@;;\nDELIMITER ", [[theResult fetchRowAsArray] objectAtIndex:colOffs]];
+		else
+			tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
+
+		// A NULL value indicates that the user does not have permission to view the syntax
+		if ([tableSyntax isNSNull]) {
+			[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+							 defaultButton:NSLocalizedString(@"OK", @"OK button")
+						   alternateButton:nil otherButton:nil
+				 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+				  beginSheetModalForWindow:parentWindow
+							 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+			return;
+		}
+
+		if([indexes count] > 1)
+			header = [NSString stringWithFormat:@"# Create syntax for %@ '%@'\n", typeString, [items objectAtIndex:counter]];
+
+		[createSyntax appendFormat:@"%@%@;%@", header, (type == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax, (counter < [indexes count]-1) ? @"\n\n" : @""];
+
+		counter++;
+		
+		// Get next index (beginning from the end)
+		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
+
 	}
+	
+	// copy to the clipboard if sender was self, otherwise
+	// show syntax(es) in sheet
+	if(sender == self) {
+		NSPasteboard *pb = [NSPasteboard generalPasteboard];
+		[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+		[pb setString:createSyntax forType:NSStringPboardType];
 
-	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
+		// Table syntax copied Growl notification
+		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
+													   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
+														  document:self
+												  notificationName:@"Syntax Copied"];
 
-	// A NULL value indicates that the user does not have permission to view the syntax
-	if ([tableSyntax isNSNull]) {
-		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK button")
-					   alternateButton:nil otherButton:nil
-			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
-			  beginSheetModalForWindow:parentWindow
-						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
 		return;
+
 	}
-
-	[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Create syntax for %@ '%@'", @"Create syntax label"), typeString, [self table]]];
-
+	
+	if([indexes count] == 1)
+		[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Create syntax for %@ '%@'", @"Create syntax label"), typeString, [self table]]];
+	else
+		[createTableSyntaxTextField setStringValue:NSLocalizedString(@"Create syntaxes for selected items", @"Create syntaxes for selected items label")];
+		
 	[createTableSyntaxTextView setEditable:YES];
 	[createTableSyntaxTextView setString:@""];
-	[createTableSyntaxTextView insertText:([tablesListInstance tableType] == SPTableTypeView) ? [[tableSyntax createViewSyntaxPrettifier] stringByAppendingString:@";"] : [tableSyntax stringByAppendingString:@";"]];
+	[createTableSyntaxTextView insertText:createSyntax];
 	[createTableSyntaxTextView setEditable:NO];
 
 	[createTableSyntaxWindow makeFirstResponder:createTableSyntaxTextField];
@@ -1812,65 +1869,10 @@
  */
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
-	// Create the query and get results
-	NSString *query = nil;
-	NSInteger colOffs = 1;
 
-	if( [tablesListInstance tableType] == SPTableTypeTable ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self table] backtickQuotedString]];
-	}
-	else if( [tablesListInstance tableType] == SPTableTypeView ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE VIEW %@", [[self table] backtickQuotedString]];
-	}
-	else if( [tablesListInstance tableType] == SPTableTypeProc ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [[self table] backtickQuotedString]];
-		colOffs = 2;
-	}
-	else if( [tablesListInstance tableType] == SPTableTypeFunc ) {
-		query = [NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [[self table] backtickQuotedString]];
-		colOffs = 2;
-	}
+	[self showCreateTableSyntax:self];
+	return;
 
-	if( query == nil )
-		return;
-
-	MCPResult *theResult = [mySQLConnection queryString:query];
-	[theResult setReturnDataAsStrings:YES];
-
-	// Check for errors, only displaying if the connection hasn't been terminated
-	if ([mySQLConnection queryErrored]) {
-		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"),[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
-		}
-		return;
-	}
-
-	NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
-
-	// A NULL value indicates that the user does not have permission to view the syntax
-	if ([tableSyntax isNSNull]) {
-		[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
-						 defaultButton:NSLocalizedString(@"OK", @"OK button")
-					   alternateButton:nil otherButton:nil
-			 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
-			  beginSheetModalForWindow:parentWindow
-						 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
-		return;
-	}
-
-	// copy to the clipboard
-	NSPasteboard *pb = [NSPasteboard generalPasteboard];
-	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
-	if([tablesListInstance tableType] == SPTableTypeView)
-		[pb setString:[tableSyntax createViewSyntaxPrettifier] forType:NSStringPboardType];
-	else
-		[pb setString:tableSyntax forType:NSStringPboardType];
-
-	// Table syntax copied Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Syntax Copied"
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Syntax for %@ table copied",@"description for table syntax copied growl notification"), [self table]] 
-													  document:self
-											  notificationName:@"Syntax Copied"];
 }
 
 /**
@@ -3576,19 +3578,14 @@
 		return [self supportsEncoding];
 	}
 
-	// table menu items
-	if ([menuItem action] == @selector(showCreateTableSyntax:) ||
-		[menuItem action] == @selector(copyCreateTableSyntax:)) 
-	{
-		return ([self table] != nil && [[self table] isNotEqualTo:@""]);
-	}
-
 	if ([menuItem action] == @selector(analyzeTable:) || 
 		[menuItem action] == @selector(optimizeTable:) || 
 		[menuItem action] == @selector(repairTable:) || 
 		[menuItem action] == @selector(flushTable:) ||
 		[menuItem action] == @selector(checkTable:) ||
-		[menuItem action] == @selector(checksumTable:))
+		[menuItem action] == @selector(checksumTable:) ||
+		[menuItem action] == @selector(showCreateTableSyntax:) ||
+		[menuItem action] == @selector(copyCreateTableSyntax:))
 	{
 		return ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]) ? YES:NO;
 	}

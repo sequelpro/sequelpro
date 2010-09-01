@@ -886,18 +886,22 @@
 		[renameTableContextMenuItem setHidden:YES];
 		[duplicateTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
-		[separatorTableContextMenuItem2 setHidden:YES];
-		[showCreateSyntaxContextMenuItem setHidden:YES];
+		[separatorTableContextMenuItem2 setHidden:NO];
+		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Syntaxes...", @"show create syntaxes menu item")];
+		[showCreateSyntaxContextMenuItem setHidden:NO];
 
 		// 'Gear' menu
 		[renameTableMenuItem setHidden:YES];
 		[duplicateTableMenuItem setHidden:YES];
 		[separatorTableMenuItem setHidden:YES];
-		[separatorTableMenuItem2 setHidden:YES];
-		[showCreateSyntaxMenuItem setHidden:YES];
+		[separatorTableMenuItem2 setHidden:NO];
+		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Syntaxes...", @"show create syntaxes menu item")];
+		[showCreateSyntaxMenuItem setHidden:NO];
 
 		// Get main menu "Table"'s submenu
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTag:SPMainMenuTable] submenu];
+		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Syntaxes", @"copy create syntaxes menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Syntaxes...", @"show create syntaxes menu item")];
 
 		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
 		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
