@@ -443,7 +443,7 @@
 	BOOL removeForeignKey = [[indexDetails objectForKey:@"RemoveForeignKey"] boolValue];
 	
 	// Remove the foreign key dependency before the index if required
-	if ([removeForeignKey boolValue]) {
+	if (removeForeignKey) {
 		
 		NSString *columnName =  [index objectForKey:@"Column_name"];
 		
