@@ -1123,17 +1123,17 @@
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;
 
 	// If there's no tables to select, error
-	if (![[tablesListInstance allTableNames] count]) {
-		[self closeAndStopProgressSheet];
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  [tableDocumentInstance parentWindow], self,
-						  nil, nil,
-						  NSLocalizedString(@"Can't import CSV data into a database without any tables!", @"error text when trying to import csv data, but we have no tables in the db")
-						  );
-		return FALSE;
-	}
+	// if (![[tablesListInstance allTableNames] count]) {
+	// 	[self closeAndStopProgressSheet];
+	// 	SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
+	// 					  NSLocalizedString(@"OK", @"OK button"),
+	// 					  nil, nil,
+	// 					  [tableDocumentInstance parentWindow], self,
+	// 					  nil, nil,
+	// 					  NSLocalizedString(@"Can't import CSV data into a database without any tables!", @"error text when trying to import csv data, but we have no tables in the db")
+	// 					  );
+	// 	return FALSE;
+	// }
 
 	// Set the import array
 	if (fieldMappingImportArray) [fieldMappingImportArray release];

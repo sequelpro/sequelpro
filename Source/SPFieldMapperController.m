@@ -53,6 +53,7 @@
 			return nil;
 		}
 		theDelegate = managerDelegate;
+
 		fieldMappingTableColumnNames   = [[NSMutableArray alloc] init];
 		fieldMappingTableDefaultValues = [[NSMutableArray alloc] init];
 		fieldMappingTableTypes         = [[NSMutableArray alloc] init];
@@ -71,10 +72,14 @@
 		doImportString    = @"―";
 		doNotImportString = @" ";
 		isEqualString     = @"=";
+		newTableMode      = NO;
 
 		prefs = [NSUserDefaults standardUserDefaults];
+
+		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
+
 	}
-	
+
 	return self;
 }
 
@@ -95,22 +100,33 @@
 	windowMinWidth = [[self window] minSize].width;
 	windowMinHeigth = [[self window] minSize].height;
 
+	[newTableNameTextField setHidden:YES];
+	[newTableNameLabel setHidden:YES];
+
 	// Init table target popup menu
 	[tableTargetPopup removeAllItems];
-	if([[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
-		[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
-		[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
-		[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
+	[tableTargetPopup addItemWithTitle:NSLocalizedString(@"New Table", @"new table menu item")];
+	[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
+	[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
+	NSArray *allTableNames = [tablesListInstance allTableNames];
+	if(allTableNames) {
+		[tableTargetPopup addItemsWithTitles:allTableNames];
 
-		// Select either the currently selected table, or the first item in the list
-		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil && ![[[theDelegate valueForKeyPath:@"tablesListInstance"] tableName] isEqualToString:@""]) {
-			[tableTargetPopup selectItemWithTitle:[[theDelegate valueForKeyPath:@"tablesListInstance"] tableName]];
+		// Select either the currently selected table, or the first item in the list, or if no table in db switch to "New Table" mode
+		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil 
+				&& ![[tablesListInstance tableName] isEqualToString:@""]
+				&& [allTableNames containsObject:[tablesListInstance tableName]]) {
+			[tableTargetPopup selectItemWithTitle:[tablesListInstance tableName]];
 		} else {
-			[tableTargetPopup selectItemAtIndex:0];
+			if([allTableNames count])
+				[tableTargetPopup selectItemAtIndex:3];
+			else
+				[tableTargetPopup selectItemAtIndex:0];
+				[newTableNameTextField selectText:nil];
 		}
 
 	}
-	
+
 	[importFieldNamesHeaderSwitch setState:importFieldNamesHeader];
 
 	[addRemainingDataSwitch setState:NO];
@@ -266,7 +282,7 @@
 - (NSString*)importHeaderString
 {
 	if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"INSERT"]) {
-		return [NSString stringWithFormat:@"INSERT %@%@%@%@INTO ", 
+		return [NSString stringWithFormat:@"INSERT %@%@%@%@INTO ",
 			([lowPriorityCheckBox state] == NSOnState) ? @"LOW_PRIORITY " : @"",
 			([delayedCheckBox state] == NSOnState) ? @"DELAYED " : @"",
 			([highPriorityCheckBox state] == NSOnState) ? @"HIGH_PRIORITY " : @"",
@@ -274,13 +290,13 @@
 			];
 	}
 	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"REPLACE"]) {
-		return [NSString stringWithFormat:@"REPLACE %@%@INTO ", 
+		return [NSString stringWithFormat:@"REPLACE %@%@INTO ",
 			([lowPriorityReplaceCheckBox state] == NSOnState) ? @"LOW_PRIORITY " : @"",
 			([delayedReplaceCheckBox state] == NSOnState) ? @"DELAYED " : @""
 			];
 	}
 	else if([[importMethodPopup titleOfSelectedItem] isEqualToString:@"UPDATE"]) {
-		return [NSString stringWithFormat:@"UPDATE %@%@%@ SET ", 
+		return [NSString stringWithFormat:@"UPDATE %@%@%@ SET ",
 			([lowPriorityUpdateCheckBox state] == NSOnState) ? @"LOW_PRIORITY " : @"",
 			([ignoreUpdateCheckBox state] == NSOnState) ? @"IGNORE " : @"",
 			[[self selectedTableTarget] backtickQuotedString]
@@ -313,19 +329,86 @@
 - (IBAction)changeTableTarget:(id)sender
 {
 
+	NSArray *allTableNames = [tablesListInstance allTableNames];
+	NSInteger i;
+
 	// Is Refresh List chosen?
-	if([tableTargetPopup selectedItem] == [tableTargetPopup lastItem]) {
+	if([tableTargetPopup selectedItem] == [tableTargetPopup itemAtIndex:1]) {
 		[tableTargetPopup removeAllItems];
+		[tableTargetPopup addItemWithTitle:NSLocalizedString(@"New Table", @"new table menu item")];
+		[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
+		[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
+
 		// Update tables list
-		[[theDelegate valueForKeyPath:@"tablesListInstance"] updateTables:nil];
-		if([[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]) {
-			[tableTargetPopup addItemsWithTitles:[[theDelegate valueForKeyPath:@"tablesListInstance"] allTableNames]];
-			[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
-			[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
+		[tablesListInstance updateTables:nil];
+		if(allTableNames) {
+			[tableTargetPopup addItemsWithTitles:allTableNames];
 		}
+
+		// Select either the currently selected table, or the first item in the list, or if no table in db switch to "New Table" mode
+		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil 
+				&& ![[tablesListInstance tableName] isEqualToString:@""]
+				&& [allTableNames containsObject:[tablesListInstance tableName]]) {
+			[tableTargetPopup selectItemWithTitle:[tablesListInstance tableName]];
+		} else {
+			if([allTableNames count])
+				[tableTargetPopup selectItemAtIndex:3];
+			else
+				[tableTargetPopup selectItemAtIndex:0];
+		}
+
+		return;
+
 	}
 
-	NSInteger i;
+	// New Table was chosen
+	else if([tableTargetPopup selectedItem] == [tableTargetPopup itemAtIndex:0]) {
+
+		newTableMode = YES;
+
+		[tableTargetPopup setHidden:YES];
+		[newTableNameTextField setHidden:NO];
+		[newTableNameLabel setHidden:NO];
+		[newTableNameTextField selectText:nil];
+		[fieldMappingTableColumnNames removeAllObjects];
+		[fieldMappingTableDefaultValues removeAllObjects];
+		[fieldMappingTableTypes removeAllObjects];
+		if([importFieldNamesHeaderSwitch state] == NSOnState) {
+			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
+				[fieldMappingTableColumnNames addObject:h];
+				[fieldMappingTableDefaultValues addObject:@""];
+				[fieldMappingTableTypes addObject:@"varchar(255)"];
+			}
+		} else {
+			i = 0;
+			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
+				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
+				[fieldMappingTableDefaultValues addObject:@""];
+				[fieldMappingTableTypes addObject:@"varchar(255)"];
+			}
+		}
+
+		// Update the table view
+		NSInteger i;
+		fieldMappingCurrentRow = 0;
+		if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+		[self setupFieldMappingArray];
+		[rowDownButton setEnabled:NO];
+		[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
+		[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+
+		[self updateFieldMappingButtonCell];
+		[self updateFieldMappingOperatorOptions];
+
+		// Set all operators to doNotImport
+		[fieldMappingOperatorArray removeAllObjects];
+		for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+			[fieldMappingOperatorArray addObject:doImport];
+
+		[fieldMapperTableView reloadData];
+		[self validateImportButton];
+		return;
+	}
 
 	// Remove all the current columns
 	[fieldMappingTableColumnNames removeAllObjects];
@@ -338,7 +421,7 @@
 	NSDictionary *tableDetails = [selectedTableData informationForTable:[tableTargetPopup titleOfSelectedItem]];
 	targetTableHasPrimaryKey = NO;
 	BOOL isReplacePossible = NO;
-	// NSLog(@"d %@", tableDetails);
+
 	if (tableDetails) {
 		for (NSDictionary *column in [tableDetails objectForKey:@"columns"]) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithString:[column objectForKey:@"name"]]];
@@ -531,11 +614,11 @@
 		fieldMappingCurrentRow++;
 	}
 	[self updateFieldMappingButtonCell];
-	
+
 	[fieldMapperTableView reloadData];
-	
+
 	[recordCountLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld of %@%lu records", @"%ld of %@%lu records"), (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
-	
+
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
 	[rowUpButton setEnabled:(fieldMappingCurrentRow != ([fieldMappingImportArray count]-1))];
@@ -544,6 +627,22 @@
 - (IBAction)changeHasHeaderCheckbox:(id)sender
 {
 	[matchingNameMenuItem setEnabled:([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO];
+
+	// In New Table mode reset new field name according to importFieldNamesHeaderSwitch's state
+	if(newTableMode) {
+		[fieldMappingTableColumnNames removeAllObjects];
+		if([importFieldNamesHeaderSwitch state] == NSOnState) {
+			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
+				[fieldMappingTableColumnNames addObject:h];
+			}
+		} else {
+			NSInteger i = 0;
+			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
+				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
+			}
+		}
+		[fieldMapperTableView reloadData];
+	}
 }
 
 - (IBAction)goBackToFileChooser:(id)sender
@@ -561,9 +660,9 @@
 
 - (IBAction)addGlobalSourceVariable:(id)sender
 {
-	[NSApp beginSheet:globalValuesSheet 
-		modalForWindow:[self window] 
-		modalDelegate:self 
+	[NSApp beginSheet:globalValuesSheet
+		modalForWindow:[self window]
+		modalDelegate:self
 		didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
 	[self addGlobalValue:nil];
 }
@@ -616,7 +715,7 @@
 
 	// Ensure all changes are stored before ordering out
 	[globalValuesTableView validateEditing];
-	if ([globalValuesTableView numberOfSelectedRows] == 1) 
+	if ([globalValuesTableView numberOfSelectedRows] == 1)
 		[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
 	// Replace the current map pair with the last selected global value
@@ -668,7 +767,7 @@
 		[lowPriorityReplaceCheckBox setState:NO];
 		return;
 	}
-	if(sender == skipexistingRowsCheckBox) { 
+	if(sender == skipexistingRowsCheckBox) {
 		if([skipexistingRowsCheckBox state] == NSOnState) {
 			[delayedCheckBox setState:NO];
 			[delayedCheckBox setEnabled:NO];
@@ -713,7 +812,7 @@
 			[onupdateCheckBox setEnabled:YES];
 		}
 	}
-	
+
 	if(sender == onupdateCheckBox && [onupdateCheckBox state] == NSOnState) {
 		[onupdateTextView setBackgroundColor:[NSColor whiteColor]];
 		[onupdateTextView setEditable:YES];
@@ -840,13 +939,13 @@
 	if (!fieldMappingArray) {
 		fieldMappingArray = [[NSMutableArray alloc] init];
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
-			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count] 
+			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count]
 					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isKindOfClass:[NSNull class]]) {
 				value = i;
 			} else {
 				value = 0;
 			}
-			
+
 			[fieldMappingArray addObject:[NSNumber numberWithInteger:value]];
 		}
 	}
@@ -881,7 +980,7 @@
 		}
 
 	[fieldMapperTableView reloadData];
-	
+
 }
 
 /*
@@ -925,6 +1024,17 @@
 - (void)validateImportButton
 {
 	BOOL enableImportButton = YES;
+
+	if(newTableMode) {
+		[importButton setTitle:@"Not Yet"];
+		[importButton setEnabled:NO];
+		return;
+		if(![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
+			[importButton setEnabled:NO];
+			return;
+		}
+	}
+
 	if([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
 		enableImportButton = NO;
 		for(id op in fieldMappingOperatorArray) {
@@ -934,7 +1044,9 @@
 			}
 		}
 	}
+
 	[importButton setEnabled:enableImportButton];
+
 }
 
 #pragma mark -
@@ -958,7 +1070,7 @@
 
 	if(aTableView == fieldMapperTableView) {
 		// A click at the operator column's header toggle all operators
-		if ([[aTableColumn identifier] isEqualToString:@"operator"] 
+		if ([[aTableColumn identifier] isEqualToString:@"operator"]
 				&& [self numberOfRowsInTableView:aTableView]
 				&& [fieldMappingOperatorArray count]
 				&& [fieldMappingTableColumnNames count]) {
@@ -971,7 +1083,7 @@
 				[fieldMappingOperatorArray addObject:globalValue];
 			[self validateImportButton];
 			[fieldMapperTableView reloadData];
-		} 
+		}
 	}
 }
 
@@ -988,7 +1100,7 @@
 				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
 
 			if(fieldMappingCurrentRow)
-				return [NSString stringWithFormat:@"%@: %@", 
+				return [NSString stringWithFormat:@"%@: %@",
 					[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description],
 					[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description]];
 			else
@@ -1025,26 +1137,42 @@
 
 	if(aTableView == fieldMapperTableView) {
 		if ([[aTableColumn identifier] isEqualToString:@"target_field"]) {
-			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
-				[(NSPopUpButton *)[aTableColumn dataCell] removeAllItems];
-				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:[fieldMappingTableColumnNames objectAtIndex:rowIndex]];
+			if(newTableMode) {
+				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableColumnNames objectAtIndex:rowIndex]] autorelease];
+				[b setEditable:YES];
+				[b setFont:[NSFont systemFontOfSize:12]];
+				[aTableColumn setDataCell:b];
+				return b;
+			} else {
+				if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
+					[(NSPopUpButton *)[aTableColumn dataCell] removeAllItems];
+					[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemWithTitle:[fieldMappingTableColumnNames objectAtIndex:rowIndex]];
+				}
+				return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
 			}
-			return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
-			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
-			[b setEditable:NO];
-			[b setAlignment:NSLeftTextAlignment];
-			[b setWraps:NO];
-			[b setFont:[NSFont systemFontOfSize:9]];
-			[b setDelegate:self];
-			return b;
+			if(newTableMode) {
+				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
+				[b setEditable:YES];
+				[b setFont:[NSFont systemFontOfSize:12]];
+				[aTableColumn setDataCell:b];
+				return b;
+			} else {
+				NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
+				[b setEditable:NO];
+				[b setAlignment:NSLeftTextAlignment];
+				[b setWraps:NO];
+				[b setFont:[NSFont systemFontOfSize:9]];
+				[b setDelegate:self];
+				return b;
+			}
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
-				NSPopUpButtonCell *c = [aTableColumn dataCell]; 
+				NSPopUpButtonCell *c = [aTableColumn dataCell];
 				NSMenu *m = [c menu];
 				[m setAutoenablesItems:NO];
 				[c removeAllItems];
@@ -1068,7 +1196,7 @@
 					return [NSNumber numberWithInteger:[c numberOfItems]-1];
 
 			}
-		} 
+		}
 
 		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
@@ -1076,10 +1204,10 @@
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingOperatorOptions];
 			}
 			return [fieldMappingOperatorArray objectAtIndex:rowIndex];
-		} 
+		}
 	}
-	
-	
+
+
 	else if(aTableView == globalValuesTableView) {
 		if ([[aTableColumn identifier] isEqualToString:@"value_index"]) {
 			return [NSString stringWithFormat:@"%ld.", numberOfImportColumns + rowIndex + 1];
@@ -1093,9 +1221,18 @@
 			return [fieldMappingGlobalValuesSQLMarked objectAtIndex:numberOfImportColumns + rowIndex];
 
 	}
-	
-	
+
+
 	return nil;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+
+	if(!newTableMode) return NO;
+
+	return YES;
+
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -1156,6 +1293,18 @@
 
 		}
 
+		else if (newTableMode && [[aTableColumn identifier] isEqualToString:@"target_field"]) {
+			if([(NSString*)anObject length]) {
+				[fieldMappingTableColumnNames replaceObjectAtIndex:rowIndex withObject:anObject];
+			}
+		}
+
+		else if (newTableMode && [[aTableColumn identifier] isEqualToString:@"type"]) {
+			if([(NSString*)anObject length]) {
+				[fieldMappingTableTypes replaceObjectAtIndex:rowIndex withObject:anObject];
+			}
+		}
+
 		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
 			if([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
@@ -1184,6 +1333,20 @@
 	if (object == globalValuesTableView) {
 		[removeGlobalValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] > 0)];
 		[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
+	}
+
+}
+
+#pragma mark -
+#pragma mark NSTextField delegates
+
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+
+	id object = [notification object];
+
+	if (object == newTableNameTextField) {
+		[self validateImportButton];
 	}
 
 }

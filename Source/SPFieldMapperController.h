@@ -48,6 +48,9 @@
 	IBOutlet id advancedLabel;
 	IBOutlet NSMenuItem *matchingNameMenuItem;
 
+	IBOutlet NSTextField *newTableNameTextField;
+	IBOutlet NSTextField *newTableNameLabel;
+
 	IBOutlet id globalValuesSheet;
 	IBOutlet NSButton *addGlobalValueButton;
 	IBOutlet NSButton *removeGlobalValueButton;
@@ -75,6 +78,7 @@
 	id theDelegate;
 	id customQueryInstance;
 	id fieldMappingImportArray;
+	id tablesListInstance;
 
 	NSInteger fieldMappingCurrentRow;
 	NSMutableArray *fieldMappingArray;
@@ -100,6 +104,7 @@
 	BOOL importFieldNamesHeader;
 	BOOL showAdvancedView;
 	BOOL targetTableHasPrimaryKey;
+	BOOL newTableMode;
 
 	NSString *primaryKeyField;
 	NSNumber *lastDisabledCSVFieldcolumn;
