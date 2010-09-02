@@ -323,7 +323,6 @@
 			[[tableTargetPopup menu] addItem:[NSMenuItem separatorItem]];
 			[tableTargetPopup addItemWithTitle:NSLocalizedString(@"Refresh List", @"refresh list menu item")];
 		}
-		return;
 	}
 
 	NSInteger i;
