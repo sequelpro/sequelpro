@@ -44,6 +44,7 @@
 BOOL lastPingSuccess;
 BOOL pingActive;
 NSInteger pingFailureCount;
+BOOL keepAliveActive;
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
@@ -778,9 +779,7 @@ void pingConnectionTask(void *ptr)
 	}
 
 	// Attempt to lock the connection. If the connection currently is busy,
-    // we don't need a ping. The connection is unlocked in threadedKeepAlive
-    // before the ping actually returns, to prevent the ping from delaying
-    // other queries
+    // we don't need a ping.
 	if (![self tryLockConnection]) return;
 
 	// Store the ping time
@@ -796,6 +795,10 @@ void pingConnectionTask(void *ptr)
  */
 - (void)threadedKeepAlive
 {
+	uint64_t currentTime_t;
+	Nanoseconds currentNanoseconds;
+	double pingStartTime;
+
 	if (!mConnected || keepAliveThread != NULL) {
         // unlock the connection now. it has been locked in keepAlive:
         [self unlockConnection];
@@ -816,18 +819,36 @@ void pingConnectionTask(void *ptr)
 	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
 
 	// Create a pthread for the actual keepalive
+	keepAliveActive = YES;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	pthread_create(&keepAliveThread, &attr, (void *)&performThreadedKeepAlive, (void *)mConnection);
 
-    // unlock the connection now. it has been locked in keepAlive:
+	// Record the ping start time
+	currentTime_t = mach_absolute_time() - connectionStartTime;
+	currentNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+	pingStartTime = UnsignedWideToUInt64(currentNanoseconds);
+
+	// Loop until the ping completes
+	do {
+		usleep(10000);
+
+		// If the ping timeout has been exceeded, force a timeout; double-check that keepAliveActive
+		// is still set to NO, as otherwise the thread id may have already been reused causing
+		// cancellation of the incorrect thread.
+		currentTime_t = mach_absolute_time() - connectionStartTime;
+		currentNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+		if ((UnsignedWideToUInt64(currentNanoseconds) - pingStartTime) * 1e-9 > pingTimeout && keepAliveActive) {
+			pthread_cancel(keepAliveThread);
+			keepAliveActive = NO;
+		}
+	} while (keepAliveActive);
+
+    // Unlock the connection now, locked in keepAlive: at the start of the ping
 	[self unlockConnection];
     
-	// Give the connection time to respond, but force a timeout after the ping timeout
-	// if the thread hasn't already closed itself.
-	sleep(pingTimeout);
-	pthread_cancel(keepAliveThread);
+	// Clean up
 	keepAliveThread = NULL;
 	pthread_attr_destroy(&attr);
 }
@@ -842,6 +863,7 @@ void performThreadedKeepAlive(void *ptr)
 	} else {
 		pingFailureCount = 0;
 	}
+	keepAliveActive = NO;
 }
 
 /**
@@ -1632,7 +1654,7 @@ void performThreadedKeepAlive(void *ptr)
 				return nil;
 			}
 		}
-		
+
 		[self lockConnection];
 
 		// Run (or re-run) the query, timing the execution time of the query - note
@@ -1641,14 +1663,14 @@ void performThreadedKeepAlive(void *ptr)
 		queryResultCode = mysql_real_query(mConnection, theCQuery, theCQueryLength);
 		lastQueryExecutedAtTime = [self timeConnected];
 		queryExecutionTime = lastQueryExecutedAtTime - queryStartTime;
-		
+
 		// On success, capture the results
 		if (0 == queryResultCode) {
 			
 			queryAffectedRows = mysql_affected_rows(mConnection);
 
 			if (mysql_field_count(mConnection) != 0) {
-				
+
 				// For normal result sets, fetch the results and unlock the connection
 				if (streamResultType == MCPStreamingNone) {
 					theResult = [[MCPResult alloc] initWithMySQLPtr:mConnection encoding:stringEncoding timeZone:mTimeZone];
