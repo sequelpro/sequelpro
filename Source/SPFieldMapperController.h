@@ -76,6 +76,8 @@
 	IBOutlet id advancedReplaceView;
 	IBOutlet id advancedUpdateView;
 
+	IBOutlet NSComboBoxCell *typeComboxBox;
+
 	id theDelegate;
 	id customQueryInstance;
 	id fieldMappingImportArray;
@@ -91,6 +93,8 @@
 	NSMutableArray *fieldMappingGlobalValues;
 	NSMutableArray *fieldMappingGlobalValuesSQLMarked;
 	NSMutableArray *fieldMappingTableDefaultValues;
+	NSMutableArray *defaultFieldTypesForComboBox;
+
 
 	NSNumber *doImport;
 	NSNumber *doNotImport;
@@ -106,6 +110,7 @@
 	BOOL showAdvancedView;
 	BOOL targetTableHasPrimaryKey;
 	BOOL newTableMode;
+	BOOL addGlobalSheetIsOpen;
 
 	NSString *primaryKeyField;
 	NSNumber *lastDisabledCSVFieldcolumn;
@@ -142,6 +147,7 @@
 - (BOOL)importIntoNewTable;
 - (NSString*)onupdateString;
 - (NSString*)importHeaderString;
+- (BOOL)canBeClosed;
 
 // IBAction methods
 - (IBAction)changeTableTarget:(id)sender;

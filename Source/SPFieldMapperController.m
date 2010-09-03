@@ -61,6 +61,7 @@
 		fieldMappingOperatorOptions    = [[NSMutableArray alloc] init];
 		fieldMappingOperatorArray      = [[NSMutableArray alloc] init];
 		fieldMappingGlobalValues       = [[NSMutableArray alloc] init];
+		defaultFieldTypesForComboBox   = [[NSMutableArray alloc] init];
 		fieldMappingGlobalValuesSQLMarked = [[NSMutableArray alloc] init];
 		fieldMappingArray = nil;
 
@@ -73,12 +74,11 @@
 		doNotImportString = @" ";
 		isEqualString     = @"=";
 		newTableMode      = NO;
+		addGlobalSheetIsOpen = NO;
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
-		[fieldMapperTableView setDelegate:self];
-		[fieldMapperTableView setDataSource:self];
 
 	}
 
@@ -87,6 +87,10 @@
 
 - (void)awakeFromNib
 {
+
+	[fieldMapperTableView setDelegate:self];
+	[fieldMapperTableView setDataSource:self];
+
 
 	// Set source path
 	// Note: [fileSourcePath setURL:[NSURL fileWithPath:sourcePath]] does NOT work
@@ -128,6 +132,20 @@
 		}
 
 	}
+
+	[defaultFieldTypesForComboBox setArray:[NSArray arrayWithObjects:
+			@"varchar(255)",
+			@"char(65)",
+			@"text",
+			@"longtext",
+			@"int(11)",
+			@"bigint",
+			@"date",
+			@"datetime",
+			@"time",
+			@"timestamp",
+			nil
+		]];
 
 	[importFieldNamesHeaderSwitch setState:importFieldNamesHeader];
 
@@ -172,6 +190,7 @@
 	if (mySQLConnection) [mySQLConnection release];
 	if (sourcePath) [sourcePath release];
 	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release];
+	if (defaultFieldTypesForComboBox) [defaultFieldTypesForComboBox release];
 	if (fieldMappingTableTypes) [fieldMappingTableTypes release];
 	if (fieldMappingArray) [fieldMappingArray release];
 	if (fieldMappingButtonOptions) [fieldMappingButtonOptions release];
@@ -324,6 +343,11 @@
 		return @"";
 }
 
+- (BOOL)canBeClosed
+{
+	return [importButton isEnabled];
+}
+
 #pragma mark -
 #pragma mark IBAction methods
 
@@ -408,6 +432,10 @@
 	else if([tableTargetPopup selectedItem] == [tableTargetPopup itemAtIndex:0]) {
 
 		newTableMode = YES;
+
+		[importMethodPopup selectItemWithTitle:@"INSERT"];
+		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
+		[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:NO];
 
 		[tableTargetPopup setHidden:YES];
 		[newTableNameTextField setHidden:NO];
@@ -703,10 +731,14 @@
 
 - (IBAction)addGlobalSourceVariable:(id)sender
 {
+
+	addGlobalSheetIsOpen = YES;
+
 	[NSApp beginSheet:globalValuesSheet
 		modalForWindow:[self window]
 		modalDelegate:self
 		didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+
 	[self addGlobalValue:nil];
 }
 
@@ -931,6 +963,7 @@
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
+	addGlobalSheetIsOpen = NO;
 	if (sheet == globalValuesSheet)
 		[self updateFieldMappingButtonCell];
 }
@@ -1206,11 +1239,8 @@
 
 		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
 			if(newTableMode) {
-				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
-				[b setEditable:YES];
-				[b setFont:[NSFont systemFontOfSize:12]];
-				[aTableColumn setDataCell:b];
-				return b;
+				[aTableColumn setDataCell:typeComboxBox];
+				return [fieldMappingTableTypes objectAtIndex:rowIndex];
 			} else {
 				NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:[fieldMappingTableTypes objectAtIndex:rowIndex]] autorelease];
 				[b setEditable:NO];
@@ -1218,7 +1248,8 @@
 				[b setWraps:NO];
 				[b setFont:[NSFont systemFontOfSize:9]];
 				[b setDelegate:self];
-				return b;
+				[aTableColumn setDataCell:b];
+				return [fieldMappingTableTypes objectAtIndex:rowIndex];
 			}
 		}
 
@@ -1280,6 +1311,7 @@
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
+	if(aTableView == globalValuesTableView) return YES;
 
 	if(!newTableMode) return NO;
 
@@ -1354,6 +1386,8 @@
 		else if (newTableMode && [[aTableColumn identifier] isEqualToString:@"type"]) {
 			if([(NSString*)anObject length]) {
 				[fieldMappingTableTypes replaceObjectAtIndex:rowIndex withObject:anObject];
+				if(![defaultFieldTypesForComboBox containsObject:anObject])
+					[defaultFieldTypesForComboBox insertObject:anObject atIndex:0];
 			}
 		}
 
@@ -1397,12 +1431,14 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 
-	if(!newTableMode) return NO;
+	if(!newTableMode || addGlobalSheetIsOpen) return NO;
 
 	NSUInteger row, column;
 
 	row = [fieldMapperTableView editedRow];
 	column = [fieldMapperTableView editedColumn];
+
+	BOOL isCellComplex = ([[fieldMapperTableView preparedCellAtColumn:column row:row] isKindOfClass:[NSComboBoxCell class]]) ? YES : NO;
 
 	// Trap tab key
 	// -- for handling of blob fields and to check if it's editable look at [[self delegate] control:textShouldBeginEditing:]
@@ -1441,6 +1477,8 @@
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
 	{
 
+		if(isCellComplex && newTableMode) return NO;
+
 		// If newTableNameTextField is active enter key closes the sheet
 		if(control == newTableNameTextField) {
 			NSButton *b = [[[NSButton alloc] init] autorelease];
@@ -1459,6 +1497,8 @@
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
 	{
 
+		if(isCellComplex) return NO;
+
 		NSUInteger newRow = row+1;
 		if (newRow>=[self numberOfRowsInTableView:fieldMapperTableView]) return YES; //check if we're already at the end of the list
 
@@ -1472,6 +1512,8 @@
 	// Trap up arrow key
 	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
 	{
+
+		if(isCellComplex) return NO;
 
 		if (row==0) return YES; //already at the beginning of the list
 		NSUInteger newRow = row-1;
@@ -1515,6 +1557,19 @@
 
 	[self validateImportButton];
 
+}
+
+#pragma mark -
+#pragma mark NSComboBox delegates
+
+- (id)comboBoxCell:(NSComboBoxCell *)aComboBoxCell objectValueForItemAtIndex:(NSInteger)index
+{
+	return [defaultFieldTypesForComboBox objectAtIndex:index];
+}
+
+- (NSInteger)numberOfItemsInComboBoxCell:(NSComboBoxCell *)aComboBoxCell
+{
+	return [defaultFieldTypesForComboBox count];
 }
 
 @end

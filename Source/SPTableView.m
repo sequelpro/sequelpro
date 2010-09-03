@@ -94,10 +94,16 @@
 
 		// ENTER or RETURN closes the SPFieldMapperController sheet by sending an object with the tag 1
 		if([[[[self delegate] class] description] isEqualToString:@"SPFieldMapperController"]) {
-			NSButton *b = [[[NSButton alloc] init] autorelease];
-			[b setTag:1];
-			[[self delegate] closeSheet:b];
-			return;
+			if([[self delegate] canBeClosed]) {
+				NSButton *b = [[[NSButton alloc] init] autorelease];
+				[b setTag:1];
+				[[self delegate] closeSheet:b];
+				return;
+			} else {
+				[super keyDown:theEvent];
+				return;
+			}
+
 		}
 
 		if (![[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"] &&
