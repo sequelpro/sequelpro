@@ -92,8 +92,15 @@
 	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
 	{
 
-		// ENTER or RETURN closes the SPFieldMapperController sheet by sending an object with the tag 1
 		if([[[[self delegate] class] description] isEqualToString:@"SPFieldMapperController"]) {
+
+			if([[self delegate] isGlobalValueSheetOpen]) {
+				[[self delegate] closeGlobalValuesSheet:nil];
+				return;
+			}
+
+			// ENTER or RETURN closes the SPFieldMapperController sheet
+			// by sending an object with the tag 1 if no table cell is edited
 			if([[self delegate] canBeClosed]) {
 				NSButton *b = [[[NSButton alloc] init] autorelease];
 				[b setTag:1];
@@ -117,6 +124,7 @@
 			[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 			return;
 		}
+
 	}
 	
 	[super keyDown:theEvent];

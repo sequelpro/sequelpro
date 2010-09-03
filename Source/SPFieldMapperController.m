@@ -90,7 +90,8 @@
 
 	[fieldMapperTableView setDelegate:self];
 	[fieldMapperTableView setDataSource:self];
-
+	[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:YES];
+	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:YES];
 
 	// Set source path
 	// Note: [fileSourcePath setURL:[NSURL fileWithPath:sourcePath]] does NOT work
@@ -108,6 +109,7 @@
 
 	[newTableNameTextField setHidden:YES];
 	[newTableNameLabel setHidden:YES];
+	[newTableNameInfoButton setHidden:YES];
 
 	// Init table target popup menu
 	[tableTargetPopup removeAllItems];
@@ -348,6 +350,11 @@
 	return [importButton isEnabled];
 }
 
+- (BOOL)isGlobalValueSheetOpen
+{
+	return addGlobalSheetIsOpen;
+}
+
 #pragma mark -
 #pragma mark IBAction methods
 
@@ -433,6 +440,9 @@
 
 		newTableMode = YES;
 
+		[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:NO];
+		[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:NO];
+
 		[importMethodPopup selectItemWithTitle:@"INSERT"];
 		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
 		[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:NO];
@@ -440,7 +450,9 @@
 		[tableTargetPopup setHidden:YES];
 		[newTableNameTextField setHidden:NO];
 		[newTableNameLabel setHidden:NO];
+		[newTableNameInfoButton setHidden:NO];
 		[newTableNameTextField selectText:nil];
+
 		[fieldMappingTableColumnNames removeAllObjects];
 		[fieldMappingTableDefaultValues removeAllObjects];
 		[fieldMappingTableTypes removeAllObjects];
@@ -726,6 +738,30 @@
 	}
 }
 
+- (IBAction)addNewColumn:(id)sender
+{
+	
+}
+
+/*
+ * Set all table target field types to that one of the current selected type
+ */
+- (IBAction)setAllTypesTo:(id)sender
+{
+	NSInteger row = [fieldMapperTableView selectedRow];
+	if(row<0 || row>=[fieldMappingTableColumnNames count]) {
+		NSBeep();
+		return;
+	}
+	NSString *type = [[fieldMappingTableTypes objectAtIndex:row] retain];
+	[fieldMappingTableTypes removeAllObjects];
+	NSInteger i;
+	for(i=0; i<[fieldMappingTableColumnNames count]; i++)
+		[fieldMappingTableTypes addObject:type];
+	[fieldMapperTableView reloadData];
+	[type release];
+}
+
 #pragma mark -
 #pragma mark Global Value Sheet
 
@@ -963,9 +999,11 @@
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if ([sheet respondsToSelector:@selector(orderOut:)]) [sheet orderOut:nil];
-	addGlobalSheetIsOpen = NO;
-	if (sheet == globalValuesSheet)
+
+	if (sheet == globalValuesSheet) {
+		addGlobalSheetIsOpen = NO;
 		[self updateFieldMappingButtonCell];
+	}
 }
 
 - (void)matchHeaderNames
@@ -1131,6 +1169,23 @@
 	}
 
 	[importButton setEnabled:enableImportButton];
+
+}
+
+/**
+ * Menu item interface validation
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+
+	if (newTableMode && [menuItem action] == @selector(setAllTypesTo:)) {
+		NSInteger row = [fieldMapperTableView selectedRow];
+		NSMenuItem *setAllItem = [[fieldMapperTableView menu] itemAtIndex:0];
+		NSString *orgTitle = [[setAllItem title] substringToIndex:[[setAllItem title] rangeOfString:@":"].location];
+		[setAllItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableTypes objectAtIndex:row]]];
+	}
+
+	return YES;
 
 }
 

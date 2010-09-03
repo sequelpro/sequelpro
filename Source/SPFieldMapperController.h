@@ -30,7 +30,7 @@
 
 @interface SPFieldMapperController : NSWindowController 
 {
-	IBOutlet id fieldMapperTableView;
+	IBOutlet SPTableView *fieldMapperTableView;
 	IBOutlet id fieldMapperTableScrollView;
 	IBOutlet NSTableView *globalValuesTableView;
 	IBOutlet NSPopUpButton *tableTargetPopup;
@@ -48,9 +48,12 @@
 	IBOutlet id importMethodLabel;
 	IBOutlet id advancedLabel;
 	IBOutlet NSMenuItem *matchingNameMenuItem;
+	IBOutlet NSMenuItem *addNewColumnMenuItem;
+	IBOutlet NSMenuItem *setAllTypesToMenuItem;
 
 	IBOutlet NSTextField *newTableNameTextField;
 	IBOutlet NSTextField *newTableNameLabel;
+	IBOutlet NSButton *newTableNameInfoButton;
 
 	IBOutlet id globalValuesSheet;
 	IBOutlet NSButton *addGlobalValueButton;
@@ -148,6 +151,7 @@
 - (NSString*)onupdateString;
 - (NSString*)importHeaderString;
 - (BOOL)canBeClosed;
+- (BOOL)isGlobalValueSheetOpen;
 
 // IBAction methods
 - (IBAction)changeTableTarget:(id)sender;
@@ -165,6 +169,9 @@
 - (IBAction)insertNULLValue:(id)sender;
 - (IBAction)closeGlobalValuesSheet:(id)sender;
 - (IBAction)advancedCheckboxValidation:(id)sender;
+
+- (IBAction)addNewColumn:(id)sender;
+- (IBAction)setAllTypesTo:(id)sender;
 
 // Others
 - (void)resizeWindowByHeightDelta:(NSInteger)delta;
