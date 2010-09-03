@@ -94,6 +94,7 @@
 	BOOL csvImportMethodHasTail;
 	BOOL insertRemainingRowsAfterUpdate;
 	BOOL importMethodIsUpdate;
+	BOOL importIntoNewTable;
 
 	NSUInteger exportMode;
 	NSUserDefaults *prefs;

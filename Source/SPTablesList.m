@@ -1656,7 +1656,7 @@
 
 		[mySQLConnection queryString:query];
 		if ([mySQLConnection queryErrored]) {
-			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while importing table", @"rror while importing table message") 
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while importing table", @"error while importing table message") 
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
 											   otherButton:nil 

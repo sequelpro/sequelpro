@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="144"/>
+			<integer value="13"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -280,7 +280,6 @@
 													</object>
 													<int key="NSResizingMask">3</int>
 													<bool key="NSIsResizeable">YES</bool>
-													<bool key="NSIsEditable">YES</bool>
 													<reference key="NSTableView" ref="678921094"/>
 												</object>
 												<object class="NSTableColumn" id="283787363">
@@ -332,7 +331,6 @@
 														<bool key="NSUsesItemFromMenu">YES</bool>
 														<bool key="NSAltersState">YES</bool>
 													</object>
-													<bool key="NSIsEditable">YES</bool>
 													<reference key="NSTableView" ref="678921094"/>
 												</object>
 												<object class="NSTableColumn" id="185178480">
@@ -1860,30 +1858,6 @@
 					<int key="connectionID">69</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">fieldMapperTableView</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="678921094"/>
-					</object>
-					<int key="connectionID">70</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">delegate</string>
-						<reference key="source" ref="678921094"/>
-						<reference key="destination" ref="1001"/>
-					</object>
-					<int key="connectionID">71</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">dataSource</string>
-						<reference key="source" ref="678921094"/>
-						<reference key="destination" ref="1001"/>
-					</object>
-					<int key="connectionID">72</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">closeSheet:</string>
 						<reference key="source" ref="1001"/>
@@ -2362,6 +2336,30 @@
 						<reference key="destination" ref="1001"/>
 					</object>
 					<int key="connectionID">409</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dataSource</string>
+						<reference key="source" ref="678921094"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">410</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="678921094"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">411</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">fieldMapperTableView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="678921094"/>
+					</object>
+					<int key="connectionID">413</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3471,6 +3469,7 @@
 					<string>405.IBPluginDependency</string>
 					<string>406.IBPluginDependency</string>
 					<string>41.IBPluginDependency</string>
+					<string>42.CustomClassName</string>
 					<string>42.IBPluginDependency</string>
 					<string>42.ImportedFromIB2</string>
 					<string>43.IBPluginDependency</string>
@@ -3501,9 +3500,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{827, 351}, {522, 348}}</string>
+					<string>{{749, 497}, {522, 348}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{827, 351}, {522, 348}}</string>
+					<string>{{749, 497}, {522, 348}}</string>
 					<integer value="1"/>
 					<string>{{387, 725}, {432, 282}}</string>
 					<boolean value="NO"/>
@@ -3730,6 +3729,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>SPTableView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -3774,7 +3774,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">409</int>
+			<int key="maxID">413</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -4596,6 +4596,7 @@
 							<string>rowUpButton</string>
 							<string>skipexistingRowsCheckBox</string>
 							<string>tableTargetPopup</string>
+							<string>tablesListInstance</string>
 							<string>theDelegate</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -4614,7 +4615,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>NSTableView</string>
+							<string>id</string>
 							<string>id</string>
 							<string>NSPathControl</string>
 							<string>id</string>
@@ -4642,6 +4643,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSPopUpButton</string>
+							<string>id</string>
 							<string>id</string>
 						</object>
 					</object>
@@ -4691,6 +4693,7 @@
 							<string>rowUpButton</string>
 							<string>skipexistingRowsCheckBox</string>
 							<string>tableTargetPopup</string>
+							<string>tablesListInstance</string>
 							<string>theDelegate</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -4753,7 +4756,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">fieldMapperTableView</string>
-								<string key="candidateClassName">NSTableView</string>
+								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">fieldMappingImportArray</string>
@@ -4862,6 +4865,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableTargetPopup</string>
 								<string key="candidateClassName">NSPopUpButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tablesListInstance</string>
+								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">theDelegate</string>

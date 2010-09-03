@@ -77,6 +77,8 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
+		[fieldMapperTableView setDelegate:self];
+		[fieldMapperTableView setDataSource:self];
 
 	}
 
@@ -218,7 +220,11 @@
 
 - (NSString*)selectedTableTarget
 {
+
+	if(newTableMode) return [newTableNameTextField stringValue];
+
 	return ([tableTargetPopup titleOfSelectedItem] == nil) ? @"" : [tableTargetPopup titleOfSelectedItem];
+
 }
 
 - (NSArray*)fieldMapperOperator
@@ -257,6 +263,11 @@
 		i++;
 	}
 	return NO;
+}
+
+- (BOOL)importIntoNewTable
+{
+	return newTableMode;
 }
 
 - (NSArray*)fieldMappingTableColumnNames
@@ -318,6 +329,38 @@
 
 - (IBAction)closeSheet:(id)sender
 {
+
+	// Try to create the new TABLE
+	if(newTableMode && [sender tag] == 1) {
+
+		[[self window] endEditingFor:nil];
+
+		NSMutableString *createString = [NSMutableString string];
+		[createString appendFormat:@"CREATE TABLE %@ (\n", [[newTableNameTextField stringValue] backtickQuotedString]];
+		NSInteger columnIndex = 0;
+		NSInteger numberOfColumns = [fieldMappingTableColumnNames count];
+		for(columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
+			[createString appendFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]];
+			if(columnIndex < numberOfColumns-1) [createString appendString:@", \n"];
+		}
+		[createString appendString:@")"];
+		[mySQLConnection queryString:createString];
+
+		if ([mySQLConnection queryErrored]) {
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error adding new table", @"error adding new table message") 
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											   otherButton:nil 
+								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new table informative message"), [newTableNameTextField stringValue], createString, [mySQLConnection getLastErrorMessage]]];
+
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:nil contextInfo:nil];
+			return;
+		}
+
+	}
+
+
 	[advancedReplaceView setHidden:YES];
 	[advancedUpdateView setHidden:YES];
 	[advancedInsertView setHidden:YES];
@@ -1026,12 +1069,21 @@
 	BOOL enableImportButton = YES;
 
 	if(newTableMode) {
-		[importButton setTitle:@"Not Yet"];
-		[importButton setEnabled:NO];
-		return;
 		if(![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
 			[importButton setEnabled:NO];
 			return;
+		}
+		for(NSString* fieldName in fieldMappingTableColumnNames) {
+			if(![fieldName length]) {
+				[importButton setEnabled:NO];
+				return;
+			}
+		}
+		for(NSString* fieldType in fieldMappingTableTypes) {
+			if(![fieldType length]) {
+				[importButton setEnabled:NO];
+				return;
+			}
 		}
 	}
 
@@ -1316,7 +1368,7 @@
 			[self validateImportButton];
 		}
 		// Refresh table
-		[aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
+		// [aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
 	}
 	else if(aTableView == globalValuesTableView) {
 		if ([[aTableColumn identifier] isEqualToString:@"global_value"])
@@ -1337,17 +1389,131 @@
 
 }
 
+
+/*
+ * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
+ * only within the current row of the tableView only in newTableMode.
+ */
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+{
+
+	if(!newTableMode) return NO;
+
+	NSUInteger row, column;
+
+	row = [fieldMapperTableView editedRow];
+	column = [fieldMapperTableView editedColumn];
+
+	// Trap tab key
+	// -- for handling of blob fields and to check if it's editable look at [[self delegate] control:textShouldBeginEditing:]
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	{
+		[[control window] makeFirstResponder:control];
+
+		// Save the current line if it's the last field in the table
+		if ( [fieldMapperTableView numberOfColumns] - 1 == column) {
+			[fieldMapperTableView makeFirstResponder];
+		} else {
+			// Select the next field for editing
+			[fieldMapperTableView editColumn:column+1 row:row withEvent:nil select:YES];
+		}
+
+		return YES;
+	}
+
+	// Trap shift-tab key
+	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] )
+	{
+		[[control window] makeFirstResponder:control];
+
+		// Save the current line if it's the last field in the table
+		if ( column < 1 ) {
+			[fieldMapperTableView makeFirstResponder];
+		} else {
+			// Select the previous field for editing
+			[fieldMapperTableView editColumn:column-1 row:row withEvent:nil select:YES];
+		}
+
+		return YES;
+	}
+
+	// Trap enter key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
+	{
+
+		// If newTableNameTextField is active enter key closes the sheet
+		if(control == newTableNameTextField) {
+			NSButton *b = [[[NSButton alloc] init] autorelease];
+			[b setTag:1];
+			[self closeSheet:b];
+			return YES;
+		}
+
+		[[self window] endEditingFor:nil];
+		[[control window] makeFirstResponder:control];
+		return YES;
+
+	}
+
+	// Trap down arrow key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
+	{
+
+		NSUInteger newRow = row+1;
+		if (newRow>=[self numberOfRowsInTableView:fieldMapperTableView]) return YES; //check if we're already at the end of the list
+
+		[[control window] makeFirstResponder:control];
+
+		[fieldMapperTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+		[fieldMapperTableView editColumn:column row:newRow withEvent:nil select:YES];
+		return YES;
+	}
+
+	// Trap up arrow key
+	else if (  [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
+	{
+
+		if (row==0) return YES; //already at the beginning of the list
+		NSUInteger newRow = row-1;
+
+		[[control window] makeFirstResponder:control];
+
+		[fieldMapperTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+		[fieldMapperTableView editColumn:column row:newRow withEvent:nil select:YES];
+		return YES;
+	}
+
+
+	// Trap the escape key
+	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
+	{
+
+		// Abort editing
+		[control abortEditing];
+
+		// Preserve the focus
+		[fieldMapperTableView makeFirstResponder];
+
+		return TRUE;
+	}
+
+	return FALSE;
+
+}
+
 #pragma mark -
 #pragma mark NSTextField delegates
 
+
+/*
+ * Validate some user input in newTableMode
+ */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 
-	id object = [notification object];
+	if(!newTableMode) return;
 
-	if (object == newTableNameTextField) {
-		[self validateImportButton];
-	}
+	[self validateImportButton];
 
 }
 

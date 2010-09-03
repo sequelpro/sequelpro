@@ -76,8 +76,10 @@
 		fieldMappingImportArrayIsPreview = NO;
 		fieldMappingArrayHasGlobalVariables = NO;
 		importMethodIsUpdate = NO;
+		importIntoNewTable = NO;
 		insertRemainingRowsAfterUpdate = NO;
 		numberOfImportDataColumns = 0;
+		selectedTableTarget = nil;
 		
 		prefs = nil;
 		lastFilename = nil;
@@ -1074,15 +1076,34 @@
 													  document:tableDocumentInstance
                                               notificationName:@"Import Finished"];
 
-	// If the table selected for import is also selected in the content view,
-	// update the content view - on the main thread to avoid crashes.
-	if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
-		if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
-			[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
-		} else {
-			[tablesListInstance setContentRequiresReload:YES];
+
+	if(importIntoNewTable) {
+
+		// Select the new table
+
+		// Update current database tables 
+		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
+	
+		// Re-query the structure of all databases in the background
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+
+		// Select the new table
+		[tablesListInstance selectItemWithName:selectedTableTarget];
+
+	} else {
+
+		// If import was done into a new table or the table selected for import is also selected in the content view,
+		// update the content view - on the main thread to avoid crashes.
+		if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
+			if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
+				[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
+			} else {
+				[tablesListInstance setContentRequiresReload:YES];
+			}
 		}
+
 	}
+
 }
 
 /**
@@ -1165,13 +1186,14 @@
 	// Get mapping settings and preset some global variables
 	fieldMapperOperator  = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
 	fieldMappingArray    = [[NSArray arrayWithArray:[fieldMapperController fieldMappingArray]] retain];
-	selectedTableTarget  = [NSString stringWithString:[fieldMapperController selectedTableTarget]];
+	selectedTableTarget  = [[NSString stringWithString:[fieldMapperController selectedTableTarget]] retain];
 	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
 	fieldMappingTableColumnNames = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]] retain];
 	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
 	fieldMappingTableDefaultValues = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableDefaultValues]] retain];
 	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
 	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
+	importIntoNewTable = [fieldMapperController importIntoNewTable];
 	fieldMappingArrayHasGlobalVariables = [fieldMapperController globalValuesInUsage];
 	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
 	insertRemainingRowsAfterUpdate = [fieldMapperController insertRemainingRowsAfterUpdate];
@@ -1475,6 +1497,7 @@
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	if (lastFilename) [lastFilename release];
 	if (prefs) [prefs release];
+	if(selectedTableTarget) [selectedTableTarget release];
 	
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	

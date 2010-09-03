@@ -24,12 +24,13 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
+#import "SPTableView.h"
 
 @class SPTextView;
 
 @interface SPFieldMapperController : NSWindowController 
 {
-	IBOutlet NSTableView *fieldMapperTableView;
+	IBOutlet id fieldMapperTableView;
 	IBOutlet id fieldMapperTableScrollView;
 	IBOutlet NSTableView *globalValuesTableView;
 	IBOutlet NSPopUpButton *tableTargetPopup;
@@ -138,6 +139,7 @@
 - (BOOL)importFieldNamesHeader;
 - (BOOL)insertRemainingRowsAfterUpdate;
 - (BOOL)globalValuesInUsage;
+- (BOOL)importIntoNewTable;
 - (NSString*)onupdateString;
 - (NSString*)importHeaderString;
 

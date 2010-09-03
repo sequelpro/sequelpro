@@ -87,9 +87,19 @@
 
 - (void)keyDown:(NSEvent *)theEvent
 {
+
 	// Check if ENTER or RETURN is hit and edit the column.
 	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
 	{
+
+		// ENTER or RETURN closes the SPFieldMapperController sheet by sending an object with the tag 1
+		if([[[[self delegate] class] description] isEqualToString:@"SPFieldMapperController"]) {
+			NSButton *b = [[[NSButton alloc] init] autorelease];
+			[b setTag:1];
+			[[self delegate] closeSheet:b];
+			return;
+		}
+
 		if (![[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"] &&
 			![[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]){
 			
