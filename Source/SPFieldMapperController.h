@@ -54,6 +54,10 @@
 	IBOutlet NSTextField *newTableNameTextField;
 	IBOutlet NSTextField *newTableNameLabel;
 	IBOutlet NSButton *newTableNameInfoButton;
+	IBOutlet NSButton *newTableButton;
+	IBOutlet id newTableInfoWindow;
+	IBOutlet id newTableInfoEncodingPopup;
+	IBOutlet id newTableInfoEnginePopup;
 
 	IBOutlet id globalValuesSheet;
 	IBOutlet NSButton *addGlobalValueButton;
@@ -85,6 +89,7 @@
 	id customQueryInstance;
 	id fieldMappingImportArray;
 	id tablesListInstance;
+	id databaseDataInstance;
 
 	NSInteger fieldMappingCurrentRow;
 	NSMutableArray *fieldMappingArray;
@@ -98,6 +103,8 @@
 	NSMutableArray *fieldMappingTableDefaultValues;
 	NSMutableArray *defaultFieldTypesForComboBox;
 
+	NSString *newTableEncoding;
+	NSString *newTableEngine;
 
 	NSNumber *doImport;
 	NSNumber *doNotImport;
@@ -170,6 +177,9 @@
 - (IBAction)closeGlobalValuesSheet:(id)sender;
 - (IBAction)advancedCheckboxValidation:(id)sender;
 
+- (IBAction)newTable:(id)sender;
+- (IBAction)newTableInfo:(id)sender;
+- (IBAction)closeInfoSheet:(id)sender;
 - (IBAction)addNewColumn:(id)sender;
 - (IBAction)setAllTypesTo:(id)sender;
 

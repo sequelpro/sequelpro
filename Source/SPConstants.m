@@ -174,6 +174,8 @@ NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
 NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
+NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncoding";
+NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";

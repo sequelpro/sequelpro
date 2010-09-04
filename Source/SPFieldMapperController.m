@@ -79,6 +79,12 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
+		databaseDataInstance = [tablesListInstance valueForKeyPath:@"databaseDataInstance"];
+
+		if(![prefs objectForKey:SPLastImportIntoNewTableType])
+			[prefs setObject:@"Default" forKey:SPLastImportIntoNewTableType];
+		if(![prefs objectForKey:SPLastImportIntoNewTableEncoding])
+			[prefs setObject:@"Default" forKey:SPLastImportIntoNewTableEncoding];
 
 	}
 
@@ -110,6 +116,7 @@
 	[newTableNameTextField setHidden:YES];
 	[newTableNameLabel setHidden:YES];
 	[newTableNameInfoButton setHidden:YES];
+	[newTableButton setHidden:NO];
 
 	// Init table target popup menu
 	[tableTargetPopup removeAllItems];
@@ -358,6 +365,14 @@
 #pragma mark -
 #pragma mark IBAction methods
 
+- (IBAction)closeInfoSheet:(id)sender
+{
+	[prefs setObject:[newTableInfoEnginePopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableType];
+	[prefs setObject:[newTableInfoEncodingPopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableEncoding];
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
+}
+
 - (IBAction)closeSheet:(id)sender
 {
 
@@ -375,6 +390,15 @@
 			if(columnIndex < numberOfColumns-1) [createString appendString:@", \n"];
 		}
 		[createString appendString:@")"];
+
+		if(![[prefs objectForKey:SPLastImportIntoNewTableType] isEqualToString:@"Default"])
+			[createString appendFormat:@" ENGINE=%@", [prefs objectForKey:SPLastImportIntoNewTableType]];
+		if(![[prefs objectForKey:SPLastImportIntoNewTableEncoding] isEqualToString:@"Default"]) {
+			NSString *encodingName = [[prefs objectForKey:SPLastImportIntoNewTableEncoding] stringByMatching:@"\\((.*)\\)" capture:1L];
+			if (!encodingName) encodingName = @"utf8";
+			[createString appendFormat:[NSString stringWithFormat:@" DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]]];
+		}
+
 		[mySQLConnection queryString:createString];
 
 		if ([mySQLConnection queryErrored]) {
@@ -437,59 +461,7 @@
 
 	// New Table was chosen
 	else if([tableTargetPopup selectedItem] == [tableTargetPopup itemAtIndex:0]) {
-
-		newTableMode = YES;
-
-		[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:NO];
-		[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:NO];
-
-		[importMethodPopup selectItemWithTitle:@"INSERT"];
-		[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
-		[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:NO];
-
-		[tableTargetPopup setHidden:YES];
-		[newTableNameTextField setHidden:NO];
-		[newTableNameLabel setHidden:NO];
-		[newTableNameInfoButton setHidden:NO];
-		[newTableNameTextField selectText:nil];
-
-		[fieldMappingTableColumnNames removeAllObjects];
-		[fieldMappingTableDefaultValues removeAllObjects];
-		[fieldMappingTableTypes removeAllObjects];
-		if([importFieldNamesHeaderSwitch state] == NSOnState) {
-			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:h];
-				[fieldMappingTableDefaultValues addObject:@""];
-				[fieldMappingTableTypes addObject:@"varchar(255)"];
-			}
-		} else {
-			i = 0;
-			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
-				[fieldMappingTableDefaultValues addObject:@""];
-				[fieldMappingTableTypes addObject:@"varchar(255)"];
-			}
-		}
-
-		// Update the table view
-		NSInteger i;
-		fieldMappingCurrentRow = 0;
-		if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-		[self setupFieldMappingArray];
-		[rowDownButton setEnabled:NO];
-		[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-		[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
-
-		[self updateFieldMappingButtonCell];
-		[self updateFieldMappingOperatorOptions];
-
-		// Set all operators to doNotImport
-		[fieldMappingOperatorArray removeAllObjects];
-		for(i=0; i < [fieldMappingTableColumnNames count]; i++)
-			[fieldMappingOperatorArray addObject:doImport];
-
-		[fieldMapperTableView reloadData];
-		[self validateImportButton];
+		[self newTable:nil];
 		return;
 	}
 
@@ -738,6 +710,63 @@
 	}
 }
 
+- (IBAction)newTable:(id)sender
+{
+	newTableMode = YES;
+
+	[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:NO];
+	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:NO];
+
+	[importMethodPopup selectItemWithTitle:@"INSERT"];
+	[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
+	[[importMethodPopup itemWithTitle:@"REPLACE"] setEnabled:NO];
+
+	[tableTargetPopup setHidden:YES];
+	[newTableNameTextField setHidden:NO];
+	[newTableNameLabel setHidden:NO];
+	[newTableNameInfoButton setHidden:NO];
+	[newTableButton setHidden:YES];
+	[newTableNameTextField selectText:nil];
+
+	[fieldMappingTableColumnNames removeAllObjects];
+	[fieldMappingTableDefaultValues removeAllObjects];
+	[fieldMappingTableTypes removeAllObjects];
+	if([importFieldNamesHeaderSwitch state] == NSOnState) {
+		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
+			[fieldMappingTableColumnNames addObject:h];
+			[fieldMappingTableDefaultValues addObject:@""];
+			[fieldMappingTableTypes addObject:@"varchar(255)"];
+		}
+	} else {
+		NSInteger i = 0;
+		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
+			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
+			[fieldMappingTableDefaultValues addObject:@""];
+			[fieldMappingTableTypes addObject:@"varchar(255)"];
+		}
+	}
+
+	// Update the table view
+	NSInteger i;
+	fieldMappingCurrentRow = 0;
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	[self setupFieldMappingArray];
+	[rowDownButton setEnabled:NO];
+	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+
+	[self updateFieldMappingButtonCell];
+	[self updateFieldMappingOperatorOptions];
+
+	// Set all operators to doNotImport
+	[fieldMappingOperatorArray removeAllObjects];
+	for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+		[fieldMappingOperatorArray addObject:doImport];
+
+	[fieldMapperTableView reloadData];
+	[self validateImportButton];
+}
+
 - (IBAction)addNewColumn:(id)sender
 {
 	
@@ -760,6 +789,65 @@
 		[fieldMappingTableTypes addObject:type];
 	[fieldMapperTableView reloadData];
 	[type release];
+}
+
+- (IBAction)newTableInfo:(id)sender
+{
+	[[self window] endEditingFor:nil];
+	
+	// Populate the table type (engine) popup button
+	[newTableInfoEnginePopup removeAllItems];
+	
+	NSArray *engines = [databaseDataInstance getDatabaseStorageEngines];
+		
+	// Add default menu item
+	[newTableInfoEnginePopup addItemWithTitle:@"Default"];
+	[[newTableInfoEnginePopup menu] addItem:[NSMenuItem separatorItem]];
+	
+	for (NSDictionary *engine in engines)
+	{
+		[newTableInfoEnginePopup addItemWithTitle:[engine objectForKey:@"Engine"]];
+	}
+	
+	[newTableInfoEnginePopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableType]];
+	
+	// Populate the table encoding popup button with a default menu item
+	[newTableInfoEncodingPopup removeAllItems];
+	[newTableInfoEncodingPopup addItemWithTitle:@"Default"];
+
+	// Retrieve the server-supported encodings and add them to the menu
+	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	NSString *utf8MenuItemTitle = nil;
+	if ([encodings count] > 0
+		&& ([mySQLConnection serverMajorVersion] > 4
+			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
+	{
+		[[newTableInfoEncodingPopup menu] addItem:[NSMenuItem separatorItem]];
+		for (NSDictionary *encoding in encodings) {
+			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
+			[newTableInfoEncodingPopup addItemWithTitle:menuItemTitle];
+
+			// If the UTF8 entry has been encountered, store the menu title
+			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:@"utf8"]) {
+				utf8MenuItemTitle = [NSString stringWithString:menuItemTitle];
+			}
+		}
+
+		// If a UTF8 entry was found, promote it to the top of the list
+		if (utf8MenuItemTitle) {
+			[[newTableInfoEncodingPopup menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
+			[newTableInfoEncodingPopup insertItemWithTitle:utf8MenuItemTitle atIndex:2];
+		}
+
+		[newTableInfoEncodingPopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableEncoding]];
+
+	}
+	
+	[NSApp beginSheet:newTableInfoWindow
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
 }
 
 #pragma mark -

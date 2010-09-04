@@ -350,6 +350,9 @@ extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
 extern NSString *SPBlobTextEditorSpellCheckingEnabled;
 extern NSString *SPUniqueSchemaDelimiter;
+extern NSString *SPLastImportIntoNewTableEncoding;
+extern NSString *SPLastImportIntoNewTableType;
+
 
 // URLs
 extern NSString *SPDonationsURL;
