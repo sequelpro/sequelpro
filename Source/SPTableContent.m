@@ -1626,6 +1626,10 @@
 
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( ![mySQLConnection queryErrored] ) {
+				maxNumRows = 0;
+				tableRowsCount = 0;
+				maxNumRowsIsEstimate = NO;
+				[self updateCountText];
 
 				// Reset auto increment if suppression button was ticked
 				if([[alert suppressionButton] state] == NSOnState) {
@@ -1684,6 +1688,7 @@
 			}
 			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
+			NSInteger affectedRows = 0;
 			errors = 0;
 
 			// Disable updating of the Console Log window for large number of queries
@@ -1738,6 +1743,8 @@
 							if(!reloadAfterRemovingRow)
 								[selectedRows removeIndex:index];
 							errors++;
+						} else {
+							affectedRows++;
 						}
 					} else {
 						if(!reloadAfterRemovingRow)
@@ -1750,7 +1757,6 @@
 				// if table has only one PRIMARY KEY
 				// delete the fast way by using the PRIMARY KEY in an IN clause
 				NSMutableString *deleteQuery = [NSMutableString string];
-				NSInteger affectedRows = 0;
 
 				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
 
@@ -1793,7 +1799,6 @@
 				// if table has more than one PRIMARY KEY
 				// delete the row by using all PRIMARY KEYs in an OR clause
 				NSMutableString *deleteQuery = [NSMutableString string];
-				NSInteger affectedRows = 0;
 
 				[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
 
@@ -1801,23 +1806,7 @@
 
 					// Build the AND clause of PRIMARY KEYS
 					[deleteQuery appendString:@"("];
-					for(NSString *primaryKeyFieldName in primaryKeyFieldNames) {
-
-						id keyValue = [tableValues cellDataAtRow:index column:[[[tableDataInstance columnWithName:primaryKeyFieldName] objectForKey:@"datacolumnindex"] integerValue]];
-
-						[deleteQuery appendString:[primaryKeyFieldName backtickQuotedString]];
-						if ([keyValue isKindOfClass:[NSData class]]) {
-							[deleteQuery appendString:@"=X'"];
-							[deleteQuery appendString:[mySQLConnection prepareBinaryData:keyValue]];
-						} else {
-							[deleteQuery appendString:@"='"];
-							[deleteQuery appendString:[mySQLConnection prepareString:[keyValue description]]];
-						}
-						[deleteQuery appendString:@"' AND "];
-					}
-
-					// Remove the trailing AND and add the closing bracket
-					[deleteQuery deleteCharactersInRange:NSMakeRange([deleteQuery length]-5, 5)];
+					[deleteQuery appendString:[self argumentForRow:index excludingLimits:YES]];
 					[deleteQuery appendString:@")"];
 
 					// Split deletion query into 64k chunks
@@ -1849,6 +1838,10 @@
 
 			// Restore Console Log window's updating bahaviour
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
+
+			maxNumRows -= affectedRows;
+			tableRowsCount -= affectedRows;
+			[self updateCountText];
 
 			if (errors) {
 				NSArray *message;
@@ -2475,12 +2468,23 @@
 	return NO;
 }
 
-/*
+/**
  * Returns the WHERE argument to identify a row.
  * If "row" is -2, it uses the oldRow.
  * Uses the primary key if available, otherwise uses all fields as argument and sets LIMIT to 1
  */
 - (NSString *)argumentForRow:(NSInteger)row
+{
+	return [self argumentForRow:row excludingLimits:NO];
+}
+
+/**
+ * Returns the WHERE argument to identify a row.
+ * If "row" is -2, it uses the oldRow value.
+ * "excludeLimits" controls whether a LIMIT 1 is appended if no primary key was available to 
+ * uniquely identify the row.
+ */
+- (NSString *)argumentForRow:(NSInteger)row excludingLimits:(BOOL)excludeLimits
 {
 	MCPResult *theResult;
 	NSDictionary *theRow;
@@ -2565,7 +2569,7 @@
 		}
 	}
 
-	if (setLimit) [argument appendString:@" LIMIT 1"];
+	if (setLimit && !excludeLimits) [argument appendString:@" LIMIT 1"];
 
 	return argument;
 }

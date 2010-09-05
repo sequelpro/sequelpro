@@ -159,6 +159,7 @@
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)addRowToDB;
 - (NSString *)argumentForRow:(NSInteger)row;
+- (NSString *)argumentForRow:(NSInteger)row excludingLimits:(BOOL)excludeLimits;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
