@@ -1128,8 +1128,9 @@
 	[self storeCurrentDetailsForRestoration];
 	[self setViewportToRestore:NSZeroRect];
 
-	// Clear the table data column cache
+	// Clear the table data column cache and status (including counts)
 	[tableDataInstance resetColumnData];
+	[tableDataInstance resetStatusData];
 
 	// Load the table's data
 	[self loadTable:[tablesListInstance tableName]];
