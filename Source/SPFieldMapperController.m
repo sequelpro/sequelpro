@@ -431,8 +431,11 @@
 		NSInteger columnIndex = 0;
 		NSInteger numberOfColumns = [fieldMappingTableColumnNames count];
 		for(columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
-			[createString appendFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]];
-			if(columnIndex < numberOfColumns-1) [createString appendString:@", \n"];
+			// add to the new table only those fields which are markes as "Do Import"
+			if([fieldMappingOperatorArray objectAtIndex:columnIndex] == doImport) {
+				[createString appendFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]];
+				if(columnIndex < numberOfColumns-1) [createString appendString:@", \n"];
+			}
 		}
 		[createString appendString:@")"];
 
@@ -780,21 +783,93 @@
 	[newTableButton setHidden:YES];
 	[newTableNameTextField selectText:nil];
 
+	// Check length and type of fieldMappingImportArray 65,535
+	NSInteger maxLengthOfSourceColumns [numberOfImportColumns];
+	NSInteger typeOfSourceColumns [numberOfImportColumns]; // 0=text 1=integer
+	NSInteger columnCounter;
+
+	for(columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+		maxLengthOfSourceColumns[columnCounter] = 0;
+		typeOfSourceColumns[columnCounter] = 1;
+	}
+
+	BOOL skipFirstRow = importFieldNamesHeader;
+
+	for(NSArray* row in fieldMappingImportArray) {
+		if(skipFirstRow) {
+			skipFirstRow = NO;
+			continue;
+		}
+		columnCounter = 0;
+		for(NSString* col in row) {
+			if(maxLengthOfSourceColumns[columnCounter] < [col length]) {
+				maxLengthOfSourceColumns[columnCounter] = [col length];
+			}
+			if(typeOfSourceColumns[columnCounter] == 1) {
+				if(![[[NSNumber numberWithLongLong:[col longLongValue]] stringValue] isEqualToString:col])
+					typeOfSourceColumns[columnCounter] = 0;
+			}
+			columnCounter++;
+		}
+	}
+
+	columnCounter = 0;
 	[fieldMappingTableColumnNames removeAllObjects];
 	[fieldMappingTableDefaultValues removeAllObjects];
 	[fieldMappingTableTypes removeAllObjects];
+	BOOL serverGreaterThanVersion4 = ([mySQLConnection serverMajorVersion] >= 5) ? YES : NO;
 	if([importFieldNamesHeaderSwitch state] == NSOnState) {
 		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
 			[fieldMappingTableColumnNames addObject:h];
 			[fieldMappingTableDefaultValues addObject:@""];
-			[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
+				if(maxLengthOfSourceColumns[columnCounter] < 9)
+					[fieldMappingTableTypes addObject:@"INT(11)"];
+				else
+					[fieldMappingTableTypes addObject:@"BIGINT(11)"];
+			} else {
+				if(serverGreaterThanVersion4) {
+					if(maxLengthOfSourceColumns[columnCounter] < 256)
+						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+					else if(maxLengthOfSourceColumns[columnCounter] < 32768)
+						[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
+					else
+						[fieldMappingTableTypes addObject:@"TEXT"];
+				} else {
+					if(maxLengthOfSourceColumns[columnCounter] < 256)
+						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+					else
+						[fieldMappingTableTypes addObject:@"TEXT"];
+				}
+			}
+			columnCounter++;
 		}
 	} else {
 		NSInteger i = 0;
 		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
 			[fieldMappingTableDefaultValues addObject:@""];
-			[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
+				if(maxLengthOfSourceColumns[columnCounter] < 9)
+					[fieldMappingTableTypes addObject:@"INT(11)"];
+				else
+					[fieldMappingTableTypes addObject:@"BIGINT(11)"];
+			} else {
+				if(serverGreaterThanVersion4) {
+					if(maxLengthOfSourceColumns[columnCounter] < 256)
+						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+					else if(maxLengthOfSourceColumns[columnCounter] < 32768)
+						[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
+					else
+						[fieldMappingTableTypes addObject:@"TEXT"];
+				} else {
+					if(maxLengthOfSourceColumns[columnCounter] < 256)
+						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+					else
+						[fieldMappingTableTypes addObject:@"TEXT"];
+				}
+			}
+			columnCounter++;
 		}
 	}
 
