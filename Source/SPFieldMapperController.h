@@ -114,6 +114,7 @@
 	NSString *isEqualString;
 
 	NSInteger numberOfImportColumns;
+	NSMutableIndexSet *toBeEditedRowIndexes;
 
 	BOOL fieldMappingImportArrayIsPreview;
 	BOOL importFieldNamesHeader;
@@ -181,6 +182,8 @@
 - (IBAction)newTableInfo:(id)sender;
 - (IBAction)closeInfoSheet:(id)sender;
 - (IBAction)addNewColumn:(id)sender;
+- (IBAction)removeNewColumn:(id)sender;
+// - (IBAction)editColumn:(id)sender;
 - (IBAction)setAllTypesTo:(id)sender;
 
 // Others

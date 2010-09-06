@@ -75,6 +75,7 @@
 		isEqualString     = @"=";
 		newTableMode      = NO;
 		addGlobalSheetIsOpen = NO;
+		toBeEditedRowIndexes = [[NSMutableIndexSet alloc] init];
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -94,10 +95,12 @@
 - (void)awakeFromNib
 {
 
-	[fieldMapperTableView setDelegate:self];
-	[fieldMapperTableView setDataSource:self];
+	// Set Context Menu
 	[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:YES];
 	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:YES];
+	[[[fieldMapperTableView menu] itemAtIndex:2] setHidden:NO];
+	[[[fieldMapperTableView menu] itemAtIndex:3] setHidden:NO];
+	// [[[fieldMapperTableView menu] itemAtIndex:4] setHidden:NO];
 
 	// Set source path
 	// Note: [fileSourcePath setURL:[NSURL fileWithPath:sourcePath]] does NOT work
@@ -128,7 +131,7 @@
 		[tableTargetPopup addItemsWithTitles:allTableNames];
 
 		// Select either the currently selected table, or the first item in the list, or if no table in db switch to "New Table" mode
-		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil 
+		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil
 				&& ![[tablesListInstance tableName] isEqualToString:@""]
 				&& [allTableNames containsObject:[tablesListInstance tableName]]) {
 			[tableTargetPopup selectItemWithTitle:[tablesListInstance tableName]];
@@ -143,16 +146,16 @@
 	}
 
 	[defaultFieldTypesForComboBox setArray:[NSArray arrayWithObjects:
-			@"varchar(255)",
-			@"char(65)",
-			@"text",
-			@"longtext",
-			@"int(11)",
-			@"bigint",
-			@"date",
-			@"datetime",
-			@"time",
-			@"timestamp",
+			@"VARCHAR(255)",
+			@"CHAR(63)",
+			@"TEXT",
+			@"LONGTEXT",
+			@"INT(11)",
+			@"BIGINT",
+			@"DATE",
+			@"DATETIME",
+			@"TIME",
+			@"TIMESTAMP",
 			nil
 		]];
 
@@ -209,6 +212,7 @@
 	if (fieldMappingGlobalValuesSQLMarked) [fieldMappingGlobalValuesSQLMarked release];
 	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
 	if (primaryKeyField) [primaryKeyField release];
+	if (toBeEditedRowIndexes) [toBeEditedRowIndexes release];
 	[super dealloc];
 }
 
@@ -372,7 +376,7 @@
 		[prefs setObject:[newTableInfoEnginePopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableType];
 		[prefs setObject:[newTableInfoEncodingPopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableEncoding];
 	}
-	
+
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
 }
@@ -380,8 +384,45 @@
 - (IBAction)closeSheet:(id)sender
 {
 
+	// Try to add new columns first
+	if(!newTableMode && [toBeEditedRowIndexes count] && [sender tag] == 1) {
+		[[self window] endEditingFor:nil];
+
+		NSUInteger currentIndex = [toBeEditedRowIndexes firstIndex];
+
+		while (currentIndex != NSNotFound) {
+
+			NSMutableString *createString = [NSMutableString string];
+
+			[createString appendFormat:@"ALTER TABLE %@ ADD %@ %@",
+				[[tableTargetPopup titleOfSelectedItem] backtickQuotedString],
+				[[fieldMappingTableColumnNames objectAtIndex:currentIndex] backtickQuotedString],
+				[fieldMappingTableTypes objectAtIndex:currentIndex]];
+
+			[mySQLConnection queryString:createString];
+
+			if ([mySQLConnection queryErrored]) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error adding new column", @"error adding new column message")
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:nil
+												   otherButton:nil
+									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new column '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new column informative message"), [fieldMappingTableColumnNames objectAtIndex:currentIndex], createString, [mySQLConnection getLastErrorMessage]]];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:nil contextInfo:nil];
+				return;
+			} else {
+				[toBeEditedRowIndexes removeIndex:currentIndex];
+			}
+
+			currentIndex = [toBeEditedRowIndexes indexGreaterThanIndex:currentIndex];
+		}
+
+
+	}
+
 	// Try to create the new TABLE
-	if(newTableMode && [sender tag] == 1) {
+	else if(newTableMode && [sender tag] == 1) {
 
 		[[self window] endEditingFor:nil];
 
@@ -406,10 +447,10 @@
 		[mySQLConnection queryString:createString];
 
 		if ([mySQLConnection queryErrored]) {
-			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error adding new table", @"error adding new table message") 
-											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-										   alternateButton:nil 
-											   otherButton:nil 
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error adding new table", @"error adding new table message")
+											 defaultButton:NSLocalizedString(@"OK", @"OK button")
+										   alternateButton:nil
+											   otherButton:nil
 								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new table informative message"), [newTableNameTextField stringValue], createString, [mySQLConnection getLastErrorMessage]]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
@@ -434,6 +475,9 @@
 	NSArray *allTableNames = [tablesListInstance allTableNames];
 	NSInteger i;
 
+	// Remove all indexes for new columns
+	[toBeEditedRowIndexes removeAllIndexes];
+
 	// Is Refresh List chosen?
 	if([tableTargetPopup selectedItem] == [tableTargetPopup itemAtIndex:1]) {
 		[tableTargetPopup removeAllItems];
@@ -448,7 +492,7 @@
 		}
 
 		// Select either the currently selected table, or the first item in the list, or if no table in db switch to "New Table" mode
-		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil 
+		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil
 				&& ![[tablesListInstance tableName] isEqualToString:@""]
 				&& [allTableNames containsObject:[tablesListInstance tableName]]) {
 			[tableTargetPopup selectItemWithTitle:[tablesListInstance tableName]];
@@ -718,8 +762,12 @@
 {
 	newTableMode = YES;
 
+	// Set Context Menu
 	[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:NO];
-	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:NO];
+	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:YES];
+	[[[fieldMapperTableView menu] itemAtIndex:2] setHidden:YES];
+	[[[fieldMapperTableView menu] itemAtIndex:3] setHidden:YES];
+	// [[[fieldMapperTableView menu] itemAtIndex:4] setHidden:YES];
 
 	[importMethodPopup selectItemWithTitle:@"INSERT"];
 	[[importMethodPopup itemWithTitle:@"UPDATE"] setEnabled:NO];
@@ -739,14 +787,14 @@
 		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
 			[fieldMappingTableColumnNames addObject:h];
 			[fieldMappingTableDefaultValues addObject:@""];
-			[fieldMappingTableTypes addObject:@"varchar(255)"];
+			[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
 		}
 	} else {
 		NSInteger i = 0;
 		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
 			[fieldMappingTableDefaultValues addObject:@""];
-			[fieldMappingTableTypes addObject:@"varchar(255)"];
+			[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
 		}
 	}
 
@@ -771,10 +819,70 @@
 	[self validateImportButton];
 }
 
+/*
+ * Add new column to the selected table (processed after pressing 'Import' button)
+ */
 - (IBAction)addNewColumn:(id)sender
 {
-	
+
+	[fieldMappingOperatorArray addObject:doNotImport];
+	[fieldMappingTableColumnNames addObject:NSLocalizedString(@"New Column Name", @"new column name placeholder string")];
+	[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+	[fieldMappingTableDefaultValues addObject:@""];
+
+	NSInteger newIndex = [fieldMappingTableTypes count]-1;
+
+	[fieldMappingArray addObject:[NSNumber numberWithInteger:newIndex]];
+	[toBeEditedRowIndexes addIndex:newIndex];
+
+	[fieldMapperTableView reloadData];
+
+	[fieldMapperTableView editColumn:2 row:newIndex withEvent:nil select:YES];
+
 }
+
+
+/*
+ * Remove currently new added column
+ */
+- (IBAction)removeNewColumn:(id)sender
+{
+
+	NSInteger toBeRemovedIndex = [fieldMapperTableView selectedRow];
+
+	if(![toBeEditedRowIndexes containsIndex:toBeRemovedIndex]) {
+		NSBeep();
+		return;
+	}
+
+	[fieldMappingOperatorArray removeObjectAtIndex:toBeRemovedIndex];
+	[fieldMappingTableColumnNames removeObjectAtIndex:toBeRemovedIndex];
+	[fieldMappingTableTypes removeObjectAtIndex:toBeRemovedIndex];
+	[fieldMappingTableDefaultValues removeObjectAtIndex:toBeRemovedIndex];
+
+	[fieldMappingArray removeObjectAtIndex:toBeRemovedIndex];
+	[toBeEditedRowIndexes removeIndex:toBeRemovedIndex];
+
+	// Renumber indexes greater than toBeRemovedIndex
+	NSInteger currentIndex = [toBeEditedRowIndexes firstIndex];
+	while(currentIndex != NSNotFound) {
+		if(currentIndex > toBeRemovedIndex) {
+			[toBeEditedRowIndexes addIndex:currentIndex-1];
+			[toBeEditedRowIndexes removeIndex:currentIndex];
+		}
+		currentIndex = [toBeEditedRowIndexes indexGreaterThanIndex:currentIndex];
+	}
+
+	[fieldMapperTableView reloadData];
+
+}
+
+// - (IBAction)editColumn:(id)sender
+// {
+// 	toBeEditedRowIndexes = [fieldMapperTableView selectedRow];
+// 	[fieldMapperTableView reloadData];
+// 	[fieldMapperTableView editColumn:3 row:[fieldMapperTableView selectedRow] withEvent:nil select:YES];
+// }
 
 /*
  * Set all table target field types to that one of the current selected type
@@ -795,26 +903,29 @@
 	[type release];
 }
 
+/*
+ * Show sheet to set up encoding and engine for the new to be created table
+ */
 - (IBAction)newTableInfo:(id)sender
 {
 	[[self window] endEditingFor:nil];
-	
+
 	// Populate the table type (engine) popup button
 	[newTableInfoEnginePopup removeAllItems];
-	
+
 	NSArray *engines = [databaseDataInstance getDatabaseStorageEngines];
-		
+
 	// Add default menu item
 	[newTableInfoEnginePopup addItemWithTitle:@"Default"];
 	[[newTableInfoEnginePopup menu] addItem:[NSMenuItem separatorItem]];
-	
+
 	for (NSDictionary *engine in engines)
 	{
 		[newTableInfoEnginePopup addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
-	
+
 	[newTableInfoEnginePopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableType]];
-	
+
 	// Populate the table encoding popup button with a default menu item
 	[newTableInfoEncodingPopup removeAllItems];
 	[newTableInfoEncodingPopup addItemWithTitle:@"Default"];
@@ -846,7 +957,7 @@
 		[newTableInfoEncodingPopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableEncoding]];
 
 	}
-	
+
 	[NSApp beginSheet:newTableInfoWindow
 	   modalForWindow:[self window]
 		modalDelegate:self
@@ -1270,11 +1381,29 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 
+	NSInteger row = [fieldMapperTableView selectedRow];
+
+	// Hide/display Remove New Column menu item
+	[[[fieldMapperTableView menu] itemAtIndex:3] setHidden:([toBeEditedRowIndexes containsIndex:row]) ? NO : YES];
+
 	if (newTableMode && [menuItem action] == @selector(setAllTypesTo:)) {
-		NSInteger row = [fieldMapperTableView selectedRow];
-		NSMenuItem *setAllItem = [[fieldMapperTableView menu] itemAtIndex:0];
-		NSString *orgTitle = [[setAllItem title] substringToIndex:[[setAllItem title] rangeOfString:@":"].location];
-		[setAllItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableTypes objectAtIndex:row]]];
+		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
+		[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableTypes objectAtIndex:row]]];
+	}
+	else if (!newTableMode && [menuItem action] == @selector(editColumn:)) {
+		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
+		[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableColumnNames objectAtIndex:row]]];
+	}
+	else if (!newTableMode && [menuItem action] == @selector(removeNewColumn:)) {
+		if([toBeEditedRowIndexes containsIndex:row]) {
+			NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
+			[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableColumnNames objectAtIndex:row]]];
+			return YES;
+		} else {
+			NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
+			[menuItem setTitle:[NSString stringWithFormat:@"%@:", orgTitle]];
+			return NO;
+		}
 	}
 
 	return YES;
@@ -1369,6 +1498,13 @@
 
 	if(aTableView == fieldMapperTableView) {
 		if ([[aTableColumn identifier] isEqualToString:@"target_field"]) {
+			if([toBeEditedRowIndexes containsIndex:rowIndex]) {
+				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableColumnNames objectAtIndex:rowIndex]] autorelease];
+				[b setEditable:YES];
+				[b setFont:[NSFont systemFontOfSize:12]];
+				[aTableColumn setDataCell:b];
+				return b;
+			}
 			if(newTableMode) {
 				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableColumnNames objectAtIndex:rowIndex]] autorelease];
 				[b setEditable:YES];
@@ -1385,6 +1521,10 @@
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+			if([toBeEditedRowIndexes containsIndex:rowIndex]) {
+				[aTableColumn setDataCell:typeComboxBox];
+				return [fieldMappingTableTypes objectAtIndex:rowIndex];
+			}
 			if(newTableMode) {
 				[aTableColumn setDataCell:typeComboxBox];
 				return [fieldMappingTableTypes objectAtIndex:rowIndex];
@@ -1460,6 +1600,8 @@
 {
 	if(aTableView == globalValuesTableView) return YES;
 
+	if([toBeEditedRowIndexes containsIndex:rowIndex]) return YES;
+
 	if(!newTableMode) return NO;
 
 	return YES;
@@ -1524,17 +1666,23 @@
 
 		}
 
-		else if (newTableMode && [[aTableColumn identifier] isEqualToString:@"target_field"]) {
-			if([(NSString*)anObject length]) {
-				[fieldMappingTableColumnNames replaceObjectAtIndex:rowIndex withObject:anObject];
+		else if ([[aTableColumn identifier] isEqualToString:@"target_field"]) {
+			if(newTableMode || [toBeEditedRowIndexes containsIndex:rowIndex]) {
+				if([(NSString*)anObject length]) {
+					[fieldMappingTableColumnNames replaceObjectAtIndex:rowIndex withObject:anObject];
+				}
 			}
 		}
 
-		else if (newTableMode && [[aTableColumn identifier] isEqualToString:@"type"]) {
-			if([(NSString*)anObject length]) {
-				[fieldMappingTableTypes replaceObjectAtIndex:rowIndex withObject:anObject];
-				if(![defaultFieldTypesForComboBox containsObject:anObject])
-					[defaultFieldTypesForComboBox insertObject:anObject atIndex:0];
+		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+			if(newTableMode || [toBeEditedRowIndexes containsIndex:rowIndex]) {
+				if([(NSString*)anObject length]) {
+					[fieldMappingTableTypes replaceObjectAtIndex:rowIndex withObject:anObject];
+					if(![defaultFieldTypesForComboBox containsObject:anObject])
+						[defaultFieldTypesForComboBox insertObject:anObject atIndex:0];
+				}
+			} else {
+
 			}
 		}
 
@@ -1578,7 +1726,7 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 
-	if(!newTableMode || addGlobalSheetIsOpen) return NO;
+	if((!newTableMode || addGlobalSheetIsOpen) && ![toBeEditedRowIndexes containsIndex:[fieldMapperTableView selectedRow]]) return NO;
 
 	NSUInteger row, column;
 
@@ -1666,6 +1814,8 @@
 		NSUInteger newRow = row-1;
 
 		[[control window] makeFirstResponder:control];
+
+		if(![toBeEditedRowIndexes containsIndex:newRow]) return NO;
 
 		[fieldMapperTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[fieldMapperTableView editColumn:column row:newRow withEvent:nil select:YES];
