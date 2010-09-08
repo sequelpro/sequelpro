@@ -54,6 +54,8 @@
 @synthesize sshHost;
 @synthesize sshUser;
 @synthesize sshPassword;
+@synthesize sshKeyLocationEnabled;
+@synthesize sshKeyLocation;
 @synthesize sshPort;
 
 @synthesize connectionKeychainItemName;
@@ -181,6 +183,15 @@
 		return;
 	}
 
+	// If an SSH key has been provided, verify it exists
+	if ([self type] == SPSSHTunnelConnection && sshKeyLocationEnabled && sshKeyLocation) {
+		if (![[NSFileManager defaultManager] fileExistsAtPath:[sshKeyLocation stringByExpandingTildeInPath]]) {
+			[self setSshKeyLocationEnabled:NSOffState];
+			SPBeginAlertSheet(NSLocalizedString(@"SSH Key not found", @"SSH key check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSH key location was specified, but no file was found in the specified location.  Please re-select the key and try again.", @"SSH key not found message"));
+			return;
+		}
+	}
+
 	// Ensure that a socket connection is not inadvertently used
 	if (![self checkHost]) return;
 	
@@ -281,6 +292,11 @@
 		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 	} else if (sshPassword) {
 		[sshTunnel setPassword:[self sshPassword]];
+	}
+
+	// Set the public key path if appropriate
+	if (sshKeyLocationEnabled && sshKeyLocation) {
+		[sshTunnel setKeyFilePath:sshKeyLocation];
 	}
 
 	// Set the callback function on the tunnel
@@ -459,6 +475,47 @@
 
 #pragma mark -
 #pragma mark Interface interaction
+
+/**
+ * Opens the SSH key selection window, ready to select a SSH key.
+ */
+- (IBAction)chooseSSHKey:(id)sender
+{
+	[favoritesTable deselectAll:self];
+	NSString *directoryPath = nil;
+	NSString *filePath = nil;
+
+	// If the custom key location is currently disabled - after the button
+	// action - leave it disabled and return without showing the sheet.
+	if (!sshKeyLocationEnabled) {
+		return;
+	}
+
+	// Otherwise open a panel at the last or default location
+	if (sshKeyLocation && [sshKeyLocation length]) {
+		filePath = [sshKeyLocation lastPathComponent];
+		directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
+	}
+	[[NSOpenPanel openPanel] beginSheetForDirectory:directoryPath
+											   file:filePath
+											  types:[NSArray arrayWithObjects:@"pem", @"", nil]
+									 modalForWindow:[tableDocument parentWindow]
+									  modalDelegate:self
+									 didEndSelector:@selector(chooseSSHKeySheetDidEnd:returnCode:contextInfo:)
+										contextInfo:nil];
+}
+
+/**
+ * Called after closing the SSH key selection sheet.
+ */
+- (void)chooseSSHKeySheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode == NSCancelButton) {
+		[self setSshKeyLocationEnabled:NSOffState];
+		return;
+	}
+	[self setSshKeyLocation:[[openPanel filename] stringByAbbreviatingWithTildeInPath]];
+}
 
 /**
  * Opens the preferences window, or brings it to the front, and switch to the favorites tab.
@@ -679,6 +736,8 @@
 	[self setDatabase:([self valueForKeyPath:@"selectedFavorite.database"] ? [self valueForKeyPath:@"selectedFavorite.database"] : @"")];
 	[self setSshHost:([self valueForKeyPath:@"selectedFavorite.sshHost"] ? [self valueForKeyPath:@"selectedFavorite.sshHost"] : @"")];
 	[self setSshUser:([self valueForKeyPath:@"selectedFavorite.sshUser"] ? [self valueForKeyPath:@"selectedFavorite.sshUser"] : @"")];
+	[self setSshKeyLocationEnabled:([self valueForKeyPath:@"selectedFavorite.sshKeyLocationEnabled"] ? [[self valueForKeyPath:@"selectedFavorite.sshKeyLocationEnabled"] intValue] : NSOffState)];
+	[self setSshKeyLocation:([self valueForKeyPath:@"selectedFavorite.sshKeyLocation"] ? [self valueForKeyPath:@"selectedFavorite.sshKeyLocation"] : @"")];
 	[self setSshPort:([self valueForKeyPath:@"selectedFavorite.sshPort"] ? [self valueForKeyPath:@"selectedFavorite.sshPort"] : @"")];
 
 	// Check whether the password exists in the keychain, and if so add it; also record the
@@ -773,6 +832,8 @@
 	if ([self database]) [newFavorite setObject:[self database] forKey:@"database"];
 	if ([self sshHost]) [newFavorite setObject:[self sshHost] forKey:@"sshHost"];
 	if ([self sshUser]) [newFavorite setObject:[self sshUser] forKey:@"sshUser"];
+	[newFavorite setObject:[NSNumber numberWithInt:[self sshKeyLocationEnabled]] forKey:@"sshKeyLocationEnabled"];
+	if ([self sshKeyLocation]) [newFavorite setObject:[self sshKeyLocation] forKey:@"sshKeyLocation"];
 	if ([self sshPort]) [newFavorite setObject:[self sshPort] forKey:@"sshPort"];
 
 	// Add the new favorite to the user defaults array

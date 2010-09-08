@@ -80,8 +80,10 @@
 	NSString *sshHost;
 	NSString *sshUser;
 	NSString *sshPassword;
+	int sshKeyLocationEnabled;
+	NSString *sshKeyLocation;
 	NSString *sshPort;
-@private NSString *favoritesPBoardType;
+	@private NSString *favoritesPBoardType;
 
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
@@ -109,6 +111,7 @@
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
 	IBOutlet NSSecureTextField *sshSSHPasswordField;
+	IBOutlet NSButton *sshSSHKeyButton;
 
 	IBOutlet NSButton *addToFavoritesButton;
 	IBOutlet NSButton *connectButton;
@@ -135,6 +138,8 @@
 @property (readwrite, retain) NSString *sshHost;
 @property (readwrite, retain) NSString *sshUser;
 @property (readwrite, retain) NSString *sshPassword;
+@property (readwrite, assign) int sshKeyLocationEnabled;
+@property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
 
 @property (readwrite, retain) NSString *connectionKeychainItemName;
@@ -158,6 +163,7 @@
 - (void)addConnectionToDocument;
 
 // Interface interaction
+- (IBAction)chooseSSHKey:(id)sender;
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;

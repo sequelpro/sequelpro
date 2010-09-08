@@ -72,6 +72,7 @@
 	}
 
 	parentWindow = nil;
+	identityFilePath = nil;
 	sshQuestionDialog = nil;
 	sshPasswordDialog = nil;
 	password = nil;
@@ -125,6 +126,19 @@
 	if (passwordInKeychain) return NO;
 	password = [[NSString alloc] initWithString:thePassword];
 	
+	return YES;
+}
+
+/**
+ * Sets the path of an identity file, or public key file, to use when connecting.
+ */
+- (BOOL) setKeyFilePath:(NSString *)thePath
+{
+	NSString *expandedPath = [thePath stringByExpandingTildeInPath];
+	if (![[NSFileManager defaultManager] fileExistsAtPath:expandedPath]) return NO;
+
+	if (identityFilePath) [identityFilePath release];
+	identityFilePath = [[NSString alloc] initWithString:expandedPath];
 	return YES;
 }
 
@@ -282,6 +296,10 @@
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
+	if (identityFilePath) {
+		[taskArguments addObject:@"-i"];
+		[taskArguments addObject:identityFilePath];
+	}
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
 		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]];		
@@ -652,6 +670,7 @@
 	if (password) [password release];
 	if (keychainName) [keychainName release];
 	if (keychainAccount) [keychainAccount release];
+	if (identityFilePath) [identityFilePath release];
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
 	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;

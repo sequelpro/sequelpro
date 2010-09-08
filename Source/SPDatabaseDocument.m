@@ -268,6 +268,8 @@
 	[connectionController setSocket:@""];
 	[connectionController setSshHost:@""];
 	[connectionController setSshUser:@""];
+	[connectionController setSshKeyLocationEnabled:NSOffState];
+	[connectionController setSshKeyLocation:@""];
 	[connectionController setSshPort:@""];
 	[connectionController setDatabase:@""];
 	[connectionController setPassword:nil];
@@ -485,6 +487,10 @@
 			[connectionController setSshHost:[connection objectForKey:@"ssh_host"]];
 		if([connection objectForKey:@"ssh_user"])
 			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
+		if([connection objectForKey:@"ssh_keyLocationEnabled"])
+			[connectionController setSshKeyLocationEnabled:[[connection objectForKey:@"ssh_keyLocationEnabled"] intValue]];
+		if([connection objectForKey:@"ssh_keyLocation"])
+			[connectionController setSshKeyLocation:[connection objectForKey:@"ssh_keyLocation"]];
 		if([connection objectForKey:@"ssh_port"])
 			[connectionController setSshPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"ssh_port"] integerValue]]];
 
@@ -3293,6 +3299,8 @@
 		aString = @"SPSSHTunnelConnection";
 		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
+		[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
+		[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
 		if([connectionController sshPort] && [[connectionController sshPort] length])
 			[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
 		break;

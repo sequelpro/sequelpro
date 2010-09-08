@@ -272,6 +272,7 @@
 		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
 		58D2E230101222870063EF1D /* link-arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22D101222870063EF1D /* link-arrow.png */; };
 		58DA8863103E15B5000B98DF /* SPLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DA8862103E15B5000B98DF /* SPLogger.m */; };
+		58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
@@ -899,6 +900,7 @@
 		58D2E22D101222870063EF1D /* link-arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow.png"; sourceTree = "<group>"; };
 		58DA8861103E15B5000B98DF /* SPLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPLogger.h; sourceTree = "<group>"; };
 		58DA8862103E15B5000B98DF /* SPLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPLogger.m; sourceTree = "<group>"; };
+		58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = KeyTemplate.pdf; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
 		58FEF57C0F3B4E9700518E8E /* SPTableData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableData.h; sourceTree = "<group>"; };
@@ -1764,6 +1766,7 @@
 				17E6419D0EF02036001BC333 /* grabber-horizontal.png */,
 				17E6419E0EF02036001BC333 /* grabber-vertical.png */,
 				17E6419F0EF02036001BC333 /* hideconsole.tiff */,
+				58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */,
 				58D2E22D101222870063EF1D /* link-arrow.png */,
 				58D2E22B101222870063EF1D /* link-arrow-clicked.png */,
 				581068B51015411B0068C6E2 /* link-arrow-highlighted.png */,
@@ -2527,6 +2530,7 @@
 				58A8A72711A0149100B95749 /* MainWindow.xib in Resources */,
 				17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */,
 				17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */,
+				58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

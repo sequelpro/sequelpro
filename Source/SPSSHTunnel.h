@@ -51,6 +51,7 @@
 	NSString *keychainName;
 	NSString *keychainAccount;
 	NSString *requestedPassphrase;
+	NSString *identityFilePath;
 	NSMutableArray *debugMessages;
 	NSLock *debugMessagesLock;
 	BOOL useHostFallback;
@@ -71,6 +72,7 @@
 - (void) setParentWindow:(NSWindow *)theWindow;
 - (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 - (BOOL) setPassword:(NSString *)thePassword;
+- (BOOL) setKeyFilePath:(NSString *)thePath;
 - (NSInteger) state;
 - (NSString *) lastError;
 - (NSString *) debugMessages;

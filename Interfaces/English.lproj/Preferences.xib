@@ -22,11 +22,12 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="1717"/>
+			<integer value="1176"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.brandonwalkin.BWToolkit</string>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+			<string>com.brandonwalkin.BWToolkit</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -56,7 +57,7 @@
 				<string key="NSWindowTitle">Preferences</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{580, 50}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<nil key="NSNextResponder"/>
@@ -65,7 +66,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{580, 72}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 			</object>
 			<object class="NSCustomView" id="594324362">
 				<nil key="NSNextResponder"/>
@@ -478,7 +479,7 @@
 								<string key="NSColorName">controlColor</string>
 								<object class="NSColor" key="NSColor" id="432854223">
 									<int key="NSColorSpace">3</int>
-									<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+									<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 								</object>
 							</object>
 							<object class="NSColor" key="NSTextColor" id="1035618107">
@@ -604,7 +605,7 @@
 						<reference key="NSNextResponder" ref="594324362"/>
 						<int key="NSvFlags">12</int>
 						<string key="NSFrame">{{202.5, 176}, {360, 5}}</string>
-						<string key="NSBounds">{{7, 0}, {346, 5}}</string>
+						<string key="NSBounds">{{7.5, 0}, {345, 5}}</string>
 						<reference key="NSSuperview" ref="594324362"/>
 						<string key="NSOffsets">{0, 0}</string>
 						<object class="NSTextFieldCell" key="NSTitleCell">
@@ -1497,7 +1498,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="593732956">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2217,6 +2218,66 @@
 													<int key="NSvFlags">256</int>
 													<object class="NSMutableArray" key="NSSubviews">
 														<bool key="EncodedWithXMLCoder">YES</bool>
+														<object class="NSTextField" id="723511019">
+															<reference key="NSNextResponder" ref="404987940"/>
+															<int key="NSvFlags">266</int>
+															<string key="NSFrame">{{119, 33}, {159, 19}}</string>
+															<reference key="NSSuperview" ref="404987940"/>
+															<bool key="NSEnabled">YES</bool>
+															<object class="NSTextFieldCell" key="NSCell" id="449219317">
+																<int key="NSCellFlags">-2073952703</int>
+																<int key="NSCellFlags2">4326912</int>
+																<string key="NSContents"/>
+																<reference key="NSSupport" ref="26"/>
+																<reference key="NSControlView" ref="723511019"/>
+																<bool key="NSDrawsBackground">YES</bool>
+																<reference key="NSBackgroundColor" ref="1001357688"/>
+																<object class="NSColor" key="NSTextColor">
+																	<int key="NSColorSpace">3</int>
+																	<bytes key="NSWhite">MC41MDQwMzIyNTgxAA</bytes>
+																</object>
+															</object>
+														</object>
+														<object class="NSTextField" id="586801007">
+															<reference key="NSNextResponder" ref="404987940"/>
+															<int key="NSvFlags">268</int>
+															<string key="NSFrame">{{5, 35}, {109, 14}}</string>
+															<reference key="NSSuperview" ref="404987940"/>
+															<bool key="NSEnabled">YES</bool>
+															<object class="NSTextFieldCell" key="NSCell" id="104958740">
+																<int key="NSCellFlags">68288064</int>
+																<int key="NSCellFlags2">71304192</int>
+																<string key="NSContents">SSH Key:</string>
+																<reference key="NSSupport" ref="26"/>
+																<reference key="NSControlView" ref="586801007"/>
+																<reference key="NSBackgroundColor" ref="700609571"/>
+																<reference key="NSTextColor" ref="1035618107"/>
+															</object>
+														</object>
+														<object class="NSButton" id="339449226">
+															<reference key="NSNextResponder" ref="404987940"/>
+															<int key="NSvFlags">265</int>
+															<string key="NSFrame">{{277, 32}, {25, 21}}</string>
+															<reference key="NSSuperview" ref="404987940"/>
+															<bool key="NSEnabled">YES</bool>
+															<object class="NSButtonCell" key="NSCell" id="447774753">
+																<int key="NSCellFlags">67239424</int>
+																<int key="NSCellFlags2">134348800</int>
+																<string key="NSContents"/>
+																<reference key="NSSupport" ref="26"/>
+																<reference key="NSControlView" ref="339449226"/>
+																<int key="NSButtonFlags">-926138113</int>
+																<int key="NSButtonFlags2">162</int>
+																<object class="NSCustomResource" key="NSNormalImage">
+																	<string key="NSClassName">NSImage</string>
+																	<string key="NSResourceName">KeyTemplate</string>
+																</object>
+																<string key="NSAlternateContents"/>
+																<string key="NSKeyEquivalent"/>
+																<int key="NSPeriodicDelay">400</int>
+																<int key="NSPeriodicInterval">75</int>
+															</object>
+														</object>
 														<object class="NSTextField" id="1041581151">
 															<reference key="NSNextResponder" ref="404987940"/>
 															<int key="NSvFlags">266</int>
@@ -2237,7 +2298,7 @@
 														<object class="NSTextField" id="663701836">
 															<reference key="NSNextResponder" ref="404987940"/>
 															<int key="NSvFlags">266</int>
-															<string key="NSFrame">{{119, 33}, {183, 19}}</string>
+															<string key="NSFrame">{{119, 33}, {159, 19}}</string>
 															<reference key="NSSuperview" ref="404987940"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSTextFieldCell" key="NSCell" id="996160392">
@@ -2667,6 +2728,7 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{580, 381}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="1041614321">
@@ -4161,10 +4223,6 @@ AQAAAAA</bytes>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="151174232">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>_dummy</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSArrayController" id="937123943">
@@ -4187,6 +4245,8 @@ AQAAAAA</bytes>
 					<string>DisplayTableViewVerticalGridlines</string>
 					<string>type</string>
 					<string>TableRowCountQueryLevel</string>
+					<string>sshKeyLocationEnabled</string>
+					<string>sshKeyLocation</string>
 				</object>
 				<bool key="NSEditable">YES</bool>
 				<bool key="NSAutomaticallyPreparesContent">YES</bool>
@@ -7047,6 +7107,206 @@ AQAAAAA</bytes>
 					</object>
 					<int key="connectionID">1834</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.sshKeyLocationEnabled</string>
+						<reference key="source" ref="339449226"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="339449226"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">value: selection.sshKeyLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.sshKeyLocationEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1838</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: selection.sshKeyLocationEnabled</string>
+						<reference key="source" ref="663701836"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="663701836"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">hidden: selection.sshKeyLocationEnabled</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">selection.sshKeyLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1844</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: selection.sshKeyLocationEnabled</string>
+						<reference key="source" ref="459575305"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="459575305"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">hidden: selection.sshKeyLocationEnabled</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">selection.sshKeyLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1850</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: selection.sshKeyLocationEnabled</string>
+						<reference key="source" ref="586801007"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="586801007"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">hidden: selection.sshKeyLocationEnabled</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">selection.sshKeyLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+									<string>NSValueTransformerName</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<string>NSNegateBoolean</string>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1858</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="723511019"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">1862</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: selection.sshKeyLocationEnabled</string>
+						<reference key="source" ref="723511019"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="723511019"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">hidden: selection.sshKeyLocationEnabled</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">selection.sshKeyLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+									<string>NSValueTransformerName</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<string>NSNegateBoolean</string>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1867</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: selection.sshKeyLocation</string>
+						<reference key="source" ref="723511019"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="723511019"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">value: selection.sshKeyLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">selection.sshKeyLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1869</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: selection.sshKeyLocation</string>
+						<reference key="source" ref="723511019"/>
+						<reference key="destination" ref="937123943"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="723511019"/>
+							<reference key="NSDestination" ref="937123943"/>
+							<string key="NSLabel">toolTip: selection.sshKeyLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">selection.sshKeyLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1871</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseSSHKey:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="339449226"/>
+					</object>
+					<int key="connectionID">1872</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -8391,6 +8651,9 @@ AQAAAAA</bytes>
 							<reference ref="578376935"/>
 							<reference ref="623079900"/>
 							<reference ref="981807110"/>
+							<reference ref="339449226"/>
+							<reference ref="586801007"/>
+							<reference ref="723511019"/>
 						</object>
 						<reference key="parent" ref="682271284"/>
 					</object>
@@ -9978,6 +10241,48 @@ AQAAAAA</bytes>
 						<reference key="object" ref="803513953"/>
 						<reference key="parent" ref="202566886"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1835</int>
+						<reference key="object" ref="339449226"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="447774753"/>
+						</object>
+						<reference key="parent" ref="404987940"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1836</int>
+						<reference key="object" ref="447774753"/>
+						<reference key="parent" ref="339449226"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1851</int>
+						<reference key="object" ref="586801007"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="104958740"/>
+						</object>
+						<reference key="parent" ref="404987940"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1852</int>
+						<reference key="object" ref="104958740"/>
+						<reference key="parent" ref="586801007"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1859</int>
+						<reference key="object" ref="723511019"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="449219317"/>
+						</object>
+						<reference key="parent" ref="404987940"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1860</int>
+						<reference key="object" ref="449219317"/>
+						<reference key="parent" ref="723511019"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -10302,6 +10607,15 @@ AQAAAAA</bytes>
 					<string>1824.IBPluginDependency</string>
 					<string>1824.ImportedFromIB2</string>
 					<string>1825.IBPluginDependency</string>
+					<string>1835.IBPluginDependency</string>
+					<string>1835.notes</string>
+					<string>1836.IBPluginDependency</string>
+					<string>1851.IBPluginDependency</string>
+					<string>1851.ImportedFromIB2</string>
+					<string>1852.IBPluginDependency</string>
+					<string>1859.IBPluginDependency</string>
+					<string>1859.ImportedFromIB2</string>
+					<string>1860.IBPluginDependency</string>
 					<string>2.IBPluginDependency</string>
 					<string>24.IBPluginDependency</string>
 					<string>24.ImportedFromIB2</string>
@@ -10923,6 +11237,39 @@ AQAAAAA</bytes>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableAttributedString">
+						<object class="NSMutableString" key="NSString">
+							<characters key="NS.bytes">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</characters>
+						</object>
+						<object class="NSDictionary" key="NSAttributes">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="NSArray" key="dict.sortedKeys">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<string>NSColor</string>
+								<string>NSFont</string>
+								<string>NSOriginalFont</string>
+								<string>NSParagraphStyle</string>
+							</object>
+							<object class="NSMutableArray" key="dict.values">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<reference ref="6928728"/>
+								<reference ref="26"/>
+								<reference ref="26"/>
+								<object class="NSParagraphStyle">
+									<int key="NSAlignment">4</int>
+									<nil key="NSTabStops"/>
+								</object>
+							</object>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="1"/>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="1"/>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -11255,7 +11602,7 @@ AQAAAAA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1834</int>
+			<int key="maxID">1872</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -11387,382 +11734,7 @@ AQAAAAA</bytes>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFavorite:</string>
 							<string>changeFont:</string>
-							<string>displayAutoUpdatePreferences:</string>
-							<string>displayEditorPreferences:</string>
-							<string>displayFavoritePreferences:</string>
-							<string>displayGeneralPreferences:</string>
-							<string>displayNetworkPreferences:</string>
-							<string>displayNotificationPreferences:</string>
-							<string>displayTablePreferences:</string>
-							<string>duplicateFavorite:</string>
-							<string>favoriteTypeDidChange:</string>
-							<string>makeSelectedFavoriteDefault:</string>
-							<string>removeFavorite:</string>
-							<string>reverseFavoritesSortOrder:</string>
-							<string>setDefaultColors:</string>
-							<string>showCustomQueryFontPanel:</string>
-							<string>showGlobalResultTableFontPanel:</string>
-							<string>sortFavorites:</string>
-							<string>updateDefaultFavorite:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFavorite:</string>
-							<string>changeFont:</string>
-							<string>displayAutoUpdatePreferences:</string>
-							<string>displayEditorPreferences:</string>
-							<string>displayFavoritePreferences:</string>
-							<string>displayGeneralPreferences:</string>
-							<string>displayNetworkPreferences:</string>
-							<string>displayNotificationPreferences:</string>
-							<string>displayTablePreferences:</string>
-							<string>duplicateFavorite:</string>
-							<string>favoriteTypeDidChange:</string>
-							<string>makeSelectedFavoriteDefault:</string>
-							<string>removeFavorite:</string>
-							<string>reverseFavoritesSortOrder:</string>
-							<string>setDefaultColors:</string>
-							<string>showCustomQueryFontPanel:</string>
-							<string>showGlobalResultTableFontPanel:</string>
-							<string>sortFavorites:</string>
-							<string>updateDefaultFavorite:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBActionInfo">
-								<string key="name">addFavorite:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">changeFont:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayAutoUpdatePreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayEditorPreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayFavoritePreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayGeneralPreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayNetworkPreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayNotificationPreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">displayTablePreferences:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">duplicateFavorite:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">favoriteTypeDidChange:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">makeSelectedFavoriteDefault:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">removeFavorite:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">reverseFavoritesSortOrder:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">setDefaultColors:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">showCustomQueryFontPanel:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">showGlobalResultTableFontPanel:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">sortFavorites:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">updateDefaultFavorite:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>autoUpdateView</string>
-							<string>defaultFavoritePopup</string>
-							<string>editorFontName</string>
-							<string>editorView</string>
-							<string>favoriteHostTextField</string>
-							<string>favoriteHostTextFieldSSH</string>
-							<string>favoriteNameTextField</string>
-							<string>favoriteUserTextField</string>
-							<string>favoriteUserTextFieldSSH</string>
-							<string>favoriteUserTextFieldSocket</string>
-							<string>favoritesController</string>
-							<string>favoritesSortByMenuItem</string>
-							<string>favoritesTabView</string>
-							<string>favoritesTableView</string>
-							<string>favoritesView</string>
-							<string>generalView</string>
-							<string>globalResultTableFontName</string>
-							<string>networkView</string>
-							<string>notificationsView</string>
-							<string>preferencesWindow</string>
-							<string>socketPasswordField</string>
-							<string>splitViewButtonBar</string>
-							<string>sshPasswordField</string>
-							<string>sshSQLPasswordField</string>
-							<string>standardPasswordField</string>
-							<string>tableCell</string>
-							<string>tablesView</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSView</string>
-							<string>NSPopUpButton</string>
-							<string>NSTextField</string>
-							<string>NSView</string>
-							<string>NSTextField</string>
-							<string>NSTextField</string>
-							<string>NSTextField</string>
-							<string>NSTextField</string>
-							<string>NSTextField</string>
-							<string>NSTextField</string>
-							<string>NSArrayController</string>
-							<string>NSMenuItem</string>
-							<string>NSTabView</string>
-							<string>NSTableView</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSTextField</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSWindow</string>
-							<string>NSSecureTextField</string>
-							<string>BWAnchoredButtonBar</string>
-							<string>NSSecureTextField</string>
-							<string>NSSecureTextField</string>
-							<string>NSSecureTextField</string>
-							<string>id</string>
-							<string>NSView</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>autoUpdateView</string>
-							<string>defaultFavoritePopup</string>
-							<string>editorFontName</string>
-							<string>editorView</string>
-							<string>favoriteHostTextField</string>
-							<string>favoriteHostTextFieldSSH</string>
-							<string>favoriteNameTextField</string>
-							<string>favoriteUserTextField</string>
-							<string>favoriteUserTextFieldSSH</string>
-							<string>favoriteUserTextFieldSocket</string>
-							<string>favoritesController</string>
-							<string>favoritesSortByMenuItem</string>
-							<string>favoritesTabView</string>
-							<string>favoritesTableView</string>
-							<string>favoritesView</string>
-							<string>generalView</string>
-							<string>globalResultTableFontName</string>
-							<string>networkView</string>
-							<string>notificationsView</string>
-							<string>preferencesWindow</string>
-							<string>socketPasswordField</string>
-							<string>splitViewButtonBar</string>
-							<string>sshPasswordField</string>
-							<string>sshSQLPasswordField</string>
-							<string>standardPasswordField</string>
-							<string>tableCell</string>
-							<string>tablesView</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">autoUpdateView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">defaultFavoritePopup</string>
-								<string key="candidateClassName">NSPopUpButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">editorFontName</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">editorView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoriteHostTextField</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoriteHostTextFieldSSH</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoriteNameTextField</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoriteUserTextField</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoriteUserTextFieldSSH</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoriteUserTextFieldSocket</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesController</string>
-								<string key="candidateClassName">NSArrayController</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesSortByMenuItem</string>
-								<string key="candidateClassName">NSMenuItem</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesTabView</string>
-								<string key="candidateClassName">NSTabView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesTableView</string>
-								<string key="candidateClassName">NSTableView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">generalView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">globalResultTableFontName</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">networkView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">notificationsView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">preferencesWindow</string>
-								<string key="candidateClassName">NSWindow</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">splitViewButtonBar</string>
-								<string key="candidateClassName">BWAnchoredButtonBar</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshSQLPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">tableCell</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">tablesView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/SPPreferenceController.h</string>
-					</object>
-				</object>
-			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="211715013">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Frameworks/Sparkle.framework/Versions/A/Headers/SUUpdater.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPPreferenceController</string>
-					<string key="superclassName">NSWindowController</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFavorite:</string>
-							<string>changeFont:</string>
+							<string>chooseSSHKey:</string>
 							<string>closePanelSheet:</string>
 							<string>displayAutoUpdatePreferences:</string>
 							<string>displayEditorPreferences:</string>
@@ -11816,6 +11788,7 @@ AQAAAAA</bytes>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -11824,6 +11797,7 @@ AQAAAAA</bytes>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFavorite:</string>
 							<string>changeFont:</string>
+							<string>chooseSSHKey:</string>
 							<string>closePanelSheet:</string>
 							<string>displayAutoUpdatePreferences:</string>
 							<string>displayEditorPreferences:</string>
@@ -11857,6 +11831,10 @@ AQAAAAA</bytes>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">changeFont:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">chooseSSHKey:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -12263,8 +12241,18 @@ AQAAAAA</bytes>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPPreferenceController.h</string>
+					</object>
+				</object>
+			</object>
+			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="211715013">
 						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPPreferenceController.h</string>
+						<string key="minorKey">../../Frameworks/Sparkle.framework/Versions/A/Headers/SUUpdater.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -12298,11 +12286,27 @@ AQAAAAA</bytes>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
+					<string key="className">BWAnchoredButton</string>
+					<string key="superclassName">NSButton</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButton.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">BWAnchoredButtonBar</string>
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButtonBar.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BWAnchoredButtonCell</string>
+					<string key="superclassName">NSButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButtonCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -12753,6 +12757,13 @@ AQAAAAA</bytes>
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">PrintCore.framework/Headers/PDEPluginInterface.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Sparkle.framework/Headers/SUAppcast.h</string>
 					</object>
 				</object>
@@ -13106,6 +13117,7 @@ AQAAAAA</bytes>
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>KeyTemplate</string>
 				<string>NSActionTemplate</string>
 				<string>NSAdvanced</string>
 				<string>NSMenuCheckmark</string>
@@ -13117,14 +13129,15 @@ AQAAAAA</bytes>
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{15, 15}</string>
+				<string>{16, 8}</string>
+				<string>{10, 10}</string>
 				<string>{32, 32}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>
 				<string>{15, 15}</string>
 				<string>{32, 23}</string>
-				<string>{128, 128}</string>
-				<string>{128, 128}</string>
+				<string>{33, 23}</string>
+				<string>{32, 23}</string>
 			</object>
 		</object>
 	</data>

@@ -132,7 +132,7 @@
 - (IBAction)closePanelSheet:(id)sender;
 - (IBAction)duplicateTheme:(id)sender;
 - (IBAction)removeTheme:(id)sender;
-
+- (IBAction)chooseSSHKey:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;

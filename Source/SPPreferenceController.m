@@ -409,8 +409,8 @@
 	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 
 	// Create default favorite
-	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", [NSNumber numberWithInteger:0], @"", @"", @"", @"", @"", @"", @"", @"", favoriteid, nil] 
-																	   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"host", @"socket", @"user", @"port", @"database", @"sshHost", @"sshUser", @"sshPort", @"id", nil]];
+	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", [NSNumber numberWithInteger:0], @"", @"", @"", @"", @"", @"", @"", [NSNumber numberWithInt:NSOffState], @"", @"", favoriteid, nil] 
+																	   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"host", @"socket", @"user", @"port", @"database", @"sshHost", @"sshUser", @"sshKeyLocationEnabled", @"sshKeyLocation", @"sshPort", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:favorite]];
@@ -683,6 +683,46 @@
 {
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
+}
+
+/**
+ * Opens the SSH key selection window, ready to select a SSH key.
+ */
+- (IBAction)chooseSSHKey:(id)sender
+{
+	NSString *directoryPath = nil;
+	NSString *filePath = nil;
+
+	// If the custom key location is currently disabled - after the button
+	// action - leave it disabled and return without showing the sheet.
+	if (![[favoritesController valueForKeyPath:@"selection.sshKeyLocationEnabled"] intValue]) {
+		return;
+	}
+
+	// Otherwise open a panel at the last or default location
+	if ([favoritesController valueForKeyPath:@"selection.sshKeyLocation"] && [[favoritesController valueForKeyPath:@"selection.sshKeyLocation"] length]) {
+		filePath = [[favoritesController valueForKeyPath:@"selection.sshKeyLocation"] lastPathComponent];
+		directoryPath = [[favoritesController valueForKeyPath:@"selection.sshKeyLocation"] stringByDeletingLastPathComponent];
+	}
+	[[NSOpenPanel openPanel] beginSheetForDirectory:directoryPath
+											   file:filePath
+											  types:[NSArray arrayWithObjects:@"pem", @"", nil]
+									 modalForWindow:preferencesWindow
+									  modalDelegate:self
+									 didEndSelector:@selector(chooseSSHKeySheetDidEnd:returnCode:contextInfo:)
+										contextInfo:nil];
+}
+
+/**
+ * Called after closing the SSH key selection sheet.
+ */
+- (void)chooseSSHKeySheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode == NSCancelButton) {
+		[favoritesController setValue:[NSNumber numberWithInt:NSOffState] forKeyPath:@"selection.sshKeyLocationEnabled"];
+		return;
+	}
+	[favoritesController setValue:[[openPanel filename] stringByAbbreviatingWithTildeInPath] forKeyPath:@"selection.sshKeyLocation"];
 }
 
 #pragma mark -
