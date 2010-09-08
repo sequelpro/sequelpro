@@ -496,13 +496,16 @@
 		filePath = [sshKeyLocation lastPathComponent];
 		directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
 	}
-	[[NSOpenPanel openPanel] beginSheetForDirectory:directoryPath
-											   file:filePath
-											  types:[NSArray arrayWithObjects:@"pem", @"", nil]
-									 modalForWindow:[tableDocument parentWindow]
-									  modalDelegate:self
-									 didEndSelector:@selector(chooseSSHKeySheetDidEnd:returnCode:contextInfo:)
-										contextInfo:nil];
+
+	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	[openPanel setAccessoryView:sshKeyLocationHelp];
+	[openPanel beginSheetForDirectory:directoryPath
+								 file:filePath
+								types:[NSArray arrayWithObjects:@"pem", @"", nil]
+					   modalForWindow:[tableDocument parentWindow]
+						modalDelegate:self
+					   didEndSelector:@selector(chooseSSHKeySheetDidEnd:returnCode:contextInfo:)
+						  contextInfo:nil];
 }
 
 /**

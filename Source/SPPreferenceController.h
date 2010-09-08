@@ -58,6 +58,7 @@
 	IBOutlet NSTextField *favoriteUserTextFieldSSH;
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
 	IBOutlet NSMenuItem *favoritesSortByMenuItem;
+	IBOutlet NSView *sshKeyLocationHelp;
 
 	IBOutlet NSWindow *enterNameWindow;
 	IBOutlet NSTextField *enterNameLabel;

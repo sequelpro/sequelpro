@@ -22,6 +22,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="5166"/>
+			<integer value="5576"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -247,7 +248,7 @@
 												<object class="BWAnchoredPopUpButtonCell" key="NSCell" id="270183415">
 													<int key="NSCellFlags">-2076049856</int>
 													<int key="NSCellFlags2">134350848</int>
-													<object class="NSFont" key="NSSupport">
+													<object class="NSFont" key="NSSupport" id="615206062">
 														<string key="NSName">LucidaGrande</string>
 														<double key="NSSize">13</double>
 														<int key="NSfFlags">16</int>
@@ -1238,34 +1239,34 @@
 																								<int key="NSPeriodicInterval">75</int>
 																							</object>
 																						</object>
-																						<object class="NSTextField" id="797420065">
+																						<object class="NSTextField" id="369644980">
 																							<reference key="NSNextResponder" ref="326102394"/>
 																							<int key="NSvFlags">268</int>
 																							<string key="NSFrame">{{7, 49}, {98, 17}}</string>
 																							<reference key="NSSuperview" ref="326102394"/>
 																							<bool key="NSEnabled">YES</bool>
-																							<object class="NSTextFieldCell" key="NSCell" id="1004204108">
+																							<object class="NSTextFieldCell" key="NSCell" id="977486746">
 																								<int key="NSCellFlags">68288064</int>
 																								<int key="NSCellFlags2">71304192</int>
 																								<string key="NSContents">SSH Key:</string>
 																								<reference key="NSSupport" ref="807120225"/>
-																								<reference key="NSControlView" ref="797420065"/>
+																								<reference key="NSControlView" ref="369644980"/>
 																								<reference key="NSBackgroundColor" ref="644242225"/>
 																								<reference key="NSTextColor" ref="434026568"/>
 																							</object>
 																						</object>
-																						<object class="NSTextField" id="357022441">
+																						<object class="NSTextField" id="964932186">
 																							<reference key="NSNextResponder" ref="326102394"/>
 																							<int key="NSvFlags">268</int>
 																							<string key="NSFrame">{{110, 47}, {198, 22}}</string>
 																							<reference key="NSSuperview" ref="326102394"/>
 																							<bool key="NSEnabled">YES</bool>
-																							<object class="NSTextFieldCell" key="NSCell" id="31454463">
+																							<object class="NSTextFieldCell" key="NSCell" id="418433681">
 																								<int key="NSCellFlags">-2076049856</int>
 																								<int key="NSCellFlags2">272631296</int>
 																								<string key="NSContents"/>
 																								<reference key="NSSupport" ref="807120225"/>
-																								<reference key="NSControlView" ref="357022441"/>
+																								<reference key="NSControlView" ref="964932186"/>
 																								<bool key="NSDrawsBackground">YES</bool>
 																								<reference key="NSBackgroundColor" ref="211632616"/>
 																								<object class="NSColor" key="NSTextColor">
@@ -1767,6 +1768,32 @@
 						<reference key="NSMixedImage" ref="329345764"/>
 					</object>
 				</object>
+			</object>
+			<object class="NSCustomView" id="914547374">
+				<reference key="NSNextResponder"/>
+				<int key="NSvFlags">274</int>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSTextField" id="557801217">
+						<reference key="NSNextResponder" ref="914547374"/>
+						<int key="NSvFlags">274</int>
+						<string key="NSFrame">{{2, 10}, {575, 34}}</string>
+						<reference key="NSSuperview" ref="914547374"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="583482404">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">138674176</int>
+							<string key="NSContents">Choose a custom SSH key file to use with this connection. Note that standard locations like ~/.ssh are checked automatically, as are any files in your SSH configuration.</string>
+							<reference key="NSSupport" ref="615206062"/>
+							<reference key="NSControlView" ref="557801217"/>
+							<reference key="NSBackgroundColor" ref="644242225"/>
+							<reference key="NSTextColor" ref="434026568"/>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{579, 51}</string>
+				<reference key="NSSuperview"/>
+				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -2928,10 +2955,10 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">hidden: sshKeyLocationEnabled</string>
-						<reference key="source" ref="797420065"/>
+						<reference key="source" ref="369644980"/>
 						<reference key="destination" ref="545410097"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="797420065"/>
+							<reference key="NSSource" ref="369644980"/>
 							<reference key="NSDestination" ref="545410097"/>
 							<string key="NSLabel">hidden: sshKeyLocationEnabled</string>
 							<string key="NSBinding">hidden</string>
@@ -2963,10 +2990,10 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">hidden: sshKeyLocationEnabled</string>
-						<reference key="source" ref="357022441"/>
+						<reference key="source" ref="964932186"/>
 						<reference key="destination" ref="545410097"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="357022441"/>
+							<reference key="NSSource" ref="964932186"/>
 							<reference key="NSDestination" ref="545410097"/>
 							<string key="NSLabel">hidden: sshKeyLocationEnabled</string>
 							<string key="NSBinding">hidden</string>
@@ -2998,10 +3025,10 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: sshKeyLocation</string>
-						<reference key="source" ref="357022441"/>
+						<reference key="source" ref="964932186"/>
 						<reference key="destination" ref="545410097"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="357022441"/>
+							<reference key="NSSource" ref="964932186"/>
 							<reference key="NSDestination" ref="545410097"/>
 							<string key="NSLabel">value: sshKeyLocation</string>
 							<string key="NSBinding">value</string>
@@ -3018,10 +3045,10 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">toolTip: sshKeyLocation</string>
-						<reference key="source" ref="357022441"/>
+						<reference key="source" ref="964932186"/>
 						<reference key="destination" ref="545410097"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="357022441"/>
+							<reference key="NSSource" ref="964932186"/>
 							<reference key="NSDestination" ref="545410097"/>
 							<string key="NSLabel">toolTip: sshKeyLocation</string>
 							<string key="NSBinding">toolTip</string>
@@ -3030,6 +3057,14 @@
 						</object>
 					</object>
 					<int key="connectionID">5570</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">sshKeyLocationHelp</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="914547374"/>
+					</object>
+					<int key="connectionID">5579</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3392,8 +3427,8 @@
 						<reference key="object" ref="326102394"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="797420065"/>
-							<reference ref="357022441"/>
+							<reference ref="369644980"/>
+							<reference ref="964932186"/>
 							<reference ref="183948302"/>
 							<reference ref="1030226140"/>
 							<reference ref="615962367"/>
@@ -3420,31 +3455,31 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5525</int>
-						<reference key="object" ref="797420065"/>
+						<reference key="object" ref="369644980"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1004204108"/>
+							<reference ref="977486746"/>
 						</object>
 						<reference key="parent" ref="326102394"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5526</int>
-						<reference key="object" ref="1004204108"/>
-						<reference key="parent" ref="797420065"/>
+						<reference key="object" ref="977486746"/>
+						<reference key="parent" ref="369644980"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5523</int>
-						<reference key="object" ref="357022441"/>
+						<reference key="object" ref="964932186"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="31454463"/>
+							<reference ref="418433681"/>
 						</object>
 						<reference key="parent" ref="326102394"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5524</int>
-						<reference key="object" ref="31454463"/>
-						<reference key="parent" ref="357022441"/>
+						<reference key="object" ref="418433681"/>
+						<reference key="parent" ref="964932186"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">5492</int>
@@ -4183,6 +4218,30 @@
 						<reference key="object" ref="757039715"/>
 						<reference key="parent" ref="990947983"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5576</int>
+						<reference key="object" ref="914547374"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="557801217"/>
+						</object>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">SSH Key Selection Help</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5577</int>
+						<reference key="object" ref="557801217"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="583482404"/>
+						</object>
+						<reference key="parent" ref="914547374"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5578</int>
+						<reference key="object" ref="583482404"/>
+						<reference key="parent" ref="557801217"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4382,6 +4441,10 @@
 					<string>5524.IBPluginDependency</string>
 					<string>5525.IBPluginDependency</string>
 					<string>5526.IBPluginDependency</string>
+					<string>5576.IBEditorWindowLastContentRect</string>
+					<string>5576.IBPluginDependency</string>
+					<string>5577.IBPluginDependency</string>
+					<string>5578.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4759,6 +4822,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{245, 466}, {579, 51}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -4777,7 +4844,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5575</int>
+			<int key="maxID">5579</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5113,6 +5180,7 @@
 							<string>socketConnectionFormContainer</string>
 							<string>socketPasswordField</string>
 							<string>sshConnectionFormContainer</string>
+							<string>sshKeyLocationHelp</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLHostField</string>
 							<string>sshSSHKeyButton</string>
@@ -5139,6 +5207,7 @@
 							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>NSSecureTextField</string>
+							<string>NSView</string>
 							<string>NSView</string>
 							<string>NSSecureTextField</string>
 							<string>NSTextField</string>
@@ -5170,6 +5239,7 @@
 							<string>socketConnectionFormContainer</string>
 							<string>socketPasswordField</string>
 							<string>sshConnectionFormContainer</string>
+							<string>sshKeyLocationHelp</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLHostField</string>
 							<string>sshSSHKeyButton</string>
@@ -5246,6 +5316,10 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">sshConnectionFormContainer</string>
+								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sshKeyLocationHelp</string>
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">

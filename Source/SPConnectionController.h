@@ -104,6 +104,7 @@
 	IBOutlet NSView *standardConnectionFormContainer;
 	IBOutlet NSView *socketConnectionFormContainer;
 	IBOutlet NSView *sshConnectionFormContainer;
+	IBOutlet NSView *sshKeyLocationHelp;
 
 	IBOutlet NSTextField *standardSQLHostField;
 	IBOutlet NSTextField *sshSQLHostField;
