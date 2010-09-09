@@ -53,7 +53,9 @@
 	IBOutlet id indexesTableView;
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
-	
+
+	id databaseDataInstance;
+
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
 	MCPResult *indexResult;
@@ -65,6 +67,7 @@
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 	NSInteger currentlyEditingRow;
 	NSUserDefaults *prefs;
+	NSArray *collations;
 }
 
 // Table methods
