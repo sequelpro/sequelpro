@@ -1290,6 +1290,14 @@ returns a dictionary containing enum/set field names as key and possible values 
 		currentlyEditingRow = rowIndex;
 	}
 
+	// Reset collation if encoding was changed
+	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {
+		if([[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
+			[[tableFields objectAtIndex:rowIndex] setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+			[tableSourceView reloadData];
+		}
+	}
+
 	[[tableFields objectAtIndex:rowIndex] setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
 }
 
