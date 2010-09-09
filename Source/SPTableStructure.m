@@ -118,7 +118,7 @@
 
 	// Make a mutable copy out of the cached [tableDataInstance columns] since we're adding infos
 	for(id col in [tableDataInstance columns])
-		[theTableFields addObject:[col mutableCopy]];
+		[theTableFields addObject:[[col mutableCopy] autorelease]];
 
 	// Retrieve the indexes for the table
 	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]] retain];
@@ -760,7 +760,6 @@ closes the keySheet
 		[queryString appendFormat:@" COLLATE %@", col];
 	}
 
-
 	// Field specification
 	if ([[theRow objectForKey:@"unsigned"] integerValue] == 1) {
 		[queryString appendString:@" UNSIGNED"];
@@ -1384,6 +1383,24 @@ would result in a position change.
 	if ( [originalRow objectForKey:@"length"] && ![[originalRow objectForKey:@"length"] isEqualToString:@""]) {
 		[queryString appendFormat:@"(%@)", [originalRow objectForKey:@"length"]];
 	}
+
+	NSString *fieldEncoding = @"";
+	if([[originalRow objectForKey:@"encoding"] integerValue] > 0) {
+		NSString *enc = [[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
+		NSInteger start = [enc rangeOfString:@"("].location+1;
+		NSInteger end = [enc length] - start - 1;
+		fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
+		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
+	}
+	if(![fieldEncoding length] && [tableDataInstance tableEncoding]) {
+		fieldEncoding = [tableDataInstance tableEncoding];
+	}
+	if([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0) {
+		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
+		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
+		[queryString appendFormat:@" COLLATE %@", col];
+	}
+
 
 	// Add unsigned, zerofill, binary, not null if necessary
 	if ([[originalRow objectForKey:@"unsigned"] integerValue]) {

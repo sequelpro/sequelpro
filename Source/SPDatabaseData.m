@@ -207,6 +207,7 @@ const SPDatabaseCharSets charsets[] =
 		characterSetCollations = [[NSMutableArray alloc] init];
 		storageEngines         = [[NSMutableArray alloc] init];
 		characterSetEncodings  = [[NSMutableArray alloc] init];
+		cachedCollationsByEncoding = [[NSMutableDictionary alloc] init];
 	}
 	
 	return self;
@@ -278,10 +279,13 @@ const SPDatabaseCharSets charsets[] =
 		[characterSetCollations removeAllObjects];
 		
 		characterSetEncoding = [[NSString alloc] initWithString:encoding];
-		
+
+		if([cachedCollationsByEncoding objectForKey:characterSetEncoding] && [[cachedCollationsByEncoding objectForKey:characterSetEncoding] count])
+			return [cachedCollationsByEncoding objectForKey:characterSetEncoding];
+
 		// Try to retrieve the available collations for the supplied encoding from the database
 		if (serverMajorVersion >= 5)
-			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];	
+			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];
 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
 		if (![characterSetCollations count]) {
@@ -289,15 +293,19 @@ const SPDatabaseCharSets charsets[] =
 			
 			do {
 				NSString *charSet = [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding];
-				
+
 				if ([charSet isEqualToString:characterSetEncoding]) {
 					[characterSetCollations addObject:[NSDictionary dictionaryWithObject:[NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding] forKey:@"COLLATION_NAME"]];
 				}
-				
+
 				++c;
 			} 
 			while (c[0].nr != 0);
-		}		
+		}
+
+		if(characterSetCollations && [characterSetCollations count])
+			[cachedCollationsByEncoding setObject:[NSArray arrayWithArray:characterSetCollations] forKey:characterSetEncoding];
+
 	}
 	
 	return characterSetCollations;
@@ -441,6 +449,7 @@ const SPDatabaseCharSets charsets[] =
 	[characterSetCollations release], characterSetCollations = nil;
 	[storageEngines release], storageEngines = nil;
 	[characterSetEncodings release], characterSetEncodings = nil;
+	[cachedCollationsByEncoding release], cachedCollationsByEncoding = nil;
 	
 	[super dealloc];
 }

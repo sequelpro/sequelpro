@@ -46,6 +46,7 @@ typedef struct
 	NSMutableArray *characterSetCollations;
 	NSMutableArray *storageEngines;
 	NSMutableArray *characterSetEncodings;
+	NSMutableDictionary *cachedCollationsByEncoding;
 	
 	MCPConnection *connection;
 }
