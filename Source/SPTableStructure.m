@@ -1499,6 +1499,13 @@ would result in a position change.
 #pragma mark -
 #pragma mark TableView delegate methods
 
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	// If we are editing a row, attempt to save that row - if saving failed, do not select the new row.
+	if (isEditingRow && ![self addRowToDB]) return NO;
+	return YES;
+}
+
 /**
  * Performs various interface validation
  */
