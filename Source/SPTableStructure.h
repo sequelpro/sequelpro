@@ -54,6 +54,8 @@
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
 
+	IBOutlet id encodingPopupCell;
+
 	id databaseDataInstance;
 
 	MCPConnection *mySQLConnection;

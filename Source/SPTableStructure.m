@@ -159,17 +159,17 @@
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	if (([encodings count] > 0) && ([tableDataInstance tableEncoding])) {
 		NSString *selectedTitle = @"";
-		[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] removeAllItems];
-		[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] addItemWithTitle:@""];
+		[encodingPopupCell removeAllItems];
+		[encodingPopupCell addItemWithTitle:@""];
 		// Populate encoding popup button
 		for (NSDictionary *encoding in encodings)
 		{
 			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
-			[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] addItemWithTitle:menuItemTitle];
+			[encodingPopupCell addItemWithTitle:menuItemTitle];
 		}
 	}
 	else {
-		[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
+		[encodingPopupCell addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 
 	// Process all the fields to normalise keys and add additional information
@@ -343,7 +343,7 @@
 	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", @"", @"", nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
 
@@ -745,7 +745,7 @@ closes the keySheet
 
 	NSString *fieldEncoding = @"";
 	if([[theRow objectForKey:@"encoding"] integerValue] > 0) {
-		NSString *enc = [[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
+		NSString *enc = [[encodingPopupCell itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
 		NSInteger start = [enc rangeOfString:@"("].location+1;
 		NSInteger end = [enc length] - start - 1;
 		fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
@@ -1254,7 +1254,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 
 	if([[tableColumn identifier] isEqualToString:@"collation"]) {
 		if([[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue] > 0) {
-			NSString *enc = [[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] itemAtIndex:[[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue]] title];
+			NSString *enc = [[encodingPopupCell itemAtIndex:[[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue]] title];
 			NSInteger start = [enc rangeOfString:@"("].location+1;
 			NSInteger end = [enc length] - start - 1;
 			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, end)]];
@@ -1281,8 +1281,8 @@ returns a dictionary containing enum/set field names as key and possible values 
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-    // Make sure that the drag operation is for the right table view
-    if (aTableView!=tableSourceView) return;
+	// Make sure that the drag operation is for the right table view
+	if (aTableView != tableSourceView) return;
 
 	if (!isEditingRow) {
 		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
@@ -1298,7 +1298,13 @@ returns a dictionary containing enum/set field names as key and possible values 
 		}
 	}
 
-	[[tableFields objectAtIndex:rowIndex] setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
+	if([[aTableColumn identifier] isEqualToString:@"type"]) {
+		if(anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"])
+			[[tableFields objectAtIndex:rowIndex] setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
+	}
+	else
+		[[tableFields objectAtIndex:rowIndex] setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
+
 }
 
 /**
@@ -1394,7 +1400,7 @@ would result in a position change.
 
 	NSString *fieldEncoding = @"";
 	if([[originalRow objectForKey:@"encoding"] integerValue] > 0) {
-		NSString *enc = [[[[[tableSourceView tableColumns] objectAtIndex:10] dataCell] itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
+		NSString *enc = [[encodingPopupCell itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
 		NSInteger start = [enc rangeOfString:@"("].location+1;
 		NSInteger end = [enc length] - start - 1;
 		fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
@@ -1430,17 +1436,19 @@ would result in a position change.
 
 	BOOL isTimestampType = [[[originalRow objectForKey:@"type"] lowercaseString] isEqualToString:@"timestamp"];
 
-	// Add the default value
-	if ([[originalRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-		if ([[originalRow objectForKey:@"null"] integerValue] == 1) {
-			[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
+	// Add the default value, skip it for auto_increment
+	if([originalRow objectForKey:@"Extra"] && ![[originalRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
+		if ([[originalRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+			if ([[originalRow objectForKey:@"null"] integerValue] == 1) {
+				[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
+			}
 		}
-	}
-	else if (isTimestampType && ([[[originalRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
-			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
-	}
-	else {
-		[queryString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"default"]]];
+		else if (isTimestampType && ([[[originalRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
+				[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+		}
+		else {
+			[queryString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"default"]]];
+		}
 	}
 
 	// Any column comments
@@ -1533,41 +1541,57 @@ would result in a position change.
 	column = [tableSourceView editedColumn];
 
 	// Trap the tab key, selecting the next item in the line
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] )
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
 	{
 		//save current line
 		[[control window] makeFirstResponder:control];
-		if ( column == 9 ) {
-			if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
-				if ( row < ([tableSourceView numberOfRows] - 1) ) {
-					[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
-					[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
-				} else {
-					[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-					[tableSourceView editColumn:0 row:0 withEvent:nil select:YES];
-				}
-			}
-		} else {
-			if ( column == 2 ) {
-				[tableSourceView editColumn:column+6 row:row withEvent:nil select:YES];
+
+		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
+			if ( row < ([tableSourceView numberOfRows] - 1) ) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
+				[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
 			} else {
-				[tableSourceView editColumn:column+1 row:row withEvent:nil select:YES];
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+				[tableSourceView editColumn:0 row:0 withEvent:nil select:YES];
 			}
 		}
-		return TRUE;
+		return YES;
+
+	}
+
+	// Trap shift-tab key
+	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
+	{
+		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] ) {
+			[[control window] makeFirstResponder:control];
+			if ( row > 0) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row-1] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableFields count]-1) row:row-1 withEvent:nil select:YES];
+			} else {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count]-1)] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableFields count]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
+			}
+		}
+		return YES;
+	}
 
 	// Trap the enter key, triggering a save
-	}
 	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] )
 	{
+		// Suppress enter for non-text fields to allow selecting of chosen items from comboboxes or popups
+		if(![[[[[[tableSourceView tableColumns] objectAtIndex:column] dataCell] class] description] isEqualToString:@"NSTextFieldCell"])
+			return YES;
+
 		[[control window] makeFirstResponder:control];
 		[self addRowToDB];
-		return TRUE;
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+		[tableSourceView makeFirstResponder];
+		return YES;
+	
+	}
 
 	// Trap escape, aborting the edit and reverting the row
-	}
-	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
-					[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] )
+	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
 	{
 		[control abortEditing];
 		if ( isEditingRow && !isEditingNewRow ) {
@@ -1580,9 +1604,11 @@ would result in a position change.
 			[tableSourceView reloadData];
 		}
 		currentlyEditingRow = -1;
-		return TRUE;
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+		[tableSourceView makeFirstResponder];
+		return YES;
 	 } else {
-		 return FALSE;
+		 return NO;
 	 }
 }
 
@@ -1591,10 +1617,11 @@ would result in a position change.
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
  * is uneditable.
  */
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
 
-    //make sure that the message is from the right table view
-    if (tableView!=tableSourceView) return;
+	//make sure that the message is from the right table view
+	if (tableView != tableSourceView) return;
 
 	[aCell setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
 }
