@@ -102,7 +102,8 @@
 		[databaseConnectionSuperview addSubview:connectionView];
 		[connectionSplitView setPosition:[[tableDocument valueForKey:@"dbTablesTableView"] frame].size.width-6 ofDividerAtIndex:0];
 		[connectionSplitViewButtonBar setSplitViewDelegate:self];
-		
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollViewFrameChanged:) name:NSViewFrameDidChangeNotification object:nil];
+
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
 		keychain = [[SPKeychain alloc] init];
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
@@ -143,6 +144,7 @@
 - (void) dealloc
 {
     [prefs removeObserver:self forKeyPath:SPFavorites];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
     [keychain release];
     [prefs release];
 
@@ -570,6 +572,35 @@
 	}
 
 	previousType = selectedTabView;
+}
+
+/**
+ * As the scrollview resizes, keep the details centered within it if
+ * the detail frame is larger than the scrollview size; otherwise, pin
+ * the detail frame to the top of the scrollview.
+ */
+- (void)scrollViewFrameChanged:(NSNotification *)aNotification
+{
+	NSRect scrollViewFrame = [connectionDetailsScrollView frame];
+	NSRect scrollDocumentFrame = [[connectionDetailsScrollView documentView] frame];
+	NSRect connectionDetailsFrame = [connectionResizeContainer frame];
+
+	// Scroll view is smaller than contents - keep positioned at top.
+	if (scrollViewFrame.size.height < connectionDetailsFrame.size.height + 10) {
+		if (connectionDetailsFrame.origin.y != 0) {
+			connectionDetailsFrame.origin.y = 0;
+			[connectionResizeContainer setFrame:connectionDetailsFrame];
+			scrollDocumentFrame.size.height = connectionDetailsFrame.size.height + 10;
+			[[connectionDetailsScrollView documentView] setFrame:scrollDocumentFrame];
+		}
+
+	// Otherwise, center.
+	} else {
+		connectionDetailsFrame.origin.y = (scrollViewFrame.size.height - connectionDetailsFrame.size.height)/3;
+		[connectionResizeContainer setFrame:connectionDetailsFrame];
+		scrollDocumentFrame.size.height = scrollViewFrame.size.height;
+		[[connectionDetailsScrollView documentView] setFrame:scrollDocumentFrame];
+	}
 }
 
 /**

@@ -94,6 +94,7 @@
 
 	IBOutlet NSView *connectionView;
 	IBOutlet NSSplitView *connectionSplitView;
+	IBOutlet NSScrollView *connectionDetailsScrollView;
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
 	IBOutlet NSTableView *favoritesTable;
 
@@ -180,6 +181,6 @@
 - (id)selectedFavorite;
 - (IBAction)addFavorite:(id)sender;
 
-- (void)splitViewDidResizeSubviews:(NSNotification *)aNotification;
+- (void)scrollViewFrameChanged:(NSNotification *)aNotification;
 
 @end
