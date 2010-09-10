@@ -753,7 +753,7 @@ closes the keySheet
 	else
 		queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@", 
 			[selectedTable backtickQuotedString], 
-			[[theRow objectForKey:@"name"] backtickQuotedString], 
+			[[oldRow objectForKey:@"name"] backtickQuotedString], 
 			[[theRow objectForKey:@"name"] backtickQuotedString], 
 			theRowType];
 
