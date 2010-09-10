@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1304"/>
+			<integer value="1309"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1075,7 +1075,7 @@
 																										<object class="NSComboTableView" key="NSTableView" id="567127181">
 																											<reference key="NSNextResponder"/>
 																											<int key="NSvFlags">274</int>
-																											<string key="NSFrameSize">{13, 558}</string>
+																											<string key="NSFrameSize">{15, 0}</string>
 																											<reference key="NSSuperview"/>
 																											<reference key="NSWindow"/>
 																											<bool key="NSEnabled">YES</bool>
@@ -1083,7 +1083,7 @@
 																												<bool key="EncodedWithXMLCoder">YES</bool>
 																												<object class="NSTableColumn">
 																													<integer value="0" key="NSIdentifier"/>
-																													<double key="NSWidth">10</double>
+																													<double key="NSWidth">12</double>
 																													<double key="NSMinWidth">10</double>
 																													<double key="NSMaxWidth">1000</double>
 																													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -1114,7 +1114,7 @@
 																											<reference key="NSGridColor" ref="864903678"/>
 																											<double key="NSRowHeight">16</double>
 																											<string key="NSAction">tableViewAction:</string>
-																											<int key="NSTvFlags">-228556800</int>
+																											<int key="NSTvFlags">-230653952</int>
 																											<reference key="NSDelegate" ref="904218650"/>
 																											<reference key="NSTarget" ref="904218650"/>
 																											<int key="NSColumnAutoresizingStyle">1</int>
@@ -1368,7 +1368,7 @@
 																										<reference key="NSControlView" ref="715508012"/>
 																										<reference key="NSBackgroundColor" ref="480189472"/>
 																										<reference key="NSTextColor" ref="454249633"/>
-																										<int key="NSVisibleItemCount">3</int>
+																										<int key="NSVisibleItemCount">4</int>
 																										<bool key="NSHasVerticalScroller">YES</bool>
 																										<bool key="NSCompletes">YES</bool>
 																										<object class="NSMutableArray" key="NSPopUpListData">
@@ -1376,6 +1376,7 @@
 																											<string>None</string>
 																											<string>auto_increment</string>
 																											<string>on update CURRENT_TIMESTAMP</string>
+																											<string>SERIAL DEFAULT VALUE</string>
 																										</object>
 																										<object class="NSComboTableView" key="NSTableView" id="1025423991">
 																											<reference key="NSNextResponder"/>

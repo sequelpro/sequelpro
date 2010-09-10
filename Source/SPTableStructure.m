@@ -35,10 +35,13 @@
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPIndexesController.h"
+#import "RegexKitLite.h"
 
 @interface SPTableStructure (PrivateAPI)
 
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
+- (BOOL)_isFieldTypeNumeric:(NSString*)aType;
+- (BOOL)_isFieldTypeDate:(NSString*)aType;
 
 @end
 
@@ -90,6 +93,9 @@
 		@"REAL",
 		@"DECIMAL",
 		@"BIT",
+		@"SERIAL",
+		@"BOOL",
+		@"BOOLEAN",
 		@"--------",
 		@"CHAR",
 		@"VARCHAR",
@@ -111,7 +117,7 @@
 		@"TIME",
 		@"YEAR",
 		nil] retain];
-		// Hint: in [self addRowToDB] > [typeSuggestions indexOfObject:theRowType] < 11 etc. has to be changed if typeSuggestions was changed!
+		// Hint: _isFieldTypeDate and _isFieldTypeNumeric must be changed if typeSuggestions was changed!
 	
 
 	databaseDataInstance = [tableDocumentInstance valueForKeyPath:@"databaseDataInstance"];
@@ -713,7 +719,10 @@ closes the keySheet
 	NSInteger code;
 	NSDictionary *theRow;
 	NSMutableString *queryString;
-	NSString *theRowType;
+	NSString *theRowType = @"";
+	NSString *theRowExtra = @"";
+
+	BOOL specialFieldTypes = NO;
 
 	if (!isEditingRow || currentlyEditingRow == -1)
 		return YES;
@@ -723,11 +732,52 @@ closes the keySheet
 
 	theRow = [tableFields objectAtIndex:currentlyEditingRow];
 
-	theRowType = [[theRow objectForKey:@"type"] uppercaseString];
+	if([theRow objectForKey:@"type"])
+		theRowType = [[[theRow objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+
+	if([theRow objectForKey:@"Extra"])
+		theRowExtra = [[[theRow objectForKey:@"Extra"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
 	if (isEditingNewRow) {
+
 		// ADD syntax
-		if ([[theRow objectForKey:@"length"] isEqualToString:@""] || ![theRow objectForKey:@"length"]) {
+
+		// Check for pre-defined field types
+		if([theRowType isEqualToString:@"SERIAL"]) {
+			specialFieldTypes = YES;
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
+															[selectedTable backtickQuotedString],
+															[[theRow objectForKey:@"name"] backtickQuotedString],
+															theRowType];
+		}
+		else if([theRowType rangeOfRegex:@"(?i)bool(ean)?"].length) {
+			specialFieldTypes = YES;
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
+															[selectedTable backtickQuotedString],
+															[[theRow objectForKey:@"name"] backtickQuotedString],
+															theRowType];
+
+			if ([[theRow objectForKey:@"null"] integerValue] == 0) {
+				[queryString appendString:@"\n NOT NULL"];
+			} else {
+				[queryString appendString:@"\n NULL"];
+			}
+			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
+			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+				if ([[theRow objectForKey:@"null"] integerValue] == 1) {
+					[queryString appendString:@"\n DEFAULT NULL "];
+				}
+			}
+			else if (![[theRow objectForKey:@"default"] length]) {
+				;
+			}
+			// Otherwise, use the provided default
+			else {
+				[queryString appendFormat:@"\n DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"default"]]];
+			}
+		}
+
+		else if ([[theRow objectForKey:@"length"] isEqualToString:@""] || ![theRow objectForKey:@"length"]) {
 
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
 															[selectedTable backtickQuotedString],
@@ -744,9 +794,47 @@ closes the keySheet
 	}
 	else {
 		// CHANGE syntax
-		if (([[theRow objectForKey:@"length"] isEqualToString:@""]) ||
+
+		// Check for pre-defined field types
+		if([theRowType isEqualToString:@"SERIAL"]) {
+			specialFieldTypes = YES;
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
+															[selectedTable backtickQuotedString],
+															[[theRow objectForKey:@"name"] backtickQuotedString],
+															[[theRow objectForKey:@"name"] backtickQuotedString],
+															theRowType];
+		}
+		else if([theRowType rangeOfRegex:@"(?i)bool(ean)?"].length) {
+			specialFieldTypes = YES;
+			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@",
+															[selectedTable backtickQuotedString],
+															[[theRow objectForKey:@"name"] backtickQuotedString],
+															[[theRow objectForKey:@"name"] backtickQuotedString],
+															theRowType];
+
+			if ([[theRow objectForKey:@"null"] integerValue] == 0) {
+				[queryString appendString:@"\n NOT NULL"];
+			} else {
+				[queryString appendString:@"\n NULL"];
+			}
+			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
+			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+				if ([[theRow objectForKey:@"null"] integerValue] == 1) {
+					[queryString appendString:@"\n DEFAULT NULL "];
+				}
+			}
+			else if (![[theRow objectForKey:@"default"] length]) {
+				;
+			}
+			// Otherwise, use the provided default
+			else {
+				[queryString appendFormat:@"\n DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"default"]]];
+			}
+		}
+
+		else if (([[theRow objectForKey:@"length"] isEqualToString:@""]) ||
 			(![theRow objectForKey:@"length"]) ||
-			([[[theRow objectForKey:@"type"] lowercaseString] isEqualToString:@"datetime"]))
+			([theRowType isEqualToString:@"DATETIME"]))
 		{
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue
 			if ([oldRow isEqualToDictionary:theRow]) {
@@ -778,101 +866,99 @@ closes the keySheet
 		}
 	}
 
-	NSString *fieldEncoding = @"";
-	if([[theRow objectForKey:@"encoding"] integerValue] > 0) {
-		NSString *enc = [[encodingPopupCell itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
-		NSInteger start = [enc rangeOfString:@"("].location+1;
-		NSInteger end = [enc length] - start - 1;
-		fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
-		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
-	}
-	if(![fieldEncoding length] && [tableDataInstance tableEncoding]) {
-		fieldEncoding = [tableDataInstance tableEncoding];
-	}
-	if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0) {
-		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-		NSString *col = [[theCollations objectAtIndex:[[theRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
-		[queryString appendFormat:@" COLLATE %@", col];
-	}
+	if(!specialFieldTypes) {
 
-	// Field specification
-	if ([[theRow objectForKey:@"unsigned"] integerValue] == 1) {
-		[queryString appendString:@" UNSIGNED"];
-	}
+		NSString *fieldEncoding = @"";
+		if([[theRow objectForKey:@"encoding"] integerValue] > 0) {
+			NSString *enc = [[encodingPopupCell itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
+			NSInteger start = [enc rangeOfString:@"("].location+1;
+			NSInteger end = [enc length] - start - 1;
+			fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
+			[queryString appendFormat:@"\n CHARACTER SET %@", fieldEncoding];
+		}
+		if(![fieldEncoding length] && [tableDataInstance tableEncoding]) {
+			fieldEncoding = [tableDataInstance tableEncoding];
+		}
+		if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0) {
+			NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
+			NSString *col = [[theCollations objectAtIndex:[[theRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
+			[queryString appendFormat:@"\n COLLATE %@", col];
+		}
 
-	if ( [[theRow objectForKey:@"zerofill"] integerValue] == 1) {
-		[queryString appendString:@" ZEROFILL"];
-	}
+		// Field specification
+		if ([[theRow objectForKey:@"unsigned"] integerValue] == 1) {
+			[queryString appendString:@"\n UNSIGNED"];
+		}
 
-	if ( [[theRow objectForKey:@"binary"] integerValue] == 1) {
-		[queryString appendString:@" BINARY"];
-	}
+		if ( [[theRow objectForKey:@"zerofill"] integerValue] == 1) {
+			[queryString appendString:@"\n ZEROFILL"];
+		}
 
-	if ([[theRow objectForKey:@"null"] integerValue] == 0) {
-		[queryString appendString:@" NOT NULL"];
-	} else {
-		[queryString appendString:@" NULL"];
-	}
+		if ( [[theRow objectForKey:@"binary"] integerValue] == 1) {
+			[queryString appendString:@"\n BINARY"];
+		}
 
-	// Don't provide any defaults for auto-increment fields
-	if ([[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
-		[queryString appendString:@" "];
-	}
-	else {
-		// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
-		if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			if ([[theRow objectForKey:@"null"] integerValue] == 1) {
-				[queryString appendString:@" DEFAULT NULL "];
+		if ([[theRow objectForKey:@"null"] integerValue] == 0 || [theRowExtra isEqualToString:@"SERIAL DEFAULT VALUE"]) {
+			[queryString appendString:@"\n NOT NULL"];
+		} else {
+			[queryString appendString:@"\n NULL"];
+		}
+
+		// Don't provide any defaults for auto-increment fields
+		if ([theRowExtra isEqualToString:@"AUTO_INCREMENT"]) {
+			[queryString appendString:@" "];
+		}
+		else {
+			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
+			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+				if ([[theRow objectForKey:@"null"] integerValue] == 1) {
+					[queryString appendString:@"\n DEFAULT NULL "];
+				}
+			}
+			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps, use that
+			else if ([theRowType isEqualToString:@"TIMESTAMP"] &&
+					 [[[theRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
+			{
+				[queryString appendString:@"\n DEFAULT CURRENT_TIMESTAMP "];
+
+			}
+			// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
+			// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
+			else if ([[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
+				[queryString appendFormat:@"\n DEFAULT %@ ", [theRow objectForKey:@"default"]];
+			}
+			// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages
+			else if (![[theRow objectForKey:@"default"] length] && ([self _isFieldTypeNumeric:theRowType] || [self _isFieldTypeDate:theRowType])) {
+				;
+			}
+			// Otherwise, use the provided default
+			else {
+				[queryString appendFormat:@"\n DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"default"]]];
 			}
 		}
-		// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps, use that
-		else if ([theRowType isEqualToString:@"TIMESTAMP"] &&
-				 [[[theRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
+
+		if (![theRowExtra isEqualToString:@""] && ![theRowExtra isEqualToString:@"NONE"])
 		{
-			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
+			[queryString appendFormat:@"\n %@", theRowExtra];
+		}
 
-		}
-		// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
-		// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
-		else if ([[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
-			[queryString appendFormat:@" DEFAULT %@ ", [theRow objectForKey:@"default"]];
-		}
-		// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages
-		// Hint: [typeSuggestions indexOfObject:theRowType] < 11 has to be changed if typeSuggestions was changed!
-		else if (![[theRow objectForKey:@"default"] length] && ([typeSuggestions indexOfObject:theRowType] < 11 || [typeSuggestions indexOfObject:theRowType] > 25)) {
-			;
-		}
-		// Otherwise, use the provided default
-		else {
-			[queryString appendFormat:@" DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"default"]]];
-		}
-	}
-
-	if (!(
-			[[theRow objectForKey:@"Extra"] isEqualToString:@""] ||
-			[[theRow objectForKey:@"Extra"] isEqualToString:@"None"]
-		) &&
-		[theRow objectForKey:@"Extra"] )
-	{
-		[queryString appendString:@" "];
-		[queryString appendString:[theRow objectForKey:@"Extra"]];
 	}
 
 	// Any column comments
 	if ([[theRow objectForKey:@"comment"] length]) {
-		[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"comment"]]];
+		[queryString appendFormat:@"\n COMMENT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"comment"]]];
 	}
 
 	if (!isEditingNewRow) {
 
 		// Unparsed details - column formats, storage, reference definitions
 		if ([[theRow objectForKey:@"unparsed"] length]) {
-			[queryString appendString:[theRow objectForKey:@"unparsed"]];
+			[queryString appendFormat:@"\n %@", [theRow objectForKey:@"unparsed"]];
 		}
 	}
 
 	// Asks the user to add an index to query if auto_increment is set and field isn't indexed
-	if ([[theRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"] &&
+	if ([theRowExtra isEqualToString:@"AUTO_INCREMENT"] &&
 		([[theRow objectForKey:@"Key"] isEqualToString:@""] ||
 		![theRow objectForKey:@"Key"]))
 	{
@@ -891,26 +977,26 @@ closes the keySheet
 		if (code) {
 			// User wants to add PRIMARY KEY
 			if ([chooseKeyButton indexOfSelectedItem] == 0 ) {
-				[queryString appendString:@" PRIMARY KEY"];
+				[queryString appendString:@"\n PRIMARY KEY"];
 
 				// Add AFTER ... only if the user added a new field
 				if (isEditingNewRow) {
-					[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+					[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 				}
 			}
 			else {
 				// Add AFTER ... only if the user added a new field
 				if (isEditingNewRow) {
-					[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+					[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 				}
 
-				[queryString appendFormat:@", ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"name"] backtickQuotedString]];
+				[queryString appendFormat:@"\n, ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"name"] backtickQuotedString]];
 			}
 		}
 	}
 	// Add AFTER ... only if the user added a new field
 	else if (isEditingNewRow) {
-		[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+		[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 	}
 
 	// Execute query
@@ -963,15 +1049,15 @@ closes the keySheet
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"),
 							  NSLocalizedString(@"Edit row", @"Edit row button"),
 							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@'.\n\nMySQL said: %@", @"error adding field informative message"),
-							  [theRow objectForKey:@"name"], [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@' via\n\n%@\n\nMySQL said: %@", @"error adding field informative message"),
+							  [theRow objectForKey:@"name"], queryString, [mySQLConnection getLastErrorMessage]]);
 		}
 		else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"),
 							  NSLocalizedString(@"Edit row", @"Edit row button"),
 							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@'.\n\nMySQL said: %@", @"error changing field informative message"),
-							  [theRow objectForKey:@"name"], [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@' via\n\n%@\n\nMySQL said: %@", @"error changing field informative message"),
+							  [theRow objectForKey:@"name"], queryString, [mySQLConnection getLastErrorMessage]]);
 		}
 
 		return NO;
@@ -1746,6 +1832,24 @@ would result in a position change.
 
 #pragma mark -
 #pragma mark Private API methods
+
+/**
+ * Return is aType is numeric according to typeSuggestions's position
+ * Hint: This must be changed if typeSuggestions was changed!
+ */
+- (BOOL)_isFieldTypeNumeric:(NSString*)aType
+{
+	return ([typeSuggestions indexOfObject:aType] < 14);
+}
+
+/**
+ * Return is aType is a date or time according to typeSuggestions's position
+ * Hint: This must be changed if typeSuggestions was changed!
+ */
+- (BOOL)_isFieldTypeDate:(NSString*)aType
+{
+	return ([typeSuggestions indexOfObject:aType] > 28);
+}
 
 /**
  * Removes a field from the current table and the dependent foreign key if specified.
