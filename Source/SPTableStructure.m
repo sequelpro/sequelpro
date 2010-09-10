@@ -55,6 +55,7 @@
 		tableFields = [[NSMutableArray alloc] init];
 		oldRow      = [[NSMutableDictionary alloc] init];
 		enumFields  = [[NSMutableDictionary alloc] init];
+		typeSuggestions = nil;
 
 		currentlyEditingRow = -1;
 		defaultValues = nil;
@@ -75,12 +76,43 @@
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Set the strutcture and index view's font
-	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 
-	for (NSTableColumn *fieldColumn in [tableSourceView tableColumns])
-	{
-		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+	typeSuggestions = [[NSArray arrayWithObjects:
+		@"TINYINT",
+		@"SMALLINT",
+		@"MEDIUMINT",
+		@"INT",
+		@"BIGINT",
+		@"FLOAT",
+		@"DOUBLE",
+		@"DOUBLE PRECISION",
+		@"REAL",
+		@"DECIMAL",
+		@"BIT",
+		@"--------",
+		@"CHAR",
+		@"VARCHAR",
+		@"BINARY",
+		@"VARBINARY",
+		@"TINYBLOB",
+		@"BLOB",
+		@"TEXT",
+		@"MEDIUMBLOB",
+		@"MEDIUMTEXT",
+		@"LONGBLOB",
+		@"LONGTEXT",
+		@"ENUM",
+		@"SET",
+		@"--------",
+		@"DATE",
+		@"DATETIME",
+		@"TIMESTAMP",
+		@"TIME",
+		@"YEAR",
+		nil] retain];
+		// Hint: in [self addRowToDB] > [typeSuggestions indexOfObject:theRowType] < 11 etc. has to be changed if typeSuggestions was changed!
+	
 
 	databaseDataInstance = [tableDocumentInstance valueForKeyPath:@"databaseDataInstance"];
 
@@ -681,6 +713,7 @@ closes the keySheet
 	NSInteger code;
 	NSDictionary *theRow;
 	NSMutableString *queryString;
+	NSString *theRowType;
 
 	if (!isEditingRow || currentlyEditingRow == -1)
 		return YES;
@@ -690,6 +723,8 @@ closes the keySheet
 
 	theRow = [tableFields objectAtIndex:currentlyEditingRow];
 
+	theRowType = [[theRow objectForKey:@"type"] uppercaseString];
+
 	if (isEditingNewRow) {
 		// ADD syntax
 		if ([[theRow objectForKey:@"length"] isEqualToString:@""] || ![theRow objectForKey:@"length"]) {
@@ -697,13 +732,13 @@ closes the keySheet
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@",
 															[selectedTable backtickQuotedString],
 															[[theRow objectForKey:@"name"] backtickQuotedString],
-															[[theRow objectForKey:@"type"] uppercaseString]];
+															theRowType];
 		}
 		else {
 			queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@(%@)",
 															[selectedTable backtickQuotedString],
 															[[theRow objectForKey:@"name"] backtickQuotedString],
-															[[theRow objectForKey:@"type"] uppercaseString],
+															theRowType,
 															[theRow objectForKey:@"length"]];
 		}
 	}
@@ -724,7 +759,7 @@ closes the keySheet
 															[selectedTable backtickQuotedString],
 															[[oldRow objectForKey:@"name"] backtickQuotedString],
 															[[theRow objectForKey:@"name"] backtickQuotedString],
-															[[theRow objectForKey:@"type"] uppercaseString]];
+															theRowType];
 		}
 		else {
 			// If the old row and new row dictionaries are equal then the user didn't actually change anything so don't continue
@@ -738,7 +773,7 @@ closes the keySheet
 															[selectedTable backtickQuotedString],
 															[[oldRow objectForKey:@"name"] backtickQuotedString],
 															[[theRow objectForKey:@"name"] backtickQuotedString],
-															[[theRow objectForKey:@"type"] uppercaseString],
+															theRowType,
 															[theRow objectForKey:@"length"]];
 		}
 	}
@@ -791,7 +826,7 @@ closes the keySheet
 			}
 		}
 		// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps, use that
-		else if ([[theRow objectForKey:@"type"] isEqualToString:@"timestamp"] &&
+		else if ([theRowType isEqualToString:@"TIMESTAMP"] &&
 				 [[[theRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
 		{
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP "];
@@ -799,8 +834,13 @@ closes the keySheet
 		}
 		// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
 		// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
-		else if ([[[theRow objectForKey:@"type"] lowercaseString] isEqualToString:@"bit"]) {
+		else if ([[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
 			[queryString appendFormat:@" DEFAULT %@ ", [theRow objectForKey:@"default"]];
+		}
+		// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages
+		// Hint: [typeSuggestions indexOfObject:theRowType] < 11 has to be changed if typeSuggestions was changed!
+		else if (![[theRow objectForKey:@"default"] length] && ([typeSuggestions indexOfObject:theRowType] < 11 || [typeSuggestions indexOfObject:theRowType] > 25)) {
+			;
 		}
 		// Otherwise, use the provided default
 		else {
@@ -818,12 +858,12 @@ closes the keySheet
 		[queryString appendString:[theRow objectForKey:@"Extra"]];
 	}
 
-	if (!isEditingNewRow) {
+	// Any column comments
+	if ([[theRow objectForKey:@"comment"] length]) {
+		[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"comment"]]];
+	}
 
-		// Any column comments
-		if ([[theRow objectForKey:@"comment"] length]) {
-			[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"comment"]]];
-		}
+	if (!isEditingNewRow) {
 
 		// Unparsed details - column formats, storage, reference definitions
 		if ([[theRow objectForKey:@"unparsed"] length]) {
@@ -1674,6 +1714,37 @@ would result in a position change.
 }
 
 #pragma mark -
+#pragma mark NSComboBox delegates
+
+- (id)comboBoxCell:(NSComboBoxCell *)aComboBoxCell objectValueForItemAtIndex:(NSInteger)index
+{
+	return [typeSuggestions objectAtIndex:index];
+}
+
+- (NSInteger)numberOfItemsInComboBoxCell:(NSComboBoxCell *)aComboBoxCell
+{
+	return [typeSuggestions count];
+}
+
+/**
+ * Allow completion for lowercased input
+ */
+- (NSString *)comboBoxCell:(NSComboBoxCell *)aComboBoxCell completedString:(NSString *)uncompletedString
+{
+
+	if([uncompletedString hasPrefix:@"-"]) return @"";
+
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH[c] %@", [uncompletedString uppercaseString]];
+	NSArray *result = [typeSuggestions filteredArrayUsingPredicate:predicate];
+
+	if(result && [result count])
+		return [result objectAtIndex:0];
+
+	return @"";
+
+}
+
+#pragma mark -
 #pragma mark Private API methods
 
 /**
@@ -1751,6 +1822,7 @@ would result in a position change.
 	[tableFields release];
 	[oldRow release];
 	[enumFields release];
+	[typeSuggestions release];
 
 	if (defaultValues) [defaultValues release];
 	if (selectedTable) [selectedTable release];

@@ -70,6 +70,8 @@
 	NSInteger currentlyEditingRow;
 	NSUserDefaults *prefs;
 	NSArray *collations;
+	NSArray *typeSuggestions;
+
 }
 
 // Table methods

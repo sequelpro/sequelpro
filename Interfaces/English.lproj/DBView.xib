@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="7484"/>
+			<integer value="1304"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1069,41 +1069,9 @@
 																										<reference key="NSTextColor" ref="454249633"/>
 																										<int key="NSVisibleItemCount">10</int>
 																										<bool key="NSHasVerticalScroller">YES</bool>
+																										<bool key="NSUsesDataSource">YES</bool>
 																										<bool key="NSCompletes">YES</bool>
-																										<object class="NSMutableArray" key="NSPopUpListData">
-																											<bool key="EncodedWithXMLCoder">YES</bool>
-																											<string>TINYINT</string>
-																											<string>SMALLINT</string>
-																											<string>MEDIUMINT</string>
-																											<string>INT</string>
-																											<string>BIGINT</string>
-																											<string>FLOAT</string>
-																											<string>DOUBLE</string>
-																											<string>DECIMAL</string>
-																											<string>--------</string>
-																											<string>DATE</string>
-																											<string>DATETIME</string>
-																											<string>TIMESTAMP</string>
-																											<string>TIME</string>
-																											<string>YEAR</string>
-																											<string>--------</string>
-																											<string>CHAR</string>
-																											<string>VARCHAR</string>
-																											<string>TINYBLOB</string>
-																											<string>TINYTEXT</string>
-																											<string>BLOB</string>
-																											<string>TEXT</string>
-																											<string>MEDIUMBLOB</string>
-																											<string>MEDIUMTEXT</string>
-																											<string>LONGBLOB</string>
-																											<string>LONGTEXT</string>
-																											<string>ENUM</string>
-																											<string>SET</string>
-																											<string>--------</string>
-																											<string>BIT</string>
-																											<string>BINARY</string>
-																											<string>VARBINARY</string>
-																										</object>
+																										<nil key="NSDataSource"/>
 																										<object class="NSComboTableView" key="NSTableView" id="567127181">
 																											<reference key="NSNextResponder"/>
 																											<int key="NSvFlags">274</int>
@@ -1148,7 +1116,6 @@
 																											<string key="NSAction">tableViewAction:</string>
 																											<int key="NSTvFlags">-228556800</int>
 																											<reference key="NSDelegate" ref="904218650"/>
-																											<reference key="NSDataSource" ref="904218650"/>
 																											<reference key="NSTarget" ref="904218650"/>
 																											<int key="NSColumnAutoresizingStyle">1</int>
 																											<int key="NSDraggingSourceMaskForLocal">15</int>
@@ -14756,6 +14723,14 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<int key="connectionID">7496</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">dataSource</string>
+						<reference key="source" ref="904218650"/>
+						<reference key="destination" ref="103234030"/>
+					</object>
+					<int key="connectionID">7498</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -23314,7 +23289,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{-19, 172}, {943, 549}}</string>
+					<string>{{0, 172}, {943, 549}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23665,7 +23640,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">7497</int>
+			<int key="maxID">7498</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
