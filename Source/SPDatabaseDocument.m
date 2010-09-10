@@ -86,6 +86,7 @@
 		_isConnected = NO;
 		_isWorkingLevel = 0;
 		_isSavedInBundle = NO;
+		_supportsEncoding = NO;
 		databaseListIsSelectable = YES;
 		_queryMode = SPInterfaceQueryMode;
 		chooseDatabaseButton = nil;
@@ -777,6 +778,8 @@
 				break;
 		}
 	}
+
+	(void*)[self databaseEncoding];
 }
 
 - (MCPConnection *) getConnection {
@@ -1697,6 +1700,8 @@
 	MCPResult *charSetResult;
 	NSString *mysqlEncoding = nil;
 
+	_supportsEncoding = YES;
+
 	// MySQL >= 4.1
 	if ([mySQLConnection serverMajorVersion] > 4
 		|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1))
@@ -1704,7 +1709,6 @@
 		charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_database'"];
 		[charSetResult setReturnDataAsStrings:YES];
 		mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
-		_supportsEncoding = (mysqlEncoding != nil);
 
 	// mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
 	} else {
@@ -1715,6 +1719,7 @@
 	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
 		mysqlEncoding = @"latin1";
+		_supportsEncoding = NO;
 	}
 
 	return mysqlEncoding;
