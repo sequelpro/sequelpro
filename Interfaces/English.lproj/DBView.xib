@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1309"/>
+			<integer value="231"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1381,7 +1381,7 @@
 																										<object class="NSComboTableView" key="NSTableView" id="1025423991">
 																											<reference key="NSNextResponder"/>
 																											<int key="NSvFlags">274</int>
-																											<string key="NSFrameSize">{13, 54}</string>
+																											<string key="NSFrameSize">{13, 72}</string>
 																											<reference key="NSSuperview"/>
 																											<reference key="NSWindow"/>
 																											<bool key="NSEnabled">YES</bool>
@@ -1558,9 +1558,10 @@
 																							<reference key="NSBackgroundColor" ref="1024678221"/>
 																							<reference key="NSGridColor" ref="864903678"/>
 																							<double key="NSRowHeight">16</double>
-																							<int key="NSTvFlags">-222265344</int>
+																							<int key="NSTvFlags">-205488128</int>
 																							<reference key="NSDelegate"/>
 																							<reference key="NSDataSource"/>
+																							<string key="NSAutosaveName">SPTableStructureSource</string>
 																							<int key="NSColumnAutoresizingStyle">1</int>
 																							<int key="NSDraggingSourceMaskForLocal">15</int>
 																							<int key="NSDraggingSourceMaskForNonLocal">0</int>
@@ -23290,7 +23291,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{0, 172}, {943, 549}}</string>
+					<string>{{43, 172}, {943, 549}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
