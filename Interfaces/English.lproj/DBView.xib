@@ -23,7 +23,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="231"/>
+			<integer value="673"/>
+			<integer value="6210"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -10185,6 +10186,24 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="NSOnImage" ref="450876295"/>
 						<reference key="NSMixedImage" ref="414351669"/>
 					</object>
+					<object class="NSMenuItem" id="819141542">
+						<reference key="NSMenu" ref="752657505"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="450876295"/>
+						<reference key="NSMixedImage" ref="414351669"/>
+					</object>
+					<object class="NSMenuItem" id="182964528">
+						<reference key="NSMenu" ref="752657505"/>
+						<string key="NSTitle">Show optimized Field Type</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="450876295"/>
+						<reference key="NSMixedImage" ref="414351669"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMenu" id="481018596">
@@ -14733,6 +14752,14 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</object>
 					<int key="connectionID">7498</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showOptimizedFieldType:</string>
+						<reference key="source" ref="103234030"/>
+						<reference key="destination" ref="182964528"/>
+					</object>
+					<int key="connectionID">7501</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -16286,6 +16313,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="338933187"/>
 							<reference ref="282262200"/>
+							<reference ref="819141542"/>
+							<reference ref="182964528"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Table Structure Menu</string>
@@ -20748,6 +20777,16 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<reference key="parent" ref="127254249"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">7499</int>
+						<reference key="object" ref="819141542"/>
+						<reference key="parent" ref="752657505"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">7500</int>
+						<reference key="object" ref="182964528"/>
+						<reference key="parent" ref="752657505"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -21959,6 +21998,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>7493.IBPluginDependency</string>
 					<string>7494.IBEditorWindowLastContentRect</string>
 					<string>7494.IBPluginDependency</string>
+					<string>7499.IBPluginDependency</string>
+					<string>7500.IBPluginDependency</string>
 					<string>858.IBPluginDependency</string>
 					<string>858.ImportedFromIB2</string>
 					<string>959.IBEditorWindowLastContentRect</string>
@@ -22857,7 +22898,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{924, 496}, {153, 43}}</string>
+					<string>{{603, 458}, {235, 73}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23291,7 +23332,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{43, 172}, {943, 549}}</string>
+					<string>{{490, 63}, {943, 549}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23605,6 +23646,8 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>{{339, 727}, {694, 6}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{265, 489}, {405, 267}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -23642,7 +23685,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">7498</int>
+			<int key="maxID">7501</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -28931,10 +28974,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>reloadTable:</string>
 							<string>removeField:</string>
 							<string>resetAutoIncrement:</string>
+							<string>showOptimizedFieldType:</string>
 							<string>unhideIndexesView:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -28956,6 +29001,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>reloadTable:</string>
 							<string>removeField:</string>
 							<string>resetAutoIncrement:</string>
+							<string>showOptimizedFieldType:</string>
 							<string>unhideIndexesView:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -28989,6 +29035,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">showOptimizedFieldType:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">unhideIndexesView:</string>
 								<string key="candidateClassName">id</string>
 							</object>
@@ -29001,7 +29051,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>addFieldButton</string>
 							<string>addIndexButton</string>
 							<string>chooseKeyButton</string>
-							<string>collationPopupCell</string>
 							<string>copyFieldButton</string>
 							<string>databaseDataInstance</string>
 							<string>editTableButton</string>
@@ -29037,7 +29086,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
 							<string>NSButton</string>
 							<string>id</string>
 							<string>id</string>
@@ -29064,7 +29112,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>addFieldButton</string>
 							<string>addIndexButton</string>
 							<string>chooseKeyButton</string>
-							<string>collationPopupCell</string>
 							<string>copyFieldButton</string>
 							<string>databaseDataInstance</string>
 							<string>editTableButton</string>
@@ -29101,10 +29148,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">chooseKeyButton</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">collationPopupCell</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">

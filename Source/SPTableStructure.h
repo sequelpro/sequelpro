@@ -84,6 +84,7 @@
 - (IBAction)copyField:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (IBAction)resetAutoIncrement:(id)sender;
+- (IBAction)showOptimizedFieldType:(id)sender;
 
 // Index sheet methods
 - (IBAction)closeSheet:(id)sender;

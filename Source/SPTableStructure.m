@@ -399,6 +399,55 @@
 }
 
 /**
+ * Show optimized field type for selected field
+ */
+- (IBAction)showOptimizedFieldType:(id)sender
+{
+	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT %@ FROM %@ PROCEDURE ANALYSE(0,8192)", 
+		[[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"] backtickQuotedString],
+		[selectedTable backtickQuotedString]]];
+
+	// Check for errors
+	if ([mySQLConnection queryErrored]) {
+		NSString *mText = NSLocalizedString(@"Error while fetching the optimized field type", @"error while fetching the optimized field type message");
+		if ([mySQLConnection isConnected]) {
+
+			[[NSAlert alertWithMessageText:mText 
+							 defaultButton:@"OK" 
+						   alternateButton:nil 
+							   otherButton:nil 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@",@"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection getLastErrorMessage]]] 
+				  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+							 modalDelegate:self 
+							didEndSelector:NULL 
+							   contextInfo:NULL];
+		}
+
+		return;
+	}
+
+	NSArray *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+
+	NSString *type = nil;
+
+	if([result count])
+		type = [[result objectAtIndex:0] objectForKey:@"Optimal_fieldtype"];
+	if(!type || ![type length]) {
+		type = NSLocalizedString(@"No optimized field type found.", @"no optimized field type found. message");
+	}
+	[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Optimized type for field '%@'", @"Optimized type for field %@"), [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"]] 
+					 defaultButton:@"OK" 
+				   alternateButton:nil 
+					   otherButton:nil 
+		 informativeTextWithFormat:type] 
+		  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+					 modalDelegate:self 
+					didEndSelector:NULL 
+					   contextInfo:NULL];
+
+}
+
+/**
  * Copies a field and goes in edit mode for the new field
  */
 - (IBAction)copyField:(id)sender
