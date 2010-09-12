@@ -580,7 +580,7 @@
 
 			[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
 
-			[dateFormatter setDateStyle:NSDateFormatterLongStyle];
+			[dateFormatter setDateStyle:NSDateFormatterMediumStyle];
 			[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
 
 			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];
