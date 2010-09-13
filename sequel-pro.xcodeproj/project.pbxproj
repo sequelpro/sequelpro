@@ -210,6 +210,7 @@
 		589235321020C1230011DE00 /* SPHistoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 589235301020C1230011DE00 /* SPHistoryController.m */; };
 		589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */; };
 		589ED05B11E0ACD100C1DCEA /* DMLocalizedNib.m in Sources */ = {isa = PBXBuildFile; fileRef = 589ED05A11E0ACD100C1DCEA /* DMLocalizedNib.m */; };
+		58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */ = {isa = PBXBuildFile; fileRef = 58A137CC123ED5E6000B1B75 /* titlebarlock.png */; };
 		58A8A72711A0149100B95749 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58A8A72611A0149100B95749 /* MainWindow.xib */; };
 		58A8A79111A036C000B95749 /* SPWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 58A8A79011A036C000B95749 /* SPWindowController.m */; };
 		58B9074A11BD9B34000826E5 /* overflowImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070A11BD9B34000826E5 /* overflowImage.png */; };
@@ -805,6 +806,7 @@
 		589582131154F8F400EDCC28 /* SPMainThreadTrampoline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMainThreadTrampoline.h; sourceTree = "<group>"; };
 		589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMainThreadTrampoline.m; sourceTree = "<group>"; };
 		589ED05A11E0ACD100C1DCEA /* DMLocalizedNib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMLocalizedNib.m; sourceTree = "<group>"; };
+		58A137CC123ED5E6000B1B75 /* titlebarlock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = titlebarlock.png; sourceTree = "<group>"; };
 		58A8A72411A0148400B95749 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainWindow.xib; sourceTree = "<group>"; };
 		58A8A78F11A036C000B95749 /* SPWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowController.h; sourceTree = "<group>"; };
 		58A8A79011A036C000B95749 /* SPWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowController.m; sourceTree = "<group>"; };
@@ -1783,6 +1785,7 @@
 				B5E2C5F90F2353B5007446E0 /* table-property.png */,
 				17E641B40EF02036001BC333 /* table-small.tiff */,
 				584F5F8E0F50ACD800036517 /* table-view-small.tiff */,
+				58A137CC123ED5E6000B1B75 /* titlebarlock.png */,
 				B57748380F7A8B57003B34F9 /* toolbar-preferences-general.tiff */,
 				B577483E0F7A8B57003B34F9 /* toolbar-preferences-tables.tiff */,
 				B577483B0F7A8B57003B34F9 /* toolbar-preferences-favorites.png */,
@@ -2531,6 +2534,7 @@
 				17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */,
 				17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */,
 				58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */,
+				58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

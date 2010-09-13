@@ -77,6 +77,13 @@
 	NSString *database;
 	NSString *socket;
 	NSString *port;
+	int useSSL;
+	int sslKeyFileLocationEnabled;
+	NSString *sslKeyFileLocation;
+	int sslCertificateFileLocationEnabled;
+	NSString *sslCertificateFileLocation;
+	int sslCACertFileLocationEnabled;
+	NSString *sslCACertFileLocation;
 	NSString *sshHost;
 	NSString *sshUser;
 	NSString *sshPassword;
@@ -103,9 +110,14 @@
 
 	IBOutlet NSView *connectionResizeContainer;
 	IBOutlet NSView *standardConnectionFormContainer;
+	IBOutlet NSView *standardConnectionSSLDetailsContainer;
 	IBOutlet NSView *socketConnectionFormContainer;
+	IBOutlet NSView *socketConnectionSSLDetailsContainer;
 	IBOutlet NSView *sshConnectionFormContainer;
 	IBOutlet NSView *sshKeyLocationHelp;
+	IBOutlet NSView *sslKeyFileLocationHelp;
+	IBOutlet NSView *sslCertificateLocationHelp;
+	IBOutlet NSView *sslCACertLocationHelp;
 
 	IBOutlet NSTextField *standardSQLHostField;
 	IBOutlet NSTextField *sshSQLHostField;
@@ -114,6 +126,12 @@
 	IBOutlet NSSecureTextField *sshPasswordField;
 	IBOutlet NSSecureTextField *sshSSHPasswordField;
 	IBOutlet NSButton *sshSSHKeyButton;
+	IBOutlet NSButton *standardSSLKeyFileButton;
+	IBOutlet NSButton *standardSSLCertificateButton;
+	IBOutlet NSButton *standardSSLCACertButton;
+	IBOutlet NSButton *socketSSLKeyFileButton;
+	IBOutlet NSButton *socketSSLCertificateButton;
+	IBOutlet NSButton *socketSSLCACertButton;
 
 	IBOutlet NSButton *addToFavoritesButton;
 	IBOutlet NSButton *connectButton;
@@ -137,6 +155,13 @@
 @property (readwrite, retain) NSString *database;
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
+@property (readwrite, assign) int useSSL;
+@property (readwrite, assign) int sslKeyFileLocationEnabled;
+@property (readwrite, retain) NSString *sslKeyFileLocation;
+@property (readwrite, assign) int sslCertificateFileLocationEnabled;
+@property (readwrite, retain) NSString *sslCertificateFileLocation;
+@property (readwrite, assign) int sslCACertFileLocationEnabled;
+@property (readwrite, retain) NSString *sslCACertFileLocation;
 @property (readwrite, retain) NSString *sshHost;
 @property (readwrite, retain) NSString *sshUser;
 @property (readwrite, retain) NSString *sshPassword;
@@ -165,9 +190,10 @@
 - (void)addConnectionToDocument;
 
 // Interface interaction
-- (IBAction)chooseSSHKey:(id)sender;
+- (IBAction)chooseKeyLocation:(id)sender;
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
+- (IBAction)updateSSLInterface:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(id)sender;

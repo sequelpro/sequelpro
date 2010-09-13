@@ -57,8 +57,18 @@
 	IBOutlet NSTextField *favoriteUserTextFieldSocket;
 	IBOutlet NSTextField *favoriteUserTextFieldSSH;
 	IBOutlet NSTextField *favoriteHostTextFieldSSH;
+	IBOutlet NSButton *sshSSHKeyButton;
+	IBOutlet NSButton *standardSSLKeyFileButton;
+	IBOutlet NSButton *standardSSLCertificateButton;
+	IBOutlet NSButton *standardSSLCACertButton;
+	IBOutlet NSButton *socketSSLKeyFileButton;
+	IBOutlet NSButton *socketSSLCertificateButton;
+	IBOutlet NSButton *socketSSLCACertButton;
 	IBOutlet NSMenuItem *favoritesSortByMenuItem;
 	IBOutlet NSView *sshKeyLocationHelp;
+	IBOutlet NSView *sslKeyFileLocationHelp;
+	IBOutlet NSView *sslCertificateLocationHelp;
+	IBOutlet NSView *sslCACertLocationHelp;
 
 	IBOutlet NSWindow *enterNameWindow;
 	IBOutlet NSTextField *enterNameLabel;
@@ -133,7 +143,7 @@
 - (IBAction)closePanelSheet:(id)sender;
 - (IBAction)duplicateTheme:(id)sender;
 - (IBAction)removeTheme:(id)sender;
-- (IBAction)chooseSSHKey:(id)sender;
+- (IBAction)chooseKeyLocation:(id)sender;
 
 // Toolbar item IBAction methods
 - (IBAction)displayGeneralPreferences:(id)sender;

@@ -22,7 +22,6 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="5588"/>
-			<integer value="5576"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -123,7 +122,7 @@
 																	<object class="NSColor" key="NSBackgroundColor">
 																		<int key="NSColorSpace">3</int>
 																		<bytes key="NSWhite">MQA</bytes>
-																		<object class="NSColorSpace" key="NSCustomColorSpace">
+																		<object class="NSColorSpace" key="NSCustomColorSpace" id="886601921">
 																			<int key="NSID">2</int>
 																		</object>
 																	</object>
@@ -424,21 +423,48 @@
 																							<int key="NSvFlags">269</int>
 																							<object class="NSMutableArray" key="NSSubviews">
 																								<bool key="EncodedWithXMLCoder">YES</bool>
+																								<object class="NSButton" id="508687946">
+																									<reference key="NSNextResponder" ref="233374444"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{108, 10}, {230, 18}}</string>
+																									<reference key="NSSuperview" ref="233374444"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="184523755">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">0</int>
+																										<string key="NSContents">Connect using SSL</string>
+																										<object class="NSFont" key="NSSupport" id="807120225">
+																											<string key="NSName">LucidaGrande</string>
+																											<double key="NSSize">13</double>
+																											<int key="NSfFlags">1044</int>
+																										</object>
+																										<reference key="NSControlView" ref="508687946"/>
+																										<int key="NSButtonFlags">1211912703</int>
+																										<int key="NSButtonFlags2">2</int>
+																										<object class="NSCustomResource" key="NSNormalImage" id="804903244">
+																											<string key="NSClassName">NSImage</string>
+																											<string key="NSResourceName">NSSwitch</string>
+																										</object>
+																										<object class="NSButtonImageSource" key="NSAlternateImage" id="791350007">
+																											<string key="NSImageName">NSSwitch</string>
+																										</object>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">200</int>
+																										<int key="NSPeriodicInterval">25</int>
+																									</object>
+																								</object>
 																								<object class="NSTextField" id="644973446">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 149}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 174}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="859982751">
 																										<int key="NSCellFlags">-1804468671</int>
 																										<int key="NSCellFlags2">272630784</int>
 																										<string key="NSContents"/>
-																										<object class="NSFont" key="NSSupport" id="807120225">
-																											<string key="NSName">LucidaGrande</string>
-																											<double key="NSSize">13</double>
-																											<int key="NSfFlags">1044</int>
-																										</object>
+																										<reference key="NSSupport" ref="807120225"/>
 																										<reference key="NSControlView" ref="644973446"/>
 																										<bool key="NSDrawsBackground">YES</bool>
 																										<object class="NSColor" key="NSBackgroundColor" id="211632616">
@@ -461,7 +487,7 @@
 																								<object class="NSTextField" id="786098118">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 151}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 176}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="393023945">
@@ -485,7 +511,7 @@
 																								<object class="NSTextField" id="810791200">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 183}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 208}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="1040289660">
@@ -503,7 +529,7 @@
 																								<object class="NSTextField" id="445567924">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 185}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 210}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="485990188">
@@ -519,7 +545,7 @@
 																								<object class="NSTextField" id="978463433">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 115}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 140}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="925313159">
@@ -536,7 +562,7 @@
 																								<object class="NSTextField" id="987440606">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 117}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 142}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="377431100">
@@ -552,7 +578,7 @@
 																								<object class="NSTextField" id="211629203">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 81}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 106}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="646391991">
@@ -569,7 +595,7 @@
 																								<object class="NSTextField" id="105635377">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 83}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 108}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="785119002">
@@ -585,7 +611,7 @@
 																								<object class="NSTextField" id="950381827">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 47}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 72}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="925102591">
@@ -603,7 +629,7 @@
 																								<object class="NSTextField" id="788113046">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 49}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 74}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="441978581">
@@ -619,7 +645,7 @@
 																								<object class="NSTextField" id="1013612483">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 13}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 38}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="1003825843">
@@ -637,7 +663,7 @@
 																								<object class="NSTextField" id="910543023">
 																									<reference key="NSNextResponder" ref="233374444"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 15}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 40}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="233374444"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="588889019">
@@ -651,7 +677,196 @@
 																									</object>
 																								</object>
 																							</object>
-																							<string key="NSFrame">{{6, 156}, {356, 232}}</string>
+																							<string key="NSFrame">{{6, 131}, {356, 257}}</string>
+																							<reference key="NSSuperview" ref="32802602"/>
+																							<string key="NSClassName">NSView</string>
+																						</object>
+																						<object class="NSCustomView" id="31135925">
+																							<reference key="NSNextResponder" ref="32802602"/>
+																							<int key="NSvFlags">268</int>
+																							<object class="NSMutableArray" key="NSSubviews">
+																								<bool key="EncodedWithXMLCoder">YES</bool>
+																								<object class="NSTextField" id="104955330">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{-3, 15}, {107, 17}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="69612386">
+																										<int key="NSCellFlags">68288064</int>
+																										<int key="NSCellFlags2">71304192</int>
+																										<string key="NSContents">CA Cert:</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="104955330"/>
+																										<reference key="NSBackgroundColor" ref="644242225"/>
+																										<reference key="NSTextColor" ref="434026568"/>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="638710413">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{109, 13}, {199, 22}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="791857368">
+																										<int key="NSCellFlags">-2073952703</int>
+																										<int key="NSCellFlags2">272631296</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<string key="NSPlaceholderString">none set</string>
+																										<reference key="NSControlView" ref="638710413"/>
+																										<bool key="NSDrawsBackground">YES</bool>
+																										<reference key="NSBackgroundColor" ref="211632616"/>
+																										<object class="NSColor" key="NSTextColor">
+																											<int key="NSColorSpace">3</int>
+																											<bytes key="NSWhite">MC41AA</bytes>
+																											<reference key="NSCustomColorSpace" ref="886601921"/>
+																										</object>
+																									</object>
+																								</object>
+																								<object class="NSButton" id="839299955">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{307, 12}, {29, 24}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="1013426677">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">134217728</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="839299955"/>
+																										<int key="NSButtonFlags">-922992385</int>
+																										<int key="NSButtonFlags2">34</int>
+																										<object class="NSCustomResource" key="NSNormalImage" id="22774617">
+																											<string key="NSClassName">NSImage</string>
+																											<string key="NSResourceName">KeyTemplate</string>
+																										</object>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">400</int>
+																										<int key="NSPeriodicInterval">75</int>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="684819179">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{-3, 49}, {107, 17}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="371333119">
+																										<int key="NSCellFlags">68288064</int>
+																										<int key="NSCellFlags2">71304192</int>
+																										<string key="NSContents">Certificate:</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="684819179"/>
+																										<reference key="NSBackgroundColor" ref="644242225"/>
+																										<reference key="NSTextColor" ref="434026568"/>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="950540175">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{109, 47}, {199, 22}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="196185392">
+																										<int key="NSCellFlags">-2073952703</int>
+																										<int key="NSCellFlags2">272631296</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<string key="NSPlaceholderString">none set</string>
+																										<reference key="NSControlView" ref="950540175"/>
+																										<bool key="NSDrawsBackground">YES</bool>
+																										<reference key="NSBackgroundColor" ref="211632616"/>
+																										<object class="NSColor" key="NSTextColor">
+																											<int key="NSColorSpace">3</int>
+																											<bytes key="NSWhite">MC41AA</bytes>
+																											<reference key="NSCustomColorSpace" ref="886601921"/>
+																										</object>
+																									</object>
+																								</object>
+																								<object class="NSButton" id="945929172">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{307, 46}, {29, 24}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="1000000271">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">134217728</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="945929172"/>
+																										<int key="NSButtonFlags">-922992385</int>
+																										<int key="NSButtonFlags2">34</int>
+																										<reference key="NSNormalImage" ref="22774617"/>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">400</int>
+																										<int key="NSPeriodicInterval">75</int>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="1034069158">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{-3, 83}, {107, 17}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="943522732">
+																										<int key="NSCellFlags">68288064</int>
+																										<int key="NSCellFlags2">71304192</int>
+																										<string key="NSContents">Key File:</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="1034069158"/>
+																										<reference key="NSBackgroundColor" ref="644242225"/>
+																										<reference key="NSTextColor" ref="434026568"/>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="679511995">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{109, 81}, {199, 22}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="650760201">
+																										<int key="NSCellFlags">-2073952703</int>
+																										<int key="NSCellFlags2">272631296</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<string key="NSPlaceholderString">none set</string>
+																										<reference key="NSControlView" ref="679511995"/>
+																										<bool key="NSDrawsBackground">YES</bool>
+																										<reference key="NSBackgroundColor" ref="211632616"/>
+																										<object class="NSColor" key="NSTextColor">
+																											<int key="NSColorSpace">3</int>
+																											<bytes key="NSWhite">MC41MDQwMzIyNTgxAA</bytes>
+																										</object>
+																									</object>
+																								</object>
+																								<object class="NSButton" id="586011242">
+																									<reference key="NSNextResponder" ref="31135925"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{307, 80}, {29, 24}}</string>
+																									<reference key="NSSuperview" ref="31135925"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="85329089">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">134217728</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="586011242"/>
+																										<int key="NSButtonFlags">-922992385</int>
+																										<int key="NSButtonFlags2">34</int>
+																										<reference key="NSNormalImage" ref="22774617"/>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">400</int>
+																										<int key="NSPeriodicInterval">75</int>
+																									</object>
+																								</object>
+																							</object>
+																							<string key="NSFrame">{{6, 28}, {356, 104}}</string>
 																							<reference key="NSSuperview" ref="32802602"/>
 																							<string key="NSClassName">NSView</string>
 																						</object>
@@ -665,7 +880,7 @@
 																			<object class="NSTabViewItem" id="517771995">
 																				<string key="NSIdentifier">2</string>
 																				<object class="NSView" key="NSView" id="962671066">
-																					<nil key="NSNextResponder"/>
+																					<reference key="NSNextResponder" ref="134031646"/>
 																					<int key="NSvFlags">256</int>
 																					<object class="NSMutableArray" key="NSSubviews">
 																						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -674,10 +889,32 @@
 																							<int key="NSvFlags">269</int>
 																							<object class="NSMutableArray" key="NSSubviews">
 																								<bool key="EncodedWithXMLCoder">YES</bool>
+																								<object class="NSButton" id="16421625">
+																									<reference key="NSNextResponder" ref="394302879"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{108, 11}, {230, 18}}</string>
+																									<reference key="NSSuperview" ref="394302879"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="972347112">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">0</int>
+																										<string key="NSContents">Connect using SSL</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="16421625"/>
+																										<int key="NSButtonFlags">1211912703</int>
+																										<int key="NSButtonFlags2">2</int>
+																										<reference key="NSNormalImage" ref="804903244"/>
+																										<reference key="NSAlternateImage" ref="791350007"/>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">200</int>
+																										<int key="NSPeriodicInterval">25</int>
+																									</object>
+																								</object>
 																								<object class="NSTextField" id="68541783">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 115}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 141}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="279442436">
@@ -694,7 +931,7 @@
 																								<object class="NSTextField" id="607362814">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 117}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 143}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="798396187">
@@ -710,7 +947,7 @@
 																								<object class="NSTextField" id="512253301">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 81}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 107}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="251554254">
@@ -727,7 +964,7 @@
 																								<object class="NSTextField" id="789391730">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 83}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 109}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="797213431">
@@ -743,7 +980,7 @@
 																								<object class="NSTextField" id="58217156">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 47}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 73}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="185246669">
@@ -761,7 +998,7 @@
 																								<object class="NSTextField" id="745773732">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 49}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 75}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="728524936">
@@ -777,7 +1014,7 @@
 																								<object class="NSTextField" id="728228957">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 13}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 39}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="299457759">
@@ -795,7 +1032,7 @@
 																								<object class="NSTextField" id="591324856">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 15}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 41}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="317867885">
@@ -811,7 +1048,7 @@
 																								<object class="NSTextField" id="474825058">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{110, 149}, {226, 22}}</string>
+																									<string key="NSFrame">{{110, 175}, {226, 22}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="684614893">
@@ -829,7 +1066,7 @@
 																								<object class="NSTextField" id="459734357">
 																									<reference key="NSNextResponder" ref="394302879"/>
 																									<int key="NSvFlags">268</int>
-																									<string key="NSFrame">{{7, 151}, {98, 17}}</string>
+																									<string key="NSFrame">{{7, 177}, {98, 17}}</string>
 																									<reference key="NSSuperview" ref="394302879"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSTextFieldCell" key="NSCell" id="352725628">
@@ -843,12 +1080,199 @@
 																									</object>
 																								</object>
 																							</object>
-																							<string key="NSFrame">{{6, 190}, {356, 198}}</string>
+																							<string key="NSFrame">{{6, 164}, {356, 224}}</string>
+																							<reference key="NSSuperview" ref="962671066"/>
+																							<string key="NSClassName">NSView</string>
+																						</object>
+																						<object class="NSCustomView" id="866600720">
+																							<reference key="NSNextResponder" ref="962671066"/>
+																							<int key="NSvFlags">268</int>
+																							<object class="NSMutableArray" key="NSSubviews">
+																								<bool key="EncodedWithXMLCoder">YES</bool>
+																								<object class="NSTextField" id="98826968">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{-3, 15}, {107, 17}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="730590428">
+																										<int key="NSCellFlags">68288064</int>
+																										<int key="NSCellFlags2">71304192</int>
+																										<string key="NSContents">CA Cert:</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="98826968"/>
+																										<reference key="NSBackgroundColor" ref="644242225"/>
+																										<reference key="NSTextColor" ref="434026568"/>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="484504415">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{109, 13}, {199, 22}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="169093017">
+																										<int key="NSCellFlags">-2073952703</int>
+																										<int key="NSCellFlags2">272631296</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<string key="NSPlaceholderString">none set</string>
+																										<reference key="NSControlView" ref="484504415"/>
+																										<bool key="NSDrawsBackground">YES</bool>
+																										<reference key="NSBackgroundColor" ref="211632616"/>
+																										<object class="NSColor" key="NSTextColor">
+																											<int key="NSColorSpace">3</int>
+																											<bytes key="NSWhite">MC41AA</bytes>
+																											<reference key="NSCustomColorSpace" ref="886601921"/>
+																										</object>
+																									</object>
+																								</object>
+																								<object class="NSButton" id="680939705">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{307, 12}, {29, 24}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="308087760">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">134217728</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="680939705"/>
+																										<int key="NSButtonFlags">-922992385</int>
+																										<int key="NSButtonFlags2">34</int>
+																										<reference key="NSNormalImage" ref="22774617"/>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">400</int>
+																										<int key="NSPeriodicInterval">75</int>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="521125104">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{-3, 49}, {107, 17}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="1025158673">
+																										<int key="NSCellFlags">68288064</int>
+																										<int key="NSCellFlags2">71304192</int>
+																										<string key="NSContents">Certificate:</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="521125104"/>
+																										<reference key="NSBackgroundColor" ref="644242225"/>
+																										<reference key="NSTextColor" ref="434026568"/>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="216069484">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{109, 47}, {199, 22}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="276609847">
+																										<int key="NSCellFlags">-2073952703</int>
+																										<int key="NSCellFlags2">272631296</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<string key="NSPlaceholderString">none set</string>
+																										<reference key="NSControlView" ref="216069484"/>
+																										<bool key="NSDrawsBackground">YES</bool>
+																										<reference key="NSBackgroundColor" ref="211632616"/>
+																										<object class="NSColor" key="NSTextColor">
+																											<int key="NSColorSpace">3</int>
+																											<bytes key="NSWhite">MC41AA</bytes>
+																											<reference key="NSCustomColorSpace" ref="886601921"/>
+																										</object>
+																									</object>
+																								</object>
+																								<object class="NSButton" id="988136593">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{307, 46}, {29, 24}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="559442548">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">134217728</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="988136593"/>
+																										<int key="NSButtonFlags">-922992385</int>
+																										<int key="NSButtonFlags2">34</int>
+																										<reference key="NSNormalImage" ref="22774617"/>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">400</int>
+																										<int key="NSPeriodicInterval">75</int>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="57862599">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{-3, 83}, {107, 17}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="357553281">
+																										<int key="NSCellFlags">68288064</int>
+																										<int key="NSCellFlags2">71304192</int>
+																										<string key="NSContents">Key File:</string>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="57862599"/>
+																										<reference key="NSBackgroundColor" ref="644242225"/>
+																										<reference key="NSTextColor" ref="434026568"/>
+																									</object>
+																								</object>
+																								<object class="NSTextField" id="51601157">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{109, 81}, {199, 22}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSTextFieldCell" key="NSCell" id="575863174">
+																										<int key="NSCellFlags">-2073952703</int>
+																										<int key="NSCellFlags2">272631296</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<string key="NSPlaceholderString">none set</string>
+																										<reference key="NSControlView" ref="51601157"/>
+																										<bool key="NSDrawsBackground">YES</bool>
+																										<reference key="NSBackgroundColor" ref="211632616"/>
+																										<object class="NSColor" key="NSTextColor">
+																											<int key="NSColorSpace">3</int>
+																											<bytes key="NSWhite">MC41MDQwMzIyNTgxAA</bytes>
+																										</object>
+																									</object>
+																								</object>
+																								<object class="NSButton" id="237955939">
+																									<reference key="NSNextResponder" ref="866600720"/>
+																									<int key="NSvFlags">268</int>
+																									<string key="NSFrame">{{307, 80}, {29, 24}}</string>
+																									<reference key="NSSuperview" ref="866600720"/>
+																									<bool key="NSEnabled">YES</bool>
+																									<object class="NSButtonCell" key="NSCell" id="167444868">
+																										<int key="NSCellFlags">67239424</int>
+																										<int key="NSCellFlags2">134217728</int>
+																										<string key="NSContents"/>
+																										<reference key="NSSupport" ref="807120225"/>
+																										<reference key="NSControlView" ref="237955939"/>
+																										<int key="NSButtonFlags">-922992385</int>
+																										<int key="NSButtonFlags2">34</int>
+																										<reference key="NSNormalImage" ref="22774617"/>
+																										<string key="NSAlternateContents"/>
+																										<string key="NSKeyEquivalent"/>
+																										<int key="NSPeriodicDelay">400</int>
+																										<int key="NSPeriodicInterval">75</int>
+																									</object>
+																								</object>
+																							</object>
+																							<string key="NSFrame">{{6, 61}, {356, 104}}</string>
 																							<reference key="NSSuperview" ref="962671066"/>
 																							<string key="NSClassName">NSView</string>
 																						</object>
 																					</object>
 																					<string key="NSFrame">{{10, 33}, {360, 371}}</string>
+																					<reference key="NSSuperview" ref="134031646"/>
 																				</object>
 																				<string key="NSLabel">Socket</string>
 																				<reference key="NSColor" ref="644242225"/>
@@ -857,7 +1281,7 @@
 																			<object class="NSTabViewItem" id="591192172">
 																				<string key="NSIdentifier">Item 2</string>
 																				<object class="NSView" key="NSView" id="159800861">
-																					<reference key="NSNextResponder" ref="134031646"/>
+																					<nil key="NSNextResponder"/>
 																					<int key="NSvFlags">256</int>
 																					<object class="NSMutableArray" key="NSSubviews">
 																						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1214,10 +1638,7 @@
 																										<reference key="NSControlView" ref="183948302"/>
 																										<int key="NSButtonFlags">-922992385</int>
 																										<int key="NSButtonFlags2">34</int>
-																										<object class="NSCustomResource" key="NSNormalImage">
-																											<string key="NSClassName">NSImage</string>
-																											<string key="NSResourceName">KeyTemplate</string>
-																										</object>
+																										<reference key="NSNormalImage" ref="22774617"/>
 																										<string key="NSAlternateContents"/>
 																										<string key="NSKeyEquivalent"/>
 																										<int key="NSPeriodicDelay">400</int>
@@ -1267,21 +1688,20 @@
 																						</object>
 																					</object>
 																					<string key="NSFrame">{{10, 33}, {360, 371}}</string>
-																					<reference key="NSSuperview" ref="134031646"/>
 																				</object>
 																				<string key="NSLabel">SSH</string>
 																				<reference key="NSColor" ref="644242225"/>
 																				<reference key="NSTabView" ref="134031646"/>
 																			</object>
 																		</object>
-																		<reference key="NSSelectedTabViewItem" ref="591192172"/>
+																		<reference key="NSSelectedTabViewItem" ref="517771995"/>
 																		<reference key="NSFont" ref="807120225"/>
 																		<int key="NSTvFlags">0</int>
 																		<bool key="NSAllowTruncatedLabels">YES</bool>
 																		<bool key="NSDrawsBackground">YES</bool>
 																		<object class="NSMutableArray" key="NSSubviews">
 																			<bool key="EncodedWithXMLCoder">YES</bool>
-																			<reference ref="159800861"/>
+																			<reference ref="962671066"/>
 																		</object>
 																	</object>
 																	<object class="NSButton" id="460592307">
@@ -1807,7 +2227,7 @@
 				</object>
 			</object>
 			<object class="NSCustomView" id="567906875">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1829,7 +2249,84 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{579, 51}</string>
+				<string key="NSClassName">NSView</string>
+			</object>
+			<object class="NSCustomView" id="12066713">
+				<nil key="NSNextResponder"/>
+				<int key="NSvFlags">274</int>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSTextField" id="538839943">
+						<reference key="NSNextResponder" ref="12066713"/>
+						<int key="NSvFlags">274</int>
+						<string key="NSFrame">{{2, 10}, {575, 17}}</string>
+						<reference key="NSSuperview" ref="12066713"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="124352014">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">138674176</int>
+							<string key="NSContents">Please select the SSL key file to use when establishing a secure connection.</string>
+							<reference key="NSSupport" ref="951888633"/>
+							<reference key="NSControlView" ref="538839943"/>
+							<reference key="NSBackgroundColor" ref="644242225"/>
+							<reference key="NSTextColor" ref="434026568"/>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{579, 34}</string>
+				<string key="NSClassName">NSView</string>
+			</object>
+			<object class="NSCustomView" id="136328549">
+				<nil key="NSNextResponder"/>
+				<int key="NSvFlags">274</int>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSTextField" id="802544195">
+						<reference key="NSNextResponder" ref="136328549"/>
+						<int key="NSvFlags">274</int>
+						<string key="NSFrame">{{2, 10}, {575, 17}}</string>
+						<reference key="NSSuperview" ref="136328549"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="196059550">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">138674176</int>
+							<string key="NSContents">Please select the client SSL certificate file to use when establishing a secure connection.</string>
+							<reference key="NSSupport" ref="951888633"/>
+							<reference key="NSControlView" ref="802544195"/>
+							<reference key="NSBackgroundColor" ref="644242225"/>
+							<reference key="NSTextColor" ref="434026568"/>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{579, 34}</string>
+				<string key="NSClassName">NSView</string>
+			</object>
+			<object class="NSCustomView" id="3577372">
+				<reference key="NSNextResponder"/>
+				<int key="NSvFlags">274</int>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSTextField" id="761812578">
+						<reference key="NSNextResponder" ref="3577372"/>
+						<int key="NSvFlags">274</int>
+						<string key="NSFrame">{{2, 10}, {575, 34}}</string>
+						<reference key="NSSuperview" ref="3577372"/>
+						<reference key="NSWindow"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="444474564">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">138674176</int>
+							<string key="NSContents">Please select the client SSL Certificate Authority certificate to use when establishing a secure connection.  This must be the same as the server CA certificate.</string>
+							<reference key="NSSupport" ref="951888633"/>
+							<reference key="NSControlView" ref="761812578"/>
+							<reference key="NSBackgroundColor" ref="644242225"/>
+							<reference key="NSTextColor" ref="434026568"/>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{579, 51}</string>
 				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
@@ -2880,14 +3377,6 @@
 					<int key="connectionID">5494</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">chooseSSHKey:</string>
-						<reference key="source" ref="545410097"/>
-						<reference key="destination" ref="183948302"/>
-					</object>
-					<int key="connectionID">5495</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: sshPassword</string>
 						<reference key="source" ref="21480939"/>
@@ -3110,6 +3599,716 @@
 						<reference key="destination" ref="1058735001"/>
 					</object>
 					<int key="connectionID">5592</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">standardConnectionSSLDetailsContainer</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="31135925"/>
+					</object>
+					<int key="connectionID">5620</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: useSSL</string>
+						<reference key="source" ref="508687946"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="508687946"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: useSSL</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">useSSL</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5627</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: sslCACertFileLocation</string>
+						<reference key="source" ref="638710413"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="638710413"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">toolTip: sslCACertFileLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">sslCACertFileLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5637</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: sslCertificateFileLocation</string>
+						<reference key="source" ref="950540175"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="950540175"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">toolTip: sslCertificateFileLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">sslCertificateFileLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5639</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: sslKeyFileLocation</string>
+						<reference key="source" ref="679511995"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="679511995"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">toolTip: sslKeyFileLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">sslKeyFileLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5641</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: useSSL</string>
+						<reference key="source" ref="31135925"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="31135925"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">hidden: useSSL</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">useSSL</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+									<string>NSValueTransformerName</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<string>NSNegateBoolean</string>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5649</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">updateSSLInterface:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="508687946"/>
+					</object>
+					<int key="connectionID">5651</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="183948302"/>
+					</object>
+					<int key="connectionID">5661</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="586011242"/>
+					</object>
+					<int key="connectionID">5662</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="945929172"/>
+					</object>
+					<int key="connectionID">5663</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="839299955"/>
+					</object>
+					<int key="connectionID">5664</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">standardSSLKeyFileButton</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="586011242"/>
+					</object>
+					<int key="connectionID">5665</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">standardSSLCertificateButton</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="945929172"/>
+					</object>
+					<int key="connectionID">5666</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">standardSSLCACertButton</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="839299955"/>
+					</object>
+					<int key="connectionID">5667</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">sslKeyFileLocationHelp</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="12066713"/>
+					</object>
+					<int key="connectionID">5671</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslKeyFileLocationEnabled</string>
+						<reference key="source" ref="586011242"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="586011242"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslKeyFileLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslKeyFileLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5673</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCertificateFileLocationEnabled</string>
+						<reference key="source" ref="945929172"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="945929172"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCertificateFileLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCertificateFileLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5677</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCACertFileLocationEnabled</string>
+						<reference key="source" ref="839299955"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="839299955"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCACertFileLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCACertFileLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5679</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">sslCACertLocationHelp</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="3577372"/>
+					</object>
+					<int key="connectionID">5686</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">sslCertificateLocationHelp</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="136328549"/>
+					</object>
+					<int key="connectionID">5687</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCertificateFileLocationEnabled</string>
+						<reference key="source" ref="988136593"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="988136593"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCertificateFileLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCertificateFileLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5707</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: sslCertificateFileLocation</string>
+						<reference key="source" ref="216069484"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="216069484"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">toolTip: sslCertificateFileLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">sslCertificateFileLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5708</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: useSSL</string>
+						<reference key="source" ref="866600720"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="866600720"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">hidden: useSSL</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">useSSL</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+									<string>NSValueTransformerName</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<integer value="1"/>
+									<string>NSNegateBoolean</string>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5710</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslKeyFileLocationEnabled</string>
+						<reference key="source" ref="237955939"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="237955939"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslKeyFileLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslKeyFileLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5711</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: sslCACertFileLocation</string>
+						<reference key="source" ref="484504415"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="484504415"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">toolTip: sslCACertFileLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">sslCACertFileLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5712</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">toolTip: sslKeyFileLocation</string>
+						<reference key="source" ref="51601157"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="51601157"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">toolTip: sslKeyFileLocation</string>
+							<string key="NSBinding">toolTip</string>
+							<string key="NSKeyPath">sslKeyFileLocation</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5714</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCACertFileLocationEnabled</string>
+						<reference key="source" ref="680939705"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="680939705"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCACertFileLocationEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCACertFileLocationEnabled</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5715</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="237955939"/>
+					</object>
+					<int key="connectionID">5717</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="680939705"/>
+					</object>
+					<int key="connectionID">5718</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseKeyLocation:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="988136593"/>
+					</object>
+					<int key="connectionID">5719</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: useSSL</string>
+						<reference key="source" ref="16421625"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="16421625"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: useSSL</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">useSSL</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5722</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">updateSSLInterface:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="16421625"/>
+					</object>
+					<int key="connectionID">5723</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">socketConnectionSSLDetailsContainer</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="866600720"/>
+					</object>
+					<int key="connectionID">5724</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">socketSSLCACertButton</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="680939705"/>
+					</object>
+					<int key="connectionID">5725</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">socketSSLCertificateButton</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="988136593"/>
+					</object>
+					<int key="connectionID">5726</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">socketSSLKeyFileButton</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="237955939"/>
+					</object>
+					<int key="connectionID">5727</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCACertFileLocation</string>
+						<reference key="source" ref="638710413"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="638710413"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCACertFileLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCACertFileLocation</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSNullPlaceholder</string>
+								<string key="NS.object.0">none set</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5730</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCertificateFileLocation</string>
+						<reference key="source" ref="950540175"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="950540175"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCertificateFileLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCertificateFileLocation</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSNullPlaceholder</string>
+								<string key="NS.object.0">none set</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5731</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslKeyFileLocation</string>
+						<reference key="source" ref="679511995"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="679511995"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslKeyFileLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslKeyFileLocation</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSNullPlaceholder</string>
+								<string key="NS.object.0">none set</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5732</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslKeyFileLocation</string>
+						<reference key="source" ref="51601157"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="51601157"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslKeyFileLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslKeyFileLocation</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSNullPlaceholder</string>
+								<string key="NS.object.0">none set</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5733</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCACertFileLocation</string>
+						<reference key="source" ref="484504415"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="484504415"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCACertFileLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCACertFileLocation</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSNullPlaceholder</string>
+								<string key="NS.object.0">none set</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5734</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sslCertificateFileLocation</string>
+						<reference key="source" ref="216069484"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="216069484"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sslCertificateFileLocation</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sslCertificateFileLocation</string>
+							<object class="NSDictionary" key="NSOptions">
+								<string key="NS.key.0">NSNullPlaceholder</string>
+								<string key="NS.object.0">none set</string>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5735</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -3907,6 +5106,7 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="394302879"/>
+							<reference ref="866600720"/>
 						</object>
 						<reference key="parent" ref="517771995"/>
 					</object>
@@ -3925,6 +5125,7 @@
 							<reference ref="512253301"/>
 							<reference ref="607362814"/>
 							<reference ref="68541783"/>
+							<reference ref="16421625"/>
 						</object>
 						<reference key="parent" ref="962671066"/>
 					</object>
@@ -4074,6 +5275,7 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="233374444"/>
+							<reference ref="31135925"/>
 						</object>
 						<reference key="parent" ref="253369045"/>
 					</object>
@@ -4094,6 +5296,7 @@
 							<reference ref="978463433"/>
 							<reference ref="786098118"/>
 							<reference ref="644973446"/>
+							<reference ref="508687946"/>
 						</object>
 						<reference key="parent" ref="32802602"/>
 					</object>
@@ -4299,6 +5502,392 @@
 						<reference key="object" ref="607446274"/>
 						<reference key="parent" ref="570492783"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5593</int>
+						<reference key="object" ref="508687946"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="184523755"/>
+						</object>
+						<reference key="parent" ref="233374444"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5594</int>
+						<reference key="object" ref="184523755"/>
+						<reference key="parent" ref="508687946"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5595</int>
+						<reference key="object" ref="31135925"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="679511995"/>
+							<reference ref="1034069158"/>
+							<reference ref="586011242"/>
+							<reference ref="945929172"/>
+							<reference ref="950540175"/>
+							<reference ref="684819179"/>
+							<reference ref="839299955"/>
+							<reference ref="638710413"/>
+							<reference ref="104955330"/>
+						</object>
+						<reference key="parent" ref="32802602"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5596</int>
+						<reference key="object" ref="679511995"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="650760201"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5597</int>
+						<reference key="object" ref="650760201"/>
+						<reference key="parent" ref="679511995"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5598</int>
+						<reference key="object" ref="1034069158"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="943522732"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5599</int>
+						<reference key="object" ref="943522732"/>
+						<reference key="parent" ref="1034069158"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5600</int>
+						<reference key="object" ref="586011242"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="85329089"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5601</int>
+						<reference key="object" ref="85329089"/>
+						<reference key="parent" ref="586011242"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5604</int>
+						<reference key="object" ref="945929172"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1000000271"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5605</int>
+						<reference key="object" ref="950540175"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="196185392"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5606</int>
+						<reference key="object" ref="684819179"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="371333119"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5607</int>
+						<reference key="object" ref="371333119"/>
+						<reference key="parent" ref="684819179"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5608</int>
+						<reference key="object" ref="196185392"/>
+						<reference key="parent" ref="950540175"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5609</int>
+						<reference key="object" ref="1000000271"/>
+						<reference key="parent" ref="945929172"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5612</int>
+						<reference key="object" ref="839299955"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1013426677"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5613</int>
+						<reference key="object" ref="638710413"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="791857368"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5614</int>
+						<reference key="object" ref="104955330"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="69612386"/>
+						</object>
+						<reference key="parent" ref="31135925"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5615</int>
+						<reference key="object" ref="69612386"/>
+						<reference key="parent" ref="104955330"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5616</int>
+						<reference key="object" ref="791857368"/>
+						<reference key="parent" ref="638710413"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5617</int>
+						<reference key="object" ref="1013426677"/>
+						<reference key="parent" ref="839299955"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5668</int>
+						<reference key="object" ref="12066713"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="538839943"/>
+						</object>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">SSL Key File Selection Help</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5669</int>
+						<reference key="object" ref="538839943"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="124352014"/>
+						</object>
+						<reference key="parent" ref="12066713"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5670</int>
+						<reference key="object" ref="124352014"/>
+						<reference key="parent" ref="538839943"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5680</int>
+						<reference key="object" ref="3577372"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="761812578"/>
+						</object>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">SSL CA Cert File Selection Help</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5681</int>
+						<reference key="object" ref="761812578"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="444474564"/>
+						</object>
+						<reference key="parent" ref="3577372"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5682</int>
+						<reference key="object" ref="444474564"/>
+						<reference key="parent" ref="761812578"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5683</int>
+						<reference key="object" ref="136328549"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="802544195"/>
+						</object>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">SSL Certificate File Selection Help</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5684</int>
+						<reference key="object" ref="802544195"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="196059550"/>
+						</object>
+						<reference key="parent" ref="136328549"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5685</int>
+						<reference key="object" ref="196059550"/>
+						<reference key="parent" ref="802544195"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5688</int>
+						<reference key="object" ref="866600720"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="98826968"/>
+							<reference ref="484504415"/>
+							<reference ref="680939705"/>
+							<reference ref="521125104"/>
+							<reference ref="216069484"/>
+							<reference ref="988136593"/>
+							<reference ref="237955939"/>
+							<reference ref="57862599"/>
+							<reference ref="51601157"/>
+						</object>
+						<reference key="parent" ref="962671066"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5689</int>
+						<reference key="object" ref="98826968"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="730590428"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5690</int>
+						<reference key="object" ref="484504415"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="169093017"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5691</int>
+						<reference key="object" ref="680939705"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="308087760"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5692</int>
+						<reference key="object" ref="521125104"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1025158673"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5693</int>
+						<reference key="object" ref="216069484"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="276609847"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5694</int>
+						<reference key="object" ref="988136593"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="559442548"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5695</int>
+						<reference key="object" ref="237955939"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="167444868"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5696</int>
+						<reference key="object" ref="57862599"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="357553281"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5697</int>
+						<reference key="object" ref="51601157"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="575863174"/>
+						</object>
+						<reference key="parent" ref="866600720"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5698</int>
+						<reference key="object" ref="575863174"/>
+						<reference key="parent" ref="51601157"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5699</int>
+						<reference key="object" ref="357553281"/>
+						<reference key="parent" ref="57862599"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5700</int>
+						<reference key="object" ref="167444868"/>
+						<reference key="parent" ref="237955939"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5701</int>
+						<reference key="object" ref="559442548"/>
+						<reference key="parent" ref="988136593"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5702</int>
+						<reference key="object" ref="276609847"/>
+						<reference key="parent" ref="216069484"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5703</int>
+						<reference key="object" ref="1025158673"/>
+						<reference key="parent" ref="521125104"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5704</int>
+						<reference key="object" ref="308087760"/>
+						<reference key="parent" ref="680939705"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5705</int>
+						<reference key="object" ref="169093017"/>
+						<reference key="parent" ref="484504415"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5706</int>
+						<reference key="object" ref="730590428"/>
+						<reference key="parent" ref="98826968"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5720</int>
+						<reference key="object" ref="16421625"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="972347112"/>
+						</object>
+						<reference key="parent" ref="394302879"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5721</int>
+						<reference key="object" ref="972347112"/>
+						<reference key="parent" ref="16421625"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4501,12 +6090,75 @@
 					<string>5576.IBPluginDependency</string>
 					<string>5577.IBPluginDependency</string>
 					<string>5578.IBPluginDependency</string>
+					<string>5588.IBPluginDependency</string>
+					<string>5589.IBPluginDependency</string>
+					<string>5590.IBPluginDependency</string>
+					<string>5593.IBPluginDependency</string>
+					<string>5594.IBPluginDependency</string>
+					<string>5595.IBPluginDependency</string>
+					<string>5596.IBPluginDependency</string>
+					<string>5597.IBPluginDependency</string>
+					<string>5598.IBPluginDependency</string>
+					<string>5599.IBPluginDependency</string>
+					<string>5600.IBAttributePlaceholdersKey</string>
+					<string>5600.IBPluginDependency</string>
+					<string>5601.IBPluginDependency</string>
+					<string>5604.IBAttributePlaceholdersKey</string>
+					<string>5604.IBPluginDependency</string>
+					<string>5605.IBPluginDependency</string>
+					<string>5606.IBPluginDependency</string>
+					<string>5607.IBPluginDependency</string>
+					<string>5608.IBPluginDependency</string>
+					<string>5609.IBPluginDependency</string>
+					<string>5612.IBAttributePlaceholdersKey</string>
+					<string>5612.IBPluginDependency</string>
+					<string>5613.IBPluginDependency</string>
+					<string>5614.IBPluginDependency</string>
+					<string>5615.IBPluginDependency</string>
+					<string>5616.IBPluginDependency</string>
+					<string>5617.IBPluginDependency</string>
+					<string>5668.IBEditorWindowLastContentRect</string>
+					<string>5668.IBPluginDependency</string>
+					<string>5669.IBPluginDependency</string>
+					<string>5670.IBPluginDependency</string>
+					<string>5680.IBEditorWindowLastContentRect</string>
+					<string>5680.IBPluginDependency</string>
+					<string>5681.IBPluginDependency</string>
+					<string>5682.IBPluginDependency</string>
+					<string>5683.IBEditorWindowLastContentRect</string>
+					<string>5683.IBPluginDependency</string>
+					<string>5684.IBPluginDependency</string>
+					<string>5685.IBPluginDependency</string>
+					<string>5688.IBPluginDependency</string>
+					<string>5689.IBPluginDependency</string>
+					<string>5690.IBPluginDependency</string>
+					<string>5691.IBAttributePlaceholdersKey</string>
+					<string>5691.IBPluginDependency</string>
+					<string>5692.IBPluginDependency</string>
+					<string>5693.IBPluginDependency</string>
+					<string>5694.IBAttributePlaceholdersKey</string>
+					<string>5694.IBPluginDependency</string>
+					<string>5695.IBAttributePlaceholdersKey</string>
+					<string>5695.IBPluginDependency</string>
+					<string>5696.IBPluginDependency</string>
+					<string>5697.IBPluginDependency</string>
+					<string>5698.IBPluginDependency</string>
+					<string>5699.IBPluginDependency</string>
+					<string>5700.IBPluginDependency</string>
+					<string>5701.IBPluginDependency</string>
+					<string>5702.IBPluginDependency</string>
+					<string>5703.IBPluginDependency</string>
+					<string>5704.IBPluginDependency</string>
+					<string>5705.IBPluginDependency</string>
+					<string>5706.IBPluginDependency</string>
+					<string>5720.IBPluginDependency</string>
+					<string>5721.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{118, 243}, {882, 475}}</string>
+					<string>{{126, 318}, {882, 475}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -4881,6 +6533,111 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="586011242"/>
+							<string key="toolTip">Click to choose the SSL key file to use when establishing a secure connection</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="945929172"/>
+							<string key="toolTip">Click to choose the client SSL certificate file to use when establishing a secure connection</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="839299955"/>
+							<string key="toolTip">Click to choose the client SSL Certificate Authority certificate to use when establishing a secure connection</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{245, 483}, {579, 34}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{245, 466}, {579, 51}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{245, 483}, {579, 34}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="680939705"/>
+							<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="988136593"/>
+							<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="237955939"/>
+							<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -4899,7 +6656,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5592</int>
+			<int key="maxID">5735</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5139,16 +6896,18 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFavorite:</string>
 							<string>cancelMySQLConnection:</string>
-							<string>chooseSSHKey:</string>
+							<string>chooseKeyLocation:</string>
 							<string>editFavorites:</string>
 							<string>initiateConnection:</string>
 							<string>reverseSortFavorites:</string>
 							<string>showHelp:</string>
 							<string>sortFavorites:</string>
 							<string>updateFavoriteSelection:</string>
+							<string>updateSSLInterface:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5166,13 +6925,14 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFavorite:</string>
 							<string>cancelMySQLConnection:</string>
-							<string>chooseSSHKey:</string>
+							<string>chooseKeyLocation:</string>
 							<string>editFavorites:</string>
 							<string>initiateConnection:</string>
 							<string>reverseSortFavorites:</string>
 							<string>showHelp:</string>
 							<string>sortFavorites:</string>
 							<string>updateFavoriteSelection:</string>
+							<string>updateSSLInterface:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5185,7 +6945,7 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">chooseSSHKey:</string>
+								<string key="name">chooseKeyLocation:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -5212,6 +6972,10 @@
 								<string key="name">updateFavoriteSelection:</string>
 								<string key="candidateClassName">id</string>
 							</object>
+							<object class="IBActionInfo">
+								<string key="name">updateSSLInterface:</string>
+								<string key="candidateClassName">id</string>
+							</object>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -5234,16 +6998,27 @@
 							<string>progressIndicator</string>
 							<string>progressIndicatorText</string>
 							<string>socketConnectionFormContainer</string>
+							<string>socketConnectionSSLDetailsContainer</string>
 							<string>socketPasswordField</string>
+							<string>socketSSLCACertButton</string>
+							<string>socketSSLCertificateButton</string>
+							<string>socketSSLKeyFileButton</string>
 							<string>sshConnectionFormContainer</string>
 							<string>sshKeyLocationHelp</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLHostField</string>
 							<string>sshSSHKeyButton</string>
 							<string>sshSSHPasswordField</string>
+							<string>sslCACertLocationHelp</string>
+							<string>sslCertificateLocationHelp</string>
+							<string>sslKeyFileLocationHelp</string>
 							<string>standardConnectionFormContainer</string>
+							<string>standardConnectionSSLDetailsContainer</string>
 							<string>standardPasswordField</string>
 							<string>standardSQLHostField</string>
+							<string>standardSSLCACertButton</string>
+							<string>standardSSLCertificateButton</string>
+							<string>standardSSLKeyFileButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5263,7 +7038,11 @@
 							<string>NSProgressIndicator</string>
 							<string>NSTextField</string>
 							<string>NSView</string>
+							<string>NSView</string>
 							<string>NSSecureTextField</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
 							<string>NSView</string>
 							<string>NSView</string>
 							<string>NSSecureTextField</string>
@@ -5271,8 +7050,15 @@
 							<string>NSButton</string>
 							<string>NSSecureTextField</string>
 							<string>NSView</string>
+							<string>NSView</string>
+							<string>NSView</string>
+							<string>NSView</string>
+							<string>NSView</string>
 							<string>NSSecureTextField</string>
 							<string>NSTextField</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -5295,16 +7081,27 @@
 							<string>progressIndicator</string>
 							<string>progressIndicatorText</string>
 							<string>socketConnectionFormContainer</string>
+							<string>socketConnectionSSLDetailsContainer</string>
 							<string>socketPasswordField</string>
+							<string>socketSSLCACertButton</string>
+							<string>socketSSLCertificateButton</string>
+							<string>socketSSLKeyFileButton</string>
 							<string>sshConnectionFormContainer</string>
 							<string>sshKeyLocationHelp</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLHostField</string>
 							<string>sshSSHKeyButton</string>
 							<string>sshSSHPasswordField</string>
+							<string>sslCACertLocationHelp</string>
+							<string>sslCertificateLocationHelp</string>
+							<string>sslKeyFileLocationHelp</string>
 							<string>standardConnectionFormContainer</string>
+							<string>standardConnectionSSLDetailsContainer</string>
 							<string>standardPasswordField</string>
 							<string>standardSQLHostField</string>
+							<string>standardSSLCACertButton</string>
+							<string>standardSSLCertificateButton</string>
+							<string>standardSSLKeyFileButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5373,8 +7170,24 @@
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
+								<string key="name">socketConnectionSSLDetailsContainer</string>
+								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
 								<string key="name">socketPasswordField</string>
 								<string key="candidateClassName">NSSecureTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">socketSSLCACertButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">socketSSLCertificateButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">socketSSLKeyFileButton</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">sshConnectionFormContainer</string>
@@ -5401,7 +7214,23 @@
 								<string key="candidateClassName">NSSecureTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
+								<string key="name">sslCACertLocationHelp</string>
+								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sslCertificateLocationHelp</string>
+								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sslKeyFileLocationHelp</string>
+								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
 								<string key="name">standardConnectionFormContainer</string>
+								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">standardConnectionSSLDetailsContainer</string>
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
@@ -5411,6 +7240,18 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">standardSQLHostField</string>
 								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">standardSSLCACertButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">standardSSLCertificateButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">standardSSLKeyFileButton</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 						</object>
 					</object>
@@ -6207,6 +8048,7 @@
 				<string>NSActionTemplate</string>
 				<string>NSMenuCheckmark</string>
 				<string>NSMenuMixedState</string>
+				<string>NSSwitch</string>
 				<string>button_edit</string>
 			</object>
 			<object class="NSMutableArray" key="dict.values">
@@ -6215,6 +8057,7 @@
 				<string>{10, 10}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>
+				<string>{15, 15}</string>
 				<string>{32, 23}</string>
 			</object>
 		</object>

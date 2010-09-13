@@ -409,8 +409,8 @@
 	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 
 	// Create default favorite
-	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", [NSNumber numberWithInteger:0], @"", @"", @"", @"", @"", @"", @"", [NSNumber numberWithInt:NSOffState], @"", @"", favoriteid, nil] 
-																	   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"host", @"socket", @"user", @"port", @"database", @"sshHost", @"sshUser", @"sshKeyLocationEnabled", @"sshKeyLocation", @"sshPort", @"id", nil]];
+	NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", [NSNumber numberWithInteger:0], @"", @"", @"", @"", [NSNumber numberWithInt:NSOffState], [NSNumber numberWithInt:NSOffState], [NSNumber numberWithInt:NSOffState], [NSNumber numberWithInt:NSOffState], @"", @"", @"", [NSNumber numberWithInt:NSOffState], @"", @"", favoriteid, nil] 
+																	   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"host", @"socket", @"user", @"port", @"useSSL", @"sslKeyFileLocationEnabled", @"sslCertificateFileLocationEnabled", @"sslCACertFileLocationEnabled", @"database", @"sshHost", @"sshUser", @"sshKeyLocationEnabled", @"sshKeyLocation", @"sshPort", @"id", nil]];
 	
 	[favoritesController addObject:favorite];
 	[favoritesController setSelectedObjects:[NSArray arrayWithObject:favorite]];
@@ -686,47 +686,115 @@
 }
 
 /**
- * Opens the SSH key selection window, ready to select a SSH key.
+ * Opens the SSH/SSL key selection window, ready to select a key file.
  */
-- (IBAction)chooseSSHKey:(id)sender
+ - (IBAction)chooseKeyLocation:(id)sender
 {
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
-
-	// If the custom key location is currently disabled - after the button
-	// action - leave it disabled and return without showing the sheet.
-	if (![[favoritesController valueForKeyPath:@"selection.sshKeyLocationEnabled"] intValue]) {
-		return;
-	}
-
-	// Otherwise open a panel at the last or default location
-	if ([favoritesController valueForKeyPath:@"selection.sshKeyLocation"] && [[favoritesController valueForKeyPath:@"selection.sshKeyLocation"] length]) {
-		filePath = [[favoritesController valueForKeyPath:@"selection.sshKeyLocation"] lastPathComponent];
-		directoryPath = [[favoritesController valueForKeyPath:@"selection.sshKeyLocation"] stringByDeletingLastPathComponent];
-	}
-
-
+	NSArray *permittedFileTypes = nil;
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-	[openPanel setAccessoryView:sshKeyLocationHelp];
+
+	// Switch details by sender.
+	// First, SSH keys:
+	if (sender == sshSSHKeyButton) {
+
+		// If the custom key location is currently disabled - after the button
+		// action - leave it disabled and return without showing the sheet.
+		if (![favoritesController valueForKeyPath:@"selection.sshKeyLocationEnabled"]) {
+			return;
+		}
+
+		// Otherwise open a panel at the last or default location
+		NSString *sshKeyLocation = [favoritesController valueForKeyPath:@"selection.sshKeyLocation"];
+		if (sshKeyLocation && [sshKeyLocation length]) {
+			filePath = [sshKeyLocation lastPathComponent];
+			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
+		}
+
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
+		[openPanel setAccessoryView:sshKeyLocationHelp];
+
+	// SSL key file location:
+	} else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
+		if ([sender state] == NSOffState) {
+			[favoritesController setValue:nil forKeyPath:@"selection.sslKeyFileLocation"];
+			return;
+		}
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
+		[openPanel setAccessoryView:sslKeyFileLocationHelp];
+		
+	// SSL certificate file location:
+	} else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
+		if ([sender state] == NSOffState) {
+			[favoritesController setValue:nil forKeyPath:@"selection.sslCertificateFileLocation"];
+			return;
+		}
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		[openPanel setAccessoryView:sslCertificateLocationHelp];
+		
+	// SSL CA certificate file location:
+	} else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
+		if ([sender state] == NSOffState) {
+			[favoritesController setValue:nil forKeyPath:@"selection.sslCACertFileLocation"];
+			return;
+		}
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		[openPanel setAccessoryView:sslCACertLocationHelp];
+	}
+
 	[openPanel beginSheetForDirectory:directoryPath
 								 file:filePath
-								types:[NSArray arrayWithObjects:@"pem", @"", nil]
+								types:permittedFileTypes
 					   modalForWindow:preferencesWindow
 						modalDelegate:self
-					   didEndSelector:@selector(chooseSSHKeySheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:nil];
+					   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
+						  contextInfo:sender];
 }
 
 /**
- * Called after closing the SSH key selection sheet.
+ * Called after closing the SSH/SSL key selection sheet.
  */
-- (void)chooseSSHKeySheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (void)chooseKeyLocationSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSCancelButton) {
-		[favoritesController setValue:[NSNumber numberWithInt:NSOffState] forKeyPath:@"selection.sshKeyLocationEnabled"];
-		return;
+	NSString *abbreviatedFileName = [[openPanel filename] stringByAbbreviatingWithTildeInPath];
+
+	// SSH key file selection
+	if (contextInfo == sshSSHKeyButton) {
+		if (returnCode == NSCancelButton) {
+			[favoritesController setValue:[NSNumber numberWithInt:NSOffState] forKeyPath:@"selection.sshKeyLocationEnabled"];
+			return;
+		}
+		[favoritesController setValue:abbreviatedFileName forKeyPath:@"selection.sshKeyLocation"];
+		[self setSshKeyLocation:abbreviatedFileName];
+
+	// SSL key file selection
+	} else if (contextInfo == standardSSLKeyFileButton || contextInfo == socketSSLKeyFileButton) {
+		if (returnCode == NSCancelButton) {
+			[favoritesController setValue:[NSNumber numberWithInt:NSOffState] forKeyPath:@"selection.sslKeyFileLocationEnabled"];
+			[favoritesController setValue:nil forKeyPath:@"selection.sslKeyFileLocation"];
+			return;
+		}
+		[favoritesController setValue:abbreviatedFileName forKeyPath:@"selection.sslKeyFileLocation"];
+
+	// SSL certificate file selection
+	} else if (contextInfo == standardSSLCertificateButton || contextInfo == socketSSLCertificateButton) {
+		if (returnCode == NSCancelButton) {
+			[favoritesController setValue:[NSNumber numberWithInt:NSOffState] forKeyPath:@"selection.sslCertificateFileLocationEnabled"];
+			[favoritesController setValue:nil forKeyPath:@"selection.sslCertificateFileLocation"];
+			return;
+		}
+		[favoritesController setValue:abbreviatedFileName forKeyPath:@"selection.sslCertificateFileLocation"];
+
+	// SSL CA certificate file selection
+	} else if (contextInfo == standardSSLCACertButton || contextInfo == socketSSLCACertButton) {
+		if (returnCode == NSCancelButton) {
+			[favoritesController setValue:[NSNumber numberWithInt:NSOffState] forKeyPath:@"selection.sslCACertFileLocationEnabled"];
+			[favoritesController setValue:nil forKeyPath:@"selection.sslCACertFileLocation"];
+			return;
+		}
+		[favoritesController setValue:abbreviatedFileName forKeyPath:@"selection.sslCACertFileLocation"];
 	}
-	[favoritesController setValue:[[openPanel filename] stringByAbbreviatingWithTildeInPath] forKeyPath:@"selection.sshKeyLocation"];
 }
 
 #pragma mark -

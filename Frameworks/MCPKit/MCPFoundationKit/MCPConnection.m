@@ -48,6 +48,7 @@ BOOL keepAliveActive;
 
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
+const char *kMCPSSLCipherList = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
 const NSUInteger kMCPConnection_Not_Inited = 1000;
 const NSUInteger kLengthOfTruncationForLog = 100;
 
@@ -111,6 +112,10 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		connectionLogin = nil;
 		connectionSocket = nil;
 		connectionPassword = nil;
+		useSSL = NO;
+		sslKeyFilePath = nil;
+		sslCertificatePath = nil;
+		sslCACertificatePath = nil;
 		keepAliveThread = NULL;
 		lastKeepAliveTime = 0;
 		pingThread = NULL;
@@ -298,6 +303,29 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	return YES;
 }
 
+/**
+ * Set the connection to establish secure connections using SSL; must be
+ * called before connect:.
+ * This will always attempt to activate SSL if set, but depending on server
+ * setup connection may sometimes proceed without SSL enabled even if requested;
+ * it is suggested that after connection, -[MCPConnection isConnectedViaSSL]
+ * is checked to determine whether SSL is actually active.
+ */
+- (void) setSSL:(BOOL)shouldUseSSL usingKeyFilePath:(NSString *)keyFilePath certificatePath:(NSString *)certificatePath certificateAuthorityCertificatePath:(NSString *)caCertificatePath
+{
+	useSSL = shouldUseSSL;
+
+	// Reset the old SSL details
+	if (sslKeyFilePath) [sslKeyFilePath release], sslKeyFilePath = nil;
+	if (sslCertificatePath) [sslCertificatePath release], sslCertificatePath = nil;
+	if (sslCACertificatePath) [sslCACertificatePath release], sslCACertificatePath = nil;
+
+	// Set new details if provided
+	if (keyFilePath) sslKeyFilePath = [[NSString alloc] initWithString:[keyFilePath stringByExpandingTildeInPath]];
+	if (certificatePath) sslCertificatePath = [[NSString alloc] initWithString:[certificatePath stringByExpandingTildeInPath]];
+	if (caCertificatePath) sslCACertificatePath = [[NSString alloc] initWithString:[caCertificatePath stringByExpandingTildeInPath]];
+}
+
 #pragma mark -
 #pragma mark Connection proxy
 
@@ -385,7 +413,18 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	} else {
 		theSocket = [self cStringFromString:connectionSocket];
 	}
-	
+
+	// Apply SSL if appropriate
+	if (useSSL) {
+		NSLog(@"sdfsdfsfds SET");
+		mysql_ssl_set(mConnection,
+						sslKeyFilePath ? [sslKeyFilePath UTF8String] : NULL,
+						sslCertificatePath ? [sslCertificatePath UTF8String] : NULL,
+						sslCACertificatePath ? [sslCACertificatePath UTF8String] : NULL,
+						NULL,
+						kMCPSSLCipherList);
+	}
+
 	// Select the password from the provided method
 	if (!connectionPassword) {
 		if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
@@ -406,7 +445,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		
 		return mConnected = NO;
 	}
-	
+
 	mConnected = YES;
 	userTriggeredDisconnect = NO;
 	connectionStartTime = mach_absolute_time();
@@ -624,6 +663,15 @@ static BOOL sTruncateLongFieldInLogs = YES;
 - (BOOL)isConnected
 {
 	return mConnected;
+}
+
+/**
+ * Returns YES if the MCPConnection is connected to a server via SSL, NO otherwise.
+ */
+- (BOOL)isConnectedViaSSL
+{
+	if (![self isConnected]) return NO;
+	return (mysql_get_ssl_cipher(mConnection))?YES:NO;
 }
 
 /**
@@ -1255,6 +1303,16 @@ void performThreadedKeepAlive(void *ptr)
 	if (theSocket == NULL) {
 		theSocket = kMCPConnectionDefaultSocket;
 	}
+
+	// Apply SSL if appropriate
+	if (useSSL) {
+		mysql_ssl_set(mConnection,
+						sslKeyFilePath ? [sslKeyFilePath UTF8String] : NULL,
+						sslCertificatePath ? [sslCertificatePath UTF8String] : NULL,
+						sslCACertificatePath ? [sslCACertificatePath UTF8String] : NULL,
+						NULL,
+						kMCPSSLCipherList);
+	}
 	
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, port, theSocket, mConnectionFlags);
 	if (theRet != mConnection) {
@@ -1833,6 +1891,14 @@ void performThreadedKeepAlive(void *ptr)
 		} else {		
 			thePass = [self cStringFromString:connectionPassword];
 		}
+		if (useSSL) {
+			mysql_ssl_set(mConnection,
+							sslKeyFilePath ? [sslKeyFilePath UTF8String] : NULL,
+							sslCertificatePath ? [sslCertificatePath UTF8String] : NULL,
+							sslCACertificatePath ? [sslCACertificatePath UTF8String] : NULL,
+							NULL,
+							kMCPSSLCipherList);
+		}
 		
 		// Connect
 		connectionSetupStatus = mysql_real_connect(killerConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
@@ -1850,13 +1916,18 @@ void performThreadedKeepAlive(void *ptr)
 			NSData *encodedKillQueryData = NSStringDataUsingLossyEncoding(killQueryString, killerConnectionEncoding, 1);
 			const char *killQueryCString = [encodedKillQueryData bytes];
 			unsigned long killQueryCStringLength = [encodedKillQueryData length];
-			if (mysql_real_query(killerConnection, killQueryCString, killQueryCStringLength) == 0) {
-				mysql_close(killerConnection);
+			int killerReturnError = mysql_real_query(killerConnection, killQueryCString, killQueryCStringLength);
+			mysql_close(killerConnection);
+			if (killerReturnError == 0) {
 				queryCancelUsedReconnect = NO;
 				return;
 			}
-			mysql_close(killerConnection);
+			NSLog(@"Task cancellation: kill query failed (Returned status %d)", killerReturnError);
+		} else {
+			NSLog(@"Task cancellation connection failed (error %u)", mysql_errno(killerConnection));
 		}
+	} else {
+		NSLog(@"Task cancelletion MySQL init failed.");
 	}
 
 	// Reset the connection
@@ -2332,6 +2403,14 @@ void performThreadedKeepAlive(void *ptr)
 			theSocket = kMCPConnectionDefaultSocket;
 		} else {
 			theSocket = [self cStringFromString:connectionSocket];
+		}
+		if (useSSL) {
+			mysql_ssl_set(mConnection,
+							sslKeyFilePath ? [sslKeyFilePath UTF8String] : NULL,
+							sslCertificatePath ? [sslCertificatePath UTF8String] : NULL,
+							sslCACertificatePath ? [sslCACertificatePath UTF8String] : NULL,
+							NULL,
+							kMCPSSLCipherList);
 		}
 		if (!connectionPassword) {
 			if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
@@ -3135,6 +3214,9 @@ void performThreadedKeepAlive(void *ptr)
 	if (connectionLogin) [connectionLogin release];
 	if (connectionSocket) [connectionSocket release];
 	if (connectionPassword) [connectionPassword release];
+	if (sslKeyFilePath) [sslKeyFilePath release];
+	if (sslCertificatePath) [sslCertificatePath release];
+	if (sslCACertificatePath) [sslCACertificatePath release];
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (structure) [structure release], structure = nil;
 	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;

@@ -139,6 +139,11 @@
 	NSInteger maxAllowedPacketSize;
 	unsigned long connectionThreadId;
 
+	BOOL useSSL;
+	NSString *sslKeyFilePath;
+	NSString *sslCertificatePath;
+	NSString *sslCACertificatePath;
+
 	NSString *encoding, *previousEncoding;
 	NSStringEncoding *stringEncoding;
 	BOOL encodingUsesLatin1Transport, previousEncodingUsesLatin1Transport;
@@ -207,6 +212,7 @@
 // Connection details
 - (BOOL)setPort:(NSInteger)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
+- (BOOL) setSSL:(BOOL)shouldUseSSL usingKeyFilePath:(NSString *)keyFilePath certificatePath:(NSString *)certificatePath certificateAuthorityCertificatePath:(NSString *)caCertificatePath;
 
 // Proxy
 - (BOOL)setConnectionProxy:(id <MCPConnectionProxy>)proxy;
@@ -217,6 +223,7 @@
 - (void)disconnect;
 - (BOOL)reconnect;
 - (BOOL)isConnected;
+- (BOOL)isConnectedViaSSL;
 - (BOOL)userTriggeredDisconnect;
 - (BOOL)checkConnection;
 - (BOOL)pingConnection;

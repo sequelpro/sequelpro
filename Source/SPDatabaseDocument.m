@@ -267,10 +267,17 @@
 	[connectionController setHost:@""];
 	[connectionController setPort:@""];
 	[connectionController setSocket:@""];
+	[connectionController setUseSSL:NSOffState];
+	[connectionController setSslKeyFileLocationEnabled:NSOffState];
+	[connectionController setSslKeyFileLocation:nil];
+	[connectionController setSslCertificateFileLocationEnabled:NSOffState];
+	[connectionController setSslCertificateFileLocation:nil];
+	[connectionController setSslCACertFileLocationEnabled:NSOffState];
+	[connectionController setSslCACertFileLocation:nil];
 	[connectionController setSshHost:@""];
 	[connectionController setSshUser:@""];
 	[connectionController setSshKeyLocationEnabled:NSOffState];
-	[connectionController setSshKeyLocation:@""];
+	[connectionController setSshKeyLocation:nil];
 	[connectionController setSshPort:@""];
 	[connectionController setDatabase:@""];
 	[connectionController setPassword:nil];
@@ -468,6 +475,22 @@
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if([connection objectForKey:@"port"])
 		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
+
+	if([connection objectForKey:@"useSSL"])
+		[connectionController setUseSSL:[[connection objectForKey:@"useSSL"] intValue]];
+	if([connection objectForKey:@"sslKeyFileLocationEnabled"])
+		[connectionController setSslKeyFileLocationEnabled:[[connection objectForKey:@"sslKeyFileLocationEnabled"] intValue]];
+	if([connection objectForKey:@"sslKeyFileLocation"])
+		[connectionController setSslKeyFileLocation:[connection objectForKey:@"sslKeyFileLocation"]];
+	if([connection objectForKey:@"sslCertificateFileLocationEnabled"])
+		[connectionController setSslCertificateFileLocationEnabled:[[connection objectForKey:@"sslCertificateFileLocationEnabled"] intValue]];
+	if([connection objectForKey:@"sslCertificateFileLocation"])
+		[connectionController setSslCertificateFileLocation:[connection objectForKey:@"sslCertificateFileLocation"]];
+	if([connection objectForKey:@"sslCACertFileLocationEnabled"])
+		[connectionController setSslCACertFileLocationEnabled:[[connection objectForKey:@"sslCACertFileLocationEnabled"] intValue]];
+	if([connection objectForKey:@"sslCACertFileLocation"])
+		[connectionController setSslCACertFileLocation:[connection objectForKey:@"sslCACertFileLocation"]];
+
 	if([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length])
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
 
@@ -529,6 +552,8 @@
 	[spfDocData setObject:[NSNumber numberWithBool:([connection objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
 
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
+
+	[connectionController updateSSLInterface:self];
 
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
@@ -3291,6 +3316,14 @@
 	[connection setObject:[self name] forKey:@"name"];
 	[connection setObject:[self host] forKey:@"host"];
 	[connection setObject:[self user] forKey:@"user"];
+
+	[connection setObject:[NSNumber numberWithInt:[connectionController useSSL]] forKey:@"useSSL"];
+	[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
+	[connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
+	[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
+	[connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
+	[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
+	[connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
 
 	switch([connectionController type]) {
 		case SPTCPIPConnection:

@@ -51,6 +51,13 @@
 @synthesize database;
 @synthesize socket;
 @synthesize port;
+@synthesize useSSL;
+@synthesize sslKeyFileLocationEnabled;
+@synthesize sslKeyFileLocation;
+@synthesize sslCertificateFileLocationEnabled;
+@synthesize sslCertificateFileLocation;
+@synthesize sslCACertFileLocationEnabled;
+@synthesize sslCACertFileLocation;
 @synthesize sshHost;
 @synthesize sshUser;
 @synthesize sshPassword;
@@ -130,8 +137,8 @@
 		
 		if (tableRow < [favorites count]) {
 			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue];
-			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
 			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:tableRow] byExtendingSelection:NO];
+			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
 			[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 		} else {
 			previousType = SPTCPIPConnection;
@@ -196,7 +203,35 @@
 
 	// Ensure that a socket connection is not inadvertently used
 	if (![self checkHost]) return;
-	
+
+	// If SSL keys have been supplied, verify they exist
+	if (([self type] == SPTCPIPConnection || [self type] == SPSocketConnection) && [self useSSL]) {
+		if (sslKeyFileLocationEnabled && sslKeyFileLocation
+			&& ![[NSFileManager defaultManager] fileExistsAtPath:[sslKeyFileLocation stringByExpandingTildeInPath]])
+		{
+			[self setSslKeyFileLocationEnabled:NSOffState];
+			[self setSslKeyFileLocation:nil];
+			SPBeginAlertSheet(NSLocalizedString(@"SSL Key File not found", @"SSL key file check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSL key file location was specified, but no file was found in the specified location.  Please re-select the key file and try again.", @"SSL key file not found message"));
+			return;
+		}
+		if (sslCertificateFileLocationEnabled && sslCertificateFileLocation
+			&& ![[NSFileManager defaultManager] fileExistsAtPath:[sslCertificateFileLocation stringByExpandingTildeInPath]])
+		{
+			[self setSslCertificateFileLocationEnabled:NSOffState];
+			[self setSslCertificateFileLocation:nil];
+			SPBeginAlertSheet(NSLocalizedString(@"SSL Certificate File not found", @"SSL certificate file check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSL certificate location was specified, but no file was found in the specified location.  Please re-select the certificate and try again.", @"SSL certificate file not found message"));
+			return;
+		}
+		if (sslCACertFileLocationEnabled && sslCACertFileLocation
+			&& ![[NSFileManager defaultManager] fileExistsAtPath:[sslCACertFileLocation stringByExpandingTildeInPath]])
+		{
+			[self setSslCACertFileLocationEnabled:NSOffState];
+			[self setSslCACertFileLocation:nil];
+			SPBeginAlertSheet(NSLocalizedString(@"SSL Certificate Authority File not found", @"SSL certificate authority file check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSL Certificate Authority certificate location was specified, but no file was found in the specified location.  Please re-select the Certificate Authority certificate and try again.", @"SSL CA certificate file not found message"));
+			return;
+		}
+	}
+
 	// Basic details have validated - start the connection process animating
 	isConnecting = YES;
 	cancellingConnection = NO;
@@ -479,47 +514,114 @@
 #pragma mark Interface interaction
 
 /**
- * Opens the SSH key selection window, ready to select a SSH key.
+ * Opens the SSH/SSL key selection window, ready to select a key file.
  */
-- (IBAction)chooseSSHKey:(id)sender
+- (IBAction)chooseKeyLocation:(id)sender
 {
 	[favoritesTable deselectAll:self];
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
-
-	// If the custom key location is currently disabled - after the button
-	// action - leave it disabled and return without showing the sheet.
-	if (!sshKeyLocationEnabled) {
-		return;
-	}
-
-	// Otherwise open a panel at the last or default location
-	if (sshKeyLocation && [sshKeyLocation length]) {
-		filePath = [sshKeyLocation lastPathComponent];
-		directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
-	}
-
+	NSArray *permittedFileTypes = nil;
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-	[openPanel setAccessoryView:sshKeyLocationHelp];
+
+	// Switch details by sender.
+	// First, SSH keys:
+	if (sender == sshSSHKeyButton) {
+
+		// If the custom key location is currently disabled - after the button
+		// action - leave it disabled and return without showing the sheet.
+		if (!sshKeyLocationEnabled) {
+			return;
+		}
+
+		// Otherwise open a panel at the last or default location
+		if (sshKeyLocation && [sshKeyLocation length]) {
+			filePath = [sshKeyLocation lastPathComponent];
+			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
+		}
+
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
+		[openPanel setAccessoryView:sshKeyLocationHelp];
+
+	// SSL key file location:
+	} else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
+		if ([sender state] == NSOffState) {
+			[self setSslKeyFileLocation:nil];
+			return;
+		}
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
+		[openPanel setAccessoryView:sslKeyFileLocationHelp];
+		
+	// SSL certificate file location:
+	} else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
+		if ([sender state] == NSOffState) {
+			[self setSslCertificateFileLocation:nil];
+			return;
+		}
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		[openPanel setAccessoryView:sslCertificateLocationHelp];
+		
+	// SSL CA certificate file location:
+	} else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
+		if ([sender state] == NSOffState) {
+			[self setSslCACertFileLocation:nil];
+			return;
+		}
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		[openPanel setAccessoryView:sslCACertLocationHelp];
+	}
+
 	[openPanel beginSheetForDirectory:directoryPath
 								 file:filePath
-								types:[NSArray arrayWithObjects:@"pem", @"", nil]
+								types:permittedFileTypes
 					   modalForWindow:[tableDocument parentWindow]
 						modalDelegate:self
-					   didEndSelector:@selector(chooseSSHKeySheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:nil];
+					   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
+						  contextInfo:sender];
 }
 
 /**
- * Called after closing the SSH key selection sheet.
+ * Called after closing the SSH/SSL key selection sheet.
  */
-- (void)chooseSSHKeySheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (void)chooseKeyLocationSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode == NSCancelButton) {
-		[self setSshKeyLocationEnabled:NSOffState];
-		return;
+	NSString *abbreviatedFileName = [[openPanel filename] stringByAbbreviatingWithTildeInPath];
+
+	// SSH key file selection
+	if (contextInfo == sshSSHKeyButton) {
+		if (returnCode == NSCancelButton) {
+			[self setSshKeyLocationEnabled:NSOffState];
+			return;
+		}
+		[self setSshKeyLocation:abbreviatedFileName];
+
+	// SSL key file selection
+	} else if (contextInfo == standardSSLKeyFileButton || contextInfo == socketSSLKeyFileButton) {
+		if (returnCode == NSCancelButton) {
+			[self setSslKeyFileLocationEnabled:NSOffState];
+			[self setSslKeyFileLocation:nil];
+			return;
+		}
+		[self setSslKeyFileLocation:abbreviatedFileName];
+
+	// SSL certificate file selection
+	} else if (contextInfo == standardSSLCertificateButton || contextInfo == socketSSLCertificateButton) {
+		if (returnCode == NSCancelButton) {
+			[self setSslCertificateFileLocationEnabled:NSOffState];
+			[self setSslCertificateFileLocation:nil];
+			return;
+		}
+		[self setSslCertificateFileLocation:abbreviatedFileName];
+
+	// SSL CA certificate file selection
+	} else if (contextInfo == standardSSLCACertButton || contextInfo == socketSSLCACertButton) {
+		if (returnCode == NSCancelButton) {
+			[self setSslCACertFileLocationEnabled:NSOffState];
+			[self setSslCACertFileLocation:nil];
+			return;
+		}
+		[self setSslCACertFileLocation:abbreviatedFileName];
 	}
-	[self setSshKeyLocation:[[openPanel filename] stringByAbbreviatingWithTildeInPath]];
 }
 
 /**
@@ -542,6 +644,14 @@
 - (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONNECTIONHELP]];
+}
+
+/**
+ * Resize parts of the interface to reflect SSL status.
+ */
+- (IBAction)updateSSLInterface:(id)sender
+{
+	[self resizeTabViewToConnectionType:[self type] animating:YES];
 }
 
 #pragma mark -
@@ -638,9 +748,11 @@
 	switch (theType) {
 		case SPTCPIPConnection:
 			targetResizeRect = [standardConnectionFormContainer frame];
+			if ([self useSSL]) additionalFormHeight += [standardConnectionSSLDetailsContainer frame].size.height;
 			break;
 		case SPSocketConnection:
 			targetResizeRect = [socketConnectionFormContainer frame];
+			if ([self useSSL]) additionalFormHeight += [socketConnectionSSLDetailsContainer frame].size.height;
 			break;
 		case SPSSHTunnelConnection:
 			targetResizeRect = [sshConnectionFormContainer frame];
@@ -761,18 +873,29 @@
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	
 	// Update key-value properties from the selected favourite, using empty strings where not found
-	[self setType:([self valueForKeyPath:@"selectedFavorite.type"] ? [[self valueForKeyPath:@"selectedFavorite.type"] integerValue] : SPTCPIPConnection)];
-	[self setName:([self valueForKeyPath:@"selectedFavorite.name"] ? [self valueForKeyPath:@"selectedFavorite.name"] : @"")];
-	[self setHost:([self valueForKeyPath:@"selectedFavorite.host"] ? [self valueForKeyPath:@"selectedFavorite.host"] : @"")];
-	[self setSocket:([self valueForKeyPath:@"selectedFavorite.socket"] ? [self valueForKeyPath:@"selectedFavorite.socket"] : @"")];
-	[self setUser:([self valueForKeyPath:@"selectedFavorite.user"] ? [self valueForKeyPath:@"selectedFavorite.user"] : @"")];
-	[self setPort:([self valueForKeyPath:@"selectedFavorite.port"] ? [self valueForKeyPath:@"selectedFavorite.port"] : @"")];
-	[self setDatabase:([self valueForKeyPath:@"selectedFavorite.database"] ? [self valueForKeyPath:@"selectedFavorite.database"] : @"")];
-	[self setSshHost:([self valueForKeyPath:@"selectedFavorite.sshHost"] ? [self valueForKeyPath:@"selectedFavorite.sshHost"] : @"")];
-	[self setSshUser:([self valueForKeyPath:@"selectedFavorite.sshUser"] ? [self valueForKeyPath:@"selectedFavorite.sshUser"] : @"")];
-	[self setSshKeyLocationEnabled:([self valueForKeyPath:@"selectedFavorite.sshKeyLocationEnabled"] ? [[self valueForKeyPath:@"selectedFavorite.sshKeyLocationEnabled"] intValue] : NSOffState)];
-	[self setSshKeyLocation:([self valueForKeyPath:@"selectedFavorite.sshKeyLocation"] ? [self valueForKeyPath:@"selectedFavorite.sshKeyLocation"] : @"")];
-	[self setSshPort:([self valueForKeyPath:@"selectedFavorite.sshPort"] ? [self valueForKeyPath:@"selectedFavorite.sshPort"] : @"")];
+	NSDictionary *fav = [self selectedFavorite];
+	[self setType:([fav objectForKey:@"type"] ? [[fav objectForKey:@"type"] integerValue] : SPTCPIPConnection)];
+	[self setName:([fav objectForKey:@"name"] ? [fav objectForKey:@"name"] : @"")];
+	[self setHost:([fav objectForKey:@"host"] ? [fav objectForKey:@"host"] : @"")];
+	[self setSocket:([fav objectForKey:@"socket"] ? [fav objectForKey:@"socket"] : @"")];
+	[self setUser:([fav objectForKey:@"user"] ? [fav objectForKey:@"user"] : @"")];
+	[self setPort:([fav objectForKey:@"port"] ? [fav objectForKey:@"port"] : @"")];
+	[self setUseSSL:([fav objectForKey:@"useSSL"] ? [[fav objectForKey:@"useSSL"] intValue] : NSOffState)];
+	[self setSslKeyFileLocationEnabled:([fav objectForKey:@"sslKeyFileLocationEnabled"] ? [[fav objectForKey:@"sslKeyFileLocationEnabled"] intValue] : NSOffState)];
+	[self setSslKeyFileLocation:([fav objectForKey:@"sslKeyFileLocation"] ? [fav objectForKey:@"sslKeyFileLocation"] : @"")];
+	[self setSslCertificateFileLocationEnabled:([fav objectForKey:@"sslCertificateFileLocationEnabled"] ? [[fav objectForKey:@"sslCertificateFileLocationEnabled"] intValue] : NSOffState)];
+	[self setSslCertificateFileLocation:([fav objectForKey:@"sslCertificateFileLocation"] ? [fav objectForKey:@"sslCertificateFileLocation"] : @"")];
+	[self setSslCACertFileLocationEnabled:([fav objectForKey:@"sslCACertFileLocationEnabled"] ? [[fav objectForKey:@"sslCACertFileLocationEnabled"] intValue] : NSOffState)];
+	[self setSslCACertFileLocation:([fav objectForKey:@"sslCACertFileLocation"] ? [fav objectForKey:@"sslCACertFileLocation"] : @"")];
+	[self setDatabase:([fav objectForKey:@"database"] ? [fav objectForKey:@"database"] : @"")];
+	[self setSshHost:([fav objectForKey:@"sshHost"] ? [fav objectForKey:@"sshHost"] : @"")];
+	[self setSshUser:([fav objectForKey:@"sshUser"] ? [fav objectForKey:@"sshUser"] : @"")];
+	[self setSshKeyLocationEnabled:([fav objectForKey:@"sshKeyLocationEnabled"] ? [[fav objectForKey:@"sshKeyLocationEnabled"] intValue] : NSOffState)];
+	[self setSshKeyLocation:([fav objectForKey:@"sshKeyLocation"] ? [fav objectForKey:@"sshKeyLocation"] : @"")];
+	[self setSshPort:([fav objectForKey:@"sshPort"] ? [fav objectForKey:@"sshPort"] : @"")];
+
+	// Trigger an interface update
+	[self resizeTabViewToConnectionType:[self type] animating:YES];
 
 	// Check whether the password exists in the keychain, and if so add it; also record the
 	// keychain details so we can pass around only those details if the password doesn't change
@@ -863,6 +986,13 @@
 	if ([self socket]) [newFavorite setObject:[self socket] forKey:@"socket"];
 	if ([self user]) [newFavorite setObject:[self user] forKey:@"user"];
 	if ([self port]) [newFavorite setObject:[self port] forKey:@"port"];
+	if ([self useSSL]) [newFavorite setObject:[NSNumber numberWithInt:[self useSSL]] forKey:@"useSSL"];
+	[newFavorite setObject:[NSNumber numberWithInt:[self sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
+	if ([self sslKeyFileLocation]) [newFavorite setObject:[self sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
+	[newFavorite setObject:[NSNumber numberWithInt:[self sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
+	if ([self sslCertificateFileLocation]) [newFavorite setObject:[self sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
+	[newFavorite setObject:[NSNumber numberWithInt:[self sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
+	if ([self sslCACertFileLocation]) [newFavorite setObject:[self sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
 	if ([self database]) [newFavorite setObject:[self database] forKey:@"database"];
 	if ([self sshHost]) [newFavorite setObject:[self sshHost] forKey:@"sshHost"];
 	if ([self sshUser]) [newFavorite setObject:[self sshUser] forKey:@"sshUser"];
@@ -1248,7 +1378,16 @@
 	[progressIndicator stopAnimation:self];
 	[progressIndicatorText setHidden:YES];
 	[addToFavoritesButton setHidden:NO];
-	
+
+	// If SSL was enabled, check it was established correctly
+	if (useSSL && ([self type] == SPTCPIPConnection || [self type] == SPSocketConnection)) {
+		if (![mySQLConnection isConnectedViaSSL]) {
+			SPBeginAlertSheet(NSLocalizedString(@"SSL connection not established", @"SSL requested but not used title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], nil, nil, nil, NSLocalizedString(@"You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted.", @"SSL connection requested but not established error detail"));
+		} else {
+			[tableDocument setStatusIconToImageWithName:@"titlebarlock"]; 
+		}
+	}
+
 	// Re-enable favorites table view
 	[favoritesTable setEnabled:YES];
 	[favoritesTable display];
@@ -1289,10 +1428,19 @@
 	if (!connectionKeychainItemName && [self password]) {
 		[mySQLConnection setPassword:[self password]];
 	}
+
+	// Enable SSL if set
+	if ([self useSSL]) {
+		[mySQLConnection setSSL:YES
+			usingKeyFilePath:[self sslKeyFileLocationEnabled] ? [self sslKeyFileLocation] : nil
+			certificatePath:[self sslCertificateFileLocationEnabled] ? [self sslCertificateFileLocation] : nil
+			certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self sslCACertFileLocation] : nil];
+	}
 	
+
 	// Connection delegate must be set before actual connection attempt is made
 	[mySQLConnection setDelegate:tableDocument];
-	
+
 	// Set whether or not we should enable delegate logging according to the prefs
 	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:SPConsoleEnableLogging]];
 	
