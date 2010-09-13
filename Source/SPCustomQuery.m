@@ -3458,6 +3458,8 @@
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
 {
 
+	if(![control isKindOfClass:[SPCopyTable class]]) return YES;
+
 	NSUInteger row, column;
 	NSDictionary *columnDefinition = nil;
 	BOOL shouldBeginEditing = NO;
@@ -3564,7 +3566,7 @@
 		}
 	}
 
-	else {
+	else if([control isKindOfClass:[SPCopyTable class]]) {
 
 		// Check firstly if SPCopyTable can handle command
 		if([customQueryView control:control textView:textView doCommandBySelector:(SEL)command])
