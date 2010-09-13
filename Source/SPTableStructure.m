@@ -432,9 +432,9 @@
 
 	if([result count])
 		type = [[result objectAtIndex:0] objectForKey:@"Optimal_fieldtype"];
-	if(!type || ![type length]) {
+	if(!type || [type isKindOfClass:[NSNull class]] || ![type length])
 		type = NSLocalizedString(@"No optimized field type found.", @"no optimized field type found. message");
-	}
+
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Optimized type for field '%@'", @"Optimized type for field %@"), [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
