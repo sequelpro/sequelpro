@@ -239,7 +239,7 @@
 	BOOL isCustomQuerySelected = ([tableDocumentInstance isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1)); 
 	BOOL isContentSelected     = ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
 	
-	if (isContentSelected) {
+	if (isContentSelected) {		
 		tables = nil;
 		exportType = SPCSVExport;
 		exportSource = SPFilteredExport;
@@ -292,7 +292,7 @@
 		
 		// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
 		exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-		
+				
 		BOOL isSelectedTables = ([sender indexOfSelectedItem] == SPTableExport);
 				
 		[exportFilePerTableCheck setHidden:(!isSelectedTables) || (exportType == SPSQLExport)];		
@@ -664,7 +664,7 @@
 	
 	// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
 	exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-	
+		
 	[exportOptionsTabBar selectTabViewItemWithIdentifier:type];
 	
 	BOOL isSQL  = (exportType == SPSQLExport);
@@ -686,10 +686,22 @@
 	
 	[exportInputPopUpButton setEnabled:(!isDot)];
 	
-	// Enable/disable the 'filtered result' and 'query result' options
-	// Note that the result count check is always greater than one as the first row is always the field names
-	[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
-	[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];			
+	// When exporting to SQL, only the selected tables option should be enabled
+	if (isSQL) {
+		// Programmatically changing the selected item of a popup button does not fire it's action, so updated
+		// the selected export source manually.
+		exportSource = SPTableExport;
+		
+		[exportInputPopUpButton selectItemAtIndex:SPTableExport];
+		[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:NO];
+		[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:NO];
+	}
+	else {
+		// Enable/disable the 'filtered result' and 'query result' options
+		// Note that the result count check is always greater than one as the first row is always the field names
+		[[[exportInputPopUpButton menu] itemAtIndex:SPFilteredExport] setEnabled:((enable) && ([[tableContentInstance currentResult] count] > 1))];
+		[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];
+	}
 	
 	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
 	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
