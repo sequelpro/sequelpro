@@ -1708,7 +1708,7 @@
 			// If no PRIMARY KEY is found and numberOfSelectedRows > 3 then
 			// check for uniqueness of rows via combining all column values;
 			// if unique then use the all columns as 'primary keys'
-			if([selectedRows count] >3 && primaryKeyFieldNames == nil) {
+			if([selectedRows count] > 3 && primaryKeyFieldNames == nil) {
 				primaryKeyFieldNames = [tableDataInstance columnNames];
 
 				NSInteger numberOfRows = 0;
@@ -1843,10 +1843,6 @@
 			// Restore Console Log window's updating bahaviour
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
 
-			maxNumRows -= affectedRows;
-			tableRowsCount -= affectedRows;
-			[self updateCountText];
-
 			if (errors) {
 				NSArray *message;
 				//TODO: The following three messages are NOT localisable!
@@ -1881,6 +1877,10 @@
 				}
 				tableRowsCount = [tableValues count];
 				[tableContentView reloadData];
+
+				// Update the maximum number of rows and the count text
+				maxNumRows -= affectedRows;
+				[self updateCountText];
 			}
 			[tableContentView deselectAll:self];
 		} else {
