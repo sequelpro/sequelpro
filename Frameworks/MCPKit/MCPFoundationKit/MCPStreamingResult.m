@@ -46,7 +46,7 @@
 
 @interface MCPStreamingResult (PrivateAPI)
 
-const char *_int2bin(unsigned int n, unsigned long len, char *buf);
+const char *_bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 
 - (void) _downloadAllData;
 - (void) _freeAllDataWhenDone;
@@ -89,9 +89,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 			[mNames release];
 			mNames = nil;
 		}
-        
-        
-        
+
 		mResult = mysql_use_result(mySQLPtr);
 
 		if (mResult) {
@@ -104,7 +102,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 		// Obtain SEL references and pointer
 		isConnectedSEL = @selector(isConnected);
 		isConnectedPtr = [parentConnection methodForSelector:isConnectedSEL];
-                
+
 		// If the result is opened in download-data-fast safe mode, set up the additional variables
 		// and threads required.
 		if (!fullyStreaming) {
@@ -138,13 +136,13 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 - (void) dealloc
 {
 	[self cancelResultLoad]; //this should close the connection if it is still open
-    
+
     if (!connectionUnlocked) {
         //this should NEVER happen
         NSLog(@"MCPStreamingResult: The connection has not been unlocked.");
         [parentConnection unlockConnection];
     }
-    
+
 	if (!fullyStreaming) {
 		pthread_mutex_destroy(&dataFreeLock);
 		pthread_mutex_destroy(&dataCreationLock);
@@ -246,14 +244,15 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 				copiedDataLength += fieldLengths[i] + 1;
 			}
 		}
-		
+
 		// If the field is of type BIT, then allocate the binary buffer
 		if (fieldDefinitions[i].type == FIELD_TYPE_BIT) {
 			buf = malloc(fieldDefinitions[i].length + 1);
 		}
-		
+
 		// If the data hasn't already been detected as NULL - in which case it will have been
 		// set to NSNull - process the data by type
+
 		if (cellData == nil) {
 			switch (fieldDefinitions[i].type) {
 				case FIELD_TYPE_TINY:
@@ -275,28 +274,28 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 				case FIELD_TYPE_SET:
 				case FIELD_TYPE_ENUM:
 				case FIELD_TYPE_NEWDATE: // Don't know what the format for this type is...
-					
-					// For fields of type BINARY/VARBINARY, return the data. Also add an extra check to make 
-					// sure it's binary data (seems that it's returned as type STRING) to get around a MySQL 
+
+					// For fields of type BINARY/VARBINARY, return the data. Also add an extra check to make
+					// sure it's binary data (seems that it's returned as type STRING) to get around a MySQL
 					// bug (#28214) returning DATE fields with the binary flag set.
-					if ((fieldDefinitions[i].flags & BINARY_FLAG) && 
-						(fieldDefinitions[i].type == FIELD_TYPE_STRING)) 
-					{						
+					if ((fieldDefinitions[i].flags & BINARY_FLAG) &&
+						(fieldDefinitions[i].type == FIELD_TYPE_STRING || fieldDefinitions[i].type == FIELD_TYPE_VAR_STRING))
+					{
 						cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 					}
 					// For string data, convert to text
 					else {
 						cellData = [NSString stringWithCString:theData encoding:mEncoding];
 					}
-					
+
 					break;
 
 				case FIELD_TYPE_BIT:
 					// Get a binary representation of the data
-					_int2bin(theData[1], fieldDefinitions[i].length, buf);
-					
+					_bytes2bin(theData, fieldLengths[i], fieldDefinitions[i].length, buf);
+
 					cellData = (theData != NULL) ? [NSString stringWithUTF8String:buf] : @"";
-					
+
 					free(buf);
 					break;
 
@@ -304,16 +303,16 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 				case FIELD_TYPE_BLOB:
 				case FIELD_TYPE_MEDIUM_BLOB:
 				case FIELD_TYPE_LONG_BLOB:
-					
+
 					// For binary data, return the data if force-return-as-string is not enabled
 					if ((fieldDefinitions[i].flags & BINARY_FLAG) && !mReturnDataAsStrings) {
 						cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 					}
 					else {
 						cellData = [[NSString alloc] initWithBytes:theData length:fieldLengths[i] encoding:mEncoding];
-					
+
 						if (cellData) [cellData autorelease];
-					}		
+					}
 
 					break;
 
@@ -386,7 +385,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 	} else {
 
 		while (1) {
-		
+
 			// Check to see whether we need to wait for the data to be available
 			// - if so, wait 1ms before checking again
 			while (!dataDownloaded && processedRowCount == downloadedRowCount) usleep(1000);
@@ -428,18 +427,18 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf);
 @implementation MCPStreamingResult (PrivateAPI)
 
 /**
- * Provides a binary representation of the supplied integer (n) in the supplied buffer (buf). The resulting
+ * Provides a binary representation of the supplied chars (n) in the supplied buffer (buf). The resulting
  * binary representation will be zero-padded according to the supplied field length (len).
  */
-const char *_int2bin(unsigned int n, unsigned long len, char *buf)
-{					
-    for (int i = (len - 1); i >= 0; --i)
-	{
-        buf[i] = (n & 1) ? '1' : '0';
-        n >>= 1;
-    }
-	
-    buf[len] = '\0';
+const char *_bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf)
+{
+
+	int i = 0;
+	nbytes--;
+	while (i < len)
+		buf[len - ++i] = ( (n[nbytes - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+
+	buf[len] = '\0';
 }
 
 /**
@@ -485,7 +484,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf)
 
 		// Set up and copy in the field lengths
 		newRowStore->dataLengths = memcpy(malloc(sizeOfDataLengths), fieldLengths, sizeOfDataLengths);
-		
+
 		// Lock both mutexes
 		pthread_mutex_lock(&dataCreationLock);
 		pthread_mutex_lock(&dataFreeLock);
@@ -501,7 +500,7 @@ const char *_int2bin(unsigned int n, unsigned long len, char *buf)
 
 		// Update the downloaded row count
 		downloadedRowCount++;
-		
+
 		// Unlock both mutexes
 		pthread_mutex_unlock(&dataCreationLock);
 		pthread_mutex_unlock(&dataFreeLock);
