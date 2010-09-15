@@ -140,8 +140,6 @@
 	BOOL wasCutPaste;
 	BOOL selectionChanged;
 
-	NSArray *bitSheetBitButtonsArray;
-
 	NSUserDefaults *prefs;
 
 	NSDictionary *qlTypes;
@@ -163,7 +161,7 @@
 - (IBAction)bitSheetSelectBit0:(id)sender;
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender;
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender;
-
+- (void)updateBitSheet;
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
 	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow;

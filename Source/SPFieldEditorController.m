@@ -109,7 +109,6 @@
 		qlTypes = [NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes];
 		[qlTypesItems release];
 
-		bitSheetBitButtonsArray = nil;
 		fieldType = @"";
 		fieldEncoding = @"";
 
@@ -156,6 +155,16 @@
 	_isEditable = isEditable;
 
 	if(NO && [fieldType length] && [fieldType isEqualToString:@"BIT"]) {
+
+		sheetEditData = [(NSString*)data retain];
+
+		NSInteger i = 0;
+		NSInteger maxBit = (maxTextLength > 63) ? 63 : maxTextLength;
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] 
+				setState:([sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
+		for(i=maxBit; i<64; i++)
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
 
 		usedSheet = bitSheet;
 
@@ -396,25 +405,6 @@
 - (void)setWasCutPaste
 {
 	wasCutPaste = YES;
-}
-
-- (IBAction)closeBitSheet:(id)sender
-{
-
-	editSheetReturnCode = 0;
-
-	if(sender == bitSheetOkButton && _isEditable) {
-		[NSApp stopModal];
-		editSheetReturnCode = 1;
-	}
-
-	[NSApp abortModal];
-
-}
-
-- (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
-{
-
 }
 
 - (IBAction)closeEditSheet:(id)sender
@@ -909,6 +899,65 @@
 #pragma mark -
 #pragma mark BIT Field Sheet
 
+- (void)updateBitSheet
+{
+	NSInteger i = 0;
+	NSInteger maxBit = (maxTextLength > 63) ? 63 : maxTextLength;
+
+	NSMutableString *bitString = [NSMutableString string];
+	[bitString setString:@""];
+
+	for(i=0; i<maxBit; i++) {
+		if([[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
+			[bitString appendString:@"1"];
+		} else {
+			[bitString appendString:@"0"];
+		}
+	}
+	
+	// free old data
+	if ( sheetEditData != nil ) {
+		[sheetEditData release];
+	}
+
+	// set edit data to text
+	sheetEditData = [[NSString stringWithString:bitString] retain];
+
+}
+
+- (IBAction)closeBitSheet:(id)sender
+{
+
+	editSheetReturnCode = 0;
+
+	if(sender == bitSheetOkButton && _isEditable) {
+		[NSApp stopModal];
+		editSheetReturnCode = 1;
+	}
+
+	[NSApp abortModal];
+
+}
+
+- (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
+{
+
+	NSInteger i = 0;
+	NSInteger maxBit = (maxTextLength > 63) ? 63 : maxTextLength;
+
+	switch([sender tag]) {
+		case 0:
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOnState];
+		break;
+		case 1:
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+		break;
+	}
+	[self updateBitSheet];
+}
+
 - (IBAction)bitSheetSelectBit0:(id)sender
 {
 
@@ -916,6 +965,18 @@
 
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender
 {
+
+	NSMutableString *bitString = [NSMutableString string];
+	[bitString setString:sheetEditData];
+	[bitString replaceCharactersInRange:NSMakeRange(maxTextLength-[sender tag]-1,1) withString:([sender state] == NSOnState) ? @"1" : @"0"];
+
+	// free old data
+	if ( sheetEditData != nil ) {
+		[sheetEditData release];
+	}
+
+	// set edit data to text
+	sheetEditData = [[NSString stringWithString:bitString] retain];
 
 }
 
