@@ -469,6 +469,16 @@
 	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
 }
 
+/**
+ * Table view delegate method. Called when the user changes the sort by column.
+ */
+- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
+{
+    [processesFiltered sortUsingDescriptors:[tableView sortDescriptors]];
+    
+	[tableView reloadData];
+}
+
 #pragma mark -
 #pragma mark Text field delegate methods
 
@@ -537,6 +547,10 @@
 		[self _updateServerProcessesFilterForFilterString:[filterProcessesSearchField stringValue]];
 	}
 	
+	// Reset sort descriptors
+	[processesFiltered sortUsingDescriptors:[processListTableView sortDescriptors]];
+	
+	// Reload data
 	[processListTableView reloadData];
 	
 	// Enable controls
