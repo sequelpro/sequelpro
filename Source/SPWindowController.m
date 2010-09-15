@@ -61,6 +61,7 @@
 	[tabBar setCellMaxWidth:250];
 	[tabBar setCellOptimumWidth:250];
 	[tabBar setSelectsTabsOnMouseDown:YES];
+	[tabBar setDoubleClickCreatesTab:YES];
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
 	[tabBar setUsesSafariStyleDragging:YES];
 

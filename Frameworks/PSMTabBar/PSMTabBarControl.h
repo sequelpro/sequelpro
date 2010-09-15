@@ -57,63 +57,63 @@ enum {
 };
 
 @interface PSMTabBarControl : NSControl {
-    
-    // control basics
-    NSMutableArray              *_cells;                    // the cells that draw the tabs
-    IBOutlet NSTabView          *tabView;                   // the tab view being navigated
-    PSMOverflowPopUpButton      *_overflowPopUpButton;      // for too many tabs
-    PSMRolloverButton           *_addTabButton;
-    PSMTabBarController			*_controller;
-
-    // Spring-loading.
-    NSTimer						*_springTimer;
-    NSTabViewItem				*_tabViewItemWithSpring;
+	// control basics
+	NSMutableArray			*_cells;					// the cells that draw the tabs
+	IBOutlet NSTabView		*tabView;					// the tab view being navigated
+	PSMOverflowPopUpButton	*_overflowPopUpButton;		// for too many tabs
+	PSMRolloverButton			*_addTabButton;
+	PSMTabBarController		*_controller;
 	
-    // drawing style
-    id<PSMTabStyle>             style;
-    BOOL                        _canCloseOnlyTab;
+	// Spring-loading.
+	NSTimer					*_springTimer;
+	NSTabViewItem				*_tabViewItemWithSpring;
+	
+	// drawing style
+	id<PSMTabStyle>			style;
+	BOOL						_canCloseOnlyTab;
 	BOOL						_disableTabClose;
-    BOOL                        _hideForSingleTab;
-    BOOL                        _showAddTabButton;
-    BOOL                        _sizeCellsToFit;
-    BOOL                        _useOverflowMenu;
+	BOOL						_hideForSingleTab;
+	BOOL						_showAddTabButton;
+	BOOL						_sizeCellsToFit;
+	BOOL						_useOverflowMenu;
 	BOOL						_alwaysShowActiveTab;
 	BOOL						_allowsScrubbing;
 	BOOL						_useSafariStyleDragging;
-	NSInteger							_resizeAreaCompensation;
+	NSInteger					_resizeAreaCompensation;
 	PSMTabBarOrientation		_orientation;
 	BOOL						_automaticallyAnimates;
-	NSTimer						*_animationTimer;
-	PSMTabBarTearOffStyle		_tearOffStyle;
+	NSTimer					*_animationTimer;
+	PSMTabBarTearOffStyle	_tearOffStyle;
 	
 	// behavior
 	BOOL						_allowsBackgroundTabClosing;
 	BOOL						_selectsTabsOnMouseDown;
+	BOOL						_createsTabOnDoubleClick;
 	
 	// vertical tab resizing
 	BOOL						_allowsResizing;
 	BOOL						_resizing;
 	
-    // cell width
-    NSInteger                         _cellMinWidth;
-    NSInteger                         _cellMaxWidth;
-    NSInteger                         _cellOptimumWidth;
-    
-    // animation for hide/show
-    NSInteger                         _currentStep;
-    BOOL                        _isHidden;
-    IBOutlet id                 partnerView;                // gets resized when hide/show
-    BOOL                        _awakenedFromNib;
-	NSInteger							_tabBarWidth;
-    NSTimer						*_showHideAnimationTimer;
-
-    // drag and drop
-    NSEvent                     *_lastMouseDownEvent;      // keep this for dragging reference
+	// cell width
+	NSInteger					_cellMinWidth;
+	NSInteger					_cellMaxWidth;
+	NSInteger					_cellOptimumWidth;
+	
+	// animation for hide/show
+	NSInteger					_currentStep;
+	BOOL						_isHidden;
+	IBOutlet id				partnerView;				// gets resized when hide/show
+	BOOL						_awakenedFromNib;
+	NSInteger					_tabBarWidth;
+	NSTimer					*_showHideAnimationTimer;
+	
+	// drag and drop
+	NSEvent					*_lastMouseDownEvent;	   // keep this for dragging reference
 	BOOL						_didDrag;
 	BOOL						_closeClicked;
-    
-    // MVC help
-    IBOutlet id                 delegate;
+	
+	// MVC help
+	IBOutlet id				delegate;
 }
 
 // control characteristics
@@ -152,6 +152,8 @@ enum {
 - (void)setAllowsResizing:(BOOL)value;
 - (BOOL)selectsTabsOnMouseDown;
 - (void)setSelectsTabsOnMouseDown:(BOOL)value;
+- (BOOL)doubleClickCreatesTab;
+- (void)setDoubleClickCreatesTab:(BOOL)value;
 - (BOOL)automaticallyAnimates;
 - (void)setAutomaticallyAnimates:(BOOL)value;
 - (BOOL)alwaysShowActiveTab;

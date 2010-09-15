@@ -567,6 +567,16 @@
 	_selectsTabsOnMouseDown = value;
 }
 
+- (BOOL)doubleClickCreatesTab
+{
+	return _createsTabOnDoubleClick;
+}
+
+- (void)setDoubleClickCreatesTab:(BOOL)value
+{
+	_createsTabOnDoubleClick = value;
+}
+
 - (BOOL)automaticallyAnimates
 {
 	return _automaticallyAnimates;
@@ -1298,7 +1308,15 @@
 			}
         }
         [self setNeedsDisplay:YES];
-    }
+    } else {
+		if ([theEvent clickCount] == 2) {
+			// fire create new tab
+			if ([self doubleClickCreatesTab] && [[self addTabButton] target] != nil && [[self addTabButton] action] != nil) {
+				[[[self addTabButton] target] performSelector:[[self addTabButton] action]];
+			}
+			return;
+		}
+	}
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
