@@ -31,6 +31,7 @@
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 	@synthesize textLimit;
+	@synthesize fieldType;
 #else
 	-(NSInteger)textLimit
 	{
@@ -71,28 +72,40 @@
 	return [[[NSAttributedString alloc] initWithString:[self stringForObjectValue:anObject] attributes:attributes] autorelease];
 }
 
-
-
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error
 {
 	// No limit set or partialString is NULL value string allow editing
 	if (textLimit == 0 || [partialString isEqualToString:[[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue]])
 		return YES;
-	
+
 	// A single character over the length of the string - likely typed.  Prevent the change.
 	if ([partialString length] == textLimit + 1) {
 		[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %ld.", @"Maximum text length is set to %ld."), (long)textLimit]];
 		return NO;
 	}
-	
+
 	// If the string is considerably longer than the limit, likely pasted.  Accept but truncate.
 	if ([partialString length] > textLimit) {
 		[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %ld. Inserted text was truncated.", @"Maximum text length is set to %ld. Inserted text was truncated."), (long)textLimit]];
 		*newString = [NSString stringWithString:[partialString substringToIndex:textLimit]];
 		return NO;
 	}
-	
-	// Length inside limit.
+
+	// Check for BIT fields whether 1 or 0 are typed
+	if(fieldType && [fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
+
+		if(partialString == nil || ![partialString length]) return YES;
+
+		// TODO HansJB
+		return YES;
+		// if() {
+		// 	[SPTooltip showWithObject:NSLocalizedString(@"For BIT fields only “1” or “0” are allowed.", @"For BIT fields only “1” or “0” are allowed.")];
+		// 	return NO;
+		// }
+
+	}
+
+
 	return YES;
 }
 

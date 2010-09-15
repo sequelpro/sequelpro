@@ -44,7 +44,9 @@
 		counter = 0;
 		maxTextLength = 0;
 		stringValue = nil;
-		
+		_isEditable = NO;
+		_isBlob = NO;
+
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		// Used for max text length recognition if last typed char is a non-space char
@@ -52,13 +54,13 @@
 
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
-		
+
 		allowUndo = NO;
 		selectionChanged = NO;
-		
+
 		tmpDirPath = NSTemporaryDirectory();
 		tmpFileName = nil;
-		
+
 		NSMenu *menu = [editSheetQuickLookButton menu];
 		[menu setAutoenablesItems:NO];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Interpret data as:", @"Interpret data as:") action:NULL keyEquivalent:@""];
@@ -74,10 +76,10 @@
 		NSString *convError = nil;
 		NSPropertyListFormat format;
 
-		NSData *defaultTypeData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"EditorQuickLookTypes.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]] 
+		NSData *defaultTypeData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"EditorQuickLookTypes.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]]
 			options:NSMappedRead error:&readError];
 
-		NSDictionary *defaultQLTypes = [NSPropertyListSerialization propertyListFromData:defaultTypeData 
+		NSDictionary *defaultQLTypes = [NSPropertyListSerialization propertyListFromData:defaultTypeData
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
 		if(defaultQLTypes == nil || readError != nil || convError != nil)
 			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@\n%@", [readError localizedDescription], convError);
@@ -106,9 +108,14 @@
 		}
 		qlTypes = [NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes];
 		[qlTypesItems release];
+
+		bitSheetBitButtonsArray = nil;
+		fieldType = @"";
+		fieldEncoding = @"";
+
 	}
 	return self;
-	
+
 }
 
 - (void)dealloc
@@ -130,118 +137,134 @@
 	maxTextLength = length;
 }
 
-- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding 
+- (void)setFieldType:(NSString*)aType
+{
+	fieldType = aType;
+}
+
+- (void)setFieldEncoding:(NSString*)aEncoding
+{
+	fieldEncoding = aEncoding;
+}
+
+- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 {
-	// If required, use monospaced fonts
-	if (![prefs objectForKey:SPFieldEditorSheetFont]) {
-		[editTextView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
-	else {
-		[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
-	}
 
-	[editTextView setContinuousSpellCheckingEnabled:[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]];
+	id usedSheet;
 
-	[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
+	_isEditable = isEditable;
 
-	[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), fieldName]];
+	if(NO && [fieldType length] && [fieldType isEqualToString:@"BIT"]) {
 
-	// hide all views in editSheet
-	[hexTextView setHidden:YES];
-	[hexTextScrollView setHidden:YES];
-	[editImage setHidden:YES];
-	[editTextView setHidden:YES];
-	[editTextScrollView setHidden:YES];
-	
-	if (!isEditable) {
-		[editSheetOkButton setHidden:YES];
-		[editSheetCancelButton setHidden:YES];
-		[editSheetIsNotEditableCancelButton setHidden:NO];
-		[editSheetOpenButton setEnabled:NO];
-	}
-	
-	editSheetWillBeInitialized = YES;
-	
-	encoding = anEncoding;
+		usedSheet = bitSheet;
 
-	isBlob = isFieldBlob;
-	
-	sheetEditData = [data retain];
-	
-	// hide all views in editSheet
-	[hexTextView setHidden:YES];
-	[hexTextScrollView setHidden:YES];
-	[editImage setHidden:YES];
-	[editTextView setHidden:YES];
-	[editTextScrollView setHidden:YES];
-	
-	// Hide QuickLook button and text/iamge/hex control for text data
-	[editSheetQuickLookButton setHidden:(!isBlob)];
-	[editSheetSegmentControl setHidden:(!isBlob)];
+		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 
-	// Set window's min size since no segment and quicklook buttons are hidden
-	if (isBlob) {
-		[editSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
-		[editSheet setMinSize:NSMakeSize(560, 200)];
 	} else {
-		[editSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
-		[editSheet setMinSize:NSMakeSize(340, 150)];
-	}
-	
-	[editTextView setEditable:isEditable];
-	[editImage setEditable:isEditable];
-	
-	[NSApp beginSheet:editSheet modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-	
-	[editSheetProgressBar startAnimation:self];
-	
-	NSImage *image = nil;
-	if ( [sheetEditData isKindOfClass:[NSData class]] ) {
-		image = [[[NSImage alloc] initWithData:sheetEditData] autorelease];
-		
-		// Set hex view to "" - load on demand only
-		[hexTextView setString:@""];
-		
-		stringValue = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
-		if (stringValue == nil)
-			stringValue = [[NSString alloc] initWithData:sheetEditData encoding:NSASCIIStringEncoding];
-		
-		[hexTextView setHidden:NO];
-		[hexTextScrollView setHidden:NO];
-		[editImage setHidden:YES];
-		[editTextView setHidden:YES];
-		[editTextScrollView setHidden:YES];
-		[editSheetSegmentControl setSelectedSegment:2];
-	} else {
-		stringValue = [sheetEditData retain];
-		
-		[hexTextView setString:@""];
-		
+
+		usedSheet = editSheet;
+
+		// If required, use monospaced fonts
+		if (![prefs objectForKey:SPFieldEditorSheetFont]) {
+			[editTextView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		}
+		else {
+			[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
+		}
+
+		[editTextView setContinuousSpellCheckingEnabled:[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]];
+
+		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
+
+		// Set field label
+		NSMutableString *label = [NSMutableString string];
+		[label appendFormat:@"“%@”", fieldName];
+		if([fieldType length] || maxTextLength > 0 || [fieldEncoding length])
+			[label appendString:@" – "];
+		if([fieldType length])
+			[label appendString:fieldType];
+		if(maxTextLength > 0)
+			[label appendFormat:@"(%ld) ", maxTextLength];
+		if([fieldEncoding length])
+			[label appendString:fieldEncoding];
+
+		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@%", NSLocalizedString(@"Field", @"Field"), label]];
+
+		// hide all views in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
-		[editTextView setHidden:NO];
-		[editTextScrollView setHidden:NO];
-		[editSheetSegmentControl setSelectedSegment:0];
-	}
-	
-	if (image) {
-		[editImage setImage:image];
-		
-		[hexTextView setHidden:YES];
-		[hexTextScrollView setHidden:YES];
-		[editImage setHidden:NO];
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
-		[editSheetSegmentControl setSelectedSegment:1];
-	} else {
-		[editImage setImage:nil];
-	}
-	if (stringValue) {
-		[editTextView setString:stringValue];
 
-		if(image == nil) {
+		if (!_isEditable) {
+			[editSheetOkButton setHidden:YES];
+			[editSheetCancelButton setHidden:YES];
+			[editSheetIsNotEditableCancelButton setHidden:NO];
+			[editSheetOpenButton setEnabled:NO];
+		}
+
+		editSheetWillBeInitialized = YES;
+
+		encoding = anEncoding;
+
+		_isBlob = isFieldBlob;
+		BOOL _isBINARY = ([fieldType isEqualToString:@"BINARY"] || [fieldType isEqualToString:@"VARBINARY"]);
+
+		sheetEditData = [data retain];
+
+		// hide all views in editSheet
+		[hexTextView setHidden:YES];
+		[hexTextScrollView setHidden:YES];
+		[editImage setHidden:YES];
+		[editTextView setHidden:YES];
+		[editTextScrollView setHidden:YES];
+
+		// Hide QuickLook button and text/iamge/hex control for text data
+		[editSheetQuickLookButton setHidden:(!_isBlob && !_isBINARY)];
+		[editSheetSegmentControl setHidden:(!_isBlob && !_isBINARY)];
+
+		[editSheetSegmentControl setEnabled:YES forSegment:1];
+
+		// Set window's min size since no segment and quicklook buttons are hidden
+		if (_isBlob || _isBINARY) {
+			[editSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
+			[editSheet setMinSize:NSMakeSize(560, 200)];
+		} else {
+			[editSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
+			[editSheet setMinSize:NSMakeSize(340, 150)];
+		}
+
+		[editTextView setEditable:_isEditable];
+		[editImage setEditable:_isEditable];
+
+		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+
+		[editSheetProgressBar startAnimation:self];
+
+		NSImage *image = nil;
+		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
+			image = [[[NSImage alloc] initWithData:sheetEditData] autorelease];
+
+			// Set hex view to "" - load on demand only
+			[hexTextView setString:@""];
+
+			stringValue = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
+			if (stringValue == nil)
+				stringValue = [[NSString alloc] initWithData:sheetEditData encoding:NSASCIIStringEncoding];
+
+			[hexTextView setHidden:NO];
+			[hexTextScrollView setHidden:NO];
+			[editImage setHidden:YES];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editSheetSegmentControl setSelectedSegment:2];
+		} else {
+			stringValue = [sheetEditData retain];
+
+			[hexTextView setString:@""];
+
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:YES];
@@ -250,45 +273,75 @@
 			[editSheetSegmentControl setSelectedSegment:0];
 		}
 
-		// Locate the caret in editTextView
-		// (to select all takes a bit time for large data)
-		[editTextView setSelectedRange:NSMakeRange(0,0)];
+		if (image) {
+			[editImage setImage:image];
 
-		// If the string content is NULL select NULL for convenience
-		if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
-			[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editSheetSegmentControl setSelectedSegment:1];
+		} else {
+			[editImage setImage:nil];
+		}
+		if (stringValue) {
+			[editTextView setString:stringValue];
 
-		// Set focus
-		if(image == nil)
-			[editSheet makeFirstResponder:editTextView];
-		else
-			[editSheet makeFirstResponder:editImage];
-		
-		[stringValue release], stringValue = nil;
+			if(image == nil) {
+				if(!_isBINARY) {
+					[hexTextView setHidden:YES];
+					[hexTextScrollView setHidden:YES];
+				} else {
+					[editSheetSegmentControl setEnabled:NO forSegment:1];
+				}
+				[editImage setHidden:YES];
+				[editTextView setHidden:NO];
+				[editTextScrollView setHidden:NO];
+				[editSheetSegmentControl setSelectedSegment:0];
+			}
+
+			// Locate the caret in editTextView
+			// (to select all takes a bit time for large data)
+			[editTextView setSelectedRange:NSMakeRange(0,0)];
+
+			// If the string content is NULL select NULL for convenience
+			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
+				[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+
+			// Set focus
+			if(image == nil)
+				[editSheet makeFirstResponder:editTextView];
+			else
+				[editSheet makeFirstResponder:editImage];
+
+			[stringValue release], stringValue = nil;
+		}
+
+		editSheetWillBeInitialized = NO;
+
+		[editSheetProgressBar stopAnimation:self];
+
 	}
-	
-	editSheetWillBeInitialized = NO;
-	
-	[editSheetProgressBar stopAnimation:self];
 
 	// wait for editSheet
-	NSModalSession session = [NSApp beginModalSessionForWindow:editSheet];
+	NSModalSession session = [NSApp beginModalSessionForWindow:usedSheet];
 	NSInteger cycleCounter = 0;
 	BOOL doGroupDueToChars = NO;
 	for (;;) {
 
 		// Break the run loop if editSheet was closed
-		if ([NSApp runModalSession:session] != NSRunContinuesResponse 
-			|| ![editSheet isVisible]) 
+		if ([NSApp runModalSession:session] != NSRunContinuesResponse
+			|| ![usedSheet isVisible])
 			break;
 
 		// Execute code on DefaultRunLoop (like displaying a tooltip)
-		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
 								 beforeDate:[NSDate distantFuture]];
 
 		// Allow undo grouping if user typed a ' ' (for word level undo)
 		// or a RETURN but not for each char due to writing speed
-		if([[NSApp currentEvent] type] == NSKeyDown 
+		if([[NSApp currentEvent] type] == NSKeyDown
 			&& 	(
 				[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
 				|| [[NSApp currentEvent] keyCode] == 36
@@ -317,16 +370,16 @@
 
 	}
 	[NSApp endModalSession:session];
-	[editSheet orderOut:nil];
-	[NSApp endSheet:editSheet];
+	[usedSheet orderOut:nil];
+	[NSApp endSheet:usedSheet];
 
 	// For safety reasons inform QuickLook to quit
 	quickLookCloseMarker = 1;
 
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
-	
-	return ( editSheetReturnCode && isEditable ) ? sheetEditData : nil;
+
+	return ( editSheetReturnCode && _isEditable ) ? sheetEditData : nil;
 }
 
 /*
@@ -343,6 +396,25 @@
 - (void)setWasCutPaste
 {
 	wasCutPaste = YES;
+}
+
+- (IBAction)closeBitSheet:(id)sender
+{
+
+	editSheetReturnCode = 0;
+
+	if(sender == bitSheetOkButton && _isEditable) {
+		[NSApp stopModal];
+		editSheetReturnCode = 1;
+	}
+
+	[NSApp abortModal];
+
+}
+
+- (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
+{
+
 }
 
 - (IBAction)closeEditSheet:(id)sender
@@ -363,7 +435,7 @@
 		[NSApp stopModal];
 		editSheetReturnCode = 1;
 	}
-	
+
 	// Delete all QuickLook temp files if it was invoked
 	if(tmpFileName != nil) {
 		NSArray *dirContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:tmpDirPath error:nil];
@@ -375,17 +447,17 @@
 			}
 		}
 	}
- 
+
 	[NSApp abortModal];
 
 }
 
 - (IBAction)openEditSheet:(id)sender
 {
-	[[NSOpenPanel openPanel] beginSheetForDirectory:nil 
-											   file:@"" 
-									 modalForWindow:[self window] 
-									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:) 
+	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
+											   file:@""
+									 modalForWindow:[self window]
+									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
 										contextInfo:NULL];
 }
 
@@ -435,12 +507,12 @@
  * Saves a file containing the content of the editSheet
  */
 - (IBAction)saveEditSheet:(id)sender
-{	
-	[[NSSavePanel savePanel] beginSheetForDirectory:nil 
-											   file:@"" 
-									 modalForWindow:[self window] 
-									  modalDelegate:self 
-									 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
+{
+	[[NSSavePanel savePanel] beginSheetForDirectory:nil
+											   file:@""
+									 modalForWindow:[self window]
+									  modalDelegate:self
+									 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
 										contextInfo:NULL];
 }
 
@@ -450,24 +522,24 @@
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		
+
 		[editSheetProgressBar startAnimation:self];
-		
+
 		NSString *fileName = [panel filename];
-		
+
 		// Write binary field types directly to the file
 		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
 			[sheetEditData writeToFile:fileName atomically:YES];
-			
+
 		// Write other field types' representations to the file via the current encoding
-		} 
+		}
 		else {
 			[[sheetEditData description] writeToFile:fileName
 										  atomically:YES
 											encoding:encoding
 											   error:NULL];
 		}
-		
+
 		[editSheetProgressBar stopAnimation:self];
 	}
 }
@@ -480,37 +552,37 @@
 	if (returnCode == NSOKButton) {
 		NSString *fileName = [panel filename];
 		NSString *contents = nil;
-		
+
 		editSheetWillBeInitialized = YES;
-		
+
 		[editSheetProgressBar startAnimation:self];
-		
+
 		// free old data
 		if ( sheetEditData != nil ) {
 			[sheetEditData release];
 		}
-		
+
 		// load new data/images
 		sheetEditData = [[NSData alloc] initWithContentsOfFile:fileName];
-		
+
 		NSImage *image = [[NSImage alloc] initWithData:sheetEditData];
 		contents = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
 		if (contents == nil)
 			contents = [[NSString alloc] initWithData:sheetEditData encoding:NSASCIIStringEncoding];
-		
+
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
-		
-		
+
+
 		if(contents)
 			[editTextView setString:contents];
 		else
 			[editTextView setString:@""];
-		
+
 		// Load hex data only if user has already displayed them
 		if(![[hexTextView string] isEqualToString:@""])
 			[hexTextView setString:[sheetEditData dataToFormattedHexString]];
-		
+
 		// If the image cell now contains a valid image, select the image view
 		if (image) {
 			[editSheetSegmentControl setSelectedSegment:1];
@@ -519,7 +591,7 @@
 			[editImage setHidden:NO];
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
-			
+
 			// Otherwise deselect the image view
 		} else {
 			[editSheetSegmentControl setSelectedSegment:0];
@@ -529,7 +601,7 @@
 			[editTextView setHidden:NO];
 			[editTextScrollView setHidden:NO];
 		}
-		
+
 		[image release];
 		if(contents)
 			[contents release];
@@ -559,10 +631,10 @@
 	// if data are binary
 	if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
 		[sheetEditData writeToFile:tmpFileName atomically:YES];
-		
+
 	// write other field types' representations to the file via the current encoding
 	} else {
-		
+
 		// if "html" type try to set the HTML charset - not yet completed
 		if([type isEqualToString:@"html"]) {
 
@@ -607,7 +679,7 @@
 
 		// Init QuickLook
 		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
-		
+
 		[[ql delegate] setDelegate:self];
 		[ql setURLs:[NSArray arrayWithObject:
 					 [NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
@@ -622,21 +694,21 @@
 		[ql setEnableDragNDrop:NO];
 		// Order out QuickLook with animation effect according to self:previewPanel:frameForURL:
 		[ql makeKeyAndOrderFrontWithEffect:2];   // 1 = fade in
-		
+
 		// quickLookCloseMarker == 1 break the modal session
 		quickLookCloseMarker = 0;
-		
+
 		[editSheetProgressBar stopAnimation:self];
 
 		// Run QuickLook in its own modal seesion for event handling
 		NSModalSession session = [NSApp beginModalSessionForWindow:ql];
 		for (;;) {
 			// Conditions for closing QuickLook
-			if ([NSApp runModalSession:session] != NSRunContinuesResponse 
-				|| quickLookCloseMarker == 1 
-				|| ![ql isVisible]) 
+			if ([NSApp runModalSession:session] != NSRunContinuesResponse
+				|| quickLookCloseMarker == 1
+				|| ![ql isVisible])
 				break;
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode  
+			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
 									 beforeDate:[NSDate distantFuture]];
 
 		}
@@ -649,7 +721,7 @@
 	// Load QL via framework (SDK 10.5 but SP runs on 10.6)
 	// TODO: This is an hack in order to be able to support QuickLook on Mac OS X 10.5 and 10.6
 	// as long as SP will be compiled against SDK 10.5.
-	// If SP will be compiled against SDK 10.6 we can use the standard way by using 
+	// If SP will be compiled against SDK 10.6 we can use the standard way by using
 	// the QuickLookUI which is part of the Quartz.framework. See Developer example "QuickLookDownloader"
 	// file:///Developer/Documentation/DocSets/com.apple.adc.documentation.AppleSnowLeopard.CoreReference.docset/Contents/Resources/Documents/samplecode/QuickLookDownloader/index.html#//apple_ref/doc/uid/DTS40009082
 	else if([[NSBundle bundleWithPath:@"/System/Library/Frameworks/Quartz.framework/Frameworks/QuickLookUI.framework"] load]) {
@@ -720,18 +792,18 @@
 // If an empty frame is returned then the panel will fade in/out instead
 - (NSRect)previewPanel:(NSPanel*)panel frameForURL:(NSURL*)URL
 {
-	
+
 	// Close modal session defined in invokeQuickLookOfType:
 	// if user closes the QuickLook view
 	quickLookCloseMarker = 1;
-	
+
 	// Return the App's middle point
 	NSRect mwf = [[NSApp mainWindow] frame];
 	return NSMakeRect(
 					  mwf.origin.x+mwf.size.width/2,
 					  mwf.origin.y+mwf.size.height/2,
 					  5, 5);
-	
+
 }
 // QuickLook delegates for SDK 10.6
 // It should return the frame for the item represented by the URL
@@ -755,33 +827,33 @@
 {
 
 	editSheetWillBeInitialized = YES;
-	
+
 	NSImage *image = nil;
-	
+
 	image = [[[NSImage alloc] initWithPasteboard:[NSPasteboard generalPasteboard]] autorelease];
 	if (image) {
-		
+
 		if (nil != sheetEditData) [sheetEditData release];
-		
+
 		[editImage setImage:image];
-		
+
 		if( sheetEditData ) [sheetEditData release];
 		sheetEditData = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
-		
+
 		NSString *contents = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
 		if (contents == nil)
 			contents = [[NSString alloc] initWithData:sheetEditData encoding:NSASCIIStringEncoding];
-		
+
 		// Set the string contents and hex representation
 		if(contents)
 			[editTextView setString:contents];
 		if(![[hexTextView string] isEqualToString:@""])
 			[hexTextView setString:[sheetEditData dataToFormattedHexString]];
-		
+
 		[contents release];
-		
+
 	}
-	
+
 	editSheetWillBeInitialized = NO;
 }
 /*
@@ -790,11 +862,11 @@
  */
 - (void)processUpdatedImageData:(NSData *)data
 {
-	
+
 	editSheetWillBeInitialized = YES;
-	
+
 	if (nil != sheetEditData) [sheetEditData release];
-	
+
 	// If the image was not processed, set a blank string as the contents of the edit and hex views.
 	if ( data == nil ) {
 		sheetEditData = [[NSData alloc] init];
@@ -803,26 +875,26 @@
 		editSheetWillBeInitialized = NO;
 		return;
 	}
-	
+
 	// Process the provided image
 	sheetEditData = [[NSData alloc] initWithData:data];
 	NSString *contents = [[NSString alloc] initWithData:data encoding:encoding];
 	if (contents == nil)
 		contents = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
-	
+
 	// Set the string contents and hex representation
 	if(contents)
 		[editTextView setString:contents];
 	if(![[hexTextView string] isEqualToString:@""])
 		[hexTextView setString:[sheetEditData dataToFormattedHexString]];
-	
+
 	[contents release];
 	editSheetWillBeInitialized = NO;
 }
 
 - (IBAction)dropImage:(id)sender
 {
-	
+
 	// If the image was deleted, set a blank string as the contents of the edit and hex views.
 	// The actual dropped image processing is handled by processUpdatedImageData:.
 	if ( [editImage image] == nil ) {
@@ -835,6 +907,19 @@
 }
 
 #pragma mark -
+#pragma mark BIT Field Sheet
+
+- (IBAction)bitSheetSelectBit0:(id)sender
+{
+
+}
+
+- (IBAction)bitSheetBitButtonWasClicked:(id)sender
+{
+
+}
+
+#pragma mark -
 #pragma mark Delegates
 
 /*
@@ -843,7 +928,7 @@
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
 {
 
-	if(textView == editTextView && maxTextLength > 0 
+	if(textView == editTextView && (maxTextLength > 0)
 		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 
 		NSInteger newLength;
@@ -861,30 +946,30 @@
 		if (r.location==NSNotFound) return NO;
 
 		// Length checking while using the Input Manager (eg for Japanese)
-		if ([textView hasMarkedText] && maxTextLength > 0 && r.location < maxTextLength)
+		if ([textView hasMarkedText] && (maxTextLength > 0) && (r.location < maxTextLength))
 			// User tries to insert a new char but max text length was already reached - return NO
-			if( !r.length  && [[textView textStorage] length] >= maxTextLength ) {
+			if( !r.length  && ([[textView textStorage] length] >= maxTextLength) ) {
 				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
 				[textView unmarkText];
 				return NO;
 			}
-			// otherwise allow it if insertion point is valid for eg 
+			// otherwise allow it if insertion point is valid for eg
 			// a VARCHAR(3) field filled with two Chinese chars and one inserts the
 			// third char by typing its pronounciation "wo" - 2 Chinese chars plus "wo" would give
 			// 4 which is larger than max length.
 			// TODO this doesn't solve the problem of inserting more than one char. For now
 			// that part which won't be saved will be hilited if user pressed the OK button.
-			else if (r.location < maxTextLength) 
+			else if (r.location < maxTextLength)
 				return YES;
 
 		// Calculate the length of the text after the change.
-		newLength=[[textView textStorage] length]+[replacementString length]-r.length;
+		newLength=[[[textView textStorage] string] length]+[replacementString length]-r.length;
 
-		// If it's too long, disallow the change but try 
+		// If it's too long, disallow the change but try
 		// to insert a text chunk partially to maxTextLength.
-		if (newLength>maxTextLength) {
-			
-			if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length <= [replacementString length]) {
+		if (newLength > maxTextLength) {
+
+			if((maxTextLength-[[textView textStorage] length]+[textView selectedRange].length) <= [replacementString length]) {
 				if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length)
 					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu. Inserted text was truncated.", @"Maximum text length is set to %llu. Inserted text was truncated."), maxTextLength]];
 				else
@@ -908,7 +993,7 @@
 {
 
 	// Do nothing if user really didn't changed text (e.g. for font size changing return)
-	if(!editTextViewWasChanged && (editSheetWillBeInitialized 
+	if(!editTextViewWasChanged && (editSheetWillBeInitialized
 		|| (([[[notification object] textStorage] editedRange].length == 0)
 		&& ([[[notification object] textStorage] changeInLength] == 0)))) {
 		// Inform the undo-grouping about the caret movement
@@ -919,7 +1004,7 @@
 	// clear the image and hex (since i doubt someone can "type" a gif)
 	[editImage setImage:nil];
 	[hexTextView setString:@""];
-	
+
 	// free old data
 	if ( sheetEditData != nil ) {
 		[sheetEditData release];
@@ -927,7 +1012,7 @@
 
 	// set edit data to text
 	sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
-	
+
 }
 
 #pragma -
@@ -946,7 +1031,7 @@
 			return YES;
 		}
 	}
-	
+
 	return NO;
 }
 

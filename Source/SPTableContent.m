@@ -434,9 +434,13 @@
 		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 
 		// Set field length limit if field is a varchar to match varchar length
-		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]) {
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
+			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"length"] integerValue]];
 		}
+
+		// Set field type for validations
+		[[dataCell formatter] setFieldType:[columnDefinition objectForKey:@"type"]];
 
 		// Set the data cell font according to the preferences
 		[dataCell setFont:tableFont];
@@ -2485,7 +2489,7 @@
 /**
  * Returns the WHERE argument to identify a row.
  * If "row" is -2, it uses the oldRow value.
- * "excludeLimits" controls whether a LIMIT 1 is appended if no primary key was available to 
+ * "excludeLimits" controls whether a LIMIT 1 is appended if no primary key was available to
  * uniquely identify the row.
  */
 - (NSString *)argumentForRow:(NSInteger)row excludingLimits:(BOOL)excludeLimits
@@ -2668,7 +2672,7 @@
 
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
-	// Actual check whether field can be identified bijectively 
+	// Actual check whether field can be identified bijectively
 	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
 		[[columnDefinition objectForKey:@"db"] backtickQuotedString],
 		[tableForColumn backtickQuotedString],
@@ -2705,7 +2709,7 @@
 			[tableDocumentInstance endTask];
 			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 		}
-		
+
 	}
 
 	[tableDocumentInstance endTask];
@@ -3480,7 +3484,7 @@
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	if ( aTableView == tableContentView ) {
-		
+
 		// Ensure that row is editable since it could contain "(not loaded)" columns together with
 		// issue that the table has no primary key
 		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
@@ -3520,18 +3524,35 @@
 				isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
 			}
 
+			NSString *fieldType = nil;
+			NSUInteger *fieldLength = 0;
+			NSString *fieldEncoding = nil;
+			// Retrieve the column defintion
+			for(id c in cqColumnDefinition) {
+				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
+					fieldType = [c objectForKey:@"type"];
+					if([c objectForKey:@"char_length"])
+						fieldLength = [[c objectForKey:@"char_length"] integerValue];
+					if([c objectForKey:@"charset_name"] && ![[c objectForKey:@"charset_name"] isEqualToString:@"binary"])
+						fieldEncoding = [c objectForKey:@"charset_name"];
+					break;
+				}
+			}
+
 			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
 
-			[fieldEditor setTextMaxLength:[[[aTableColumn dataCellForRow:rowIndex] formatter] textLimit]];
+			[fieldEditor setTextMaxLength:fieldLength];
+			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
+			[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
 
 			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 			if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 
 			id editData = [[fieldEditor editWithObject:cellValue
-									 	 fieldName:[[aTableColumn headerCell] stringValue]
+										 fieldName:[[aTableColumn headerCell] stringValue]
 									 usingEncoding:[mySQLConnection stringEncoding]
-									  isObjectBlob:isBlob 
-										isEditable:isFieldEditable 
+									  isObjectBlob:isBlob
+										isEditable:isFieldEditable
 										withWindow:[tableDocumentInstance parentWindow]] retain];
 
 			if (editData) {
@@ -3571,7 +3592,7 @@
 
 		return YES;
 	}
-	
+
 	return YES;
 }
 
@@ -3737,7 +3758,7 @@
 	row = [tableContentView editedRow];
 	column = [tableContentView editedColumn];
 
-	// If cell editing mode and editing request comes 
+	// If cell editing mode and editing request comes
 	// from the keyboard show an error tooltip
 	// or bypass if numberOfPossibleUpdateRows == 1
 	if([tableContentView isCellEditingMode]) {
