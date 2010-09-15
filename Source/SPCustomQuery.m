@@ -1480,6 +1480,16 @@
 		[dataCell setFont:tableFont];
 
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
+		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+
+		// Set field length limit if field is a varchar to match varchar length
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
+			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"char_length"] integerValue]];
+		}
+
+		// Set field type for validations
+		[[dataCell formatter] setFieldType:[columnDefinition objectForKey:@"type"]];
 		[theCol setDataCell:dataCell];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
 
@@ -2249,10 +2259,19 @@
 			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
 			isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
 
-			// Set max text length
-			if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
-			 && [columnDefinition valueForKey:@"char_length"])
-				[fieldEditor setTextMaxLength:[[columnDefinition valueForKey:@"char_length"] integerValue]];
+			NSString *fieldType = nil;
+			NSUInteger *fieldLength = 0;
+			NSString *fieldEncoding = nil;
+			// Retrieve the column defintion
+			fieldType = [columnDefinition objectForKey:@"type"];
+			if([columnDefinition objectForKey:@"char_length"])
+				fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
+			if([columnDefinition objectForKey:@"charset_name"] && ![[columnDefinition objectForKey:@"charset_name"] isEqualToString:@"binary"])
+				fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
+
+			[fieldEditor setTextMaxLength:fieldLength];
+			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
+			[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
 
 			id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 			if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];

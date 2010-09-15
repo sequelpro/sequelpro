@@ -94,17 +94,13 @@
 	// Check for BIT fields whether 1 or 0 are typed
 	if(fieldType && [fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
 
-		if(partialString == nil || ![partialString length]) return YES;
+		if([partialString rangeOfCharacterFromSet:[[NSCharacterSet characterSetWithCharactersInString:@"01"] invertedSet]].location != NSNotFound) {
+				[SPTooltip showWithObject:NSLocalizedString(@"For BIT fields only “1” or “0” are allowed.", @"For BIT fields only “1” or “0” are allowed.")];
+	    		return NO;
+		}
 
-		// TODO HansJB
 		return YES;
-		// if() {
-		// 	[SPTooltip showWithObject:NSLocalizedString(@"For BIT fields only “1” or “0” are allowed.", @"For BIT fields only “1” or “0” are allowed.")];
-		// 	return NO;
-		// }
-
 	}
-
 
 	return YES;
 }
