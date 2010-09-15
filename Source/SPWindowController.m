@@ -61,13 +61,13 @@
 	[tabBar setCellMaxWidth:250];
 	[tabBar setCellOptimumWidth:250];
 	[tabBar setSelectsTabsOnMouseDown:YES];
-	[tabBar setDoubleClickCreatesTab:YES];
+	[tabBar setCreatesTabOnDoubleClick:YES];
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
 	[tabBar setUsesSafariStyleDragging:YES];
 
     // hook up add tab button
-    [[tabBar addTabButton] setTarget:self];
-    [[tabBar addTabButton] setAction:@selector(addNewConnection:)];
+    [tabBar setCreateNewTabTarget:self];
+    [tabBar setCreateNewTabAction:@selector(addNewConnection:)];
 
 	// Retrieve references to the 'Close Window' and 'Close Tab' menus.  These are updated as window focus changes.
 	closeWindowMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1003];

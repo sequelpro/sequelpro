@@ -472,6 +472,32 @@
 	[self update];
 }
 
+
+
+- (id)createNewTabTarget
+{	
+	return _createNewTabTarget;
+}
+
+- (void)setCreateNewTabTarget:(id)object
+{
+	_createNewTabTarget = object;
+	[[self addTabButton] setTarget:object];
+}
+
+- (SEL)createNewTabAction
+{
+	return _createNewTabAction;	
+}
+
+- (void)setCreateNewTabAction:(SEL)selector
+{
+	_createNewTabAction = selector;
+	[[self addTabButton] setAction:selector];
+}
+
+
+
 - (NSInteger)cellMinWidth
 {
     return _cellMinWidth;
@@ -567,12 +593,12 @@
 	_selectsTabsOnMouseDown = value;
 }
 
-- (BOOL)doubleClickCreatesTab
+- (BOOL)createsTabOnDoubleClick;
 {
 	return _createsTabOnDoubleClick;
 }
 
-- (void)setDoubleClickCreatesTab:(BOOL)value
+- (void)setCreatesTabOnDoubleClick:(BOOL)value
 {
 	_createsTabOnDoubleClick = value;
 }
@@ -1311,8 +1337,8 @@
     } else {
 		if ([theEvent clickCount] == 2) {
 			// fire create new tab
-			if ([self doubleClickCreatesTab] && [[self addTabButton] target] != nil && [[self addTabButton] action] != nil) {
-				[[[self addTabButton] target] performSelector:[[self addTabButton] action]];
+			if ([self createsTabOnDoubleClick] && [self createNewTabTarget] != nil && [self createNewTabAction] != nil) {
+				[[self createNewTabTarget] performSelector:[self createNewTabAction]];
 			}
 			return;
 		}

@@ -89,6 +89,8 @@ enum {
 	BOOL						_allowsBackgroundTabClosing;
 	BOOL						_selectsTabsOnMouseDown;
 	BOOL						_createsTabOnDoubleClick;
+	id							_createNewTabTarget;
+	SEL							_createNewTabAction;
 	
 	// vertical tab resizing
 	BOOL						_allowsResizing;
@@ -136,6 +138,12 @@ enum {
 - (void)setHideForSingleTab:(BOOL)value;
 - (BOOL)showAddTabButton;
 - (void)setShowAddTabButton:(BOOL)value;
+
+- (id)createNewTabTarget;
+- (void)setCreateNewTabTarget:(id)object;
+- (SEL)createNewTabAction;
+- (void)setCreateNewTabAction:(SEL)selector;
+
 - (NSInteger)cellMinWidth;
 - (void)setCellMinWidth:(NSInteger)value;
 - (NSInteger)cellMaxWidth;
@@ -152,8 +160,8 @@ enum {
 - (void)setAllowsResizing:(BOOL)value;
 - (BOOL)selectsTabsOnMouseDown;
 - (void)setSelectsTabsOnMouseDown:(BOOL)value;
-- (BOOL)doubleClickCreatesTab;
-- (void)setDoubleClickCreatesTab:(BOOL)value;
+- (BOOL)createsTabOnDoubleClick;
+- (void)setCreatesTabOnDoubleClick:(BOOL)value;
 - (BOOL)automaticallyAnimates;
 - (void)setAutomaticallyAnimates:(BOOL)value;
 - (BOOL)alwaysShowActiveTab;
