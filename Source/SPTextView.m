@@ -1063,9 +1063,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
-	NSArray *lineRanges;
-	NSString *tabString = @"\t";
-	NSUInteger i, indentedLinesLength = 0;
 
 	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
 
@@ -1076,33 +1073,47 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
 
 		// Register the indent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:tabString];
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:@"\t"];
 
 		// Insert the new tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:tabString];
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:@"\t"];
 
 		return YES;
 	}
 
-	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
-	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
+	// Otherwise, something is selected
+	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location,0)];
+	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange([self selectedRange])-1,0)]);
+	
+	// Expand selection for first and last line to begin and end resp. but not the last line ending
+	NSRange blockRange = NSMakeRange(firstLineRange.location, lastLineMaxRange - firstLineRange.location);
+	if([textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\n' || [textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\r')
+		blockRange.length--;
 
-	// Loop through the ranges, storing a count of the overall length.
-	for (i = 0; i < [lineRanges count]; i++) {
-		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
-		indentedLinesLength += currentLineRange.length + 1;
+	// Replace \n by \n\t of all lines in blockRange
+	NSString *newString;
+	// check for line ending
+	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
+		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+			[[textViewString substringWithRange:blockRange] 
+				stringByReplacingOccurrencesOfString:@"\r" withString:@"\r\t"]];
+	else
+		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+			[[textViewString substringWithRange:blockRange] 
+				stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"]];
 
-		// Register the indent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location+i, 0) replacementString:tabString];
+	// Register the indent for undo
+	[self shouldChangeTextInRange:blockRange replacementString:newString];
 
-		// Insert the new tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location+i, 0) withString:tabString];
-	}
+	[self replaceCharactersInRange:blockRange withString:newString];
 
-	// Select the entirety of the new range
-	[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, indentedLinesLength)];
+	[self setSelectedRange:NSMakeRange(blockRange.location, [newString length])];
 
-	return YES;
+	if(blockRange.length == [newString length])
+		return NO;
+	else
+		return YES;
+
 }
 
 
@@ -1116,10 +1127,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
-	NSArray *lineRanges;
-	NSUInteger i, unindentedLines = 0, unindentedLinesLength = 0;
 
-	if ([self selectedRange].location == NSNotFound) return NO;
+	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
 
 	// Undent the currently selected line if the caret is within a single line
 	if ([self selectedRange].length == 0) {
@@ -1129,7 +1138,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// Ensure that the line has length and that the first character is a tab
 		if (currentLineRange.length < 1
-			|| [textViewString characterAtIndex:currentLineRange.location] != '\t')
+			|| ([textViewString characterAtIndex:currentLineRange.location] != '\t' && [textViewString characterAtIndex:currentLineRange.location] != ' '))
 			return NO;
 
 		// Register the undent for undo
@@ -1141,37 +1150,46 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		return YES;
 	}
 
-	// Otherwise, the selection has a length - get an array of current line ranges for the specified selection
-	lineRanges = [textViewString lineRangesForRange:[self selectedRange]];
+	// Otherwise, something is selected
+	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location,0)];
+	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange([self selectedRange])-1,0)]);
+	
+	// Expand selection for first and last line to begin and end resp. but the last line ending
+	NSRange blockRange = NSMakeRange(firstLineRange.location, lastLineMaxRange - firstLineRange.location);
+	if([textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\n' || [textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\r')
+		blockRange.length--;
 
-	// Loop through the ranges, storing a count of the total lines changed and the new length.
-	for (i = 0; i < [lineRanges count]; i++) {
-		currentLineRange = NSRangeFromString([lineRanges objectAtIndex:i]);
-		unindentedLinesLength += currentLineRange.length;
-		
-		// Ensure that the line has length and that the first character is a tab
-		if (currentLineRange.length < 1
-			|| [textViewString characterAtIndex:currentLineRange.location-unindentedLines] != '\t')
-			continue;
+	// Check if blockRange starts with SPACE or TAB
+	// (this also catches the first line of the entire text buffer or
+	// if only one line is selected)
+	NSInteger leading = 0;
+	if([textViewString characterAtIndex:blockRange.location] == ' ' 
+		|| [textViewString characterAtIndex:blockRange.location] == '\t')
+		leading++;
 
-		// Register the undent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) replacementString:@""];
+	// Replace \n[ \t] by \n of all lines in blockRange
+	NSString *newString;
+	// check for line ending
+	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
+		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+			stringByReplacingOccurrencesOfString:@"\r\t" withString:@"\r"] 
+			stringByReplacingOccurrencesOfString:@"\r " withString:@"\r"];
+	else
+		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+			stringByReplacingOccurrencesOfString:@"\n\t" withString:@"\n"] 
+			stringByReplacingOccurrencesOfString:@"\n " withString:@"\n"];
 
-		// Remove the tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location-unindentedLines, 1) withString:@""];
-		
-		// As a line has been unindented, modify counts and lengths
-		unindentedLines++;
-		unindentedLinesLength--;
-	}
+	// Register the unindent for undo
+	[self shouldChangeTextInRange:blockRange replacementString:newString];
 
-	// If a change was made, select the entirety of the new range and return success
-	if (unindentedLines) {
-		[self setSelectedRange:NSMakeRange(NSRangeFromString([lineRanges objectAtIndex:0]).location, unindentedLinesLength)];
+	[self replaceCharactersInRange:blockRange withString:newString];
+
+	[self setSelectedRange:NSMakeRange(blockRange.location, [newString length])];
+
+	if(blockRange.length == [newString length])
+		return NO;
+	else
 		return YES;
-	}
-
-	return NO;
 }
 
 #pragma mark -
