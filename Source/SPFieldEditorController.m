@@ -36,6 +36,10 @@
 
 @implementation SPFieldEditorController
 
+/**
+ * Initialise an instance of SPFieldEditorController using the XIB “FieldEditorSheet.xib”. Init the available Quciklook format by reading
+ * EditorQuickLookTypes.plist and if given user-defined format store in the Preferences for key (SPQuickLookTypes).
+ */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"])) {
@@ -118,6 +122,9 @@
 
 }
 
+/**
+ * Dealloc SPFieldEditorController and closes Quicklook window if visible.
+ */
 - (void)dealloc
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -132,26 +139,63 @@
 	[super dealloc];
 }
 
-- (void)setTextMaxLength:(unsigned long long)length
+/**
+ * Set the maximum text length of the underlying table field for input validation.
+ *
+ * @param length The maximum text length
+ */
+- (void)setTextMaxLength:(NSUInteger)length
 {
 	maxTextLength = length;
 }
 
+/**
+ * Set the field type of the underlying table field for input validation.
+ *
+ * @param aType The field type which will be used for dispatching which sheet will be shown. If type == BIT the bitSheet will be used otherwise the editSheet.
+ */
 - (void)setFieldType:(NSString*)aType
 {
 	fieldType = aType;
 }
 
+/**
+ * Set the field encoding of the underlying table field for displaying it to the user.
+ *
+ * @param aEncoding encoding
+ */
 - (void)setFieldEncoding:(NSString*)aEncoding
 {
 	fieldEncoding = aEncoding;
 }
 
+/**
+ * Set if underlying table field allows NULL for several validations.
+ *
+ * @param allowNULL If allowNULL is YES NULL value is allowed for the underlying table field
+ */
 - (void)setAllowNULL:(BOOL)allowNULL
 {
 	_allowNULL = allowNULL;
 }
 
+/**
+ * Main method for editing data. It will validate several settings and display a modal sheet for theWindow whioch waits until the user closes the sheet.
+ *
+ * @param data The to be edited table field data.
+ * 
+ * @param fieldName The name of the currently edited table field.
+ * 
+ * @param anEncoding The used encoding while editing.
+ * 
+ * @param isFieldBlob If YES the underlying table field is a TEXT/BLOB field. This setting handles several controls which are offered in the sheet to the user.
+ * 
+ * @param isEditable If YES the underlying table field is editable, if NO the field is not editable and the SPFieldEditorController sheet do not show a "OK" button for saving.
+ * 
+ * @param theWindow The window for displaying the sheet.
+ * 
+ * @return If SPFieldEditorController was closed by "OK" and the field was editable it returns the edited value, otherwise it returns nil.
+ */
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 {
@@ -174,7 +218,7 @@
 	if([fieldEncoding length])
 		[label appendString:fieldEncoding];
 
-	if([fieldType length] && [fieldType isEqualToString:@"BIT"]) {
+	if([fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
 
 		sheetEditData = [(NSString*)data retain];
 
@@ -243,7 +287,7 @@
 		encoding = anEncoding;
 
 		_isBlob = isFieldBlob;
-		BOOL _isBINARY = ([fieldType isEqualToString:@"BINARY"] || [fieldType isEqualToString:@"VARBINARY"]);
+		BOOL _isBINARY = ([[fieldType uppercaseString] isEqualToString:@"BINARY"] || [[fieldType uppercaseString] isEqualToString:@"VARBINARY"]);
 
 		sheetEditData = [data retain];
 
@@ -415,7 +459,7 @@
 	return ( editSheetReturnCode && _isEditable ) ? sheetEditData : nil;
 }
 
-/*
+/**
  * Establish and return an UndoManager for editTextView
  */
 - (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
@@ -426,11 +470,19 @@
 	return esUndoManager;
 }
 
+/**
+ * Set variable if something in editTextView was cutted or pasted for creating better undo grouping.
+ */
 - (void)setWasCutPaste
 {
 	wasCutPaste = YES;
 }
 
+/**
+ * Close the editSheet. Before closing it validates the editSheet data against maximum text size.
+ * If data size is too long select the part which is to long for better editing and keep the sheet opened.
+ * If any temporary Quicklook files were created delete them before clsoing the sheet.
+ */
 - (IBAction)closeEditSheet:(id)sender
 {
 
@@ -466,6 +518,9 @@
 
 }
 
+/**
+ * Open the open file panel to load a file (text/image) into the editSheet
+ */
 - (IBAction)openEditSheet:(id)sender
 {
 	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
@@ -475,7 +530,7 @@
 										contextInfo:NULL];
 }
 
-/*
+/**
  * Segement controller for text/image/hex buttons in editSheet
  */
 - (IBAction)segmentControllerChanged:(id)sender
@@ -517,8 +572,8 @@
 	}
 }
 
-/*
- * Saves a file containing the content of the editSheet
+/**
+ * Open the save file panel to save the content of the editSheet according to its type as NSData or NSString atomically into the past file.
  */
 - (IBAction)saveEditSheet:(id)sender
 {
@@ -531,7 +586,7 @@
 }
 
 /**
- * Save panel didEndSelector. Writes the current content to disk.
+ * Save file panel didEndSelector. If the returnCode == NSOKButton it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
@@ -559,7 +614,7 @@
 }
 
 /**
- * Open panel didEndSelector. Opens the selected file.
+ * Open file panel didEndSelector. If the returnCode == NSOKButton it opens the selected file in the editSheet.
  */
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo
 {
@@ -627,6 +682,9 @@
 #pragma mark -
 #pragma mark QuickLook
 
+/**
+ * Invoked if a Quicklook format was chosen
+ */
 - (IBAction)quickLookFormatButton:(id)sender
 {
 	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > [sender tag] - 2) {
@@ -635,6 +693,14 @@
 	}
 }
 
+/**
+ * Create a temporary file in NSTemporaryDirectory() with the chosen extension type which will be called by Apple's Quicklook generator
+ * 
+ * @param type The type as file extension for Apple's default Quicklook generator.
+ *
+ * @param isText If YES the content of editSheet will be treates as pure text.
+ *
+ */
 - (void)createTemporaryQuickLookFileOfType:(NSString *)type treatAsText:(BOOL)isText
 {
 	// Create a temporary file name to store the data as file
@@ -676,8 +742,13 @@
 	}
 }
 
-/*
+/**
  * Opens QuickLook for current data if QuickLook is available
+ * 
+ * @param type The type as file extension for Apple's default Quicklook generator.
+ *
+ * @param isText If YES the content of editSheet will be treates as pure text.
+ *
  */
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
@@ -762,7 +833,10 @@
 
 }
 
-// QuickLook delegates for SDK 10.6
+
+/**
+ * QuickLook delegate for SDK 10.6. Set the Quicklook delegate to self and suppress setShowsAddToiPhotoButton since the format is unknow.
+ */
 - (void)beginPreviewPanelControl:(id)panel
 {
 
@@ -774,36 +848,55 @@
 	[panel setShowsAddToiPhotoButton:NO];
 
 }
-// QuickLook delegates for SDK 10.6
+
+/**
+ * QuickLook delegate for SDK 10.6 - not in usage.
+ */
 - (void)endPreviewPanelControl:(id)panel
 {
 	// This document loses its responsisibility on the preview panel
 	// Until the next call to -beginPreviewPanelControl: it must not
 	// change the panel's delegate, data source or refresh it.
 }
-// QuickLook delegates for SDK 10.6
+
+/**
+ * QuickLook delegate for SDK 10.6
+ */
 - (BOOL)acceptsPreviewPanelControl:(id)panel;
 {
 	return YES;
 }
+
 // QuickLook delegates for SDK 10.6
 // - (BOOL)previewPanel:(QLPreviewPanel *)panel handleEvent:(NSEvent *)event
 // {
 // }
-// QuickLook delegates for SDK 10.6
+
+/**
+ * QuickLook delegate for SDK 10.6.
+ *
+ * @return It always returns 1.
+ */
 - (NSInteger)numberOfPreviewItemsInPreviewPanel:(id)panel
 {
 	return 1;
 }
-// QuickLook delegates for SDK 10.6
+
+/**
+ * QuickLook delegate for SDK 10.6.
+ *
+ * @return It returns as NSURL the temporarily created file.
+ */
 - (id)previewPanel:(id)panel previewItemAtIndex:(NSInteger)index
 {
 	return [NSURL fileURLWithPath:tmpFileName];
 }
 
-// QuickLook delegates for SDK 10.5
-// It should return the frame for the item represented by the URL
-// If an empty frame is returned then the panel will fade in/out instead
+/**
+ * QuickLook delegate for SDK 10.5.
+ *
+ * @return It returns the frame of the application's middle. If an empty frame is returned then the panel will fade in/out instead.
+ */
 - (NSRect)previewPanel:(NSPanel*)panel frameForURL:(NSURL*)URL
 {
 
@@ -819,9 +912,12 @@
 					  5, 5);
 
 }
-// QuickLook delegates for SDK 10.6
-// It should return the frame for the item represented by the URL
-// If an empty frame is returned then the panel will fade in/out instead
+
+/**
+ * QuickLook delegate for SDK 10.6.
+ *
+ * @return It returns the frame of the application's middle. If an empty frame is returned then the panel will fade in/out instead.
+ */
 - (NSRect)previewPanel:(id)panel sourceFrameOnScreenForPreviewItem:(id)item
 {
 	// Return the App's middle point
@@ -831,12 +927,16 @@
 					  mwf.origin.y+mwf.size.height/2,
 					  5, 5);
 }
+
 // QuickLook delegates for SDK 10.6
 // - (id)previewPanel:(id)panel transitionImageForPreviewItem:(id)item contentRect:(NSRect *)contentRect
 // {
 // 	return [NSImage imageNamed:@"database"];
 // }
 
+/**
+ * Called by (SPImageView) if an image was pasted into the editSheet
+ */
 -(void)processPasteImageData
 {
 
@@ -870,9 +970,11 @@
 
 	editSheetWillBeInitialized = NO;
 }
-/*
- * Invoked when the imageView in the connection sheet has the contents deleted
- * or a file dragged and dropped onto it.
+
+/**
+ * Invoked if the imageView was changed or a file dragged and dropped onto it.
+ * 
+ * @param data The image data. If data == nil the reset all views in editSheet.
  */
 - (void)processUpdatedImageData:(NSData *)data
 {
@@ -906,11 +1008,12 @@
 	editSheetWillBeInitialized = NO;
 }
 
+/**
+ * If the image was deleted reset all views in editSheet.
+ * The actual dropped image process is handled by (processUpdatedImageData:).
+ */
 - (IBAction)dropImage:(id)sender
 {
-
-	// If the image was deleted, set a blank string as the contents of the edit and hex views.
-	// The actual dropped image processing is handled by processUpdatedImageData:.
 	if ( [editImage image] == nil ) {
 		if (nil != sheetEditData) [sheetEditData release];
 		sheetEditData = [[NSData alloc] init];
@@ -923,6 +1026,9 @@
 #pragma mark -
 #pragma mark BIT Field Sheet
 
+/**
+ * Update all controls in the bitSheet
+ */
 - (void)updateBitSheet
 {
 	NSInteger i = 0;
@@ -969,6 +1075,9 @@
 
 }
 
+/**
+ * Close the bitSheet and abort the running modal session.
+ */
 - (IBAction)closeBitSheet:(id)sender
 {
 
@@ -983,6 +1092,9 @@
 
 }
 
+/**
+ * Selector of any operator in the bitSheet. The different buttons will be distinguished by the sender's tag.
+ */
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
 {
 
@@ -1033,11 +1145,18 @@
 	[self updateBitSheet];
 }
 
+/**
+ * Selector to set the focus to the first bit - but it doesn't work (⌘B).
+ */
 - (IBAction)bitSheetSelectBit0:(id)sender
 {
 	[[self window] makeFirstResponder:[self valueForKeyPath:@"bitSheetBitButton0"]];
 }
 
+/**
+ * Selector to set the to be edited data to NULL or not according to [sender state].
+ * If NULL processes several validations.
+ */
 - (IBAction)setToNull:(id)sender
 {
 
@@ -1062,6 +1181,9 @@
 
 }
 
+/**
+ * Selector if any bit NSButton was pressed to update any controls in bitSheet.
+ */
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender
 {
 
@@ -1073,7 +1195,7 @@
 #pragma mark Delegates
 
 /**
- * Performs interface validation for various controls.
+ * Performs interface validation for various controls. Esp. if user changed the value in bitSheetIntegerTextField or bitSheetHexTextField.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
@@ -1128,8 +1250,8 @@
 
 }
 
-/*
- Validate editTextView for max text length except for NULL value string
+/**
+ * Validate editTextView for maximum text length except for NULL as value string
  */
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
 {
@@ -1192,8 +1314,8 @@
 	return YES;
 }
 
-/*
- invoked when the user changes the string in the editSheet
+/**
+ * Invoked when the user changes the string in the editSheet
  */
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
@@ -1248,10 +1370,12 @@
 	allowUndo = YES;
 }
 
+/**
+ * Traps any editing in editTextView to allow undo grouping only if the text buffer was really changed.
+ * Inform the run loop delayed for larger undo groups.
+ */
 - (void)textDidChange:(NSNotification *)aNotification
 {
-	// Allow undo grouping only if the text buffer was really changed. Inform
-	// the run loop delayed for larger undo groups.
 	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.2];
 }
 

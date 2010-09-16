@@ -24,6 +24,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+/**
+ * @class SPExportFile SPExportFile.h
+ *
+ * @author Hans-Jörg Bibiko
+ *
+ * This class offers a sheet for editing different kind of data such as text, blobs (including images) as editSheet and bit fields as bitSheet. 
+ */
 @interface SPFieldEditorController : NSWindowController
 {
 	IBOutlet id editSheetProgressBar;
@@ -169,7 +176,7 @@
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
 	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow;
 
-- (void)setTextMaxLength:(unsigned long long)length;
+- (void)setTextMaxLength:(NSUInteger)length;
 - (void)setFieldType:(NSString*)aType;
 - (void)setFieldEncoding:(NSString*)aEncoding;
 - (void)setAllowNULL:(BOOL)allowNULL;
