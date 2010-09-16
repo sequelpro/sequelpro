@@ -739,6 +739,13 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		return;
 	}
 
+	// Check if ESCAPE is hit and use it to cancel row editing if supported
+	else if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)])
+	{
+		if ([[self delegate] cancelRowEditing]) return;
+	}
+	
+
 	[super keyDown:theEvent];
 }
 

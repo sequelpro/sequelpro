@@ -416,7 +416,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 	// Apply SSL if appropriate
 	if (useSSL) {
-		NSLog(@"sdfsdfsfds SET");
 		mysql_ssl_set(mConnection,
 						sslKeyFilePath ? [sslKeyFilePath UTF8String] : NULL,
 						sslCertificatePath ? [sslCertificatePath UTF8String] : NULL,

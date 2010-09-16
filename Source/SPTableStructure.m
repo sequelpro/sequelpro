@@ -609,6 +609,27 @@
 	}
 }
 
+/**
+ * Cancel active row editing, replacing the previous row if there was one
+ * and resetting state.
+ * Returns whether row editing was cancelled.
+ */
+- (BOOL)cancelRowEditing
+{
+	if (!isEditingRow) return NO;
+	if (isEditingNewRow) {
+		isEditingNewRow = NO;
+		[tableFields removeObjectAtIndex:currentlyEditingRow];
+	} else {
+		[tableFields replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
+	}
+	isEditingRow = NO;
+	[tableSourceView reloadData];
+	currentlyEditingRow = -1;
+	[tableSourceView makeFirstResponder];
+	return YES;
+}
+
 #pragma mark -
 #pragma mark Index sheet methods
 
@@ -1065,18 +1086,7 @@ closes the keySheet
 
 	// Discard changes and cancel editing
 	else {
-		if (!isEditingNewRow) {
-			[tableFields replaceObjectAtIndex:currentlyEditingRow
-								   withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
-			isEditingRow = NO;
-		}
-		else {
-			[tableFields removeObjectAtIndex:currentlyEditingRow];
-			isEditingRow = NO;
-			isEditingNewRow = NO;
-		}
-
-		currentlyEditingRow = -1;
+		[self cancelRowEditing];
 	}
 
 	[tableSourceView reloadData];
@@ -1706,18 +1716,7 @@ would result in a position change.
 	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
 	{
 		[control abortEditing];
-		if ( isEditingRow && !isEditingNewRow ) {
-			isEditingRow = NO;
-			[tableFields replaceObjectAtIndex:row withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
-		} else if ( isEditingNewRow ) {
-			isEditingRow = NO;
-			isEditingNewRow = NO;
-			[tableFields removeObjectAtIndex:row];
-			[tableSourceView reloadData];
-		}
-		currentlyEditingRow = -1;
-		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-		[tableSourceView makeFirstResponder];
+		[self cancelRowEditing];
 		return YES;
 	 } else {
 		 return NO;

@@ -89,7 +89,7 @@
 {
 
 	// Check if ENTER or RETURN is hit and edit the column.
-	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
+	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
 	{
 
 		if([[[[self delegate] class] description] isEqualToString:@"SPFieldMapperController"]) {
@@ -125,6 +125,12 @@
 			return;
 		}
 
+	}
+
+	// Check if ESCAPE is hit and use it to cancel row editing if supported
+	else if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)])
+	{
+		if ([[self delegate] cancelRowEditing]) return;
 	}
 	
 	[super keyDown:theEvent];

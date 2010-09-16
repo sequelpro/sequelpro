@@ -1623,14 +1623,10 @@
 
 	if ( [contextInfo isEqualToString:@"removeallrows"] ) {
 		if ( returnCode == NSAlertDefaultReturn ) {
-			//check if the user is currently editing a row
-			if (isEditingRow) {
-				//cancel the edit
-				isEditingRow = NO;
-				// in case the delete fails, make sure we at least stay in a somewhat consistent state
-				[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
-				currentlyEditingRow = -1;
-			}
+
+			// Check if the user is currently editing a row, and revert to ensure a somewhat
+			// consistent state if deletion fails.
+			if (isEditingRow) [self cancelRowEditing];
 
 			[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@", [selectedTable backtickQuotedString]]];
 			if ( ![mySQLConnection queryErrored] ) {
@@ -1668,31 +1664,17 @@
 				if ([selectedRows count]!=1) {
 					NSLog(@"Expected only one selected row, but found %d",[selectedRows count]);
 				}
-				// this code is pretty much taken from the escape key handler
+
+				// Always cancel the edit; if the user is currently editing a new row, we can just discard it;
+				// if editing an old row, restore it to the original to ensure consistent state if deletion fails.
+				// If editing a new row, deselect the row and return - as no table reload is required.
 				if ( isEditingNewRow ) {
-					// since the user is currently editing a new row, we don't actually have to delete any rows from the database
-					// we just have to remove the row from the view (and the store)
-					isEditingRow = NO;
-					isEditingNewRow = NO;
-					tableRowsCount--;
-					[tableValues removeRowAtIndex:currentlyEditingRow];
-					currentlyEditingRow = -1;
-					[self updateCountText];
-					[tableContentView reloadData];
-
-					//deselect the row
+					[self cancelRowEditing]; // Resets isEditingNewRow!
 					[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-
-					// we also don't have to reload the table, since no query went to the database
 					return;
 				} else {
-					//cancel the edit
-					isEditingRow = NO;
-					// in case the delete fails, make sure we at least stay in a somewhat consistent state
-					[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
-					currentlyEditingRow = -1;
+					[self cancelRowEditing];
 				}
-
 			}
 			[tableContentView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
@@ -2430,16 +2412,7 @@
 
 	// Discard changes selected
 	} else {
-		if ( !isEditingNewRow ) {
-			[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
-			isEditingRow = NO;
-		} else {
-			tableRowsCount--;
-			[tableValues removeRowAtIndex:currentlyEditingRow];
-			isEditingRow = NO;
-			isEditingNewRow = NO;
-		}
-		currentlyEditingRow = -1;
+		[self cancelRowEditing];
 	}
 	[tableContentView reloadData];
 }
@@ -2474,6 +2447,29 @@
 	// Saving failed - return failure.
 	isSavingRow = NO;
 	return NO;
+}
+
+/**
+ * Cancel active row editing, replacing the previous row if there was one
+ * and resetting state.
+ * Returns whether row editing was cancelled.
+ */
+- (BOOL)cancelRowEditing
+{
+	if (!isEditingRow) return NO;
+	if (isEditingNewRow) {
+		tableRowsCount--;
+		[tableValues removeRowAtIndex:currentlyEditingRow];
+		[self updateCountText];
+		isEditingNewRow = NO;
+	} else {
+		[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+	}
+	isEditingRow = NO;
+	currentlyEditingRow = -1;
+	[tableContentView reloadData];
+	[tableContentView makeFirstResponder];
+	return YES;
 }
 
 /**
@@ -3295,7 +3291,6 @@
 
 	}
 
-
 	// Catch editing events in the row and if the row isn't currently being edited,
 	// start an edit.  This allows edits including enum changes to save correctly.
 	if ( !isEditingRow ) {
@@ -3835,22 +3830,7 @@
 
 		// Abort editing
 		[control abortEditing];
-		if ( isEditingRow && !isEditingNewRow ) {
-			isEditingRow = NO;
-			[tableValues replaceRowAtIndex:row withRowContents:oldRow];
-		} else if ( isEditingNewRow ) {
-			isEditingRow = NO;
-			isEditingNewRow = NO;
-			tableRowsCount--;
-			[tableValues removeRowAtIndex:row];
-			[self updateCountText];
-			[tableContentView reloadData];
-		}
-		currentlyEditingRow = -1;
-
-		// Preserve the focus
-		[tableContentView makeFirstResponder];
-
+		[self cancelRowEditing];
 		return TRUE;
 	}
 
