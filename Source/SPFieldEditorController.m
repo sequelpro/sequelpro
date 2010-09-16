@@ -154,17 +154,34 @@
 
 	_isEditable = isEditable;
 
-	if(NO && [fieldType length] && [fieldType isEqualToString:@"BIT"]) {
+	// Set field label
+	NSMutableString *label = [NSMutableString string];
+	[label appendFormat:@"“%@”", fieldName];
+	if([fieldType length] || maxTextLength > 0 || [fieldEncoding length])
+		[label appendString:@" – "];
+	if([fieldType length])
+		[label appendString:fieldType];
+	if(maxTextLength > 0)
+		[label appendFormat:@"(%ld) ", maxTextLength];
+	if([fieldEncoding length])
+		[label appendString:fieldEncoding];
+
+	if([fieldType length] && [fieldType isEqualToString:@"BIT"]) {
 
 		sheetEditData = [(NSString*)data retain];
 
+		[bitSheetFieldName setStringValue:label];
+
+		// Init according bit check boxes
 		NSInteger i = 0;
-		NSInteger maxBit = (maxTextLength > 63) ? 63 : maxTextLength;
+		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
 		for(i=0; i<maxBit; i++) 
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] 
 				setState:([sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
 		for(i=maxBit; i<64; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
+
+		[self updateBitSheet];
 
 		usedSheet = bitSheet;
 
@@ -185,18 +202,6 @@
 		[editTextView setContinuousSpellCheckingEnabled:[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]];
 
 		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-
-		// Set field label
-		NSMutableString *label = [NSMutableString string];
-		[label appendFormat:@"“%@”", fieldName];
-		if([fieldType length] || maxTextLength > 0 || [fieldEncoding length])
-			[label appendString:@" – "];
-		if([fieldType length])
-			[label appendString:fieldType];
-		if(maxTextLength > 0)
-			[label appendFormat:@"(%ld) ", maxTextLength];
-		if([fieldEncoding length])
-			[label appendString:fieldEncoding];
 
 		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@%", NSLocalizedString(@"Field", @"Field"), label]];
 
@@ -902,19 +907,25 @@
 - (void)updateBitSheet
 {
 	NSInteger i = 0;
-	NSInteger maxBit = (maxTextLength > 63) ? 63 : maxTextLength;
+	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
 
 	NSMutableString *bitString = [NSMutableString string];
 	[bitString setString:@""];
+	for(i=0; i<maxBit; i++) [bitString appendString:@"0"];
+
+	NSUInteger intValue = 0;
+	NSUInteger bitValue = 0x1;
 
 	for(i=0; i<maxBit; i++) {
 		if([[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
-			[bitString appendString:@"1"];
-		} else {
-			[bitString appendString:@"0"];
+			intValue += bitValue;
+			[bitString replaceCharactersInRange:NSMakeRange(maxTextLength-i-1, 1) withString:@"1"];
 		}
+		bitValue <<= 1;
 	}
-	
+	[bitSheetIntegerTextField setStringValue:[[NSNumber numberWithUnsignedLongLong:intValue] stringValue]];
+	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
+	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
 	// free old data
 	if ( sheetEditData != nil ) {
 		[sheetEditData release];
@@ -943,16 +954,47 @@
 {
 
 	NSInteger i = 0;
-	NSInteger maxBit = (maxTextLength > 63) ? 63 : maxTextLength;
+	NSInteger aBit;
+	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
 
 	switch([sender tag]) {
-		case 0:
+		case 0: // all to 1
 		for(i=0; i<maxBit; i++) 
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOnState];
 		break;
-		case 1:
+		case 1: // all to 0
 		for(i=0; i<maxBit; i++) 
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+		break;
+		case 2: // negate
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:![[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state]];
+		break;
+		case 3: // shift left
+		for(i=maxBit-1; i>0; i--) {
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+		}
+		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:NSOffState];
+		break;
+		case 4: // shift right
+		for(i=0; i<maxBit-1; i++) {
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+		}
+		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:NSOffState];
+		break;
+		case 5: // rotate left
+		aBit = [[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] state];
+		for(i=maxBit-1; i>0; i--) {
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+		}
+		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:aBit];
+		break;
+		case 6: // rotate right
+		aBit = [[self valueForKeyPath:@"bitSheetBitButton0"] state];
+		for(i=0; i<maxBit-1; i++) {
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+		}
+		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:aBit];
 		break;
 	}
 	[self updateBitSheet];
@@ -960,28 +1002,74 @@
 
 - (IBAction)bitSheetSelectBit0:(id)sender
 {
-
+	[[self window] makeFirstResponder:[self valueForKeyPath:@"bitSheetBitButton0"]];
 }
 
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender
 {
 
-	NSMutableString *bitString = [NSMutableString string];
-	[bitString setString:sheetEditData];
-	[bitString replaceCharactersInRange:NSMakeRange(maxTextLength-[sender tag]-1,1) withString:([sender state] == NSOnState) ? @"1" : @"0"];
-
-	// free old data
-	if ( sheetEditData != nil ) {
-		[sheetEditData release];
-	}
-
-	// set edit data to text
-	sheetEditData = [[NSString stringWithString:bitString] retain];
+	[self updateBitSheet];
 
 }
 
 #pragma mark -
 #pragma mark Delegates
+
+/**
+ * Performs interface validation for various controls.
+ */
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+	id object = [notification object];
+
+	if (object == bitSheetIntegerTextField) {
+
+		NSInteger i = 0;
+		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+
+		NSUInteger intValue = strtoull([[bitSheetIntegerTextField stringValue] UTF8String], NULL, 0);
+
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+
+		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+
+		i = 0;
+		while( intValue && i < maxBit )
+		{
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
+			intValue >>= 1;
+			i++;
+		}
+		[self updateBitSheet];
+	}
+	else if (object == bitSheetHexTextField) {
+
+		NSInteger i = 0;
+		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+
+		NSUInteger intValue;
+
+		[[NSScanner scannerWithString:[bitSheetHexTextField stringValue]] scanHexLongLong: &intValue];
+
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+
+		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+
+		i = 0;
+		while( intValue && i < maxBit )
+		{
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
+			intValue >>= 1;
+			i++;
+		}
+		[self updateBitSheet];
+	}
+
+}
 
 /*
  Validate editTextView for max text length except for NULL value string
@@ -1053,26 +1141,28 @@
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
 
-	// Do nothing if user really didn't changed text (e.g. for font size changing return)
-	if(!editTextViewWasChanged && (editSheetWillBeInitialized
-		|| (([[[notification object] textStorage] editedRange].length == 0)
-		&& ([[[notification object] textStorage] changeInLength] == 0)))) {
-		// Inform the undo-grouping about the caret movement
-		selectionChanged = YES;
-		return;
+	if([notification object] == editTextView) {
+		// Do nothing if user really didn't changed text (e.g. for font size changing return)
+		if(!editTextViewWasChanged && (editSheetWillBeInitialized
+			|| (([[[notification object] textStorage] editedRange].length == 0)
+			&& ([[[notification object] textStorage] changeInLength] == 0)))) {
+			// Inform the undo-grouping about the caret movement
+			selectionChanged = YES;
+			return;
+		}
+
+		// clear the image and hex (since i doubt someone can "type" a gif)
+		[editImage setImage:nil];
+		[hexTextView setString:@""];
+
+		// free old data
+		if ( sheetEditData != nil ) {
+			[sheetEditData release];
+		}
+
+		// set edit data to text
+		sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 	}
-
-	// clear the image and hex (since i doubt someone can "type" a gif)
-	[editImage setImage:nil];
-	[hexTextView setString:@""];
-
-	// free old data
-	if ( sheetEditData != nil ) {
-		[sheetEditData release];
-	}
-
-	// set edit data to text
-	sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 
 }
 
