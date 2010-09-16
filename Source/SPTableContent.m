@@ -3522,12 +3522,16 @@
 			NSString *fieldType = nil;
 			NSUInteger *fieldLength = 0;
 			NSString *fieldEncoding = nil;
+			BOOL allowNULL = YES;
+
 			// Retrieve the column defintion
 			for(id c in cqColumnDefinition) {
 				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 					fieldType = [c objectForKey:@"type"];
 					if([c objectForKey:@"char_length"])
 						fieldLength = [[c objectForKey:@"char_length"] integerValue];
+					if([c objectForKey:@"null"])
+						allowNULL = (![[c objectForKey:@"null"] integerValue]);
 					if([c objectForKey:@"charset_name"] && ![[c objectForKey:@"charset_name"] isEqualToString:@"binary"])
 						fieldEncoding = [c objectForKey:@"charset_name"];
 					break;
@@ -3539,6 +3543,7 @@
 			[fieldEditor setTextMaxLength:fieldLength];
 			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
 			[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
+			[fieldEditor setAllowNULL:allowNULL];
 
 			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 			if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];

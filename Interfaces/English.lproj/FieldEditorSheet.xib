@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
 			<integer value="81"/>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2719,6 +2719,27 @@
 								<int key="NSPeriodicInterval">75</int>
 							</object>
 						</object>
+						<object class="NSButton" id="173283216">
+							<reference key="NSNextResponder" ref="539487490"/>
+							<int key="NSvFlags">268</int>
+							<string key="NSFrame">{{337, 66}, {39, 15}}</string>
+							<reference key="NSSuperview" ref="539487490"/>
+							<int key="NSTag">7</int>
+							<bool key="NSEnabled">YES</bool>
+							<object class="NSButtonCell" key="NSCell" id="566456802">
+								<int key="NSCellFlags">-2080244224</int>
+								<int key="NSCellFlags2">134479872</int>
+								<string key="NSContents">NULL</string>
+								<reference key="NSSupport" ref="22"/>
+								<reference key="NSControlView" ref="173283216"/>
+								<int key="NSButtonFlags">-1232846593</int>
+								<int key="NSButtonFlags2">268435619</int>
+								<string key="NSAlternateContents"/>
+								<string key="NSKeyEquivalent">N</string>
+								<int key="NSPeriodicDelay">400</int>
+								<int key="NSPeriodicInterval">75</int>
+							</object>
+						</object>
 						<object class="NSButton" id="557422946">
 							<reference key="NSNextResponder" ref="539487490"/>
 							<int key="NSvFlags">268</int>
@@ -3875,14 +3896,6 @@
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">nextKeyView</string>
-						<reference key="source" ref="817754450"/>
-						<reference key="destination" ref="824786228"/>
-					</object>
-					<int key="connectionID">396</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">nextKeyView</string>
 						<reference key="source" ref="818873877"/>
 						<reference key="destination" ref="912777084"/>
 					</object>
@@ -4848,6 +4861,38 @@
 					</object>
 					<int key="connectionID">519</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">bitSheetNULLButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="173283216"/>
+					</object>
+					<int key="connectionID">524</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="817754450"/>
+						<reference key="destination" ref="173283216"/>
+					</object>
+					<int key="connectionID">525</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nextKeyView</string>
+						<reference key="source" ref="173283216"/>
+						<reference key="destination" ref="824786228"/>
+					</object>
+					<int key="connectionID">526</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">setToNull:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="173283216"/>
+					</object>
+					<int key="connectionID">528</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5228,6 +5273,7 @@
 							<reference ref="317620485"/>
 							<reference ref="817754450"/>
 							<reference ref="557422946"/>
+							<reference ref="173283216"/>
 						</object>
 						<reference key="parent" ref="620871617"/>
 					</object>
@@ -6529,6 +6575,20 @@
 						<reference key="object" ref="910142244"/>
 						<reference key="parent" ref="557422946"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">520</int>
+						<reference key="object" ref="173283216"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="566456802"/>
+						</object>
+						<reference key="parent" ref="539487490"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">521</int>
+						<reference key="object" ref="566456802"/>
+						<reference key="parent" ref="173283216"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -6757,6 +6817,9 @@
 					<string>4.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
+					<string>520.IBAttributePlaceholdersKey</string>
+					<string>520.IBPluginDependency</string>
+					<string>521.IBPluginDependency</string>
 					<string>6.IBPluginDependency</string>
 					<string>6.ImportedFromIB2</string>
 					<string>7.CustomClassName</string>
@@ -7080,6 +7143,16 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="173283216"/>
+							<string key="toolTip">Set to NULL (⇧⌘N)</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>SPImageView</string>
@@ -7175,7 +7248,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">519</int>
+			<int key="maxID">528</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -7588,9 +7661,11 @@
 							<string>quickLookFormatButton:</string>
 							<string>saveEditSheet:</string>
 							<string>segmentControllerChanged:</string>
+							<string>setToNull:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -7617,6 +7692,7 @@
 							<string>quickLookFormatButton:</string>
 							<string>saveEditSheet:</string>
 							<string>segmentControllerChanged:</string>
+							<string>setToNull:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7658,6 +7734,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">segmentControllerChanged:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">setToNull:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>
@@ -7743,6 +7823,7 @@
 							<string>bitSheetFieldName</string>
 							<string>bitSheetHexTextField</string>
 							<string>bitSheetIntegerTextField</string>
+							<string>bitSheetNULLButton</string>
 							<string>bitSheetOctalTextField</string>
 							<string>bitSheetOkButton</string>
 							<string>editImage</string>
@@ -7840,6 +7921,7 @@
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
+							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
 							<string>id</string>
@@ -7940,6 +8022,7 @@
 							<string>bitSheetFieldName</string>
 							<string>bitSheetHexTextField</string>
 							<string>bitSheetIntegerTextField</string>
+							<string>bitSheetNULLButton</string>
 							<string>bitSheetOctalTextField</string>
 							<string>bitSheetOkButton</string>
 							<string>editImage</string>
@@ -8267,6 +8350,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">bitSheetIntegerTextField</string>
 								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetNULLButton</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">bitSheetOctalTextField</string>

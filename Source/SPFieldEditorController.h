@@ -48,6 +48,7 @@
 	IBOutlet NSTextField *bitSheetOctalTextField;
 	IBOutlet NSButton *bitSheetOkButton;
 	IBOutlet NSButton *bitSheetCloseButton;
+	IBOutlet NSButton *bitSheetNULLButton;
 	IBOutlet NSButton *bitSheetBitButton0;
 	IBOutlet NSButton *bitSheetBitButton1;
 	IBOutlet NSButton *bitSheetBitButton2;
@@ -125,6 +126,7 @@
 	BOOL editSheetWillBeInitialized;
 	BOOL _isBlob;
 	BOOL _isEditable;
+	BOOL _allowNULL;
 	NSInteger quickLookCloseMarker;
 	NSStringEncoding encoding;
 	NSString *fieldType;
@@ -161,6 +163,7 @@
 - (IBAction)bitSheetSelectBit0:(id)sender;
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender;
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender;
+- (IBAction)setToNull:(id)sender;
 - (void)updateBitSheet;
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
@@ -169,6 +172,7 @@
 - (void)setTextMaxLength:(unsigned long long)length;
 - (void)setFieldType:(NSString*)aType;
 - (void)setFieldEncoding:(NSString*)aEncoding;
+- (void)setAllowNULL:(BOOL)allowNULL;
 
 - (void)processPasteImageData;
 - (void)processUpdatedImageData:(NSData *)data;

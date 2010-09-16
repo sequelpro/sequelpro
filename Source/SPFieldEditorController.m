@@ -46,6 +46,7 @@
 		stringValue = nil;
 		_isEditable = NO;
 		_isBlob = NO;
+		_allowNULL = YES;
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -146,6 +147,11 @@
 	fieldEncoding = aEncoding;
 }
 
+- (void)setAllowNULL:(BOOL)allowNULL
+{
+	_allowNULL = allowNULL;
+}
+
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 {
@@ -157,12 +163,14 @@
 	// Set field label
 	NSMutableString *label = [NSMutableString string];
 	[label appendFormat:@"“%@”", fieldName];
-	if([fieldType length] || maxTextLength > 0 || [fieldEncoding length])
+	if([fieldType length] || maxTextLength > 0 || [fieldEncoding length] || !_allowNULL)
 		[label appendString:@" – "];
 	if([fieldType length])
 		[label appendString:fieldType];
 	if(maxTextLength > 0)
 		[label appendFormat:@"(%ld) ", maxTextLength];
+	if(!_allowNULL)
+		[label appendString:@"NOT NULL "];
 	if([fieldEncoding length])
 		[label appendString:fieldEncoding];
 
@@ -170,14 +178,25 @@
 
 		sheetEditData = [(NSString*)data retain];
 
+		[bitSheetNULLButton setEnabled:_allowNULL];
+
+		// Check for NULL
+		if([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
+			[bitSheetNULLButton setState:NSOnState];
+			[self setToNull:bitSheetNULLButton];
+		} else {
+			[bitSheetNULLButton setState:NSOffState];
+		}
+
 		[bitSheetFieldName setStringValue:label];
 
 		// Init according bit check boxes
 		NSInteger i = 0;
 		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
-		for(i=0; i<maxBit; i++) 
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] 
-				setState:([sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
+		if([bitSheetNULLButton state] == NSOffState)
+			for(i=0; i<maxBit; i++) 
+				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] 
+					setState:([sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
 		for(i=maxBit; i<64; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
 
@@ -909,6 +928,20 @@
 	NSInteger i = 0;
 	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
 
+
+	if([bitSheetNULLButton state] == NSOnState) {
+		if ( sheetEditData != nil ) {
+			[sheetEditData release];
+		}
+
+		NSString *nullString = [prefs objectForKey:SPNullValue];
+		sheetEditData = [[NSString stringWithString:nullString] retain];
+		[bitSheetIntegerTextField setStringValue:nullString];
+		[bitSheetHexTextField setStringValue:nullString];
+		[bitSheetOctalTextField setStringValue:nullString];
+		return;
+	}
+
 	NSMutableString *bitString = [NSMutableString string];
 	[bitString setString:@""];
 	for(i=0; i<maxBit; i++) [bitString appendString:@"0"];
@@ -1003,6 +1036,30 @@
 - (IBAction)bitSheetSelectBit0:(id)sender
 {
 	[[self window] makeFirstResponder:[self valueForKeyPath:@"bitSheetBitButton0"]];
+}
+
+- (IBAction)setToNull:(id)sender
+{
+
+	NSInteger i;
+	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+
+	if([sender state] == NSOnState) {
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
+		[bitSheetHexTextField setEnabled:NO];
+		[bitSheetIntegerTextField setEnabled:NO];
+		[bitSheetOctalTextField setEnabled:NO];
+	} else {
+		for(i=0; i<maxBit; i++) 
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:YES];
+		[bitSheetHexTextField setEnabled:YES];
+		[bitSheetIntegerTextField setEnabled:YES];
+		[bitSheetOctalTextField setEnabled:YES];
+	}
+
+	[self updateBitSheet];
+
 }
 
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender

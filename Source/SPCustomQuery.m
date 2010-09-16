@@ -2262,16 +2262,21 @@
 			NSString *fieldType = nil;
 			NSUInteger *fieldLength = 0;
 			NSString *fieldEncoding = nil;
+			BOOL allowNULL = YES;
+
 			// Retrieve the column defintion
 			fieldType = [columnDefinition objectForKey:@"type"];
 			if([columnDefinition objectForKey:@"char_length"])
 				fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
 			if([columnDefinition objectForKey:@"charset_name"] && ![[columnDefinition objectForKey:@"charset_name"] isEqualToString:@"binary"])
 				fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
+			if([columnDefinition objectForKey:@"null"])
+				allowNULL = (![[columnDefinition objectForKey:@"null"] integerValue]);
 
 			[fieldEditor setTextMaxLength:fieldLength];
 			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
 			[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
+			[fieldEditor setAllowNULL:allowNULL];
 
 			id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 			if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
