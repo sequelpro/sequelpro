@@ -23,7 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection;
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, BWAnchoredButtonBar;
+
+// Constants
+extern NSString *SPNewIndexIndexName;
+extern NSString *SPNewIndexIndexType;
+extern NSString *SPNewIndexIndexedColumns;
+extern NSString *SPNewIndexStorageType;
 
 @interface SPIndexesController : NSWindowController 
 {
@@ -41,24 +47,55 @@
 	// New index sheet
 	IBOutlet NSPopUpButton *indexTypePopUpButton;
 	IBOutlet NSTextField *indexNameTextField;
-	IBOutlet NSComboBox *indexedColumnsComboBox;
+	IBOutlet NSTableView *indexedColumnsTableView;
+	IBOutlet NSScrollView *indexedColumnsScrollView;
+	IBOutlet NSTextField *indexTypeLabel;
+	IBOutlet NSTextField *indexNameLabel;
+	IBOutlet NSTableColumn *indexSizeTableColumn;
+	IBOutlet NSButton *addIndexedColumnButton;
+	IBOutlet NSButton *removeIndexedColumnButton;
+	IBOutlet NSButton *confirmAddIndexButton;
+	IBOutlet BWAnchoredButtonBar *anchoredButtonBar;
 	
+	// Advanced options view
+	IBOutlet NSButton *indexAdvancedOptionsViewButton;
+	IBOutlet NSView *indexAdvancedOptionsView;
+	IBOutlet NSButton *indexAdvancedOptionsViewLabelButton;
+	IBOutlet NSPopUpButton *indexStorageTypePopUpButton;
+		
 	NSString *table;
 	
-	NSMutableArray *fields, *indexes;
+	NSMutableArray *fields, *indexes, *indexedFields, *supportsLength, *requiresLength;
 	
 	NSUserDefaults *prefs;
 	
 	MCPConnection *connection;
+	
+	BOOL showAdvancedView;
+	
+	NSInteger heightOffset;
+	NSUInteger windowMinWidth;
+	NSUInteger windowMinHeigth;
 }
 
+/**
+ * @property table The table currently being viewed
+ */
 @property (readwrite, retain) NSString *table;
+
+/**
+ * @property connection The MySQL connection to use
+ */
 @property (readwrite, assign) MCPConnection *connection;
 
 - (IBAction)addIndex:(id)sender;
 - (IBAction)removeIndex:(id)sender;
 - (IBAction)chooseIndexType:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+
+- (IBAction)addIndexedField:(id)sender;
+- (IBAction)removeIndexedField:(id)sender;
+- (IBAction)toggleAdvancedIndexOptionsView:(id)sender;
 
 - (void)setFields:(NSArray *)tableFields;
 - (void)setIndexes:(NSArray *)tableIndexes;

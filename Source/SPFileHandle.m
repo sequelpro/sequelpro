@@ -420,7 +420,7 @@
 		pthread_mutex_unlock(&bufferLock);
 
 		// Write out the data
-		long bufferLengthWrittenOut;
+		long bufferLengthWrittenOut = 0;
 				
 		if (useCompression) {
 			switch (compressionFormat) 

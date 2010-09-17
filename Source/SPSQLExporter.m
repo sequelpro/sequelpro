@@ -545,6 +545,8 @@
 	{
 		// Check for cancellation flag
 		if ([self isCancelled]) {
+			[errors release];
+			[sqlString release];
 			[pool release];
 			return;
 		}
