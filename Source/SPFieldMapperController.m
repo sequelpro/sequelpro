@@ -32,6 +32,8 @@
 #import "SPNotLoaded.h"
 #import "SPTextView.h"
 
+#define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
+
 @implementation SPFieldMapperController
 
 @synthesize sourcePath;
@@ -579,7 +581,7 @@
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:SP_NUMBER_OF_RECORDS_STRING, (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 
 	[self updateFieldMappingButtonCell];
 	[self updateFieldMappingOperatorOptions];
@@ -723,7 +725,7 @@
 
 	[fieldMapperTableView reloadData];
 
-	[recordCountLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld of %@%lu records", @"%ld of %@%lu records"), (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:SP_NUMBER_OF_RECORDS_STRING, (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 
 	// enable/disable buttons
 	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
@@ -880,7 +882,7 @@
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:@"%ld of %@%lu records", (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+	[recordCountLabel setStringValue:[NSString stringWithFormat:SP_NUMBER_OF_RECORDS_STRING, (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
 
 	[self updateFieldMappingButtonCell];
 	[self updateFieldMappingOperatorOptions];
