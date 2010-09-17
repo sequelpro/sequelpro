@@ -161,6 +161,9 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 		modalDelegate:self
 	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:) 
 		  contextInfo:nil];
+	
+	// Because there is only one indexed column initially, disable the remove button
+	[removeIndexedColumnButton setEnabled:NO];
 }
 
 /**
@@ -242,12 +245,19 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	[indexAdvancedOptionsView setHidden:YES];
 	[indexAdvancedOptionsViewButton setState:NSOffState];
 	
+	// Hide the size column
 	[indexSizeTableColumn setHidden:YES];
+
+	// Reset the indexed columns
+	[indexedFields removeAllObjects];
+	[indexedFields addObject:[[[fields objectAtIndex:0] copy] autorelease]];
 	
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:0];
 	
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
+	
+	[self _reloadIndexedColumnsTableData];
 }
 
 /**
