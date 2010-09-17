@@ -39,7 +39,7 @@
 #pragma mark -
 #pragma mark lex init
 
-/*
+/**
  * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
  */
 #import "SPEditorTokens.h"
@@ -100,7 +100,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize completionIsOpen;
 @synthesize completionWasReinvokedAutomatically;
 
-/*
+/**
  * Sort function (mainly used to sort the words in the textView)
  */
 NSInteger alphabeticSort(id string1, id string2, void *reverse)
@@ -257,7 +257,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 }
 
-/*
+/**
  * Return an array of NSDictionary containing the sorted strings representing
  * the set of unique words, SQL keywords, user-defined funcs/procs, tables etc.
  * NSDic key "display" := the displayed and to be inserted word
@@ -814,7 +814,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 
-/*
+/**
  * Returns the associated line number for a character position inside of the SPTextView
  */
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex
@@ -822,7 +822,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
 }
 
-/*
+/**
  * Checks if the char after the current caret position/selection matches a supplied attribute
  */
 - (BOOL) isNextCharMarkedBy:(id)attribute withValue:(id)aValue
@@ -839,7 +839,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return NO;
 }
 
-/*
+/**
  * Checks if the caret adjoins to an alphanumeric char  |word or word| or wo|rd
  * Exception for word| and char is a “(” to allow e.g. auto-pairing () for functions
  */
@@ -874,7 +874,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return (leftIsAlphanum ^ rightIsAlphanum || leftIsAlphanum && rightIsAlphanum);
 }
 
-/*
+/**
  * Checks if the caret is wrapped by auto-paired characters.
  * e.g. [| := caret]: "|" 
  */
@@ -955,7 +955,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.01];
 }
 
-/*
+/**
  * Search for the current selection or current word in the MySQL Help 
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
@@ -963,7 +963,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[customQueryInstance showHelpForCurrentWord:self];
 }
 
-/*
+/**
  * If the textview has a selection, wrap it with the supplied prefix and suffix strings;
  * return whether or not any wrap was performed.
  */
@@ -992,7 +992,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return YES;
 }
 
-/*
+/**
  * Copy selected text chunk as RTF to preserve syntax highlighting
  */
 - (void) copyAsRTF
@@ -1016,7 +1016,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[customQueryInstance selectCurrentQuery];
 }
 
-/*
+/**
  * Selects the line lineNumber relatively to a selection (if given) and scrolls to it
  */
 - (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines
@@ -1053,7 +1053,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self scrollRangeToVisible:selRange];
 }
 
-/*
+/**
  * Shifts the selection, if any, rightwards by indenting any selected lines with one tab.
  * If the caret is within a line, the selection is not changed after the index; if the selection
  * has length, all lines crossed by the length are indented and fully selected.
@@ -1117,7 +1117,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 
-/*
+/**
  * Shifts the selection, if any, leftwards by un-indenting any selected lines by one tab if possible.
  * If the caret is within a line, the selection is not changed after the undent; if the selection has
  * length, all lines crossed by the length are un-indented and fully selected.
@@ -1195,7 +1195,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark snippet handler
 
-/*
+/**
  * Reset snippet controller variables to end a snippet session
  */
 - (void)endSnippetSession
@@ -1207,7 +1207,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	snippetWasJustInserted = NO;
 }
 
-/*
+/**
  * Shows pre-defined completion list
  */
 - (void)showCompletionListFor:(NSString*)kind atRange:(NSRange)aRange fuzzySearch:(BOOL)fuzzySearchMode
@@ -1371,7 +1371,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Update all mirrored snippets and adjust any involved instances
  */
 - (void)processMirroredSnippets
@@ -1440,7 +1440,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 
-/*
+/**
  * Selects the current snippet defined by “currentSnippetIndex”
  */
 - (void)selectCurrentSnippet
@@ -1538,7 +1538,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 }
 
-/*
+/**
  * Inserts a chosen query favorite and initialze a snippet session if user defined any
  */
 - (void)insertAsSnippet:(NSString*)theSnippet atRange:(NSRange)targetRange
@@ -1805,7 +1805,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Run 'command' as BASH command(s) and return the result.
  * This task can be interrupted by pressing ⌘.
  */
@@ -1891,7 +1891,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Checks whether the current caret position in inside of a defined snippet range
  */
 - (BOOL)checkForCaretInsideSnippet
@@ -1961,7 +1961,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Return YES if user interacts with snippets (is needed mainly for suppressing
  * the highlighting of the current query)
  */
@@ -1973,7 +1973,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark event management
 
-/*
+/**
  * Used for autoHelp update if the user changed the caret position by using the mouse.
  */
 - (void) mouseDown:(NSEvent *)theEvent
@@ -1999,8 +1999,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 }
 
-/*
- * Handle some keyDown events in order to provide autopairing functionality (if enabled).
+/**
+ * Handle some keyDown events and perform autopairing functionality (if enabled).
  */
 - (void) keyDown:(NSEvent *)theEvent
 {
@@ -2297,7 +2297,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 }
 
-/*
+/**
  * The following moveWord... routines are needed to be able to recognize a db schema à la
  * db.table.field as ONE word while navigating and selecting by the keyboard
  */
@@ -2346,7 +2346,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Handle special commands - see NSResponder.h for a sample list.
  * This subclass currently handles insertNewline: in order to preserve indentation
  * when adding newlines.
@@ -2395,7 +2395,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[super doCommandBySelector:aSelector];
 }
 
-/*
+/**
  * Set whether this text view should apply the indentation on the current line to new lines.
  */
 - (void)setAutoindent:(BOOL)enableAutoindent
@@ -2403,7 +2403,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autoindentEnabled = enableAutoindent;
 }
 
-/*
+/**
  * Retrieve whether this text view applies indentation on the current line to new lines.
  */
 - (BOOL)autoindent
@@ -2411,7 +2411,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return autoindentEnabled;
 }
 
-/*
+/**
  * Set whether this text view should not autoindent when the Enter key is used, as opposed
  * to the return key.  Also catches function-return.
  */
@@ -2420,7 +2420,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autoindentIgnoresEnter = enableAutoindentIgnoresEnter;
 }
 
-/*
+/**
  * Retrieve whether this text view should not autoindent when the Enter key is used.
  */
 - (BOOL)autoindentIgnoresEnter
@@ -2428,7 +2428,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return autoindentIgnoresEnter;
 }
 
-/*
+/**
  * Set whether this text view should automatically create the matching closing char for ", ', ` and ( chars.
  */
 - (void)setAutopair:(BOOL)enableAutopair
@@ -2436,7 +2436,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autopairEnabled = enableAutopair;
 }
 
-/*
+/**
  * Retrieve whether this text view automatically creates the matching closing char for ", ', ` and ( chars.
  */
 - (BOOL)autopair
@@ -2444,7 +2444,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return autopairEnabled;
 }
 
-/*
+/**
  * Set whether MySQL Help should be automatically invoked while typing.
  */
 - (void)setAutohelp:(BOOL)enableAutohelp
@@ -2452,7 +2452,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autohelpEnabled = enableAutohelp;
 }
 
-/*
+/**
  * Retrieve whether MySQL Help should be automatically invoked while typing.
  */
 - (BOOL)autohelp
@@ -2460,7 +2460,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return autohelpEnabled;
 }
 
-/*
+/**
  * Set whether SQL keywords should be automatically uppercased.
  */
 - (void)setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords
@@ -2468,7 +2468,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	autouppercaseKeywordsEnabled = enableAutouppercaseKeywords;
 }
 
-/*
+/**
  * Retrieve whether SQL keywords should be automatically uppercased.
  */
 - (BOOL)autouppercaseKeywords
@@ -2477,7 +2477,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 
-/*
+/**
  * If enabled it shows the MySQL Help for the current word (not inside quotes) or for the selection
  * after an adjustable delay if the textView is idle, i.e. no user interaction.
  */
@@ -2500,7 +2500,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Syntax Highlighting.
  *  
  * (The main bottleneck is the [NSTextStorage addAttribute:value:range:] method - the parsing itself is really fast!)
@@ -2878,7 +2878,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark context menu
 
-/*
+/**
  * Add a menu item to context menu for looking up mysql documentation.
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event 
@@ -2937,7 +2937,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
     return menu;
 }
 
-/*
+/**
+ * Menu validation
  * Disable the search in the MySQL help function when getRangeForCurrentWord returns zero length. 
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
@@ -2970,7 +2971,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark delegates
 
-/*
+/**
  * Scrollview delegate after the textView's view port was changed.
  * Manily used to update the syntax highlighting for a large text size.
  */
@@ -2989,7 +2990,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  *  Performs syntax highlighting, re-init autohelp, and re-calculation of snippets after a text change
  */
 - (void)textStorageDidProcessEditing:(NSNotification *)notification
@@ -3096,7 +3097,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Set font panel's valid modes
  */
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
@@ -3107,11 +3108,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark -
 #pragma mark drag&drop
 
-///////////////////////////
-// Dragging methods
-///////////////////////////
-
-/*
+/**
  * Insert the content of a dragged file path or if ⌘ is pressed
  * while dragging insert the file path
  */
@@ -3224,7 +3221,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	return [super performDragOperation:sender];
 }
 
-/*
+/**
  * Confirmation sheetDidEnd method
  */
 - (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
@@ -3235,7 +3232,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[self insertFileContentOfFile:[sheet helpAnchor]];
 
 }
-/*
+/**
  * Convert a NSPoint, usually the mouse location, to
  * a character index of the text view.
  */
@@ -3259,7 +3256,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 }
 
-/*
+/**
  * Insert content of a plain text file for a given path.
  * In addition it tries to figure out the file's text encoding heuristically.
  */

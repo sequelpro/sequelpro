@@ -47,7 +47,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 }
 
 
-/*
+/**
  * Returns the shared query console.
  */
 + (SPNavigatorController *)sharedNavigatorController
@@ -110,7 +110,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[functionIcon release];
 	[fieldIcon release];
 }
-/*
+/**
  * The following base protocol methods are implemented to ensure the singleton status of this class.
  */
 
@@ -1018,7 +1018,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		return NO;
 	return YES;
 }
-/*
+/**
  * Double-click on item selects the chosen path in active connection window
  */
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
