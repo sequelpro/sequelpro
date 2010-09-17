@@ -320,7 +320,7 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 {
 	[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
 	
-	if ([[tableColumn identifier] isEqualToString:@"name"]) {
+	if ([[tableColumn identifier] isEqualToString:@"name"] && [object isKindOfClass:[NSDictionary class]]) {
 		// If the field type is foud within the requires length array then a length prefix is required so 
 		// display the size column.
 		if ([requiresLength containsObject:[[object objectForKey:@"type"] uppercaseString]]) [indexSizeTableColumn setHidden:NO];
@@ -560,7 +560,9 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 		if ([requiresLength containsObject:[[field objectForKey:@"type"] uppercaseString]]) c++;
 	}
 	
-	[indexSizeTableColumn setHidden:(!c)];
+	// Only toggle the sizes column if the advanced view is hidden
+	if (!showAdvancedView) [indexSizeTableColumn setHidden:(!c)];
+	
 	[confirmAddIndexButton setEnabled:(!c)];
 	
 	[indexedColumnsTableView reloadData];
