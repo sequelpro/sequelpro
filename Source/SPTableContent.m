@@ -1153,6 +1153,7 @@
 	NSString *taskString;
 
 	if ([tableDocumentInstance isWorking]) return;
+	if (![self saveRowOnDeselect]) return;
 	[self setPaginationViewVisibility:FALSE];
 
 	// Select the correct pagination value
@@ -1275,6 +1276,7 @@
  */
 - (IBAction) navigatePaginationFromButton:(id)sender
 {
+	if (![self saveRowOnDeselect]) return;
 	if (sender == paginationPreviousButton) {
 		if (contentPage <= 1) return;
 		[paginationPageField setIntegerValue:(contentPage - 1)];
