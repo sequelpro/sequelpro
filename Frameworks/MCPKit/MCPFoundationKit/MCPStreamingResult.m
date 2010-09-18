@@ -46,7 +46,7 @@
 
 @interface MCPStreamingResult (PrivateAPI)
 
-const char *_bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
+void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 
 - (void) _downloadAllData;
 - (void) _freeAllDataWhenDone;
@@ -430,7 +430,7 @@ const char *_bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
  * Provides a binary representation of the supplied chars (n) in the supplied buffer (buf). The resulting
  * binary representation will be zero-padded according to the supplied field length (len).
  */
-const char *_bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf)
+void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf)
 {
 
 	int i = 0;

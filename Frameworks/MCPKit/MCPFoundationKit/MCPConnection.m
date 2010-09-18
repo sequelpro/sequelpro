@@ -1612,7 +1612,7 @@ void performThreadedKeepAlive(void *ptr)
  * proceed and loop depending on the status, not returning control until either the query has been executed
  * and the result can be returned or the connection and document have been closed.
  */
-- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding) encoding streamingResult:(NSInteger) streamResultType
+- (id)queryString:(NSString *) query usingEncoding:(NSStringEncoding)aStringEncoding streamingResult:(NSInteger) streamResultType
 {
 	MCPResult		*theResult = nil;
 	double			queryStartTime, queryExecutionTime;
@@ -1659,7 +1659,7 @@ void performThreadedKeepAlive(void *ptr)
 	}
 
 	// Derive the query string in the correct encoding
-	NSData *d = NSStringDataUsingLossyEncoding(query, encoding, 1);
+	NSData *d = NSStringDataUsingLossyEncoding(query, aStringEncoding, 1);
 	theCQuery = [d bytes];
 	// Set the length of the current query
 	theCQueryLength = [d length];
@@ -3091,7 +3091,7 @@ void performThreadedKeepAlive(void *ptr)
  * For internal use only. Transforms a NSString to a C type string (ending with \0).
  * Lossy conversions are enabled.
  */
-- (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)encoding
+- (const char *)cStringFromString:(NSString *)theString usingEncoding:(NSStringEncoding)aStringEncoding
 {
 	NSMutableData *theData;
 	
@@ -3099,7 +3099,7 @@ void performThreadedKeepAlive(void *ptr)
 		return (const char *)NULL;
 	}
 	
-	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:encoding allowLossyConversion:YES]];
+	theData = [NSMutableData dataWithData:[theString dataUsingEncoding:aStringEncoding allowLossyConversion:YES]];
 	[theData increaseLengthBy:1];
 	
 	return (const char *)[theData bytes];
@@ -3128,7 +3128,7 @@ void performThreadedKeepAlive(void *ptr)
 /**
  * Returns a NSString from a C style string.
  */
-- (NSString *)stringWithCString:(const char *)theCString usingEncoding:(NSStringEncoding)encoding
+- (NSString *)stringWithCString:(const char *)theCString usingEncoding:(NSStringEncoding)aStringEncoding
 {
 	NSData	 *theData;
 	NSString *theString;
@@ -3136,7 +3136,7 @@ void performThreadedKeepAlive(void *ptr)
 	if (theCString == NULL) return @"";
 	
 	theData = [NSData dataWithBytes:theCString length:(strlen(theCString))];
-	theString = [[NSString alloc] initWithData:theData encoding:encoding];
+	theString = [[NSString alloc] initWithData:theData encoding:aStringEncoding];
 	
 	if (theString) {
 		[theString autorelease];

@@ -51,6 +51,11 @@
 /**
  *
  */
+- (void)showErrorWithTitle:(NSString *)error message:(NSString *)connection;
+
+/**
+ *
+ */
 - (NSString *)keychainPasswordForConnection:(id)connection;
 
 /**
@@ -145,7 +150,7 @@
 	NSString *sslCACertificatePath;
 
 	NSString *encoding, *previousEncoding;
-	NSStringEncoding *stringEncoding;
+	NSStringEncoding stringEncoding;
 	BOOL encodingUsesLatin1Transport, previousEncodingUsesLatin1Transport;
 
 	NSInteger currentProxyState;
@@ -212,7 +217,7 @@
 // Connection details
 - (BOOL)setPort:(NSInteger)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
-- (BOOL) setSSL:(BOOL)shouldUseSSL usingKeyFilePath:(NSString *)keyFilePath certificatePath:(NSString *)certificatePath certificateAuthorityCertificatePath:(NSString *)caCertificatePath;
+- (void) setSSL:(BOOL)shouldUseSSL usingKeyFilePath:(NSString *)keyFilePath certificatePath:(NSString *)certificatePath certificateAuthorityCertificatePath:(NSString *)caCertificatePath;
 
 // Proxy
 - (BOOL)setConnectionProxy:(id <MCPConnectionProxy>)proxy;
