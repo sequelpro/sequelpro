@@ -629,7 +629,7 @@
 	isEditingRow = NO;
 	[tableSourceView reloadData];
 	currentlyEditingRow = -1;
-	[tableSourceView makeFirstResponder];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 	return YES;
 }
 
@@ -1710,7 +1710,7 @@ would result in a position change.
 		[[control window] makeFirstResponder:control];
 		[self addRowToDB];
 		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-		[tableSourceView makeFirstResponder];
+		[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 		return YES;
 	
 	}
@@ -1913,7 +1913,7 @@ would result in a position change.
 	[tableDocumentInstance endTask];
 
 	// Preserve focus on table for keyboard navigation
-	[tableSourceView makeFirstResponder];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 
 	[pool drain];
 }

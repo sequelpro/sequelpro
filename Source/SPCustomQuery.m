@@ -2296,7 +2296,7 @@
 			if ( editData ) [editData release];
 
 			// Preserve focus and restore selection indexes if appropriate
-			[customQueryView makeFirstResponder];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
 			if (selectionIndexToRestore)
 				[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 
@@ -3607,7 +3607,7 @@
 			[control abortEditing];
 
 			// Preserve the focus
-			[customQueryView makeFirstResponder];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
 
 			return TRUE;
 		}

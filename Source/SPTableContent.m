@@ -2468,7 +2468,7 @@
 	isEditingRow = NO;
 	currentlyEditingRow = -1;
 	[tableContentView reloadData];
-	[tableContentView makeFirstResponder];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
 	return YES;
 }
 
@@ -3585,7 +3585,7 @@
 
 			if (editData) [editData release];
 
-			[tableContentView makeFirstResponder];
+			[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
 
 			return NO;
 		}

@@ -1820,7 +1820,7 @@
 
 		// Save the current line if it's the last field in the table
 		if ( [fieldMapperTableView numberOfColumns] - 1 == column) {
-			[fieldMapperTableView makeFirstResponder];
+			[[fieldMapperTableView window] makeFirstResponder:fieldMapperTableView];
 		} else {
 			// Select the next field for editing
 			[fieldMapperTableView editColumn:column+1 row:row withEvent:nil select:YES];
@@ -1836,7 +1836,7 @@
 
 		// Save the current line if it's the last field in the table
 		if ( column < 1 ) {
-			[fieldMapperTableView makeFirstResponder];
+			[[fieldMapperTableView window] makeFirstResponder:fieldMapperTableView];
 		} else {
 			// Select the previous field for editing
 			[fieldMapperTableView editColumn:column-1 row:row withEvent:nil select:YES];
@@ -1908,7 +1908,7 @@
 		[control abortEditing];
 
 		// Preserve the focus
-		[fieldMapperTableView makeFirstResponder];
+		[[fieldMapperTableView window] makeFirstResponder:fieldMapperTableView];
 
 		return TRUE;
 	}
