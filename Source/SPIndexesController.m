@@ -146,6 +146,12 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 		}
 	}
 	
+	// Reset the indexed columns
+	[indexedFields removeAllObjects];
+	[indexedFields addObject:[[[fields objectAtIndex:0] copy] autorelease]];
+	
+	[indexedColumnsTableView reloadData];
+	
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 	
 	// Index storage types (HASH & BTREE) are only available some storage engines
@@ -247,17 +253,11 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	
 	// Hide the size column
 	[indexSizeTableColumn setHidden:YES];
-
-	// Reset the indexed columns
-	[indexedFields removeAllObjects];
-	[indexedFields addObject:[[[fields objectAtIndex:0] copy] autorelease]];
 	
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:0];
 	
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
-	[[sender window] orderOut:self];
-	
-	[self _reloadIndexedColumnsTableData];
+	[[sender window] orderOut:self];	
 }
 
 /**

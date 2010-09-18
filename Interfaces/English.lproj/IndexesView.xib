@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="55"/>
+			<integer value="4"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -681,7 +681,7 @@
 						<object class="NSButton" id="587008277">
 							<reference key="NSNextResponder" ref="762677578"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{132, 13}, {100, 28}}</string>
+							<string key="NSFrame">{{152, 13}, {100, 28}}</string>
 							<reference key="NSSuperview" ref="762677578"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
@@ -707,7 +707,7 @@
 						<object class="NSButton" id="948801180">
 							<reference key="NSNextResponder" ref="762677578"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{34, 13}, {100, 28}}</string>
+							<string key="NSFrame">{{54, 13}, {100, 28}}</string>
 							<reference key="NSSuperview" ref="762677578"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="758521208">
@@ -1624,9 +1624,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{695, 411}, {267, 274}}</string>
+					<string>{{512, 335}, {267, 274}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{695, 411}, {267, 274}}</string>
+					<string>{{512, 335}, {267, 274}}</string>
 					<integer value="1"/>
 					<integer value="0"/>
 					<integer value="1"/>
