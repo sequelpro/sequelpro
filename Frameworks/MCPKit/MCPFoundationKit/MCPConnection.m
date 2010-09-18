@@ -2022,13 +2022,13 @@ void performThreadedKeepAlive(void *ptr)
     // We check if the connection actually was busy. If it wasn't busy,
     // it means we probably tried to unlock the connection twice. This is
     // potentially dangerous, therefore we log this to the console
-    if ([connectionLock condition]!=MCPConnectionBusy) {
+    if ([connectionLock condition] != MCPConnectionBusy) {
         NSLog(@"Tried to unlock the connection, but it wasn't locked.");
     }
     
     // Since we connected with CLIENT_MULTI_RESULT, we must make sure there are nor more results!
     // This is still a bit of a dirty hack
-    if (mysql_more_results(mConnection)) {
+    if (mConnected && mConnection && mConnection->net.vio && mConnection->net.buff && mysql_more_results(mConnection)) {
         NSLog(@"Discarding unretrieved results. This is currently normal when using CALL.");
         [self flushMultiResults];
     }
