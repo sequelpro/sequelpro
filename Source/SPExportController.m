@@ -35,10 +35,13 @@
 #import "SPConstants.h"
 #import "SPGrowlController.h"
 #import "SPExportFile.h"
+#import "SPAlertSheets.h"
 
 @interface SPExportController (PrivateAPI)
 
 - (void)_switchTab;
+- (void)_checkForDatabaseChanges;
+- (NSUInteger)_refreshDatabaseTableList;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -373,51 +376,7 @@
  */
 - (IBAction)refreshTableList:(id)sender
 {		
-	[tables removeAllObjects];
-	
-	// For all modes, retrieve table and view names
-	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
-		
-	for (id itemName in tablesAndViews) {
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   itemName, 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithInt:SPTableTypeTable], 
-						   nil]];
-	}
-		
-	// For SQL only, add procedures and functions
-	if (exportType == SPSQLExport) {
-		NSArray *procedures = [tablesListInstance allProcedureNames];
-		
-		for (id procName in procedures) 
-		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   procName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithInt:SPTableTypeProc], 
-							   nil]];
-		}
-		
-		NSArray *functions = [tablesListInstance allFunctionNames];
-		
-		for (id funcName in functions) 
-		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   funcName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithInt:SPTableTypeFunc], 
-							   nil]];
-		}	
-	}
-	
-	[exportTableList reloadData];
+	[self _refreshDatabaseTableList];
 }
 
 /**
@@ -603,8 +562,28 @@
 	// Perform the export
 	if (returnCode == NSOKButton) {
 		
-		// Initialize the export after half a second to give the export sheet a chance to close 
+		// If we are about to perform a table export, cache the current number of tables within the list, 
+		// refresh the list and then compare the numbers to accommodate situations where new tables are
+		// added by external applications.
+		if ((exportSource == SPTableExport) && (exportType != SPDotExport)) {
+			
+			// Give the export sheet a chance to close
+			[self performSelector:@selector(_checkForDatabaseChanges) withObject:nil afterDelay:0.5];
+		}
+	}
+}
+
+- (void)tableListChangedAlertDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Perform the export ignoring the new tables
+	if (returnCode == NSOKButton) {
+		
+		// Initialize the export after a slight delay to give the alert a chance to close 
 		[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
+	}
+	else {
+		// Cancel the export and redisplay the export dialog after a short delay
+		[self performSelector:@selector(export:) withObject:self afterDelay:0.5];		
 	}
 }
 
@@ -717,6 +696,87 @@
 	[self updateAvailableExportFilenameTokens];
 	
 	if (!showCustomFilenameView) [self updateDisplayedExportFilename];
+}
+
+/**
+ * Checks for changes in the current database, by refreshing the table list and warning the user if required.
+ */
+- (void)_checkForDatabaseChanges
+{
+	NSUInteger i = [tables count];
+	
+	[tablesListInstance updateTables:self];
+		
+	NSUInteger j = [self _refreshDatabaseTableList];
+	
+	if (j > i) {
+		NSUInteger diff = (j - i);
+		
+		SPBeginAlertSheet(NSLocalizedString(@"The list of tables has changed", @"table list change alert message"), 
+						  NSLocalizedString(@"Continue", @"continue button"), 
+						  NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, 
+						  @selector(tableListChangedAlertDidEnd:returnCode:contextInfo:), nil, 
+						  [NSString stringWithFormat:NSLocalizedString(@"The number of tables in this database has changed since the export dialog was opened. There are now %d additional table(s), most likely added by an external application.\n\nHow would you like to proceed?", @"table list change alert informative message"), diff]);
+	}
+	else {
+		[self initializeExportUsingSelectedOptions];
+	}
+}
+
+/**
+ * Refreshes the database table list.
+ *
+ * @return An unsigned integer indicating the number of items within the list.
+ */
+- (NSUInteger)_refreshDatabaseTableList
+{	
+	[tables removeAllObjects];
+	
+	// For all modes, retrieve table and view names
+	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
+	
+	for (id itemName in tablesAndViews) {
+		[tables addObject:[NSMutableArray arrayWithObjects:
+						   itemName, 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithInt:SPTableTypeTable], 
+						   nil]];
+	}
+	
+	// For SQL only, add procedures and functions
+	if (exportType == SPSQLExport) {
+		NSArray *procedures = [tablesListInstance allProcedureNames];
+		
+		for (id procName in procedures) 
+		{
+			[tables addObject:[NSMutableArray arrayWithObjects:
+							   procName,
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithInt:SPTableTypeProc], 
+							   nil]];
+		}
+		
+		NSArray *functions = [tablesListInstance allFunctionNames];
+		
+		for (id funcName in functions) 
+		{
+			[tables addObject:[NSMutableArray arrayWithObjects:
+							   funcName,
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithInt:SPTableTypeFunc], 
+							   nil]];
+		}	
+	}
+	
+	[exportTableList reloadData];
+	
+	return [tables count];
 }
 
 /**
