@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10F569</string>
-		<string key="IBDocument.InterfaceBuilderVersion">762</string>
+		<string key="IBDocument.InterfaceBuilderVersion">788</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,13 +15,13 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>762</string>
+				<string>788</string>
 				<string>1.2.5</string>
 			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="280"/>
+			<integer value="14"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1098,22 +1098,6 @@
 						</object>
 					</object>
 					<int key="connectionID">306</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: selection.MenuLabel</string>
-						<reference key="source" ref="247897226"/>
-						<reference key="destination" ref="863945469"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="247897226"/>
-							<reference key="NSDestination" ref="863945469"/>
-							<string key="NSLabel">value: selection.MenuLabel</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">selection.MenuLabel</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">308</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -2278,6 +2262,13 @@
 						<string key="NS.key.0">toggleCollapse:</string>
 						<string key="NS.object.0">id</string>
 					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">toggleCollapse:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">toggleCollapse:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/TablesList.h</string>
@@ -2320,6 +2311,80 @@
 							<string>id</string>
 						</object>
 					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>doDecomposedStringWithCanonicalMapping:</string>
+							<string>doDecomposedStringWithCompatibilityMapping:</string>
+							<string>doPrecomposedStringWithCanonicalMapping:</string>
+							<string>doPrecomposedStringWithCompatibilityMapping:</string>
+							<string>doRemoveDiacritics:</string>
+							<string>doSelectionLowerCase:</string>
+							<string>doSelectionTitleCase:</string>
+							<string>doSelectionUpperCase:</string>
+							<string>doTranspose:</string>
+							<string>insertNULLvalue:</string>
+							<string>selectCurrentLine:</string>
+							<string>selectCurrentWord:</string>
+							<string>selectEnclosingBrackets:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doRemoveDiacritics:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doSelectionLowerCase:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doSelectionTitleCase:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doSelectionUpperCase:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">doTranspose:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">insertNULLvalue:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">selectCurrentLine:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">selectCurrentWord:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">selectEnclosingBrackets:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+						</object>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPTextViewAdditions.h</string>
@@ -2358,6 +2423,50 @@
 							<string>id</string>
 						</object>
 					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addContentFilter:</string>
+							<string>closeContentFilterManagerSheet:</string>
+							<string>duplicateContentFilter:</string>
+							<string>exportContentFilter:</string>
+							<string>importContentFilterByAdding:</string>
+							<string>insertPlaceholder:</string>
+							<string>removeContentFilter:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">addContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">closeContentFilterManagerSheet:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">duplicateContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">exportContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">importContentFilterByAdding:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">insertPlaceholder:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">removeContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+						</object>
+					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -2393,6 +2502,80 @@
 							<string>BWAnchoredButtonBar</string>
 						</object>
 					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>contentFilterArrayController</string>
+							<string>contentFilterConjunctionLabel</string>
+							<string>contentFilterConjunctionTextField</string>
+							<string>contentFilterNameTextField</string>
+							<string>contentFilterTableView</string>
+							<string>contentFilterTextView</string>
+							<string>encodingPopUp</string>
+							<string>insertPlaceholderButton</string>
+							<string>numberOfArgsLabel</string>
+							<string>removeButton</string>
+							<string>resultingClauseContentLabel</string>
+							<string>resultingClauseLabel</string>
+							<string>splitViewButtonBar</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterArrayController</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterConjunctionLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterConjunctionTextField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterNameTextField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterTableView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterTextView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">encodingPopUp</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">insertPlaceholderButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">numberOfArgsLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">removeButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">resultingClauseContentLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">resultingClauseLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">splitViewButtonBar</string>
+								<string key="candidateClassName">BWAnchoredButtonBar</string>
+							</object>
+						</object>
+					</object>
 					<reference key="sourceIdentifier" ref="559035321"/>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2410,9 +2593,23 @@
 						<string key="NS.key.0">showMySQLHelpForCurrentWord:</string>
 						<string key="NS.object.0">id</string>
 					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">showMySQLHelpForCurrentWord:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">showMySQLHelpForCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">scrollView</string>
 						<string key="NS.object.0">NSScrollView</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">scrollView</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">scrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
@@ -2457,6 +2654,55 @@
 							<string>id</string>
 						</object>
 					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addContentFilter:</string>
+							<string>closeContentFilterManagerSheet:</string>
+							<string>duplicateContentFilter:</string>
+							<string>exportContentFilter:</string>
+							<string>importContentFilterByAdding:</string>
+							<string>insertPlaceholder:</string>
+							<string>removeContentFilter:</string>
+							<string>suppressLeadingFiledPlaceholderWasChanged:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">addContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">closeContentFilterManagerSheet:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">duplicateContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">exportContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">importContentFilterByAdding:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">insertPlaceholder:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">removeContentFilter:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">suppressLeadingFiledPlaceholderWasChanged:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+						</object>
+					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -2492,6 +2738,85 @@
 							<string>id</string>
 							<string>BWAnchoredButtonBar</string>
 							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>contentFilterArrayController</string>
+							<string>contentFilterConjunctionLabel</string>
+							<string>contentFilterConjunctionTextField</string>
+							<string>contentFilterNameTextField</string>
+							<string>contentFilterTableView</string>
+							<string>contentFilterTextView</string>
+							<string>encodingPopUp</string>
+							<string>insertPlaceholderButton</string>
+							<string>numberOfArgsLabel</string>
+							<string>removeButton</string>
+							<string>resultingClauseContentLabel</string>
+							<string>resultingClauseLabel</string>
+							<string>splitViewButtonBar</string>
+							<string>suppressLeadingFiledPlaceholderCheckbox</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterArrayController</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterConjunctionLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterConjunctionTextField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterNameTextField</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterTableView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">contentFilterTextView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">encodingPopUp</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">insertPlaceholderButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">numberOfArgsLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">removeButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">resultingClauseContentLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">resultingClauseLabel</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">splitViewButtonBar</string>
+								<string key="candidateClassName">BWAnchoredButtonBar</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">suppressLeadingFiledPlaceholderCheckbox</string>
+								<string key="candidateClassName">id</string>
+							</object>
 						</object>
 					</object>
 					<reference key="sourceIdentifier" ref="554460013"/>
@@ -3148,6 +3473,13 @@
 					<object class="NSMutableDictionary" key="actions">
 						<string key="NS.key.0">showWindow:</string>
 						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">showWindow:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">showWindow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>

@@ -698,8 +698,17 @@
 	// Notify listenters that the query has finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-	// Trigger a full reload if required
-	if (fullTableReloadRequired) [self reloadTable:self];
+	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
+		if(filterString)
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection getLastErrorMessage]]);
+		else
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection getLastErrorMessage]]);
+	} else {
+		// Trigger a full reload if required
+		if (fullTableReloadRequired) [self reloadTable:self];
+	}
 }
 
 /**

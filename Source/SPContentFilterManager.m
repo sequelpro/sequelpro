@@ -33,10 +33,9 @@
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
+#define SP_NAME_REQUIRED_PLACEHOLDER_STRING NSLocalizedString(@"[name required]", @"[name required]")
 
 @interface SPContentFilterManager (PrivateAPI)
-
-- (void)_initWithNoSelection;
 
 @end
 
@@ -79,18 +78,8 @@
  */
 - (void)awakeFromNib
 {
-	[contentFilterTextView setAllowsDocumentBackgroundColorChange:YES];
 
-	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-
-	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
-
-	[contentFilterTextView bind:@"backgroundColor"
-					   toObject:[NSUserDefaultsController sharedUserDefaultsController]
-					withKeyPath:@"values.CustomQueryEditorBackgroundColor"
-						options:bindingOptions];
-
-
+	// Add global group row to contentFilters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			@"Global", @"MenuLabel",
 			@"", @"headerOfFileURL",
@@ -130,7 +119,12 @@
 			break;
 
 	[[self window] makeFirstResponder:contentFilterTableView];
-	[self _initWithNoSelection];
+
+	// Init GUI elements
+	[contentFilterTableView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+	[[contentFilterNameTextField cell] setPlaceholderString:SP_NO_SELECTION_PLACEHOLDER_STRING];
+	[contentFilterNameTextField setStringValue:@""];
+	[contentFilterTextView setString:@""];
 
 	// Register drag types
 	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:SPContentFilterPasteboardDragType]];
@@ -153,7 +147,8 @@
 
 /**
  * Returns the content filters array for fileURL.
- * fileURL == nil → global content filters
+ * 
+ * @param fileURL == The SPDatabaseDocument file URL; if fileURL == nil return the global content filters
  */
 - (NSMutableArray *)contentFilterForFileURL:(NSURL *)fileURL
 {
@@ -293,13 +288,16 @@
 }
 
 /**
- * Insert placeholder - the placeholder string is stored as tooltip
+ * Insert placeholder - the to be inserted placeholder string is stored in sender's tooltip
  */
 - (IBAction)insertPlaceholder:(id)sender
 {
 	[contentFilterTextView insertText:[[[sender selectedItem] toolTip] substringToIndex:[[[sender selectedItem] toolTip] rangeOfString:@" – "].location]];
 }
 
+/**
+ * Show save panel sheet for exporting content filters to disk
+ */
 - (IBAction)exportContentFilter:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
@@ -314,6 +312,9 @@
 	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFilter"];
 }
 
+/**
+ * Show open panel sheet for importing content filters by adding them to current ones
+ */
 - (IBAction)importContentFilterByAdding:(id)sender
 {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -332,6 +333,9 @@
 					contextInfo:NULL];
 }
 
+/**
+ * Show open panel sheet for importing content filters by replacing the current ones. Not yet implemented
+ */
 - (IBAction)importFavoritesByReplacing:(id)sender
 {
 
@@ -342,13 +346,6 @@
  */
 - (IBAction)closeContentFilterManagerSheet:(id)sender
 {
-
-	// First check for ESC if pressed while inline editing
-	if(![sender tag] && isTableCellEditing) {
-		[contentFilterTableView abortEditing];
-		isTableCellEditing = NO;
-		return;
-	}
 
 	[NSApp endSheet:[self window] returnCode:0];
 	[[self window] orderOut:self];
@@ -381,6 +378,15 @@
 
 }
 
+/**
+ * It triggers an update of contentFilterTextView and 
+ * resultingClauseContentLabel by inserting @"" into contentFilterTextView
+ */
+- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
+{
+	[contentFilterTextView insertText:@""];
+}
+
 #pragma mark -
 #pragma mark SplitView delegate methods
 
@@ -401,7 +407,21 @@
 }
 
 #pragma mark -
-#pragma mark TableView datasource methods
+#pragma mark TableView delegate methods
+
+/**
+ * Update contentFilterNameTextField if selection of contentFilterTableView was changed.
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+	if([contentFilterTableView selectedRow] > -1) {
+		NSString *newName = [[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] objectForKey:@"MenuLabel"];
+		if(newName)
+			[contentFilterNameTextField setStringValue:newName];
+		else
+			[contentFilterNameTextField setStringValue:@""];
+	}
+}
 
 /**
  * Returns the number of all content filters.
@@ -494,7 +514,7 @@
 }
 
 /**
- * Sorting by clicking at a column header inside groups
+ * Sorting by clicking at a column header inside groups. Not yet implemented
  */
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
@@ -503,14 +523,122 @@
 }
 
 /**
- * contentFilters holds the data if a table row is a group header or not
+ * If current row's contentFilters object has a key "headerOfFileURL" then row is grouped ie it's an header
  */
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
 {
 	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? YES : NO;
 }
+
+#pragma mark -
+#pragma mark TableView drag & drop delegate methods
+
 /**
- * Detect if inline editing was done - then ESC to close the sheet will be activate
+ * Return whether or not the supplied rows can be written.
+ */
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
+{
+
+	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
+	NSUInteger originalRow = [rows firstIndex];
+
+	if(originalRow < 1) return NO;
+
+	// Do not drag headers
+	if([[contentFilters objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
+
+	[pboard declareTypes:pboardTypes owner:nil];
+
+	NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
+	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
+	[archiver encodeObject:rows forKey:@"indexdata"];
+	[archiver finishEncoding];
+	[pboard setData:indexdata forType:SPContentFilterPasteboardDragType];
+
+	return YES;
+
+}
+
+/**
+ * Validate the proposed drop of the supplied rows.
+ */
+- (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
+{
+	NSArray *pboardTypes = [[info draggingPasteboard] types];
+
+	if (([pboardTypes count] > 1) && (row != -1)) {
+		if (([pboardTypes containsObject:SPContentFilterPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
+			if (row > 0) {
+				return NSDragOperationMove;
+			}
+		}
+	}
+
+	return NSDragOperationNone;
+}
+
+/**
+ * Return whether or not to accept the drop of the supplied rows.
+ */
+- (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
+{
+
+	if(row < 1) return NO;
+
+	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPContentFilterPasteboardDragType]] autorelease];
+	NSIndexSet *draggedIndexes = [[NSIndexSet alloc] initWithIndexSet:(NSIndexSet *)[unarchiver decodeObjectForKey:@"indexdata"]];
+	[unarchiver finishDecoding];
+
+	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
+	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
+	NSUInteger rowIndex = [draggedIndexes firstIndex];
+	while ( rowIndex != NSNotFound ) {
+		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
+		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
+	}
+
+
+	NSInteger destinationRow = row;
+	NSInteger offset = 0;
+
+	NSUInteger i;
+
+	for(i=0; i<[draggedRows count]; i++) {
+
+		NSInteger originalRow = [[draggedRows objectAtIndex:i] integerValue];
+
+		if(originalRow < destinationRow) destinationRow--;
+
+		originalRow += offset;
+
+		// For safety reasons
+		if(originalRow > [contentFilters count]-1) originalRow = [contentFilters count] - 1;
+
+		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[contentFilters objectAtIndex:originalRow]];
+		[contentFilters removeObjectAtIndex:originalRow];
+		[contentFilterTableView reloadData];
+
+		if(destinationRow+i >= [contentFilters count])
+			[contentFilters addObject:draggedRow];
+		else
+			[contentFilters insertObject:draggedRow atIndex:destinationRow+i];
+
+		if(originalRow < row) offset--;
+
+	}
+
+	[contentFilterTableView reloadData];
+	[contentFilterArrayController rearrangeObjects];
+	[draggedIndexes release];
+	[draggedRows release];
+	return YES;
+}
+
+#pragma mark -
+#pragma mark Various Control delegate methods
+
+/**
+ * Detect if inline editing was done
  */
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
@@ -518,8 +646,33 @@
 }
 
 /**
+ * Trap the escape overriding default behaviour and ending editing,
+ * only within the current row.
+ */
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+{
+	// Trap the escape key
+	if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
+	{
+
+		// Abort editing
+		[control abortEditing];
+		isTableCellEditing = NO;
+		// Reset name input text field
+		if([contentFilterTableView selectedRow] > -1)
+			[contentFilterNameTextField setStringValue:
+				[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] objectForKey:@"MenuLabel"]];
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
  * Changes in the name text field will be saved in data source directly
- * to update the table view accordingly
+ * to update the table view accordingly. If filter name is changed via inline editing
+ * in the tableView update name text field accordingly and check for empty names
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
@@ -530,15 +683,29 @@
 	id object = [notification object];
 
 	if(object == contentFilterNameTextField) {
-		[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] setObject:[contentFilterNameTextField stringValue] forKey:@"MenuLabel"];
-		[contentFilterTableView reloadData];
+		if([[contentFilterNameTextField stringValue] length]) {
+			[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] setObject:[contentFilterNameTextField stringValue] forKey:@"MenuLabel"];
+			[contentFilterTableView reloadData];
+		} else {
+			NSBeep();
+			[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] setObject:SP_NAME_REQUIRED_PLACEHOLDER_STRING forKey:@"MenuLabel"];
+			[contentFilterNameTextField setStringValue:SP_NAME_REQUIRED_PLACEHOLDER_STRING];
+			[contentFilterNameTextField selectText:nil];
+		}
+	}
+	else if (object == contentFilterTableView) {
+		NSTextView *editor = [[notification userInfo] objectForKey:@"NSFieldEditor"];
+		NSString *newName = [[editor textStorage] string];
+		if([newName length]) {
+			[contentFilterNameTextField setStringValue:newName];
+		} else {
+			NSBeep();
+			[editor insertText:SP_NAME_REQUIRED_PLACEHOLDER_STRING];
+			[editor setSelectedRange:NSMakeRange(0,[SP_NAME_REQUIRED_PLACEHOLDER_STRING length])];
+			[contentFilterNameTextField setStringValue:SP_NAME_REQUIRED_PLACEHOLDER_STRING];
+		}
 	}
 
-}
-
-- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
-{
-	[contentFilterTextView insertText:@""];
 }
 
 /**
@@ -610,115 +777,10 @@
 }
 
 #pragma mark -
-#pragma mark TableView drag & drop delegate methods
-
-/**
- * Return whether or not the supplied rows can be written.
- */
-- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
-{
-
-	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
-	NSUInteger originalRow = [rows firstIndex];
-
-	if(originalRow < 1) return NO;
-
-	// Do not drag headers
-	if([[contentFilters objectAtIndex:originalRow] objectForKey:@"headerOfFileURL"]) return NO;
-
-	[pboard declareTypes:pboardTypes owner:nil];
-
-	NSMutableData *indexdata = [[[NSMutableData alloc] init] autorelease];
-	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:indexdata] autorelease];
-	[archiver encodeObject:rows forKey:@"indexdata"];
-	[archiver finishEncoding];
-	[pboard setData:indexdata forType:SPContentFilterPasteboardDragType];
-
-	return YES;
-
-}
-
-/**
- * Validate the proposed drop of the supplied rows.
- */
-- (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
-{
-	NSArray *pboardTypes = [[info draggingPasteboard] types];
-
-	if (([pboardTypes count] > 1) && (row != -1)) {
-		if (([pboardTypes containsObject:SPContentFilterPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
-			if (row > 0) {
-				return NSDragOperationMove;
-			}
-		}
-	}
-
-	return NSDragOperationNone;
-}
-
-/**
- * Return whether or not to accept the drop of the supplied rows.
- */
-
-- (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
-{
-
-	if(row < 1) return NO;
-
-	NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[[info draggingPasteboard] dataForType:SPContentFilterPasteboardDragType]] autorelease];
-	NSIndexSet *draggedIndexes = [[NSIndexSet alloc] initWithIndexSet:(NSIndexSet *)[unarchiver decodeObjectForKey:@"indexdata"]];
-	[unarchiver finishDecoding];
-
-	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
-	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
-	NSUInteger rowIndex = [draggedIndexes firstIndex];
-	while ( rowIndex != NSNotFound ) {
-		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
-		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
-	}
-
-
-	NSInteger destinationRow = row;
-	NSInteger offset = 0;
-
-	NSUInteger i;
-
-	for(i=0; i<[draggedRows count]; i++) {
-
-		NSInteger originalRow = [[draggedRows objectAtIndex:i] integerValue];
-
-		if(originalRow < destinationRow) destinationRow--;
-
-		originalRow += offset;
-
-		// For safety reasons
-		if(originalRow > [contentFilters count]-1) originalRow = [contentFilters count] - 1;
-
-		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[contentFilters objectAtIndex:originalRow]];
-		[contentFilters removeObjectAtIndex:originalRow];
-		[contentFilterTableView reloadData];
-
-		if(destinationRow+i >= [contentFilters count])
-			[contentFilters addObject:draggedRow];
-		else
-			[contentFilters insertObject:draggedRow atIndex:destinationRow+i];
-
-		if(originalRow < row) offset--;
-
-	}
-
-	[contentFilterTableView reloadData];
-	[contentFilterArrayController rearrangeObjects];
-	[draggedIndexes release];
-	[draggedRows release];
-	return YES;
-}
-
-#pragma mark -
 #pragma mark Other
 
 /**
- * Sheet did end method
+ * Sheet did end method for removing content filters
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
@@ -871,14 +933,6 @@
 
 		}
 	}
-}
-
-- (void)_initWithNoSelection
-{
-	[contentFilterTableView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-	[[contentFilterNameTextField cell] setPlaceholderString:SP_NO_SELECTION_PLACEHOLDER_STRING];
-	[contentFilterNameTextField setStringValue:@""];
-	[contentFilterTextView setString:@""];
 }
 
 @end
