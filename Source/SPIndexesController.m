@@ -57,32 +57,32 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"IndexesView"])) {
-		
+
 		table = @"";
-		
+
 		fields  = [[NSMutableArray alloc] init];
 		indexes = [[NSMutableArray alloc] init];
 		indexedFields = [[NSMutableArray alloc] init];
-		
+
 		prefs = [NSUserDefaults standardUserDefaults];
-		
+
 		showAdvancedView = NO;
-		
+
 		heightOffset = 0;
 		windowMinWidth = [[self window] minSize].width;
 		windowMinHeigth = [[self window] minSize].height;
-		
+
 		// Create an array of field types that supporting specifying an index length prefix
 		supportsLength = [[NSArray alloc] initWithObjects:
 						  @"CHAR", @"VARCHAR", @"TINYTEXT", @"TEXT", @"MEDIUMTEXT", @"LONGTEXT",
 						  @"BINARY", @"VARBINARY", @"TINYBLOB", @"BLOB", @"MEDIUMBLOB", @"LONGBLOB", nil];
-		
+
 		// Create an array of field types that require an index length prefix
 		requiresLength = [[NSArray alloc] initWithObjects:
 						  @"TINYTEXT", @"TEXT", @"MEDIUMTEXT", @"LONGTEXT",
 						  @"TINYBLOB", @"BLOB", @"MEDIUMBLOB", @"LONGBLOB", nil];
 	}
-	
+
 	return self;
 }
 
@@ -90,23 +90,23 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * Nib awakening.
  */
 - (void)awakeFromNib
-{	
+{
 	// Set the index tables view's vertical gridlines if required
 	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	
+
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-	
+
 	for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 	{
 		[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
-	
+
 	for (NSTableColumn *fieldColumn in [indexedColumnsTableView tableColumns])
 	{
 		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
-	
+
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 }
 
@@ -117,57 +117,57 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * Opens the add new index sheet.
  */
 - (IBAction)addIndex:(id)sender
-{	
+{
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
-	
+
 	[indexTypePopUpButton insertItemWithTitle:@"PRIMARY KEY" atIndex:0];
-	
+
 	// Set sheet defaults - key type PRIMARY, key name PRIMARY and disabled
 	[indexTypePopUpButton selectItemAtIndex:0];
 	[indexNameTextField setEnabled:NO];
 	[indexNameTextField setStringValue:@"PRIMARY"];
-		
+
 	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
-	for (NSDictionary *field in fields) 
+	for (NSDictionary *field in fields)
 	{
 		if ([field objectForKey:@"isprimarykey"]) {
-			
+
 			[indexTypePopUpButton removeItemAtIndex:0];
-			
+
 			// Select INDEX type
 			[indexTypePopUpButton selectItemAtIndex:0];
 			[indexNameTextField setEnabled:YES];
 			[indexNameTextField setStringValue:@""];
-			
+
 			[[self window] makeFirstResponder:indexNameTextField];
-			
+
 			break;
 		}
 	}
-	
+
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
-	[indexedFields addObject:[[[fields objectAtIndex:0] copy] autorelease]];
-	
+	[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
+
 	[indexedColumnsTableView reloadData];
-	
+
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
-	
+
 	// Index storage types (HASH & BTREE) are only available some storage engines
 	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
-	
+
 	// MyISAM and InnoDB tables only support BTREE storage types so disable the storage type popup button
 	// as it's the default anyway.
 	[indexStorageTypePopUpButton setEnabled:(!([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"]))];
-	
+
 	// Begin the sheet
 	[NSApp beginSheet:[self window]
-	   modalForWindow:[dbDocument parentWindow] 
+	   modalForWindow:[dbDocument parentWindow]
 		modalDelegate:self
-	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:) 
+	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
-	
+
 	// Because there is only one indexed column initially, disable the remove button
 	[removeIndexedColumnButton setEnabled:NO];
 }
@@ -178,20 +178,20 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (IBAction)removeIndex:(id)sender
 {
 	if (![indexesTableView numberOfSelectedRows]) return;
-	
+
 	// Check whether a save of the current fields row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
-	
+
 	NSInteger index = [indexesTableView selectedRow];
-	
+
 	if ((index == -1) || (index > ([indexes count] - 1))) return;
-	
+
 	NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
 	NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
-	
+
 	BOOL hasForeignKey = NO;
 	NSString *constraintName = @"";
-	
+
 	// Check to see whether the user is attempting to remove an index that a foreign key constraint depends on
 	// thus would result in an error if not dropped before removing the index.
 	for (NSDictionary *constraint in [tableData getConstraints])
@@ -205,22 +205,22 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 			}
 		}
 	}
-	
+
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete index '%@'?", @"delete index message"), keyName]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
-									   otherButton:nil 
+									   otherButton:nil
 						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
-	
+
 	[alert setAlertStyle:NSCriticalAlertStyle];
-	
+
 	NSArray *buttons = [alert buttons];
-	
+
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
+
 	[alert beginSheetModalForWindow:[dbDocument parentWindow] modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
 }
 
@@ -232,10 +232,10 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	if ([[indexTypePopUpButton titleOfSelectedItem] isEqualToString:@"PRIMARY KEY"] ) {
 		[indexNameTextField setEnabled:NO];
 		[indexNameTextField setStringValue:@"PRIMARY"];
-	} 
+	}
 	else {
 		[indexNameTextField setEnabled:YES];
-		
+
 		if ([[indexNameTextField stringValue] isEqualToString:@"PRIMARY"]) {
 			[indexNameTextField setStringValue:@""];
 		}
@@ -250,14 +250,14 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	// Close the advanced options view if it's open
 	[indexAdvancedOptionsView setHidden:YES];
 	[indexAdvancedOptionsViewButton setState:NSOffState];
-	
+
 	// Hide the size column
 	[indexSizeTableColumn setHidden:YES];
-	
+
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:0];
-	
+
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
-	[[sender window] orderOut:self];	
+	[[sender window] orderOut:self];
 }
 
 /**
@@ -275,14 +275,17 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 				break;
 			}
 		}
-					
-		// If the field type is foud within the requires length array then a length prefix is required so 
+
+		// If the field type is foud within the requires length array then a length prefix is required so
 		// display the size column.
 		if ([requiresLength containsObject:[[[indexedFields objectAtIndex:([indexedFields count] - 1)] objectForKey:@"type"] uppercaseString]]) [indexSizeTableColumn setHidden:NO];
 	}
-	
+
 	[self _reloadIndexedColumnsTableData];
-	
+
+	// Select new added row
+	[indexedColumnsTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[indexedFields count]-1] byExtendingSelection:NO];
+
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 }
 
@@ -292,9 +295,9 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (IBAction)removeIndexedField:(id)sender
 {
 	[indexedFields removeObjectAtIndex:[indexedColumnsTableView selectedRow]];
-	
+
 	[self _reloadIndexedColumnsTableData];
-	
+
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 }
 
@@ -304,12 +307,12 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (IBAction)toggleAdvancedIndexOptionsView:(id)sender
 {
 	showAdvancedView = (!showAdvancedView);
-	
+
 	[indexAdvancedOptionsViewButton setState:showAdvancedView];
 	[indexAdvancedOptionsView setHidden:(!showAdvancedView)];
-	
+
 	[indexSizeTableColumn setHidden:(!showAdvancedView)];
-	
+
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:(showAdvancedView) ? ([indexAdvancedOptionsView frame].size.height + 10) : 0];
 }
 
@@ -323,27 +326,41 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	return [[(tableView == indexesTableView) ? indexes : indexedFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+
+	if(tableView == indexesTableView) {
+	 	return [[indexes objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	}
+	else {
+		return [[indexedFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	}
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
-	
-	if ([[tableColumn identifier] isEqualToString:@"name"] && [object isKindOfClass:[NSDictionary class]]) {
-		// If the field type is foud within the requires length array then a length prefix is required so 
-		// display the size column.
-		if ([requiresLength containsObject:[[object objectForKey:@"type"] uppercaseString]]) [indexSizeTableColumn setHidden:NO];
+
+	if(tableView == indexesTableView) return;
+
+	if([[tableColumn identifier] isEqualToString:@"name"]) {
+		// Iterate to given fields to replace the correct desired index field dictionary
+		for(NSDictionary *dic in fields) {
+			if([[dic objectForKey:@"name"] isEqualToString:object]) {
+				[indexedFields replaceObjectAtIndex:rowIndex withObject:dic];
+				break;
+			}
+		}
 	}
-	
+	else {
+		[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
+	}
+
 	[self _reloadIndexedColumnsTableData];
 }
 
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if ([[tableColumn identifier] isEqualToString:@"Size"]) {
-				
-		// If the field is of type TEXT or BLOB then a index prefix length is required so change the default 
+
+		// If the field is of type TEXT or BLOB then a index prefix length is required so change the default
 		// placeholder of 'optional' to 'required'.
 		[cell setPlaceholderString:([requiresLength containsObject:[[[indexedFields objectAtIndex:rowIndex] objectForKey:@"type"] uppercaseString]]) ? NSLocalizedString(@"required", @"required placeholder string") : NSLocalizedString(@"optional", @"optional placeholder string")];
 	}
@@ -356,7 +373,7 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * Returns the number items that are to be shown in the combo box cell.
  */
 - (NSInteger)numberOfItemsInComboBoxCell:(NSComboBoxCell *)comboBoxCell
-{	
+{
 	return [fields count];
 }
 
@@ -364,7 +381,7 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * Returns the item to be displayed in the combo box cell as the supplied index.
  */
 - (id)comboBoxCell:(NSComboBoxCell *)comboBoxCell objectValueForItemAtIndex:(NSInteger)index
-{	
+{
 	return [[fields objectAtIndex:index] objectForKey:@"name"];
 }
 
@@ -377,7 +394,7 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
 	if ([notification object] == indexesTableView) {
-		
+
 		// Check if there is currently an index selected and change button state accordingly
 		[removeIndexButton setEnabled:([indexesTableView numberOfSelectedRows] > 0 && [tablesList tableType] == SPTableTypeTable)];
 	}
@@ -397,11 +414,11 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (void)setFields:(NSArray *)tableFields
 {
 	[fields removeAllObjects];
-	
+
 	[fields setArray:tableFields];
-	
+
 	[indexedFields removeAllObjects];
-	
+
 	if ([fields count]) [indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
 }
 
@@ -413,7 +430,7 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (void)setIndexes:(NSArray *)tableIndexes
 {
 	[indexes removeAllObjects];
-	
+
 	[indexes setArray:tableIndexes];
 }
 
@@ -426,47 +443,47 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (void)addIndexSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[theSheet orderOut:nil];
-	
+
 	if (returnCode == NSOKButton) {
 		[dbDocument startTaskWithDescription:NSLocalizedString(@"Adding index...", @"adding index task status message")];
-		
+
 		NSUInteger i, j;
 		NSMutableDictionary *indexDetails = [NSMutableDictionary dictionary];
-		
+
 		// Loop the indexed fields array and remove duplicates
 		NSArray *copy = [indexedFields copy];
-		
-		for (i = ([copy count] - 1); i > 0; i--) 
+
+		for (i = ([copy count] - 1); i > 0; i--)
 		{
 			NSDictionary *field = [[copy objectAtIndex:i] objectForKey:@"name"];
-			
+
 			for (j = 0; j < i; j++)
-			{				
-				if ([[[copy objectAtIndex:j] objectForKey:@"name"] isEqualToString:field]) {					
+			{
+				if ([[[copy objectAtIndex:j] objectForKey:@"name"] isEqualToString:field]) {
 					[indexedFields removeObjectAtIndex:i];
 				}
 			}
 		}
-				
+
 		[copy release];
-		
+
 		// In the event that we removed duplicate columns reload the table view to ensure that the next time
 		// it is open we don't cause the table view to ask for rows that no longer exist.
 		[indexedColumnsTableView reloadData];
-				
+
 		[indexDetails setObject:indexedFields forKey:SPNewIndexIndexedColumns];
 		[indexDetails setObject:[indexNameTextField stringValue] forKey:SPNewIndexIndexName];
 		[indexDetails setObject:[indexTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexIndexType];
-				
+
 		if ([indexStorageTypePopUpButton indexOfSelectedItem] > 0) {
 			[indexDetails setObject:[indexStorageTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexStorageType];
 		}
-		
+
 		if ([NSThread isMainThread]) {
 			[NSThread detachNewThreadSelector:@selector(_addIndexUsingDetails:) toTarget:self withObject:indexDetails];
-			
-			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];				
-		} 
+
+			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
+		}
 		else {
 			[self _addIndexUsingDetails:indexDetails];
 		}
@@ -481,20 +498,20 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 {
 	// Order out current sheet to suppress overlapping of sheets
 	[[alert window] orderOut:nil];
-	
+
 	if (returnCode == NSAlertDefaultReturn) {
 		[dbDocument startTaskWithDescription:NSLocalizedString(@"Removing index...", @"removing index task status message")];
-				
+
 		NSMutableDictionary *indexDetails = [NSMutableDictionary dictionary];
-		
+
 		[indexDetails setObject:[indexes objectAtIndex:[indexesTableView selectedRow]] forKey:@"Index"];
 		[indexDetails setObject:[NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
-		
+
 		if ([NSThread isMainThread]) {
 			[NSThread detachNewThreadSelector:@selector(_removeIndexUsingDeatails:) toTarget:self withObject:indexDetails];
-			
+
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
-		} 
+		}
 		else {
 			[self _removeIndexUsingDeatails:indexDetails];
 		}
@@ -505,26 +522,26 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * This method is called as part of Key Value Observing which is used to watch for preference changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
+{
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
 		[indexesTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 	// Use monospaced fonts preference changed
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
-		
+
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
+
 		for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 		{
 			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-		
+
 		for (NSTableColumn *indexColumn in [indexedColumnsTableView tableColumns])
 		{
 			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
-		
+
 		[indexesTableView reloadData];
 		[self _reloadIndexedColumnsTableData];
 	}
@@ -534,24 +551,24 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * Menu item validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
-{	
+{
 	// Remove index
 	if ([menuItem action] == @selector(removeIndex:)) {
 		return ([indexesTableView numberOfSelectedRows] == 1);
 	}
-	
+
 	// Reset AUTO_INCREMENT
-	if ([menuItem action] == @selector(resetAutoIncrement:)) {		
-		return ([indexesTableView numberOfSelectedRows] == 1 
-				&& [[indexes objectAtIndex:[indexesTableView selectedRow]] objectForKey:@"Key_name"] 
+	if ([menuItem action] == @selector(resetAutoIncrement:)) {
+		return ([indexesTableView numberOfSelectedRows] == 1
+				&& [[indexes objectAtIndex:[indexesTableView selectedRow]] objectForKey:@"Key_name"]
 				&& [[[indexes objectAtIndex:[indexesTableView selectedRow]] objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]);
 	}
-	
+
 	// Remove indexed field
 	if ([menuItem action] == @selector(removeIndexedField:)) {
 		return (([indexedFields count] > 1) && ([indexedColumnsTableView numberOfSelectedRows] == 1));
 	}
-	
+
 	return YES;
 }
 
@@ -563,18 +580,24 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  */
 - (void)_reloadIndexedColumnsTableData
 {
-	NSUInteger c = 0;
-	
-	for (NSDictionary *field in indexedFields)
-	{		
-		if ([requiresLength containsObject:[[field objectForKey:@"type"] uppercaseString]]) c++;
+	NSUInteger sizeRequiredFieldAndNotYetSet = 0;
+	NSUInteger sizeRequired = 0;
+
+	for (NSDictionary *field in indexedFields) {
+		if ([requiresLength containsObject:[[field objectForKey:@"type"] uppercaseString]]) {
+			sizeRequired++;
+			sizeRequiredFieldAndNotYetSet++;
+			if([field objectForKey:@"Size"] && [[field objectForKey:@"Size"] length])
+				sizeRequiredFieldAndNotYetSet--;
+		}
 	}
-	
-	// Only toggle the sizes column if the advanced view is hidden
-	if (!showAdvancedView) [indexSizeTableColumn setHidden:(!c)];
-	
-	[confirmAddIndexButton setEnabled:(!c)];
-	
+
+	// Only toggle the sizes column if the advanced view is hidden and at least one field requires a size
+	if (!showAdvancedView) [indexSizeTableColumn setHidden:(!sizeRequired)];
+
+	// Validate Add Button
+	[confirmAddIndexButton setEnabled:(!sizeRequiredFieldAndNotYetSet)];
+
 	[indexedColumnsTableView reloadData];
 }
 
@@ -586,94 +609,92 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (void)_addIndexUsingDetails:(NSDictionary *)indexDetails
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+
 	// Check whether a save of the current fields row is required.
 	if (![[tableStructure onMainThread] saveRowOnDeselect]) return;
-	
-	// Retrive index details
+
+	// Retrieve index details
 	NSString *indexName        = [indexDetails objectForKey:SPNewIndexIndexName];
 	NSString *indexType        = [indexDetails objectForKey:SPNewIndexIndexType];
-	NSString *indexStorageType = [indexDetails objectForKey:SPNewIndexStorageType]; 
+	NSString *indexStorageType = [indexDetails objectForKey:SPNewIndexStorageType];
 	NSArray *indexedColumns    = [indexDetails objectForKey:SPNewIndexIndexedColumns];
-	
+
 	// Interface validation should prevent this, but just to be safe
 	if ([indexedColumns count] > 0) {
-		
+
 		NSMutableArray *tempIndexedColumns = [[NSMutableArray alloc] init];
-		
+
 		if ([indexType isEqualToString:@"PRIMARY KEY"]) {
 			indexName = @"";
-		} 
+		}
 		else {
 			indexName = ([indexName isEqualToString:@""]) ? @"" : [indexName backtickQuotedString];
 		}
-		
-		// For each column strip leading and trailing whitespace and add it to the temp array
+
+		// For each column add it to the temp array and check if size is required
 		for (NSDictionary *column in indexedColumns)
-		{					
-			NSString *columnName = [[column objectForKey:@"name"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+		{
+			NSString *columnName = [column objectForKey:@"name"];
 			NSString *columnType = [column objectForKey:@"type"];
-			
+
 			if ((![columnName length]) || (![columnType length])) continue;
-						
-			// If this field type requires a length and one hasn't been specified (interface validation 
+
+			// If this field type requires a length and one hasn't been specified (interface validation
 			// should ensure this doesn't happen), then skip it.
 			if ([requiresLength containsObject:[columnType uppercaseString]] && (![[column objectForKey:@"Size"] length])) continue;
-			
+
 			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType]) {
-				
+
 				[tempIndexedColumns addObject:[NSString stringWithFormat:@"%@ (%@)", [columnName backtickQuotedString], [column objectForKey:@"Size"]]];
 			}
 			else {
 				[tempIndexedColumns addObject:[columnName backtickQuotedString]];
 			}
 		}
-		
+
 		// Build the query
 		NSMutableString *query = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@", [table backtickQuotedString], indexType];
-		
+
 		// If supplied specify the index's name
 		if ([indexName length]) {
 			[query appendString:@" "];
 			[query appendString:indexName];
 		}
-		
+
 		// Add the columns
 		[query appendFormat:@" (%@)", [tempIndexedColumns componentsJoinedByCommas]];
-		
+
 		// If supplied specify the index's storage type
 		if (indexStorageType) {
 			[query appendString:@" USING "];
 			[query appendString:indexStorageType];
 		}
-		
+
 		// Execute the query
 		[connection queryString:query];
-		
-		// Get rid of temp arrays
-		[supportsLength release];
-		[requiresLength release];
+
+		// Release temp array
 		[tempIndexedColumns release];
-		
+
 		// Check for errors, but only if the query wasn't cancelled
 		if ([connection queryErrored] && ![connection queryCancelled]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, 
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection getLastErrorMessage]]);
 		}
 		else {
 			[tableData resetAllData];
 			[tablesList setStatusRequiresReload:YES];
-			
+
 			[tableStructure loadTable:table];
 		}
 	}
-	
+
 	// Reset indexed fields to default
 	[indexedFields removeAllObjects];
 	[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
-	
+
 	[dbDocument endTask];
-	
+
 	[pool drain];
 }
 
@@ -685,17 +706,17 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 - (void)_removeIndexUsingDeatails:(NSDictionary *)indexDetails
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+
 	NSDictionary *index   = [indexDetails objectForKey:@"Index"];
 	BOOL removeForeignKey = [[indexDetails objectForKey:@"RemoveForeignKey"] boolValue];
-	
+
 	// Remove the foreign key dependency before the index if required
 	if (removeForeignKey) {
-		
+
 		NSString *columnName =  [index objectForKey:@"Column_name"];
-		
+
 		NSString *constraintName = @"";
-		
+
 		// Check to see whether the user is attempting to remove an index that a foreign key constraint depends on
 		// thus would result in an error if not dropped before removing the index.
 		for (NSDictionary *constraint in [tableData getConstraints])
@@ -708,20 +729,20 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 				}
 			}
 		}
-		
+
 		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [table backtickQuotedString], [constraintName backtickQuotedString]]];
-		
+
 		// Check for errors, but only if the query wasn't cancelled
 		if ([connection queryErrored] && ![connection queryCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			
+
 			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
 			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [connection getLastErrorMessage]] forKey:@"message"];
-			
+
 			[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
-		} 
+		}
 	}
-	
+
 	if ([[index objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
 		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP PRIMARY KEY", [table backtickQuotedString]]];
 	}
@@ -729,30 +750,30 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP INDEX %@",
 								 [table backtickQuotedString], [[index objectForKey:@"Key_name"] backtickQuotedString]]];
 	}
-	
+
 	// Check for errors, but only if the query wasn't cancelled
 	if ([connection queryErrored] && ![connection queryCancelled]) {
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-		
+
 		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
 		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection getLastErrorMessage]] forKey:@"message"];
-		
+
 		[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
-	} 
+	}
 	else {
 		[tableData resetAllData];
 		[tablesList setStatusRequiresReload:YES];
-		
+
 		[tableStructure loadTable:table];
 	}
-	
+
 	[dbDocument endTask];
-	
+
 	[pool drain];
 }
 
 /**
- * Resizes the new index sheet's height by the supplied delta, while retaining the position of 
+ * Resizes the new index sheet's height by the supplied delta, while retaining the position of
  * all interface controls to accommodate the advanced options view.
  *
  * @param delta The height delta for which the height should be adjusted for.
@@ -768,16 +789,16 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	NSUInteger typeLabelMask    = [indexTypeLabel autoresizingMask];
 	NSUInteger nameLabelMask    = [indexNameLabel autoresizingMask];
 	NSUInteger buttonBarMask    = [anchoredButtonBar autoresizingMask];
-	
+
 	NSRect frame = [[self window] frame];
-	
+
 	if (frame.size.height > 600 && delta > heightOffset) {
 		frame.origin.y += [indexAdvancedOptionsView frame].size.height;
 		frame.size.height -= [indexAdvancedOptionsView frame].size.height;
-		
+
 		[[self window] setFrame:frame display:YES animate:YES];
 	}
-	
+
 	[indexTypePopUpButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameTextField setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexedColumnsScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
@@ -787,21 +808,21 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	[indexTypeLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	
+
 	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
-	
+
 	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
-	
+
 	frame.origin.y += heightOffset;
 	frame.size.height -= heightOffset;
-	
+
 	heightOffset= delta;
-	
+
 	frame.origin.y -= heightOffset;
 	frame.size.height += heightOffset;
-	
+
 	[[self window] setFrame:frame display:YES animate:YES];
-	
+
 	[indexTypePopUpButton setAutoresizingMask:popUpMask];
 	[indexNameTextField setAutoresizingMask:nameFieldMask];
 	[indexedColumnsScrollView setAutoresizingMask:scrollMask];
@@ -819,16 +840,16 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
  * Dealloc.
  */
 - (void)dealloc
-{		
+{
 	[table release], table = nil;
 	[indexes release], indexes = nil;
 	[fields release], fields = nil;
-	
+
 	[supportsLength release], supportsLength = nil;
 	[requiresLength release], requiresLength = nil;
-	
+
 	if (indexedFields) [indexedFields release], indexedFields = nil;
-	
+
 	[super dealloc];
 }
 
