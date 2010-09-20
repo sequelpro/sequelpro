@@ -46,6 +46,8 @@ BOOL pingActive;
 NSInteger pingFailureCount;
 BOOL keepAliveActive;
 
+static void forceThreadExit(int signalNumber);
+
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const char *kMCPSSLCipherList = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
@@ -845,6 +847,7 @@ void pingConnectionTask(void *ptr)
 	uint64_t currentTime_t;
 	Nanoseconds currentNanoseconds;
 	double pingStartTime;
+	BOOL threadCancelled = NO;
 
 	if (!mConnected || keepAliveThread != NULL) {
         // unlock the connection now. it has been locked in keepAlive:
@@ -886,8 +889,13 @@ void pingConnectionTask(void *ptr)
 		// cancellation of the incorrect thread.
 		currentTime_t = mach_absolute_time() - connectionStartTime;
 		currentNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
-		if ((UnsignedWideToUInt64(currentNanoseconds) - pingStartTime) * 1e-9 > pingTimeout && keepAliveActive) {
+		if ((UnsignedWideToUInt64(currentNanoseconds) - pingStartTime) * 1e-9 > pingTimeout && keepAliveActive && !threadCancelled) {
 			pthread_cancel(keepAliveThread);
+			threadCancelled = YES;
+
+		// If the timeout has been exceeded by an additional two seconds, kill the thread.
+		} else if ((UnsignedWideToUInt64(currentNanoseconds) - pingStartTime) * 1e-9 > (pingTimeout + 2) && keepAliveActive) {
+			pthread_kill(keepAliveThread, SIGUSR1);		
 			keepAliveActive = NO;
 		}
 	} while (keepAliveActive);
@@ -905,13 +913,37 @@ void pingConnectionTask(void *ptr)
  */
 void performThreadedKeepAlive(void *ptr)
 {
+
+	// Set up a signal handler for SIGUSR1, to handle forced timeouts.
+	struct sigaction timeoutAction;
+	timeoutAction.sa_handler = forceThreadExit;
+	sigemptyset(&timeoutAction.sa_mask);
+	timeoutAction.sa_flags = 0;
+	sigaction(SIGUSR1, &timeoutAction, NULL);
+
 	if (mysql_ping((MYSQL *)ptr)) {
 		pingFailureCount++;
 	} else {
 		pingFailureCount = 0;
 	}
 	keepAliveActive = NO;
+
+
+	// Reset and clear the SIGUSR1 used to check connection timeouts.
+	timeoutAction.sa_handler = SIG_IGN;
+	sigemptyset(&timeoutAction.sa_mask);
+	timeoutAction.sa_flags = 0;
+	sigaction(SIGUSR1, &timeoutAction, NULL);
 }
+
+/**
+ * Support forcing a thread to exit as a result of a signal.
+ */
+static void forceThreadExit(int signalNumber)
+{
+	pthread_exit(NULL);
+}
+
 
 /**
  * Restore the connection encoding details as necessary based on the delegate-provided
