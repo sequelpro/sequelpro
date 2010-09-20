@@ -828,9 +828,17 @@
 	}
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
 
-	if(![filter objectForKey:@"Clause"] || ![filter objectForKey:@"NumberOfArguments"]) {
+	if(![filter objectForKey:@"NumberOfArguments"]) {
 		NSLog(@"Error while retrieving filter clause. No “Clause” or/and “NumberOfArguments” key found.");
 		NSBeep();
+		return nil;
+	}
+
+	if(![filter objectForKey:@"Clause"] || ![[filter objectForKey:@"Clause"] length]) {
+
+		SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+					  NSLocalizedString(@"Content Filter clause is empty.", @"content filter clause is empty tooltip."));
+
 		return nil;
 	}
 
@@ -2202,16 +2210,20 @@
 				[item setToolTip:[filter objectForKey:@"Tooltip"]];
 			else {
 				NSMutableString *tip = [[NSMutableString alloc] init];
-				[tip setString:[[filter objectForKey:@"Clause"] stringByReplacingOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"]];
-				if([tip isMatchedByRegex:@"(?<!\\\\)\\$BINARY"]) {
-					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@""];
-					[tip appendString:NSLocalizedString(@"\n\nPress ⇧ for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
+				if([filter objectForKey:@"Clause"] && [[filter objectForKey:@"Clause"] length]) {
+					[tip setString:[[filter objectForKey:@"Clause"] stringByReplacingOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"]];
+					if([tip isMatchedByRegex:@"(?<!\\\\)\\$BINARY"]) {
+						[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@""];
+						[tip appendString:NSLocalizedString(@"\n\nPress ⇧ for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
+					}
+					[tip flushCachedRegexData];
+					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
+					[tip flushCachedRegexData];
+					[item setToolTip:tip];
+					[tip release];
+				} else {
+					[item setToolTip:@""];
 				}
-				[tip flushCachedRegexData];
-				[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
-				[tip flushCachedRegexData];
-				[item setToolTip:tip];
-				[tip release];
 			}
 			[item setTag:i];
 			[menu addItem:item];
