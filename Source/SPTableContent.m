@@ -179,9 +179,12 @@
 #pragma mark -
 #pragma mark Table loading methods and information
 
-/*
+/**
  * Loads aTable, retrieving column information and updating the tableViewColumns before
  * reloading table data into the data array and redrawing the table.
+ *
+ * @param aTable The to be loaded table name
+ *
  */
 - (void)loadTable:(NSString *)aTable
 {
@@ -699,7 +702,7 @@
 	if (fullTableReloadRequired) [self reloadTable:self];
 }
 
-/*
+/**
  * Processes a supplied streaming result set, loading it into the data array.
  */
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount
@@ -862,8 +865,9 @@
 	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:([fieldField titleOfSelectedItem]) ? [[fieldField titleOfSelectedItem] backtickQuotedString] : @""];
 	[clause flushCachedRegexData];
 
-	// Escape % sign
-	[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
+	// Escape % sign for format insertion ie if number of arguments is greater than 0
+	if(numberOfArguments > 0)
+		[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
 	[clause flushCachedRegexData];
 
 	// Replace placeholder ${} by %@
@@ -934,6 +938,14 @@
 	return filterString;
 }
 
+/**
+ * Esacpe argument by looking for used quoting strings in clause
+ *
+ * @param argument The to be used filter argument which should be be escaped
+ *
+ * @param clause The entire WHERE filter clause
+ *
+ */
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause
 {
 
@@ -959,7 +971,7 @@
 	return [arg autorelease];
 }
 
-/*
+/**
  * Update the table count/selection text
  */
 - (void)updateCountText
@@ -1104,7 +1116,7 @@
 #pragma mark -
 #pragma mark Table interface actions
 
-/*
+/**
  * Reloads the current table data, performing a new SQL query. Now attempts to preserve sort
  * order, filters, and viewport. Performs the action in a new thread if a task is not already
  * running.
@@ -1144,7 +1156,7 @@
 	[reloadPool drain];
 }
 
-/*
+/**
  * Filter the table with arguments given by the user.
  * Performs the action in a new thread if necessary.
  */
@@ -1368,7 +1380,7 @@
 #pragma mark -
 #pragma mark Edit methods
 
-/*
+/**
  * Collect all columns for a given 'tableForColumn' table and
  * return a WHERE clause for identifying the field in quesyion.
  */
@@ -1449,7 +1461,7 @@
 	return fieldIDQueryStr;
 }
 
-/*
+/**
  * Adds an empty row to the table-array and goes into edit mode
  */
 - (IBAction)addRow:(id)sender
@@ -2230,7 +2242,7 @@
 		  contextInfo:nil];
 }
 
-/*
+/**
  * Tries to write a new row to the database.
  * Returns YES if row is written to database, otherwise NO; also returns YES if no row
  * is being edited and nothing has to be written to the database.
@@ -2399,7 +2411,7 @@
 	}
 }
 
-/*
+/**
  * Handle the user decision as a result of an addRow error.
  */
 - (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
@@ -2419,7 +2431,7 @@
 	[tableContentView reloadData];
 }
 
-/*
+/**
  * A method to be called whenever the table selection changes; checks whether the current
  * row is being edited, and if so attempts to save it.  Returns YES if no save was necessary
  * or the save was successful, and NO if a save was necessary and failed - in which case further
@@ -2581,7 +2593,7 @@
 }
 
 
-/*
+/**
  * Returns YES if the table contains any columns which are of any of the blob or text types,
  * NO otherwise.
  */
@@ -2598,7 +2610,7 @@
 	return NO;
 }
 
-/*
+/**
  * Returns a string controlling which fields to retrieve for a query.  Returns * (all fields) if the preferences
  * option dontShowBlob isn't set; otherwise, returns a comma-separated list of all non-blob/text fields.
  */
@@ -2629,7 +2641,7 @@
 	}
 }
 
-/*
+/**
  * Check if table cell is editable
  * Returns as array the minimum number of possible changes or
  * -1 if no table name can be found or multiple table origins
@@ -2719,7 +2731,7 @@
 
 }
 
-/*
+/**
  * Close an open sheet.
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
@@ -2993,7 +3005,7 @@
 	}
 }
 
-/*
+/**
  * Fetches the number of rows in the selected table using a "SELECT COUNT(1)" query and return it
  */
 - (NSInteger)fetchNumberOfRows
@@ -3435,7 +3447,7 @@
 }
 
 - (void)tableViewColumnDidResize:(NSNotification *)aNotification
-/*
+/**
  saves the new column size in the preferences
  */
 {
@@ -3746,7 +3758,7 @@
 #pragma mark -
 #pragma mark Other methods
 
-/*
+/**
  * If user selected a table cell which is a blob field and tried to edit it
  * cancel the fieldEditor, display the field editor sheet instead for editing
  * and re-enable the fieldEditor after editing.
@@ -3818,7 +3830,7 @@
 
 }
 
-/*
+/**
  * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */

@@ -52,7 +52,7 @@
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		contentFilters = [[NSMutableArray alloc] init];
-		
+
 		if(managerDelegate == nil) {
 			NSBeep();
 			NSLog(@"ContentFilterManager was called without a delegate.");
@@ -64,7 +64,7 @@
 		filterType = [NSString stringWithString:compareType];
 
 	}
-	
+
 	return self;
 }
 
@@ -80,11 +80,11 @@
 - (void)awakeFromNib
 {
 	[contentFilterTextView setAllowsDocumentBackgroundColorChange:YES];
-	
+
 	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-	
+
 	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
-	
+
 	[contentFilterTextView bind:@"backgroundColor"
 					   toObject:[NSUserDefaultsController sharedUserDefaultsController]
 					withKeyPath:@"values.CustomQueryEditorBackgroundColor"
@@ -92,7 +92,7 @@
 
 
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			@"Global", @"MenuLabel", 
+			@"Global", @"MenuLabel",
 			@"", @"headerOfFileURL",
 			@"", @"Clause",
 			@"", @"ConjunctionLabel",
@@ -111,8 +111,8 @@
 
 	// Build doc-based filters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"MenuLabel", 
-		[delegatesFileURL absoluteString], @"headerOfFileURL", 
+		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"MenuLabel",
+		[delegatesFileURL absoluteString], @"headerOfFileURL",
 		@"", @"Clause",
 		nil]];
 	if([[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL]) {
@@ -134,7 +134,7 @@
 
 	// Register drag types
 	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:SPContentFilterPasteboardDragType]];
-	
+
 	[contentFilterArrayController setContent:contentFilters];
 	[contentFilterTableView reloadData];
 
@@ -144,7 +144,7 @@
 	// Set column header
 	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"content filter for field type ‘%@’"), filterType]];
 
-	// Set the button delegate 
+	// Set the button delegate
 	[splitViewButtonBar setSplitViewDelegate:self];
 }
 
@@ -169,7 +169,7 @@
 
 	// Look for the header specified by fileURL
 	while(i<[contentFilters count]) {
-		if ([[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"] 
+		if ([[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"]
 				&& [[[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"] isEqualToString:fileURLstring]) {
 			i++;
 			break;
@@ -250,7 +250,7 @@
 	[contentFilterTableView reloadData];
 
 	[contentFilterTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
-	
+
 	[contentFilterTableView scrollRowToVisible:[contentFilterTableView selectedRow]];
 
 	[removeButton setEnabled:([contentFilterTableView numberOfSelectedRows] > 0)];
@@ -274,21 +274,21 @@
  */
 - (IBAction)removeContentFilter:(id)sender
 {
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected content filters?", @"remove selected content filters message") 
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected content filters?", @"remove selected content filters message")
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
 						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected content filters? This action cannot be undone.", @"remove all selected content filters informative message")];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
-	
+
 	NSArray *buttons = [alert buttons];
-	
+
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"r"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-	
+
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedFilters"];
 }
 
@@ -303,9 +303,9 @@
 - (IBAction)exportContentFilter:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
+
 	[panel setRequiredFileType:SPFileExtensionDefault];
-	
+
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
@@ -322,19 +322,19 @@
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
 	// [panel setResolvesAliases:YES];
-	
-	[panel beginSheetForDirectory:nil 
-						   file:@"" 
-						  types:[NSArray arrayWithObjects:SPFileExtensionDefault, nil] 
+
+	[panel beginSheetForDirectory:nil
+						   file:@""
+						  types:[NSArray arrayWithObjects:SPFileExtensionDefault, nil]
 				 modalForWindow:[self window]
-				  modalDelegate:self 
-				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
+				  modalDelegate:self
+				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:)
 					contextInfo:NULL];
 }
 
 - (IBAction)importFavoritesByReplacing:(id)sender
 {
-	
+
 }
 
 /**
@@ -370,7 +370,7 @@
 		[cf setObject:[self contentFilterForFileURL:nil] forKey:filterType];
 		[prefs setObject:cf forKey:SPContentFilters];
 		[cf release];
-		
+
 		// Inform all opened documents to update the query favorites list
 		for(id doc in [[NSApp delegate] orderedDocuments])
 			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
@@ -421,7 +421,7 @@
 	return [[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
 
-/*
+/**
  * Save content filter name (MenuLabel) if inline edited (suppress empty names)
  */
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -437,7 +437,7 @@
 	[contentFilterTableView reloadData];
 }
 
-/*
+/**
  * Before selecting an other filter save pending query string changes
  * and make sure that no group table item can be selected
  */
@@ -453,7 +453,7 @@
 	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? NO : YES;
 }
 
-/*
+/**
  * Set indention levels for headers and filters
  * (maybe in the future use an image for headers for expanding and collapsing)
  */
@@ -472,7 +472,7 @@
 	}
 }
 
-/*
+/**
  * A row of an header return is slighlty larger
  */
 - (CGFloat)tableView:(NSTableView *)aTableView heightOfRow:(NSInteger)rowIndex
@@ -480,7 +480,7 @@
 	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? 20 : 18;
 }
 
-/*
+/**
  * Only filter name can be edited inline
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -493,7 +493,7 @@
 	}
 }
 
-/*
+/**
  * Sorting by clicking at a column header inside groups
  */
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
@@ -502,22 +502,22 @@
 	return;
 }
 
-/*
+/**
  * contentFilters holds the data if a table row is a group header or not
  */
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
 {
 	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? YES : NO;
 }
-/*
+/**
  * Detect if inline editing was done - then ESC to close the sheet will be activate
- */ 
+ */
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
 	isTableCellEditing = NO;
 }
 
-/*
+/**
  * Changes in the name text field will be saved in data source directly
  * to update the table view accordingly
  */
@@ -541,7 +541,7 @@
 	[contentFilterTextView insertText:@""];
 }
 
-/*
+/**
  * Parse clause and update labels accordingly
  */
 - (void)textViewDidChangeSelection:(NSNotification *)notification
@@ -595,8 +595,8 @@
 	if([contentFilters count] < 2) return NO;
 
 	SEL action = [menuItem action];
-	
-	if ( (action == @selector(duplicateContentFilter:))) 
+
+	if ( (action == @selector(duplicateContentFilter:)))
 	{
 		return ([contentFilterTableView numberOfSelectedRows] == 1);
 	}
@@ -605,7 +605,7 @@
 	{
 		return ([contentFilterTableView numberOfSelectedRows] > 0);
 	}
-	
+
 	return YES;
 }
 
@@ -642,9 +642,9 @@
  * Validate the proposed drop of the supplied rows.
  */
 - (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
-{	
+{
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
-	
+
 	if (([pboardTypes count] > 1) && (row != -1)) {
 		if (([pboardTypes containsObject:SPContentFilterPasteboardDragType]) && (operation == NSTableViewDropAbove)) {
 			if (row > 0) {
@@ -652,7 +652,7 @@
 			}
 		}
 	}
-	
+
 	return NSDragOperationNone;
 }
 
@@ -676,7 +676,7 @@
 		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
 		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
 	}
-	
+
 
 	NSInteger destinationRow = row;
 	NSInteger offset = 0;
@@ -770,14 +770,14 @@
 		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
 			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
 
-			spf = [[NSPropertyListSerialization propertyListFromData:pData 
+			spf = [[NSPropertyListSerialization propertyListFromData:pData
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:nil
+												  otherButton:nil
 									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
@@ -803,9 +803,9 @@
 				[spf release];
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:nil
+												  otherButton:nil
 									informativeTextWithFormat:NSLocalizedString(@"No content filters found.", @"error that no content filters found")];
 
 				[alert setAlertStyle:NSInformationalAlertStyle];
@@ -832,7 +832,7 @@
 			NSMutableDictionary *cfdata = [NSMutableDictionary dictionary];
 			NSMutableArray *filterData = [NSMutableArray array];
 
-	
+
 			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"content filters" forKey:@"format"];
 			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
@@ -847,7 +847,7 @@
 
 			[cfdata setObject:filterData forKey:filterType];
 			[spfdata setObject:cfdata forKey:SPContentFilters];
-			
+
 			NSString *err = nil;
 			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
 													  format:NSPropertyListXMLFormat_v1_0
@@ -855,9 +855,9 @@
 
 			if(err != nil) {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting content filter data", @"error while converting content filter data")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:nil
+												  otherButton:nil
 									informativeTextWithFormat:err];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
