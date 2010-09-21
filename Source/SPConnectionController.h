@@ -1,5 +1,5 @@
 //
-//  $Id
+//  $Id$
 //
 //  SPConnectionController.h
 //  sequel-pro

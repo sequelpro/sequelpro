@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
-
 @interface SPKeychain : NSObject
 
 - (void)addPassword:(NSString *)password forName:(NSString *)name account:(NSString *)account;

@@ -24,12 +24,10 @@
 
 #import "SPColorWellCell.h"
 
-
 @implementation SPColorWellCell
 
 - (void) drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView
 {
-
 	// Set initial inset from cellFrame
 	NSRect rect = NSInsetRect (cellFrame, 0.5, 0.5);
 
@@ -59,7 +57,6 @@
 	// Draw the actual color as rect
 	[(NSColor*) [self objectValue] set];
 	NSRectFillUsingOperation(NSInsetRect (rect, insetFactor, insetFactor), NSCompositeSourceOver);
-
 }
 
 @end

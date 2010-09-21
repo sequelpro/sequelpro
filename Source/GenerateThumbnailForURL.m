@@ -25,8 +25,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
-#import <Cocoa/Cocoa.h>
-
 
 /* -----------------------------------------------------------------------------
 Generate a thumbnail for file

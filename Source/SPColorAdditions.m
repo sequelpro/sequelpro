@@ -24,7 +24,6 @@
 
 #import "SPColorAdditions.h"
 
-
 @implementation NSColor (SPColorAdditions)
 
 /*

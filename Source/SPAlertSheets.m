@@ -42,8 +42,8 @@ void SPBeginAlertSheet(
 		  id modalDelegate,
 		 SEL didEndSelector,
 		void *contextInfo,
-	NSString *msg
-) {
+	NSString *msg) 
+{
 	NSButton *aButton;
 
 	// Set up an NSAlert with the supplied details
@@ -95,8 +95,8 @@ void SPBeginWaitingAlertSheet(
 			void *contextInfo,
 		NSString *msg,
 		NSString *infoText,
-	   NSInteger *returnCode
-) {
+	   NSInteger *returnCode) 
+{
 
 	NSButton *aButton;
 
@@ -160,6 +160,7 @@ void SPBeginWaitingAlertSheet(
 								 beforeDate:[NSDate distantFuture]];
 
 	}
+	
 	[NSApp endModalSession:session];
 	[NSApp endSheet:[alert window]];
 }

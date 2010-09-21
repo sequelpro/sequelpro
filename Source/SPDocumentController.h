@@ -24,9 +24,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-
-@interface SPDocumentController : NSDocument {
-
-}
+@interface SPDocumentController : NSDocument
 
 @end

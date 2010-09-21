@@ -28,11 +28,9 @@
 
 @implementation NSWindow (SPWindowAdditions)
 
-// -------------------------------------------------------------------------------
-// toolbarHeight
-//
-// Returns the height of the currently visible toolbar.
-// -------------------------------------------------------------------------------
+/**
+ * Returns the height of the currently visible toolbar.
+ */
 - (CGFloat)toolbarHeight
 {
     NSRect windowFrame;
@@ -47,11 +45,9 @@
     return toolbarHeight;
 }
 
-// -------------------------------------------------------------------------------
-// resizeForContentView:titleBarVisible
-//
-// Resizes this window to the size of the supplied view.
-// -------------------------------------------------------------------------------
+/**
+ * Resizes this window to the size of the supplied view.
+ */
 - (void)resizeForContentView:(NSView *)view titleBarVisible:(BOOL)visible
 {	
 	NSSize viewSize = [view frame].size;
@@ -76,9 +72,9 @@
 	[self setFrame:frame display:YES animate:YES];
 }
 
-// -------------------------------------------------------------------------------
-// Three finger multi-touch right/left swipe event to go back/forward in table history.
-// -------------------------------------------------------------------------------
+/**
+ * Three finger multi-touch right/left swipe event to go back/forward in table history.
+ */
 - (void)swipeWithEvent:(NSEvent *)anEvent
 {
 	if([[self delegate] isKindOfClass:[SPDatabaseDocument class]] 

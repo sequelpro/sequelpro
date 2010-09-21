@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 // As the QuickLook framework is private we have to make
 // these methods public to avoid warnings while compiling
 @interface QLPreviewPanel : NSPanel

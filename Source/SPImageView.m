@@ -27,7 +27,7 @@
 
 @implementation SPImageView
 
-/*
+/**
  * On a drag and drop, read in dragged files and convert dragged images before passing
  * them to the delegate for further processing
  */

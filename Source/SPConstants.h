@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
-
 // View modes
 typedef enum {
 	SPStructureViewMode	  = 1,

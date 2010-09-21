@@ -27,6 +27,6 @@
 
 @interface NSFileManager (SPFileManagerAdditions)
 
-- (NSString*)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory error:(NSError **)errorOut;
+- (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory error:(NSError **)errorOut;
 
 @end

@@ -443,7 +443,6 @@
 		[self makeTextSizeLarger];
 	else if([anEvent deltaZ]<-5.0)
 		[self makeTextSizeSmaller];
-
 }
 
 @end

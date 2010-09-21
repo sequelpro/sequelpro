@@ -38,9 +38,9 @@
 
 @implementation SPFavoriteTextFieldCell
 
-// -------------------------------------------------------------------------------
-// init
-// -------------------------------------------------------------------------------
+/**
+ * Init.
+ */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -53,9 +53,6 @@
 	return self;
 }
 
-// -------------------------------------------------------------------------------
-// copyWithZone:
-// -------------------------------------------------------------------------------
 - (id)copyWithZone:(NSZone *)zone 
 {
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
@@ -69,21 +66,17 @@
 	return cell;
 }
 
-// -------------------------------------------------------------------------------
-// favoriteName
-//
-// Get the cell's favorite name.
-// -------------------------------------------------------------------------------
+/**
+ * Get the cell's favorite name.
+ */
 - (NSString *)favoriteName
 {
 	return favoriteName;
 }
 
-// -------------------------------------------------------------------------------
-// setFavoriteName:
-//
-// Set the cell's favorite name to the supplied name.
-// -------------------------------------------------------------------------------
+/**
+ * Set the cell's favorite name to the supplied name.
+ */
 - (void)setFavoriteName:(NSString *)name
 {
 	if (favoriteName != name) {
@@ -92,21 +85,17 @@
 	}
 }
 
-// -------------------------------------------------------------------------------
-// favoriteHost
-//
-// Get the cell's favorite host.
-// -------------------------------------------------------------------------------
+/**
+ * Get the cell's favorite host.
+ */
 - (NSString *)favoriteHost
 {
 	return favoriteHost;
 }
 
-// -------------------------------------------------------------------------------
-// setFavoriteHost:
-//
-// Set the cell's favorite host to the supplied name.
-// -------------------------------------------------------------------------------
+/**
+ * Set the cell's favorite host to the supplied name.
+ */
 - (void)setFavoriteHost:(NSString *)host
 {
 	if (favoriteHost != host) {
@@ -115,11 +104,9 @@
 	}
 }
 
-// -------------------------------------------------------------------------------
-// drawInteriorWithFrame:inView:
-//
-// Draws the actual cell.
-// -------------------------------------------------------------------------------
+/**
+ * Draws the actual cell.
+ */
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {		
 	(([self isHighlighted]) && (![[self highlightColorWithFrame:cellFrame inView:controlView] isEqualTo:[NSColor secondarySelectedControlColor]])) ? [self invertFontColors] : [self restoreFontColors];
@@ -186,31 +173,27 @@
 	return cellSize;
 }
 
-// -------------------------------------------------------------------------------
-// invertFontColors
-//
-// Inverts the displayed font colors when the cell is selected.
-// -------------------------------------------------------------------------------
+/**
+ * Inverts the displayed font colors when the cell is selected.
+ *
 - (void)invertFontColors
 {
 	mainStringColor = [NSColor whiteColor];
 	subStringColor = [NSColor whiteColor];
 }
 
-// -------------------------------------------------------------------------------
-// restoreFontColors
-//
-// Restores the displayed font colors once the cell is no longer selected.
-// -------------------------------------------------------------------------------
+/**
+ * Restores the displayed font colors once the cell is no longer selected.
+ */
 - (void)restoreFontColors
 {
 	mainStringColor = [NSColor blackColor];
 	subStringColor = [NSColor grayColor];
 }
 
-// -------------------------------------------------------------------------------
-// dealloc
-// -------------------------------------------------------------------------------
+/**
+ * Dealloc.
+ */
 - (void)dealloc 
 {	
     [favoriteName release], favoriteName = nil;
@@ -223,41 +206,33 @@
 
 @implementation SPFavoriteTextFieldCell (PrivateAPI)
 
-// -------------------------------------------------------------------------------
-// constructSubStringAttributedString
-//
-// Constructs the attributed string to be used as the cell's substring.
-// -------------------------------------------------------------------------------
+/**
+ * Constructs the attributed string to be used as the cell's substring.
+ */
 - (NSAttributedString *)constructSubStringAttributedString
 {
 	return [[[NSAttributedString alloc] initWithString:favoriteHost attributes:[self subStringAttributedStringAttributes]] autorelease];
 }
 
-// -------------------------------------------------------------------------------
-// attributedStringForFavoriteName
-//
-// Constructs the attributed string for the cell's favorite name.
-// -------------------------------------------------------------------------------
+/**
+ * Constructs the attributed string for the cell's favorite name.
+ */
 - (NSAttributedString *)attributedStringForFavoriteName
 {	
 	return [[[NSAttributedString alloc] initWithString:favoriteName attributes:[self mainStringAttributedStringAttributes]] autorelease];
 }
 
-// -------------------------------------------------------------------------------
-// mainStringAttributedStringAttributes
-//
-// Returns the attributes of the cell's main string.
-// -------------------------------------------------------------------------------
+/**
+ * Returns the attributes of the cell's main string.
+ */
 - (NSDictionary *)mainStringAttributedStringAttributes
 {
 	return [NSDictionary dictionaryWithObjectsAndKeys:mainStringColor, NSForegroundColorAttributeName, [NSFont systemFontOfSize:FAVORITE_NAME_FONT_SIZE], NSFontAttributeName, nil];
 }
 
-// -------------------------------------------------------------------------------
-// subStringAttributedStringAttributes
-//
-// Returns the attributes of the cell's sub string.
-// -------------------------------------------------------------------------------
+/**
+ * Returns the attributes of the cell's sub string.
+ */
 - (NSDictionary *)subStringAttributedStringAttributes
 {
 	return [NSDictionary dictionaryWithObjectsAndKeys:subStringColor, NSForegroundColorAttributeName, [NSFont systemFontOfSize:[NSFont smallSystemFontSize]], NSFontAttributeName, nil];

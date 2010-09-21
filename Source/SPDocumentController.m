@@ -22,9 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import "SPDocumentController.h"
-
 
 @implementation SPDocumentController
 

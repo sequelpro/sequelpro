@@ -33,8 +33,8 @@
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76))
-	{
+	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
+		
 		[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 	}
 	else {
