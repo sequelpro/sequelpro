@@ -142,17 +142,17 @@
 		nil
 		] retain];
 	editorNameForColors = [[NSArray arrayWithObjects:
-		NSLocalizedString(@"Text",@"text lable for color table"),
-		NSLocalizedString(@"Background",@"background lable for color table"),
-		NSLocalizedString(@"Caret",@"caret lable for color table"),
-		NSLocalizedString(@"Comment",@"comment lable for color table"),
-		NSLocalizedString(@"Keyword",@"keyword lable for color table"),
-		NSLocalizedString(@"Numeric",@"numeric lable for color table"),
-		NSLocalizedString(@"Quote",@"quote lable for color table"),
-		NSLocalizedString(@"Backtick Quote",@"backtick quote lable for color table"),
-		NSLocalizedString(@"Variable",@"variable lable for color table"),
-		NSLocalizedString(@"Query Background",@"query background lable for color table"),
-		NSLocalizedString(@"Selection",@"selection lable for color table"),
+		NSLocalizedString(@"Text",@"text label for color table"),
+		NSLocalizedString(@"Background",@"background label for color table"),
+		NSLocalizedString(@"Caret",@"caret label for color table"),
+		NSLocalizedString(@"Comment",@"comment label"),
+		NSLocalizedString(@"Keyword",@"keyword label for color table"),
+		NSLocalizedString(@"Numeric",@"numeric label for color table"),
+		NSLocalizedString(@"Quote",@"quote label for color table"),
+		NSLocalizedString(@"Backtick Quote",@"backtick quote label for color table"),
+		NSLocalizedString(@"Variable",@"variable label for color table"),
+		NSLocalizedString(@"Query Background",@"query background label for color table"),
+		NSLocalizedString(@"Selection",@"selection label for color table"),
 		nil
 		] retain];
 
@@ -1651,7 +1651,7 @@
 	[themeSelectionMenu removeAllItems];
 	[themeSelectionMenu setAutoenablesItems:YES];
 	[themeSelectionMenu setShowsStateColumn:YES];
-	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"default color scheme label") action:@selector(setDefaultColors:) keyEquivalent:@""];
+	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"default label") action:@selector(setDefaultColors:) keyEquivalent:@""];
 	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	
 	NSArray *foundThemes = [self getAvailableThemes];

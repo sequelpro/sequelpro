@@ -1036,7 +1036,6 @@ closes the keySheet
 			isEditingNewRow = NO;
 			currentlyEditingRow = -1;
 			[tableFields removeAllObjects];
-			//[indexes removeAllObjects];
 			[tableSourceView reloadData];
 			[indexesTableView reloadData];
 			[addFieldButton setEnabled:NO];
