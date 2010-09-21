@@ -996,6 +996,7 @@ static SPQueryController *sharedQueryController = nil;
 	if (allowConsoleUpdate && [[self window] isVisible]) {
 		[consoleTableView noteNumberOfRowsChanged];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
+		[consoleTableView reloadData];
 	}
 }
 
