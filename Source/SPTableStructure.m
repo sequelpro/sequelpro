@@ -43,6 +43,7 @@
 - (BOOL)_isFieldTypeNumeric:(NSString*)aType;
 - (BOOL)_isFieldTypeDate:(NSString*)aType;
 - (BOOL)_isFieldTypeString:(NSString*)aType;
+- (BOOL)_isFieldTypeAllowBinary:(NSString*)aType;
 
 @end
 
@@ -104,15 +105,16 @@
 		@"--------",
 		@"CHAR",
 		@"VARCHAR",
+		@"TINYTEXT",
+		@"TEXT",
+		@"MEDIUMTEXT",
+		@"LONGTEXT",
+		@"TINYBLOB",
+		@"MEDIUMBLOB",
+		@"BLOB",
+		@"LONGBLOB",
 		@"BINARY",
 		@"VARBINARY",
-		@"TINYBLOB",
-		@"BLOB",
-		@"TEXT",
-		@"MEDIUMBLOB",
-		@"MEDIUMTEXT",
-		@"LONGBLOB",
-		@"LONGTEXT",
 		@"ENUM",
 		@"SET",
 		@"--------",
@@ -240,6 +242,9 @@
 			NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
 			for(id col in theCollations) {
 				if([[col objectForKey:@"COLLATION_NAME"] isEqualToString:[theField objectForKey:@"collation"]]) {
+					// Set BINARY if collation ends with _bin for convenience
+					if([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"])
+						[theField setObject:[NSNumber numberWithInt:1] forKey:@"binary"];
 					break;
 				}
 				selectedIndex++;
@@ -645,7 +650,7 @@
 	[[sender window] orderOut:self];
 }
 
-/*
+/**
 closes the keySheet
 */
 - (IBAction)closeKeySheet:(id)sender
@@ -671,6 +676,11 @@ closes the keySheet
 	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
 }
 
+/**
+ * Try table's auto_increment to a specific value
+ *
+ * @param valueAsString The new auto_increment integer as NSString
+ */
 - (void)setAutoIncrementTo:(NSString*)valueAsString
 {
 
@@ -761,7 +771,7 @@ closes the keySheet
 }
 
 
-/*
+/**
  * A method to be called whenever the selection changes or the table would be reloaded
  * or altered; checks whether the current row is being edited, and if so attempts to save
  * it.  Returns YES if no save was necessary or the save was successful, and NO if a save
@@ -1183,7 +1193,7 @@ closes the keySheet
 #pragma mark -
 #pragma mark Getter methods
 
-/*
+/**
 get the default value for a specified field
 */
 - (NSString *)defaultValueForField:(NSString *)field
@@ -1197,7 +1207,7 @@ get the default value for a specified field
 	}
 }
 
-/*
+/**
 returns an array containing the field names of the selected table
 */
 - (NSArray *)fieldNames
@@ -1220,7 +1230,7 @@ returns an array containing the field names of the selected table
 	return [NSArray arrayWithArray:tempArray];
 }
 
-/*
+/**
 returns a dictionary containing enum/set field names as key and possible values as array
 */
 - (NSDictionary *)enumFields
@@ -1407,20 +1417,59 @@ returns a dictionary containing enum/set field names as key and possible values 
 		currentlyEditingRow = rowIndex;
 	}
 
+	NSDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
+
 	// Reset collation if encoding was changed
 	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if([[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
-			[[tableFields objectAtIndex:rowIndex] setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+		if([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
+			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+			[tableSourceView reloadData];
+		}
+	}
+	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
+	else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		if([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
+			if([anObject integerValue] == 1) {
+				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+			}
+			[tableSourceView reloadData];
+		}
+	}
+	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
+	else if([[aTableColumn identifier] isEqualToString:@"Extra"]) {
+		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
+			if([[[currentRow objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"]) {
+				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
+			}
+			[tableSourceView reloadData];
+		}
+	}
+	// Reset default to "" if field doesn't allow NULL and current default is set to NULL
+	else if([[aTableColumn identifier] isEqualToString:@"null"]) {
+		if([[currentRow objectForKey:@"null"] integerValue] != [anObject integerValue]) {
+			if([anObject integerValue] == 0) {
+				if([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]])
+					[currentRow setObject:@"" forKey:@"default"];
+			}
 			[tableSourceView reloadData];
 		}
 	}
 
+	// Store new value but not if user choose "---" for type and reset values if required
 	if([[aTableColumn identifier] isEqualToString:@"type"]) {
-		if(anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"])
-			[[tableFields objectAtIndex:rowIndex] setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
+		if(anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"]) {
+			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
+			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
+			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"]) {
+				[currentRow setObject:@"" forKey:@"default"];
+				[currentRow setObject:@"" forKey:@"length"];
+			}
+			[tableSourceView reloadData];
+		}
+	} else {
+		[currentRow setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
 	}
-	else
-		[[tableFields objectAtIndex:rowIndex] setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
+
 
 }
 
@@ -1437,7 +1486,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 	return YES;
 }
 
-/*
+/**
 Begin a drag and drop operation from the table - copy a single dragged row to the drag pasteboard.
 */
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
@@ -1457,7 +1506,7 @@ Begin a drag and drop operation from the table - copy a single dragged row to th
 	}
 }
 
-/*
+/**
 Determine whether to allow a drag and drop operation on this table - for the purposes of drag reordering,
 validate that the original source is of the correct type and within the same table, and that the drag
 would result in a position change.
@@ -1487,7 +1536,7 @@ would result in a position change.
 	return NSDragOperationNone;
 }
 
-/*
+/**
  * Having validated a drop, perform the field/column reordering to match.
  */
 - (BOOL)tableView:(NSTableView*)tableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)destinationRowIndex dropOperation:(NSTableViewDropOperation)operation
@@ -1726,9 +1775,9 @@ would result in a position change.
 }
 
 
-/*
+/**
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
- * is uneditable.
+ * is uneditable and do cell validation due to row's field type.
  */
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
@@ -1736,7 +1785,48 @@ would result in a position change.
 	//make sure that the message is from the right table view
 	if (tableView != tableSourceView) return;
 
-	[aCell setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
+	if([tablesListInstance tableType] == SPTableTypeView) {
+		[aCell setEnabled:NO];
+	} else {
+
+		// validate cell against current field type
+		NSDictionary *theRow = [tableFields objectAtIndex:rowIndex];
+		NSString *theRowType = @"";
+		if([theRow objectForKey:@"type"])
+			theRowType = [[[theRow objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+
+		// Only string fields allow encoding settings
+		if(([[aTableColumn identifier] isEqualToString:@"encoding"])) {
+			[aCell setEnabled:([self _isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+		}
+		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
+		else if([[aTableColumn identifier] isEqualToString:@"collation"]){
+ 			[aCell setEnabled:([self _isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+		}
+		// Check if UNSIGNED and ZEROFILL is allowed
+		else if([[aTableColumn identifier] isEqualToString:@"zerofill"] || [[aTableColumn identifier] isEqualToString:@"unsigned"]) {
+			[aCell setEnabled:([self _isFieldTypeNumeric:theRowType])];
+		}
+		// Check if BINARY is allowed
+		else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
+			[aCell setEnabled:([self _isFieldTypeAllowBinary:theRowType])];
+		}
+		// TEXT or BLOB fields don't allow a DEFAULT
+		else if([[aTableColumn identifier] isEqualToString:@"default"]) {
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"]) ? NO : YES];
+		}
+		// Check allow NULL
+		else if([[aTableColumn identifier] isEqualToString:@"null"]) {
+			[aCell setEnabled:([[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] || [[[theRow objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"]) ? NO : YES];
+		}
+		// TEXT or BLOB fields don't allow a length
+		else if([[aTableColumn identifier] isEqualToString:@"length"]) {
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [self _isFieldTypeDate:theRowType]) ? NO : YES];
+		}
+		else {
+			[aCell setEnabled:YES];
+		}
+	}
 }
 
 #pragma mark -
@@ -1836,7 +1926,7 @@ would result in a position change.
 
 	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
 
-	return ([typeSuggestions indexOfObject:type] > 31);
+	return ([typeSuggestions indexOfObject:type] > 32);
 }
 
 /**
@@ -1848,7 +1938,18 @@ would result in a position change.
 
 	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
 
-	return (![self _isFieldTypeDate:type] && ![self _isFieldTypeNumeric:type]);
+	return ([typeSuggestions indexOfObject:type] > 17 && [typeSuggestions indexOfObject:type] < 32);
+}
+/**
+ * Return if aType is a string type
+ */
+- (BOOL)_isFieldTypeAllowBinary:(NSString*)aType
+{
+	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+
+	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
+
+	return ([typeSuggestions indexOfObject:type] > 17 && [typeSuggestions indexOfObject:type] < 24);
 }
 
 /**
