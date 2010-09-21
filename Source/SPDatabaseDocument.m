@@ -2493,7 +2493,8 @@
 - (void)doPerformQueryService:(NSString *)query
 {
 	[parentWindow makeKeyAndOrderFront:self];
-	[tablesListInstance doPerformQueryService:query];
+	[self viewQuery:nil];
+	[customQueryInstance doPerformQueryService:query];
 }
 
 /**
@@ -2561,7 +2562,7 @@
 	}
 }
 
-/*
+/**
  * Is current document Untitled?
  */
 - (BOOL)isUntitled
@@ -3515,7 +3516,7 @@
 	[tableDumpInstance importFromClipboard];
 }
 
-/*
+/**
  * Show the MySQL Help TOC of the current MySQL connection
  * Invoked by the MainMenu > Help > MySQL Help
  */
@@ -3839,7 +3840,7 @@
 	}
 }
 
-/*
+/**
  * Return the createTableSyntaxWindow
  */
 - (NSWindow *)getCreateTableSyntaxWindow
@@ -4410,7 +4411,7 @@
 	return [[spfFileURL copy] autorelease];
 }
 
-/*
+/**
  * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
  * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
  */
