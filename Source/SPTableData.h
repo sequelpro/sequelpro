@@ -41,7 +41,11 @@
 	NSString *tableCreateSyntax;
 	
 	MCPConnection *mySQLConnection;
+
+	BOOL isWorking;
 }
+
+@property (readwrite, assign) BOOL isWorking;
 
 - (void) setConnection:(MCPConnection *)theConnection;
 - (NSString *) tableEncoding;

@@ -35,6 +35,11 @@
 
 @implementation SPTableData
 
+@synthesize isWorking;
+
+/**
+ * Init class.
+ */
 - (id) init
 {
 	if ((self = [super init])) {
@@ -47,14 +52,17 @@
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
 		mySQLConnection = nil;
+		isWorking = NO;
 	}
 
 	return self;
 }
 
-/*
+/**
  * Set the connection for use.
  * Called by the connect sheet methods.
+ *
+ * @param theConnection The used connection for the SPDatabaseDocument
  */
 - (void) setConnection:(MCPConnection *)theConnection
 {
@@ -63,11 +71,15 @@
 }
 
 
-/*
+/**
  * Retrieve the encoding for the current table, using or refreshing the cache as appropriate.
  */
 - (NSString *) tableEncoding
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return nil;
+
 	if (tableEncoding == nil) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -78,11 +90,15 @@
 	return (tableEncoding == nil) ? nil : [NSString stringWithString:tableEncoding];
 }
 
-/*
+/**
  * Retrieve the create syntax for the current table, using or refreshing the cache as appropriate.
  */
 - (NSString *) tableCreateSyntax
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return nil;
+
 	if (tableCreateSyntax == nil) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -99,11 +115,15 @@
 }
 
 
-/*
+/**
  * Retrieve all columns for the current table as an array, using or refreshing the cache as appropriate.
  */
 - (NSArray *) columns
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return [NSArray array];
+
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -114,13 +134,23 @@
 	return columns;
 }
 
+/**
+ * Retrieve all constraints.
+ */
 - (NSArray *) getConstraints
 {
 	return constraints;
 }
 
+/**
+ * Retrieve all triggers used in the current selected table.
+ */
 - (NSArray *) triggers
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return [NSArray array];
+	
 
 	// If triggers is nil, the triggers need to be loaded - if a table is selected on MySQL >= 5.0.2
 	if (!triggers) {
@@ -137,11 +167,18 @@
 	return (NSArray *)triggers;
 }
 
-/*
- * Retrieve a column with a specified name, using or refreshing the cache as appropriate.
+/**
+ * Retrieve a NSDictionary containing all parameters of the column with a specified name, using or refreshing the cache as appropriate.
+ *
+ * @param colName The column name.
  */
 - (NSDictionary *) columnWithName:(NSString *)colName
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return nil;
+	
+
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -155,11 +192,16 @@
 }
 
 
-/*
+/**
  * Retrieve column names for the current table as an array, using or refreshing the cache as appropriate.
  */
 - (NSArray *) columnNames
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return [NSArray array];
+	
+
 	if ([columnNames count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -171,11 +213,17 @@
 }
 
 
-/*
- * Retrieve a specified column for the current table as a dictionary, using or refreshing the cache as appropriate.
+/**
+ * Retrieve a NSDictionary containing all parameters of the column with a specific index, using or refreshing the cache as appropriate.
+ *
+ * @param index The index of the column array.
  */
 - (NSDictionary *) columnAtIndex:(NSInteger)index
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return nil;
+
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -186,13 +234,19 @@
 	return [columns objectAtIndex:index];
 }
 
-/*
+/**
  * Checks if this column is type text or blob.
  * Used to determine if we have to show a popup when we edit a value from this column.
+ *
+ * @param colName The column name which should be checked.
  */
 
 - (BOOL) columnIsBlobOrText:(NSString *)colName
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return YES; // to be at the safe side
+
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
 			[self updateInformationForCurrentView];
@@ -205,20 +259,30 @@
 }
 
 
-/*
+/**
  * Retrieve the table status value for a supplied key, using or refreshing the cache as appropriate.
+ *
+ * @param aKey The key name of the underlying NSDictionary
  */
 - (NSString *) statusValueForKey:(NSString *)aKey
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return nil;
+
 	if ([status count] == 0) {
 		[self updateStatusInformationForCurrentTable];
 	}
 	return [status objectForKey:aKey];
 }
 
-/*
+/**
  * Set the table status value for the supplied key. This method is useful for when status values are obtained
  * via other means and are subsequently more accurate than the value currently set.
+ *
+ * @param value The string value for the passed key name.
+ *
+ * @param key The key name.
  */
 - (void)setStatusValue:(NSString *)value forKey:(NSString *)key
 {
@@ -226,11 +290,15 @@
 }
 
 
-/*
+/**
  * Retrieve all known status values as a dictionary, using or refreshing the cache as appropriate.
  */
 - (NSDictionary *) statusValues
 {
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return nil;
+
 	if ([status count] == 0) {
 		[self updateStatusInformationForCurrentTable];
 	}
@@ -238,7 +306,7 @@
 }
 
 
-/*
+/**
  * Flushes all caches - should be used on major changes, for example table changes.
  */
 - (void) resetAllData
@@ -264,7 +332,7 @@
 }
 
 
-/*
+/**
  * Flushes any status-related caches.
  */
 - (void) resetStatusData
@@ -273,7 +341,7 @@
 }
 
 
-/*
+/**
  * Flushes any field/column-related caches.
  */
 - (void) resetColumnData
@@ -283,12 +351,14 @@
 }
 
 
-/*
+/**
  * Retrieves the information for the current table and stores it in cache.
  * Returns a boolean indicating success.
  */
 - (BOOL) updateInformationForCurrentTable
 {
+	isWorking = YES;
+
 	NSDictionary *tableData = nil;
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
@@ -302,6 +372,7 @@
 	}
 
 	if (tableData == nil ) {
+		isWorking = NO;
 		return FALSE;
 	}
 
@@ -317,11 +388,51 @@
 	}
 	tableEncoding = [[NSString alloc] initWithString:[tableData objectForKey:@"encoding"]];
 
+	isWorking = NO;
+
+	return TRUE;
+}
+
+/**
+ * Retrieves the information for the current view and stores it in cache.
+ * Returns a boolean indicating success.
+ */
+- (BOOL) updateInformationForCurrentView
+{
+
+	isWorking = YES;
+
+	NSDictionary *viewData = [self informationForView:[tableListInstance tableName]];
+	NSDictionary *columnData;
+	NSEnumerator *enumerator;
+
+	if (viewData == nil) {
+		[columns removeAllObjects];
+		[columnNames removeAllObjects];
+		[constraints removeAllObjects];
+		isWorking = NO;
+		return FALSE;
+	}
+
+	[columns addObjectsFromArray:[viewData objectForKey:@"columns"]];
+
+	enumerator = [columns objectEnumerator];
+	while (columnData = [enumerator nextObject]) {
+		[columnNames addObject:[NSString stringWithString:[columnData objectForKey:@"name"]]];
+	}
+
+	if (tableEncoding != nil) {
+		[tableEncoding release];
+	}
+	tableEncoding = [[NSString alloc] initWithString:[viewData objectForKey:@"encoding"]];
+
+	isWorking = NO;
+
 	return TRUE;
 }
 
 
-/*
+/**
  * Retrieve the CREATE TABLE string for a table and analyse it to extract the field
  * details, primary key, unique keys, and table encoding.
  * In future this could also be used to retrieve the majority of index information
@@ -652,40 +763,8 @@
 }
 
 
-/*
- * Retrieves the information for the current view and stores it in cache.
- * Returns a boolean indicating success.
- */
-- (BOOL) updateInformationForCurrentView
-{
-	NSDictionary *viewData = [self informationForView:[tableListInstance tableName]];
-	NSDictionary *columnData;
-	NSEnumerator *enumerator;
 
-	if (viewData == nil) {
-		[columns removeAllObjects];
-		[columnNames removeAllObjects];
-		[constraints removeAllObjects];
-		return FALSE;
-	}
-
-	[columns addObjectsFromArray:[viewData objectForKey:@"columns"]];
-
-	enumerator = [columns objectEnumerator];
-	while (columnData = [enumerator nextObject]) {
-		[columnNames addObject:[NSString stringWithString:[columnData objectForKey:@"name"]]];
-	}
-
-	if (tableEncoding != nil) {
-		[tableEncoding release];
-	}
-	tableEncoding = [[NSString alloc] initWithString:[viewData objectForKey:@"encoding"]];
-
-	return TRUE;
-}
-
-
-/*
+/**
  * Retrieve information which can be used to display views.  Unlike tables, all the information
  * for views cannot be extracted from the CREATE ALGORITHM syntax without selecting all the info
  * from the referenced tables.  For the time being we therefore use the column information for
@@ -815,16 +894,21 @@
 
 
 
-/*
+/**
  * Retrieve the status of a table as a dictionary and add it to the local cache for reuse.
  */
 - (BOOL)updateStatusInformationForCurrentTable
 {
+
+	isWorking = YES;
+
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected tables and return false
-	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName])
+	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName]) {
+		isWorking = NO;
 		return FALSE;
+	}
 
 	// Ensure queries are run as UTF8
 	if (changeEncoding) {
@@ -867,6 +951,7 @@
 					   [mySQLConnection getLastErrorMessage]]);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
+		isWorking = NO;
 		return FALSE;
 	}
 
@@ -884,6 +969,7 @@
 		if ([[status objectForKey:@"Engine"] isNSNull]) {
 			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:NSLocalizedString(@"An error occurred retrieving table information.  MySQL said: %@", @"MySQL table info retrieval error message"), [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+			isWorking = NO;
 			return FALSE;
 		}
 
@@ -918,6 +1004,8 @@
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
+	isWorking = NO;
+
 	return TRUE;
 }
 
@@ -926,6 +1014,8 @@
  */
 - (BOOL) updateTriggersForCurrentTable
 {
+
+	isWorking = YES;
 
 	// Ensure queries are made in UTF8
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
@@ -949,6 +1039,7 @@
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
+		isWorking = NO;
 		return NO;
 	}
 
@@ -960,10 +1051,12 @@
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
+	isWorking = NO;
+
 	return YES;
 }
 
-/*
+/**
  * Parse an array of field definition parts - not including name but including type and optionally unsigned/zerofill/null
  * and so forth - into a dictionary of parsed details.  Intended for use both with CREATE TABLE syntax - with fuller
  * details - and with the "type" column from SHOW COLUMNS.
@@ -980,13 +1073,15 @@
 	NSString *detailString;
 	NSInteger i, definitionPartsIndex = 0, partsArrayLength;
 
+	NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
 	// Skip blank items within the definition parts
 	while (definitionPartsIndex < [definitionParts count]
-			&& ![[[definitionParts objectAtIndex:definitionPartsIndex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length])
+			&& ![[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex) stringByTrimmingCharactersInSet:whitespaceCharacterSet] length])
 		definitionPartsIndex++;
 
 	// The first item is always the data type.
-	[fieldParser setString:[definitionParts objectAtIndex:definitionPartsIndex]];
+	[fieldParser setString:NSArrayObjectAtIndex(definitionParts, definitionPartsIndex)];
 	definitionPartsIndex++;
 
 	// If no field length definition is present, store only the type
@@ -1003,7 +1098,7 @@
 			[detailParser setString:[fieldParser stringFromCharacter:'(' toCharacter:')' inclusively:NO]];
 			detailParts = [[NSMutableArray alloc] initWithArray:[detailParser splitStringByCharacter:',']];
 			for (i = 0; i < [detailParts count]; i++) {
-				[detailParser setString:[detailParts objectAtIndex:i]];
+				[detailParser setString:NSArrayObjectAtIndex(detailParts, i)];
 				[detailParts replaceObjectAtIndex:i withObject:[detailParser unquotedString]];
 			}
 			[fieldDetails setObject:[NSArray arrayWithArray:detailParts] forKey:@"values"];
@@ -1016,7 +1111,7 @@
 			[detailParser setString:[detailParts objectAtIndex:0]];
 			[fieldDetails setObject:[detailParser unquotedString] forKey:@"length"];
 			if ([detailParts count] > 1) {
-				[detailParser setString:[detailParts objectAtIndex:1]];
+				[detailParser setString:NSArrayObjectAtIndex(detailParts, 1)];
 				[fieldDetails setObject:[detailParser unquotedString] forKey:@"decimals"];
 			}
 			[detailParts release];
@@ -1060,70 +1155,75 @@
 	}
 	[detailString release];
 
+
+	NSNumber *boolYES = [NSNumber numberWithBool:YES];
+	NSNumber *boolNO  = [NSNumber numberWithBool:NO];
+
 	// Set up some column defaults for all columns
-	[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"null"];
-	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"unsigned"];
-	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"binary"];
-	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"zerofill"];
-	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"autoincrement"];
-	[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"onupdatetimestamp"];
+	[fieldDetails setValue:boolYES forKey:@"null"];
+	[fieldDetails setValue:boolNO forKey:@"unsigned"];
+	[fieldDetails setValue:boolNO forKey:@"binary"];
+	[fieldDetails setValue:boolNO forKey:@"zerofill"];
+	[fieldDetails setValue:boolNO forKey:@"autoincrement"];
+	[fieldDetails setValue:boolNO forKey:@"onupdatetimestamp"];
 	[fieldDetails setValue:@"" forKey:@"comment"];
 	[fieldDetails setValue:[NSMutableString string] forKey:@"unparsed"];
 
 	// Walk through the remaining column definition parts storing recognised details
 	partsArrayLength = [definitionParts count];
+	id aValue;
 	for ( ; definitionPartsIndex < partsArrayLength; definitionPartsIndex++) {
-		detailString = [[NSString alloc] initWithString:[[definitionParts objectAtIndex:definitionPartsIndex] uppercaseString]];
+		detailString = [[NSString alloc] initWithString:[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex) uppercaseString]];
 
 		// Whether numeric fields are unsigned
 		if ([detailString isEqualToString:@"UNSIGNED"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"unsigned"];
+			[fieldDetails setValue:boolYES forKey:@"unsigned"];
 
 		// Whether numeric fields are zerofill
 		} else if ([detailString isEqualToString:@"ZEROFILL"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"zerofill"];
+			[fieldDetails setValue:boolYES forKey:@"zerofill"];
 
 		// Whether text types are binary
 		} else if ([detailString isEqualToString:@"BINARY"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"binary"];
+			[fieldDetails setValue:boolYES forKey:@"binary"];
 
 		// Whether text types have a different encoding to the table
 		} else if ([detailString isEqualToString:@"CHARSET"] && (definitionPartsIndex + 1 < partsArrayLength)) {
-			if (![[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
-				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+1] forKey:@"encoding"];
+			if (![[aValue = NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:aValue forKey:@"encoding"];
 			}
 			definitionPartsIndex++;
 		} else if ([detailString isEqualToString:@"CHARACTER"] && (definitionPartsIndex + 2 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"SET"]) {
-			if (![[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"DEFAULT"]) {;
-				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+2] forKey:@"encoding"];
+					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"SET"]) {
+			if (![[aValue = NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:aValue forKey:@"encoding"];
 			}
 			definitionPartsIndex += 2;
 
 		// Whether text types have a different collation to the table
 		} else if ([detailString isEqualToString:@"COLLATE"] && (definitionPartsIndex + 1 < partsArrayLength)) {
-			if (![[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"DEFAULT"]) {
-				[fieldDetails setValue:[definitionParts objectAtIndex:definitionPartsIndex+1] forKey:@"collation"];
+			if (![[aValue = NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"DEFAULT"]) {
+				[fieldDetails setValue:aValue forKey:@"collation"];
 			}
 			definitionPartsIndex++;
 
 		// Whether fields are NOT NULL
 		} else if ([detailString isEqualToString:@"NOT"] && (definitionPartsIndex + 1 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"NULL"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:NO] forKey:@"null"];
+					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"NULL"]) {
+			[fieldDetails setValue:boolNO forKey:@"null"];
 			definitionPartsIndex++;
 
 		// Whether fields are NULL
 		} else if ([detailString isEqualToString:@"NULL"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"null"];
+			[fieldDetails setValue:boolYES forKey:@"null"];
 
 		// Whether fields should auto-increment
 		} else if ([detailString isEqualToString:@"AUTO_INCREMENT"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"autoincrement"];
+			[fieldDetails setValue:boolYES forKey:@"autoincrement"];
 
 		// Field defaults
 		} else if ([detailString isEqualToString:@"DEFAULT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
-			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
+			detailParser = [[SPSQLParser alloc] initWithString:NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1)];
 			if([[detailParser unquotedString] isEqualToString:@"NULL"])
 				[fieldDetails setObject:[NSNull null] forKey:@"default"];
 			else
@@ -1133,14 +1233,14 @@
 
 		// Special timestamp case - Whether fields are set to update the current timestamp
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
-					&& [[[definitionParts objectAtIndex:definitionPartsIndex+1] uppercaseString] isEqualToString:@"UPDATE"]
-					&& [[[definitionParts objectAtIndex:definitionPartsIndex+2] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-			[fieldDetails setValue:[NSNumber numberWithBool:YES] forKey:@"onupdatetimestamp"];
+					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
+					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+			[fieldDetails setValue:boolYES forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
 
 		// Column comments
 		} else if ([detailString isEqualToString:@"COMMENT"] && (definitionPartsIndex + 1 < partsArrayLength)) {
-			detailParser = [[SPSQLParser alloc] initWithString:[definitionParts objectAtIndex:definitionPartsIndex+1]];
+			detailParser = [[SPSQLParser alloc] initWithString:NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1)];
 			[fieldDetails setValue:[detailParser unquotedString] forKey:@"comment"];
 			[detailParser release];
 			definitionPartsIndex++;
@@ -1149,7 +1249,7 @@
 		// TODO: Currently unhandled: [UNIQUE | PRIMARY] KEY | COLUMN_FORMAT bar | STORAGE q | REFERENCES...
 		} else {
 			[[fieldDetails objectForKey:@"unparsed"] appendString:@" "];
-			[[fieldDetails objectForKey:@"unparsed"] appendString:[definitionParts objectAtIndex:definitionPartsIndex]];
+			[[fieldDetails objectForKey:@"unparsed"] appendString:NSArrayObjectAtIndex(definitionParts, definitionPartsIndex)];
 		}
 
 		[detailString release];
@@ -1158,7 +1258,7 @@
 	return [fieldDetails autorelease];
 }
 
-/*
+/**
  * Return the column names which are set to PRIMIARY KEY; returns nil if no PRIMARY KEY is set.
  */
 - (NSArray *)primaryKeyColumnNames
@@ -1201,8 +1301,8 @@
 	for( i = 0; i < [r numOfRows]; i++ ) {
 		resultRow = [r fetchRowAsArray];
 		// check if the row is indeed a key (for MySQL servers before 5.0.3)
-		if ([[[resultRow objectAtIndex:3] description] isEqualToString:@"PRI"]) {
-			[keyColumns addObject:[[resultRow objectAtIndex:0] description]];
+		if ([[NSArrayObjectAtIndex(resultRow ,3) description] isEqualToString:@"PRI"]) {
+			[keyColumns addObject:[NSArrayObjectAtIndex(resultRow ,0) description]];
 		}
 	}
 
@@ -1215,6 +1315,9 @@
 
 #pragma mark -
 
+/**
+ * Dealloc the class
+ */
 - (void) dealloc
 {
 	[columns release];

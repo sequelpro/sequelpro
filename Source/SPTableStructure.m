@@ -150,7 +150,6 @@
  */
 - (void)loadTable:(NSString *)aTable
 {
-	NSMutableArray *theTableFields = [NSMutableArray array];
 	NSArray *theTableIndexes;
 	NSMutableDictionary *theTableEnumLists = [NSMutableDictionary dictionary];
 	NSInteger i;
@@ -163,6 +162,9 @@
 		[[self onMainThread] setTableDetails:nil];
 		return;
 	}
+
+	NSMutableArray *theTableFields = [[NSMutableArray alloc] init];
+	[theTableFields setArray:[NSArray array]];
 
 	// Make a mutable copy out of the cached [tableDataInstance columns] since we're adding infos
 	for(id col in [tableDataInstance columns])
@@ -205,16 +207,15 @@
 
 	// Set up the encoding PopUpButtonCell
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
-	if (([encodings count] > 0) && ([tableDataInstance tableEncoding])) {
+	if ([encodings count]) {
 		NSString *selectedTitle = @"";
 		[encodingPopupCell removeAllItems];
 		[encodingPopupCell addItemWithTitle:@""];
+
 		// Populate encoding popup button
 		for (NSDictionary *encoding in encodings)
-		{
-			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
-			[encodingPopupCell addItemWithTitle:menuItemTitle];
-		}
+			[encodingPopupCell addItemWithTitle:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
+
 	}
 	else {
 		[encodingPopupCell addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
@@ -296,6 +297,7 @@
 	// Send the query finished/work complete notification
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
+	[theTableFields release];
 }
 
 /**
@@ -330,10 +332,10 @@
 	[indexesController setTable:selectedTable];
 
 	// Reset the table store and display
+	[tableFields removeAllObjects];
 	[enumFields removeAllObjects];
 	[tableSourceView deselectAll:self];
 	[indexesTableView deselectAll:self];
-	[tableFields removeAllObjects];
 	[addFieldButton setEnabled:NO];
 	[copyFieldButton setEnabled:NO];
 	[removeFieldButton setEnabled:NO];
@@ -1380,13 +1382,14 @@ returns a dictionary containing enum/set field names as key and possible values 
 	if (rowIndex >= [tableFields count]) return @"...";
 
 	if([[tableColumn identifier] isEqualToString:@"collation"]) {
-		if([[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue] > 0) {
-			NSString *enc = [[encodingPopupCell itemAtIndex:[[[tableFields objectAtIndex:rowIndex] objectForKey:@"encoding"] integerValue]] title];
+		NSInteger idx = 0;
+		if((idx = [[NSArrayObjectAtIndex(tableFields,rowIndex) objectForKey:@"encoding"] integerValue]) > 0) {
+			NSString *enc = [[encodingPopupCell itemAtIndex:idx] title];
 			NSInteger start = [enc rangeOfString:@"("].location+1;
 			NSInteger end = [enc length] - start - 1;
 			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, end)]];
 		} else {
-			if([tableDataInstance tableEncoding]) {
+			if([tableDataInstance tableEncoding] != nil) {
 				collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 			} else {
 				collations = [NSArray array];
@@ -1403,7 +1406,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 		}
 	}
 
-	return [[tableFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	return [NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:[tableColumn identifier]];
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -1790,10 +1793,10 @@ would result in a position change.
 	} else {
 
 		// validate cell against current field type
-		NSDictionary *theRow = [tableFields objectAtIndex:rowIndex];
+		NSDictionary *theRow = NSArrayObjectAtIndex(tableFields, rowIndex);
 		NSString *theRowType = @"";
-		if([theRow objectForKey:@"type"])
-			theRowType = [[[theRow objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+		if(theRowType = [theRow objectForKey:@"type"])
+			theRowType = [[theRowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
 		// Only string fields allow encoding settings
 		if(([[aTableColumn identifier] isEqualToString:@"encoding"])) {
@@ -1874,7 +1877,7 @@ would result in a position change.
 
 - (id)comboBoxCell:(NSComboBoxCell *)aComboBoxCell objectValueForItemAtIndex:(NSInteger)index
 {
-	return [typeSuggestions objectAtIndex:index];
+	return NSArrayObjectAtIndex(typeSuggestions, index);
 }
 
 - (NSInteger)numberOfItemsInComboBoxCell:(NSComboBoxCell *)aComboBoxCell
