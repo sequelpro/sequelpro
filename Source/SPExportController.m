@@ -555,7 +555,7 @@
 #pragma mark Other 
 
 /**
- * Invoked when the user dismissing the export dialog and starts the export process if required.
+ * Invoked when the user dismisses the export dialog. Starts the export process if required.
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
@@ -570,6 +570,10 @@
 			// Give the export sheet a chance to close
 			[self performSelector:@selector(_checkForDatabaseChanges) withObject:nil afterDelay:0.5];
 		}
+		else {
+			// Initialize the export after a short delay to give the alert a chance to close 
+			[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
+		}
 	}
 }
 
@@ -578,7 +582,7 @@
 	// Perform the export ignoring the new tables
 	if (returnCode == NSOKButton) {
 		
-		// Initialize the export after a slight delay to give the alert a chance to close 
+		// Initialize the export after a short delay to give the alert a chance to close 
 		[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
 	}
 	else {
