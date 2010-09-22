@@ -32,6 +32,7 @@ NSString *SPNewIndexIndexName      = @"IndexName";
 NSString *SPNewIndexIndexType      = @"IndexType";
 NSString *SPNewIndexIndexedColumns = @"IndexedColumns";
 NSString *SPNewIndexStorageType    = @"IndexStorageType";
+NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 @interface SPIndexesController (PrivateAPI)
 
@@ -161,6 +162,10 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	// as it's the default anyway.
 	[indexStorageTypePopUpButton setEnabled:(!([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"]))];
 
+	// The ability to specify an index's key block size was added in MySQL 5.1.10 so disable the textfield
+	// if it's not supported.
+	[indexKeyBlockSizeTextField setEnabled:(([connection serverMajorVersion] >= 5) && ([connection serverMinorVersion] >= 1) && ([connection serverReleaseVersion] >= 10))];
+	
 	// Begin the sheet
 	[NSApp beginSheet:[self window]
 	   modalForWindow:[dbDocument parentWindow]
@@ -258,6 +263,9 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
+	
+	// Clear the index key block size field
+	[indexKeyBlockSizeTextField setStringValue:@""];
 }
 
 /**
@@ -337,13 +345,14 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
+	if (tableView == indexesTableView) return;
 
-	if(tableView == indexesTableView) return;
-
-	if([[tableColumn identifier] isEqualToString:@"name"]) {
+	if ([[tableColumn identifier] isEqualToString:@"name"]) {
+		
 		// Iterate to given fields to replace the correct desired index field dictionary
-		for(NSDictionary *dic in fields) {
-			if([[dic objectForKey:@"name"] isEqualToString:object]) {
+		for (NSDictionary *dic in fields) 
+		{
+			if ([[dic objectForKey:@"name"] isEqualToString:object]) {
 				[indexedFields replaceObjectAtIndex:rowIndex withObject:dic];
 				break;
 			}
@@ -474,6 +483,11 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 		[indexDetails setObject:indexedFields forKey:SPNewIndexIndexedColumns];
 		[indexDetails setObject:[indexNameTextField stringValue] forKey:SPNewIndexIndexName];
 		[indexDetails setObject:[indexTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexIndexType];
+		
+		// If there is a key block size set it means the database version supports it
+		if ([[indexKeyBlockSizeTextField stringValue] length]) {
+			[indexDetails setObject:[NSNumber numberWithInteger:[indexKeyBlockSizeTextField integerValue]] forKey:SPNewIndexKeyBlockSize];
+		}
 
 		if ([indexStorageTypePopUpButton indexOfSelectedItem] > 0) {
 			[indexDetails setObject:[indexStorageTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexStorageType];
@@ -614,9 +628,11 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 	if (![[tableStructure onMainThread] saveRowOnDeselect]) return;
 
 	// Retrieve index details
-	NSString *indexName        = [indexDetails objectForKey:SPNewIndexIndexName];
-	NSString *indexType        = [indexDetails objectForKey:SPNewIndexIndexType];
-	NSString *indexStorageType = [indexDetails objectForKey:SPNewIndexStorageType];
+	NSString *indexName         = [indexDetails objectForKey:SPNewIndexIndexName];
+	NSString *indexType         = [indexDetails objectForKey:SPNewIndexIndexType];
+	NSString *indexStorageType  = [indexDetails objectForKey:SPNewIndexStorageType];
+	NSNumber *indexKeyBlockSize = [indexDetails objectForKey:SPNewIndexKeyBlockSize]; 
+	
 	NSArray *indexedColumns    = [indexDetails objectForKey:SPNewIndexIndexedColumns];
 
 	// Interface validation should prevent this, but just to be safe
@@ -668,6 +684,11 @@ NSString *SPNewIndexStorageType    = @"IndexStorageType";
 		if (indexStorageType) {
 			[query appendString:@" USING "];
 			[query appendString:indexStorageType];
+		}
+		
+		// If supplied specify the index's key block size
+		if (indexKeyBlockSize) {
+			[query appendFormat:@" KEY_BLOCK_SIZE = %d", [indexKeyBlockSize integerValue]];
 		}
 
 		// Execute the query

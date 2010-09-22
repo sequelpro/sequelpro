@@ -30,6 +30,7 @@ extern NSString *SPNewIndexIndexName;
 extern NSString *SPNewIndexIndexType;
 extern NSString *SPNewIndexIndexedColumns;
 extern NSString *SPNewIndexStorageType;
+extern NSString *SPNewIndexKeyBlockSize;
 
 @interface SPIndexesController : NSWindowController 
 {
@@ -62,6 +63,7 @@ extern NSString *SPNewIndexStorageType;
 	IBOutlet NSView *indexAdvancedOptionsView;
 	IBOutlet NSButton *indexAdvancedOptionsViewLabelButton;
 	IBOutlet NSPopUpButton *indexStorageTypePopUpButton;
+	IBOutlet NSTextField *indexKeyBlockSizeTextField;
 		
 	NSString *table;
 	
