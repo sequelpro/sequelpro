@@ -1547,7 +1547,7 @@
 	if ([tablesListView numberOfSelectedRows] == 1
 		&& [(NSString *)selectedItem length]
 		&& [selectedTableName isEqualToString:(NSString *)selectedItem]
-		&& selectedTableType == [(NSString *)selectedItem integerValue])
+		&& selectedTableType == [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue])
 	{
 		return;
 	}
