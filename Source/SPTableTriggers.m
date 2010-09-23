@@ -173,9 +173,14 @@
 	NSString *triggerActionTime = ([triggerActionTimePopUpButton indexOfSelectedItem]) ? @"AFTER" : @"BEFORE";
 	NSString *triggerEvent      = @"";
 	switch([triggerEventPopUpButton indexOfSelectedItem]) {
-		case 0: triggerEvent = @"INSERT";
-		case 1: triggerEvent = @"UPDATE";
-		case 2: triggerEvent = @"DELETE";
+		case 0:
+		triggerEvent = @"INSERT";
+		break;
+		case 1:
+		triggerEvent = @"UPDATE";
+		break;
+		case 2:triggerEvent = @"DELETE";
+		break;
 	}
 	NSString *triggerStatement  = [triggerStatementTextView string];
 
