@@ -1772,7 +1772,6 @@
  */
 - (IBAction)showCreateTableSyntax:(id)sender
 {
-
 	NSInteger colOffs = 1;
 	NSString *query = nil;
 	NSString *typeString = @"";
@@ -1832,7 +1831,7 @@
 		}
 
 		NSString *tableSyntax;
-		if( type == SPTableTypeProc )
+		if (type == SPTableTypeProc)
 			tableSyntax = [NSString stringWithFormat:@"DELIMITER ;;\n%@;;\nDELIMITER ", [[theResult fetchRowAsArray] objectAtIndex:colOffs]];
 		else
 			tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
@@ -1849,7 +1848,7 @@
 		}
 
 		if([indexes count] > 1)
-			header = [NSString stringWithFormat:@"# Create syntax for %@ '%@'\n", typeString, [items objectAtIndex:counter]];
+			header = [NSString stringWithFormat:@"-- Create syntax for %@ '%@'\n", typeString, [items objectAtIndex:counter]];
 
 		[createSyntax appendFormat:@"%@%@;%@", header, (type == SPTableTypeView) ? [tableSyntax createViewSyntaxPrettifier] : tableSyntax, (counter < [indexes count]-1) ? @"\n\n" : @""];
 
@@ -1862,7 +1861,7 @@
 	
 	// copy to the clipboard if sender was self, otherwise
 	// show syntax(es) in sheet
-	if(sender == self) {
+	if (sender == self) {
 		NSPasteboard *pb = [NSPasteboard generalPasteboard];
 		[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
 		[pb setString:createSyntax forType:NSStringPboardType];
@@ -1877,7 +1876,7 @@
 
 	}
 	
-	if([indexes count] == 1)
+	if ([indexes count] == 1)
 		[createTableSyntaxTextField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Create syntax for %@ '%@'", @"Create syntax label"), typeString, [self table]]];
 	else
 		[createTableSyntaxTextField setStringValue:NSLocalizedString(@"Create syntaxes for selected items", @"Create syntaxes for selected items label")];
@@ -1903,10 +1902,9 @@
  */
 - (IBAction)copyCreateTableSyntax:(id)sender
 {
-
 	[self showCreateTableSyntax:self];
+	
 	return;
-
 }
 
 /**
@@ -1914,7 +1912,6 @@
  */
 - (IBAction)checkTable:(id)sender
 {
-
 	NSArray *selectedItems = [tablesListInstance selectedTableItems];
 	id message = nil;
 	
