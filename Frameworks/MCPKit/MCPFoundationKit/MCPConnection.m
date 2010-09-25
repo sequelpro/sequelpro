@@ -41,13 +41,6 @@
 #include <mach/mach_time.h>
 #include <SystemConfiguration/SystemConfiguration.h>
 
-BOOL lastPingSuccess;
-BOOL pingActive;
-NSInteger pingFailureCount;
-BOOL keepAliveActive;
-
-static void forceThreadExit(int signalNumber);
-
 const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const char *kMCPSSLCipherList = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
@@ -118,7 +111,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		sslKeyFilePath = nil;
 		sslCertificatePath = nil;
 		sslCACertificatePath = nil;
-		keepAliveThread = NULL;
 		lastKeepAliveTime = 0;
 		pingThread = NULL;
 		connectionProxy = nil;
@@ -132,6 +124,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		isDisconnecting = NO;
 		userTriggeredDisconnect = NO;
 		automaticReconnectAttempts = 0;
+		lastPingSuccess = NO;
+		lastPingBlocked = NO;
+		pingThreadActive = NO;
 		pingFailureCount = 0;
 		
 		// Initialize ivar defaults
@@ -696,7 +691,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	BOOL connectionVerified = FALSE;
 	
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
-	connectionVerified = [self pingConnection];
+	connectionVerified = [self pingConnectionUsingLoopDelay:400];
 
 	// If the connection doesn't appear to be responding, and we can still attempt an automatic
 	// reconnect (only once each connection - eg an automatic reconnect failure prevents loops,
@@ -751,201 +746,6 @@ static BOOL sTruncateLongFieldInLogs = YES;
 }
 
 /**
- * This function provides a method of pinging the remote server while also enforcing
- * the specified connection time.  This is required because low-level net reads can
- * block indefinitely if the remote server disappears or on network issues - setting
- * the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix" ping, but cause
- * long queries to be terminated.
- * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
- */
-- (BOOL)pingConnection
-{
-	// Set up a query lock
-	[self lockConnection];
-
-	uint64_t currentTime_t;
-	Nanoseconds elapsedTime;
-	uint64_t pingStartTime_t = mach_absolute_time();
-	lastPingSuccess = FALSE;
-	pingActive = YES;
-
-	// Create a pthread for the ping, so we can force it to end after the connection timeout
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&pingThread, NULL, (void *)&pingConnectionTask, (void *)mConnection);
-
-	// Loop tightly until the ping responds, or the elapsed time exceeds the connection timeout
-	while (pingActive) {
-		currentTime_t = mach_absolute_time() - pingStartTime_t;
-		elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
-		if (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9 > connectionTimeout) break;
-		usleep(400);
-	}
-
-	// If the connection timed out, kill the thread and set status to failed
-	if (pingActive) {
-		pthread_cancel(pingThread);
-		lastPingSuccess = FALSE;
-	}
-	pthread_attr_destroy(&attr);
-
-	[self unlockConnection];
-
-	return lastPingSuccess;
-}
-
-/**
- * This function is paired with pingConnection, and performs the checking ping in a pthread,
- * allowing the thread to be cancelled if it does not respond.
- */
-void pingConnectionTask(void *ptr)
-{
-	lastPingSuccess = (BOOL)(!mysql_ping((MYSQL *)ptr));
-	pingActive = NO;
-}
-
-/**
- * Keeps a connection alive by running a ping.
- * This method is called every ten seconds and spawns a thread which determines
- * whether or not it should perform a ping.
- */
-- (void)keepAlive:(NSTimer *)theTimer
-{
-
-	// Do nothing if not connected or if keepalive is disabled
-	if (!mConnected || !useKeepAlive) return;
-
-	// Check to see whether a ping is required.  First, compare the last query
-	// and keepalive times against the keepalive interval.
-	// Compare against interval-1 to allow default keepalive intervals to repeat
-	// at the correct intervals (eg no timer interval delay).
-	double timeConnected = [self timeConnected];
-	if (timeConnected - lastQueryExecutedAtTime < keepAliveInterval - 1
-		|| timeConnected - lastKeepAliveTime < keepAliveInterval - 1)
-	{
-		return;
-	}
-
-	// Attempt to lock the connection. If the connection currently is busy,
-    // we don't need a ping.
-	if (![self tryLockConnection]) return;
-
-	// Store the ping time
-	lastKeepAliveTime = timeConnected;
-
-	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
-}
-
-/**
- * A threaded keepalive to avoid blocking the interface.  Performs safety
- * checks, and then creates a child pthread to actually ping the connection,
- * forcing the thread to close after the timeout if it hasn't closed already.
- */
-- (void)threadedKeepAlive
-{
-	uint64_t currentTime_t;
-	Nanoseconds currentNanoseconds;
-	double pingStartTime;
-	BOOL threadCancelled = NO;
-
-	if (!mConnected || keepAliveThread != NULL) {
-        // unlock the connection now. it has been locked in keepAlive:
-        [self unlockConnection];
-        return;
-    }
-
-	// If the maximum number of ping failures has been reached, trigger a reconnect
-	if (pingFailureCount >= 3) {
-		NSAutoreleasePool *connectionPool = [[NSAutoreleasePool alloc] init];
-		[self unlockConnection];
-		[self reconnect];
-		[connectionPool drain];
-		return;
-	}
-
-	// Use a ping timeout between zero and thirty seconds
-	NSInteger pingTimeout = 30;
-	if (connectionTimeout > 0 && connectionTimeout < pingTimeout) pingTimeout = connectionTimeout;
-
-	// Create a pthread for the actual keepalive
-	keepAliveActive = YES;
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&keepAliveThread, &attr, (void *)&performThreadedKeepAlive, (void *)mConnection);
-
-	// Record the ping start time
-	currentTime_t = mach_absolute_time() - connectionStartTime;
-	currentNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
-	pingStartTime = UnsignedWideToUInt64(currentNanoseconds);
-
-	// Loop until the ping completes
-	do {
-		usleep(10000);
-
-		// If the ping timeout has been exceeded, force a timeout; double-check that keepAliveActive
-		// is still set to NO, as otherwise the thread id may have already been reused causing
-		// cancellation of the incorrect thread.
-		currentTime_t = mach_absolute_time() - connectionStartTime;
-		currentNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
-		if ((UnsignedWideToUInt64(currentNanoseconds) - pingStartTime) * 1e-9 > pingTimeout && keepAliveActive && !threadCancelled) {
-			pthread_cancel(keepAliveThread);
-			threadCancelled = YES;
-
-		// If the timeout has been exceeded by an additional two seconds, kill the thread.
-		} else if ((UnsignedWideToUInt64(currentNanoseconds) - pingStartTime) * 1e-9 > (pingTimeout + 2) && keepAliveActive) {
-			pthread_kill(keepAliveThread, SIGUSR1);		
-			keepAliveActive = NO;
-		}
-	} while (keepAliveActive);
-
-    // Unlock the connection now, locked in keepAlive: at the start of the ping
-	[self unlockConnection];
-    
-	// Clean up
-	keepAliveThread = NULL;
-	pthread_attr_destroy(&attr);
-}
-
-/**
- * Actually perform a keepalive ping - intended for use within a pthread.
- */
-void performThreadedKeepAlive(void *ptr)
-{
-
-	// Set up a signal handler for SIGUSR1, to handle forced timeouts.
-	struct sigaction timeoutAction;
-	timeoutAction.sa_handler = forceThreadExit;
-	sigemptyset(&timeoutAction.sa_mask);
-	timeoutAction.sa_flags = 0;
-	sigaction(SIGUSR1, &timeoutAction, NULL);
-
-	if (mysql_ping((MYSQL *)ptr)) {
-		pingFailureCount++;
-	} else {
-		pingFailureCount = 0;
-	}
-	keepAliveActive = NO;
-
-
-	// Reset and clear the SIGUSR1 used to check connection timeouts.
-	timeoutAction.sa_handler = SIG_IGN;
-	sigemptyset(&timeoutAction.sa_mask);
-	timeoutAction.sa_flags = 0;
-	sigaction(SIGUSR1, &timeoutAction, NULL);
-}
-
-/**
- * Support forcing a thread to exit as a result of a signal.
- */
-static void forceThreadExit(int signalNumber)
-{
-	pthread_exit(NULL);
-}
-
-
-/**
  * Restore the connection encoding details as necessary based on the delegate-provided
  * details.
  */
@@ -983,6 +783,176 @@ static void forceThreadExit(int signalNumber)
 	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
 
 	return (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9);
+}
+
+#pragma mark -
+#pragma mark Pinging and keepalive
+
+/**
+ * This function provides a method of pinging the remote server while also enforcing
+ * the specified connection time.  This is required because low-level net reads can
+ * block indefinitely if the remote server disappears or on network issues - setting
+ * the MYSQL_OPT_READ_TIMEOUT (and the WRITE equivalent) would "fix" ping, but cause
+ * long queries to be terminated.
+ * The supplied loop delay number controls how tight the thread checking loop is, in
+ * microseconds, to allow differentiating foreground and background pings.
+ * Unlike mysql_ping, this function returns FALSE on failure and TRUE on success.
+ */
+- (BOOL)pingConnectionUsingLoopDelay:(NSUInteger)loopDelay
+{
+	if (!mConnected) return NO;
+
+	uint64_t pingStartTime_t, currentTime_t;
+	Nanoseconds elapsedNanoseconds;
+	BOOL threadCancelled = NO;
+
+	// Set up a query lock
+	[self lockConnection];
+
+	lastPingSuccess = NO;
+	lastPingBlocked = NO;
+	pingThreadActive = YES;
+
+	// Use a ping timeout defaulting to thirty seconds, but using the connection timeout if set
+	NSInteger pingTimeout = 30;
+	if (connectionTimeout > 0) pingTimeout = connectionTimeout;
+
+	// Set up a struct containing details the ping task will need
+	MCPConnectionPingDetails pingDetails;
+	pingDetails.mySQLConnection = mConnection;
+	pingDetails.lastPingSuccessPointer = &lastPingSuccess;
+	pingDetails.pingActivePointer = &pingThreadActive;
+
+	// Create a pthread for the ping
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(&pingThread, &attr, (void *)&backgroundPingTask, &pingDetails);
+
+	// Record the ping start time
+	pingStartTime_t = mach_absolute_time();
+
+	// Loop until the ping completes
+	do {
+		usleep(loopDelay);
+
+		// If the ping timeout has been exceeded, force a timeout; double-check that the
+		// thread is still active.
+		currentTime_t = mach_absolute_time() - pingStartTime_t	;
+		elapsedNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+		if (((double)UnsignedWideToUInt64(elapsedNanoseconds)) * 1e-9 > pingTimeout && pingThreadActive && !threadCancelled) {
+			pthread_cancel(pingThread);
+			threadCancelled = YES;
+
+		// If the timeout has been exceeded by an additional two seconds, and the thread is
+		// still active, kill the thread.  This can occur in certain network conditions causing
+		// a blocking read.
+		} else if (((double)UnsignedWideToUInt64(elapsedNanoseconds)) * 1e-9 > (pingTimeout + 2) && pingThreadActive) {
+			pthread_kill(pingThread, SIGUSR1);	
+			pingThreadActive = NO;
+			lastPingBlocked = YES;
+		}
+	} while (pingThreadActive);
+
+	// Clean up
+	pingThread = NULL;
+	pthread_attr_destroy(&attr);
+
+    // Unlock the connection
+	[self unlockConnection];
+
+	return lastPingSuccess;
+}
+
+/**
+ * Actually perform a keepalive ping - intended for use within a pthread.
+ */
+void backgroundPingTask(void *ptr)
+{
+	MCPConnectionPingDetails *pingDetails = (MCPConnectionPingDetails *)ptr;
+
+	// Set up a cleanup routine
+	pthread_cleanup_push(pingThreadCleanup, pingDetails);
+
+	// Set up a signal handler for SIGUSR1, to handle forced timeouts.
+	signal(SIGUSR1, forceThreadExit);
+
+	// Perform a ping
+	*(pingDetails->lastPingSuccessPointer) = (BOOL)(!mysql_ping(pingDetails->mySQLConnection));
+
+	// Call the cleanup routine
+	pthread_cleanup_pop(1);
+}
+
+/**
+ * Support forcing a thread to exit as a result of a signal.
+ */
+void forceThreadExit(int signalNumber)
+{
+	pthread_exit(NULL);
+}
+
+void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
+{
+	*(pingDetails->pingActivePointer) = NO;
+}
+
+/**
+ * Keeps a connection alive by running a ping.
+ * This method is called every ten seconds and spawns a thread which determines
+ * whether or not it should perform a ping.
+ */
+- (void)keepAlive:(NSTimer *)theTimer
+{
+
+	// Do nothing if not connected or if keepalive is disabled
+	if (!mConnected || !useKeepAlive) return;
+
+	// Check to see whether a ping is required.  First, compare the last query
+	// and keepalive times against the keepalive interval.
+	// Compare against interval-1 to allow default keepalive intervals to repeat
+	// at the correct intervals (eg no timer interval delay).
+	double timeConnected = [self timeConnected];
+	if (timeConnected - lastQueryExecutedAtTime < keepAliveInterval - 1
+		|| timeConnected - lastKeepAliveTime < keepAliveInterval - 1)
+	{
+		return;
+	}
+
+	// Attempt to lock the connection. If the connection is currently busy,
+    // we don't need a ping.
+	if (![self tryLockConnection]) return;
+	[self unlockConnection];
+
+	// Store the ping time
+	lastKeepAliveTime = timeConnected;
+
+	[NSThread detachNewThreadSelector:@selector(threadedKeepAlive) toTarget:self withObject:nil];
+}
+
+/**
+ * A threaded keepalive to avoid blocking the interface.  Performs safety
+ * checks, and then creates a child pthread to actually ping the connection,
+ * forcing the thread to close after the timeout if it hasn't closed already.
+ */
+- (void)threadedKeepAlive
+{
+
+	// If the maximum number of ping failures has been reached, trigger a reconnect
+	if (lastPingBlocked || pingFailureCount >= 3) {
+		NSAutoreleasePool *connectionPool = [[NSAutoreleasePool alloc] init];
+		[self reconnect];
+		[connectionPool drain];
+		return;
+	}
+
+	// Otherwise, perform a background ping.
+	BOOL pingResult = [self pingConnectionUsingLoopDelay:10000];
+	if (pingResult) {
+		pingFailureCount = 0;
+	} else {
+		pingFailureCount++;
+	}
 }
 
 #pragma mark -

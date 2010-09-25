@@ -32,6 +32,12 @@
 #import "MCPConstants.h"
 #import "mysql.h"
 
+typedef struct {
+	MYSQL	*mySQLConnection;
+	BOOL	*pingActivePointer;
+	BOOL	*lastPingSuccessPointer;
+} MCPConnectionPingDetails;
+
 @protocol MCPConnectionProxy;
 
 @class MCPResult, MCPStreamingResult;
@@ -168,10 +174,13 @@
 	NSMutableDictionary *structure;
 	NSMutableArray *allKeysofDbStructure;
 	
+	pthread_t pingThread;
+	NSInteger pingFailureCount;
+	BOOL pingThreadActive;
+	BOOL lastPingSuccess;
+	BOOL lastPingBlocked;
 	NSTimer *keepAliveTimer;
 	double lastKeepAliveTime;
-	pthread_t keepAliveThread;
-	pthread_t pingThread;
 	uint64_t connectionStartTime;
 	
 	BOOL retryAllowed;
@@ -231,14 +240,17 @@
 - (BOOL)isConnectedViaSSL;
 - (BOOL)userTriggeredDisconnect;
 - (BOOL)checkConnection;
-- (BOOL)pingConnection;
-void pingConnectionTask(void *ptr);
-- (void)keepAlive:(NSTimer *)theTimer;
-- (void)threadedKeepAlive;
-void performThreadedKeepAlive(void *ptr);
 - (void)restoreConnectionDetails;
 - (void)setAllowQueryRetries:(BOOL)allow;
 - (double)timeConnected;
+
+// Pinging and keepalive
+- (BOOL)pingConnectionUsingLoopDelay:(NSUInteger)loopDelay;
+void backgroundPingTask(void *ptr);
+void forceThreadExit(int signalNumber);
+void pingThreadCleanup();
+- (void)keepAlive:(NSTimer *)theTimer;
+- (void)threadedKeepAlive;
 
 // Server versions
 - (NSString *)serverVersionString;
