@@ -175,7 +175,7 @@
 
 /**
  * Inverts the displayed font colors when the cell is selected.
- *
+ */
 - (void)invertFontColors
 {
 	mainStringColor = [NSColor whiteColor];
