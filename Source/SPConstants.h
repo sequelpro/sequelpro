@@ -309,6 +309,7 @@ extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;
 extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
+extern NSString *SPProcessListTableColumnWidths;
 extern NSString *SPProcessListShowProcessID;
 extern NSString *SPProcessListEnableAutoRefresh;
 extern NSString *SPProcessListAutoRrefreshInterval;

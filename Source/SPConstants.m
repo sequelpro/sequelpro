@@ -135,6 +135,7 @@ NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
+NSString *SPProcessListTableColumnWidths         = @"ProcessListTableColumnWidths";
 NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
 NSString *SPProcessListEnableAutoRefresh         = @"ProcessListEnableAutoRefresh";
 NSString *SPProcessListAutoRrefreshInterval      = @"ProcessListAutoRrefreshInterval";

@@ -92,6 +92,11 @@
 	for (NSTableColumn *column in [processListTableView tableColumns])
 	{
 		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	
+		// Also, if available restore the table's column widths
+		NSNumber *columnWidth = [[prefs objectForKey:SPProcessListTableColumnWidths] objectForKey:[[column headerCell] stringValue]];
+				
+		if (columnWidth) [column setWidth:[columnWidth doubleValue]];
 	}
 	
 	// Register as an observer for the when the UseMonospacedFonts preference changes
@@ -478,6 +483,29 @@
     
 	[tableView reloadData];
 }
+
+/**
+ * Table view delegate method. Called whenever the user changes a column width.
+ */
+- (void)tableViewColumnDidResize:(NSNotification *)notification
+{
+	NSTableColumn *column = [[notification userInfo] objectForKey:@"NSTableColumn"];
+			
+	// Get the existing table column widths dictionary if it exists
+	NSMutableDictionary *tableColumnWidths = ([prefs objectForKey:SPProcessListTableColumnWidths]) ?
+											  [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPProcessListTableColumnWidths]] :
+											  [NSMutableDictionary dictionary];
+	
+	// Save column size
+	NSString *columnName = [[column headerCell] stringValue];
+	
+	if (columnName) {
+		[tableColumnWidths setObject:[NSNumber numberWithDouble:[column width]] forKey:columnName];
+		
+		[prefs setObject:tableColumnWidths forKey:SPProcessListTableColumnWidths];
+	}
+}
+
 
 #pragma mark -
 #pragma mark Text field delegate methods
