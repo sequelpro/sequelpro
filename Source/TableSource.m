@@ -1528,7 +1528,7 @@ would result in a position change.
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, tableWindow, self, nil, nil,
 			[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection getLastErrorMessage]]);
 	} else {
 		[tableDataInstance resetAllData];
