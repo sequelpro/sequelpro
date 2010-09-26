@@ -29,6 +29,8 @@
 #import "SPConstants.h"
 #import "SPCustomQuery.h"
 
+#import "pthread.h"
+
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 
 // Table view column identifiers
@@ -96,6 +98,8 @@ static SPQueryController *sharedQueryController = nil;
 		completionKeywordList = nil;
 		completionFunctionList = nil;
 		functionArgumentSnippets = nil;
+		
+		pthread_mutex_init(&consoleLock, NULL);
 
 		NSError *readError = nil;
 		NSString *convError = nil;
@@ -824,6 +828,9 @@ static SPQueryController *sharedQueryController = nil;
 	if(completionKeywordList) [completionKeywordList release];
 	if(completionFunctionList) [completionFunctionList release];
 	if(functionArgumentSnippets) [functionArgumentSnippets release];
+	
+	pthread_mutex_destroy(&consoleLock);
+	
 	[super dealloc];
 }
 
@@ -981,6 +988,8 @@ static SPQueryController *sharedQueryController = nil;
 
 	[consoleMessage setIsError:error];
 
+	pthread_mutex_lock(&consoleLock);
+	
 	[messagesFullSet addObject:consoleMessage];
 
 	// If filtering is active, determine whether to add a reference to the filtered set
@@ -998,6 +1007,8 @@ static SPQueryController *sharedQueryController = nil;
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 		[consoleTableView reloadData];
 	}
+	
+	pthread_mutex_unlock(&consoleLock);
 }
 
 @end

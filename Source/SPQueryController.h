@@ -57,6 +57,8 @@
 
 	NSUserDefaults *prefs;
 	NSDateFormatter *dateFormatter;
+	
+	pthread_mutex_t consoleLock;
 }
 
 @property (readwrite, retain) NSFont *consoleFont;
