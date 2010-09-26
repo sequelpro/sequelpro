@@ -282,41 +282,8 @@
 	return lineRangesArray;
 }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5
-/*
- * componentsSeparatedByCharactersInSet:
- * Credit - Greg Hulands <ghulands@mac.com>
- * Needed for 10.4+ compatibility
- */
-- (NSArray *)componentsSeparatedByCharactersInSet:(NSCharacterSet *)set // 10.5 adds this to NSString, but we are 10.4+
-{ 
-	NSMutableArray *result = [NSMutableArray array];
-	NSScanner *scanner = [NSScanner scannerWithString:self];
-	NSString *chunk = nil;
-	
-	[scanner setCharactersToBeSkipped:nil];
-	BOOL sepFound = [scanner scanCharactersFromSet:set intoString:(NSString **)nil]; // skip any preceding separators
-	
-	if (sepFound) { // if initial separator, start with empty component
-		[result addObject:@""];
-	}
-	
-	while ([scanner scanUpToCharactersFromSet:set intoString:&chunk]) {
-		[result addObject:chunk];
-		sepFound = [scanner scanCharactersFromSet: set intoString: (NSString **) nil];
-	}
-	
-	if (sepFound) { // if final separator, end with empty component
-		[result addObject: @""];
-	}
-	
-	result = [result copy];
-	return [result autorelease];
-}
-#endif
-
 /**
- *
+ * Returns the string by removing the characters in the supplied set and options.
  */
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet options:(NSUInteger)mask
 {
@@ -348,7 +315,7 @@
 }
 
 /**
- *
+ * Convenience method to access the above method with no options.
  */
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet
 {
@@ -408,16 +375,15 @@
 }
 
 /**
- * Returns the minimum of a, b and c
+ * Returns the minimum of a, b and c.
  */
 - (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c
 {
 	NSInteger min = a;
-	if ( b < min )
-		min = b;
+	
+	if (b < min) min = b;
 
-	if( c < min )
-		min = c;
+	if (c < min) min = c;
 
 	return min;
 }

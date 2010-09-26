@@ -237,8 +237,7 @@
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow setContentView:taskProgressLayer];
 
-	[contentViewSplitter setDelegate:self];
-
+	[contentViewSplitter setDelegate:self];	
 }
 
 /**
@@ -4223,7 +4222,6 @@
  */
 - (BOOL)parentTabShouldClose
 {
-
 	// If no connection is available, always return YES.  Covers initial setup and disconnections.
 	if(!_isConnected) return YES;
 

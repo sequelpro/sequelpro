@@ -31,12 +31,7 @@
 	NSString *fieldType;
 }
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
-	@property NSInteger textLimit;
-	@property NSString* fieldType;
-#else
-	-(NSInteger)textLimit;
-	-(void)setTextLimit:(NSInteger)limit;
-#endif
+@property NSInteger textLimit;
+@property NSString* fieldType;
 
 @end
