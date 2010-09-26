@@ -45,6 +45,8 @@
 #import "SPEncodingPopupAccessory.h"
 #import <UniversalDetector/UniversalDetector.h>
 
+#define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
+
 @interface SPDataImport (PrivateAPI)
 
 - (void) _importBackgroundProcess:(NSString *)filename;
@@ -436,7 +438,7 @@
 				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", connectionEncodingToRestore]];
 			}
 			[self closeAndStopProgressSheet];
-			SPBeginAlertSheet(NSLocalizedString(@"File read error", @"File read error title"),
+			SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)", @"SQL read error, including detail from system"), (long)queriesPerformed, [exception reason]]);
@@ -486,7 +488,7 @@
 					} else {
 						displayEncoding = [NSString localizedNameOfStringEncoding:sqlEncoding];
 					}
-					SPBeginAlertSheet(NSLocalizedString(@"File read error", @"File read error title"),
+					SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), displayEncoding, (long)queriesPerformed]);
@@ -763,7 +765,7 @@
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
 			[self closeAndStopProgressSheet];
-			SPBeginAlertSheet(NSLocalizedString(@"File read error", @"File read error title"),
+			SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)", @"CSV read error, including detail string from system"), (long)rowsImported, [exception reason]]);
@@ -812,7 +814,7 @@
 					} else {
 						displayEncoding = [NSString localizedNameOfStringEncoding:csvEncoding];
 					}
-					SPBeginAlertSheet(NSLocalizedString(@"File read error", @"File read error title"),
+					SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), displayEncoding, (long)rowsImported]);

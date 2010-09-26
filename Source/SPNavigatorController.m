@@ -1196,23 +1196,23 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(type == 0 || type == 1) // TABLE / VIEW
 		switch(index) {
 			case 0:
-			return NSLocalizedString(@"Type", @"type label");
+			return NSLocalizedString(@"Type", @"type label (Navigator)");
 			case 1:
-			return NSLocalizedString(@"Default", @"default label");
+			return NSLocalizedString(@"Default", @"default label (Navigator)");
 			case 2:
-			return NSLocalizedString(@"Is Nullable", @"is nullable label");
+			return NSLocalizedString(@"Is Nullable", @"is nullable label (Navigator)");
 			case 3:
-			return NSLocalizedString(@"Encoding", @"encoding label");
+			return NSLocalizedString(@"Encoding", @"encoding label (Navigator)");
 			case 4:
-			return NSLocalizedString(@"Collation", @"collation label");
+			return NSLocalizedString(@"Collation", @"collation label (Navigator)");
 			case 5:
-			return NSLocalizedString(@"Key", @"key label");
+			return NSLocalizedString(@"Key", @"key label (Navigator)");
 			case 6:
-			return NSLocalizedString(@"Extra", @"extra label");
+			return NSLocalizedString(@"Extra", @"extra label (Navigator)");
 			case 7:
-			return NSLocalizedString(@"Privileges", @"privileges label");
+			return NSLocalizedString(@"Privileges", @"privileges label (Navigator)");
 			case 8:
-			return NSLocalizedString(@"Comment", @"comment label");
+			return NSLocalizedString(@"Comment", @"comment label (Navigator)");
 		}
 
 	if(type == 2) // PROCEDURE
@@ -1224,20 +1224,20 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			case 2:
 			return @"Is Deterministic";
 			case 3:
-			return NSLocalizedString(@"Execution Privilege", @"execution privilege label");
+			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
 			return @"Definer";
 		}
 	if(type == 3) // FUNCTION
 		switch(index) {
 			case 0:
-			return NSLocalizedString(@"Return Type", @"return type label");
+			return NSLocalizedString(@"Return Type", @"return type label (Navigator)");
 			case 1:
 			return @"SQL Data Access";
 			case 2:
 			return @"Is Deterministic";
 			case 3:
-			return NSLocalizedString(@"Execution Privilege", @"execution privilege label");
+			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
 			return @"Definer";
 		}

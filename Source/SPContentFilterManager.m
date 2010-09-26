@@ -31,9 +31,10 @@
 #import "SPConstants.h"
 #import "SPConnectionController.h"
 
-#define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
-#define SP_NO_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[no selection]", @"[no selection]")
-#define SP_NAME_REQUIRED_PLACEHOLDER_STRING NSLocalizedString(@"[name required]", @"[name required]")
+#define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"displayed when multiple content filters are selected in ContentFilterManager")
+#define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"displayed if there is no content filter selected in ContentFilterManager")
+#define SP_NAME_REQUIRED_PLACEHOLDER_STRING      NSLocalizedString(@"[name required]", @"displayed when new content filter has empty Name field (ContentFilterManager)")
+#define SP_FILE_PARSER_ERROR_TITLE_STRING        NSLocalizedString(@"Error while reading data file", @"File with content filters could not be parsed - message title (ContentFilterManager)")
 
 @interface SPContentFilterManager (PrivateAPI)
 
@@ -136,7 +137,7 @@
 	[removeButton setEnabled:([contentFilterTableView numberOfSelectedRows] > 0)];
 
 	// Set column header
-	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"content filter for field type ‘%@’"), filterType]];
+	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"table column header. Read: 'Showing all content filters for fields of type %@' (ContentFilterManager)"), filterType]];
 
 	// Set the button delegate
 	[splitViewButtonBar setSplitViewDelegate:self];
@@ -725,14 +726,14 @@
 		[numberOfArgsLabel setHidden:(![[contentFilterTextView string] length])];
 
 		NSUInteger numOfArgs = [[[contentFilterTextView string] componentsMatchedByRegex:@"(?<!\\\\)(\\$\\{.*?\\})"] count];
-		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %lu", @"Number of arguments: %lu"), (unsigned long)numOfArgs]];
+		[numberOfArgsLabel setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Number of arguments: %lu", @"Argument count (ContentFilterManager)"), (unsigned long)numOfArgs]];
 
 		[contentFilterConjunctionTextField setHidden:(numOfArgs < 2)];
 		[contentFilterConjunctionLabel setHidden:(numOfArgs < 2)];
 
 		if(numOfArgs > 2) {
 			[resultingClauseLabel setStringValue:NSLocalizedString(@"Error", @"error")];
-			[resultingClauseContentLabel setStringValue:NSLocalizedString(@"Maximum number of arguments is 2!", @"Maximum number of arguments is 2!")];
+			[resultingClauseContentLabel setStringValue:NSLocalizedString(@"Maximum number of arguments is 2!", @"Shown when user inserts too many arguments (ContentFilterManager)")];
 		} else {
 			[resultingClauseLabel setStringValue:@"SELECT * FROM <table> WHERE"];
 			NSMutableString *c = [[NSMutableString alloc] init];
@@ -836,11 +837,11 @@
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:SP_FILE_PARSER_ERROR_TITLE_STRING]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil
-									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
+									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"file with content filters could not be parsed - message text (ContentFilterManager)")];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
@@ -864,11 +865,11 @@
 				[contentFilterTableView reloadData];
 				[spf release];
 			} else {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:SP_FILE_PARSER_ERROR_TITLE_STRING]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil
-									informativeTextWithFormat:NSLocalizedString(@"No content filters found.", @"error that no content filters found")];
+									informativeTextWithFormat:NSLocalizedString(@"No content filters found.", @"No content filters were found in file to import (ContentFilterManager)")];
 
 				[alert setAlertStyle:NSInformationalAlertStyle];
 				[alert runModal];
@@ -916,7 +917,7 @@
 											errorDescription:&err];
 
 			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting content filter data", @"error while converting content filter data")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting content filter data", @"Content filters could not be converted to plist upon export - message title (ContentFilterManager)")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil

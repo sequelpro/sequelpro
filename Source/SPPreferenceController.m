@@ -140,17 +140,17 @@
 		nil
 		] retain];
 	editorNameForColors = [[NSArray arrayWithObjects:
-		NSLocalizedString(@"Text",@"text label for color table"),
-		NSLocalizedString(@"Background",@"background label for color table"),
-		NSLocalizedString(@"Caret",@"caret label for color table"),
-		NSLocalizedString(@"Comment",@"comment label"),
-		NSLocalizedString(@"Keyword",@"keyword label for color table"),
-		NSLocalizedString(@"Numeric",@"numeric label for color table"),
-		NSLocalizedString(@"Quote",@"quote label for color table"),
-		NSLocalizedString(@"Backtick Quote",@"backtick quote label for color table"),
-		NSLocalizedString(@"Variable",@"variable label for color table"),
-		NSLocalizedString(@"Query Background",@"query background label for color table"),
-		NSLocalizedString(@"Selection",@"selection label for color table"),
+		NSLocalizedString(@"Text",@"text label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Background",@"background label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Caret",@"caret label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Comment",@"comment label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Keyword",@"keyword label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Numeric",@"numeric label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Quote",@"quote label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Backtick Quote",@"backtick quote label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Variable",@"variable label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Query Background",@"query background label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Selection",@"selection label for color table (Prefs > Editor)"),
 		nil
 		] retain];
 
@@ -1620,7 +1620,7 @@
 	[themeSelectionMenu removeAllItems];
 	[themeSelectionMenu setAutoenablesItems:YES];
 	[themeSelectionMenu setShowsStateColumn:YES];
-	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"default label") action:@selector(setDefaultColors:) keyEquivalent:@""];
+	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"Name of 'Default' color theme (Prefs > Editor)") action:@selector(setDefaultColors:) keyEquivalent:@""];
 	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	
 	NSArray *foundThemes = [self getAvailableThemes];
