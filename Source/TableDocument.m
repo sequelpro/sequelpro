@@ -648,9 +648,13 @@
 
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
+	[tableWindow setRepresentedURL:[self fileURL]];
 	
 	// ...but hide the icon while the document is temporary
-	if ([self isUntitled]) [[tableWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
+	if ([self isUntitled]) {
+		[[tableWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
+		[tableWindow setRepresentedURL:nil];
+	}
 
 	// Set the connection encoding
 	NSString *encodingName = [prefs objectForKey:SPDefaultEncoding];
