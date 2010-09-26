@@ -109,8 +109,8 @@
 	
 	[prefs synchronize];
 	
-	// Sort favorites
-	[self _sortFavorites];
+	// Sort favorites if a sort type has been selected
+	if (currentSortItem > -1) [self _sortFavorites];
 
 	NSTableColumn *column;
 	SPColorWellCell *colorCell;

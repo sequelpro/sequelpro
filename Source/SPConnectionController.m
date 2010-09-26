@@ -133,8 +133,8 @@
         [favoritesTable registerForDraggedTypes:[NSArray arrayWithObject:favoritesPBoardType]];
         [favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
-		// Sort the favourites to match prefs and select the appropriate row
-		[self _sortFavorites];
+		// Sort the favourites to match prefs and select the appropriate row - if a valid sort option is selected
+		if (currentSortItem > -1) [self _sortFavorites];
 		
 		NSInteger tableRow = ([prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite] + 1);
 		
