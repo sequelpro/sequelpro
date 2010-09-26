@@ -109,10 +109,8 @@
 	
 	[prefs synchronize];
 	
-	if (currentSortItem > -1) {
-		[self _sortFavorites];
-	}	
-
+	// Sort favorites
+	[self _sortFavorites];
 
 	NSTableColumn *column;
 	SPColorWellCell *colorCell;
@@ -903,9 +901,6 @@
 #pragma mark -
 #pragma mark TableView datasource methods
 
-// -------------------------------------------------------------------------------
-// numberOfRowsInTableView:
-// -------------------------------------------------------------------------------
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
 	if(aTableView == colorSettingTableView)
@@ -916,26 +911,18 @@
 	return [[favoritesController arrangedObjects] count];
 }
 
-// -------------------------------------------------------------------------------
-// tableView:objectValueForTableColumn:row:
-// -------------------------------------------------------------------------------
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	if(tableView == colorSettingTableView) {
-		if ([[tableColumn identifier] isEqualToString:@"name"])
-			return [editorNameForColors objectAtIndex:rowIndex];
-		else
-			return [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:rowIndex]]];
-	} else if(tableView == editThemeListTable) {
+	if (tableView == colorSettingTableView) {
+		return ([[tableColumn identifier] isEqualToString:@"name"]) ? [editorNameForColors objectAtIndex:rowIndex] : [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:[editorColors objectAtIndex:rowIndex]]];
+	} 
+	else if (tableView == editThemeListTable) {
 		return [editThemeListItems objectAtIndex:rowIndex];
-	} else {
-		if ([[tableColumn identifier] isEqualToString:@"default"] && (rowIndex == [prefs integerForKey:SPDefaultFavorite])) {
-			return [NSImage imageNamed:@"blue-tick"];
-		}
-		else {
-			return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
-		}
+	} 
+	else {
+		return [[[favoritesController arrangedObjects] objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 	}
+	
 	return nil;
 }
 
@@ -988,9 +975,6 @@
 #pragma mark -
 #pragma mark TableView drag & drop delegate methods
 
-// -------------------------------------------------------------------------------
-// tableView:writeRowsWithIndexes:toPasteboard:
-// -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
@@ -1007,9 +991,6 @@
 	}
 }
 
-// -------------------------------------------------------------------------------
-// tableView:validateDrop:proposedRow:proposedDropOperation:
-// -------------------------------------------------------------------------------
 - (NSDragOperation)tableView:(NSTableView *)tv validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
 
@@ -1031,9 +1012,6 @@
 	return NSDragOperationNone;
 }
 
-// -------------------------------------------------------------------------------
-// tableView:acceptDrop:row:dropOperation:
-// -------------------------------------------------------------------------------
 - (BOOL)tableView:(NSTableView *)tv acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
 {
 
@@ -1068,8 +1046,9 @@
 	}
 	
 	draggedRow = [NSMutableDictionary dictionaryWithDictionary:[[favoritesController arrangedObjects] objectAtIndex:originalRow]];
-	//Before deleting this favorite, we need to save the current index.
-	//because removeObjectAtArrangedObjectIndex will set prefs LastFavoriteIndex to 0
+	
+	// Before deleting this favorite, we need to save the current index.
+	// because removeObjectAtArrangedObjectIndex will set prefs LastFavoriteIndex to 0
 	lastFavoriteIndexCached = [prefs integerForKey:SPLastFavoriteIndex];
 	
 	[favoritesController removeObjectAtArrangedObjectIndex:originalRow];
@@ -1117,9 +1096,6 @@
 	return YES;
 }
 
-// -------------------------------------------------------------------------------
-// tableView:willDisplayCell:forTableColumn:row:
-// -------------------------------------------------------------------------------
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)index
 {
 
@@ -1161,12 +1137,8 @@
 	}
 }
 
-// -------------------------------------------------------------------------------
-// tableViewSelectionDidChange:
-// -------------------------------------------------------------------------------
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
-
 	if([notification object] == colorSettingTableView) return;
 
 	if ([[favoritesTableView selectedRowIndexes] count] > 0) {
@@ -1205,9 +1177,6 @@
 #pragma mark -
 #pragma mark Toolbar delegate methods
 
-// -------------------------------------------------------------------------------
-// toolbar:itemForItemIdentifier:willBeInsertedIntoToolbar:
-// -------------------------------------------------------------------------------
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {		
     if ([itemIdentifier isEqualToString:SPPreferenceToolbarGeneral]) {

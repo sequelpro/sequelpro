@@ -89,7 +89,6 @@
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
-		17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 17D3649711DFE61B00CC9413 /* blue-tick.tiff */; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
 		17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */; };
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
@@ -608,7 +607,6 @@
 		17CC97F210B4ABE90034CD7A /* SPAboutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAboutController.m; sourceTree = "<group>"; };
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
-		17D3649711DFE61B00CC9413 /* blue-tick.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "blue-tick.tiff"; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
 		17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = "sequel-pro-print-template.html"; path = "Templates/sequel-pro-print-template.html"; sourceTree = "<group>"; };
@@ -1729,7 +1727,6 @@
 			isa = PBXGroup;
 			children = (
 				17BFC80D10D3FF5200A3B112 /* Icons */,
-				17D3649711DFE61B00CC9413 /* blue-tick.tiff */,
 				BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */,
 				BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */,
 				BCCDED64115940CB00285E65 /* sync_arrows_03.tiff */,
@@ -2354,6 +2351,7 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -2538,7 +2536,6 @@
 				BCCDED6D115940CB00285E65 /* sync_arrows_06.tiff in Resources */,
 				58A8A72711A0149100B95749 /* MainWindow.xib in Resources */,
 				17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */,
-				17D3649811DFE61B00CC9413 /* blue-tick.tiff in Resources */,
 				58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */,
 				58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */,
 			);

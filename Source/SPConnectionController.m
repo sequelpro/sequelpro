@@ -94,7 +94,7 @@
 		isConnecting = NO;
 		mySQLConnectionCancelled = NO;
         favoritesPBoardType = @"FavoritesPBoardType";
-
+		
 		// Load the connection nib, keeping references to the top-level objects for later release
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
 		NSArray *connectionViewTopLevelObjects = nil;
@@ -106,17 +106,20 @@
 		// Hide the main view and position and display the connection view
 		[databaseConnectionView setHidden:YES];
 		[connectionView setFrame:[databaseConnectionView frame]];
-		[databaseConnectionSuperview addSubview:connectionView];
+		[databaseConnectionSuperview addSubview:connectionView];		
 		[connectionSplitView setPosition:[[tableDocument valueForKey:@"dbTablesTableView"] frame].size.width-6 ofDividerAtIndex:0];
 		[connectionSplitViewButtonBar setSplitViewDelegate:self];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollViewFrameChanged:) name:NSViewFrameDidChangeNotification object:nil];
-
+		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
 		keychain = [[SPKeychain alloc] init];
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
+		
 		favorites = nil;
+		
+		// Load favorites
 		[self updateFavorites];
-        
+		
 		// Register an observer for changes within the favorites
 		[prefs addObserver:self forKeyPath:SPFavorites options:NSKeyValueObservingOptionNew context:NULL];
 
@@ -131,7 +134,7 @@
         [favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
 		// Sort the favourites to match prefs and select the appropriate row
-		if (currentSortItem > -1) [self _sortFavorites];
+		[self _sortFavorites];
 		
 		NSInteger tableRow = ([prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite] + 1);
 		
@@ -140,11 +143,13 @@
 			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:tableRow] byExtendingSelection:NO];
 			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
 			[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
-		} else {
+		} 
+		else {
 			previousType = SPTCPIPConnection;
 			[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
 		}
 	}
+	
 	return self;
 }
 
@@ -488,26 +493,27 @@
  * interface, allowing the application to run as normal.
  */
 - (void)addConnectionToDocument
-{
-	
+{					
 	// Hide the connection view and restore the main view
 	[connectionView removeFromSuperviewWithoutNeedingDisplay];
 	[databaseConnectionView setHidden:NO];
-
+	
 	// Restore the toolbar icons
 	NSArray *toolbarItems = [[[tableDocument parentWindow] toolbar] items];
+	
 	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 
 	// Set keychain id for saving SPF files
-	if([self valueForKeyPath:@"selectedFavorite.id"])
+	if ([self valueForKeyPath:@"selectedFavorite.id"]) {
 		[tableDocument setKeychainID:[[self valueForKeyPath:@"selectedFavorite.id"] stringValue]];
-	else
+	}
+	else {
 		[tableDocument setKeychainID:@""];
+	}
 
 	// Pass the connection to the table document, allowing it to set
 	// up the other classes and the rest of the interface.
 	[tableDocument setConnection:mySQLConnection];
-
 }
 
 #pragma mark -
