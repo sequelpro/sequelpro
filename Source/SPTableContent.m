@@ -1943,33 +1943,29 @@
 - (NSArray *)currentDataResult
 {
 	NSArray *tableColumns;
-	NSEnumerator *enumerator;
-	id tableColumn;
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
 	NSUInteger i;
 
-	//load table if not already done
+	// Load table if not already done
 	if ( ![tablesListInstance contentLoaded] ) {
 		[self loadTable:[tablesListInstance tableName]];
 	}
 
 	tableColumns = [tableContentView tableColumns];
-	enumerator = [tableColumns objectEnumerator];
 
-	//set field names as first line
-	while ( (tableColumn = [enumerator nextObject]) ) {
-		[tempRow addObject:[[tableColumn headerCell] stringValue]];
+	// Set field names as first line
+	for (NSTableColumn *aTableColumn in tableColumns) {
+		[tempRow addObject:[[aTableColumn headerCell] stringValue]];
 	}
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 
-	//add rows
-	for ( i = 0 ; i < [self numberOfRowsInTableView:nil] ; i++) {
+	// Add rows
+	for ( i = 0 ; i < [self numberOfRowsInTableView:tableContentView] ; i++) {
 		[tempRow removeAllObjects];
-		enumerator = [tableColumns objectEnumerator];
-		while ( (tableColumn = [enumerator nextObject]) ) {
-			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, [[tableColumn identifier] integerValue]);
-			if([o isNSNull])
+		for (NSTableColumn *aTableColumn in tableColumns) {
+			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, [[aTableColumn identifier] integerValue]);
+			if ([o isNSNull])
 				[tempRow addObject:@"NULL"];
 			else if ([o isSPNotLoaded])
 				[tempRow addObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
@@ -1977,7 +1973,7 @@
 				[tempRow addObject:[o description]];
 			else {
 				NSImage *image = [[NSImage alloc] initWithData:o];
-				if(image) {
+				if (image) {
 					NSInteger imageWidth = [image size].width;
 					if (imageWidth > 100) imageWidth = 100;
 					[tempRow addObject:[NSString stringWithFormat:
@@ -2002,32 +1998,28 @@
 - (NSArray *)currentResult
 {
 	NSArray *tableColumns;
-	NSEnumerator *enumerator;
-	id tableColumn;
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
 	NSUInteger i;
 
-	//load table if not already done
+	// Load the table if not already loaded
 	if ( ![tablesListInstance contentLoaded] ) {
 		[self loadTable:[tablesListInstance tableName]];
 	}
 
 	tableColumns = [tableContentView tableColumns];
-	enumerator = [tableColumns objectEnumerator];
 
-	//set field names as first line
-	while ( (tableColumn = [enumerator nextObject]) ) {
-		[tempRow addObject:[[tableColumn headerCell] stringValue]];
+	// Add the field names as the first line
+	for (NSTableColumn *aTableColumn in tableColumns) {
+		[tempRow addObject:[[aTableColumn headerCell] stringValue]];
 	}
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 
-	//add rows
-	for ( i = 0 ; i < [self numberOfRowsInTableView:nil] ; i++) {
+	// Add the rows
+	for ( i = 0 ; i < [self numberOfRowsInTableView:tableContentView] ; i++) {
 		[tempRow removeAllObjects];
-		enumerator = [tableColumns objectEnumerator];
-		while ( (tableColumn = [enumerator nextObject]) ) {
-			[tempRow addObject:[self tableView:nil objectValueForTableColumn:tableColumn row:i]];
+		for (NSTableColumn *aTableColumn in tableColumns) {
+			[tempRow addObject:[self tableView:tableContentView objectValueForTableColumn:aTableColumn row:i]];
 		}
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 	}
