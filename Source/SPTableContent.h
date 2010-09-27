@@ -203,6 +203,6 @@
 
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
-- (void)updateFilterTableClause;
+- (void)updateFilterTableClause:(NSString*)currentValue;
 
 @end

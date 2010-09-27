@@ -2820,6 +2820,16 @@
 - (IBAction)showTableFilter:(id)sender
 {
 	[filterTableWindow makeKeyAndOrderFront:nil];
+	[filterTableWhereClause setContinuousSpellCheckingEnabled:NO];
+	[filterTableWhereClause setAutoindent:NO];
+	[filterTableWhereClause setAutoindentIgnoresEnter:NO];
+	[filterTableWhereClause setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
+	[filterTableWhereClause setAutohelp:NO];
+	[filterTableWhereClause setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
+	[filterTableWhereClause setCompletionWasReinvokedAutomatically:NO];
+	[filterTableWhereClause insertText:@""];
+	[filterTableWhereClause didChangeText];
+	[[NSApp keyWindow] makeFirstResponder:filterTableView];
 }
 
 #pragma mark -
@@ -3273,7 +3283,7 @@
 {
 	if(aTableView == filterTableView) {
 		[[[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"] replaceObjectAtIndex:rowIndex withObject:(NSString*)anObject];
-		[self updateFilterTableClause];
+		[self updateFilterTableClause:nil];
 		return;
 	}
 	else if(aTableView == tableContentView) {
@@ -3876,7 +3886,7 @@
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	if ([notification object] == filterTableView) {
-		[self updateFilterTableClause];
+		[self updateFilterTableClause:[[[[notification userInfo] objectForKey:@"NSFieldEditor"] textStorage] string]];
 	}
 }
 /**
@@ -4022,42 +4032,72 @@
 /**
  * Update WHERE clause in Filter Table Window - TODO not yet finished - initial approach only by HansJB
  */
-- (void)updateFilterTableClause
+- (void)updateFilterTableClause:(NSString*)currentValue
 {
 	NSMutableString *clause = [NSMutableString string];
 	NSInteger numberOfRows = [self numberOfRowsInTableView:filterTableView];
 	NSInteger numberOfCols = [[filterTableView tableColumns] count];
 	NSInteger numberOfValues = 0;
 	NSRange opRange;
+
+	NSString *re1 = @"^\\s*(<|>|!?=)\\s*(.*?)\\s*$";
+	NSString *re2 = @"(?i)^\\s*(.*)\\s+(.*?)\\s*$";
+	NSString *defaultOperator = @"LIKE '%%%@%%'";
+	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
 	for(NSInteger i=0; i<numberOfRows; i++) {
 		numberOfValues = 0;
 		for(NSInteger index=0; index<numberOfCols; index++) {
 			NSString *filterCell;
 			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSNumber numberWithInteger:index]]];
-			if([filterCell = [[filterCellData objectForKey:@"filter"] objectAtIndex:i] length]) {
+			if(currentValue == nil) {
+				filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
+			} else {
+				if(index == [filterTableView editedColumn] && i == [filterTableView editedRow])
+					filterCell = currentValue;
+				else
+					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
+			}
+			if([filterCell length]) {
+
 				if(numberOfValues)
 					[clause appendString:@" AND "];
-				opRange = [filterCell rangeOfString:@" "];
-				if(opRange.length) {
-					NSString *op = [[filterCell substringToIndex:opRange.location] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-					NSString *pattern = [[filterCell substringFromIndex:NSMaxRange(opRange)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-					if([op isEqualToString:@">"] ||
-						[op isEqualToString:@"<"] ||
-						[op isEqualToString:@"="]) {
-						[clause appendFormat:@"%@ %@ %@", [[filterCellData objectForKey:@"name"] backtickQuotedString], op, pattern];
-					}
 
-				} else {
-					[clause appendFormat:@"%@ LIKE '%%%@%%'", [[filterCellData objectForKey:@"name"] backtickQuotedString], filterCell];
+				NSString *fieldName = [[filterCellData objectForKey:@"name"] backtickQuotedString];
+
+				opRange = [filterCell rangeOfString:@"`@`"];
+				if(opRange.length) {
+					filterCell = [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
+					[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
 				}
+				else if([filterCell isMatchedByRegex:@"(?i)^\\s*null\\s*$"]) {
+					[clause appendFormat:@"%@ IS NULL", fieldName];
+				}
+				else if([filterCell isMatchedByRegex:re1]) {
+					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re1];
+					if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
+						[clause appendFormat:@"%@ %@ %@", fieldName, NSArrayObjectAtIndex(matches, 1), NSArrayObjectAtIndex(matches, 2)];
+				}
+				else if([filterCell isMatchedByRegex:re2]) {
+					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re2];
+					if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
+						[clause appendFormat:@"%@ %@ %@", fieldName, [NSArrayObjectAtIndex(matches, 1) uppercaseString], NSArrayObjectAtIndex(matches, 2)];
+				}
+				else {
+					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", defaultOperator], fieldName, filterCell];
+				}
+
 				numberOfValues++;
 			}
 		}
 		if(numberOfValues)
 			[clause appendString:@"\nOR\n"];
 	}
-	[filterTableWhereClause setString:[clause substringToIndex:([clause length]-4)]];
-	[filterTableWhereClause insertText:@""];
+	if([clause length] > 3)
+		[filterTableWhereClause setString:[clause substringToIndex:([clause length]-4)]];
+	else
+		[filterTableWhereClause setString:@""];
+	[filterTableWhereClause insertText:@" "];
 	[filterTableWhereClause didChangeText];
 	[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
 }
