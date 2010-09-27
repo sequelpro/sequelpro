@@ -77,6 +77,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /**
  * Control whether DELIMITER commands are recognised and used to override
  * supported characters.
+ * When delimiter support is enabled, many string functions will start looking
+ * for the delimiter *instead* of the supplied character, assuming that use
+ * is looking for line endings.  This will be improved in future versions.
  */
 - (void) setDelimiterSupport:(BOOL)shouldSupportDelimiters
 {
@@ -327,7 +330,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (stringIndex == NSNotFound) return NO;
 	
 	// If it has been found, trim the string appropriately and return YES
-	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusive?1:0))];
+	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusive?1:-delimiterLengthMinusOne))];
 	return YES;
 }
 
@@ -355,7 +358,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (stringIndex == NSNotFound) return nil;
 	
 	// If it has been found, return the appropriate string range
-	return [string substringWithRange:NSMakeRange(returnFromPosition, stringIndex + (inclusive?1:0) - returnFromPosition)];
+	return [string substringWithRange:NSMakeRange(returnFromPosition, stringIndex + (inclusive?1:-delimiterLengthMinusOne) - returnFromPosition)];
 }
 
 /**
@@ -388,10 +391,10 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		stringIndex = [self firstOccurrenceOfCharacter:character afterIndex:parsedToPosition ignoringQuotedStrings:ignoreQuotedStrings];
 	} while (lastMatchIsDelimiter && stringIndex != NSNotFound);
 	if (stringIndex == NSNotFound) return nil;
-	
+
 	// Select the appropriate string range, truncate the current string, and return the selected string
-	resultString = [NSString stringWithString:[string substringWithRange:NSMakeRange(returnFromPosition, stringIndex + (inclusiveReturn?1:0) - returnFromPosition)]];
-	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusiveTrim?1:0))];
+	resultString = [NSString stringWithString:[string substringWithRange:NSMakeRange(returnFromPosition, stringIndex + (inclusiveReturn?1:-delimiterLengthMinusOne) - returnFromPosition)]];
+	[self deleteCharactersInRange:NSMakeRange(0, stringIndex + (inclusiveTrim?1:-delimiterLengthMinusOne))];
 	return resultString;
 }
 
@@ -771,12 +774,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 										// Delimiter command found.  Extract the delimiter string itself
 										NSArray *delimiterCommandParts = [[self arrayOfCaptureComponentsMatchedByRegex:@"(?i)^(delimiter[ \\t]+(\\S+))(?=\\s)"
 																			range:NSMakeRange(currentStringIndex, stringLength - currentStringIndex)] objectAtIndex:0];
-										delimiter = [delimiterCommandParts objectAtIndex:2];
+										if (delimiter) [delimiter release];
+										delimiter = [[NSString alloc] initWithString:[delimiterCommandParts objectAtIndex:2]];
 										delimiterLengthMinusOne = [delimiter length] - 1;
 										parsedToPosition = currentStringIndex + [[delimiterCommandParts objectAtIndex:1] length];
 										
 										// Drop back to standard non-delimiter mode if the delimiter has ended
 										if ([delimiter isEqualToString:[NSString stringWithFormat:@"%C", character]]) {
+											if (delimiter) [delimiter release];
 											delimiter = nil;
 											delimiterLengthMinusOne = 0;
 										}
@@ -1005,7 +1010,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 - (void) setString:(NSString *)aString {
 	[string setString:aString];
-	delimiter = nil;
+	if (delimiter) [delimiter release], delimiter = nil;
 	delimiterLengthMinusOne = 0;
 	lastMatchIsDelimiter = NO;
 	[self _clearCharCache];
@@ -1024,6 +1029,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 - (void) dealloc {
 	[string release];
+	if (delimiter) [delimiter release];
 	if (charCacheEnd != -1) free(stringCharCache);
 	[super dealloc];
 }
