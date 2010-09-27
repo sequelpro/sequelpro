@@ -765,14 +765,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 							switch((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+3)) {
 								case 'i':
 								case 'I':
-									if([self isMatchedByRegex:@"^(delimiter[ \\t]+(\\S+))(?=\\s)" 
+									if([self isMatchedByRegex:@"^(delimiter[ \\t]+(\\S+))(?=\\s|\\Z)" 
 													  options:RKLCaseless 
 													  inRange:NSMakeRange(currentStringIndex, stringLength - currentStringIndex) 
 														error:nil])
 									{
 										
 										// Delimiter command found.  Extract the delimiter string itself
-										NSArray *delimiterCommandParts = [[self arrayOfCaptureComponentsMatchedByRegex:@"(?i)^(delimiter[ \\t]+(\\S+))(?=\\s)"
+										NSArray *delimiterCommandParts = [[self arrayOfCaptureComponentsMatchedByRegex:@"(?i)^(delimiter[ \\t]+(\\S+))(?=\\s|\\Z)"
 																			range:NSMakeRange(currentStringIndex, stringLength - currentStringIndex)] objectAtIndex:0];
 										if (delimiter) [delimiter release];
 										delimiter = [[NSString alloc] initWithString:[delimiterCommandParts objectAtIndex:2]];
