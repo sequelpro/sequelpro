@@ -28,7 +28,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage;
+@class SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView;
 
 @interface SPTableContent : NSObject 
 {	
@@ -65,7 +65,13 @@
 	IBOutlet NSView *paginationView;
 	IBOutlet NSTextField *paginationPageField;
 	IBOutlet NSStepper *paginationPageStepper;
-	
+
+	IBOutlet SPCopyTable *filterTableView;
+	IBOutlet NSPanel *filterTableWindow;
+	IBOutlet NSButton *filterTableFilterButton;
+	IBOutlet NSButton *filterTableClearButton;
+	IBOutlet SPTextView *filterTableWhereClause;
+
 	MCPConnection *mySQLConnection;
 
 	BOOL _mainNibLoaded;
@@ -76,6 +82,7 @@
 	NSString *selectedTable, *usedQuery;
 	SPDataStorage *tableValues;
 	NSMutableArray *dataColumns, *keys, *oldRow;
+	NSMutableDictionary *filterTableData;
 	NSUInteger tableRowsCount, previousTableRowsCount;
 	NSString *compareType;
 	NSNumber *sortCol;
@@ -143,6 +150,11 @@
 - (IBAction)copyRow:(id)sender;
 - (IBAction)removeRow:(id)sender;
 
+// Filter Table
+- (IBAction)tableFilterExecute:(id)sender;
+- (IBAction)tableFilterClear:(id)sender;
+- (IBAction)showTableFilter:(id)sender;
+
 // Getter methods
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResult;
@@ -190,5 +202,7 @@
 - (void)makeContentFilterHaveFocus;
 
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+
+- (void)updateFilterTableClause;
 
 @end
