@@ -177,7 +177,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			[[self delegate] addRowToDB];
 
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. addRowToDB could reload the table and change the number of rows
-		if (column>=[tableStorage columnCount]) return YES; //the column count could change too
+		if (tableStorage && column>=[tableStorage columnCount]) return YES; //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
@@ -200,7 +200,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			[[self delegate] addRowToDB];
 
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // addRowToDB could reload the table and change the number of rows
-		if (column>=[tableStorage columnCount]) return YES; //the column count could change too
+		if (tableStorage && column>=[tableStorage columnCount]) return YES; //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
