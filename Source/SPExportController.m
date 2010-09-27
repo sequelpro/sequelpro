@@ -41,7 +41,6 @@
 
 - (void)_switchTab;
 - (void)_checkForDatabaseChanges;
-- (NSUInteger)_refreshDatabaseTableList;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -376,7 +375,51 @@
  */
 - (IBAction)refreshTableList:(id)sender
 {		
-	[self _refreshDatabaseTableList];
+	[tables removeAllObjects];
+	
+	// For all modes, retrieve table and view names
+	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
+	
+	for (id itemName in tablesAndViews) {
+		[tables addObject:[NSMutableArray arrayWithObjects:
+						   itemName, 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithBool:YES], 
+						   [NSNumber numberWithInt:SPTableTypeTable], 
+						   nil]];
+	}
+	
+	// For SQL only, add procedures and functions
+	if (exportType == SPSQLExport) {
+		NSArray *procedures = [tablesListInstance allProcedureNames];
+		
+		for (id procName in procedures) 
+		{
+			[tables addObject:[NSMutableArray arrayWithObjects:
+							   procName,
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithInt:SPTableTypeProc], 
+							   nil]];
+		}
+		
+		NSArray *functions = [tablesListInstance allFunctionNames];
+		
+		for (id funcName in functions) 
+		{
+			[tables addObject:[NSMutableArray arrayWithObjects:
+							   funcName,
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithBool:YES],
+							   [NSNumber numberWithInt:SPTableTypeFunc], 
+							   nil]];
+		}	
+	}
+	
+	[exportTableList reloadData];
 }
 
 /**
@@ -711,8 +754,13 @@
 	
 	[tablesListInstance updateTables:self];
 		
-	NSUInteger j = [self _refreshDatabaseTableList];
+	NSUInteger j = [[tablesListInstance allTableAndViewNames] count];
 	
+	// If this is an SQL export, include procs and functions
+	if (exportType == SPSQLExport) {
+		j += ([[tablesListInstance allProcedureNames] count] + [[tablesListInstance allFunctionNames] count]);
+	}
+		
 	if (j > i) {
 		NSUInteger diff = (j - i);
 		
@@ -725,62 +773,6 @@
 	else {
 		[self initializeExportUsingSelectedOptions];
 	}
-}
-
-/**
- * Refreshes the database table list.
- *
- * @return An unsigned integer indicating the number of items within the list.
- */
-- (NSUInteger)_refreshDatabaseTableList
-{	
-	[tables removeAllObjects];
-	
-	// For all modes, retrieve table and view names
-	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
-	
-	for (id itemName in tablesAndViews) {
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   itemName, 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithInt:SPTableTypeTable], 
-						   nil]];
-	}
-	
-	// For SQL only, add procedures and functions
-	if (exportType == SPSQLExport) {
-		NSArray *procedures = [tablesListInstance allProcedureNames];
-		
-		for (id procName in procedures) 
-		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   procName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithInt:SPTableTypeProc], 
-							   nil]];
-		}
-		
-		NSArray *functions = [tablesListInstance allFunctionNames];
-		
-		for (id funcName in functions) 
-		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   funcName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithInt:SPTableTypeFunc], 
-							   nil]];
-		}	
-	}
-	
-	[exportTableList reloadData];
-	
-	return [tables count];
 }
 
 /**
