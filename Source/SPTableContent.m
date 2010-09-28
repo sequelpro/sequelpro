@@ -70,7 +70,11 @@
 		previousTableRowsCount = 0;
 		dataColumns       = [[NSMutableArray alloc] init];
 		oldRow            = [[NSMutableArray alloc] init];
+
 		filterTableData   = [[NSMutableDictionary alloc] initWithCapacity:1];
+		filterTableNegate = NO;
+		filterTableDistinct = NO;
+		lastEditedFilterTableValue = nil;
 
 		selectedTable = nil;
 		sortCol       = nil;
@@ -165,6 +169,11 @@
 	paginationViewFrame.size.height = 0;
 	[paginationView setFrame:paginationViewFrame];
 	[contentViewPane addSubview:paginationView];
+
+	// Init Filter Table GUI
+	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
+	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
+	filterTableDefaultOperator = @"LIKE '%%%@%%'";
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -2800,6 +2809,8 @@
 - (IBAction)tableFilterClear:(id)sender
 {
 
+	[filterTableView abortEditing];
+
 	for(NSNumber *col in [filterTableData allKeys])
 		[[filterTableData objectForKey:col] setObject:[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil] forKey:@"filter"];
 
@@ -2821,7 +2832,33 @@
 	[filterTableWhereClause setCompletionWasReinvokedAutomatically:NO];
 	[filterTableWhereClause insertText:@""];
 	[filterTableWhereClause didChangeText];
-	[[NSApp keyWindow] makeFirstResponder:filterTableView];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:filterTableView];
+}
+
+- (IBAction)toggleNegateClause:(id)sender
+{
+	filterTableNegate = !filterTableNegate;
+}
+
+- (IBAction)toggleDistinctSelect:(id)sender
+{
+	filterTableDistinct = !filterTableDistinct;
+}
+
+- (IBAction)setDefaultOperator:(id)sender
+{
+	NSLog(@"DEFAULT");
+}
+
+- (IBAction)swapFilterTable:(id)sender
+{
+	NSLog(@"SWAP");
+}
+
+- (IBAction)toggleLookAllFieldsMode:(id)sender
+{
+	NSLog(@"ddd %@", lastEditedFilterTableValue);
+	// [self tableFilterClear:nil];
 }
 
 #pragma mark -
@@ -3878,7 +3915,14 @@
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	if ([notification object] == filterTableView) {
-		[self updateFilterTableClause:[[[[notification userInfo] objectForKey:@"NSFieldEditor"] textStorage] string]];
+
+		NSString *str = [[[[notification userInfo] objectForKey:@"NSFieldEditor"] textStorage] string];
+		if(str && [str length]) {
+			if(lastEditedFilterTableValue) [lastEditedFilterTableValue release];
+			lastEditedFilterTableValue = [[NSString stringWithString:str] retain];
+		}
+		[self updateFilterTableClause:lastEditedFilterTableValue];
+
 	}
 }
 /**
@@ -4034,7 +4078,6 @@
 
 	NSString *re1 = @"^\\s*(<|>|!?=)\\s*(.*?)\\s*$";
 	NSString *re2 = @"(?i)^\\s*(.*)\\s+(.*?)\\s*$";
-	NSString *defaultOperator = @"LIKE '%%%@%%'";
 	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 	for(NSInteger i=0; i<numberOfRows; i++) {
@@ -4058,7 +4101,21 @@
 				NSString *fieldName = [[filterCellData objectForKey:@"name"] backtickQuotedString];
 
 				opRange = [filterCell rangeOfString:@"`@`"];
-				if(opRange.length) {
+				if([filterCell isMatchedByRegex:@"^\\s*['\"]"]) {
+					if([filterTableDefaultOperator isMatchedByRegex:@"['\"]"]) {
+						NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\1\\s*$"];
+						if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3) {
+							[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, NSArrayObjectAtIndex(matches, 2)];
+						} else {
+							matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\s*$"];
+							if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
+								[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, NSArrayObjectAtIndex(matches, 2)];
+						}
+					} else {
+						[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, filterCell];
+					}
+				}
+				else if(opRange.length) {
 					filterCell = [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
 					[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
 				}
@@ -4076,7 +4133,7 @@
 						[clause appendFormat:@"%@ %@ %@", fieldName, [NSArrayObjectAtIndex(matches, 1) uppercaseString], NSArrayObjectAtIndex(matches, 2)];
 				}
 				else {
-					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", defaultOperator], fieldName, filterCell];
+					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, filterCell];
 				}
 
 				numberOfValues++;
@@ -4135,6 +4192,7 @@
 	[dataColumns release];
 	[oldRow release];
 	[filterTableData release];
+	if(lastEditedFilterTableValue) [lastEditedFilterTableValue release];
 	if (selectedTable) [selectedTable release];
 	if (contentFilters) [contentFilters release];
 	if (numberOfDefaultFilters) [numberOfDefaultFilters release];

@@ -71,6 +71,9 @@
 	IBOutlet NSButton *filterTableFilterButton;
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
+	IBOutlet id filterTableNegateCheckbox;
+	IBOutlet id filterTableDistinctCheckbox;
+	IBOutlet NSMenuItem *filterTableGearLookAllFields;
 
 	MCPConnection *mySQLConnection;
 
@@ -82,7 +85,6 @@
 	NSString *selectedTable, *usedQuery;
 	SPDataStorage *tableValues;
 	NSMutableArray *dataColumns, *keys, *oldRow;
-	NSMutableDictionary *filterTableData;
 	NSUInteger tableRowsCount, previousTableRowsCount;
 	NSString *compareType;
 	NSNumber *sortCol;
@@ -96,6 +98,12 @@
 	NSUInteger lastSelectedContentFilterIndex;
 	id contentFilterManager;
 	NSUInteger contentPage;
+
+	NSMutableDictionary *filterTableData;
+	BOOL filterTableNegate;
+	BOOL filterTableDistinct;
+	NSString *filterTableDefaultOperator;
+	NSString *lastEditedFilterTableValue;
 
 	BOOL sortColumnToRestoreIsAsc;
 	BOOL tableRowsSelectable;
@@ -154,6 +162,11 @@
 - (IBAction)tableFilterExecute:(id)sender;
 - (IBAction)tableFilterClear:(id)sender;
 - (IBAction)showTableFilter:(id)sender;
+- (IBAction)toggleNegateClause:(id)sender;
+- (IBAction)toggleDistinctSelect:(id)sender;
+- (IBAction)setDefaultOperator:(id)sender;
+- (IBAction)swapFilterTable:(id)sender;
+- (IBAction)toggleLookAllFieldsMode:(id)sender;
 
 // Getter methods
 - (NSArray *)currentResult;
