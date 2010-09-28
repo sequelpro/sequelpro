@@ -803,8 +803,8 @@
 			continue;
 		}
 		columnCounter = 0;
-		for(NSString* col in row) {
-			if(maxLengthOfSourceColumns[columnCounter] < [col length]) {
+		for(id col in row) {
+			if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < [col length]) {
 				maxLengthOfSourceColumns[columnCounter] = [col length];
 			}
 			if(typeOfSourceColumns[columnCounter] == 1) {
