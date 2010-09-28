@@ -23,8 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="27"/>
-			<integer value="7503"/>
+			<integer value="7565"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -48,7 +47,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSCustomView" id="632807581">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6084,7 +6083,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{943, 549}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSWindowTemplate" id="554105051">
@@ -9741,7 +9739,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="BWTransparentCheckbox" id="631288327">
 							<reference key="NSNextResponder" ref="257361103"/>
 							<int key="NSvFlags">292</int>
-							<string key="NSFrame">{{68, 27}, {139, 18}}</string>
+							<string key="NSFrame">{{68, 27}, {158, 18}}</string>
 							<reference key="NSSuperview" ref="257361103"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="BWTransparentCheckboxCell" key="NSCell" id="1038452661">
@@ -9751,11 +9749,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="631288327"/>
 								<int key="NSButtonFlags">1211912703</int>
-								<int key="NSButtonFlags2">130</int>
+								<int key="NSButtonFlags2">268435586</int>
 								<reference key="NSNormalImage" ref="653588312"/>
 								<reference key="NSAlternateImage" ref="386686735"/>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent"/>
+								<string key="NSKeyEquivalent">n</string>
 								<int key="NSPeriodicDelay">200</int>
 								<int key="NSPeriodicInterval">25</int>
 							</object>
@@ -9763,7 +9761,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<object class="BWTransparentCheckbox" id="158170126">
 							<reference key="NSNextResponder" ref="257361103"/>
 							<int key="NSvFlags">292</int>
-							<string key="NSFrame">{{68, 9}, {139, 18}}</string>
+							<string key="NSFrame">{{68, 9}, {158, 18}}</string>
 							<reference key="NSSuperview" ref="257361103"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="BWTransparentCheckboxCell" key="NSCell" id="146098012">
@@ -9773,11 +9771,11 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="158170126"/>
 								<int key="NSButtonFlags">1211912703</int>
-								<int key="NSButtonFlags2">130</int>
+								<int key="NSButtonFlags2">268435586</int>
 								<reference key="NSNormalImage" ref="653588312"/>
 								<reference key="NSAlternateImage" ref="386686735"/>
 								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent"/>
+								<string key="NSKeyEquivalent">d</string>
 								<int key="NSPeriodicDelay">200</int>
 								<int key="NSPeriodicInterval">25</int>
 							</object>
@@ -9820,6 +9818,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										<reference ref="926461989"/>
 										<object class="NSMenuItem" id="906365069">
 											<reference key="NSMenu" ref="435787029"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<string key="NSTitle">Set Default Operator</string>
 											<string key="NSKeyEquiv"/>
 											<int key="NSKeyEquivModMask">1048576</int>
@@ -9855,6 +9854,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 										</object>
 										<object class="NSMenuItem" id="182251176">
 											<reference key="NSMenu" ref="435787029"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<string key="NSTitle">Swap Table</string>
 											<string key="NSKeyEquiv">s</string>
 											<int key="NSKeyEquivModMask">1572864</int>
@@ -9868,6 +9868,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									</object>
 									<reference key="NSMenuFont" ref="244931163"/>
 								</object>
+								<int key="NSSelectedIndex">4</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -15402,14 +15403,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<int key="connectionID">7526</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">tableFilterExecute:</string>
-						<reference key="source" ref="392169872"/>
-						<reference key="destination" ref="389089658"/>
-					</object>
-					<int key="connectionID">7527</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">filterTableWindow</string>
 						<reference key="source" ref="392169872"/>
@@ -15520,6 +15513,30 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<reference key="destination" ref="158170126"/>
 					</object>
 					<int key="connectionID">7579</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">filterTable:</string>
+						<reference key="source" ref="392169872"/>
+						<reference key="destination" ref="389089658"/>
+					</object>
+					<int key="connectionID">7580</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">filterTableFilterButton</string>
+						<reference key="source" ref="392169872"/>
+						<reference key="destination" ref="389089658"/>
+					</object>
+					<int key="connectionID">7581</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">filterTableDistinctCheckbox</string>
+						<reference key="source" ref="392169872"/>
+						<reference key="destination" ref="158170126"/>
+					</object>
+					<int key="connectionID">7582</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -23051,7 +23068,9 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>7502.windowTemplate.minSize</string>
 					<string>7503.IBPluginDependency</string>
 					<string>7504.IBPluginDependency</string>
+					<string>7505.IBAttributePlaceholdersKey</string>
 					<string>7505.IBPluginDependency</string>
+					<string>7506.IBAttributePlaceholdersKey</string>
 					<string>7506.IBPluginDependency</string>
 					<string>7507.IBPluginDependency</string>
 					<string>7508.IBPluginDependency</string>
@@ -23076,6 +23095,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>7525.IBPluginDependency</string>
 					<string>7533.IBPluginDependency</string>
 					<string>7534.IBPluginDependency</string>
+					<string>7537.IBAttributePlaceholdersKey</string>
 					<string>7537.IBPluginDependency</string>
 					<string>7538.IBPluginDependency</string>
 					<string>7563.IBPluginDependency</string>
@@ -23087,6 +23107,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>7568.IBPluginDependency</string>
 					<string>7569.IBPluginDependency</string>
 					<string>7570.IBPluginDependency</string>
+					<string>7577.IBAttributePlaceholdersKey</string>
 					<string>7577.IBPluginDependency</string>
 					<string>7578.IBPluginDependency</string>
 					<string>858.IBPluginDependency</string>
@@ -24421,7 +24442,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{977, 203}, {943, 549}}</string>
+					<string>{{119, 203}, {943, 549}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24736,15 +24757,31 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{242, 511}, {480, 270}}</string>
+					<string>{{85, 438}, {480, 270}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{242, 511}, {480, 270}}</string>
+					<string>{{85, 438}, {480, 270}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{340, 170}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="672293521"/>
+							<string key="toolTip">Clear all Filter Criterias (⌘⌫)</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="389089658"/>
+							<string key="toolTip">Apply Filter to current Table (⌘F)</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -24769,17 +24806,33 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="631288327"/>
+							<string key="toolTip">If set negate entire WHERE clause (⌘N)</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{429, 466}, {188, 81}}</string>
+					<string>{{88, 384}, {228, 98}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="158170126"/>
+							<string key="toolTip">Table Data will be queried by using SELECT DISTINCT (⌘D)</string>
+						</object>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24820,7 +24873,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">7579</int>
+			<int key="maxID">7582</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -30198,6 +30251,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>swapFilterTable:</string>
 							<string>tableFilterClear:</string>
 							<string>tableFilterExecute:</string>
+							<string>toggleDistinctSelect:</string>
 							<string>toggleFilterField:</string>
 							<string>toggleLookAllFieldsMode:</string>
 							<string>toggleNegateClause:</string>
@@ -30205,6 +30259,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -30239,6 +30294,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>swapFilterTable:</string>
 							<string>tableFilterClear:</string>
 							<string>tableFilterExecute:</string>
+							<string>toggleDistinctSelect:</string>
 							<string>toggleFilterField:</string>
 							<string>toggleLookAllFieldsMode:</string>
 							<string>toggleNegateClause:</string>
@@ -30295,6 +30351,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">toggleDistinctSelect:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">toggleFilterField:</string>
 								<string key="candidateClassName">id</string>
 							</object>
@@ -30327,6 +30387,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>fieldField</string>
 							<string>filterButton</string>
 							<string>filterTableClearButton</string>
+							<string>filterTableDistinctCheckbox</string>
 							<string>filterTableFilterButton</string>
 							<string>filterTableGearLookAllFields</string>
 							<string>filterTableNegateCheckbox</string>
@@ -30368,6 +30429,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>NSPopUpButton</string>
 							<string>id</string>
 							<string>NSButton</string>
+							<string>id</string>
 							<string>NSButton</string>
 							<string>NSMenuItem</string>
 							<string>id</string>
@@ -30412,6 +30474,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<string>fieldField</string>
 							<string>filterButton</string>
 							<string>filterTableClearButton</string>
+							<string>filterTableDistinctCheckbox</string>
 							<string>filterTableFilterButton</string>
 							<string>filterTableGearLookAllFields</string>
 							<string>filterTableNegateCheckbox</string>
@@ -30485,6 +30548,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<object class="IBToOneOutletInfo">
 								<string key="name">filterTableClearButton</string>
 								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">filterTableDistinctCheckbox</string>
+								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">filterTableFilterButton</string>
@@ -31721,7 +31788,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{10, 10}</string>
+				<string>{15, 15}</string>
 				<string>{8, 8}</string>
 				<string>{32, 32}</string>
 				<string>{128, 128}</string>

@@ -104,6 +104,7 @@
 	BOOL filterTableDistinct;
 	NSString *filterTableDefaultOperator;
 	NSString *lastEditedFilterTableValue;
+	NSInteger activeFilter; // 0 = default filter; 1 = filter table
 
 	BOOL sortColumnToRestoreIsAsc;
 	BOOL tableRowsSelectable;
@@ -216,6 +217,6 @@
 
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
-- (void)updateFilterTableClause:(NSString*)currentValue;
+- (void)updateFilterTableClause:(id)currentValue;
 
 @end

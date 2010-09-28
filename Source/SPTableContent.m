@@ -75,6 +75,7 @@
 		filterTableNegate = NO;
 		filterTableDistinct = NO;
 		lastEditedFilterTableValue = nil;
+		activeFilter = 0;
 
 		selectedTable = nil;
 		sortCol       = nil;
@@ -378,10 +379,14 @@
 	while ([[tableContentView tableColumns] count]) {
 		[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
 	}
+	// Remove existing columns from the filter table
 	while ([[filterTableView tableColumns] count]) {
 		[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
 	}
+	// Clear filter table data
 	[filterTableData removeAllObjects];
+	[filterTableWhereClause setString:@""];
+	activeFilter = 0;
 
 	// Retrieve the field names and types for this table from the data cache. This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
@@ -620,7 +625,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// Start construction of the query string
-	queryString = [NSMutableString stringWithFormat:@"SELECT %@ FROM %@", [self fieldListForQuery], [selectedTable backtickQuotedString]];
+	queryString = [NSMutableString stringWithFormat:@"SELECT %@%@ FROM %@", (activeFilter == 1 && [self tableFilterString] && [filterTableDistinctCheckbox state] == NSOnState) ? @"DISTINCT " : @"", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 
 	// Add a filter string if appropriate
 	filterString = [self tableFilterString];
@@ -839,6 +844,19 @@
  */
 - (NSString *)tableFilterString
 {
+
+	// Call did come from filter table and is filter table window still open?
+	if(activeFilter == 1 && [filterTableWindow isVisible]) {
+
+		if([[[filterTableWhereClause textStorage] string] length])
+			if([filterTableNegateCheckbox state] == NSOnState)
+				return [NSString stringWithFormat:@"NOT (%@)", [[filterTableWhereClause textStorage] string]];
+			else
+				return [[filterTableWhereClause textStorage] string];
+		else
+			return nil;
+
+	}
 
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
 	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
@@ -1213,6 +1231,12 @@
  */
 - (IBAction)filterTable:(id)sender
 {
+
+	if(sender == filterTableFilterButton)
+		activeFilter = 1;
+	else
+		activeFilter = 0;
+
 	NSString *taskString;
 
 	if ([tableDocumentInstance isWorking]) return;
@@ -2857,8 +2881,7 @@
 
 - (IBAction)toggleLookAllFieldsMode:(id)sender
 {
-	NSLog(@"ddd %@", lastEditedFilterTableValue);
-	// [self tableFilterClear:nil];
+	[self updateFilterTableClause:sender];
 }
 
 #pragma mark -
@@ -3921,7 +3944,7 @@
 			if(lastEditedFilterTableValue) [lastEditedFilterTableValue release];
 			lastEditedFilterTableValue = [[NSString stringWithString:str] retain];
 		}
-		[self updateFilterTableClause:lastEditedFilterTableValue];
+		[self updateFilterTableClause:str];
 
 	}
 }
@@ -4066,9 +4089,9 @@
 }
 
 /**
- * Update WHERE clause in Filter Table Window - TODO not yet finished - initial approach only by HansJB
+ * Update WHERE clause in Filter Table Window
  */
-- (void)updateFilterTableClause:(NSString*)currentValue
+- (void)updateFilterTableClause:(id)currentValue
 {
 	NSMutableString *clause = [NSMutableString string];
 	NSInteger numberOfRows = [self numberOfRowsInTableView:filterTableView];
@@ -4076,9 +4099,18 @@
 	NSInteger numberOfValues = 0;
 	NSRange opRange;
 
+	BOOL lookInAllFields = NO;
+
 	NSString *re1 = @"^\\s*(<|>|!?=)\\s*(.*?)\\s*$";
 	NSString *re2 = @"(?i)^\\s*(.*)\\s+(.*?)\\s*$";
 	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+
+	if(currentValue == filterTableGearLookAllFields) {
+		numberOfRows = 1;
+		lookInAllFields = YES;
+	}
+
+	[filterTableWhereClause setString:@""];
 
 	for(NSInteger i=0; i<numberOfRows; i++) {
 		numberOfValues = 0;
@@ -4087,16 +4119,21 @@
 			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSNumber numberWithInteger:index]]];
 			if(currentValue == nil) {
 				filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
-			} else {
+			} else if(lookInAllFields) {
+				if(lastEditedFilterTableValue && [lastEditedFilterTableValue length])
+					filterCell = lastEditedFilterTableValue;
+				else
+					break;
+			} else if([currentValue isKindOfClass:[NSString class]]){
 				if(index == [filterTableView editedColumn] && i == [filterTableView editedRow])
-					filterCell = currentValue;
+					filterCell = (NSString*)currentValue;
 				else
 					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
 			}
 			if([filterCell length]) {
 
 				if(numberOfValues)
-					[clause appendString:@" AND "];
+					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];
 
 				NSString *fieldName = [[filterCellData objectForKey:@"name"] backtickQuotedString];
 
@@ -4146,8 +4183,7 @@
 		[filterTableWhereClause setString:[clause substringToIndex:([clause length]-4)]];
 	else
 		[filterTableWhereClause setString:@""];
-	[filterTableWhereClause insertText:@" "];
-	[filterTableWhereClause didChangeText];
+	[filterTableWhereClause insertText:@""];
 	[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
 }
 
