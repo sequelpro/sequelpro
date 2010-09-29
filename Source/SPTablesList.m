@@ -1516,9 +1516,6 @@
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
 
-	// Clear Content's Filter Table
-	[tableContentInstance tableFilterClear:nil];
-
 	if([tablesListView selectedRow] < 0) {
 		// Reset all
 		if (selectedTableName) [selectedTableName release];

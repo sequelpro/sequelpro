@@ -371,6 +371,14 @@
 		// Clear restoration settings
 		[self clearDetailsToRestore];
 
+		// Clear filter table
+		while ([[filterTableView tableColumns] count]) {
+			[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
+		}
+		// Clear filter table data
+		[filterTableData removeAllObjects];
+		[filterTableWhereClause setString:@""];
+		activeFilter = 0;
 		return;
 	}
 
@@ -381,6 +389,7 @@
 		[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
 	}
 	// Remove existing columns from the filter table
+	[filterTableView abortEditing];
 	while ([[filterTableView tableColumns] count]) {
 		[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
 	}
@@ -504,6 +513,7 @@
 
 	[filterTableView setDelegate:self];
 	[filterTableView setDataSource:self];
+	[filterTableView reloadData];
 
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it.
 	if (sortColumnNumberToRestore) {
