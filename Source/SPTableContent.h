@@ -67,12 +67,13 @@
 	IBOutlet NSStepper *paginationPageStepper;
 
 	IBOutlet SPCopyTable *filterTableView;
-	IBOutlet NSPanel *filterTableWindow;
+	IBOutlet NSWindow *filterTableWindow;
 	IBOutlet NSButton *filterTableFilterButton;
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
 	IBOutlet id filterTableNegateCheckbox;
 	IBOutlet id filterTableDistinctCheckbox;
+	IBOutlet id filterTableLiveSearchCheckbox;
 	IBOutlet NSMenuItem *filterTableGearLookAllFields;
 
 	MCPConnection *mySQLConnection;
@@ -160,9 +161,8 @@
 - (IBAction)removeRow:(id)sender;
 
 // Filter Table
-- (IBAction)tableFilterExecute:(id)sender;
 - (IBAction)tableFilterClear:(id)sender;
-- (IBAction)showTableFilter:(id)sender;
+- (IBAction)showFilterTable:(id)sender;
 - (IBAction)toggleNegateClause:(id)sender;
 - (IBAction)toggleDistinctSelect:(id)sender;
 - (IBAction)setDefaultOperator:(id)sender;

@@ -174,6 +174,7 @@
 	// Init Filter Table GUI
 	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
 	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
+	[filterTableLiveSearchCheckbox setState:NSOffState];
 	filterTableDefaultOperator = @"LIKE '%%%@%%'";
 
 	// Add observers for document task activity
@@ -738,15 +739,22 @@
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
-		if(filterString)
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection getLastErrorMessage]]);
-		else
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection getLastErrorMessage]]);
+		if(activeFilter == 0) {
+			if(filterString)
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection getLastErrorMessage]]);
+			else
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection getLastErrorMessage]]);
+		}
+		// Filter task came from filter table
+		else if(activeFilter == 1){
+			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter table window title"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
+		}
 	} else {
 		// Trigger a full reload if required
 		if (fullTableReloadRequired) [self reloadTable:self];
+		[filterTableWindow setTitle:NSLocalizedString(@"Filter", @"filter table window title")];
 	}
 }
 
@@ -2825,26 +2833,35 @@
 #pragma mark -
 #pragma mark Filter Table
 
-- (IBAction)tableFilterExecute:(id)sender
-{
-	
-}
-
+/**
+ * Clear the filter table
+ */
 - (IBAction)tableFilterClear:(id)sender
 {
 
 	[filterTableView abortEditing];
 
-	for(NSNumber *col in [filterTableData allKeys])
-		[[filterTableData objectForKey:col] setObject:[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil] forKey:@"filter"];
+	if(filterTableData && [filterTableData count]) {
 
-	[filterTableView reloadData];
-	[filterTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-	[filterTableWhereClause setString:@""];
+		// Clear filter data
+		for(NSNumber *col in [filterTableData allKeys])
+			[[filterTableData objectForKey:col] setObject:[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil] forKey:@"filter"];
 
+		[filterTableView reloadData];
+		[filterTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+		[filterTableWhereClause setString:@""];
+
+		// Reload table
+		[self filterTable:nil];
+
+	
+	}
 }
 
-- (IBAction)showTableFilter:(id)sender
+/**
+ * Show filter table
+ */
+- (IBAction)showFilterTable:(id)sender
 {
 	[filterTableWindow makeKeyAndOrderFront:nil];
 	[filterTableWhereClause setContinuousSpellCheckingEnabled:NO];
@@ -2859,16 +2876,35 @@
 	[[tableDocumentInstance parentWindow] makeFirstResponder:filterTableView];
 }
 
+/**
+ * Set filter table's Negate
+ */
 - (IBAction)toggleNegateClause:(id)sender
 {
 	filterTableNegate = !filterTableNegate;
+
+	// If live search is set perform filtering
+	if([filterTableLiveSearchCheckbox state] == NSOnState)
+		[self filterTable:filterTableFilterButton];
+
 }
 
+/**
+ * Set filter table's Distinct
+ */
 - (IBAction)toggleDistinctSelect:(id)sender
 {
 	filterTableDistinct = !filterTableDistinct;
+
+	// If live search is set perform filtering
+	if([filterTableLiveSearchCheckbox state] == NSOnState)
+		[self filterTable:filterTableFilterButton];
+
 }
 
+/**
+ * Set filter table's default operator
+ */
 - (IBAction)setDefaultOperator:(id)sender
 {
 	NSLog(@"DEFAULT");
@@ -2879,9 +2915,17 @@
 	NSLog(@"SWAP");
 }
 
+/**
+ * Generate WHERE clause to look for last typed pattern in all fields
+ */
 - (IBAction)toggleLookAllFieldsMode:(id)sender
 {
 	[self updateFilterTableClause:sender];
+
+	// If live search is set perform filtering
+	if([filterTableLiveSearchCheckbox state] == NSOnState)
+		[self filterTable:filterTableFilterButton];
+
 }
 
 #pragma mark -
@@ -4120,10 +4164,21 @@
 			if(currentValue == nil) {
 				filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
 			} else if(lookInAllFields) {
-				if(lastEditedFilterTableValue && [lastEditedFilterTableValue length])
+				if(lastEditedFilterTableValue && [lastEditedFilterTableValue length]) {
+
 					filterCell = lastEditedFilterTableValue;
-				else
-					break;
+
+				} else {
+
+					[filterTableWhereClause setString:@""];
+					[filterTableWhereClause insertText:@""];
+					[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
+
+					// If live search is set perform filtering
+					if([filterTableLiveSearchCheckbox state] == NSOnState)
+						[self filterTable:filterTableFilterButton];
+
+				}
 			} else if([currentValue isKindOfClass:[NSString class]]){
 				if(index == [filterTableView editedColumn] && i == [filterTableView editedRow])
 					filterCell = (NSString*)currentValue;
@@ -4179,12 +4234,20 @@
 		if(numberOfValues)
 			[clause appendString:@"\nOR\n"];
 	}
+
+	// Remove last " OR " if any
 	if([clause length] > 3)
 		[filterTableWhereClause setString:[clause substringToIndex:([clause length]-4)]];
 	else
 		[filterTableWhereClause setString:@""];
+
+	// Update syntax highlighting and uppercasing
 	[filterTableWhereClause insertText:@""];
 	[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
+
+	// If live search is set perform filtering
+	if([filterTableLiveSearchCheckbox state] == NSOnState)
+		[self filterTable:filterTableFilterButton];
 }
 
 /**
