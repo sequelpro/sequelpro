@@ -4225,7 +4225,7 @@
 
 	BOOL lookInAllFields = NO;
 
-	NSString *re1 = @"^\\s*(<|>|!?=)\\s*(.*?)\\s*$";
+	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"(?i)^\\s*(.*)\\s+(.*?)\\s*$";
 	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
@@ -4265,6 +4265,9 @@
 				else
 					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
 			}
+			filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
+			filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
+			filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
 			if([filterCell length]) {
 
 				if(numberOfValues)
