@@ -172,7 +172,7 @@
 	[contentViewPane addSubview:paginationView];
 
 	// Init Filter Table GUI
-	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
+	[filterTableDistinctMenuItem setState:(filterTableDistinct) ? NSOnState : NSOffState];
 	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
 	[filterTableLiveSearchCheckbox setState:NSOffState];
 	filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:[prefs objectForKey:SPFilterTableDefaultOperator]] retain];
@@ -636,7 +636,7 @@
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 	// Start construction of the query string
-	queryString = [NSMutableString stringWithFormat:@"SELECT %@%@ FROM %@", (activeFilter == 1 && [self tableFilterString] && [filterTableDistinctCheckbox state] == NSOnState) ? @"DISTINCT " : @"", [self fieldListForQuery], [selectedTable backtickQuotedString]];
+	queryString = [NSMutableString stringWithFormat:@"SELECT %@%@ FROM %@", (activeFilter == 1 && [self tableFilterString] && filterTableDistinct) ? @"DISTINCT " : @"", [self fieldListForQuery], [selectedTable backtickQuotedString]];
 
 	// Add a filter string if appropriate
 	filterString = [self tableFilterString];
@@ -2933,6 +2933,8 @@
 {
 	filterTableDistinct = !filterTableDistinct;
 
+	[filterTableDistinctMenuItem setState:(filterTableDistinct) ? NSOnState : NSOffState];
+
 	// If live search is set perform filtering
 	if([filterTableLiveSearchCheckbox state] == NSOnState)
 		[self filterTable:filterTableFilterButton];
@@ -4205,7 +4207,10 @@
  */
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator
 {
-	NSMutableString *newOp = [NSMutableString string];
+
+	if(anOperator == nil) return @"";
+
+	NSMutableString *newOp = [[[NSMutableString alloc] initWithCapacity:[anOperator length]] autorelease];
 	[newOp setString:anOperator];
 	[newOp replaceOccurrencesOfRegex:@"%" withString:@"%%"];
 	[newOp replaceOccurrencesOfRegex:@"(?<!`)@(?!=`)" withString:@"%"];

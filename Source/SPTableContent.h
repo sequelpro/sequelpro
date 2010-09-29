@@ -72,7 +72,7 @@
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
 	IBOutlet id filterTableNegateCheckbox;
-	IBOutlet id filterTableDistinctCheckbox;
+	IBOutlet NSMenuItem *filterTableDistinctMenuItem;
 	IBOutlet id filterTableLiveSearchCheckbox;
 	IBOutlet NSMenuItem *filterTableGearLookAllFields;
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
