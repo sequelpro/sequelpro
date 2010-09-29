@@ -79,7 +79,7 @@
 		keyCode = [[anEvent characters] characterAtIndex:0];
 
 
-	for(size_t i = 0; i < sizeofA(key_movements); ++i)
+	for(size_t i = 0; i < (sizeof(key_movements) / sizeof(key_movements[0])); ++i)
 	{
 		if(keyCode == key_movements[i].key)
 		{
@@ -740,12 +740,14 @@
 - (NSRect)rectOfMainScreen
 {
 	NSRect mainScreen = [[NSScreen mainScreen] frame];
-	NSScreen* candidate;
-	enumerate([NSScreen screens], candidate)
+	
+	for (NSScreen *candidate in [NSScreen screens])
 	{
-		if(NSMinX([candidate frame]) == 0.0f && NSMinY([candidate frame]) == 0.0f)
+		if (NSMinX([candidate frame]) == 0.0f && NSMinY([candidate frame]) == 0.0f) {
 			mainScreen = [candidate frame];
+		}
 	}
+	
 	return mainScreen;
 }
 
