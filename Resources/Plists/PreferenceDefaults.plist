@@ -171,5 +171,7 @@
 	<false/>
 	<key>ResetAutoIncrementAfterDeletionOfAllRows</key>
 	<true/>
+	<key>FilterTableDefaultOperator</key>
+	<string>LIKE '%@%'</string>
 </dict>
 </plist>

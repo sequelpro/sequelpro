@@ -175,7 +175,7 @@
 	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
 	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
 	[filterTableLiveSearchCheckbox setState:NSOffState];
-	filterTableDefaultOperator = @"LIKE '%%%@%%'";
+	filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:[prefs objectForKey:SPFilterTableDefaultOperator]] retain];
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -2826,6 +2826,33 @@
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	[sheet orderOut:self];
+	
+	if([contextInfo isEqualToString:@"setdefaultoperator"]) {
+		if(returnCode) {
+			if(filterTableDefaultOperator) [filterTableDefaultOperator release];
+			NSString *newOperator = [filterTableSetDefaultOperatorValue stringValue];
+			filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:newOperator] retain];
+			[prefs setObject:newOperator forKey:SPFilterTableDefaultOperator];
+			if(![newOperator isMatchedByRegex:@"(?i)like\\s+['\"]%@%['\"]\\s*"]) {
+				if(![prefs objectForKey:SPFilterTableDefaultOperatorLastItems])
+					[prefs setObject:[NSMutableArray array] forKey:SPFilterTableDefaultOperatorLastItems];
+				NSMutableArray *lastItems = [NSMutableArray array];
+				[lastItems setArray:[prefs objectForKey:SPFilterTableDefaultOperatorLastItems]];
+				if([lastItems containsObject:newOperator])
+					[lastItems removeObject:newOperator];
+				if([lastItems count] > 0)
+					[lastItems insertObject:newOperator atIndex:0];
+				else
+					[lastItems addObject:newOperator];
+				// Remember only the last 15 items
+				if([lastItems count] > 15)
+					while([lastItems count] > 15)
+						[filterTableSetDefaultOperatorValue removeObjectAtIndex:[lastItems count]-1];
+				[prefs setObject:lastItems forKey:SPFilterTableDefaultOperatorLastItems];
+			}
+			[self updateFilterTableClause:nil];
+		}
+	}
 }
 
 /**
@@ -2917,7 +2944,29 @@
  */
 - (IBAction)setDefaultOperator:(id)sender
 {
-	NSLog(@"DEFAULT");
+
+	[filterTableWindow makeFirstResponder:filterTableView];
+
+	// Load history
+	if([prefs objectForKey:SPFilterTableDefaultOperatorLastItems]) {
+		NSMutableArray *lastItems = [NSMutableArray array];
+		NSString *defaultItem = @"LIKE '%@%'";
+		[lastItems addObject:defaultItem];
+
+		for(NSString* item in [prefs objectForKey:SPFilterTableDefaultOperatorLastItems])
+			[lastItems addObject:item];
+		[filterTableSetDefaultOperatorValue removeAllItems];
+		[filterTableSetDefaultOperatorValue addItemsWithObjectValues:lastItems];
+	}
+
+	[filterTableSetDefaultOperatorValue setStringValue:[prefs objectForKey:SPFilterTableDefaultOperator]];
+
+	[NSApp beginSheet:filterTableSetDefaultOperatorSheet
+	   modalForWindow:filterTableWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"setdefaultoperator"];
+
 }
 
 - (IBAction)swapFilterTable:(id)sender
@@ -2936,6 +2985,15 @@
 	if([filterTableLiveSearchCheckbox state] == NSOnState)
 		[self filterTable:filterTableFilterButton];
 
+}
+
+/**
+ * Closes the current sheet and stops the modal session
+ */
+- (IBAction)closeSheet:(id)sender
+{
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 #pragma mark -
@@ -4143,6 +4201,18 @@
 }
 
 /**
+ * Escape passed operator for usage as filterTableDefaultOperator
+ */
+- (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator
+{
+	NSMutableString *newOp = [NSMutableString string];
+	[newOp setString:anOperator];
+	[newOp replaceOccurrencesOfRegex:@"%" withString:@"%%"];
+	[newOp replaceOccurrencesOfRegex:@"(?<!`)@(?!=`)" withString:@"%"];
+	return newOp;
+}
+
+/**
  * Update WHERE clause in Filter Table Window
  */
 - (void)updateFilterTableClause:(id)currentValue
@@ -4151,7 +4221,7 @@
 	NSInteger numberOfRows = [self numberOfRowsInTableView:filterTableView];
 	NSInteger numberOfCols = [[filterTableView tableColumns] count];
 	NSInteger numberOfValues = 0;
-	NSRange opRange;
+	NSRange opRange, defopRange;
 
 	BOOL lookInAllFields = NO;
 
@@ -4201,25 +4271,29 @@
 					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];
 
 				NSString *fieldName = [[filterCellData objectForKey:@"name"] backtickQuotedString];
-
+				NSString *filterTableDefaultOperatorWithFieldName = [filterTableDefaultOperator stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
 				opRange = [filterCell rangeOfString:@"`@`"];
+				defopRange = [filterTableDefaultOperator rangeOfString:@"`@`"];
 				if([filterCell isMatchedByRegex:@"^\\s*['\"]"]) {
 					if([filterTableDefaultOperator isMatchedByRegex:@"['\"]"]) {
 						NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\1\\s*$"];
 						if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3) {
-							[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, NSArrayObjectAtIndex(matches, 2)];
+							[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, NSArrayObjectAtIndex(matches, 2)];
 						} else {
 							matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\s*$"];
 							if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
-								[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, NSArrayObjectAtIndex(matches, 2)];
+								[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, NSArrayObjectAtIndex(matches, 2)];
 						}
 					} else {
-						[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, filterCell];
+						[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
 					}
 				}
-				else if(opRange.length) {
+				else if(opRange.length || defopRange.length) {
 					filterCell = [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
-					[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
+					if(defopRange.length)
+						[clause appendFormat:filterTableDefaultOperatorWithFieldName, [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
+					else
+						[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
 				}
 				else if([filterCell isMatchedByRegex:@"(?i)^\\s*null\\s*$"]) {
 					[clause appendFormat:@"%@ IS NULL", fieldName];
@@ -4235,7 +4309,7 @@
 						[clause appendFormat:@"%@ %@ %@", fieldName, [NSArrayObjectAtIndex(matches, 1) uppercaseString], NSArrayObjectAtIndex(matches, 2)];
 				}
 				else {
-					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperator], fieldName, filterCell];
+					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
 				}
 
 				numberOfValues++;
@@ -4301,7 +4375,8 @@
 	[dataColumns release];
 	[oldRow release];
 	[filterTableData release];
-	if(lastEditedFilterTableValue) [lastEditedFilterTableValue release];
+	if (lastEditedFilterTableValue) [lastEditedFilterTableValue release];
+	if (filterTableDefaultOperator) [filterTableDefaultOperator release];
 	if (selectedTable) [selectedTable release];
 	if (contentFilters) [contentFilters release];
 	if (numberOfDefaultFilters) [numberOfDefaultFilters release];

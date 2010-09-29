@@ -81,6 +81,8 @@ NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
+NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
+NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";

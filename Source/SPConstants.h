@@ -255,6 +255,8 @@ extern NSString *SPLimitResults;
 extern NSString *SPLimitResultsValue;
 extern NSString *SPNullValue;
 extern NSString *SPGlobalResultTableFont;
+extern NSString *SPFilterTableDefaultOperator;
+extern NSString *SPFilterTableDefaultOperatorLastItems;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;

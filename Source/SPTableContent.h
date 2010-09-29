@@ -67,7 +67,7 @@
 	IBOutlet NSStepper *paginationPageStepper;
 
 	IBOutlet SPCopyTable *filterTableView;
-	IBOutlet NSWindow *filterTableWindow;
+	IBOutlet NSPanel *filterTableWindow;
 	IBOutlet NSButton *filterTableFilterButton;
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
@@ -75,6 +75,8 @@
 	IBOutlet id filterTableDistinctCheckbox;
 	IBOutlet id filterTableLiveSearchCheckbox;
 	IBOutlet NSMenuItem *filterTableGearLookAllFields;
+	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
+	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
 
 	MCPConnection *mySQLConnection;
 
@@ -168,6 +170,7 @@
 - (IBAction)setDefaultOperator:(id)sender;
 - (IBAction)swapFilterTable:(id)sender;
 - (IBAction)toggleLookAllFieldsMode:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 
 // Getter methods
 - (NSArray *)currentResult;
@@ -218,5 +221,6 @@
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
 - (void)updateFilterTableClause:(id)currentValue;
+- (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
 
 @end
