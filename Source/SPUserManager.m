@@ -320,7 +320,7 @@
 			[child setValue:value forKey:key];
 		}
 		NS_HANDLER
-		DLog(@"%@ not implemented yet.", key);
+		NSLog(@"%@ not implemented yet.", key);
 		NS_ENDHANDLER
 	}
 }
@@ -1108,7 +1108,6 @@
 									[dbName backtickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
-		DLog(@"%@", grantStatement);
 		[self.mySqlConnection queryString:grantStatement];
 		[self checkAndDisplayMySqlError];
 	}
@@ -1121,7 +1120,6 @@
 									 [dbName backtickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
-		DLog(@"%@", revokeStatement);
 		[self.mySqlConnection queryString:revokeStatement];
 		[self checkAndDisplayMySqlError];
 	}
@@ -1183,7 +1181,6 @@
 										[[grantPrivileges componentsJoinedByCommas] uppercaseString],
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
-			DLog(@"%@", grantStatement);
 			[self.mySqlConnection queryString:grantStatement];
 			[self checkAndDisplayMySqlError];
 		}
@@ -1195,7 +1192,6 @@
 										 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
-			DLog(@"%@", revokeStatement);
 			[self.mySqlConnection queryString:revokeStatement];
 			[self checkAndDisplayMySqlError];
 		}		
