@@ -39,117 +39,59 @@
 }
 
 /**
- * Returns the actual enabled list of encodings for open/save SQL files.
+ * Sort using the equivalent Mac encoding as the major key. 
+ * Secondary key is the actual encoding value, which works well enough. 
+ * We treat Unicode encodings as special case, putting them at top of the list.
+ */
+static int encodingCompare(const void *firstPtr, const void *secondPtr) {
+
+	CFStringEncoding first = *(CFStringEncoding *)firstPtr;
+	CFStringEncoding second = *(CFStringEncoding *)secondPtr;
+	CFStringEncoding macEncodingForFirst = CFStringGetMostCompatibleMacStringEncoding(first);
+	CFStringEncoding macEncodingForSecond = CFStringGetMostCompatibleMacStringEncoding(second);
+
+	// Should really never happen
+	if (first == second) return 0;
+
+	if (macEncodingForFirst == kCFStringEncodingUnicode || macEncodingForSecond == kCFStringEncodingUnicode) {
+		if (macEncodingForSecond == macEncodingForFirst) 
+			// Both Unicode; compare second order
+			return (first > second) ? 1 : -1;
+		// First is Unicode
+		return (macEncodingForFirst == kCFStringEncodingUnicode) ? -1 : 1;
+	}
+
+	if ((macEncodingForFirst > macEncodingForSecond) || ((macEncodingForFirst == macEncodingForSecond) && (first > second)))
+		return 1;
+
+	return -1;
+}
+
+/**
+ * Returns the actual enabled list of encodings for open/save files.
  */
 + (NSArray *)enabledEncodings
 {
-	static const NSInteger plainTextFileStringEncodingsSupported[] = {
-		kCFStringEncodingUTF8, 
-		kCFStringEncodingUTF16, 
-		kCFStringEncodingUTF16BE, 
-		kCFStringEncodingUTF16LE, 
-		kCFStringEncodingUTF32, 
-		kCFStringEncodingISOLatin1, 
-		kCFStringEncodingISOLatin2, 
-		kCFStringEncodingISOLatin3, 
-		kCFStringEncodingISOLatin4, 
-		kCFStringEncodingISOLatin5, 
-		kCFStringEncodingISOLatin6, 
-		kCFStringEncodingISOLatin7, 
-		kCFStringEncodingISOLatin8, 
-		kCFStringEncodingISOLatin9, 
-		kCFStringEncodingISOLatin10, 
-		kCFStringEncodingISOLatinCyrillic, 
-		kCFStringEncodingISOLatinArabic, 
-		kCFStringEncodingISOLatinGreek, 
-		kCFStringEncodingISOLatinHebrew, 
-		kCFStringEncodingISOLatinThai, 
-		kCFStringEncodingKOI8_R, 
-		kCFStringEncodingKOI8_U, 
-		kCFStringEncodingISO_2022_CN, 
-		kCFStringEncodingISO_2022_CN_EXT, 
-		kCFStringEncodingISO_2022_JP, 
-		kCFStringEncodingISO_2022_JP_1, 
-		kCFStringEncodingISO_2022_JP_2, 
-		kCFStringEncodingISO_2022_JP_3, 
-		kCFStringEncodingISO_2022_KR, 
-		kCFStringEncodingJIS_X0208_90, 
-		kCFStringEncodingShiftJIS, 
-		kCFStringEncodingShiftJIS_X0213, 
-		kCFStringEncodingBig5, 
-		kCFStringEncodingBig5_E, 
-		kCFStringEncodingBig5_HKSCS_1999, 
-		kCFStringEncodingEUC_CN, 
-		kCFStringEncodingEUC_JP, 
-		kCFStringEncodingEUC_KR, 
-		kCFStringEncodingEUC_TW, 
-		kCFStringEncodingGBK_95, 
-		kCFStringEncodingGB_18030_2000, 
-		kCFStringEncodingGB_2312_80, 
-		kCFStringEncodingHZ_GB_2312, 
-		kCFStringEncodingKSC_5601_87, 
-		kCFStringEncodingMacRoman, 
-		kCFStringEncodingMacRomanLatin1, 
-		kCFStringEncodingMacArabic, 
-		kCFStringEncodingMacArmenian, 
-		kCFStringEncodingMacBengali, 
-		kCFStringEncodingMacBurmese, 
-		kCFStringEncodingMacCeltic, 
-		kCFStringEncodingMacCentralEurRoman, 
-		kCFStringEncodingMacChineseSimp, 
-		kCFStringEncodingMacChineseTrad, 
-		kCFStringEncodingMacCroatian, 
-		kCFStringEncodingMacCyrillic, 
-		kCFStringEncodingMacDevanagari, 
-		kCFStringEncodingMacDingbats, 
-		kCFStringEncodingMacEthiopic, 
-		kCFStringEncodingMacFarsi, 
-		kCFStringEncodingMacGaelic, 
-		kCFStringEncodingMacGeorgian, 
-		kCFStringEncodingMacGreek, 
-		kCFStringEncodingMacGujarati, 
-		kCFStringEncodingMacGurmukhi, 
-		kCFStringEncodingMacHebrew, 
-		kCFStringEncodingMacIcelandic, 
-		kCFStringEncodingMacInuit, 
-		kCFStringEncodingMacJapanese, 
-		kCFStringEncodingMacKannada, 
-		kCFStringEncodingMacKhmer, 
-		kCFStringEncodingMacKorean, 
-		kCFStringEncodingMacLaotian, 
-		kCFStringEncodingMacMalayalam, 
-		kCFStringEncodingMacMongolian, 
-		kCFStringEncodingMacOriya, 
-		kCFStringEncodingMacRomanian, 
-		kCFStringEncodingMacSinhalese, 
-		kCFStringEncodingMacSymbol, 
-		kCFStringEncodingMacTamil, 
-		kCFStringEncodingMacTelugu, 
-		kCFStringEncodingMacThai, 
-		kCFStringEncodingMacTibetan, 
-		kCFStringEncodingMacTurkish, 
-		kCFStringEncodingMacUkrainian, 
-		kCFStringEncodingMacVietnamese, 
-		kCFStringEncodingWindowsLatin1, 
-		kCFStringEncodingWindowsLatin2, 
-		kCFStringEncodingWindowsLatin5, 
-		kCFStringEncodingWindowsArabic, 
-		kCFStringEncodingWindowsBalticRim, 
-		kCFStringEncodingWindowsCyrillic, 
-		kCFStringEncodingWindowsGreek, 
-		kCFStringEncodingWindowsHebrew, 
-		kCFStringEncodingWindowsKoreanJohab, 
-		kCFStringEncodingWindowsVietnamese, 
-		-1
-		};
-		NSStringEncoding encoding;
-		NSInteger cnt = 0;
-		NSMutableArray *encs = [NSMutableArray array];
-		while (plainTextFileStringEncodingsSupported[cnt] != -1)
-			if ((encoding = CFStringConvertEncodingToNSStringEncoding(plainTextFileStringEncodingsSupported[cnt++])) != kCFStringEncodingInvalidId)
-				[encs addObject:[NSNumber numberWithUnsignedInteger:encoding]];
+	static NSMutableArray *allEncodings = nil;
 
-		return encs;
+	// Build list of encodings, sorted, and including only those with human readable names
+	if (!allEncodings) {
+		const CFStringEncoding *cfEncodings = CFStringGetListOfAvailableEncodings();
+		CFStringEncoding *tmp;
+		NSInteger cnt, num = 0;
+		while (cfEncodings[num] != kCFStringEncodingInvalidId) num++;
+		tmp = malloc(sizeof(CFStringEncoding) * num);
+		memcpy(tmp, cfEncodings, sizeof(CFStringEncoding) * num);
+		qsort(tmp, num, sizeof(CFStringEncoding), encodingCompare);
+		allEncodings = [[NSMutableArray alloc] init];
+		for (cnt = 0; cnt < num; cnt++) {
+			NSStringEncoding nsEncoding = CFStringConvertEncodingToNSStringEncoding(tmp[cnt]);
+			if (nsEncoding && [NSString localizedNameOfStringEncoding:nsEncoding])
+				[allEncodings addObject:[NSNumber numberWithUnsignedInteger:nsEncoding]];
+		}
+		free(tmp);
+	}
+	return allEncodings;
 }
 
 /**
