@@ -65,22 +65,23 @@
 		pthread_mutex_init(&tableValuesLock, NULL);
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
 
-		tableValues      = [[SPDataStorage alloc] init];
-		tableRowsCount = 0;
-		previousTableRowsCount = 0;
+		tableValues       = [[SPDataStorage alloc] init];
 		dataColumns       = [[NSMutableArray alloc] init];
 		oldRow            = [[NSMutableArray alloc] init];
-
 		filterTableData   = [[NSMutableDictionary alloc] initWithCapacity:1];
-		filterTableNegate = NO;
-		filterTableDistinct = NO;
+
+		tableRowsCount         = 0;
+		previousTableRowsCount = 0;
+
+		filterTableNegate          = NO;
+		filterTableDistinct        = NO;
 		lastEditedFilterTableValue = nil;
-		activeFilter = 0;
+		activeFilter               = 0;
 
 		selectedTable = nil;
 		sortCol       = nil;
-		isDesc		  = NO;
-		keys		  = nil;
+		isDesc        = NO;
+		keys          = nil;
 
 		currentlyEditingRow = -1;
 		contentPage = 1;
@@ -108,6 +109,9 @@
 		usedQuery = [[NSString alloc] initWithString:@""];
 
 		tableLoadTimer = nil;
+
+		blackColor = [NSColor blackColor];
+		lightGrayColor = [NSColor lightGrayColor];
 
 		// Init default filters for Content Browser
 		contentFilters = nil;
@@ -3430,17 +3434,17 @@
 		if ([aTableView editedColumn] != -1
 			&& [aTableView editedRow] == rowIndex
 			&& [[NSArrayObjectAtIndex([aTableView tableColumns], [aTableView editedColumn]) identifier] integerValue] == columnIndex) {
-			[cell setTextColor:[NSColor blackColor]];
+			[cell setTextColor:blackColor];
 			return;
 		}
 
 		// For null cells and not loaded cells, display the contents in gray.
 		if ([theValue isNSNull] || [theValue isSPNotLoaded]) {
-			[cell setTextColor:[NSColor lightGrayColor]];
+			[cell setTextColor:lightGrayColor];
 
 		// Otherwise, set the color to black - required as NSTableView reuses NSCells.
 		} else {
-			[cell setTextColor:[NSColor blackColor]];
+			[cell setTextColor:blackColor];
 		}
 	}
 }
@@ -4219,19 +4223,23 @@
 
 /**
  * Update WHERE clause in Filter Table Window
+ *
+ * @param currentValue If currentValue == nil take the data from filterTableData, if currentValue == filterTableGearLookAllFields
+ * generate a WHERE clause to search in all given fields, if currentValue == a string take this string as table cell data of the
+ * currently edited table cell
  */
 - (void)updateFilterTableClause:(id)currentValue
 {
-	NSMutableString *clause = [NSMutableString string];
-	NSInteger numberOfRows = [self numberOfRowsInTableView:filterTableView];
-	NSInteger numberOfCols = [[filterTableView tableColumns] count];
+	NSMutableString *clause  = [NSMutableString string];
+	NSInteger numberOfRows   = [self numberOfRowsInTableView:filterTableView];
+	NSInteger numberOfCols   = [[filterTableView tableColumns] count];
 	NSInteger numberOfValues = 0;
 	NSRange opRange, defopRange;
 
 	BOOL lookInAllFields = NO;
 
 	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
-	NSString *re2 = @"(?i)^\\s*(.*)\\s+(.*?)\\s*$";
+	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
 	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
 	if(currentValue == filterTableGearLookAllFields) {
@@ -4246,15 +4254,15 @@
 		for(NSInteger index=0; index<numberOfCols; index++) {
 			NSString *filterCell;
 			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSNumber numberWithInteger:index]]];
+
+			// Take filterTableData
 			if(currentValue == nil) {
 				filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
+			// Take last edited value to create the OR clause
 			} else if(lookInAllFields) {
 				if(lastEditedFilterTableValue && [lastEditedFilterTableValue length]) {
-
 					filterCell = lastEditedFilterTableValue;
-
 				} else {
-
 					[filterTableWhereClause setString:@""];
 					[filterTableWhereClause insertText:@""];
 					[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
@@ -4264,16 +4272,20 @@
 						[self filterTable:filterTableFilterButton];
 
 				}
+			// Take value from currently edited table cell
 			} else if([currentValue isKindOfClass:[NSString class]]){
 				if(index == [filterTableView editedColumn] && i == [filterTableView editedRow])
 					filterCell = (NSString*)currentValue;
 				else
 					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
 			}
-			filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
-			filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
-			filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
+
 			if([filterCell length]) {
+
+				// Recode special operators
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
 
 				if(numberOfValues)
 					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];
@@ -4282,6 +4294,10 @@
 				NSString *filterTableDefaultOperatorWithFieldName = [filterTableDefaultOperator stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
 				opRange = [filterCell rangeOfString:@"`@`"];
 				defopRange = [filterTableDefaultOperator rangeOfString:@"`@`"];
+
+				// if cell data begins with ' or " treat it as it is
+				// by checking if default operator by itself contains a ' or " - if so
+				// remove first and if given the last ' or "
 				if([filterCell isMatchedByRegex:@"^\\s*['\"]"]) {
 					if([filterTableDefaultOperator isMatchedByRegex:@"['\"]"]) {
 						NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\1\\s*$"];
@@ -4296,6 +4312,8 @@
 						[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
 					}
 				}
+
+				// if cell contains the field name placeholder
 				else if(opRange.length || defopRange.length) {
 					filterCell = [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
 					if(defopRange.length)
@@ -4303,19 +4321,27 @@
 					else
 						[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
 				}
+
+				// if cell is equal to NULL
 				else if([filterCell isMatchedByRegex:@"(?i)^\\s*null\\s*$"]) {
 					[clause appendFormat:@"%@ IS NULL", fieldName];
 				}
+
+				// if cell starts with an operator
 				else if([filterCell isMatchedByRegex:re1]) {
 					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re1];
 					if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
 						[clause appendFormat:@"%@ %@ %@", fieldName, NSArrayObjectAtIndex(matches, 1), NSArrayObjectAtIndex(matches, 2)];
 				}
+
+				// if cell consists of at least two words treat the first as operator and the rest as argument
 				else if([filterCell isMatchedByRegex:re2]) {
 					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re2];
 					if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
 						[clause appendFormat:@"%@ %@ %@", fieldName, [NSArrayObjectAtIndex(matches, 1) uppercaseString], NSArrayObjectAtIndex(matches, 2)];
 				}
+
+				// apply the default operator
 				else {
 					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
 				}
@@ -4367,7 +4393,9 @@
 
 #pragma mark -
 
-// Last but not least
+/**
+ * dealloc
+ */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

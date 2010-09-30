@@ -130,6 +130,9 @@
 	NSString *kCellEditorErrorNoMultiTabDb;
 	NSString *kCellEditorErrorTooManyMatches;
 
+	NSColor *blackColor;
+	NSColor *lightGrayColor;
+
 }
 
 // Table loading methods and information
