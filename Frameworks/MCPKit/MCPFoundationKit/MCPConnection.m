@@ -140,7 +140,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		lockQuerying = NO;
 
 		connectionThreadId     = 0;
-		maxAllowedPacketSize   = -1;
+		maxAllowedPacketSize   = 1048576;
 		lastQueryExecutionTime = 0;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
@@ -458,17 +458,11 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	[self timeZone]; // Getting the timezone used by the server.
 	
 	// Only attempt to set the max allowed packet if we have a connection
+	// The fetches may fail, in which case the class default (which should match
+	// the MySQL default) will be used.
 	if (mConnection != NULL) {
-		
 		isMaxAllowedPacketEditable = [self isMaxAllowedPacketEditable];
-		
-		if (![self fetchMaxAllowedPacket]) {
-			[self setLastErrorMessage:nil];
-			
-			lastQueryErrorId = mysql_errno(mConnection);
-			
-			mConnected = NO;
-		}
+		[self fetchMaxAllowedPacket];
 	}
 	else {
 		mConnected = NO;
