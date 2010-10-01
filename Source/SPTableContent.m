@@ -75,6 +75,7 @@
 
 		filterTableNegate          = NO;
 		filterTableDistinct        = NO;
+		filterTableIsSwapped       = NO;
 		lastEditedFilterTableValue = nil;
 		activeFilter               = 0;
 
@@ -3348,7 +3349,10 @@
 - (NSInteger)numberOfRowsInTableView:(SPCopyTable *)aTableView
 {
 	if(aTableView == filterTableView) {
-		return [[[filterTableData objectForKey:[NSNumber numberWithInteger:0]] objectForKey:@"filter"] count];
+		if(filterTableIsSwapped)
+			return [filterTableData count];
+		else
+			return [[[filterTableData objectForKey:[NSNumber numberWithInteger:0]] objectForKey:@"filter"] count];
 	}
 	else if(aTableView == tableContentView) {
 		return tableRowsCount;
@@ -3359,7 +3363,15 @@
 {
 
 	if(aTableView == filterTableView) {
-		return NSArrayObjectAtIndex([[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"], rowIndex);
+		if(filterTableIsSwapped)
+			// First column shows the field names
+			if([[aTableColumn identifier] integerValue] == 0) {
+				NSTableHeaderCell *c = [[[NSTableHeaderCell alloc] initTextCell:[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"name"]] autorelease];
+				return c;
+			} else
+				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"], [[aTableColumn identifier] integerValue]-1);
+		else
+			return NSArrayObjectAtIndex([[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"], rowIndex);
 	}
 	else if(aTableView == tableContentView) {
 
@@ -3402,6 +3414,12 @@
 {
 
 	if(aTableView == filterTableView) {
+		if(filterTableIsSwapped && [[aTableColumn identifier] integerValue] == 0) {
+			[cell setDrawsBackground:YES];
+			[cell setBackgroundColor:lightGrayColor];
+		} else {
+			[cell setDrawsBackground:NO];
+		}
 		return;
 	}
 	else if(aTableView == tableContentView) {
@@ -3452,7 +3470,10 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if(aTableView == filterTableView) {
-		[[[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"] replaceObjectAtIndex:rowIndex withObject:(NSString*)anObject];
+		if(filterTableIsSwapped)
+			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"] replaceObjectAtIndex:([[aTableColumn identifier] integerValue]-1) withObject:(NSString*)anObject];
+		else
+			[[[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"] replaceObjectAtIndex:rowIndex withObject:(NSString*)anObject];
 		[self updateFilterTableClause:nil];
 		return;
 	}
@@ -3779,7 +3800,13 @@
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
-	if ( aTableView == tableContentView ) {
+	if(aTableView == filterTableView) {
+		if(filterTableIsSwapped && [[aTableColumn identifier] integerValue] == 0)
+			return NO;
+		else
+			return YES;
+	}
+	else if ( aTableView == tableContentView ) {
 
 		// Ensure that row is editable since it could contain "(not loaded)" columns together with
 		// issue that the table has no primary key

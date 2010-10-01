@@ -105,6 +105,7 @@
 	NSMutableDictionary *filterTableData;
 	BOOL filterTableNegate;
 	BOOL filterTableDistinct;
+	BOOL filterTableIsSwapped;
 	NSString *filterTableDefaultOperator;
 	NSString *lastEditedFilterTableValue;
 	NSInteger activeFilter; // 0 = default filter; 1 = filter table
