@@ -2387,6 +2387,8 @@
 		{
 			[rowValue setString:@"CURRENT_TIMESTAMP"];
 
+		} else if ( [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"geometry"] ) {
+			[rowValue setString:[NSString stringWithFormat:@"GeomFromText('%@')", rowObject]];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else if ( [rowObject isNSNull]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -2672,8 +2674,12 @@
 				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection prepareString:tempValue]]];
 			}
 			// BLOB/TEXT data
-			else if ([tempValue isKindOfClass:[NSData class]])
-				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
+			else if ([tempValue isKindOfClass:[NSData class]]) {
+				if([tableDataInstance columnIsGeometry:NSArrayObjectAtIndex(keys, i)])
+					[value setString:[NSString stringWithFormat:@"GeomFromText('%@')", [[[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding] autorelease]]];
+				else
+					[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
+			}
 			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
 
@@ -2712,15 +2718,18 @@
 {
 	NSInteger i;
 	NSMutableArray *fields = [NSMutableArray array];
+	NSArray *columnNames = [tableDataInstance columnNames];
+	BOOL hasGeometryFields = NO;
 
 	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && ([dataColumns count] > 0)) {
-
-		NSArray *columnNames = [tableDataInstance columnNames];
 
 		for (i = 0 ; i < [columnNames count]; i++)
 		{
 			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
-					[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
+					if([tableDataInstance columnIsGeometry:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]])
+						[fields addObject:[NSString stringWithFormat:@"AsText(%@)", [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]]];
+					else
+						[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
 			}
 			else {
 				// For blob/text fields, select a null placeholder so the column count is still correct
@@ -2729,9 +2738,22 @@
 		}
 
 		return [fields componentsJoinedByString:@","];
-	}
-	else {
-		return @"*";
+	} else {
+
+		for (i = 0 ; i < [columnNames count]; i++)
+		{
+			if([tableDataInstance columnIsGeometry:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]]) {
+				[fields addObject:[NSString stringWithFormat:@"AsText(%@)", [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]]];
+				hasGeometryFields = YES;
+			}
+			else
+				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
+		}
+		if(hasGeometryFields)
+			return [fields componentsJoinedByString:@","];
+		else
+			return @"*";
+
 	}
 }
 

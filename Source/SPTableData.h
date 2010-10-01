@@ -57,6 +57,7 @@
 - (NSArray *) getConstraints;
 - (NSArray *) triggers;
 - (BOOL) columnIsBlobOrText:(NSString *)colName;
+- (BOOL) columnIsGeometry:(NSString *)colName;
 - (NSString *) statusValueForKey:(NSString *)aKey;
 - (void)setStatusValue:(NSString *)value forKey:(NSString *)key;
 - (NSDictionary *) statusValues;

@@ -258,6 +258,30 @@
 	return (BOOL) ([[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"textdata" ] || [[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
 }
 
+/**
+ * Checks if this column is type geometry.
+ * Used to determine if we have to use AsText() in SELECT.
+ *
+ * @param colName The column name which should be checked.
+ */
+
+- (BOOL) columnIsGeometry:(NSString *)colName
+{
+
+	// Return if CREATE SYNTAX is being parsed
+	if(isWorking) return YES; // to be at the safe side
+
+	if ([columns count] == 0) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
+			[self updateInformationForCurrentView];
+		} else {
+			[self updateInformationForCurrentTable];
+		}
+	}
+
+	return (BOOL) ([[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"geometry"]);
+}
+
 
 /**
  * Retrieve the table status value for a supplied key, using or refreshing the cache as appropriate.
@@ -1147,6 +1171,11 @@
 	} else if ([detailString isEqualToString:@"TINYTEXT"] || [detailString isEqualToString:@"TEXT"]
 				|| [detailString isEqualToString:@"MEDIUMTEXT"] || [detailString isEqualToString:@"LONGTEXT"]) {
 		[fieldDetails setObject:@"textdata" forKey:@"typegrouping"];
+	} else if ([detailString isEqualToString:@"POINT"] || [detailString isEqualToString:@"GEOMETRY"]
+				|| [detailString isEqualToString:@"LINESTRING"] || [detailString isEqualToString:@"POLYGON"]
+				|| [detailString isEqualToString:@"MULTIPOLYGON"] || [detailString isEqualToString:@"GEOMETRYCOLLECTION"]
+				|| [detailString isEqualToString:@"MULTIPOINT"] || [detailString isEqualToString:@"MULTILINESTRING"]) {
+		[fieldDetails setObject:@"geometry" forKey:@"typegrouping"];
 
 	// Default to "blobdata".  This means that future and currently unsupported types - including spatial extensions -
 	// will be preserved unmangled.

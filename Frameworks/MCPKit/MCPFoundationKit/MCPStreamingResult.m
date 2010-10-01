@@ -320,6 +320,10 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 					cellData = [NSNull null];
 					break;
 
+				case FIELD_TYPE_GEOMETRY:
+					cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
+					break;
+
 				default:
 					NSLog(@"in fetchNextRowAsArray : Unknown type : %ld for column %ld, sending back a NSData object", (NSInteger)fieldDefinitions[i].type, (NSInteger)i);
 					cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
