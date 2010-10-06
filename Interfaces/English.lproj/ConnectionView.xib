@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5588"/>
+			<integer value="5166"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -880,7 +880,7 @@
 																			<object class="NSTabViewItem" id="517771995">
 																				<string key="NSIdentifier">2</string>
 																				<object class="NSView" key="NSView" id="962671066">
-																					<reference key="NSNextResponder" ref="134031646"/>
+																					<nil key="NSNextResponder"/>
 																					<int key="NSvFlags">256</int>
 																					<object class="NSMutableArray" key="NSSubviews">
 																						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1272,7 +1272,6 @@
 																						</object>
 																					</object>
 																					<string key="NSFrame">{{10, 33}, {360, 371}}</string>
-																					<reference key="NSSuperview" ref="134031646"/>
 																				</object>
 																				<string key="NSLabel">Socket</string>
 																				<reference key="NSColor" ref="644242225"/>
@@ -1281,7 +1280,7 @@
 																			<object class="NSTabViewItem" id="591192172">
 																				<string key="NSIdentifier">Item 2</string>
 																				<object class="NSView" key="NSView" id="159800861">
-																					<nil key="NSNextResponder"/>
+																					<reference key="NSNextResponder" ref="134031646"/>
 																					<int key="NSvFlags">256</int>
 																					<object class="NSMutableArray" key="NSSubviews">
 																						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1567,7 +1566,7 @@
 																										<int key="NSCellFlags2">272630784</int>
 																										<string key="NSContents"/>
 																										<reference key="NSSupport" ref="807120225"/>
-																										<string key="NSPlaceholderString">22</string>
+																										<string key="NSPlaceholderString">optional</string>
 																										<reference key="NSControlView" ref="692784990"/>
 																										<bool key="NSDrawsBackground">YES</bool>
 																										<reference key="NSBackgroundColor" ref="211632616"/>
@@ -1688,20 +1687,21 @@
 																						</object>
 																					</object>
 																					<string key="NSFrame">{{10, 33}, {360, 371}}</string>
+																					<reference key="NSSuperview" ref="134031646"/>
 																				</object>
 																				<string key="NSLabel">SSH</string>
 																				<reference key="NSColor" ref="644242225"/>
 																				<reference key="NSTabView" ref="134031646"/>
 																			</object>
 																		</object>
-																		<reference key="NSSelectedTabViewItem" ref="517771995"/>
+																		<reference key="NSSelectedTabViewItem" ref="591192172"/>
 																		<reference key="NSFont" ref="807120225"/>
 																		<int key="NSTvFlags">0</int>
 																		<bool key="NSAllowTruncatedLabels">YES</bool>
 																		<bool key="NSDrawsBackground">YES</bool>
 																		<object class="NSMutableArray" key="NSSubviews">
 																			<bool key="EncodedWithXMLCoder">YES</bool>
-																			<reference ref="962671066"/>
+																			<reference ref="159800861"/>
 																		</object>
 																	</object>
 																	<object class="NSButton" id="460592307">
@@ -2302,7 +2302,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="3577372">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2311,7 +2311,6 @@
 						<int key="NSvFlags">274</int>
 						<string key="NSFrame">{{2, 10}, {575, 34}}</string>
 						<reference key="NSSuperview" ref="3577372"/>
-						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="444474564">
 							<int key="NSCellFlags">67239424</int>
@@ -2325,8 +2324,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{579, 51}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
@@ -3098,35 +3095,6 @@
 						</object>
 					</object>
 					<int key="connectionID">5419</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: sshPort</string>
-						<reference key="source" ref="692784990"/>
-						<reference key="destination" ref="545410097"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="692784990"/>
-							<reference key="NSDestination" ref="545410097"/>
-							<string key="NSLabel">value: sshPort</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">sshPort</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSContinuouslyUpdatesValue</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<boolean value="YES"/>
-									<string>22</string>
-								</object>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">5420</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -4309,6 +4277,35 @@
 						</object>
 					</object>
 					<int key="connectionID">5735</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: sshPort</string>
+						<reference key="source" ref="692784990"/>
+						<reference key="destination" ref="545410097"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="692784990"/>
+							<reference key="NSDestination" ref="545410097"/>
+							<string key="NSLabel">value: sshPort</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">sshPort</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSContinuouslyUpdatesValue</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<boolean value="YES"/>
+									<string>optional</string>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">5737</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -6656,7 +6653,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5735</int>
+			<int key="maxID">5737</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

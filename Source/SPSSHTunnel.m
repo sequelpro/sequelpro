@@ -42,7 +42,7 @@
  */
 - (id) initToHost:(NSString *) theHost port:(NSInteger) thePort login:(NSString *) theLogin tunnellingToPort:(NSInteger) targetPort onHost:(NSString *) targetHost
 {
-	if (!theHost || !thePort || !targetPort || !targetHost) return nil;
+	if (!theHost || !targetPort || !targetHost) return nil;
 
 	self = [super init];
 
@@ -292,7 +292,7 @@
 	taskArguments = [[NSMutableArray alloc] init];
 	[taskArguments addObject:@"-N"]; // Tunnel only
 	[taskArguments addObject:@"-v"]; // Verbose mode for messages
-	[taskArguments addObject:@"-M"]; // Places the ssh client into 'master' mode for connection sharing
+	[taskArguments addObject:@"-o ControlMaster=auto"]; // Support 'master' mode for connection sharing
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
@@ -305,7 +305,9 @@
 		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]];		
 		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
 	}
-	[taskArguments addObject:[NSString stringWithFormat:@"-p %ld", (long)sshPort]];
+	if (sshPort) {
+		[taskArguments addObject:[NSString stringWithFormat:@"-p %ld", (long)sshPort]];
+	}
 	if ([sshLogin length]) {
 		[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
 	} else {
