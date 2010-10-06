@@ -306,6 +306,8 @@
  */
 - (IBAction)cancelMySQLConnection:(id)sender
 {
+	[connectButton setEnabled:NO];
+	
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[progressIndicatorText display];
 	
@@ -354,11 +356,14 @@
  * Currently only cleans up the SSH connection (MySQL connection isn't threaded)
  */
 - (void)cancelConnection
-{
+{	
 	if (!sshTunnel) return;
+
 	cancellingConnection = YES;
+	
 	[sshTunnel disconnect];
 	[sshTunnel release];
+	
 	sshTunnel = nil;
 }
 
@@ -442,8 +447,9 @@
 		[delegate connectionControllerConnectAttemptFailed:self];
 	}
 
-	// Only display the connection error message if there is a window visible
-	if ([[tableDocument parentWindow] isVisible]) {
+	// Only display the connection error message if there is a window visible and the connection attempt
+	// wasn't cancelled even though it failed.
+	if ([[tableDocument parentWindow] isVisible] && (!mySQLConnectionCancelled)) {
 		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, [tableDocument parentWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 	}
 }
@@ -453,7 +459,6 @@
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {	
-	
 	// Restore the passwords from keychain for editing if appropriate
 	if (connectionKeychainItemName) {
 		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
@@ -1321,6 +1326,9 @@
 {
 	// Must be performed on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] _restoreConnectionInterface];
+	
+	// Reset the window title
+	[[tableDocument parentWindow] setTitle:[tableDocument displayName]];
 	
 	// Stop the current tab's progress indicator
 	[tableDocument setIsProcessing:NO];
