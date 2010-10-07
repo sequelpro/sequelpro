@@ -2716,43 +2716,27 @@
  */
 - (NSString *)fieldListForQuery
 {
-	NSInteger i;
-	NSMutableArray *fields = [NSMutableArray array];
-	NSArray *columnNames = [tableDataInstance columnNames];
-	BOOL hasGeometryFields = NO;
+	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && [dataColumns count]) {
 
-	if (([prefs boolForKey:SPLoadBlobsAsNeeded]) && ([dataColumns count] > 0)) {
+		NSMutableArray *fields = [NSMutableArray arrayWithCapacity:[dataColumns count]];
+		BOOL tableHasBlobs = NO;
+		NSString *fieldName;
 
-		for (i = 0 ; i < [columnNames count]; i++)
-		{
-			if (![tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
-					if([tableDataInstance columnIsGeometry:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]])
-						[fields addObject:[NSString stringWithFormat:@"AsText(%@)", [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]]];
-					else
-						[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
-			}
+		for (NSDictionary* field in dataColumns)
+			if (![tableDataInstance columnIsBlobOrText:fieldName = [field objectForKey:@"name"]] )
+				[fields addObject:[fieldName backtickQuotedString]];
 			else {
 				// For blob/text fields, select a null placeholder so the column count is still correct
 				[fields addObject:@"NULL"];
+				tableHasBlobs = YES;
 			}
-		}
 
-		return [fields componentsJoinedByString:@","];
-	} else {
+		return (tableHasBlobs) ? [fields componentsJoinedByString:@", "] : @"*";
 
-		for (i = 0 ; i < [columnNames count]; i++)
-		{
-			if([tableDataInstance columnIsGeometry:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]]) {
-				[fields addObject:[NSString stringWithFormat:@"AsText(%@)", [NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]]];
-				hasGeometryFields = YES;
-			}
-			else
-				[fields addObject:[NSArrayObjectAtIndex(columnNames, i) backtickQuotedString]];
-		}
-		if(hasGeometryFields)
-			return [fields componentsJoinedByString:@","];
-		else
-			return @"*";
+	}
+	else {
+
+		return @"*";
 
 	}
 }
@@ -3415,6 +3399,9 @@
 		} else {
 			theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 		}
+
+		if([theValue isKindOfClass:[MCPGeometryData class]])
+			return [theValue description];
 
 		if ([theValue isNSNull])
 			return [prefs objectForKey:SPNullValue];

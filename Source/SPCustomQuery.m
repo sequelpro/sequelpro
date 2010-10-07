@@ -1847,6 +1847,9 @@
 		if ([theValue isNSNull])
 			return [prefs objectForKey:SPNullValue];
 
+		if ([theValue isKindOfClass:[MCPGeometryData class]])
+			return [theValue description];
+
 	    return theValue;
 	}
 	else {

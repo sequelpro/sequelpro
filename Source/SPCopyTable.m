@@ -669,8 +669,12 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		// Retrieve the cell's content
 		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
 
+		// TODO it's temporarily
+		if ([contentString isKindOfClass:[MCPGeometryData class]])
+			contentString = [contentString description];
+
 		// Replace NULLs with their placeholder string
-		if ([contentString isNSNull]) {
+		else if ([contentString isNSNull]) {
 			contentString = [prefs objectForKey:SPNullValue];
 
 		// Same for cells for which loading has been deferred - likely blobs

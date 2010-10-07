@@ -1,13 +1,10 @@
 //
 //  $Id$
 //
-//  MCPKit.h
-//  MCPKit
+//  MCPGeometryData.h
+//  sequel-pro
 //
-//  Created by Serge Cohen (serge.cohen@m4x.org) on 08/12/2001.
-//  Copyright (c) 2001 Serge Cohen. All rights reserved.
-//
-//  Forked by the Sequel Pro team (sequelpro.com), April 2009
+//  Created by Hans-Jörg Bibiko on October 07, 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,20 +20,20 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://mysql-cocoa.sourceforge.net/>
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 
-#import <MCPKit/MCPConstants.h>
-#import <MCPKit/MCPNull.h>
-#import <MCPKit/MCPResult.h>
-#import <MCPKit/MCPStreamingResult.h>
-#import <MCPKit/MCPConnection.h>
-#import <MCPKit/MCPNumber.h>
-#import <MCPKit/MCPResultPlus.h>
-#import <MCPKit/MCPFastQueries.h>
-#import <MCPKit/MCPConnectionProxy.h>
-#import <MCPKit/MCPGeometryData.h>
+@interface MCPGeometryData : NSObject <NSCoding, NSCopying>
+{
+	char *geoBuffer;
+	NSUInteger bufferLength;
+}
 
-#import "mysql.h"
+- (id)initWithData:(NSData*)geoData;
++ (id)dataWithData:(NSData*)geoData;
+- (NSString*)description;
+- (NSUInteger)length;
+
+@end
