@@ -25,6 +25,11 @@
 #import "MCPGeometryData.h"
 
 
+#define SIZEOF_STORED_UINT32 4
+#define SIZEOF_STORED_DOUBLE 8
+#define POINT_DATA_SIZE (SIZEOF_STORED_DOUBLE*2)
+#define WKB_HEADER_SIZE (1+SIZEOF_STORED_UINT32)
+
 @implementation MCPGeometryData
 
 - (id)copyWithZone:(NSZone *)zone { return [self retain]; }
@@ -38,20 +43,20 @@
 	return self;
 }
 
-- (id)initWithData:(NSData*)geoData
+- (id)initWithBytes:(Byte*)geoData length:(NSUInteger)length
 {
 	if ((self = [self init])) {
-		bufferLength = [geoData length];
+		bufferLength = length;
 		geoBuffer = malloc(bufferLength);
-		memcpy(geoBuffer, [geoData bytes], bufferLength);
+		memcpy(geoBuffer, geoData, bufferLength);
 	}
 	return self;
 }
 
 
-+ (id)dataWithData:(NSData*)geoData
++ (id)dataWithBytes:(Byte*)geoData length:(NSUInteger)length
 {
-	return [[[MCPGeometryData alloc] initWithData:geoData] autorelease];
+	return [[[MCPGeometryData alloc] initWithBytes:geoData length:length] autorelease];
 }
 
 - (NSString*)description
@@ -62,6 +67,117 @@
 - (NSUInteger)length
 {
 	return bufferLength;
+}
+
+- (NSData*)data
+{
+	return [NSData dataWithBytes:geoBuffer length:bufferLength];
+}
+
+- (NSString*)wktString
+{
+	char byteOrder;
+	UInt32 geoType, c, c1;
+	st_point_2d aPoint;
+	NSUInteger ptr;
+	double x, y;
+	NSMutableString *wkt = [NSMutableString string];
+	NSUInteger i,j;
+	BOOL raw = NO;
+	
+	if (bufferLength < WKB_HEADER_SIZE)
+		return @"Error";
+
+	ptr = (raw) ? 0 : 4;
+
+	byteOrder = geoBuffer[ptr];
+
+	if(byteOrder != 0x1)
+		return @"Byte order not yet supported";
+
+	ptr++;
+	geoType = geoBuffer[ptr];
+	ptr += SIZEOF_STORED_UINT32;
+
+	NSData *d;
+	switch(geoType) {
+		case wkb_point:
+		memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+		return [NSString stringWithFormat:@"POINT(%.16g %.16g)",aPoint.x, aPoint.y];
+		break;
+		case wkb_linestring:
+		[wkt setString:@"LINESTRING("];
+		c = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32;
+		for(i=0; i<c; i++) {
+			memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+			[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i<c-1) ? @"," : @""];
+			ptr += POINT_DATA_SIZE;
+		}
+		[wkt appendString:@")"];
+		return wkt;
+		break;
+		case wkb_polygon:
+		[wkt setString:@"POLYGON("];
+		c = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32;
+		for(i=0; i<c; i++) {
+			c1 = geoBuffer[ptr];
+			ptr += SIZEOF_STORED_UINT32;
+			[wkt appendString:@"("];
+			for(j=0; j<c1; j++) {
+				memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+				[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (j<c1-1) ? @"," : @""];
+				ptr += POINT_DATA_SIZE;
+			}
+			[wkt appendFormat:@")%@",  (i<c-1) ? @"," : @""];
+		}
+		[wkt appendString:@")"];
+		return wkt;
+		break;
+		case wkb_multipoint:
+		[wkt setString:@"MULTIPOINT("];
+		c = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+		for(i=0; i<c; i++) {
+			memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+			[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i<c-1) ? @"," : @""];
+			ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
+		}
+		[wkt appendString:@")"];
+		return wkt;
+		break;
+		case wkb_multilinestring:
+		[wkt setString:@"MULTILINESTRING("];
+		c = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+		for(i=0; i<c; i++) {
+			c1 = geoBuffer[ptr];
+			ptr += SIZEOF_STORED_UINT32;
+			[wkt appendString:@"("];
+			for(j=0; j<c1; j++) {
+				memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+				[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (j<c1-1) ? @"," : @""];
+				ptr += POINT_DATA_SIZE;
+			}
+			ptr += WKB_HEADER_SIZE;
+			[wkt appendFormat:@")%@",  (i<c-1) ? @"," : @""];
+		}
+		[wkt appendString:@")"];
+		return wkt;
+		break;
+		case wkb_multipolygon:
+		// NSLog(@"ml %@", geoData);
+		
+		[wkt setString:@"MULTIPOLYGON be patient"];
+		break;
+		case wkb_geometrycollection:
+		[wkt setString:@"GEOMETRYCOLLECTION be patient"];
+		break;
+		default:
+		return @"Error geometry type parsing";
+	}
+	return wkt;
 }
 
 - (void)dealloc

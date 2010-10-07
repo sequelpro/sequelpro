@@ -322,7 +322,7 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 					break;
 
 				case FIELD_TYPE_GEOMETRY:
-					cellData = [MCPGeometryData dataWithData:[NSData dataWithBytes:theData length:fieldLengths[i]]];
+					cellData = [MCPGeometryData dataWithBytes:theData length:fieldLengths[i]];
 					break;
 
 				default:

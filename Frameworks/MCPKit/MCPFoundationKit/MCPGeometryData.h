@@ -25,15 +25,34 @@
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 
+enum wkbType
+{
+	wkb_point = 1,
+	wkb_linestring = 2,
+	wkb_polygon = 3,
+	wkb_multipoint = 4,
+	wkb_multilinestring = 5,
+	wkb_multipolygon = 6,
+	wkb_geometrycollection = 7
+};
+
+typedef struct st_point_2d_
+{
+	double x;
+	double y;
+} st_point_2d;
+
 @interface MCPGeometryData : NSObject <NSCoding, NSCopying>
 {
-	char *geoBuffer;
+	Byte *geoBuffer;
 	NSUInteger bufferLength;
 }
 
-- (id)initWithData:(NSData*)geoData;
-+ (id)dataWithData:(NSData*)geoData;
+- (id)initWithBytes:(Byte*)geoData length:(NSUInteger)length;
++ (id)dataWithBytes:(Byte*)geoData length:(NSUInteger)length;
 - (NSString*)description;
 - (NSUInteger)length;
+- (NSData*)data;
+- (NSString*)wktString;
 
 @end

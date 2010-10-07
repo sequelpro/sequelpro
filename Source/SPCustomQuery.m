@@ -1752,6 +1752,9 @@
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"]) {
 				[fieldIDQueryStr appendFormat:@"%@=%@ AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
 			}
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+				[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]];
+			}
 			else {
 				[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
 			}
@@ -1848,7 +1851,7 @@
 			return [prefs objectForKey:SPNullValue];
 
 		if ([theValue isKindOfClass:[MCPGeometryData class]])
-			return [theValue description];
+			return [theValue wktString];
 
 	    return theValue;
 	}
@@ -1902,6 +1905,8 @@
 					newObject = @"CURRENT_TIMESTAMP";
 				} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 					newObject = @"NULL";
+				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+					newObject = [NSString stringWithFormat:@"GeomFromText('%@')", anObject];
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]

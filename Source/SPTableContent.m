@@ -1547,6 +1547,9 @@
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"]) {
 				[fieldIDQueryStr appendFormat:@"%@=%@ AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
 			}
+			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+				[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]];
+			}
 			else {
 				[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
 			}
@@ -2673,12 +2676,12 @@
 			if ([[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"type"] isEqualToString:@"BIT"]) {
 				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection prepareString:tempValue]]];
 			}
+			else if ([tempValue isKindOfClass:[MCPGeometryData class]]) {
+				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:[tempValue data]]]];
+			}
 			// BLOB/TEXT data
 			else if ([tempValue isKindOfClass:[NSData class]]) {
-				if([tableDataInstance columnIsGeometry:NSArrayObjectAtIndex(keys, i)])
-					[value setString:[NSString stringWithFormat:@"GeomFromText('%@')", [[[NSString alloc] initWithData:tempValue encoding:NSASCIIStringEncoding] autorelease]]];
-				else
-					[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
+				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
 			}
 			else
 				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
@@ -3401,7 +3404,7 @@
 		}
 
 		if([theValue isKindOfClass:[MCPGeometryData class]])
-			return [theValue description];
+			return [theValue wktString];
 
 		if ([theValue isNSNull])
 			return [prefs objectForKey:SPNullValue];
@@ -3542,6 +3545,8 @@
 						newObject = @"CURRENT_TIMESTAMP";
 					} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 						newObject = @"NULL";
+					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+						newObject = [NSString stringWithFormat:@"GeomFromText('%@')", anObject];
 					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 						newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
 					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]

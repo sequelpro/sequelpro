@@ -470,7 +470,7 @@ const OUR_CHARSET our_charsets60[] =
 					break;
 
 				case FIELD_TYPE_GEOMETRY:
-					theCurrentObj = [MCPGeometryData dataWithData:[NSData dataWithBytes:theData length:theLengths[i]]];
+					theCurrentObj = [MCPGeometryData dataWithBytes:theData length:theLengths[i]];
 					break;
 
 				default:
