@@ -2391,7 +2391,7 @@
 			[rowValue setString:@"CURRENT_TIMESTAMP"];
 
 		} else if ( [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"geometry"] ) {
-			[rowValue setString:[NSString stringWithFormat:@"GeomFromText('%@')", rowObject]];
+			[rowValue setString:[NSString stringWithFormat:@"GeomFromText('%@')", ([rowObject isKindOfClass:[MCPGeometryData class]]) ? [rowObject wktString] : rowObject]];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else if ( [rowObject isNSNull]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
