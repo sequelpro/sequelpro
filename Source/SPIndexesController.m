@@ -26,6 +26,7 @@
 #import "SPIndexesController.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "SPServerSupport.h"
 
 // Constants
 NSString *SPNewIndexIndexName      = @"IndexName";
@@ -164,7 +165,7 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	// The ability to specify an index's key block size was added in MySQL 5.1.10 so disable the textfield
 	// if it's not supported.
-	[indexKeyBlockSizeTextField setEnabled:(([connection serverMajorVersion] >= 5) && ([connection serverMinorVersion] >= 1) && ([connection serverReleaseVersion] >= 10))];
+	[indexKeyBlockSizeTextField setEnabled:[[dbDocument serverSupport] supportsIndexKeyBlockSize]];
 	
 	// Begin the sheet
 	[NSApp beginSheet:[self window]

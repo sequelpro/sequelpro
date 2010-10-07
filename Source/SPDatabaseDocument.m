@@ -60,6 +60,7 @@
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
+#import "SPServerSupport.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -76,10 +77,10 @@
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
 @synthesize isProcessing;
+@synthesize serverSupport;
 
 - (id)init
 {
-	
 	if ((self = [super init])) {
 
 		_mainNibLoaded = NO;
@@ -675,11 +676,17 @@
 #pragma mark -
 #pragma mark Connection callback and methods
 
-- (void) setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(MCPConnection *)theConnection
 {
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
-
+	
+	// Now that we have a connection, determine what functionality the database supports.
+	// Note that this must be done before anything else as it's used by nearly all of the main controllers.
+	serverSupport = [[SPServerSupport alloc] initWithMajorVersion:[mySQLConnection serverMajorVersion] 
+															minor:[mySQLConnection serverMinorVersion] 
+														  release:[mySQLConnection serverReleaseVersion]];
+	
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
 	
@@ -701,15 +708,22 @@
 
 	// Update the database list
 	[self setDatabases:self];
+	
 	[chooseDatabaseButton setEnabled:!_isWorkingLevel];
 
+	[databaseDataInstance setConnection:mySQLConnection];
+	
+	// Pass the support class to the data instance
+	[databaseDataInstance setServerSupport:serverSupport];
+	
 	// Set the connection on the tables list instance - this updates the table list while the connection
 	// is still UTF8
 	[tablesListInstance setConnection:mySQLConnection];
 
 	// Set the connection encoding if necessary
 	NSNumber *encodingType = [prefs objectForKey:SPDefaultEncoding];
-	if ( [encodingType intValue] != SPEncodingAutodetect ) {
+	
+	if ([encodingType intValue] != SPEncodingAutodetect) {
 		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
 	}
 
@@ -723,8 +737,7 @@
 	[exportControllerInstance setConnection:mySQLConnection];
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
-	[databaseDataInstance setConnection:mySQLConnection];
-
+	
 	// Set the custom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
@@ -738,9 +751,10 @@
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
 	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
-	if(spfSession != nil && [spfSession objectForKey:@"queries"]) {
+	
+	if (spfSession != nil && [spfSession objectForKey:@"queries"]) {
 		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"save_editor_content"];
-		if([[spfSession objectForKey:@"queries"] isKindOfClass:[NSData class]]) {
+		if ([[spfSession objectForKey:@"queries"] isKindOfClass:[NSData class]]) {
 			NSString *q = [[NSString alloc] initWithData:[[spfSession objectForKey:@"queries"] decompress] encoding:NSUTF8StringEncoding];
 			[self initQueryEditorWithString:q];
 			[q release];
@@ -750,7 +764,7 @@
 	}
 
 	// Insert queryEditorInitString into the Query Editor if defined
-	if(queryEditorInitString && [queryEditorInitString length]) {
+	if (queryEditorInitString && [queryEditorInitString length]) {
 		[self viewQuery:self];
 		[customQueryInstance doPerformLoadQueryService:queryEditorInitString];
 		[queryEditorInitString release];
@@ -759,12 +773,12 @@
 
 	// Set focus to table list filter field if visible
 	// otherwise set focus to Table List view
-	if ( [[tablesListInstance tables] count] > 20 )
+	if ([[tablesListInstance tables] count] > 20)
 		[parentWindow makeFirstResponder:listFilterField];
 	else
 		[parentWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 
-	if(spfSession != nil) {
+	if (spfSession != nil) {
 
 		// Restore vertical split view divider for tables' list and right view (Structure, Content, etc.)
 		if([spfSession objectForKey:@"windowVerticalDividerPosition"])
@@ -772,12 +786,13 @@
 
 		// Start a task to restore the session details
 		[self startTaskWithDescription:NSLocalizedString(@"Restoring session...", @"Restoring session task description")];
+		
 		if ([NSThread isMainThread])
 			[NSThread detachNewThreadSelector:@selector(restoreSession) toTarget:self withObject:nil];
 		else
 			[self restoreSession];
-
-	} else {
+	} 
+	else {
 		switch ([prefs integerForKey:SPDefaultViewMode] > 0 ? [prefs integerForKey:SPDefaultViewMode] : [prefs integerForKey:SPLastViewMode]) {
 			default:
 			case SPStructureViewMode:
@@ -801,10 +816,16 @@
 		}
 	}
 
-	(void*)[self databaseEncoding];
+	(void *)[self databaseEncoding];
 }
 
-- (MCPConnection *) getConnection {
+/**
+ * Returns the current connection associated with this document.
+ *
+ * @return The document's connection
+ */
+- (MCPConnection *) getConnection 
+{
 	return mySQLConnection;
 }
 
@@ -876,8 +897,6 @@
 	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
-	
-	
 }
 
 /**
@@ -903,7 +922,6 @@
 
 	// Select the database
 	[self selectDatabase:[chooseDatabaseButton titleOfSelectedItem] item:[self table]];
-
 }
 
 /**
@@ -911,7 +929,6 @@
  */
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem
 {
-
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:NO];
 
@@ -934,10 +951,10 @@
 										nil];
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(_selectDatabaseAndItem:) toTarget:self withObject:selectionDetails];
-	} else {
+	} 
+	else {
 		[self _selectDatabaseAndItem:selectionDetails];
 	}
-
 }
 
 /**
@@ -956,12 +973,14 @@
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	NSString *utf8MenuItemTitle = nil;
-	if ([encodings count] > 0
-		&& ([mySQLConnection serverMajorVersion] > 4
-			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
-	{
+	
+	[databaseEncodingButton setEnabled:YES];
+	
+	if (([encodings count] > 0) && [serverSupport supportsPost41CharacterSetHandling]) {
 		[[databaseEncodingButton menu] addItem:[NSMenuItem separatorItem]];
-		for (NSDictionary *encoding in encodings) {
+		
+		for (NSDictionary *encoding in encodings) 
+		{
 			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
 			[databaseEncodingButton addItemWithTitle:menuItemTitle];
 
@@ -977,7 +996,9 @@
 			[databaseEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
 		}
 	}
-
+	else {
+		[databaseEncodingButton setEnabled:NO];
+	}
 	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:parentWindow
@@ -1725,15 +1746,13 @@
 	_supportsEncoding = YES;
 
 	// MySQL >= 4.1
-	if ([mySQLConnection serverMajorVersion] > 4
-		|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1))
-	{
+	if ([serverSupport supportsCharacterSetDatabaseVar]) {
 		charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_database'"];
 		[charSetResult setReturnDataAsStrings:YES];
 		mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
-
-	// mysql 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
-	} else {
+	} 
+	// MySQL 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
+	else {
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
 
@@ -2450,7 +2469,9 @@
     if (!userManagerInstance)
     {
         userManagerInstance = [[SPUserManager alloc] init];
-        userManagerInstance.mySqlConnection = mySQLConnection;
+		
+        [userManagerInstance setMySqlConnection:mySQLConnection];
+		[userManagerInstance setServerSupport:serverSupport];
     }
     
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
@@ -3801,9 +3822,7 @@
 	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
 	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
 	// as we don't know what's calling this method.
-	if ([connectionController selectedFavorite]) {
-		return;
-	}
+	if ([connectionController selectedFavorite]) return;
 
 	// Request the connection controller to add its details to favorites
 	[connectionController addFavorite:self];
@@ -4690,6 +4709,7 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	
 	[nibObjectsToRelease release];
 
 	[allDatabases release];
@@ -4714,6 +4734,7 @@
 	if (mainToolbar) [mainToolbar release];
 	if (titleAccessoryView) [titleAccessoryView release];
 	if (taskProgressWindow) [taskProgressWindow release];
+	if (serverSupport) [serverSupport release];
 	
 	[super dealloc];
 }

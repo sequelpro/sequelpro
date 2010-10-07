@@ -30,6 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
+#import "SPServerSupport.h"
 
 @interface SPTableTriggers (PrivateAPI)
 
@@ -105,11 +106,7 @@
 	[labelTextField setStringValue:@""];
 
 	// Show a warning if the version of MySQL is too low to support triggers
-	if ([connection serverMajorVersion] < 5
-		|| ([connection serverMajorVersion]     == 5
-			&& [connection serverMinorVersion]  == 0
-			&& [connection serverReleaseVersion] < 2))
-	{
+	if (![[tableDocumentInstance serverSupport] supportsTriggers]) {
 		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
 		return;
 	}
@@ -569,9 +566,7 @@
 			[tableDataInstance updateTriggersForCurrentTable];
 		}
 
-		NSArray *triggers = nil;
-		if ([connection serverMajorVersion] >= 5 && [connection serverMinorVersion] >= 0)
-			triggers = [tableDataInstance triggers];
+		NSArray *triggers = ([[tableDocumentInstance serverSupport] supportsTriggers]) ? [tableDataInstance triggers] : nil;
 
 		for (NSDictionary *trigger in triggers)
 		{

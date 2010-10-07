@@ -819,7 +819,9 @@
 	[fieldMappingTableColumnNames removeAllObjects];
 	[fieldMappingTableDefaultValues removeAllObjects];
 	[fieldMappingTableTypes removeAllObjects];
+	
 	BOOL serverGreaterThanVersion4 = ([mySQLConnection serverMajorVersion] >= 5) ? YES : NO;
+	
 	if([importFieldNamesHeaderSwitch state] == NSOnState) {
 		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
 			[fieldMappingTableColumnNames addObject:h];
@@ -1010,6 +1012,7 @@
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	NSString *utf8MenuItemTitle = nil;
+	
 	if ([encodings count] > 0
 		&& ([mySQLConnection serverMajorVersion] > 4
 			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
@@ -1032,7 +1035,6 @@
 		}
 
 		[newTableInfoEncodingPopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableEncoding]];
-
 	}
 
 	[NSApp beginSheet:newTableInfoWindow
@@ -1047,7 +1049,6 @@
 
 - (IBAction)addGlobalSourceVariable:(id)sender
 {
-
 	addGlobalSheetIsOpen = YES;
 
 	[NSApp beginSheet:globalValuesSheet

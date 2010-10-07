@@ -42,6 +42,7 @@
 #import "SPNavigatorController.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPHistoryController.h"
+#import "SPServerSupport.h"
 
 @interface SPTablesList (PrivateAPI)
 
@@ -125,12 +126,12 @@
 		// Reorder the tables in alphabetical order
 		[tables sortArrayUsingSelector:@selector(localizedCompare:) withPairedMutableArrays:tableTypes, nil];
 
-		/* grab the procedures and functions
+		/* Grab the procedures and functions
 		 *
-		 * using information_schema gives us more info (for information window perhaps?) but breaks
+		 * Using information_schema gives us more info (for information window perhaps?) but breaks
 		 * backward compatibility with pre 4 I believe. I left the other methods below, in case.
 		 */
-		if ([mySQLConnection serverMajorVersion] >= 5) {
+		if ([[tableDocumentInstance serverSupport] supportsInformationSchema]) {
 			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
 			theResult = [mySQLConnection queryString:pQuery];
 
@@ -226,9 +227,11 @@
 	// Add the table headers even if no tables were found
 	if (tableListContainsViews) {
 		[tables insertObject:NSLocalizedString(@"TABLES & VIEWS",@"header for table & views list") atIndex:0];
-	} else {
+	} 
+	else {
 		[tables insertObject:NSLocalizedString(@"TABLES",@"header for table list") atIndex:0];
 	}
+	
 	[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeNone] atIndex:0];
 
 	[[tablesListView onMainThread] reloadData];
@@ -237,7 +240,7 @@
 	// but not if the update was called from SPTableData since it calls that method
 	// if a selected table doesn't exist - this happens if a table was deleted/renamed by an other user
 	// or if the table name contains characters which are not supported by the current set encoding
-	if( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
+	if ( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
 		tableListIsSelectable = YES;
 		[[tablesListView onMainThread] selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
@@ -245,7 +248,8 @@
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
 		selectedTableType = [[tableTypes objectAtIndex:itemToReselect] integerValue];
-	} else {
+	} 
+	else {
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = nil;
 		selectedTableType = SPTableTypeNone;
@@ -253,6 +257,7 @@
 
 	// Determine whether or not to show the list filter based on the number of tables, and clear it
 	[[self onMainThread] clearFilter];
+	
 	if ([tables count] > 20) [self showFilter];
 	else [self hideFilter];
 
@@ -264,14 +269,12 @@
 	if (previousSelectedTable) [previousSelectedTable release];
 
 	// Query the structure of all databases in the background
-	if(sender == self)
+	if (sender == self)
 		// Invoked by SP
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
 	else
 		// User press refresh button ergo force update
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
-
-
 }
 
 /**
@@ -279,9 +282,7 @@
  */
 - (IBAction)addTable:(id)sender
 {
-	if ((![tableSourceInstance saveRowOnDeselect]) || (![tableContentInstance saveRowOnDeselect]) || (![tableDocumentInstance database])) {
-		return;
-	}
+	if ((![tableSourceInstance saveRowOnDeselect]) || (![tableContentInstance saveRowOnDeselect]) || (![tableDocumentInstance database])) return;
 
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
@@ -305,13 +306,16 @@
 
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	
 	NSString *utf8MenuItemTitle = nil;
-	if ([encodings count] > 0
-		&& ([mySQLConnection serverMajorVersion] > 4
-			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
-	{
+	
+	[tableEncodingButton setEnabled:YES];
+	
+	if (([encodings count] > 0) && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 		[[tableEncodingButton menu] addItem:[NSMenuItem separatorItem]];
-		for (NSDictionary *encoding in encodings) {
+		
+		for (NSDictionary *encoding in encodings) 
+		{
 			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
 			[tableEncodingButton addItemWithTitle:menuItemTitle];
 
@@ -326,6 +330,9 @@
 			[[tableEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
 			[tableEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
 		}
+	}
+	else {
+		[tableEncodingButton setEnabled:NO];
 	}
 
 	[NSApp beginSheet:tableSheet
@@ -1580,7 +1587,6 @@
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-
 	// Disallow selection while the document is working on a task
 	if ([tableDocumentInstance isWorking]) return NO;
 

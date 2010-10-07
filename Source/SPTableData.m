@@ -32,6 +32,7 @@
 #import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#import "SPServerSupport.h"
 
 @implementation SPTableData
 
@@ -147,19 +148,16 @@
  */
 - (NSArray *) triggers
 {
-
 	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return [NSArray array];
+	if (isWorking) return [NSArray array];
 	
 
 	// If triggers is nil, the triggers need to be loaded - if a table is selected on MySQL >= 5.0.2
 	if (!triggers) {
-		if ([tableListInstance tableType] == SPTableTypeTable
-			&& [mySQLConnection serverMajorVersion]		>= 5
-			&& [mySQLConnection serverMinorVersion]		>= 0)
-		{
+		if (([tableListInstance tableType] == SPTableTypeTable) && [[tableDocumentInstance serverSupport] supportsTriggers]) {
 			[self updateTriggersForCurrentTable];
-		} else {
+		} 
+		else {
 			return [NSArray array];
 		}
 	}

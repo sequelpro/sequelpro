@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10F569</string>
-		<string key="IBDocument.InterfaceBuilderVersion">788</string>
+		<string key="IBDocument.InterfaceBuilderVersion">804</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,18 +15,18 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>788</string>
-				<string>1.2.2</string>
+				<string>804</string>
+				<string>1.2.5</string>
 			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="43"/>
+			<integer value="593"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string>com.brandonwalkin.BWToolkit</string>
+			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.Metadata">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -56,7 +56,7 @@
 				<string key="NSWindowTitle">User Managment</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{752, 506}</string>
 				<object class="NSView" key="NSWindowView" id="846307432">
 					<reference key="NSNextResponder"/>
@@ -148,7 +148,7 @@
 																			<string key="NSColorName">controlBackgroundColor</string>
 																			<object class="NSColor" key="NSColor" id="246134814">
 																				<int key="NSColorSpace">3</int>
-																				<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
+																				<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
 																			</object>
 																		</object>
 																		<object class="NSColor" key="NSTextColor" id="315534074">
@@ -1623,7 +1623,7 @@
 																		<int key="NSsFlags">256</int>
 																		<reference key="NSTarget" ref="728294866"/>
 																		<string key="NSAction">_doScroller:</string>
-																		<double key="NSPercent">0.96969696969696972</double>
+																		<double key="NSPercent">0.96969699859619141</double>
 																	</object>
 																	<object class="NSScroller" id="253008686">
 																		<reference key="NSNextResponder" ref="728294866"/>
@@ -1633,7 +1633,7 @@
 																		<int key="NSsFlags">257</int>
 																		<reference key="NSTarget" ref="728294866"/>
 																		<string key="NSAction">_doScroller:</string>
-																		<double key="NSPercent">0.99236641221374045</double>
+																		<double key="NSPercent">0.99236643314361572</double>
 																	</object>
 																	<object class="NSClipView" id="2173">
 																		<reference key="NSNextResponder" ref="728294866"/>
@@ -1752,7 +1752,7 @@
 																		<int key="NSsFlags">256</int>
 																		<reference key="NSTarget" ref="898351365"/>
 																		<string key="NSAction">_doScroller:</string>
-																		<double key="NSPercent">0.96969696969696972</double>
+																		<double key="NSPercent">0.96969699859619141</double>
 																	</object>
 																	<object class="NSScroller" id="1063461866">
 																		<reference key="NSNextResponder" ref="898351365"/>
@@ -1762,7 +1762,7 @@
 																		<int key="NSsFlags">257</int>
 																		<reference key="NSTarget" ref="898351365"/>
 																		<string key="NSAction">_doScroller:</string>
-																		<double key="NSPercent">0.9928057553956835</double>
+																		<double key="NSPercent">0.99280577898025513</double>
 																	</object>
 																	<object class="NSClipView" id="226879331">
 																		<reference key="NSNextResponder" ref="898351365"/>
@@ -1978,8 +1978,8 @@
 																							<bool key="NS.raise.underflow">YES</bool>
 																							<bool key="NS.raise.dividebyzero">YES</bool>
 																						</object>
-																						<string key="NS.decimal">,</string>
-																						<string key="NS.thousand">.</string>
+																						<string key="NS.decimal">.</string>
+																						<string key="NS.thousand">,</string>
 																						<bool key="NS.hasthousands">NO</bool>
 																						<bool key="NS.localized">YES</bool>
 																						<bool key="NS.allowsfloats">NO</bool>
@@ -2044,8 +2044,8 @@
 																							<bool key="NS.raise.underflow">YES</bool>
 																							<bool key="NS.raise.dividebyzero">YES</bool>
 																						</object>
-																						<string key="NS.decimal">,</string>
-																						<string key="NS.thousand">.</string>
+																						<string key="NS.decimal">.</string>
+																						<string key="NS.thousand">,</string>
 																						<bool key="NS.hasthousands">NO</bool>
 																						<bool key="NS.localized">YES</bool>
 																						<bool key="NS.allowsfloats">NO</bool>
@@ -2110,8 +2110,8 @@
 																							<bool key="NS.raise.underflow">YES</bool>
 																							<bool key="NS.raise.dividebyzero">YES</bool>
 																						</object>
-																						<string key="NS.decimal">,</string>
-																						<string key="NS.thousand">.</string>
+																						<string key="NS.decimal">.</string>
+																						<string key="NS.thousand">,</string>
 																						<bool key="NS.hasthousands">NO</bool>
 																						<bool key="NS.localized">YES</bool>
 																						<bool key="NS.allowsfloats">NO</bool>
@@ -2224,7 +2224,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{752, 528}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
 			<object class="NSTreeController" id="889422316">
 				<object class="NSMutableArray" key="NSDeclaredKeys">
@@ -4121,6 +4121,30 @@
 					</object>
 					<int key="connectionID">979</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">maxUpdatesTextField</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="65963335"/>
+					</object>
+					<int key="connectionID">980</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">maxConnectionsTextField</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="111842321"/>
+					</object>
+					<int key="connectionID">981</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">maxQuestionsTextField</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="165705493"/>
+					</object>
+					<int key="connectionID">982</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5789,7 +5813,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">979</int>
+			<int key="maxID">982</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6018,6 +6042,9 @@
 							<string>availableTableView</string>
 							<string>grantedController</string>
 							<string>grantedTableView</string>
+							<string>maxConnectionsTextField</string>
+							<string>maxQuestionsTextField</string>
+							<string>maxUpdatesTextField</string>
 							<string>outlineView</string>
 							<string>privsSupportedByServer</string>
 							<string>removeSchemaPrivButton</string>
@@ -6035,6 +6062,9 @@
 							<string>NSTableView</string>
 							<string>NSArrayController</string>
 							<string>NSTableView</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
 							<string>NSOutlineView</string>
 							<string>NSMutableDictionary</string>
 							<string>NSButton</string>
@@ -6055,6 +6085,9 @@
 							<string>availableTableView</string>
 							<string>grantedController</string>
 							<string>grantedTableView</string>
+							<string>maxConnectionsTextField</string>
+							<string>maxQuestionsTextField</string>
+							<string>maxUpdatesTextField</string>
 							<string>outlineView</string>
 							<string>privsSupportedByServer</string>
 							<string>removeSchemaPrivButton</string>
@@ -6086,6 +6119,18 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">grantedTableView</string>
 								<string key="candidateClassName">NSTableView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">maxConnectionsTextField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">maxQuestionsTextField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">maxUpdatesTextField</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">outlineView</string>

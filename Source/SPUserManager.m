@@ -29,6 +29,7 @@
 #import "SPStringAdditions.h"
 #import "SPGrowlController.h"
 #import "SPConnectionController.h"
+#import "SPServerSupport.h"
 
 #define COLUMNIDNAME @"NameColumn"
 
@@ -46,7 +47,7 @@
 - (void)_initializeSchemaPrivs;
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host;
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled;
-- (void) _initializeAvailablePrivs;
+- (void)_initializeAvailablePrivs;
 
 @end
 
@@ -61,7 +62,14 @@
 @synthesize grantedSchemaPrivs;
 @synthesize availablePrivs;
 @synthesize treeSortDescriptors;
+@synthesize serverSupport;
 
+#pragma mark -
+#pragma mark Initialization
+
+/**
+ * Initialization.
+ */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
@@ -91,7 +99,7 @@
  * UI specific items to set up when the window loads. This is different than awakeFromNib 
  * as it's only called once.
  */
--(void)windowDidLoad
+- (void)windowDidLoad
 {
 	[tabView selectTabViewItemAtIndex:0];
 	
@@ -110,7 +118,7 @@
 	treeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
 	
 	[self setTreeSortDescriptors:[NSArray arrayWithObject:treeSortDescriptor]];
-	
+		
 	[super windowDidLoad];
 }
 
@@ -120,7 +128,7 @@
  */
 - (void)_initializeUsers
 {
-	isInitializing = TRUE; // Don't want to do some of the notifications if initializing
+	isInitializing = YES; // Don't want to do some of the notifications if initializing
 	NSMutableString *privKey;
 	NSArray *privRow;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -129,7 +137,7 @@
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
 	// Select users from the mysql.user table
-	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
 	NSInteger rows = [result numOfRows];
 	
 	if (rows > 0) {
@@ -148,32 +156,49 @@
 
 	// Set up the array of privs supported by this server.
 	[self.privsSupportedByServer removeAllObjects];
-
-	// Attempt to use SHOW PRIVILEGES syntax - supported since 4.1.0
-	result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
-	[result setReturnDataAsStrings:YES];
-	if ([result numOfRows]) {
-		while (privRow = [result fetchRowAsArray]) {
+	
+	result = nil;
+	
+	// Attempt to obtain user privileges if supported
+	if ([serverSupport supportsShowPrivileges]) {
+	
+		result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
+		
+		[result setReturnDataAsStrings:YES];
+	}
+	
+	if (result && [result numOfRows]) {
+		while (privRow = [result fetchRowAsArray]) 
+		{
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
+			
 			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
 			[privKey appendString:@"_priv"];
+			
 			[self.privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:privKey];
 		}
-	
+	} 
 	// If that fails, base privilege support on the mysql.users columns
-	} else {
-		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM `mysql`.`user`"];
+	else {
+		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];
+		
 		[result setReturnDataAsStrings:YES];
-		while (privRow = [result fetchRowAsArray]) {
+		
+		while (privRow = [result fetchRowAsArray]) 
+		{
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
+			
 			if (![privKey hasSuffix:@"_priv"]) continue;
+			
 			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
+			
 			[self.privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
 		}
 	}
 
 	[pool release];
-	isInitializing = FALSE;
+	
+	isInitializing = NO;
 }
 
 /**
@@ -184,15 +209,15 @@
 {
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
-	for(NSInteger i = 0; i < [items count]; i++)
+	for (NSInteger i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
 		
 		// Check to make sure if we already have added the parent.
-		if (parentResults != nil && [parentResults count] > 0)
-		{
+		if (parentResults != nil && [parentResults count] > 0) {
+			
 			// Add Children
 			NSManagedObject *parent = [parentResults objectAtIndex:0];
 			NSManagedObject *child = [self _createNewSPUser];
@@ -202,8 +227,10 @@
 			
 			NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
 			[children addObject:child];
+			
 			[self _initializeSchemaPrivsForChild:child];
-		} else {
+		} 
+		else {
 			// Add Parent
 			NSManagedObject *parent = [self _createNewSPUser];
 			NSManagedObject *child = [self _createNewSPUser];
@@ -219,15 +246,19 @@
 			
 			NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
 			[children addObject:child];
+			
 			[self _initializeSchemaPrivsForChild:child];
 		}
+		
 		// Save the initialized objects so that any new changes will be tracked.
 		NSError *error = nil;
+		
 		[[self managedObjectContext] save:&error];
-		if (error != nil)
-		{
+		
+		if (error != nil) {
 			[[NSApplication sharedApplication] presentError:error];
 		}
+		
 		[parentResults release];
 	}
 	
@@ -246,17 +277,16 @@
 	NSEntityDescription *privEntityDescription = [NSEntityDescription entityForName:@"Privileges"
 															 inManagedObjectContext:moc];
 	NSArray *props = [privEntityDescription attributeKeys];
+	
 	[availablePrivs removeAllObjects];
 	
 	for (NSString *prop in props)
 	{
-		if ([prop hasSuffix:@"_priv"] && [[self.privsSupportedByServer objectForKey:prop] boolValue])
-		{
-			NSString *displayName = [[prop stringByReplacingOccurrencesOfString:@"_priv"
-																	 withString:@""] replaceUnderscoreWithSpace];
+		if ([prop hasSuffix:@"_priv"] && [[self.privsSupportedByServer objectForKey:prop] boolValue]) {
+			NSString *displayName = [[prop stringByReplacingOccurrencesOfString:@"_priv" withString:@""] replaceUnderscoreWithSpace];
+			
 			[availablePrivs addObject:[NSDictionary dictionaryWithObjectsAndKeys:displayName, @"displayName", prop, @"name", nil]];				
 		}
-
 	}
 	
 	[availableController rearrangeObjects];
@@ -272,11 +302,10 @@
 	
 	MCPResult *results = [self.mySqlConnection listDBs];
 	
-	if ([results numOfRows]) {
-		[results dataSeek:0];
-	}
+	if ([results numOfRows]) [results dataSeek:0];
 	
-	for (NSInteger i = 0; i < [results numOfRows]; i++) {
+	for (NSInteger i = 0; i < [results numOfRows]; i++) 
+	{
 		[schemas addObject:[results fetchRowAsDictionary]];
 	}
 	
@@ -333,37 +362,43 @@
 	// Assumes that the child has already been initialized with values from the
 	// global user table.
 	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * from `mysql`.`db` d WHERE d.user = %@ and d.host = %@", 
+	NSString *queryString = [NSString stringWithFormat:@"SELECT * from mysql.db d WHERE d.user = %@ and d.host = %@", 
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
+	
 	MCPResult *queryResults = [self.mySqlConnection queryString:queryString];
-	if ([queryResults numOfRows] > 0)
-	{
+	
+	if ([queryResults numOfRows] > 0) {
 		// Go to the beginning
 		[queryResults dataSeek:0];
 	}
 	
-	for (NSInteger i = 0; i < [queryResults numOfRows]; i++) {
+	for (NSInteger i = 0; i < [queryResults numOfRows]; i++) 
+	{
 		NSDictionary *rowDict = [queryResults fetchRowAsDictionary];
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
 																inManagedObjectContext:[self managedObjectContext]];
 		for (NSString *key in rowDict)
 		{
-			if ([key hasSuffix:@"_priv"])
-			{
+			if ([key hasSuffix:@"_priv"]) {
+				
 				BOOL boolValue = [[rowDict objectForKey:key] boolValue];
+				
 				// Special case keys
-				if ([privColumnToGrantMap objectForKey:key])
-				{
+				if ([privColumnToGrantMap objectForKey:key]) {
 					key = [privColumnToGrantMap objectForKey:key];
 				}
+				
 				[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:key];
-			} else if ([key isEqualToString:@"Db"]) {
+			} 
+			else if ([key isEqualToString:@"Db"]) {
                 [dbPriv setValue:[[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"]
                           forKey:key];
-            } else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
+            } 
+			else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
 				[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
 			}
 		}
+		
 		NSMutableSet *privs = [child mutableSetValueForKey:@"schema_privileges"];
 		[privs addObject:dbPriv];
 	}
@@ -412,10 +447,12 @@
     if (managedObjectContext != nil) return managedObjectContext;
 	
     NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+	
     if (coordinator != nil) {
         managedObjectContext = [[NSManagedObjectContext alloc] init];
         [managedObjectContext setPersistentStoreCoordinator: coordinator];
     }
+	
 	[[NSNotificationCenter defaultCenter] addObserver:self 
 											 selector:@selector(contextDidSave:) 
 												 name:NSManagedObjectContextDidSaveNotification 
@@ -453,12 +490,12 @@
 
 - (BOOL)outlineView:(NSOutlineView *)olv isGroupItem:(id)item
 {
-	return FALSE;
+	return NO;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)olv shouldSelectItem:(id)item
 {
-	return TRUE;
+	return YES;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)olv shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
@@ -491,7 +528,7 @@
 	[availableTableView deselectAll:nil];
 }
 
--(BOOL)selectionShouldChangeInOutlineView:(NSOutlineView *)outlineView
+- (BOOL)selectionShouldChangeInOutlineView:(NSOutlineView *)outlineView
 {
 	if ([[treeController selectedObjects] count] > 0)
 	{
@@ -581,13 +618,13 @@
 {
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
 
-	// Iterate through the supported privs, setting the value of each to true
+	// Iterate through the supported privs, setting the value of each to YES
 	for (NSString *key in self.privsSupportedByServer) {
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
 		@try {
-			[selectedUser setValue:[NSNumber numberWithBool:TRUE] forKey:key];
+			[selectedUser setValue:[NSNumber numberWithBool:YES] forKey:key];
 		}
 		@catch (NSException * e) {
 		}
@@ -601,13 +638,13 @@
 {
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
 
-	// Iterate through the supported privs, setting the value of each to false
+	// Iterate through the supported privs, setting the value of each to NO
 	for (NSString *key in self.privsSupportedByServer) {
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
 		@try {
-			[selectedUser setValue:[NSNumber numberWithBool:FALSE] forKey:key];
+			[selectedUser setValue:[NSNumber numberWithBool:NO] forKey:key];
 		}
 		@catch (NSException * e) {
 		}
@@ -684,7 +721,7 @@
  */ 
 - (void)editNewHost
 {
-	[outlineView editColumn:0 row:[outlineView selectedRow]	withEvent:nil select:TRUE];		
+	[outlineView editColumn:0 row:[outlineView selectedRow]	withEvent:nil select:YES];		
 }
 
 /**
@@ -803,7 +840,7 @@
 												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 												  host:[selectedHost valueForKey:@"host"]];
 	NSManagedObject *priv = nil;
-	BOOL isNew = FALSE;
+	BOOL isNew = NO;
 	
     
 	if ([selectedPrivs count] > 0)
@@ -815,10 +852,10 @@
 		priv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
 											 inManagedObjectContext:[self managedObjectContext]];
 		[priv setValue:selectedDb forKey:@"db"];
-		isNew = TRUE;
+		isNew = YES;
 	}
 
-	// Now setup all the items that are selected to true
+	// Now setup all the items that are selected to YES
 	for (NSDictionary *obj in objects)
 	{
 		[priv setValue:[NSNumber numberWithBool:enabled] forKey:[obj valueForKey:@"name"]];
@@ -942,49 +979,50 @@
 {
 	for (NSManagedObject *user in updatedUsers) 
 	{
-		if ([[[user entity] name] isEqualToString:@"Privileges"])
-		{
+		if ([[[user entity] name] isEqualToString:@"Privileges"]) {
 			[self grantDbPrivilegesWithPrivilege:user];
-
-
-		// If the parent user has changed, either the username or password have been edited.
 		}
-		else if (![user parent])
-		{
+		// If the parent user has changed, either the username or password have been edited.
+		else if (![user parent]) {
 			NSArray *hosts = [user valueForKey:@"children"];
 
 			// If the user has been changed, update the username on all hosts.  Don't check for errors, as some
 			// hosts may be new.
 			if (![[user valueForKey:@"user"] isEqualToString:[user valueForKey:@"originaluser"]]) {
-				for (NSManagedObject *child in hosts) {
+				
+				for (NSManagedObject *child in hosts) 
+				{
 					NSString *renameUserStatement = [NSString stringWithFormat:
 														@"RENAME USER %@@%@ TO %@@%@",
 														 [[user valueForKey:@"originaluser"] tickQuotedString],
 														 [[child host] tickQuotedString],
 														 [[user valueForKey:@"user"] tickQuotedString],
 														 [[child host] tickQuotedString]];
+					
 					[self.mySqlConnection queryString:renameUserStatement];	
 				}
 			}
 
 			// If the password has been changed, use the same password on all hosts
 			if (![[user valueForKey:@"password"] isEqualToString:[user valueForKey:@"originalpassword"]]) {
-				for (NSManagedObject *child in hosts) {
+				
+				for (NSManagedObject *child in hosts) 
+				{
 					NSString *changePasswordStatement = [NSString stringWithFormat:
 														 @"SET PASSWORD FOR %@@%@ = PASSWORD(%@)",
 														 [[user valueForKey:@"user"] tickQuotedString],
 														 [[child host] tickQuotedString],
 														 [[user valueForKey:@"password"] tickQuotedString]];
+					
 					[self.mySqlConnection queryString:changePasswordStatement];	
 					[self checkAndDisplayMySqlError];
 				}
 			}
-            
-            
-		} else {
-            [self updateResourcesForUser:user];
+		} 
+		else {
+			if ([serverSupport supportsUserMaxVars]) [self updateResourcesForUser:user];
+			
 			[self grantPrivilegesToUser:user];
-            
 		}
 	}
 	
@@ -997,22 +1035,44 @@
 
 	for (NSManagedObject *user in deletedUsers)
 	{
-		if (![[[user entity] name] isEqualToString:@"Privileges"] && [user valueForKey:@"host"] != nil)
+		if (![[[user entity] name] isEqualToString:@"Privileges"] && ([user valueForKey:@"host"] != nil))
 		{
-			[droppedUsers appendFormat:@"%@@%@, ", 
-				[[user valueForKey:@"user"] tickQuotedString], 
-				[[user valueForKey:@"host"] tickQuotedString]];
+			[droppedUsers appendFormat:@"%@@%@, ", [[user valueForKey:@"user"] tickQuotedString], [[user valueForKey:@"host"] tickQuotedString]];
 		}
 
 	}
 
 	if ([droppedUsers length] > 2) {
-		droppedUsers = [[droppedUsers substringToIndex:[droppedUsers length]-2] mutableCopy];
-		[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+		droppedUsers = [[droppedUsers substringToIndex:([droppedUsers length] - 2)] mutableCopy];
+		
+		// Before MySQL 5.0.2 DROP USER just removed users with no privileges, so revoke 
+		// all their privileges first. Also, REVOKE ALL PRIVILEGES was added in MySQL 4.1.2, so use the
+		// old multiple query approach (damn, I wish there were only one MySQL version!).
+		if (![serverSupport supportsFullDropUser]) {
+			[mySqlConnection queryString:[NSString stringWithFormat:@"REVOKE ALL PRIVILEGES ON *.* FROM %@", droppedUsers]];
+			[mySqlConnection queryString:[NSString stringWithFormat:@"REVOKE GRANT OPTION ON *.* FROM %@", droppedUsers]];
+		}
+		
+		// DROP USER was added in MySQL 4.1.1
+		if ([serverSupport supportsDropUser]) {
+			[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+		}
+		// Otherwise manually remove the user rows from the mysql.user table
+		else {
+			NSArray *users = [droppedUsers componentsSeparatedByString:@", "];
+			
+			for (NSString *user in users)
+			{
+				NSArray *userDetails = [user componentsSeparatedByString:@"@"];
+				
+				[mySqlConnection queryString:[NSString stringWithFormat:@"DELETE FROM mysql.user WHERE User = %@ and Host = %@", [userDetails objectAtIndex:0], [userDetails objectAtIndex:1]]];
+			}
+		}
+		
 		[droppedUsers release];
 	}
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -1025,31 +1085,45 @@
 		if ([[[user entity] name] isEqualToString:@"Privileges"]) continue;
 		
 		NSString *createStatement = nil;
-
-		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) 
-        {
-            createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@", 
-                               [[[user parent] valueForKey:@"user"] tickQuotedString], 
-                               [[user valueForKey:@"host"] tickQuotedString],
-                               [[[user parent] valueForKey:@"password"] tickQuotedString]];
+		
+		// Note that if the database does not support the use of the CREATE USER statment, then
+		// we must resort to using GRANT. Doing so means we must specify the privileges and the database
+		// for which these apply, so make them as restrictive as possible, but then revoke them to get the
+		// same affect as CREATE USER. That is, a new user with no privleges.		
+		NSString *host = [[user valueForKey:@"host"] tickQuotedString];
+		
+		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
+			
+			NSString *username = [[[user parent] valueForKey:@"user"] tickQuotedString];
+			NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+			
+            createStatement = ([serverSupport supportsCreateUser]) ? 
+				[NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@", username, host, password] : 
+				[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ IDENTIFIED BY %@", username, host, password];
 		}
-        else
-        {
-            if ([user parent] && [[user parent] valueForKey:@"user"])
-            {
-                createStatement = [NSString stringWithFormat:@"CREATE USER %@@%@",
-                                   [[[user parent] valueForKey:@"user"] tickQuotedString],
-                                   [[user valueForKey:@"host"] tickQuotedString]];
-            }
+        else if ([user parent] && [[user parent] valueForKey:@"user"]) {
+				
+				NSString *username = [[[user parent] valueForKey:@"user"] tickQuotedString];
+				
+                createStatement = ([serverSupport supportsCreateUser]) ?
+					[NSString stringWithFormat:@"CREATE USER %@@%@", username, host] :
+					[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@", username, host];
         }
-        
-        if (createStatement)
-        {
+		        
+        if (createStatement) {
+			
             // Create user in database
-            [self.mySqlConnection queryString:createStatement];
+            [mySqlConnection queryString:createStatement];
             
             if ([self checkAndDisplayMySqlError]) {
-                [self updateResourcesForUser:user];
+                if ([serverSupport supportsUserMaxVars]) [self updateResourcesForUser:user];
+			
+				// If we created the user with the GRANT statment (MySQL < 5), then revoke the 
+				// privileges we gave the new user.
+				if (![serverSupport supportsUserMaxVars]) {
+					[mySqlConnection queryString:[NSString stringWithFormat:@"REVOKE SELECT ON mysql.* FROM %@@%@", [[[user parent] valueForKey:@"user"] tickQuotedString], host]];
+				}
+				
                 [self grantPrivilegesToUser:user];                
             }
         }	
@@ -1068,24 +1142,22 @@
 	
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
     dbName = [dbName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"];
-	NSString *statement = [NSString stringWithFormat:@"SELECT USER,HOST FROM `mysql`.`db` WHERE USER=%@ AND HOST=%@ AND DB=%@",
+	NSString *statement = [NSString stringWithFormat:@"SELECT USER, HOST FROM mysql.db WHERE USER = %@ AND HOST = %@ AND DB = %@",
 									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
 									  [dbName tickQuotedString]];
 	MCPResult *result = [self.mySqlConnection queryString:statement];
 	NSUInteger rows = [result numOfRows];
 	BOOL userExists = YES;
-	if (rows == 0)
-	{
-		userExists = NO;
-	}
+	
+	if (rows == 0) userExists = NO;
 	
 	for (NSString *key in self.privsSupportedByServer)
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
 		NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 		@try {
-			if ([[schemaPriv valueForKey:key] boolValue] == TRUE)
+			if ([[schemaPriv valueForKey:key] boolValue] == YES)
 			{
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
@@ -1093,11 +1165,9 @@
 				if (userExists || [grantPrivileges count] > 0) {
 					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				}
-				
 			}
 		}
-		@catch (NSException * e) {
-		}
+		@catch (NSException * e) { }
 	}
 	
 	// Grant privileges
@@ -1108,6 +1178,7 @@
 									[dbName backtickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									[[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
+
 		[self.mySqlConnection queryString:grantStatement];
 		[self checkAndDisplayMySqlError];
 	}
@@ -1120,11 +1191,12 @@
 									 [dbName backtickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
 									 [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
+
 		[self.mySqlConnection queryString:revokeStatement];
 		[self checkAndDisplayMySqlError];
 	}
 	
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -1134,7 +1206,7 @@
 {
     if ([user valueForKey:@"parent"] != nil) {
         NSString *updateResourcesStatement = [NSString stringWithFormat:
-                                              @"UPDATE mysql.user SET max_questions=%@,max_updates=%@,max_connections=%@ WHERE User=%@ AND Host=%@",
+                                              @"UPDATE mysql.user SET max_questions = %@, max_updates = %@, max_connections = %@ WHERE User = %@ AND Host = %@",
                                               [user valueForKey:@"max_questions"],
                                               [user valueForKey:@"max_updates"],
                                               [user valueForKey:@"max_connections"],
@@ -1145,6 +1217,7 @@
                                               
     }
 }
+
 /**
  * Grant or revoke privileges for the supplied user.
  */
@@ -1155,7 +1228,7 @@
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
-		for(NSString *key in self.privsSupportedByServer)
+		for (NSString *key in self.privsSupportedByServer)
 		{
 			if (![key hasSuffix:@"_priv"]) continue;
 			NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
@@ -1164,7 +1237,7 @@
 			// Check the value of the priv and assign to grant or revoke query as appropriate; do this
 			// in a try/catch check to avoid exceptions for unhandled privs
 			@try {
-				if ([[user valueForKey:key] boolValue] == TRUE) {
+				if ([[user valueForKey:key] boolValue] == YES) {
 					[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				} else {
 					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
@@ -1181,6 +1254,7 @@
 										[[grantPrivileges componentsJoinedByCommas] uppercaseString],
 										[[[user parent] valueForKey:@"user"] tickQuotedString],
 										[[user valueForKey:@"host"] tickQuotedString]];
+
 			[self.mySqlConnection queryString:grantStatement];
 			[self checkAndDisplayMySqlError];
 		}
@@ -1192,6 +1266,7 @@
 										 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
 										 [[[user parent] valueForKey:@"user"] tickQuotedString],
 										 [[user valueForKey:@"host"] tickQuotedString]];
+
 			[self.mySqlConnection queryString:revokeStatement];
 			[self checkAndDisplayMySqlError];
 		}		
@@ -1202,7 +1277,7 @@
 		[self grantDbPrivilegesWithPrivilege:priv];
 	}
 	
-	return TRUE;
+	return YES;
 }
 
 /** 
@@ -1285,6 +1360,7 @@
 
 #pragma mark -
 #pragma mark Tab View Delegate methods
+
 - (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
     BOOL retVal = YES;
@@ -1299,28 +1375,46 @@
     if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
         || [[tabViewItem identifier] isEqualToString:@"Resources"]
         || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-        id parent = [selectedObject parent];
-        if (parent) {
+        
+		id parent = [selectedObject parent];
+        
+		if (parent) {
             retVal = ([[parent children] count] > 0);
-        } else {
+        } 
+		else {
             retVal = ([[selectedObject children] count] > 0);
         }
-        if (retVal == NO) {
+        
+		if (retVal == NO) {
             NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
                                              defaultButton:NSLocalizedString(@"Add Host", @"Add Host")
                                            alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
                                                otherButton:nil
                                  informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
-            NSInteger ret = [alert runModal];
-            if (ret == NSAlertDefaultReturn) {
+            
+			NSInteger ret = [alert runModal];
+            
+			if (ret == NSAlertDefaultReturn) {
                 [self addHost:nil];
             }
         }
-
+		
+		// If this is the resources tab, enable or disable the controls based on the server's support for them
+		if ([[tabViewItem identifier] isEqualToString:@"Resources"]) {
+			
+			BOOL serverSupportsUserMaxVars = [serverSupport supportsUserMaxVars];
+			
+			// Disable the fields according to the version
+			[maxUpdatesTextField setEnabled:serverSupportsUserMaxVars];
+			[maxConnectionsTextField setEnabled:serverSupportsUserMaxVars];
+			[maxQuestionsTextField setEnabled:serverSupportsUserMaxVars];
+		}
     }
+	
     return retVal;
 }
--(void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	if ([[treeController selectedObjects] count] == 0) return;
 	
@@ -1418,27 +1512,11 @@
         }
 
 	}
-	else if ([notification object] == grantedTableView)
-	{
-		if ([[grantedController selectedObjects] count] > 0)
-		{
-			[removeSchemaPrivButton setEnabled:YES];
-			
-		} else {
-			[removeSchemaPrivButton setEnabled:NO];
-		}
-
-	
+	else if ([notification object] == grantedTableView) {
+		[removeSchemaPrivButton setEnabled:([[grantedController selectedObjects] count] > 0)];
 	}
-	else if ([notification object] == availableTableView)
-	{
-		if ([[availableController selectedObjects] count] > 0)
-		{
-			[addSchemaPrivButton setEnabled:YES];			
-		} else {
-			[addSchemaPrivButton setEnabled:NO];
-		}
-
+	else if ([notification object] == availableTableView) {
+		[addSchemaPrivButton setEnabled:([[availableController selectedObjects] count] > 0)];
 	}		
 }
 
@@ -1450,6 +1528,7 @@
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+	
     [managedObjectContext release];
     [persistentStoreCoordinator release];
     [managedObjectModel release];
@@ -1460,6 +1539,7 @@
 	[availablePrivs release];
 	[grantedSchemaPrivs release];
 	[treeSortDescriptor release];
+	[serverSupport release];
 	
 	[super dealloc];
 }

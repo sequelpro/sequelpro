@@ -34,13 +34,19 @@ typedef struct
 	const char *description;
 } SPDatabaseCharSets;
 
+@class SPServerSupport;
+
+/**
+ * @class SPDatabaseData SPDatabaseData.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * This class provides various convenience methods for obtaining data associated with the current database, 
+ * if available. This includes available encodings, collations, etc.
+ */
 @interface SPDatabaseData : NSObject 
 {
 	NSString *characterSetEncoding;
-	
-	NSInteger serverMajorVersion;
-	NSInteger serverMinorVersion;
-	NSInteger serverReleaseVersion;
 	
 	NSMutableArray *collations;
 	NSMutableArray *characterSetCollations;
@@ -49,9 +55,18 @@ typedef struct
 	NSMutableDictionary *cachedCollationsByEncoding;
 	
 	MCPConnection *connection;
+	SPServerSupport *serverSupport;	
 }
 
+/**
+ * @property connection The current database connection
+ */
 @property (readwrite, assign) MCPConnection *connection;
+
+/**
+ * @property serverSupport The connection's associated SPServerSupport instance
+ */
+@property (readwrite, assign) SPServerSupport *serverSupport;
 
 - (void)resetAllData;
 

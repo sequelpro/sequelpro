@@ -25,7 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-@class BWAnchoredButtonBar;
+@class SPServerSupport, BWAnchoredButtonBar;
 
 @interface SPUserManager : NSWindowController
 {	
@@ -37,6 +37,7 @@
 	BOOL isInitializing;
 	
 	MCPConnection *mySqlConnection;
+	SPServerSupport *serverSupport;
 	
 	IBOutlet NSOutlineView *outlineView;
 	IBOutlet NSTabView *tabView;
@@ -53,6 +54,10 @@
 	IBOutlet NSButton *addSchemaPrivButton;
 	IBOutlet NSButton *removeSchemaPrivButton;
 	
+	IBOutlet NSTextField *maxUpdatesTextField;
+	IBOutlet NSTextField *maxConnectionsTextField;
+	IBOutlet NSTextField *maxQuestionsTextField;
+	
     IBOutlet NSTextField *userNameTextField;
 
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
@@ -66,6 +71,7 @@
 }
 
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
+@property (nonatomic, retain) SPServerSupport *serverSupport;
 @property (nonatomic, retain) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;

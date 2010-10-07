@@ -25,6 +25,7 @@
 
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
+#import "SPServerSupport.h"
 
 @interface SPDatabaseData (PrivateAPI)
 
@@ -194,6 +195,10 @@ const SPDatabaseCharSets charsets[] =
 @implementation SPDatabaseData
 
 @synthesize connection;
+@synthesize serverSupport;
+
+#pragma mark -
+#pragma mark Initialization
 
 /**
  * Initialize cache arrays.
@@ -207,32 +212,22 @@ const SPDatabaseCharSets charsets[] =
 		characterSetCollations = [[NSMutableArray alloc] init];
 		storageEngines         = [[NSMutableArray alloc] init];
 		characterSetEncodings  = [[NSMutableArray alloc] init];
+		
 		cachedCollationsByEncoding = [[NSMutableDictionary alloc] init];
 	}
 	
 	return self;
 }
 
-/**
- * Set the current connection the supplied connection instance.
- */
-- (void)setConnection:(MCPConnection *)dbConnection
-{
-	connection = dbConnection;
-	
-	serverMajorVersion   = [connection serverMajorVersion];
-	serverMinorVersion   = [connection serverMinorVersion];
-	serverReleaseVersion = [connection serverReleaseVersion];
-}
+#pragma mark -
+#pragma mark Public API
 
 /**
  * Reset all the cached values.
  */
 - (void)resetAllData
 {
-	if (characterSetEncoding != nil) {
-		[characterSetEncoding release], characterSetEncoding = nil; 
-	}
+	if (characterSetEncoding != nil) [characterSetEncoding release], characterSetEncoding = nil; 
 	
 	[collations removeAllObjects];
 	[characterSetCollations removeAllObjects];
@@ -248,9 +243,10 @@ const SPDatabaseCharSets charsets[] =
 	if ([collations count] == 0) {
 		
 		// Try to retrieve the available collations from the database
-		if (serverMajorVersion >= 5)
-			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema.collations` ORDER BY `collation_name` ASC"]];	
-
+		if ([serverSupport supportsInformationSchema]) {
+			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`collations` ORDER BY `collation_name` ASC"]];	
+		}
+		
 		// If that failed, get the list of collations from the hard-coded list
 		if (![collations count]) {
 			const SPDatabaseCharSets *c = charsets;
@@ -284,8 +280,9 @@ const SPDatabaseCharSets charsets[] =
 			return [cachedCollationsByEncoding objectForKey:characterSetEncoding];
 
 		// Try to retrieve the available collations for the supplied encoding from the database
-		if (serverMajorVersion >= 5)
+		if ([serverSupport supportsInformationSchema]) {
 			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];
+		}
 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
 		if (![characterSetCollations count]) {
@@ -303,8 +300,9 @@ const SPDatabaseCharSets charsets[] =
 			while (c[0].nr != 0);
 		}
 
-		if(characterSetCollations && [characterSetCollations count])
+		if (characterSetCollations && [characterSetCollations count]) {
 			[cachedCollationsByEncoding setObject:[NSArray arrayWithArray:characterSetCollations] forKey:characterSetEncoding];
+		}
 
 	}
 	
@@ -317,11 +315,12 @@ const SPDatabaseCharSets charsets[] =
 - (NSArray *)getDatabaseStorageEngines
 {	
 	if ([storageEngines count] == 0) {
-		if (serverMajorVersion < 5) {
+		if ([serverSupport isMySQL3] || [serverSupport isMySQL4]) {
 			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
 			
 			// Check if InnoDB support is enabled
 			MCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			
 			[result setReturnDataAsStrings:YES];
 			
 			if ([result numOfRows] == 1) {
@@ -331,7 +330,7 @@ const SPDatabaseCharSets charsets[] =
 			}
 			
 			// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was included
-			if ((serverMajorVersion <= 4) && (serverMinorVersion < 100)) {
+			if ([serverSupport supportsPre41StorageEngines]) {
 				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"HEAP" forKey:@"Engine"]];
 				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ISAM" forKey:@"Engine"]];
 			}
@@ -340,35 +339,32 @@ const SPDatabaseCharSets charsets[] =
 			}
 			
 			// BLACKHOLE storage engine was added in MySQL 4.1.11
-			if ((serverMajorVersion   >= 4) &&
-				(serverMinorVersion   >= 1) &&
-				(serverReleaseVersion >= 11))
-			{
+			if ([serverSupport supportsBlackholeStorageEngine]) {
 				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"BLACKHOLE" forKey:@"Engine"]];
+			}
 				
-				// ARCHIVE storage engine was added in MySQL 4.1.3
-				if (serverReleaseVersion >= 3) {
-					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ARCHIVE" forKey:@"Engine"]];
-				}
-				
-				// CSV storage engine was added in MySQL 4.1.4
-				if (serverReleaseVersion >= 4) {
-					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"CSV" forKey:@"Engine"]];
-				}
-			}			
+			// ARCHIVE storage engine was added in MySQL 4.1.3
+			if ([serverSupport supportsArchiveStorageEngine]) {
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ARCHIVE" forKey:@"Engine"]];
+			}
+			
+			// CSV storage engine was added in MySQL 4.1.4
+			if ([serverSupport supportsCSVStorageEngine]) {
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"CSV" forKey:@"Engine"]];
+			}
 		}
 		// The table information_schema.engines didn't exist until MySQL 5.1.5
 		else {
-			if ((serverMajorVersion   >= 5) &&
-				(serverMinorVersion   >= 1) &&
-				(serverReleaseVersion >= 5))
+			if ([serverSupport supportsInformationSchemaEngines])
 			{
 				// Check the information_schema.engines table is accessible
 				MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'ENGINES'"];
 				
 				if ([result numOfRows] == 1) {
+					
 					// Table is accessible so get available storage engines
-					[storageEngines addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT Engine, Support FROM information_schema.engines WHERE support IN ('DEFAULT', 'YES');"]];				
+					// Note, that the case of the column names specified in this query are important.
+					[storageEngines addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT Engine, Support FROM `information_schema`.`engines` WHERE SUPPORT IN ('DEFAULT', 'YES')"]];				
 				}
 			}
 			else {				
@@ -396,23 +392,28 @@ const SPDatabaseCharSets charsets[] =
  * information_schema.character_sets.
  */ 
 - (NSArray *)getDatabaseCharacterSetEncodings
-{
+{	
 	if ([characterSetEncodings count] == 0) {
 		
 		// Try to retrieve the available character set encodings from the database
 		// Check the information_schema.character_sets table is accessible
-		if (serverMajorVersion >= 5) {
+		if ([serverSupport supportsInformationSchema]) {
 			[characterSetEncodings addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`character_sets` ORDER BY `character_set_name` ASC"]];
-		} else if (serverMajorVersion == 4 && serverMinorVersion >= 1) {
+		} 
+		else if ([serverSupport supportsShowCharacterSet]) {
 			NSArray *supportedEncodings = [self _getDatabaseDataForQuery:@"SHOW CHARACTER SET"];
+			
 			supportedEncodings = [supportedEncodings sortedArrayUsingFunction:_sortMySQL4CharsetEntry context:nil];
-			for (NSDictionary *anEncoding in supportedEncodings) {
+			
+			for (NSDictionary *anEncoding in supportedEncodings) 
+			{
 				NSDictionary *convertedEncoding = [NSDictionary dictionaryWithObjectsAndKeys:
 													[anEncoding objectForKey:@"Charset"], @"CHARACTER_SET_NAME",
 													[anEncoding objectForKey:@"Description"], @"DESCRIPTION",
 													[anEncoding objectForKey:@"Default collation"], @"DEFAULT_COLLATE_NAME",
 													[anEncoding objectForKey:@"Maxlen"], @"MAXLEN",
 													nil];
+				
 				[characterSetEncodings addObject:convertedEncoding];
 			}
 		}
@@ -432,9 +433,12 @@ const SPDatabaseCharSets charsets[] =
 			while (c[0].nr != 0);
 		}
 	}
-	
+		
 	return characterSetEncodings;
 }
+
+#pragma mark -
+#pragma mark Other
 
 /**
  * Deallocate ivars.
@@ -453,6 +457,9 @@ const SPDatabaseCharSets charsets[] =
 	
 	[super dealloc];
 }
+
+#pragma mark -
+#pragma mark Private API
 
 /**
  * Executes the supplied query against the current connection and returns the result as an array of 

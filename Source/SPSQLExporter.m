@@ -499,6 +499,8 @@
 			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
+					[errors release];
+					[sqlString release];
 					[pool release];
 					return;
 				}
@@ -565,6 +567,8 @@
 	{
 		// Check for cancellation flag
 		if ([self isCancelled]) {
+			[errors release];
+			[sqlString release];
 			[pool release];
 			return;
 		}
@@ -595,6 +599,8 @@
 			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
+					[errors release];
+					[sqlString release];
 					[pool release];
 					return;
 				}
@@ -609,6 +615,8 @@
 					// Check for cancellation flag
 					if ([self isCancelled]) {
 						[proceduresList release];
+						[errors release];
+						[sqlString release];
 						[pool release];
 						return;
 					}

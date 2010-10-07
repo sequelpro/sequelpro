@@ -74,6 +74,8 @@
 	{
 		success = [dbActionTableCopy moveTable:currentTable from:sourceDatabaseName to:targetDatabaseName];
 	}
+	
+	[dbActionTableCopy release];
 		
 	tables = [connection listTablesFromDB:sourceDatabaseName];
 		

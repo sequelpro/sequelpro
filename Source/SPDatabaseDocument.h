@@ -29,7 +29,12 @@
 #import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
-@class SPConnectionController, SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController;
+@class SPConnectionController, 
+	   SPProcessListController, 
+	   SPServerVariablesController, 
+	   SPUserManager, 
+	   SPWindowController,
+	   SPServerSupport;
 
 /**
  * The SPDatabaseDocument class controls the primary database view window.
@@ -55,6 +60,7 @@
 	IBOutlet id statusTableCopyChecksum;
 	
     SPUserManager *userManagerInstance;
+	SPServerSupport *serverSupport;
 	
 	IBOutlet NSSearchField *listFilterField;
 
@@ -190,15 +196,17 @@
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
 @property (readwrite, assign) BOOL isProcessing;
+@property (readonly) SPServerSupport *serverSupport;
 
 - (BOOL)isUntitled;
 - (BOOL)couldCommitCurrentViewActions;
 
 - (void)initQueryEditorWithString:(NSString *)query;
 - (void)initWithConnectionFile:(NSString *)path;
+
 // Connection callback and methods
 - (void)setConnection:(MCPConnection *)theConnection;
-- (MCPConnection *) getConnection;
+- (MCPConnection *)getConnection;
 - (void)setKeychainID:(NSString *)theID;
 
 // Database methods
