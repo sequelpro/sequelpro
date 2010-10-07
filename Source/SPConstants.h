@@ -83,14 +83,6 @@ typedef enum {
 	SPRowCountFetchAlways  = 2
 } SPRowCountQueryUsageLevels;
 
-// Export type
-typedef enum {
-	SPExportingSQL = 0,
-	SPExportingCSV = 1,
-	SPExportingXML = 2,
-	SPExportingDOT = 3
-} SPExportMode;
-
 // Database object (table list) types
 typedef enum
 {

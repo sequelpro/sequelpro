@@ -216,7 +216,7 @@
 
 		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
 
-		SPExportMode tableType = [tablesListInstance tableType];
+		SPTableType tableType = [tablesListInstance tableType];
 		
 		switch (tableType) {
 			case SPTableTypeTable:
