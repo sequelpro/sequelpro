@@ -427,7 +427,7 @@
 				[NSNumber numberWithDouble:y_min],
 				[NSNumber numberWithDouble:y_max],
 				nil], @"bbox",
-			coordinates, @"coordinates",
+			[NSArray arrayWithObjects:coordinates,nil], @"coordinates",
 			@"LINESTRING", @"type",
 			nil];
 		break;
@@ -462,64 +462,95 @@
 			nil];
 		break;
 
-		// case wkb_multipoint:
-		// [wkt setString:@"MULTIPOINT("];
-		// numberOfItems = geoBuffer[ptr];
-		// ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
-		// for(i=0; i < numberOfItems; i++) {
-		// 	memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
-		// 	[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i < numberOfItems-1) ? @"," : @""];
-		// 	ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
-		// }
-		// [wkt appendString:@")"];
-		// return wkt;
-		// break;
-		// 
-		// case wkb_multilinestring:
-		// [wkt setString:@"MULTILINESTRING("];
-		// numberOfItems = geoBuffer[ptr];
-		// ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
-		// for(i=0; i < numberOfItems; i++) {
-		// 	numberOfSubItems = geoBuffer[ptr];
-		// 	ptr += SIZEOF_STORED_UINT32;
-		// 	[wkt appendString:@"("];
-		// 	for(j=0; j < numberOfSubItems; j++) {
-		// 		memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
-		// 		[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (j < numberOfSubItems-1) ? @"," : @""];
-		// 		ptr += POINT_DATA_SIZE;
-		// 	}
-		// 	ptr += WKB_HEADER_SIZE;
-		// 	[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
-		// }
-		// [wkt appendString:@")"];
-		// return wkt;
-		// break;
-		// 
-		// case wkb_multipolygon:
-		// [wkt setString:@"MULTIPOLYGON("];
-		// numberOfItems = geoBuffer[ptr];
-		// ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
-		// for(i=0; i < numberOfItems; i++) {
-		// 	numberOfSubItems = geoBuffer[ptr];
-		// 	ptr += SIZEOF_STORED_UINT32;
-		// 	[wkt appendString:@"("];
-		// 	for(j=0; j < numberOfSubItems; j++) {
-		// 		numberOfSubSubItems = geoBuffer[ptr];
-		// 		ptr += SIZEOF_STORED_UINT32;
-		// 		[wkt appendString:@"("];
-		// 		for(k=0; k < numberOfSubSubItems; k++) {
-		// 			memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
-		// 			[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (k < numberOfSubSubItems-1) ? @"," : @""];
-		// 			ptr += POINT_DATA_SIZE;
-		// 		}
-		// 		[wkt appendFormat:@")%@", (j < numberOfSubItems-1) ? @"," : @""];
-		// 	}
-		// 	ptr += WKB_HEADER_SIZE;
-		// 	[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
-		// }
-		// [wkt appendString:@")"];
-		// return wkt;
-		// break;
+		case wkb_multipoint:
+		numberOfItems = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+		for(i=0; i < numberOfItems; i++) {
+			memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+			x_min = (aPoint.x < x_min) ? aPoint.x : x_min;
+			x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
+			y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
+			y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
+			[coordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+			ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
+		}
+		return [NSDictionary dictionaryWithObjectsAndKeys:
+			[NSArray arrayWithObjects:
+				[NSNumber numberWithDouble:x_min],
+				[NSNumber numberWithDouble:x_max],
+				[NSNumber numberWithDouble:y_min],
+				[NSNumber numberWithDouble:y_max],
+				nil], @"bbox",
+			coordinates, @"coordinates",
+			@"MULTIPOINT", @"type",
+			nil];
+		break;
+		
+		case wkb_multilinestring:
+		numberOfItems = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+		for(i=0; i < numberOfItems; i++) {
+			numberOfSubItems = geoBuffer[ptr];
+			ptr += SIZEOF_STORED_UINT32;
+			for(j=0; j < numberOfSubItems; j++) {
+				memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+				x_min = (aPoint.x < x_min) ? aPoint.x : x_min;
+				x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
+				y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
+				y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
+				[subcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+				ptr += POINT_DATA_SIZE;
+			}
+			ptr += WKB_HEADER_SIZE;
+			[coordinates addObject:[[subcoordinates copy] autorelease]];
+			[subcoordinates removeAllObjects];
+		}
+		return [NSDictionary dictionaryWithObjectsAndKeys:
+			[NSArray arrayWithObjects:
+				[NSNumber numberWithDouble:x_min],
+				[NSNumber numberWithDouble:x_max],
+				[NSNumber numberWithDouble:y_min],
+				[NSNumber numberWithDouble:y_max],
+				nil], @"bbox",
+			coordinates, @"coordinates",
+			@"MULTILINESTRING", @"type",
+			nil];
+		break;
+		
+		case wkb_multipolygon:
+		numberOfItems = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+		for(i=0; i < numberOfItems; i++) {
+			numberOfSubItems = geoBuffer[ptr];
+			ptr += SIZEOF_STORED_UINT32;
+			for(j=0; j < numberOfSubItems; j++) {
+				numberOfSubSubItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32;
+				for(k=0; k < numberOfSubSubItems; k++) {
+					memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+					x_min = (aPoint.x < x_min) ? aPoint.x : x_min;
+					x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
+					y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
+					y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
+					[subcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+					ptr += POINT_DATA_SIZE;
+				}
+				[coordinates addObject:[[subcoordinates copy] autorelease]];
+				[subcoordinates removeAllObjects];
+			}
+			ptr += WKB_HEADER_SIZE;
+		}
+		return [NSDictionary dictionaryWithObjectsAndKeys:
+			[NSArray arrayWithObjects:
+				[NSNumber numberWithDouble:x_min],
+				[NSNumber numberWithDouble:x_max],
+				[NSNumber numberWithDouble:y_min],
+				[NSNumber numberWithDouble:y_max],
+				nil], @"bbox",
+			coordinates, @"coordinates",
+			@"MULTIPOLYGON", @"type",
+			nil];
+		break;
 		// 
 		// case wkb_geometrycollection:
 		// [wkt setString:@"GEOMETRYCOLLECTION("];

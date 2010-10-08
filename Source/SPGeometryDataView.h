@@ -29,14 +29,15 @@
 {
 	NSString *type;
 	NSArray *coordinates;
-	double x_min;
-	double x_max;
-	double y_min;
-	double y_max;
-	double width;
-	double height;
-	double zoom_factor;
-	double margin_offset;
+	CGFloat x_min;
+	CGFloat x_max;
+	CGFloat y_min;
+	CGFloat y_max;
+	CGFloat width;
+	CGFloat height;
+	CGFloat zoom_factor;
+	CGFloat margin_offset;
+
 }
 
 - (id)initWithCoordinates:(NSDictionary*)coord;

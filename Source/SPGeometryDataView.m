@@ -33,31 +33,51 @@
 - (id)initWithCoordinates:(NSDictionary*)coord
 {
 
-	margin_offset = 5.0;
+	margin_offset = 10.0;
 
 	type = [coord objectForKey:@"type"];
 	coordinates = [coord objectForKey:@"coordinates"];
-	x_min = [[[coord objectForKey:@"bbox"] objectAtIndex:0] doubleValue] - margin_offset;
-	x_max = [[[coord objectForKey:@"bbox"] objectAtIndex:1] doubleValue] + margin_offset;
-	y_min = [[[coord objectForKey:@"bbox"] objectAtIndex:2] doubleValue] - margin_offset;
-	y_max = [[[coord objectForKey:@"bbox"] objectAtIndex:3] doubleValue] + margin_offset;
-
+	x_min = (CGFloat)[[[coord objectForKey:@"bbox"] objectAtIndex:0] doubleValue];
+	x_max = (CGFloat)[[[coord objectForKey:@"bbox"] objectAtIndex:1] doubleValue];
+	y_min = (CGFloat)[[[coord objectForKey:@"bbox"] objectAtIndex:2] doubleValue];
+	y_max = (CGFloat)[[[coord objectForKey:@"bbox"] objectAtIndex:3] doubleValue];
 	zoom_factor = 1.0;
 
 	width = x_max - x_min;
 	height = y_max - y_min;
 
-	
-	if ( self = [super initWithFrame:NSMakeRect(0,0,width,height)] )
+	// make it a square due to aspect ratio
+	if(width>height)
+		height = width;
+	else
+		width = height;
+
+	if ( self = [super initWithFrame:NSMakeRect(0,0,width+margin_offset*2,height+margin_offset*2)] )
 	{
 		;
 	}
-    return self;
+	return self;
 }
 
 - (NSPoint)normalizePoint:(NSPoint)aPoint
 {
+
+	aPoint.x-=x_min;
+	aPoint.y-=y_min;
+	aPoint.x+=margin_offset;
+	aPoint.y+=margin_offset;
+
 	return aPoint;
+}
+
+- (void)drawPoint:(NSPoint)aPoint
+{
+	NSBezierPath *circlePath = [NSBezierPath bezierPath];
+	[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-2,aPoint.y-2,4,4)];
+	[[NSColor grayColor] setStroke];
+	[[NSColor redColor] setFill];
+	[circlePath stroke];
+	[circlePath fill];
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -65,7 +85,7 @@
 
 	if(!type || ![type length] || !coordinates || ![coordinates count]) return;
 
-	NSBezierPath *path, *circlePath;
+	NSBezierPath *path;
 	NSColor *polyFillColor = [NSColor colorWithCalibratedRed:.5 green:.5 blue:0.5 alpha:0.05];
 	BOOL isFirst = YES;
 
@@ -82,39 +102,16 @@
 	[[NSColor blackColor] set];
 	[path setLineWidth:1];
 
-	if ([type isEqualToString:@"POINT"]) {
-		circlePath = [NSBezierPath bezierPath];
-		[circlePath appendBezierPathWithOvalInRect:NSMakeRect(width/2-2,height/2-2,4,4)];
-		[[NSColor grayColor] setStroke];
-		[[NSColor redColor] setFill];
-		[circlePath stroke];
-		[circlePath fill];
+	if ([type hasSuffix:@"POINT"]) {
+		for(NSString* coord in coordinates)
+			[self drawPoint:[self normalizePoint:NSPointFromString(coord)]];
 	}
-	else if([type isEqualToString:@"LINESTRING"]) {
+	else if([type hasSuffix:@"LINESTRING"]) {
 
-		for(NSString* coord in coordinates) {
-			aPoint = [self normalizePoint:NSPointFromString(coord)];
-			if(isFirst) {
-				[path moveToPoint:aPoint];
-				isFirst = NO;
-			} else {
-				[path lineToPoint:aPoint];
-			}
-			circlePath = [NSBezierPath bezierPath];
-			[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-2,aPoint.y-2,4,4)];
-			[[NSColor grayColor] setStroke];
-			[[NSColor redColor] setFill];
-			[circlePath stroke];
-			[circlePath fill];
-		}
-		[[NSColor blackColor] setStroke];
-		[path stroke];
-
-	}
-	else if([type isEqualToString:@"POLYGON"]) {
-		for(NSArray* polygon in coordinates) {
+		for(NSArray* lines in coordinates) {
+			path = [NSBezierPath bezierPath];
 			isFirst = YES;
-			for(NSString* coord in polygon) {
+			for(NSString* coord in lines) {
 				aPoint = [self normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
 					[path moveToPoint:aPoint];
@@ -122,12 +119,24 @@
 				} else {
 					[path lineToPoint:aPoint];
 				}
-				circlePath = [NSBezierPath bezierPath];
-				[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-2,aPoint.y-2,4,4)];
-				[[NSColor grayColor] setStroke];
-				[[NSColor redColor] setFill];
-				[circlePath stroke];
-				[circlePath fill];
+				[self drawPoint:aPoint];
+			}
+			[[NSColor blackColor] setStroke];
+			[path stroke];
+		}
+	}
+	else if([type hasSuffix:@"POLYGON"]) {
+		for(NSArray* polygons in coordinates) {
+			isFirst = YES;
+			for(NSString* coord in polygons) {
+				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				if(isFirst) {
+					[path moveToPoint:aPoint];
+					isFirst = NO;
+				} else {
+					[path lineToPoint:aPoint];
+				}
+				[self drawPoint:aPoint];
 			}
 			[[NSColor blackColor] setStroke];
 			[polyFillColor setFill];
@@ -147,6 +156,7 @@
 	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:[self bounds]] autorelease];
 	[image addRepresentation:bitmap];
 	return image;
+
 }
 
 /**
