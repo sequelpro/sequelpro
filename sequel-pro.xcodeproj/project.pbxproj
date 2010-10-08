@@ -22,6 +22,7 @@
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		11D44DF0118F5887002AA43C /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
+		17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */ = {isa = PBXBuildFile; fileRef = 17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */; };
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
@@ -487,6 +488,8 @@
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
 		171312CD109D23C700FB465F /* SPTableTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTextFieldCell.m; sourceTree = "<group>"; };
+		17148563125F5FF500321285 /* SPDatabaseCharacterSets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseCharacterSets.h; sourceTree = "<group>"; };
+		17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseCharacterSets.m; sourceTree = "<group>"; };
 		17292441107AC41000B21980 /* SPXMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporter.h; sourceTree = "<group>"; };
 		17292442107AC41000B21980 /* SPXMLExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporter.m; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
@@ -1360,6 +1363,8 @@
 				1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */,
 				17A20AC4124F9B110095CEFB /* SPServerSupport.h */,
 				17A20AC5124F9B110095CEFB /* SPServerSupport.m */,
+				17148563125F5FF500321285 /* SPDatabaseCharacterSets.h */,
+				17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */,
 			);
 			name = "Data Controllers";
 			sourceTree = "<group>";
@@ -2368,6 +2373,7 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -2791,6 +2797,7 @@
 				BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */,
 				17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */,
 				BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */,
+				17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

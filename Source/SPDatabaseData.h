@@ -26,14 +26,6 @@
 #import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-typedef struct
-{
-	NSUInteger nr;
-	const char *name;
-	const char *collation;
-	const char *description;
-} SPDatabaseCharSets;
-
 @class SPServerSupport;
 
 /**
