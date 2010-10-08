@@ -29,6 +29,7 @@
 #define SIZEOF_STORED_DOUBLE 8
 #define POINT_DATA_SIZE (SIZEOF_STORED_DOUBLE*2)
 #define WKB_HEADER_SIZE (1+SIZEOF_STORED_UINT32)
+#define BUFFER_START 4
 
 @implementation MCPGeometryData
 
@@ -104,19 +105,16 @@
 {
 
 	char byteOrder;
-	UInt32 geoType, numberOfItems, numberOfSubItems;
+	UInt32 geoType, numberOfItems, numberOfSubItems, numberOfSubSubItems, numberOfCollectionItems;
 	st_point_2d aPoint;
 
-	NSUInteger ptr, i, j;
+	NSUInteger i, j, k, n;          // Loop counter for numberOf...Items
+	NSUInteger ptr = BUFFER_START;  // pointer to geoBuffer while parsing
 
 	NSMutableString *wkt = [NSMutableString string];
 
-	BOOL raw = NO; // is needed later
-	
 	if (bufferLength < WKB_HEADER_SIZE)
 		return @"Header Error";
-
-	ptr = (raw) ? 0 : 4;
 
 	byteOrder = geoBuffer[ptr];
 
@@ -200,21 +198,219 @@
 		break;
 
 		case wkb_multipolygon:
-		// NSLog(@"ml %@", geoData);
-		
-		[wkt setString:@"MULTIPOLYGON be patient"];
+		[wkt setString:@"MULTIPOLYGON("];
+		numberOfItems = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+		for(i=0; i < numberOfItems; i++) {
+			numberOfSubItems = geoBuffer[ptr];
+			ptr += SIZEOF_STORED_UINT32;
+			[wkt appendString:@"("];
+			for(j=0; j < numberOfSubItems; j++) {
+				numberOfSubSubItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32;
+				[wkt appendString:@"("];
+				for(k=0; k < numberOfSubSubItems; k++) {
+					memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+					[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (k < numberOfSubSubItems-1) ? @"," : @""];
+					ptr += POINT_DATA_SIZE;
+				}
+				[wkt appendFormat:@")%@", (j < numberOfSubItems-1) ? @"," : @""];
+			}
+			ptr += WKB_HEADER_SIZE;
+			[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
+		}
+		[wkt appendString:@")"];
+		return wkt;
 		break;
 
 		case wkb_geometrycollection:
-		[wkt setString:@"GEOMETRYCOLLECTION be patient"];
+		[wkt setString:@"GEOMETRYCOLLECTION("];
+		numberOfCollectionItems = geoBuffer[ptr];
+		ptr += SIZEOF_STORED_UINT32;
+
+		for(n=0; n < numberOfCollectionItems; n++) {
+
+			byteOrder = geoBuffer[ptr];
+
+			if(byteOrder != 0x1)
+				return @"Byte order not yet supported";
+
+			ptr++;
+			geoType = geoBuffer[ptr];
+			ptr += SIZEOF_STORED_UINT32;
+
+			switch(geoType) {
+
+				case wkb_point:
+				memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+				[wkt appendFormat:@"POINT(%.16g %.16g)", aPoint.x, aPoint.y];
+				ptr += POINT_DATA_SIZE;
+				break;
+
+				case wkb_linestring:
+				[wkt appendString:@"LINESTRING("];
+				numberOfItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32;
+				for(i=0; i < numberOfItems; i++) {
+					memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+					[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i < numberOfItems-1) ? @"," : @""];
+					ptr += POINT_DATA_SIZE;
+				}
+				[wkt appendString:@")"];
+				break;
+
+				case wkb_polygon:
+				[wkt appendString:@"POLYGON("];
+				numberOfItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32;
+				for(i=0; i < numberOfItems; i++) {
+					numberOfSubItems = geoBuffer[ptr];
+					ptr += SIZEOF_STORED_UINT32;
+					[wkt appendString:@"("];
+					for(j=0; j < numberOfSubItems; j++) {
+						memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+						[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (j < numberOfSubItems-1) ? @"," : @""];
+						ptr += POINT_DATA_SIZE;
+					}
+					[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
+				}
+				[wkt appendString:@")"];
+				break;
+
+				case wkb_multipoint:
+				[wkt appendString:@"MULTIPOINT("];
+				numberOfItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+				for(i=0; i < numberOfItems; i++) {
+					memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+					[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i < numberOfItems-1) ? @"," : @""];
+					ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
+				}
+				ptr -= WKB_HEADER_SIZE;
+				[wkt appendString:@")"];
+				break;
+
+				case wkb_multilinestring:
+				[wkt appendString:@"MULTILINESTRING("];
+				numberOfItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+				for(i=0; i < numberOfItems; i++) {
+					numberOfSubItems = geoBuffer[ptr];
+					ptr += SIZEOF_STORED_UINT32;
+					[wkt appendString:@"("];
+					for(j=0; j < numberOfSubItems; j++) {
+						memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+						[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (j < numberOfSubItems-1) ? @"," : @""];
+						ptr += POINT_DATA_SIZE;
+					}
+					ptr += WKB_HEADER_SIZE;
+					[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
+				}
+				ptr -= WKB_HEADER_SIZE;
+				[wkt appendString:@")"];
+				break;
+
+				case wkb_multipolygon:
+				[wkt appendString:@"MULTIPOLYGON("];
+				numberOfItems = geoBuffer[ptr];
+				ptr += SIZEOF_STORED_UINT32+WKB_HEADER_SIZE;
+				for(i=0; i < numberOfItems; i++) {
+					numberOfSubItems = geoBuffer[ptr];
+					ptr += SIZEOF_STORED_UINT32;
+					[wkt appendString:@"("];
+					for(j=0; j < numberOfSubItems; j++) {
+						numberOfSubSubItems = geoBuffer[ptr];
+						ptr += SIZEOF_STORED_UINT32;
+						[wkt appendString:@"("];
+						for(k=0; k < numberOfSubSubItems; k++) {
+							memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
+							[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (k < numberOfSubSubItems-1) ? @"," : @""];
+							ptr += POINT_DATA_SIZE;
+						}
+						[wkt appendFormat:@")%@", (j < numberOfSubItems-1) ? @"," : @""];
+					}
+					ptr += WKB_HEADER_SIZE;
+					[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
+				}
+				ptr -= WKB_HEADER_SIZE;
+				[wkt appendString:@")"];
+				break;
+
+				default:
+				return @"Error geometrycollection type parsing";
+			}
+			[wkt appendString:(n < numberOfCollectionItems-1) ? @"," : @""];
+		}
+		[wkt appendString:@")"];
+		return wkt;
 		break;
 
 		default:
 		return @"Error geometry type parsing";
 	}
-	return wkt;
+	return @"Error while parsing";
 }
 
+/**
+ * Return the WKB type of the geoBuffer ie if buffer represents a POINT, LINESTRING, etc.
+ * according to stored wkbType in header file. It returns -1 if an error occurred.
+ */
+- (NSInteger)wkbType
+{
+	char byteOrder;
+	UInt32 geoType;
+
+	NSUInteger ptr = BUFFER_START;  // pointer to geoBuffer while parsing
+
+	if (bufferLength < WKB_HEADER_SIZE)
+		return @"Header Error";
+
+	byteOrder = geoBuffer[ptr];
+
+	if(byteOrder != 0x1)
+		return -1;
+
+	ptr++;
+	geoType = geoBuffer[ptr];
+	
+	if(geoType > 0 && geoType < 8)
+		return geoType;
+	else
+		return -1;
+	
+}
+
+/**
+ * Return the WKT type of the geoBuffer ie if buffer represents a POINT, LINESTRING, etc.
+ * according to stored wkbType in header file. It returns nil if an error occurred.
+ */
+- (NSString*)wktType
+{
+	switch([self wkbType])
+	{
+		case wkb_point:
+		return @"POINT";
+		case wkb_linestring:
+		return @"LINESTRING";
+		case wkb_polygon:
+		return @"POLYGON";
+		case wkb_multipoint:
+		return @"MULTIPOINT";
+		case wkb_multilinestring:
+		return @"MULTILINESTRING";
+		case wkb_multipolygon:
+		return @"MULTIPOLYGON";
+		case wkb_geometrycollection:
+		return @"GEOMETRYCOLLECTION";
+		default:
+		return nil;
+	}
+	return nil;
+}
+
+/**
+ * dealloc
+ */
 - (void)dealloc
 {
 	if(geoBuffer && bufferLength) free(geoBuffer);

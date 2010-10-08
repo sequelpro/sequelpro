@@ -44,8 +44,12 @@ typedef struct st_point_2d_
 
 @interface MCPGeometryData : NSObject <NSCoding, NSCopying>
 {
+	// Holds the WKB bytes coming from SQL server
 	Byte *geoBuffer;
+
+	// Holds the buffer length
 	NSUInteger bufferLength;
+
 }
 
 - (id)initWithBytes:(Byte*)geoData length:(NSUInteger)length;
@@ -54,5 +58,7 @@ typedef struct st_point_2d_
 - (NSUInteger)length;
 - (NSData*)data;
 - (NSString*)wktString;
+- (NSInteger)wkbType;
+- (NSString*)wktType;
 
 @end
