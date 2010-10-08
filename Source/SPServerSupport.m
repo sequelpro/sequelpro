@@ -45,6 +45,7 @@
 @synthesize isMySQL5;
 @synthesize isMySQL6;
 @synthesize supportsInformationSchema;
+@synthesize supportsSpatialExtensions;
 @synthesize supportsShowCharacterSet;
 @synthesize supportsCharacterSetDatabaseVar;
 @synthesize supportsPost41CharacterSetHandling;
@@ -119,6 +120,9 @@
 	
 	// The information schema database wasn't added until MySQL 5
 	supportsInformationSchema = (serverMajorVersion >= 5);
+	
+	// Support for spatial extensions wasn't added until MySQL 4.1
+	supportsSpatialExtensions = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
 	
 	// The SHOW CHARACTER SET statement wasn't added until MySQL 4.1.0
 	supportsShowCharacterSet = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
@@ -232,6 +236,7 @@
 	isMySQL6                           = NO;
 	
 	supportsInformationSchema          = NO;
+	supportsSpatialExtensions          = NO;
 	supportsShowCharacterSet           = NO;
 	supportsCharacterSetDatabaseVar    = NO;
 	supportsPost41CharacterSetHandling = NO;

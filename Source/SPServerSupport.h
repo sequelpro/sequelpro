@@ -50,6 +50,7 @@
 	
 	// General
 	BOOL supportsInformationSchema;
+	BOOL supportsSpatialExtensions;
 	
 	// Encoding
 	BOOL supportsShowCharacterSet;
@@ -121,6 +122,11 @@
  * @property supportsInformationSchema Indicates if the server supports the information_schema database
  */
 @property (readonly) BOOL supportsInformationSchema;
+
+/**
+ * @property supportsSpatialExtensions Indicates if the server supports spatial extensions
+ */
+@property (readonly) BOOL supportsSpatialExtensions;
 
 /**
  * @property supportsShowCharacterSet Indicates if the server supports the SHOW CHARACTER SET statement

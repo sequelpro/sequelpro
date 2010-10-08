@@ -129,12 +129,20 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexTypePopUpButton selectItemAtIndex:0];
 	[indexNameTextField setEnabled:NO];
 	[indexNameTextField setStringValue:@"PRIMARY"];
+	
+	// If the table is of type MyISAM and Spation extension support is available, add the SPATIAL type
+	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
+	
+	if ([engine isEqualToString:@"MyISAM"] && [[dbDocument serverSupport] supportsSpatialExtensions]) {
+		[indexTypePopUpButton addItemWithTitle:@"SPATIAL"];
+	}
 
-	// Check to see whether a primary key already exists for the table, and if so select an INDEX instead
+	// Check to see whether a primary key already exists for the table, and if so select INDEX instead
 	for (NSDictionary *field in fields)
 	{
 		if ([field objectForKey:@"isprimarykey"]) {
 
+			// Remove primary key option
 			[indexTypePopUpButton removeItemAtIndex:0];
 
 			// Select INDEX type
@@ -155,9 +163,6 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexedColumnsTableView reloadData];
 
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
-
-	// Index storage types (HASH & BTREE) are only available some storage engines
-	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
 
 	// MyISAM and InnoDB tables only support BTREE storage types so disable the storage type popup button
 	// as it's the default anyway.
@@ -235,7 +240,9 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)chooseIndexType:(id)sender
 {
-	if ([[indexTypePopUpButton titleOfSelectedItem] isEqualToString:@"PRIMARY KEY"] ) {
+	NSString *indexType = [indexTypePopUpButton titleOfSelectedItem];
+	
+	if ([indexType isEqualToString:@"PRIMARY KEY"] ) {
 		[indexNameTextField setEnabled:NO];
 		[indexNameTextField setStringValue:@"PRIMARY"];
 	}
@@ -245,6 +252,9 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		if ([[indexNameTextField stringValue] isEqualToString:@"PRIMARY"]) {
 			[indexNameTextField setStringValue:@""];
 		}
+		
+		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
+		[indexStorageTypePopUpButton setEnabled:(![indexType isEqualToString:@"SPATIAL"])];
 	}
 }
 
@@ -490,7 +500,7 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			[indexDetails setObject:[NSNumber numberWithInteger:[indexKeyBlockSizeTextField integerValue]] forKey:SPNewIndexKeyBlockSize];
 		}
 
-		if ([indexStorageTypePopUpButton indexOfSelectedItem] > 0) {
+		if (([indexStorageTypePopUpButton indexOfSelectedItem] > 0) && (![[indexTypePopUpButton titleOfSelectedItem] isEqualToString:@"SPATIAL"])) {
 			[indexDetails setObject:[indexStorageTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexStorageType];
 		}
 
@@ -668,6 +678,8 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 				[tempIndexedColumns addObject:[columnName backtickQuotedString]];
 			}
 		}
+		
+		if (![indexType isEqualToString:@"INDEX"]) indexType = [indexType stringByAppendingFormat:@" INDEX"];
 
 		// Build the query
 		NSMutableString *query = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@", [table backtickQuotedString], indexType];
