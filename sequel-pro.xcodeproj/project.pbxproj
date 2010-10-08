@@ -343,6 +343,7 @@
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
 		BC2777A011514B940034DF6A /* SPNavigatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC27779F11514B940034DF6A /* SPNavigatorController.m */; };
+		BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */; };
 		BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC29C37E10501EFD00DD6C6E /* SPQueryController.m */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
@@ -980,6 +981,8 @@
 		BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small-square.tiff"; sourceTree = "<group>"; };
 		BC27779E11514B940034DF6A /* SPNavigatorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNavigatorController.h; sourceTree = "<group>"; };
 		BC27779F11514B940034DF6A /* SPNavigatorController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNavigatorController.m; sourceTree = "<group>"; };
+		BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGeometryDataView.h; sourceTree = "<group>"; };
+		BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGeometryDataView.m; sourceTree = "<group>"; };
 		BC29C37D10501EFD00DD6C6E /* SPQueryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryController.h; sourceTree = "<group>"; };
 		BC29C37E10501EFD00DD6C6E /* SPQueryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryController.m; sourceTree = "<group>"; };
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
@@ -1720,6 +1723,8 @@
 				584095181107CB6600260CFD /* SPAlertSheets.m */,
 				BC878A6F121A836F00AE5066 /* SPColorWellCell.h */,
 				BC878A70121A836F00AE5066 /* SPColorWellCell.m */,
+				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
+				BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */,
 			);
 			name = GUI;
 			sourceTree = "<group>";
@@ -2363,7 +2368,6 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -2786,6 +2790,7 @@
 				BC398A2D121D526200BE3EF4 /* SPCopyTable.m in Sources */,
 				BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */,
 				17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */,
+				BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

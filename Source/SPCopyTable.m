@@ -669,9 +669,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		// Retrieve the cell's content
 		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
 
-		// TODO it's temporarily
+		// Get WKT string out of the MCPGeometryData for calculation
 		if ([contentString isKindOfClass:[MCPGeometryData class]])
-			contentString = [contentString description];
+			contentString = [contentString wktString];
 
 		// Replace NULLs with their placeholder string
 		else if ([contentString isNSNull]) {

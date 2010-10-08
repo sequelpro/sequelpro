@@ -2193,16 +2193,25 @@
 	NSPoint pos = [NSEvent mouseLocation];
 	pos.y -= 20;
 
-	// Try to get the original data. If not possible return nil.
-	// @try clause is used due to the multifarious cases of
-	// possible exceptions (eg for reloading tables etc.)
-	id theValue;
-	@try{
+	id theValue = nil;
+
+	// While the table is being loaded, additional validation is required - data
+	// locks must be used to avoid crashes, and indexes higher than the available
+	// rows or columns may be requested.  Return "..." to indicate loading in these
+	// cases.
+	if (isWorking) {
+		pthread_mutex_lock(&resultDataLock);
+		if (row < resultDataCount && [[aTableColumn identifier] integerValue] < [resultData columnCount]) {
+			theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]) copy] autorelease];
+		}
+		pthread_mutex_unlock(&resultDataLock);
+
+		if (!theValue) theValue = @"...";
+	} else {
 		theValue = SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]);
 	}
-	@catch(id ae) {
-		return nil;
-	}
+
+	if(theValue == nil) return nil;
 
 	// Get the original data for trying to display the blob data as an image
 	if ([theValue isKindOfClass:[NSData class]]) {
@@ -2211,6 +2220,9 @@
 			[SPTooltip showWithObject:image atLocation:pos ofType:@"image"];
 			return nil;
 		}
+	}
+	else if ([theValue isKindOfClass:[MCPGeometryData class]]) {
+		; // TODO
 	}
 
 	// Show the cell string value as tooltip (including line breaks and tabs)
