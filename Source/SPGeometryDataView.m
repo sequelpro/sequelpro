@@ -30,13 +30,123 @@
 /**
  * Initialize SPGeometryDataView object
  */
-- (id)initWithFrame:(NSRect)frame
+- (id)initWithCoordinates:(NSDictionary*)coord
 {
-	if ( self = [super initWithFrame:frame] )
+
+	margin_offset = 5.0;
+
+	type = [coord objectForKey:@"type"];
+	coordinates = [coord objectForKey:@"coordinates"];
+	x_min = [[[coord objectForKey:@"bbox"] objectAtIndex:0] doubleValue] - margin_offset;
+	x_max = [[[coord objectForKey:@"bbox"] objectAtIndex:1] doubleValue] + margin_offset;
+	y_min = [[[coord objectForKey:@"bbox"] objectAtIndex:2] doubleValue] - margin_offset;
+	y_max = [[[coord objectForKey:@"bbox"] objectAtIndex:3] doubleValue] + margin_offset;
+
+	zoom_factor = 1.0;
+
+	width = x_max - x_min;
+	height = y_max - y_min;
+
+	
+	if ( self = [super initWithFrame:NSMakeRect(0,0,width,height)] )
 	{
 		;
 	}
     return self;
+}
+
+- (NSPoint)normalizePoint:(NSPoint)aPoint
+{
+	return aPoint;
+}
+
+- (void)drawRect:(NSRect)dirtyRect
+{
+
+	if(!type || ![type length] || !coordinates || ![coordinates count]) return;
+
+	NSBezierPath *path, *circlePath;
+	NSColor *polyFillColor = [NSColor colorWithCalibratedRed:.5 green:.5 blue:0.5 alpha:0.05];
+	BOOL isFirst = YES;
+
+	NSPoint aPoint;
+
+	path = [NSBezierPath bezierPathWithRect:[self bounds]];
+	[path setLineWidth:0.1];
+	[[NSColor whiteColor] set];
+	[path fill];
+	[[NSColor grayColor] set];
+	[path stroke];
+
+	path = [NSBezierPath bezierPath];
+	[[NSColor blackColor] set];
+	[path setLineWidth:1];
+
+	if ([type isEqualToString:@"POINT"]) {
+		circlePath = [NSBezierPath bezierPath];
+		[circlePath appendBezierPathWithOvalInRect:NSMakeRect(width/2-2,height/2-2,4,4)];
+		[[NSColor grayColor] setStroke];
+		[[NSColor redColor] setFill];
+		[circlePath stroke];
+		[circlePath fill];
+	}
+	else if([type isEqualToString:@"LINESTRING"]) {
+
+		for(NSString* coord in coordinates) {
+			aPoint = [self normalizePoint:NSPointFromString(coord)];
+			if(isFirst) {
+				[path moveToPoint:aPoint];
+				isFirst = NO;
+			} else {
+				[path lineToPoint:aPoint];
+			}
+			circlePath = [NSBezierPath bezierPath];
+			[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-2,aPoint.y-2,4,4)];
+			[[NSColor grayColor] setStroke];
+			[[NSColor redColor] setFill];
+			[circlePath stroke];
+			[circlePath fill];
+		}
+		[[NSColor blackColor] setStroke];
+		[path stroke];
+
+	}
+	else if([type isEqualToString:@"POLYGON"]) {
+		for(NSArray* polygon in coordinates) {
+			isFirst = YES;
+			for(NSString* coord in polygon) {
+				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				if(isFirst) {
+					[path moveToPoint:aPoint];
+					isFirst = NO;
+				} else {
+					[path lineToPoint:aPoint];
+				}
+				circlePath = [NSBezierPath bezierPath];
+				[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-2,aPoint.y-2,4,4)];
+				[[NSColor grayColor] setStroke];
+				[[NSColor redColor] setFill];
+				[circlePath stroke];
+				[circlePath fill];
+			}
+			[[NSColor blackColor] setStroke];
+			[polyFillColor setFill];
+			[path fill];
+			[path stroke];
+		}
+
+	}
+}
+
+- (NSImage*)image
+{
+
+	[self drawRect:[self bounds]];
+
+	NSImage *image = [[[NSImage alloc] initWithSize:[self bounds].size] autorelease];
+	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:[self bounds]] autorelease];
+	[image addRepresentation:bitmap];
+	return image;
 }
 
 /**

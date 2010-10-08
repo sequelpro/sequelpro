@@ -51,6 +51,7 @@
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPHistoryController.h"
+#import "SPGeometryDataView.h"
 
 @implementation SPTableContent
 
@@ -3349,7 +3350,14 @@
 			}
 		}
 		else if ([theValue isKindOfClass:[MCPGeometryData class]]) {
-			; // TODO
+			// SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[theValue coordinates]];
+			// image = [v image];
+			// if(image) {
+			// 	[SPTooltip showWithObject:image atLocation:pos ofType:@"image"];
+			// 	[v release];
+			// 	return nil;
+			// }
+			// [v release];
 		}
 
 		// Show the cell string value as tooltip (including line breaks and tabs)

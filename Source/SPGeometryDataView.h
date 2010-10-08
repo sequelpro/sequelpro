@@ -27,7 +27,21 @@
 
 @interface SPGeometryDataView : NSView
 {
-
+	NSString *type;
+	NSArray *coordinates;
+	double x_min;
+	double x_max;
+	double y_min;
+	double y_max;
+	double width;
+	double height;
+	double zoom_factor;
+	double margin_offset;
 }
+
+- (id)initWithCoordinates:(NSDictionary*)coord;
+- (void)setMax:(NSArray*)bbox;
+- (NSPoint)normalizePoint:(NSPoint)aPoint;
+- (NSImage*)image;
 
 @end

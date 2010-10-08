@@ -58,6 +58,7 @@ typedef struct st_point_2d_
 - (NSUInteger)length;
 - (NSData*)data;
 - (NSString*)wktString;
+- (NSDictionary*)coordinates;
 - (NSInteger)wkbType;
 - (NSString*)wktType;
 
