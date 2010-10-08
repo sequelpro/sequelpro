@@ -43,6 +43,7 @@
 - (BOOL)_isFieldTypeNumeric:(NSString*)aType;
 - (BOOL)_isFieldTypeDate:(NSString*)aType;
 - (BOOL)_isFieldTypeString:(NSString*)aType;
+- (BOOL)_isFieldTypeGeometry:(NSString*)aType;
 - (BOOL)_isFieldTypeAllowBinary:(NSString*)aType;
 
 @end
@@ -123,6 +124,15 @@
 		@"TIMESTAMP",
 		@"TIME",
 		@"YEAR",
+		@"--------",
+		@"GEOMETRY",
+		@"POINT",
+		@"LINESTRING",
+		@"POLYGON",
+		@"MULTIPOINT",
+		@"MULTILINESTRING",
+		@"MULTIPOLYGON",
+		@"GEOMETRYCOLLECTION",
 		nil] retain];
 		// Hint: _isFieldTypeDate and _isFieldTypeNumeric must be changed if typeSuggestions was changed!
 	
@@ -1822,9 +1832,9 @@ would result in a position change.
 		else if([[aTableColumn identifier] isEqualToString:@"null"]) {
 			[aCell setEnabled:([[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] || [[[theRow objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"]) ? NO : YES];
 		}
-		// TEXT or BLOB fields don't allow a length
+		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
 		else if([[aTableColumn identifier] isEqualToString:@"length"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [self _isFieldTypeDate:theRowType]) ? NO : YES];
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [self _isFieldTypeDate:theRowType] || [self _isFieldTypeGeometry:theRowType]) ? NO : YES];
 		}
 		else {
 			[aCell setEnabled:YES];
@@ -1929,7 +1939,20 @@ would result in a position change.
 
 	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
 
-	return ([typeSuggestions indexOfObject:type] > 32);
+	return ([typeSuggestions indexOfObject:type] > 32 && [typeSuggestions indexOfObject:type] < 38);
+}
+
+/**
+ * Return if aType is a geometry to typeSuggestions's position
+ * Hint: This must be changed if typeSuggestions was changed!
+ */
+- (BOOL)_isFieldTypeGeometry:(NSString*)aType
+{
+	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+
+	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
+
+	return ([typeSuggestions indexOfObject:type] > 38);
 }
 
 /**
