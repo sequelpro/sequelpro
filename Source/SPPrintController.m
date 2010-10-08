@@ -216,7 +216,7 @@
 
 		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
 
-		SPTableType tableType = [tablesListInstance tableType];
+		NSInteger tableType = [tablesListInstance tableType];
 		
 		switch (tableType) {
 			case SPTableTypeTable:
