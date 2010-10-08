@@ -3888,7 +3888,10 @@
 			[fieldEditor setAllowNULL:allowNULL];
 
 			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
-			if ([cellValue isNSNull]) cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+			if ([cellValue isNSNull])
+				cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+			else if ([cellValue isKindOfClass:[MCPGeometryData class]])
+				cellValue = [cellValue wktString];
 
 			id editData = [[fieldEditor editWithObject:cellValue
 										 fieldName:[[aTableColumn headerCell] stringValue]

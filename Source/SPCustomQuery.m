@@ -2287,7 +2287,10 @@
 			[fieldEditor setAllowNULL:allowNULL];
 
 			id originalData = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
-			if ([originalData isNSNull]) originalData = [prefs objectForKey:SPNullValue];
+			if ([originalData isNSNull])
+				originalData = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+			else if ([originalData isKindOfClass:[MCPGeometryData class]])
+				originalData = [originalData wktString];
 
 			id editData = [[fieldEditor editWithObject:originalData
 									fieldName:[columnDefinition objectForKey:@"name"]
