@@ -1358,7 +1358,7 @@
 			} else {
 				// Apply GeomFromText() for each geometry field
 				if([geometryFields count] && [geometryFieldsMapIndex containsIndex:i]) {
-					[valueString appendFormat:@"GeomFromText('%@')", [mySQLConnection prepareString:cellData]];
+					[valueString appendString:[mySQLConnection prepareString:[(NSString*)cellData getGeomFromTextFromString]]];
 				} else {
 					[valueString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];
 				}

@@ -1907,7 +1907,7 @@
 				} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 					newObject = @"NULL";
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
-					newObject = [NSString stringWithFormat:@"GeomFromText('%@')", anObject];
+					newObject = [(NSString*)anObject getGeomFromTextFromString];
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 					newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
 				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]

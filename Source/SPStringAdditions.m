@@ -375,6 +375,33 @@
 }
 
 /**
+ * Create the GeomFromText() string according to a possible SRID value
+ */
+- (NSString*)getGeomFromTextFromString
+{
+
+	NSString *geomStr = [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+	if(![self rangeOfString:@")"].length || [self length] < 5) return @"";
+
+	// No SRID
+	if([geomStr hasSuffix:@")"])
+		return [NSString stringWithFormat:@"GeomFromText('%@')", geomStr];
+	// Has SRID
+	else {
+		NSUInteger idx = [geomStr length]-1;
+		while(idx>1) {
+			if([geomStr characterAtIndex:idx] == ')')
+				break;
+			idx--;
+		}
+		return [NSString stringWithFormat:@"GeomFromText('%@'%@)",
+			[geomStr substringToIndex:idx+1], [geomStr substringFromIndex:idx+1]];
+	}
+
+}
+
+/**
  * Returns the minimum of a, b and c.
  */
 - (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c
