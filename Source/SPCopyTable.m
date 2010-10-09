@@ -301,6 +301,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 						[result appendFormat:@"%@\t", displayString];
 						[displayString release];
 					}
+				}
+				else if ([cellData isKindOfClass:[MCPGeometryData class]]) {
+					[result appendFormat:@"%@\t", [cellData wktString]];
 				} else
 					[result appendFormat:@"%@\t", [cellData description]];
 			} else {
@@ -374,6 +377,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		else if ([t isEqualToString:@"blobdata"] || [t isEqualToString:@"textdata"])
 			columnTypes[c] = 2;
 
+		// GEOMETRY data
+		else if ([t isEqualToString:@"geometry"])
+			columnTypes[c] = 3;
+
 		// Default to strings
 		else
 			columnTypes[c] = 1;
@@ -440,6 +447,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 						}
 						break;
 
+					// GEOMETRY
+					case 3:
+						[value appendFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:[cellData data]]];
+						break;
 					// Unhandled cases - abort
 					default:
 						NSBeep();
@@ -540,6 +551,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 						[result appendString:displayString];
 						[displayString release];
 					}
+				}
+				else if ([cellData isKindOfClass:[MCPGeometryData class]]) {
+					[result appendFormat:@"%@\t", [cellData wktString]];
 				} else
 					[result appendFormat:@"%@\t", [cellData description]];
 			} else {

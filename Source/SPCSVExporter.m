@@ -285,7 +285,10 @@
 				
 				[csvCellString setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
-			} 
+			}
+			else if ([csvCell isKindOfClass:[MCPGeometryData class]]) {
+				[csvCellString setString:[csvCell wktString]];
+			}
 			else {
 				[csvCellString setString:[csvCell description]];
 			}

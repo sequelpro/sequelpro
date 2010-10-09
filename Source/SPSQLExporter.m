@@ -385,7 +385,7 @@
 						else if ([object isKindOfClass:[NSData class]]) {
 							
 							if ([self sqlOutputEncodeBLOBasHex]) {
-								[sqlString appendFormat:@"X'%@", [connection prepareBinaryData:object]];
+								[sqlString appendFormat:@"X'%@'", [connection prepareBinaryData:object]];
 							}
 							else {
 								[sqlString appendString:@"'"];
@@ -403,6 +403,10 @@
 							
 							[sqlString appendString:@"'"];
 						} 
+						// GEOMETRY data types directly as hex data
+						else if ([object isKindOfClass:[MCPGeometryData class]]) {
+							[sqlString appendFormat:@"X'%@'", [connection prepareBinaryData:[object data]]];
+						}
 						else {
 							[cellValue setString:[object description]];
 							

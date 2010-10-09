@@ -195,6 +195,9 @@
 			else if ([data isKindOfClass:[NSNull class]]) {
 				[xmlItem setString:[self xmlNULLString]];
 			}
+			else if ([data isKindOfClass:[MCPGeometryData class]]) {
+				[xmlItem setString:[data wktString]];
+			}
 			else {
 				[xmlItem setString:[data description]];
 			}
