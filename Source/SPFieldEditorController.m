@@ -33,6 +33,7 @@
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
 #import "SPConstants.h"
+#import "SPGeometryDataView.h"
 
 @implementation SPFieldEditorController
 
@@ -204,6 +205,8 @@
 
 	_isEditable = isEditable;
 
+	BOOL _isGeometry = ([[fieldType uppercaseString] isEqualToString:@"GEOMETRY"]) ? YES : NO;
+
 	// Set field label
 	NSMutableString *label = [NSMutableString string];
 	[label appendFormat:@"“%@”", fieldName];
@@ -298,9 +301,9 @@
 		[editTextView setHidden:YES];
 		[editTextScrollView setHidden:YES];
 
-		// Hide QuickLook button and text/iamge/hex control for text data
-		[editSheetQuickLookButton setHidden:(!_isBlob && !_isBINARY)];
-		[editSheetSegmentControl setHidden:(!_isBlob && !_isBINARY)];
+		// Hide QuickLook button and text/image/hex control for text data
+		[editSheetQuickLookButton setHidden:(!_isBlob && !_isBINARY && _isGeometry)];
+		[editSheetSegmentControl setHidden:(!_isBlob && !_isBINARY && !_isGeometry)];
 
 		[editSheetSegmentControl setEnabled:YES forSegment:1];
 
@@ -337,6 +340,17 @@
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
+		} else if ([sheetEditData isKindOfClass:[MCPGeometryData class]]) {
+				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
+				image = [v thumbnailImage];
+				stringValue = [[sheetEditData wktString] retain];
+				[hexTextView setString:@""];
+				[hexTextView setHidden:YES];
+				[hexTextScrollView setHidden:YES];
+				[editSheetSegmentControl setEnabled:NO forSegment:2];
+				[editSheetSegmentControl setSelectedSegment:0];
+				[editTextView setHidden:NO];
+				[editTextScrollView setHidden:NO];
 		} else {
 			stringValue = [sheetEditData retain];
 
@@ -352,13 +366,14 @@
 
 		if (image) {
 			[editImage setImage:image];
-
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:NO];
-			[editTextView setHidden:YES];
-			[editTextScrollView setHidden:YES];
-			[editSheetSegmentControl setSelectedSegment:1];
+			if(!_isGeometry) {
+				[editTextView setHidden:YES];
+				[editTextScrollView setHidden:YES];
+				[editSheetSegmentControl setSelectedSegment:1];
+			}
 		} else {
 			[editImage setImage:nil];
 		}
@@ -387,7 +402,7 @@
 				[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
 
 			// Set focus
-			if(image == nil)
+			if(image == nil || _isGeometry)
 				[editSheet makeFirstResponder:editTextView];
 			else
 				[editSheet makeFirstResponder:editImage];
@@ -456,7 +471,7 @@
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
 
-	return ( editSheetReturnCode && _isEditable ) ? sheetEditData : nil;
+	return ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
 }
 
 /**
@@ -577,12 +592,25 @@
  */
 - (IBAction)saveEditSheet:(id)sender
 {
-	[[NSSavePanel savePanel] beginSheetForDirectory:nil
-											   file:@""
-									 modalForWindow:[self window]
-									  modalDelegate:self
-									 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
-										contextInfo:NULL];
+
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	NSString *fileDefault = @"";
+
+	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[MCPGeometryData class]]) {
+		[panel setRequiredFileType:@"pdf"];
+		[panel setAllowsOtherFileTypes:NO];
+	} else {
+		[panel setAllowsOtherFileTypes:YES];
+	}
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setExtensionHidden:NO];
+
+	[panel beginSheetForDirectory:nil
+							   file:fileDefault
+					 modalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
+						contextInfo:NULL];
 }
 
 /**
@@ -600,8 +628,26 @@
 		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
 			[sheetEditData writeToFile:fileName atomically:YES];
 
-		// Write other field types' representations to the file via the current encoding
 		}
+		else if ( [sheetEditData isKindOfClass:[MCPGeometryData class]] ) {
+
+			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
+
+				[[editTextView string] writeToFile:fileName
+											  atomically:YES
+												encoding:encoding
+												   error:NULL];
+
+			} else if (editImage != nil){
+
+				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
+				NSData *pdf = [v pdfData];
+				if(pdf)
+					[pdf writeToFile:fileName atomically:YES];
+
+			}
+		}
+		// Write other field types' representations to the file via the current encoding
 		else {
 			[[sheetEditData description] writeToFile:fileName
 										  atomically:YES

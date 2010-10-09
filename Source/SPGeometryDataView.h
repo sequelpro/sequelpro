@@ -43,9 +43,11 @@
 
 }
 
+- (id)initWithCoordinates:(NSDictionary*)coord targetDimension:(CGFloat)targetDimension;
 - (id)initWithCoordinates:(NSDictionary*)coord;
 - (void)setMax:(NSArray*)bbox;
 - (NSPoint)normalizePoint:(NSPoint)aPoint;
 - (NSImage*)thumbnailImage;
+- (NSData*)pdfData;
 
 @end

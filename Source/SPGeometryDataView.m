@@ -28,16 +28,22 @@
 @implementation SPGeometryDataView
 
 /**
- * Initialize SPGeometryDataView object
+ * Initialize SPGeometryDataView object with default targetDimension
  */
 - (id)initWithCoordinates:(NSDictionary*)coord
 {
+	return [self initWithCoordinates:coord targetDimension:400.0];
+}
+
+/**
+ * Initialize SPGeometryDataView object
+ */
+- (id)initWithCoordinates:(NSDictionary*)coord targetDimension:(CGFloat)targetDimension
+{
 
 	CGFloat maxDim;
-	CGFloat targetDim = 400.0;
 
 	margin_offset = 10.0;
-
 	type = [coord objectForKey:@"type"];
 	coordinates = [coord objectForKey:@"coordinates"];
 
@@ -51,7 +57,7 @@
 
 	maxDim = (width > height) ? width : height;
 	if(maxDim != 0)
-		zoom_factor = targetDim/maxDim;
+		zoom_factor = targetDimension/maxDim;
 	else
 		zoom_factor = 1.0;
 
@@ -224,6 +230,9 @@
 	}
 }
 
+/**
+ * Return the geometry as NSImage by using targetDimension
+ */
 - (NSImage*)thumbnailImage
 {
 
@@ -240,6 +249,20 @@
 	NSImage* image = [[[NSImage alloc]initWithSize:imgSize] autorelease];
 	[image addRepresentation:bitmap];
 	return image;
+
+}
+
+/**
+ * Return PDF data of the geometry image
+ */
+- (NSData*)pdfData
+{
+	if(!type || ![type length] || !coordinates || ![coordinates count]) return nil;
+
+	NSSize mySize = self.bounds.size;
+	NSRect myBounds = [self bounds];
+
+	return [self dataWithPDFInsideRect:myBounds];
 
 }
 
