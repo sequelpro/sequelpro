@@ -902,10 +902,14 @@
 								[insertBaseString appendString:@","];
 							else
 								insertBaseStringHasEntries = YES;
-							// Store column index for each geometry field to be able to apply GeomFromText() while importing
-							if([geometryFields containsObject:fieldName = NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) ])
-								[geometryFieldsMapIndex addIndex:i];
-							[insertBaseString appendString:[fieldName backtickQuotedString]];
+							if([geometryFields count]) {
+								// Store column index for each geometry field to be able to apply GeomFromText() while importing
+								if([geometryFields containsObject:fieldName = NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) ])
+									[geometryFieldsMapIndex addIndex:i];
+								[insertBaseString appendString:[fieldName backtickQuotedString]];
+							} else {
+								[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+							}
 						}
 					}
 					[insertBaseString appendString:@") VALUES\n"];
@@ -1353,7 +1357,7 @@
 				[valueString appendString:@"NULL"];
 			} else {
 				// Apply GeomFromText() for each geometry field
-				if([geometryFieldsMapIndex containsIndex:i]) {
+				if([geometryFields count] && [geometryFieldsMapIndex containsIndex:i]) {
 					[valueString appendFormat:@"GeomFromText('%@')", [mySQLConnection prepareString:cellData]];
 				} else {
 					[valueString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];

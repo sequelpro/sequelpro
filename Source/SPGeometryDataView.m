@@ -24,11 +24,22 @@
 
 #import "SPGeometryDataView.h"
 
+@interface SPGeometryDataView (PrivateAPI)
+
+- (NSPoint)_normalizePoint:(NSPoint)aPoint;
+- (void)_drawPoint:(NSPoint)aPoint;
+
+@end
+
+#pragma mark -
 
 @implementation SPGeometryDataView
 
 /**
  * Initialize SPGeometryDataView object with default targetDimension
+ *
+ * @param coord Contains all necessary data to draw the geometry image
+ *
  */
 - (id)initWithCoordinates:(NSDictionary*)coord
 {
@@ -37,11 +48,13 @@
 
 /**
  * Initialize SPGeometryDataView object
+ *
+ * @param coord Contains all necessary data to draw the geometry image
+ *
+ * @param targetDimension Sets the maximum size (height or width) of the image
  */
 - (id)initWithCoordinates:(NSDictionary*)coord targetDimension:(CGFloat)targetDimension
 {
-
-	CGFloat maxDim;
 
 	margin_offset = 10.0;
 	type = [coord objectForKey:@"type"];
@@ -55,7 +68,7 @@
 	width = x_max - x_min;
 	height = y_max - y_min;
 
-	maxDim = (width > height) ? width : height;
+	CGFloat maxDim = (width > height) ? width : height;
 	if(maxDim != 0)
 		zoom_factor = targetDimension/maxDim;
 	else
@@ -71,31 +84,18 @@
 		;
 	}
 
+	lineColor         = [NSColor blackColor];
+	borderLineColor   = [NSColor grayColor];
+	backgroundColor   = [NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:0.96];
+	pointFillColor    = [NSColor redColor];
+	pointStrokeColor  = [NSColor grayColor];
+	polygonFillColor1 = [NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.1];
+	polygonFillColor2 = [NSColor colorWithCalibratedRed:0.0 green:1.0 blue:1.0 alpha:0.1];
+	polygonFillColor3 = [NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.1];
+
+	lineWidth = 1.0;
+
 	return self;
-}
-
-- (NSPoint)normalizePoint:(NSPoint)aPoint
-{
-
-	aPoint.x*=zoom_factor;
-	aPoint.y*=zoom_factor;
-	aPoint.x-=x_min;
-	aPoint.y-=y_min;
-	aPoint.x+=margin_offset;
-	aPoint.y+=margin_offset;
-	return aPoint;
-}
-
-- (void)drawPoint:(NSPoint)aPoint
-{
-
-	NSBezierPath *circlePath = [NSBezierPath bezierPath];
-	[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-5,aPoint.y-5,10,10)];
-	[[NSColor grayColor] setStroke];
-	[[NSColor redColor] setFill];
-	[circlePath stroke];
-	[circlePath fill];
-
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -104,9 +104,6 @@
 	if(!type || ![type length] || !coordinates || ![coordinates count]) return;
 
 	NSBezierPath *path;
-	NSColor *polyFillColor1 = [NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.1];
-	NSColor *polyFillColor2 = [NSColor colorWithCalibratedRed:0.0 green:1.0 blue:1.0 alpha:0.1];
-	NSColor *polyFillColor3 = [NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.1];
 	BOOL isFirst = YES;
 
 	NSPoint aPoint;
@@ -114,60 +111,62 @@
 	// Draw a rect as border
 	path = [NSBezierPath bezierPathWithRect:[self bounds]];
 	[path setLineWidth:0.1];
-	[[NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:0.96] set];
+	[backgroundColor set];
 	[path fill];
-	[[NSColor grayColor] set];
+	[borderLineColor set];
 	[path stroke];
 
 	path = [NSBezierPath bezierPath];
-	[[NSColor blackColor] set];
-	[path setLineWidth:1];
+	[lineColor set];
+	[path setLineWidth:lineWidth];
 
 	if ([type hasSuffix:@"POINT"]) {
 		for(NSString* coord in coordinates)
-			[self drawPoint:[self normalizePoint:NSPointFromString(coord)]];
+			[self _drawPoint:[self _normalizePoint:NSPointFromString(coord)]];
 	}
 	else if([type hasSuffix:@"LINESTRING"]) {
 
 		for(NSArray* lines in coordinates) {
 			isFirst = YES;
 			path = [NSBezierPath bezierPath];
+			[path setLineWidth:lineWidth];
 			for(NSString* coord in lines) {
-				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				aPoint = [self _normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
 					[path moveToPoint:aPoint];
 					isFirst = NO;
 				} else {
 					[path lineToPoint:aPoint];
 				}
-				[self drawPoint:aPoint];
+				[self _drawPoint:aPoint];
 			}
-			[[NSColor blackColor] setStroke];
+			[lineColor setStroke];
 			[path stroke];
 		}
 	}
 	else if([type hasSuffix:@"POLYGON"]) {
-		NSUInteger i = 0;
+		NSUInteger i = 0; // polygon fill color alternating
 		for(NSArray* polygons in coordinates) {
 			isFirst = YES;
 			path = [NSBezierPath bezierPath];
+			[path setLineWidth:lineWidth];
 			for(NSString* coord in polygons) {
-				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				aPoint = [self _normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
 					[path moveToPoint:aPoint];
 					isFirst = NO;
 				} else {
 					[path lineToPoint:aPoint];
 				}
-				[self drawPoint:aPoint];
+				[self _drawPoint:aPoint];
 			}
-			[[NSColor blackColor] setStroke];
+			[lineColor setStroke];
 			switch(i) {
-				case 0: [polyFillColor1 setFill];
+				case 0: [polygonFillColor1 setFill];
 				break;
-				case 1: [polyFillColor2 setFill];
+				case 1: [polygonFillColor2 setFill];
 				break;
-				case 2: [polyFillColor3 setFill];
+				case 2: [polygonFillColor3 setFill];
 				break;
 			}
 			[path fill];
@@ -178,48 +177,53 @@
 	}
 	else if([type isEqualToString:@"GEOMETRYCOLLECTION"]) {
 
+		// First array contains all points
 		for(NSString* coord in [coordinates objectAtIndex:0]) {
-			[self drawPoint:[self normalizePoint:NSPointFromString(coord)]];
+			[self _drawPoint:[self _normalizePoint:NSPointFromString(coord)]];
 		}
 
+		// Second array contains all linestrings
 		for(NSArray* lines in [coordinates objectAtIndex:1]) {
 			isFirst = YES;
 			path = [NSBezierPath bezierPath];
+			[path setLineWidth:lineWidth];
 			for(NSString* coord in lines) {
-				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				aPoint = [self _normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
 					[path moveToPoint:aPoint];
 					isFirst = NO;
 				} else {
 					[path lineToPoint:aPoint];
 				}
-				[self drawPoint:aPoint];
+				[self _drawPoint:aPoint];
 			}
-			[[NSColor blackColor] setStroke];
+			[lineColor setStroke];
 			[path stroke];
 		}
 
-		NSUInteger i = 0;
+		// Third array contains all polygons
+		NSUInteger i = 0; // polygon fill color alternating
 		for(NSArray* polygons in [coordinates objectAtIndex:2]) {
 			isFirst = YES;
 			path = [NSBezierPath bezierPath];
+			[path setLineWidth:lineWidth];
 			for(NSString* coord in polygons) {
-				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				aPoint = [self _normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
 					[path moveToPoint:aPoint];
 					isFirst = NO;
 				} else {
 					[path lineToPoint:aPoint];
 				}
-				[self drawPoint:aPoint];
+				[self _drawPoint:aPoint];
 			}
-			[[NSColor blackColor] setStroke];
+			[lineColor setStroke];
 			switch(i) {
-				case 0: [polyFillColor1 setFill];
+				case 0: [polygonFillColor1 setFill];
 				break;
-				case 1: [polyFillColor2 setFill];
+				case 1: [polygonFillColor2 setFill];
 				break;
-				case 2: [polyFillColor3 setFill];
+				case 2: [polygonFillColor3 setFill];
 				break;
 			}
 			[path fill];
@@ -272,6 +276,43 @@
 - (void)dealloc
 {
 	[super dealloc];
+}
+
+@end
+
+#pragma mark -
+#pragma mark PrivateAPI
+
+@implementation  SPGeometryDataView (PrivateAPI)
+
+/**
+ * Converts original NSPoint to target coordinates
+ */
+- (NSPoint)_normalizePoint:(NSPoint)aPoint
+{
+
+	aPoint.x*=zoom_factor;
+	aPoint.y*=zoom_factor;
+	aPoint.x-=x_min;
+	aPoint.y-=y_min;
+	aPoint.x+=margin_offset;
+	aPoint.y+=margin_offset;
+	return aPoint;
+}
+
+/**
+ * Draw a point at aPoint representing the original coordinate
+ */
+- (void)_drawPoint:(NSPoint)aPoint
+{
+
+	NSBezierPath *circlePath = [NSBezierPath bezierPath];
+	[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-5,aPoint.y-5,10,10)];
+	[pointStrokeColor setStroke];
+	[pointFillColor setFill];
+	[circlePath stroke];
+	[circlePath fill];
+
 }
 
 @end

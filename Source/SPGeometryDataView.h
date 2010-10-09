@@ -40,6 +40,16 @@
 	CGFloat height;
 	CGFloat zoom_factor;
 	CGFloat margin_offset;
+	CGFloat lineWidth;
+
+	NSColor *lineColor;
+	NSColor *borderLineColor;
+	NSColor *backgroundColor;
+	NSColor *pointFillColor;
+	NSColor *pointStrokeColor;
+	NSColor *polygonFillColor1;
+	NSColor *polygonFillColor2;
+	NSColor *polygonFillColor3;
 
 }
 
