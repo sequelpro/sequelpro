@@ -101,6 +101,10 @@
 	BOOL progressCancelled;
 	BOOL _mainNibLoaded;
 
+	NSDictionary *targetTableDetails;
+	NSMutableArray *geometryFields;
+	NSMutableIndexSet *geometryFieldsMapIndex;
+
 	NSSavePanel *currentExportPanel;
 }
 

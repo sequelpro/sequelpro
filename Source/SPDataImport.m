@@ -67,6 +67,8 @@
 	if ((self = [super init])) {
 		
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
+		geometryFields = [[NSMutableArray alloc] init];
+		geometryFieldsMapIndex = [[NSMutableIndexSet alloc] init];
 		fieldMappingArray = nil;
 		fieldMappingGlobalValueArray = nil;
 		fieldMappingTableColumnNames = nil;
@@ -82,6 +84,7 @@
 		insertRemainingRowsAfterUpdate = NO;
 		numberOfImportDataColumns = 0;
 		selectedTableTarget = nil;
+		targetTableDetails = nil;
 		
 		prefs = nil;
 		lastFilename = nil;
@@ -682,6 +685,9 @@
 	fieldMappingArray = nil;
 	fieldMappingGlobalValueArray = nil;
 
+	[geometryFields removeAllObjects];
+	[geometryFieldsMapIndex removeAllIndexes];
+
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
 
@@ -709,7 +715,7 @@
 	[[singleProgressBar onMainThread] setIndeterminate:YES];
 	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
 	[[singleProgressBar onMainThread] startAnimation:self];
-				
+
 	// Open the progress sheet
 	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];
@@ -887,14 +893,19 @@
 				// Set up the field names import string for INSERT or REPLACE INTO
 				[insertBaseString appendString:csvImportHeaderString];
 				if(!importMethodIsUpdate) {
-					[insertBaseString appendString:[selectedTableTarget backtickQuotedString]];
-					[insertBaseString appendString:@" ("];
+					NSString *fieldName;
+					[insertBaseString appendFormat:@"%@ (", [selectedTableTarget backtickQuotedString]];
 					insertBaseStringHasEntries = NO;
 					for (i = 0; i < [fieldMappingArray count]; i++) {
 						if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
-							if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
-							else insertBaseStringHasEntries = YES;
-							[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
+							if (insertBaseStringHasEntries)
+								[insertBaseString appendString:@","];
+							else
+								insertBaseStringHasEntries = YES;
+							// Store column index for each geometry field to be able to apply GeomFromText() while importing
+							if([geometryFields containsObject:fieldName = NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) ])
+								[geometryFieldsMapIndex addIndex:i];
+							[insertBaseString appendString:[fieldName backtickQuotedString]];
 						}
 					}
 					[insertBaseString appendString:@") VALUES\n"];
@@ -949,8 +960,7 @@
 				} else {
 					if(insertRemainingRowsAfterUpdate) {
 						[insertRemainingBaseString setString:@"INSERT INTO "];
-						[insertRemainingBaseString appendString:[selectedTableTarget backtickQuotedString]];
-						[insertRemainingBaseString appendString:@" ("];
+						[insertRemainingBaseString appendFormat:@"%@ (", [selectedTableTarget backtickQuotedString]];
 						insertBaseStringHasEntries = NO;
 						for (i = 0; i < [fieldMappingArray count]; i++) {
 							if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
@@ -1145,19 +1155,6 @@
 	}
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;
 
-	// If there's no tables to select, error
-	// if (![[tablesListInstance allTableNames] count]) {
-	// 	[self closeAndStopProgressSheet];
-	// 	SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
-	// 					  NSLocalizedString(@"OK", @"OK button"),
-	// 					  nil, nil,
-	// 					  [tableDocumentInstance parentWindow], self,
-	// 					  nil, nil,
-	// 					  NSLocalizedString(@"Can't import CSV data into a database without any tables!", @"error text when trying to import csv data, but we have no tables in the db")
-	// 					  );
-	// 	return FALSE;
-	// }
-
 	// Set the import array
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
@@ -1212,6 +1209,17 @@
 		NSBeep();
 		return FALSE;
 	}
+
+	// Store target table definitions
+	SPTableData *selectedTableData = [[SPTableData alloc] init];
+	[selectedTableData setConnection:mySQLConnection];
+	targetTableDetails = [selectedTableData informationForTable:selectedTableTarget];
+	[selectedTableData release];
+
+	// Store all field names which are of typegrouping 'geometry'
+	for(NSDictionary *field in [targetTableDetails objectForKey:@"columns"])
+		if([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"])
+		[geometryFields addObject:[field objectForKey:@"name"]];
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
@@ -1275,9 +1283,7 @@
 				if (cellData == [NSNull null]) {
 					[setString appendString:@"NULL"];
 				} else {
-					[setString appendString:@"'"];
-					[setString appendString:[mySQLConnection prepareString:cellData]];
-					[setString appendString:@"'"];
+					[setString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];
 				}
 			}
 		}
@@ -1290,8 +1296,7 @@
 			// - check for global values
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 				// Global variables are coming wrapped in ' ' if there're not marked as SQL 
-				[whereString appendString:@"="];
-				[whereString appendString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+				[whereString appendFormat:@"=%@", NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
 			} else {
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
@@ -1302,10 +1307,7 @@
 				if (cellData == [NSNull null]) {
 					[whereString appendString:@" IS NULL"];
 				} else {
-					[whereString appendString:@"="];
-					[whereString appendString:@"'"];
-					[whereString appendString:[mySQLConnection prepareString:cellData]];
-					[whereString appendString:@"'"];
+					[whereString appendFormat:@"='%@'", [mySQLConnection prepareString:cellData]];
 				}
 			}
 		}
@@ -1350,9 +1352,12 @@
 			if (cellData == [NSNull null]) {
 				[valueString appendString:@"NULL"];
 			} else {
-				[valueString appendString:@"'"];
-				[valueString appendString:[mySQLConnection prepareString:cellData]];
-				[valueString appendString:@"'"];
+				// Apply GeomFromText() for each geometry field
+				if([geometryFieldsMapIndex containsIndex:i]) {
+					[valueString appendFormat:@"GeomFromText('%@')", [mySQLConnection prepareString:cellData]];
+				} else {
+					[valueString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];
+				}
 			}
 		}
 	}
@@ -1497,6 +1502,9 @@
 - (void)dealloc
 {	
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
+	if (geometryFields) [geometryFields release];
+	if (geometryFieldsMapIndex) [geometryFieldsMapIndex release];
+
 	if (lastFilename) [lastFilename release];
 	if (prefs) [prefs release];
 	if(selectedTableTarget) [selectedTableTarget release];
