@@ -27,6 +27,9 @@
 
 @interface SPGeometryDataView : NSView
 {
+	
+	NSWindow *geometryDataWindow;
+	
 	NSString *type;
 	NSArray *coordinates;
 	CGFloat x_min;
@@ -43,6 +46,6 @@
 - (id)initWithCoordinates:(NSDictionary*)coord;
 - (void)setMax:(NSArray*)bbox;
 - (NSPoint)normalizePoint:(NSPoint)aPoint;
-- (NSImage*)image;
+- (NSImage*)thumbnailImage;
 
 @end
