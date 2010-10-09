@@ -209,7 +209,10 @@
 				if([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"])
 					[field setObject:@"PRI" forKey:@"Key"];
 				else
-					[field setObject:(([[theIndex objectForKey:@"Non_unique"] isEqualToString:@"1"]) ? @"MUL" : @"UNI") forKey:@"Key"];
+					if([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"])
+						[field setObject:@"SPA" forKey:@"Key"];
+					else
+						[field setObject:(([[theIndex objectForKey:@"Non_unique"] isEqualToString:@"1"]) ? @"MUL" : @"UNI") forKey:@"Key"];
 				break;
 			}
 		}
