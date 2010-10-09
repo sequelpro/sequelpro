@@ -125,6 +125,7 @@
 
 		for(NSArray* lines in coordinates) {
 			isFirst = YES;
+			path = [NSBezierPath bezierPath];
 			for(NSString* coord in lines) {
 				aPoint = [self normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
@@ -143,6 +144,7 @@
 		NSUInteger i = 0;
 		for(NSArray* polygons in coordinates) {
 			isFirst = YES;
+			path = [NSBezierPath bezierPath];
 			for(NSString* coord in polygons) {
 				aPoint = [self normalizePoint:NSPointFromString(coord)];
 				if(isFirst) {
@@ -167,7 +169,58 @@
 			i++;
 			if(i>2) i=0;
 		}
+	}
+	else if([type isEqualToString:@"GEOMETRYCOLLECTION"]) {
 
+		for(NSString* coord in [coordinates objectAtIndex:0]) {
+			[self drawPoint:[self normalizePoint:NSPointFromString(coord)]];
+		}
+
+		for(NSArray* lines in [coordinates objectAtIndex:1]) {
+			isFirst = YES;
+			path = [NSBezierPath bezierPath];
+			for(NSString* coord in lines) {
+				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				if(isFirst) {
+					[path moveToPoint:aPoint];
+					isFirst = NO;
+				} else {
+					[path lineToPoint:aPoint];
+				}
+				[self drawPoint:aPoint];
+			}
+			[[NSColor blackColor] setStroke];
+			[path stroke];
+		}
+
+		NSUInteger i = 0;
+		for(NSArray* polygons in [coordinates objectAtIndex:2]) {
+			isFirst = YES;
+			path = [NSBezierPath bezierPath];
+			for(NSString* coord in polygons) {
+				aPoint = [self normalizePoint:NSPointFromString(coord)];
+				if(isFirst) {
+					[path moveToPoint:aPoint];
+					isFirst = NO;
+				} else {
+					[path lineToPoint:aPoint];
+				}
+				[self drawPoint:aPoint];
+			}
+			[[NSColor blackColor] setStroke];
+			switch(i) {
+				case 0: [polyFillColor1 setFill];
+				break;
+				case 1: [polyFillColor2 setFill];
+				break;
+				case 2: [polyFillColor3 setFill];
+				break;
+			}
+			[path fill];
+			[path stroke];
+			i++;
+			if(i>2) i=0;
+		}
 	}
 }
 
