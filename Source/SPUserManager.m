@@ -349,7 +349,6 @@
 			[child setValue:value forKey:key];
 		}
 		NS_HANDLER
-		NSLog(@"%@ not implemented yet.", key);
 		NS_ENDHANDLER
 	}
 }
@@ -523,6 +522,7 @@
 		[selectedObject setValue:@"%" forKey:@"host"];
 		[outlineView reloadItem:selectedObject];
 	}
+	
 	[schemasTableView deselectAll:nil];
 	[grantedTableView deselectAll:nil];
 	[availableTableView deselectAll:nil];
@@ -1510,7 +1510,6 @@
 		} else {
             [availableTableView setEnabled:NO];
         }
-
 	}
 	else if ([notification object] == grantedTableView) {
 		[removeSchemaPrivButton setEnabled:([[grantedController selectedObjects] count] > 0)];
