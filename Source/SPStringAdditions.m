@@ -377,7 +377,7 @@
 /**
  * Create the GeomFromText() string according to a possible SRID value
  */
-- (NSString*)getGeomFromTextFromString
+- (NSString*)getGeomFromTextString
 {
 
 	NSString *geomStr = [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];

@@ -67,7 +67,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 
-- (NSString*)getGeomFromTextFromString;
+- (NSString*)getGeomFromTextString;
 
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet options:(NSUInteger)mask;
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet;

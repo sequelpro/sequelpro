@@ -2393,7 +2393,7 @@
 			[rowValue setString:@"CURRENT_TIMESTAMP"];
 
 		} else if ( [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"geometry"] ) {
-			[rowValue setString:([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextFromString] : [(NSString*)rowObject getGeomFromTextFromString]];
+			[rowValue setString:([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString]];
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else if ( [rowObject isNSNull]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
@@ -3566,7 +3566,7 @@
 					} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 						newObject = @"NULL";
 					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
-						newObject = [(NSString*)anObject getGeomFromTextFromString];
+						newObject = [(NSString*)anObject getGeomFromTextString];
 					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 						newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
 					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
