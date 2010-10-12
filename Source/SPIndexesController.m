@@ -678,8 +678,8 @@ NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 				[tempIndexedColumns addObject:[columnName backtickQuotedString]];
 			}
 		}
-		
-		if (![indexType isEqualToString:@"INDEX"]) indexType = [indexType stringByAppendingFormat:@" INDEX"];
+				
+		if ((![indexType isEqualToString:@"INDEX"]) && (![indexType isEqualToString:@"PRIMARY KEY"])) indexType = [indexType stringByAppendingFormat:@" INDEX"];
 
 		// Build the query
 		NSMutableString *query = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@", [table backtickQuotedString], indexType];
