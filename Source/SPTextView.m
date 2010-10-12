@@ -2484,7 +2484,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)autoHelp
 {
 
-	if(![prefs boolForKey:SPCustomQueryUpdateAutoHelp]) return;
+	if(![prefs boolForKey:SPCustomQueryUpdateAutoHelp] || ![[self string] length]) return;
 
 	// If selection show Help for it
 	if([self selectedRange].length)
@@ -2494,8 +2494,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	// Otherwise show Help if caret is not inside quotes
 	NSUInteger cursorPosition = [self selectedRange].location;
-	if (cursorPosition >= [[self string] length]) cursorPosition--;
-	if(cursorPosition >= 0 && ![(NSString*)NSMutableAttributedStringAttributeAtIndex([self textStorage], kQuote, cursorPosition, nil) length])
+	// If cursor at the end go one char leftwards
+	if (cursorPosition > 0 && cursorPosition >= [[self string] length]) cursorPosition--;
+	if (cursorPosition < [[self string] length] && ![(NSString*)NSMutableAttributedStringAttributeAtIndex([self textStorage], kQuote, cursorPosition, nil) length])
 		[customQueryInstance performSelector:@selector(showAutoHelpForCurrentWord:) withObject:self afterDelay:0.1];
 
 }
