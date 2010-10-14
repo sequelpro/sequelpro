@@ -6,6 +6,22 @@
 	objectVersion = 45;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		1798AB1C12676EA0000D946A /* Localize */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 1798AB2012676EBE000D946A /* Build configuration list for PBXAggregateTarget "Localize" */;
+			buildPhases = (
+				1798AB1B12676EA0000D946A /* ShellScript */,
+			);
+			dependencies = (
+				1798AB2812676F14000D946A /* PBXTargetDependency */,
+				1798AB411267731F000D946A /* PBXTargetDependency */,
+			);
+			name = Localize;
+			productName = Localize;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		112730571180788A000737FD /* SPTableCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 112730551180788A000737FD /* SPTableCopyTest.m */; };
 		1127305B11807894000737FD /* SPDatabaseInfoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1127305911807894000737FD /* SPDatabaseInfoTest.m */; };
@@ -395,6 +411,27 @@
 			remoteGlobalIDString = 17B7B5611016012700F057DE;
 			remoteInfo = MCPKit;
 		};
+		1798AAFF12676BAD000D946A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
+			remoteInfo = "Sequel Pro";
+		};
+		1798AB2712676F14000D946A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
+			remoteInfo = "Sequel Pro";
+		};
+		1798AB401267731F000D946A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */;
+			remoteInfo = xibLocalizationPostprocessor;
+		};
 		17B7B59A1016039200F057DE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -549,6 +586,7 @@
 		1792C13610AD75C800ABE758 /* SPServerVariablesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPServerVariablesController.m; sourceTree = "<group>"; };
 		1792C25F10AE1A2D00ABE758 /* SPConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionDelegate.h; sourceTree = "<group>"; };
 		1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionDelegate.m; sourceTree = "<group>"; };
+		1798AB0C12676CD9000D946A /* localize.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = localize.sh; sourceTree = "<group>"; };
 		179ECEC611F265EE009C6A40 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
@@ -1424,6 +1462,7 @@
 			isa = PBXGroup;
 			children = (
 				1713122F109C7DF600FB465F /* build.sh */,
+				1798AB0C12676CD9000D946A /* localize.sh */,
 				1761FD9D0EF0488900331368 /* build-version.pl */,
 				178934980F30CDA10097539A /* trim-application.sh */,
 				17B7B698101611C800F057DE /* build-mysql-client.sh */,
@@ -2266,6 +2305,7 @@
 			);
 			dependencies = (
 				1792C2CD10AE239D00ABE758 /* PBXTargetDependency */,
+				1798AB0012676BAD000D946A /* PBXTargetDependency */,
 			);
 			name = "Unit Tests";
 			productName = "Unit Tests";
@@ -2392,6 +2432,7 @@
 				58B906E511BD989A000826E5 /* PSMTabBar */,
 				58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */,
 				584754C1120A04560057631F /* Sequel Pro QLGenerator */,
+				1798AB1C12676EA0000D946A /* Localize */,
 			);
 		};
 /* End PBXProject section */
@@ -2579,6 +2620,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Run build tasks\n\"${SRCROOT}/Scripts/build.sh\"\n";
+		};
+		1798AB1B12676EA0000D946A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Scripts/localize.sh\"";
 		};
 		380F4ED70FC0B50500B0BFD7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2808,6 +2862,21 @@
 			isa = PBXTargetDependency;
 			target = 17B7B5611016012700F057DE /* MCPKit */;
 			targetProxy = 1792C2CC10AE239D00ABE758 /* PBXContainerItemProxy */;
+		};
+		1798AB0012676BAD000D946A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
+			targetProxy = 1798AAFF12676BAD000D946A /* PBXContainerItemProxy */;
+		};
+		1798AB2812676F14000D946A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
+			targetProxy = 1798AB2712676F14000D946A /* PBXContainerItemProxy */;
+		};
+		1798AB411267731F000D946A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */;
+			targetProxy = 1798AB401267731F000D946A /* PBXContainerItemProxy */;
 		};
 		17B7B59B1016039200F057DE /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3141,6 +3210,35 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		1798AB1D12676EA0000D946A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = Localize;
+				UNLOCALIZED_RESOURCES_FOLDER_PATH = "Sequel Pro.app/Contents/Resources";
+			};
+			name = Debug;
+		};
+		1798AB1E12676EA0000D946A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PRODUCT_NAME = Localize;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		1798AB1F12676EA0000D946A /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = Localize;
+			};
+			name = Distribution;
+		};
 		17B7B5641016012A00F057DE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3213,7 +3311,6 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Plists/MCPKit-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
@@ -3378,7 +3475,6 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
 				OTHER_LDFLAGS = "";
@@ -3396,7 +3492,7 @@
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
 				GCC_TREAT_NONCONFORMANT_CODE_ERRORS_AS_WARNINGS = YES;
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_GLOBAL_CONSTRUCTORS = YES;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
@@ -3437,7 +3533,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
@@ -3445,7 +3540,6 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = (
@@ -3516,7 +3610,6 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				OTHER_LDFLAGS = "";
@@ -3647,7 +3740,6 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
 					"-lstdc++",
@@ -3828,6 +3920,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1798AB2012676EBE000D946A /* Build configuration list for PBXAggregateTarget "Localize" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1798AB1D12676EA0000D946A /* Debug */,
+				1798AB1E12676EA0000D946A /* Release */,
+				1798AB1F12676EA0000D946A /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		17B7B5671016012A00F057DE /* Build configuration list for PBXNativeTarget "MCPKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
