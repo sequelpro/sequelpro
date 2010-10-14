@@ -39,7 +39,6 @@
 
 	NSURL *_sessionURL;
 	NSMutableDictionary *_spfSessionDocData;
-
 }
 
 // Window management

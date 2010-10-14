@@ -881,106 +881,6 @@
 }
 
 #pragma mark -
-#pragma mark AppleScript support
-
-//////////////// Examples to catch AS core events - maybe for further stuff
-// - (void)handleQuitEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-// {
-// 	[NSApp terminate:self];
-// }
-// - (void)handleOpenEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-// {
-// 	NSLog(@"OPEN ");
-// }
-// 
-// - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
-// {
-// 	NSAppleEventManager *aeManager = [NSAppleEventManager sharedAppleEventManager];
-// 	[aeManager setEventHandler:self andSelector:@selector(handleQuitEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
-// 	[aeManager setEventHandler:self andSelector:@selector(handleOpenEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenApplication];
-// }
-
-
-/**
- * Is needed to interact with AppleScript for set/get internal SP variables
- */
-- (BOOL)application:(NSApplication *)sender delegateHandlesKey:(NSString *)key
-{
-	NSLog(@"Not yet implemented.");
-	
-	return NO;
-}
-
-/**
- * AppleScript calls that method to get the available documents
- */
-- (NSArray *)orderedDocuments
-{
-	NSMutableArray *orderedDocuments = [NSMutableArray array];
-
-	for (NSWindow *aWindow in [self orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			[orderedDocuments addObjectsFromArray:[[aWindow windowController] documents]];
-		}
-	}
-
-	return orderedDocuments;
-}
-
-/** 
- * Support for 'make new document'.
- * TODO: following tab support this has been disabled - need to discuss reimplmenting vs syntax.
- */
-- (void)insertInOrderedDocuments:(SPDatabaseDocument *)doc 
-{
-	[self newWindow:self];
-
-	// Set autoconnection if appropriate
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
-		[[self frontDocument] connect];
-	}
-
-}
-
-/**
- * AppleScript calls that method to get the available windows.
- */
-- (NSArray *)orderedWindows
-{
-	return [NSApp orderedWindows];
-}
-
-/**
- * AppleScript handler to quit Sequel Pro
- * This handler is needed to allow to quit SP via the Dock or AppleScript after activating it by using AppleScript
- */
-- (id)handleQuitScriptCommand:(NSScriptCommand *)command
-{
-	[NSApp terminate:self];
-	return nil;
-}
-
-/**
- * AppleScript handler
- * This handler is needed to catch an 'open' command if no argument was passed which would cause a crash
- */
-- (id)handleOpenScriptCommand:(NSScriptCommand *)command
-{
-	return nil;
-}
-
-/**
- * AppleScript handler for print
- * This handler prints the active view
- */
-- (id)handlePrintScriptCommand:(NSScriptCommand *)command
-{
-	SPDatabaseDocument *frontDoc = [self frontDocument];
-	if (frontDoc && ![frontDoc isWorking] && ![[frontDoc connectionID] isEqualToString:@"_"])
-		[frontDoc startPrintDocumentOperation];
-}
-
-#pragma mark -
 
 /**
  * Deallocate
@@ -988,11 +888,13 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	if(_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
+	
 	[prefsController release], prefsController = nil;
 	[aboutController release], aboutController = nil;
-	if(_sessionURL) [_sessionURL release], _sessionURL = nil;
+	
+	if (_sessionURL) [_sessionURL release], _sessionURL = nil;
+	if (_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
+	
 	[super dealloc];
 }
 

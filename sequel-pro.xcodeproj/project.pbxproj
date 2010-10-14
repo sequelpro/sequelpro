@@ -69,6 +69,7 @@
 		1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */; };
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
+		1798AB911267924D000D946A /* SPAppleScriptSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798AB901267924D000D946A /* SPAppleScriptSupport.m */; };
 		179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A20AC5124F9B110095CEFB /* SPServerSupport.m */; };
@@ -587,6 +588,8 @@
 		1792C25F10AE1A2D00ABE758 /* SPConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionDelegate.h; sourceTree = "<group>"; };
 		1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionDelegate.m; sourceTree = "<group>"; };
 		1798AB0C12676CD9000D946A /* localize.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = localize.sh; sourceTree = "<group>"; };
+		1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAppleScriptSupport.h; sourceTree = "<group>"; };
+		1798AB901267924D000D946A /* SPAppleScriptSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAppleScriptSupport.m; sourceTree = "<group>"; };
 		179ECEC611F265EE009C6A40 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
@@ -1679,6 +1682,8 @@
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
 				58A8A78F11A036C000B95749 /* SPWindowController.h */,
 				58A8A79011A036C000B95749 /* SPWindowController.m */,
+				1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */,
+				1798AB901267924D000D946A /* SPAppleScriptSupport.m */,
 				173E70A6107FF61D008733C9 /* Main View Controllers */,
 				173E70D2107FF687008733C9 /* Subview Controllers */,
 				173E70D4107FF6E7008733C9 /* Data Controllers */,
@@ -2852,6 +2857,7 @@
 				17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */,
 				BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */,
 				17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */,
+				1798AB911267924D000D946A /* SPAppleScriptSupport.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
