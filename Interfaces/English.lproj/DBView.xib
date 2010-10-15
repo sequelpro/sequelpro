@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="7654"/>
+			<integer value="673"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -956,8 +956,8 @@
 																		<bool key="EncodedWithXMLCoder">YES</bool>
 																		<object class="BWAnchoredPopUpButton" id="844922654">
 																			<reference key="NSNextResponder" ref="220777809"/>
-																			<int key="NSvFlags">292</int>
-																			<string key="NSFrame">{{124, -1}, {32, 24}}</string>
+																			<int key="NSvFlags">289</int>
+																			<string key="NSFrame">{{662, -1}, {32, 24}}</string>
 																			<reference key="NSSuperview" ref="220777809"/>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="BWAnchoredPopUpButtonCell" key="NSCell" id="688701059">
@@ -1065,7 +1065,7 @@
 																		<object class="NSButton" id="168895907">
 																			<reference key="NSNextResponder" ref="220777809"/>
 																			<int key="NSvFlags">-2147483356</int>
-																			<string key="NSFrame">{{155, -1}, {33, 25}}</string>
+																			<string key="NSFrame">{{124, -1}, {33, 25}}</string>
 																			<reference key="NSSuperview" ref="220777809"/>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="NSButtonCell" key="NSCell" id="598509241">
@@ -1837,7 +1837,7 @@
 																					<string>NeXT TIFF v4.0 pasteboard type</string>
 																				</object>
 																			</object>
-																			<string key="NSFrame">{{156, 0}, {507, 23}}</string>
+																			<string key="NSFrame">{{125, 0}, {507, 23}}</string>
 																			<reference key="NSSuperview" ref="220777809"/>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="NSImageCell" key="NSCell" id="4715">
@@ -1857,7 +1857,7 @@
 																		<object class="NSButton" id="507448309">
 																			<reference key="NSNextResponder" ref="220777809"/>
 																			<int key="NSvFlags">289</int>
-																			<string key="NSFrame">{{663, -1}, {32, 25}}</string>
+																			<string key="NSFrame">{{632, -1}, {32, 25}}</string>
 																			<reference key="NSSuperview" ref="220777809"/>
 																			<bool key="NSEnabled">YES</bool>
 																			<object class="NSButtonCell" key="NSCell" id="1072754876">
