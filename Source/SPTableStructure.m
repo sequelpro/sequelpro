@@ -151,6 +151,24 @@
 											   object:tableDocumentInstance];
 
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Init the view column submenu according to saved hidden status;
+	// menu items are identified by their tag number which represents the initial column index
+	for(NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
+	for(NSTableColumn *col in [tableSourceView tableColumns]) {
+		if([col isHidden]) {
+			if([[col identifier] isEqualToString:@"Key"])
+				[[viewColumnsMenu itemWithTag:7] setState:NSOffState];
+			else if([[col identifier] isEqualToString:@"encoding"])
+				[[viewColumnsMenu itemWithTag:10] setState:NSOffState];
+			else if([[col identifier] isEqualToString:@"collation"])
+				[[viewColumnsMenu itemWithTag:11] setState:NSOffState];
+			else if([[col identifier] isEqualToString:@"comment"])
+				[[viewColumnsMenu itemWithTag:12] setState:NSOffState];
+		}
+	}
+	[tableSourceView reloadData];
+
 }
 
 #pragma mark -
@@ -467,6 +485,45 @@
 					 modalDelegate:self 
 					didEndSelector:NULL 
 					   contextInfo:NULL];
+
+}
+
+/**
+ * Control the visibility of the columns
+ */
+- (IBAction)toggleColumnView:(id)sender
+{
+
+	NSString *columnIdentifierName = nil;
+
+	switch([sender tag]) {
+		case 7:
+		columnIdentifierName = @"Key";
+		break;
+		case 10:
+		columnIdentifierName = @"encoding";
+		break;
+		case 11:
+		columnIdentifierName = @"collation";
+		break;
+		case 12:
+		columnIdentifierName = @"comment";
+		break;
+		default:
+		return;
+	}
+
+	for(NSTableColumn *col in [tableSourceView tableColumns]) {
+
+		if([[col identifier] isEqualToString:columnIdentifierName]) {
+			[col setHidden:([sender state] == NSOffState) ? NO : YES];
+			[sender setState:![sender state]];
+			break;
+		}
+
+	}
+
+	[tableSourceView reloadData];
 
 }
 

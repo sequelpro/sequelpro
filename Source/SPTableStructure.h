@@ -54,6 +54,8 @@
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
 
+	IBOutlet id viewColumnsMenu;
+
 	IBOutlet id encodingPopupCell;
 
 	id databaseDataInstance;
@@ -85,6 +87,7 @@
 - (IBAction)removeField:(id)sender;
 - (IBAction)resetAutoIncrement:(id)sender;
 - (IBAction)showOptimizedFieldType:(id)sender;
+- (IBAction)toggleColumnView:(id)sender;
 - (BOOL)cancelRowEditing;
 
 // Index sheet methods
