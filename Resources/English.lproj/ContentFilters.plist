@@ -283,5 +283,94 @@ Do quote strings manually.</string>
 				<string>IS NOT NULL</string>
 			</dict>
 		</array>
+		<key>spatial</key>
+		<array>
+			<dict>
+				<key>MenuLabel</key>
+				<string>contains</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBRContains(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>within</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBRWithin(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>disjoint</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBRDisjoint(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>equal</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBREqual(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>intersects</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBRIntersects(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>overlaps</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBROverlaps(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>touches</string>
+				<key>NumberOfArguments</key>
+				<integer>1</integer>
+				<key>SuppressLeadingFieldPlaceholder</key>
+				<true/>
+				<key>Clause</key>
+				<string>MBRTouches(GeomFromText('${}'),$CURRENT_FIELD)</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NULL</string>
+			</dict>
+			<dict>
+				<key>MenuLabel</key>
+				<string>IS NOT NULL</string>
+				<key>NumberOfArguments</key>
+				<integer>0</integer>
+				<key>Clause</key>
+				<string>IS NOT NULL</string>
+			</dict>
+		</array>
 	</dict>
 </plist>

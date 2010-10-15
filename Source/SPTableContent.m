@@ -135,6 +135,7 @@
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"number"] count]] forKey:@"number"];
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
+			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"spatial"] count]] forKey:@"spatial"];
 		}
 
 		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row");
@@ -2241,6 +2242,9 @@
 				|| [fieldTypeGrouping isEqualToString:@"float"]) {
 		compareType = @"number";
 		// [argumentField setFormatter:numberFormatter];
+
+	} else if ([fieldTypeGrouping isEqualToString:@"geometry"]) {
+		compareType = @"spatial";
 
 	} else  {
 		compareType = @"";
