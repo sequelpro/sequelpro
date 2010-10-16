@@ -112,8 +112,9 @@
 
 		}
 
-		if (![[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"] &&
-			![[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {
+		if ((![[[[self delegate] class] description] isEqualToString:@"SPCustomQuery"]) &&
+			(![[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) &&
+			(![[[[self delegate] class] description] isEqualToString:@"SPConnectionController"])) {
 			
 			// Ensure that editing is permitted
 			if (![[self delegate] tableView:self shouldEditTableColumn:[[self tableColumns] objectAtIndex:0] row:[self selectedRow]]) return;
