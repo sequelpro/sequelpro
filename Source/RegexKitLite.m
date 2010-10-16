@@ -165,8 +165,9 @@ typedef uint32_t RKLLookasideCache_t;
 #define RKL_EXPECTED(cond, expect)       __builtin_expect((long)(cond), (expect))
 #define RKL_PREFETCH(ptr)                __builtin_prefetch(ptr)
 #define RKL_PREFETCH_UNICHAR(ptr, off)   { const char *p = ((const char *)(ptr)) + ((off) * sizeof(UniChar)) + _RKL_PREFETCH_SIZE; RKL_PREFETCH(p); RKL_PREFETCH(p + _RKL_PREFETCH_SIZE); }
-#define RKL_HAVE_CLEANUP
-#define RKL_CLEANUP(func)                RKL_ATTRIBUTES(cleanup(func))
+//#define RKL_HAVE_CLEANUP
+//#define RKL_CLEANUP(func)                RKL_ATTRIBUTES(cleanup(func))
+#define RKL_CLEANUP(func)
 #else  // defined (__GNUC__) && (__GNUC__ >= 4) 
 #define RKL_ATTRIBUTES(attr, ...)
 #define RKL_EXPECTED(cond, expect)       (cond)

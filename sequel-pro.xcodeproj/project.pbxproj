@@ -3446,7 +3446,6 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "Sequel Pro";
 				WRAPPER_EXTENSION = qlgenerator;
@@ -3465,7 +3464,6 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "Sequel Pro";
 				WRAPPER_EXTENSION = qlgenerator;
@@ -3483,7 +3481,6 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
-				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "Sequel Pro";
 				WRAPPER_EXTENSION = qlgenerator;
@@ -3553,8 +3550,8 @@
 					"\"$(SRCROOT)/Frameworks/zlib\"",
 				);
 				OTHER_LDFLAGS = (
-					"-lstdc++",
 					"$(SRCROOT)/Frameworks/zlib/libz.a",
+					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
@@ -3577,7 +3574,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = PSMTabBar;
 			};
@@ -3598,7 +3594,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = PSMTabBar;
 				ZERO_LINK = NO;
@@ -3618,7 +3613,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = PSMTabBar;
 			};
@@ -3703,7 +3697,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lstdc++",
 					"-framework",
 					Foundation,
 					"-framework",
@@ -3726,7 +3719,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lstdc++",
 					"-framework",
 					Foundation,
 					"-framework",
@@ -3748,7 +3740,6 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lstdc++",
 					"-framework",
 					Foundation,
 					"-framework",
@@ -3781,7 +3772,6 @@
 					"\"$(SRCROOT)/Frameworks/zlib\"",
 				);
 				OTHER_LDFLAGS = (
-					"-lstdc++",
 					"$(SRCROOT)/Frameworks/zlib/libz.a",
 					"-lcrypto",
 				);
@@ -3810,7 +3800,6 @@
 					"\"$(SRCROOT)/Frameworks/zlib\"",
 				);
 				OTHER_LDFLAGS = (
-					"-lstdc++",
 					"$(SRCROOT)/Frameworks/zlib/libz.a",
 					"-lcrypto",
 				);
@@ -3866,10 +3855,6 @@
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
 				LIBRARY_SEARCH_PATHS = "";
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"-lstdc++",
-					"-lcrypto",
-				);
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -3916,7 +3901,6 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_WARNINGS = YES;
-				OTHER_LDFLAGS = "-lcrypto";
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 				VALID_ARCHS = "i386 ppc x86_64";
