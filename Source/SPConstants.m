@@ -49,9 +49,9 @@ NSString *SPFileExtensionSQL                     = @"sql";
 NSString *SPColorThemeFileExtension              = @"spTheme";
 
 // File names
-NSString *SPHTMLPrintTemplate                    = @"sequel-pro-print-template";
-NSString *SPHTMLTableInfoPrintTemplate           = @"sequel-pro-table-info-print-template";
-NSString *SPHTMLHelpTemplate                     = @"sequel-pro-mysql-help-template";
+NSString *SPHTMLPrintTemplate                    = @"SPPrintTemplate";
+NSString *SPHTMLTableInfoPrintTemplate           = @"SPTableInfoPrintTemplate";
+NSString *SPHTMLHelpTemplate                     = @"SPMySQLHelpTemplate";
 
 // Folder names
 NSString *SPThemesSupportFolder                  = @"Themes";

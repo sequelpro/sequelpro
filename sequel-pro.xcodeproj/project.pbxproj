@@ -109,11 +109,11 @@
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
-		17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */; };
+		17DD52B7115071D0007D8950 /* SPPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* SPPrintTemplate.html */; };
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
 		17DD52C6115074CB007D8950 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C4115074CB007D8950 /* Localizable.strings */; };
 		17E090E811498FC9007FC1B4 /* SPPrintController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E090E711498FC9007FC1B4 /* SPPrintController.m */; };
-		17E0937E114AE154007FC1B4 /* sequel-pro-table-info-print-template.html in Resources */ = {isa = PBXBuildFile; fileRef = 17E0937D114AE154007FC1B4 /* sequel-pro-table-info-print-template.html */; };
+		17E0937E114AE154007FC1B4 /* SPTableInfoPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* SPCustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* SPCustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* SPAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* SPAppController.m */; };
@@ -364,7 +364,7 @@
 		BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */; };
 		BC29C37F10501EFD00DD6C6E /* SPQueryController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC29C37E10501EFD00DD6C6E /* SPQueryController.m */; };
 		BC2C16D40FEBEDF10003993B /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
-		BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */; };
+		BC2C8E220FA8C2DB008468C7 /* SPMySQLHelpTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* SPMySQLHelpTemplate.html */; };
 		BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */; };
 		BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC32F241121D66260067305E /* SPFileManagerAdditions.m */; };
 		BC398A2D121D526200BE3EF4 /* SPCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = BC398A2C121D526200BE3EF4 /* SPCopyTable.m */; };
@@ -659,7 +659,7 @@
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
-		17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = "sequel-pro-print-template.html"; path = "Templates/sequel-pro-print-template.html"; sourceTree = "<group>"; };
+		17DD52B6115071D0007D8950 /* SPPrintTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = SPPrintTemplate.html; path = Templates/SPPrintTemplate.html; sourceTree = "<group>"; };
 		17DD52B811507217007D8950 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		17DD52C2115074B3007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		17DD52C5115074CB007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -686,7 +686,7 @@
 		17DD52E6115075B1007D8950 /* tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = tables.html; sourceTree = "<group>"; };
 		17E090E611498FC9007FC1B4 /* SPPrintController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPrintController.h; sourceTree = "<group>"; };
 		17E090E711498FC9007FC1B4 /* SPPrintController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrintController.m; sourceTree = "<group>"; };
-		17E0937D114AE154007FC1B4 /* sequel-pro-table-info-print-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = "sequel-pro-table-info-print-template.html"; path = "Templates/sequel-pro-table-info-print-template.html"; sourceTree = "<group>"; };
+		17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = SPTableInfoPrintTemplate.html; path = Templates/SPTableInfoPrintTemplate.html; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* Sequel-Pro.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Sequel-Pro.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* SPCustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCustomQuery.h; sourceTree = "<group>"; };
@@ -1031,7 +1031,7 @@
 		BC29C37E10501EFD00DD6C6E /* SPQueryController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryController.m; sourceTree = "<group>"; };
 		BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataAdditions.h; sourceTree = "<group>"; };
 		BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditions.m; sourceTree = "<group>"; };
-		BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = "sequel-pro-mysql-help-template.html"; path = "Templates/sequel-pro-mysql-help-template.html"; sourceTree = "<group>"; };
+		BC2C8E210FA8C2DB008468C7 /* SPMySQLHelpTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = SPMySQLHelpTemplate.html; path = Templates/SPMySQLHelpTemplate.html; sourceTree = "<group>"; };
 		BC30C010111C98BD002701C9 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/DataMigrationDialog.xib; sourceTree = "<group>"; };
 		BC32F240121D66260067305E /* SPFileManagerAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFileManagerAdditions.h; sourceTree = "<group>"; };
 		BC32F241121D66260067305E /* SPFileManagerAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFileManagerAdditions.m; sourceTree = "<group>"; };
@@ -1428,9 +1428,9 @@
 		1740F8350FC3069700CF3699 /* Templates */ = {
 			isa = PBXGroup;
 			children = (
-				17DD52B6115071D0007D8950 /* sequel-pro-print-template.html */,
-				BC2C8E210FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html */,
-				17E0937D114AE154007FC1B4 /* sequel-pro-table-info-print-template.html */,
+				17DD52B6115071D0007D8950 /* SPPrintTemplate.html */,
+				BC2C8E210FA8C2DB008468C7 /* SPMySQLHelpTemplate.html */,
+				17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */,
 			);
 			name = Templates;
 			sourceTree = "<group>";
@@ -2541,7 +2541,7 @@
 				B52460DB0F8EF93B00171639 /* Console.xib in Resources */,
 				B508B5DA0F9837A200E03A69 /* button_edit.tiff in Resources */,
 				B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */,
-				BC2C8E220FA8C2DB008468C7 /* sequel-pro-mysql-help-template.html in Resources */,
+				BC2C8E220FA8C2DB008468C7 /* SPMySQLHelpTemplate.html in Resources */,
 				384582C40FB95FF800DDACB6 /* func-small.png in Resources */,
 				384582C70FB9603600DDACB6 /* proc-small.png in Resources */,
 				B5D93ABB0FC5121300710017 /* toolbar-preferences-network.tiff in Resources */,
@@ -2588,9 +2588,9 @@
 				BC5AD7FF10FB262F008769E3 /* field-small-square.tiff in Resources */,
 				BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */,
 				BC962D661144EACA006170BD /* CompletionTokens.plist in Resources */,
-				17E0937E114AE154007FC1B4 /* sequel-pro-table-info-print-template.html in Resources */,
+				17E0937E114AE154007FC1B4 /* SPTableInfoPrintTemplate.html in Resources */,
 				B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */,
-				17DD52B7115071D0007D8950 /* sequel-pro-print-template.html in Resources */,
+				17DD52B7115071D0007D8950 /* SPPrintTemplate.html in Resources */,
 				17F90E2C1210B34900274C98 /* Credits.rtf in Resources */,
 				17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */,
 				17DD52C6115074CB007D8950 /* Localizable.strings in Resources */,
@@ -3037,7 +3037,8 @@
 				58475706120A1B630057631F /* German */,
 			);
 			name = SPQLPluginConnectionTemplate.html;
-			sourceTree = "<group>";
+			path = "/Users/stuart/Documents/Projects/SequelPro/sequel-pro/Resources";
+			sourceTree = "<absolute>";
 		};
 		584756FC120A1B290057631F /* SPQLPluginContentFiltersTemplate.html */ = {
 			isa = PBXVariantGroup;
