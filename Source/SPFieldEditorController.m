@@ -302,7 +302,7 @@
 		[editTextScrollView setHidden:YES];
 
 		// Hide QuickLook button and text/image/hex control for text data
-		[editSheetQuickLookButton setHidden:(!_isBlob && !_isBINARY && _isGeometry)];
+		[editSheetQuickLookButton setHidden:((!_isBlob && !_isBINARY) || _isGeometry)];
 		[editSheetSegmentControl setHidden:(!_isBlob && !_isBINARY && !_isGeometry)];
 
 		[editSheetSegmentControl setEnabled:YES forSegment:1];

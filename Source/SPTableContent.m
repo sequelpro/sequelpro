@@ -3647,6 +3647,8 @@
 
 		// Catch editing events in the row and if the row isn't currently being edited,
 		// start an edit.  This allows edits including enum changes to save correctly.
+		if ( isEditingRow && [tableContentView selectedRow] != currentlyEditingRow )
+			[self saveRowOnDeselect];
 		if ( !isEditingRow ) {
 			[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
 			isEditingRow = YES;
