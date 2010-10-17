@@ -23,18 +23,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#define USE_APPLICATION_UNIT_TEST 1
-
 #import <SenTestingKit/SenTestingKit.h>
 
+#define USE_APPLICATION_UNIT_TEST 1
 
-@interface SPDatabaseInfoTest : SenTestCase {
-
-}
+@interface SPDatabaseInfoTest : SenTestCase
 
 - (void)testDatabaseExists;
 - (void)testListDBs;
 - (void)testListDBsLike;
-
 
 @end

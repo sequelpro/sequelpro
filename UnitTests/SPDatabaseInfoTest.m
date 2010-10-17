@@ -24,28 +24,35 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <OCMock/OCMock.h>
+
 #import "SPDatabaseInfo.h"
 #import "SPDatabaseInfoTest.h"
 
-
 @implementation SPDatabaseInfoTest
 
-- (SPDatabaseInfo *)getDatabaseInfoFixture {
+- (SPDatabaseInfo *)getDatabaseInfoFixture 
+{
     SPDatabaseInfo *dbInfo = [[SPDatabaseInfo alloc] init];
+	
 	return dbInfo;
 }
 
-- (id) getMockConnection {
+- (id) getMockConnection 
+{
 	id mockConnection = [OCMockObject niceMockForClass:[MCPConnection class]];
+	
 	return mockConnection;
 }
 
-- (id) getMockMCPResult {
+- (id) getMockMCPResult 
+{
 	id mockResult = [OCMockObject niceMockForClass:[MCPResult class]];
+	
 	return mockResult;
 }
 
-- (void)testDatabaseExists {
+- (void)testDatabaseExists 
+{
 	SPDatabaseInfo *dbInfo = [self getDatabaseInfoFixture];
 	
 	NSArray *tables = [[NSArray alloc] initWithObjects: @"db_one", nil];
@@ -62,7 +69,8 @@
 	[mockConnection verify];
 }
 
-- (void)testListDBs {
+- (void)testListDBs 
+{
 	SPDatabaseInfo *dbInfo = [self getDatabaseInfoFixture];
 	id mockConnection = [self getMockConnection];
 	[[mockConnection expect] queryString:@"SHOW DATABASES"];
@@ -71,7 +79,8 @@
 	[mockConnection verify];
 }
 
-- (void)testListDBsLike {
+- (void)testListDBsLike 
+{
 	SPDatabaseInfo *dbInfo = [self getDatabaseInfoFixture];
 	id mockConnection = [self getMockConnection];
 	[[mockConnection expect] queryString:@"SHOW DATABASES LIKE `test_db`"];
@@ -79,6 +88,5 @@
 	[dbInfo listDBsLike:@"test_db"];
 	[mockConnection verify];
 }
-
 
 @end

@@ -23,12 +23,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#define USE_APPLICATION_UNIT_TEST 1
-
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface SPDatabaseRenameTest : SenTestCase {
-}
+#define USE_APPLICATION_UNIT_TEST 1
+
+@interface SPDatabaseRenameTest : SenTestCase
+
 - (void) testRenameDatabase;
 - (void) testCreateDatabase;
 

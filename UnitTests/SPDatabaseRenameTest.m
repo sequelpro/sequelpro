@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <OCMock/OCMock.h>
+
 #import "SPDatabaseRenameTest.h"
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
@@ -32,31 +33,38 @@
 #import "SPStringAdditions.h"
 #import "SPLogger.h"
 
-
 @implementation SPDatabaseRenameTest
 
-- (SPDatabaseRename *) getDatabaseRenameFixture {
+- (SPDatabaseRename *) getDatabaseRenameFixture 
+{
     SPDatabaseRename *dbRename = [[SPDatabaseRename alloc] init];
+	
 	return [dbRename autorelease];
 }
 
-- (SPTableCopy *) getTableCopyFixture {
+- (SPTableCopy *)getTableCopyFixture 
+{
     SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
+	
 	return [tableCopy autorelease];
 }
 
-- (id) getMockConnection {
+- (id)getMockConnection 
+{
 	id mockConnection = [OCMockObject niceMockForClass:[MCPConnection class]];
-	return mockConnection;
+	
+	eturn mockConnection;
 }
 
-- (id) getMockDBInfo {
+- (id)getMockDBInfo 
+{
 	id mockDBInfo = [OCMockObject niceMockForClass:[SPDatabaseInfo class]];
+	
 	return mockDBInfo;
 }
 
-- (void) testRenameDatabase {
-	
+- (void)testRenameDatabase 
+{
 	SPDatabaseRename *dbRename = [self getDatabaseRenameFixture];
 
 	id mockConnection = [self getMockConnection];
@@ -84,7 +92,8 @@
 	[target release];
 }
 
-- (void) testCreateDatabase {
+- (void)testCreateDatabase 
+{
 	SPDatabaseRename *dbRename = [self getDatabaseRenameFixture];
 }
 

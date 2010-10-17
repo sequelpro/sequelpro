@@ -1201,7 +1201,7 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
-		1198F5B01174EDA700670590 /* DatabaseActions */ = {
+		1198F5B01174EDA700670590 /* Database Actions */ = {
 			isa = PBXGroup;
 			children = (
 				1198F5B11174EDD500670590 /* SPDatabaseCopy.h */,
@@ -1215,18 +1215,10 @@
 				11B55BFC1189E3B2009EF465 /* SPDBActionCommons.h */,
 				11B55BFD1189E3B2009EF465 /* SPDBActionCommons.m */,
 			);
-			name = DatabaseActions;
+			name = "Database Actions";
 			sourceTree = "<group>";
 		};
-		1198F5B41174EDDE00670590 /* Other */ = {
-			isa = PBXGroup;
-			children = (
-				1198F5B51174EDE400670590 /* DatabaseActions */,
-			);
-			name = Other;
-			sourceTree = "<group>";
-		};
-		1198F5B51174EDE400670590 /* DatabaseActions */ = {
+		1198F5B41174EDDE00670590 /* Database Actions */ = {
 			isa = PBXGroup;
 			children = (
 				1198F5C21174EF3F00670590 /* SPDatabaseCopyTest.h */,
@@ -1238,7 +1230,7 @@
 				11C210DD1180E9B800758039 /* SPDatabaseRenameTest.h */,
 				11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */,
 			);
-			name = DatabaseActions;
+			name = "Database Actions";
 			sourceTree = "<group>";
 		};
 		17128B890FE6DFFA0035DD75 /* QuickLook */ = {
@@ -1252,6 +1244,8 @@
 		171312CF109D23CA00FB465F /* Cells */ = {
 			isa = PBXGroup;
 			children = (
+				BC878A6F121A836F00AE5066 /* SPColorWellCell.h */,
+				BC878A70121A836F00AE5066 /* SPColorWellCell.m */,
 				17E641680EF01F37001BC333 /* ImageAndTextCell.h */,
 				17E641690EF01F37001BC333 /* ImageAndTextCell.m */,
 				58D2E228101222670063EF1D /* SPTextAndLinkCell.h */,
@@ -1438,8 +1432,8 @@
 		1740F8360FC306AE00CF3699 /* Scripting */ = {
 			isa = PBXGroup;
 			children = (
-				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 				17E641F70EF02088001BC333 /* sequel-pro.scriptSuite */,
+				17E641F80EF02088001BC333 /* sequel-pro.scriptTerminology */,
 			);
 			path = Scripting;
 			sourceTree = "<group>";
@@ -1595,6 +1589,82 @@
 			name = Icons;
 			sourceTree = "<group>";
 		};
+		17DC8825126B222D00E9AAEC /* Third Party */ = {
+			isa = PBXGroup;
+			children = (
+				5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */,
+				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
+				58C34F5110B86CAE00D37E14 /* NSNotificationAdditions.h */,
+				58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */,
+				17DC8826126B22F200E9AAEC /* Views */,
+				58B909A111C3B8EC000826E5 /* Localization */,
+				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
+			);
+			name = "Third Party";
+			sourceTree = "<group>";
+		};
+		17DC8826126B22F200E9AAEC /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */,
+				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
+				BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */,
+				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		17DC8827126B32F300E9AAEC /* Table Views */ = {
+			isa = PBXGroup;
+			children = (
+				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
+				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
+				BC398A2B121D526200BE3EF4 /* SPCopyTable.h */,
+				BC398A2C121D526200BE3EF4 /* SPCopyTable.m */,
+			);
+			name = "Table Views";
+			sourceTree = "<group>";
+		};
+		17DC8828126B332F00E9AAEC /* Accessory Views */ = {
+			isa = PBXGroup;
+			children = (
+				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
+				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
+				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
+				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
+			);
+			name = "Accessory Views";
+			sourceTree = "<group>";
+		};
+		17DC8829126B337900E9AAEC /* Text Views */ = {
+			isa = PBXGroup;
+			children = (
+				17E641800EF01FA8001BC333 /* SPTextView.h */,
+				17E641810EF01FA8001BC333 /* SPTextView.m */,
+				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
+				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
+			);
+			name = "Text Views";
+			sourceTree = "<group>";
+		};
+		17DC885B126B36CF00E9AAEC /* MCPKit */ = {
+			isa = PBXGroup;
+			children = (
+				380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */,
+				380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */,
+			);
+			name = MCPKit;
+			sourceTree = "<group>";
+		};
+		17DC886A126B378A00E9AAEC /* Category Additions */ = {
+			isa = PBXGroup;
+			children = (
+				380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */,
+				380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */,
+			);
+			name = "Category Additions";
+			sourceTree = "<group>";
+		};
 		17DD52D0115075B1007D8950 /* Help */ = {
 			isa = PBXGroup;
 			children = (
@@ -1651,6 +1721,7 @@
 				17E6415D0EF01EF9001BC333 /* Model */,
 				17E641670EF01F19001BC333 /* Views */,
 				17E6416E0EF01F3B001BC333 /* Other */,
+				17DC8825126B222D00E9AAEC /* Third Party */,
 				58B906F811BD9B34000826E5 /* PSMTabBar */,
 				17B7B5551016002900F057DE /* MCPKit */,
 			);
@@ -1696,13 +1767,13 @@
 		17E6415D0EF01EF9001BC333 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				173E70A1107FF495008733C9 /* Core Data */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
 				BCA6271A1031B9D40047E5D5 /* SPTooltip.h */,
 				BCA6271B1031B9D40047E5D5 /* SPTooltip.m */,
+				173E70A1107FF495008733C9 /* Core Data */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -1710,14 +1781,19 @@
 		17E641670EF01F19001BC333 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				17E6417E0EF01FA8001BC333 /* SPImageView.h */,
+				17E6417F0EF01FA8001BC333 /* SPImageView.m */,
+				584094CC1107BD0500260CFD /* SPAlertSheets.h */,
+				584095181107CB6600260CFD /* SPAlertSheets.m */,
+				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
+				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
+				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
+				BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */,
 				171312CF109D23CA00FB465F /* Cells */,
+				17DC8829126B337900E9AAEC /* Text Views */,
+				17DC8827126B32F300E9AAEC /* Table Views */,
 				17DF51241163C68600E3F396 /* Outline Views */,
-				BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */,
-				BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */,
-				29A1B7E30FD1293A000B88E8 /* SPPrintAccessory.h */,
-				29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */,
-				BC8C8530100E0A8000D7A129 /* SPTableView.h */,
-				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
+				17DC8828126B332F00E9AAEC /* Accessory Views */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -1725,17 +1801,14 @@
 		17E6416E0EF01F3B001BC333 /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
-				1198F5B01174EDA700670590 /* DatabaseActions */,
+				1198F5B01174EDA700670590 /* Database Actions */,
 				17128B890FE6DFFA0035DD75 /* QuickLook */,
-				583CE39511722B70008F148E /* Compression */,
+				583CE39511722B70008F148E /* File Compression */,
 				173284E51088FEC20062E892 /* Data */,
 				17E6416F0EF01F4C001BC333 /* Keychain */,
 				58FEF15E0F23D60A00518E8E /* Parsing */,
-				17E641710EF01F5C001BC333 /* GUI */,
-				17E641720EF01F6B001BC333 /* SSHTunnel */,
+				17E641720EF01F6B001BC333 /* SSH Tunnel */,
 				B57747D60F7A8990003B34F9 /* Category Additions */,
-				58B909A111C3B8EC000826E5 /* Localization */,
 				584754CC120A05660057631F /* QuickLook Plugin */,
 				58DA884E103E1597000B98DF /* Debugging & Support */,
 			);
@@ -1751,41 +1824,14 @@
 			name = Keychain;
 			sourceTree = "<group>";
 		};
-		17E641710EF01F5C001BC333 /* GUI */ = {
-			isa = PBXGroup;
-			children = (
-				BC398A2B121D526200BE3EF4 /* SPCopyTable.h */,
-				BC398A2C121D526200BE3EF4 /* SPCopyTable.m */,
-				17E6417E0EF01FA8001BC333 /* SPImageView.h */,
-				17E6417F0EF01FA8001BC333 /* SPImageView.m */,
-				17E641800EF01FA8001BC333 /* SPTextView.h */,
-				17E641810EF01FA8001BC333 /* SPTextView.m */,
-				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
-				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
-				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
-				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
-				5841423D0F97E11000A34B47 /* NoodleLineNumberView.h */,
-				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
-				BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */,
-				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
-				584094CC1107BD0500260CFD /* SPAlertSheets.h */,
-				584095181107CB6600260CFD /* SPAlertSheets.m */,
-				BC878A6F121A836F00AE5066 /* SPColorWellCell.h */,
-				BC878A70121A836F00AE5066 /* SPColorWellCell.m */,
-				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
-				BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */,
-			);
-			name = GUI;
-			sourceTree = "<group>";
-		};
-		17E641720EF01F6B001BC333 /* SSHTunnel */ = {
+		17E641720EF01F6B001BC333 /* SSH Tunnel */ = {
 			isa = PBXGroup;
 			children = (
 				58CDB32E0FCE138D00F8ACA3 /* SPSSHTunnel.h */,
 				58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */,
 				58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */,
 			);
-			name = SSHTunnel;
+			name = "SSH Tunnel";
 			sourceTree = "<group>";
 		};
 		17E6418B0EF01FF7001BC333 /* Images */ = {
@@ -2002,24 +2048,22 @@
 		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
 			isa = PBXGroup;
 			children = (
-				1198F5B41174EDDE00670590 /* Other */,
-				380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */,
-				380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */,
-				380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */,
-				380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */,
+				17DC885B126B36CF00E9AAEC /* MCPKit */,
+				1198F5B41174EDDE00670590 /* Database Actions */,
+				17DC886A126B378A00E9AAEC /* Category Additions */,
 			);
 			name = "Unit Tests";
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
-		583CE39511722B70008F148E /* Compression */ = {
+		583CE39511722B70008F148E /* File Compression */ = {
 			isa = PBXGroup;
 			children = (
 				583CE39C11722B84008F148E /* zlib.1.2.4.h */,
 				5885CF48116A63B200A85ACB /* SPFileHandle.h */,
 				5885CF49116A63B200A85ACB /* SPFileHandle.m */,
 			);
-			name = Compression;
+			name = "File Compression";
 			sourceTree = "<group>";
 		};
 		584754CC120A05660057631F /* QuickLook Plugin */ = {
@@ -2057,7 +2101,6 @@
 		58B906F811BD9B34000826E5 /* PSMTabBar */ = {
 			isa = PBXGroup;
 			children = (
-				58B906F911BD9B34000826E5 /* Images */,
 				58B9071611BD9B34000826E5 /* NSBezierPath_AMShading.h */,
 				58B9071711BD9B34000826E5 /* NSBezierPath_AMShading.m */,
 				58B9071811BD9B34000826E5 /* NSString_AITruncation.h */,
@@ -2084,6 +2127,7 @@
 				58B9072D11BD9B34000826E5 /* PSMTabDragWindowController.m */,
 				58B9072E11BD9B34000826E5 /* PSMTabStyle.h */,
 				58B9072F11BD9B34000826E5 /* Styles */,
+				58B906F911BD9B34000826E5 /* Images */,
 			);
 			name = PSMTabBar;
 			path = Frameworks/PSMTabBar;
@@ -2155,8 +2199,8 @@
 		58B909A111C3B8EC000826E5 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
-				58B909A411C3B919000826E5 /* DMLocalizedNibBundle.m */,
 				589ED05A11E0ACD100C1DCEA /* DMLocalizedNib.m */,
+				58B909A411C3B919000826E5 /* DMLocalizedNibBundle.m */,
 				58B9095B11C3A3EC000826E5 /* xibLocalizationPostprocessor.m */,
 			);
 			name = Localization;
@@ -2191,10 +2235,6 @@
 			children = (
 				B52460D30F8EF92300171639 /* SPArrayAdditions.h */,
 				B52460D40F8EF92300171639 /* SPArrayAdditions.m */,
-				5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */,
-				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
-				58C34F5110B86CAE00D37E14 /* NSNotificationAdditions.h */,
-				58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */,
 				1789343A0F30C1DD0097539A /* SPStringAdditions.h */,
 				1789343B0F30C1DD0097539A /* SPStringAdditions.m */,
 				B52460D50F8EF92300171639 /* SPTextViewAdditions.h */,
