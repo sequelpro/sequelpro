@@ -2458,7 +2458,6 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -3077,8 +3076,7 @@
 				58475706120A1B630057631F /* German */,
 			);
 			name = SPQLPluginConnectionTemplate.html;
-			path = "/Users/stuart/Documents/Projects/SequelPro/sequel-pro/Resources";
-			sourceTree = "<absolute>";
+			sourceTree = "<group>";
 		};
 		584756FC120A1B290057631F /* SPQLPluginContentFiltersTemplate.html */ = {
 			isa = PBXVariantGroup;
