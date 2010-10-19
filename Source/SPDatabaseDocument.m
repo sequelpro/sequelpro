@@ -1071,6 +1071,14 @@
 }
 
 /**
+ * Refreshes the tables list by calling SPTablesList's updateTables.
+ */
+- (IBAction)refreshTables:(id)sender
+{
+	[tablesListInstance updateTables:self];
+}
+
+/**
  * Displays the database server variables sheet.
  */
 - (IBAction)showServerVariables:(id)sender
@@ -3589,19 +3597,22 @@
 			else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
 				return (enable && (tag == SPSQLExport));
 			}
-		} else {
-			for(NSNumber *type in [tablesListInstance selectedTableTypes])
-				if([type intValue] == SPTableTypeTable || [type intValue] == SPTableTypeView)
-					return enable;
-
+		} 
+		else {
+			for (NSNumber *type in [tablesListInstance selectedTableTypes]) 
+			{
+				if ([type intValue] == SPTableTypeTable || [type intValue] == SPTableTypeView) return enable;
+			}
+			
 			return (enable && (tag == SPSQLExport));
 		}
 	}
 
-	if ([menuItem action] == @selector(import:) ||
+	if ([menuItem action] == @selector(import:)         ||
 		[menuItem action] == @selector(removeDatabase:) ||
-		[menuItem action] == @selector(copyDatabase:) ||
-		[menuItem action] == @selector(renameDatabase:))
+		[menuItem action] == @selector(copyDatabase:)   ||
+		[menuItem action] == @selector(renameDatabase:) ||
+		[menuItem action] == @selector(refreshTables:))
 	{
 		return ([self database] != nil);
 	}
@@ -3628,12 +3639,11 @@
 	}
 
 	if ([menuItem action] == @selector(printDocument:)) {
-		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1)
-			// if Custom Query Tab is active the textView will handle printDocument by itself
+		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1) ||
+			// If Custom Query Tab is active the textView will handle printDocument by itself
 			// if it is first responder; otherwise allow to print the Query Result table even 
-			//if no db/table is selected
-			|| [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
-			);
+			// if no db/table is selected
+			[tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2);
 	}
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {

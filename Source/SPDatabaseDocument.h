@@ -215,6 +215,7 @@
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
+- (IBAction)refreshTables:(id)sender;
 - (IBAction)copyDatabase:(id)sender;
 - (IBAction)renameDatabase:(id)sender;
 - (IBAction)showMySQLHelp:(id)sender;
