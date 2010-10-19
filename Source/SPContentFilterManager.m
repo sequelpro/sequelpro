@@ -31,10 +31,10 @@
 #import "SPConstants.h"
 #import "SPConnectionController.h"
 
-#define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"displayed when multiple content filters are selected in ContentFilterManager")
-#define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"displayed if there is no content filter selected in ContentFilterManager")
+#define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
+#define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
 #define SP_NAME_REQUIRED_PLACEHOLDER_STRING      NSLocalizedString(@"[name required]", @"displayed when new content filter has empty Name field (ContentFilterManager)")
-#define SP_FILE_PARSER_ERROR_TITLE_STRING        NSLocalizedString(@"Error while reading data file", @"File with content filters could not be parsed - message title (ContentFilterManager)")
+#define SP_FILE_PARSER_ERROR_TITLE_STRING        NSLocalizedString(@"Error while reading data file", @"error while reading data file")
 
 @interface SPContentFilterManager (PrivateAPI)
 
@@ -841,7 +841,7 @@
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil
-									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"file with content filters could not be parsed - message text (ContentFilterManager)")];
+									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];

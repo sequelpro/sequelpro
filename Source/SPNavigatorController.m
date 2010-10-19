@@ -1198,7 +1198,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			case 0:
 			return NSLocalizedString(@"Type", @"type label (Navigator)");
 			case 1:
-			return NSLocalizedString(@"Default", @"default label (Navigator)");
+			return NSLocalizedString(@"Default", @"default label");
 			case 2:
 			return NSLocalizedString(@"Is Nullable", @"is nullable label (Navigator)");
 			case 3:
@@ -1212,7 +1212,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			case 7:
 			return NSLocalizedString(@"Privileges", @"privileges label (Navigator)");
 			case 8:
-			return NSLocalizedString(@"Comment", @"comment label (Navigator)");
+			return NSLocalizedString(@"Comment", @"comment label");
 		}
 
 	if(type == 2) // PROCEDURE

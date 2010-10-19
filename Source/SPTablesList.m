@@ -263,7 +263,7 @@
 
 	// Set the filter placeholder text
 	if ([tableDocumentInstance database]) {
-		[[[listFilterField cell] onMainThread] setPlaceholderString:NSLocalizedString(@"Filter", @"Filter placeholder")];
+		[[[listFilterField cell] onMainThread] setPlaceholderString:NSLocalizedString(@"Filter", @"filter label")];
 	}
 
 	if (previousSelectedTable) [previousSelectedTable release];

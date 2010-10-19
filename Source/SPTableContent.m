@@ -766,12 +766,12 @@
 		}
 		// Filter task came from filter table
 		else if(activeFilter == 1){
-			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter table window title"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
+			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
 		}
 	} else {
 		// Trigger a full reload if required
 		if (fullTableReloadRequired) [self reloadTable:self];
-		[filterTableWindow setTitle:NSLocalizedString(@"Filter", @"filter table window title")];
+		[filterTableWindow setTitle:NSLocalizedString(@"Filter", @"filter label")];
 	}
 }
 

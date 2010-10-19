@@ -143,7 +143,7 @@
 		NSLocalizedString(@"Text",@"text label for color table (Prefs > Editor)"),
 		NSLocalizedString(@"Background",@"background label for color table (Prefs > Editor)"),
 		NSLocalizedString(@"Caret",@"caret label for color table (Prefs > Editor)"),
-		NSLocalizedString(@"Comment",@"comment label for color table (Prefs > Editor)"),
+		NSLocalizedString(@"Comment",@"comment label"),
 		NSLocalizedString(@"Keyword",@"keyword label for color table (Prefs > Editor)"),
 		NSLocalizedString(@"Numeric",@"numeric label for color table (Prefs > Editor)"),
 		NSLocalizedString(@"Quote",@"quote label for color table (Prefs > Editor)"),
@@ -1620,7 +1620,7 @@
 	[themeSelectionMenu removeAllItems];
 	[themeSelectionMenu setAutoenablesItems:YES];
 	[themeSelectionMenu setShowsStateColumn:YES];
-	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"Name of 'Default' color theme (Prefs > Editor)") action:@selector(setDefaultColors:) keyEquivalent:@""];
+	[themeSelectionMenu addItemWithTitle:NSLocalizedString(@"Default", @"default label") action:@selector(setDefaultColors:) keyEquivalent:@""];
 	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	
 	NSArray *foundThemes = [self getAvailableThemes];
