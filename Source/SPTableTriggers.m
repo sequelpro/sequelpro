@@ -145,43 +145,50 @@
 - (IBAction)confirmAddTrigger:(id)sender
 {
 	[self closeTriggerSheet:self];
+	
+	NSString *createTriggerStatementTemplate = @"CREATE TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@";
 
 	// MySQL doesn't have ALTER TRIGGER, so we delete the old one and add a new one.
 	// In case of error, all the old trigger info is kept in buffer
-	if(isEdit && [editTriggerName length]>0)
+	if (isEdit && [editTriggerName length] > 0)
 	{
 		NSString *queryDelete = [NSString stringWithFormat:@"DROP TRIGGER %@.%@",
 								 [[tableDocumentInstance database] backtickQuotedString],
 								 [editTriggerName backtickQuotedString]];
+		
 		[connection queryString:queryDelete];
-		if([connection queryErrored])
-		{
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger",
-												@"error deleting trigger message"),
+		
+		if ([connection queryErrored]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [NSApp mainWindow], nil, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@",
-																		   @"error deleting trigger informative message"),
+							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"),
 							   [connection getLastErrorMessage]]);
+			
+			return;
 		}
 	}
 
 	NSString *triggerName       = [triggerNameTextField stringValue];
 	NSString *triggerActionTime = ([triggerActionTimePopUpButton indexOfSelectedItem]) ? @"AFTER" : @"BEFORE";
 	NSString *triggerEvent      = @"";
-	switch([triggerEventPopUpButton indexOfSelectedItem]) {
+	
+	switch ([triggerEventPopUpButton indexOfSelectedItem]) 
+	{
 		case 0:
-		triggerEvent = @"INSERT";
-		break;
+			triggerEvent = @"INSERT";
+			break;
 		case 1:
-		triggerEvent = @"UPDATE";
-		break;
-		case 2:triggerEvent = @"DELETE";
-		break;
+			triggerEvent = @"UPDATE";
+			break;
+		case 2:
+			triggerEvent = @"DELETE";
+			break;
 	}
+	
 	NSString *triggerStatement  = [triggerStatementTextView string];
 
-	NSString *query = [NSString stringWithFormat:@"CREATE TRIGGER %@ %@ %@ ON %@ FOR EACH ROW %@",
+	NSString *query = [NSString stringWithFormat:createTriggerStatementTemplate,
 					   [triggerName backtickQuotedString],
 					   triggerActionTime,
 					   triggerEvent,
@@ -192,16 +199,27 @@
 	[connection queryString:query];
 
 	if (([connection queryErrored])) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger",
-											@"error creating trigger message"),
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"),
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@",
-																	   @"error creating trigger informative message"),
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
 						   [connection getLastErrorMessage]]);
-		// In case of error, restore the original trigger statement
-		if(isEdit) {
+		
+		// In case of error, re-create the original trigger statement
+		if (isEdit) {
 			[triggerStatementTextView setString:editTriggerStatement];
+			
+			NSString *query = [NSString stringWithFormat:createTriggerStatementTemplate,
+							   [editTriggerName backtickQuotedString],
+							   editTriggerActionTime,
+							   editTriggerEvent,
+							   [editTriggerTableName backtickQuotedString],
+							   editTriggerStatement];
+		
+			// If this attempt to re-create the trigger failed, then we're screwed as we've just lost the user's 
+			// data, but they had a backup and everything's cool, right? Should we be displaying an error here
+			// or will it interfere with the one above?
+			[connection queryString:query];
 		}
 	}
 	else {
@@ -210,10 +228,9 @@
 	}
 
 	// After Edit, rename button to Add
-	if(isEdit)
-	{
+	if (isEdit) {
 		isEdit = NO;
-		[confirmAddTriggerButton setTitle: NSLocalizedString(@"Add", @"Add trigger button")];
+		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Add", @"Add trigger button label")];
 	}
 
 	[self _refreshTriggerDataForcingCacheRefresh:YES];
@@ -224,7 +241,6 @@
  */
 - (IBAction)addTrigger:(id)sender
 {
-
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
@@ -298,41 +314,42 @@
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Start Edit panel
-	if([triggerData count] > rowIndex && [triggerData objectAtIndex:rowIndex] != NSNotFound)
+	if (([triggerData count] > rowIndex) && ([triggerData objectAtIndex:rowIndex] != NSNotFound))
 	{
 		NSDictionary *trigger = [triggerData objectAtIndex:rowIndex];
 
-		// Temporary save original name and statement (we need them later)
-		editTriggerName = [trigger objectForKey:@"trigger"];
-		editTriggerStatement = [trigger objectForKey:@"statement"];
+		// Cache the original trigger's name and statement in the event that the editing process fails and
+		// we need to recreate it.
+		editTriggerName       = [trigger objectForKey:@"trigger"];
+		editTriggerStatement  = [trigger objectForKey:@"statement"];
+		editTriggerTableName  = [trigger objectForKey:@"table"];
+		editTriggerEvent      = [trigger objectForKey:@"event"];
+		editTriggerActionTime = [trigger objectForKey:@"timing"];
 
 		[triggerNameTextField setStringValue:editTriggerName];
 		[triggerStatementTextView setString:editTriggerStatement];
 
 		// Timin title is different then what we have saved in the database (case difference)
-		for(int i=0;i<[[triggerActionTimePopUpButton itemArray] count]; i++)
+		for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
 		{
-			if([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString]
-				isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]])
-			{
+			if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]]) {
 				[triggerActionTimePopUpButton selectItemAtIndex:i];
 				break;
 			}
 		}
 
 		// Event title is different then what we have saved in the database (case difference)
-		for(int i=0;i<[[triggerEventPopUpButton itemArray] count]; i++)
+		for (NSUInteger i = 0; i < [[triggerEventPopUpButton itemArray] count]; i++)
 		{
-			if([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString]
-				isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]])
-			{
+			if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]]) {
 				[triggerEventPopUpButton selectItemAtIndex:i];
 				break;
 			}
 		}
 
 		// Change button label from Add to Edit
-		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Edit", @"Edit trigger button")];
+		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Save", @"Save trigger button label")];
+		
 		isEdit = YES;
 
 		[NSApp beginSheet:addTriggerPanel
