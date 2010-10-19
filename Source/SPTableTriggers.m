@@ -32,6 +32,16 @@
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
 
+// Constants
+static const NSString *SPTriggerName       = @"TriggerName";
+static const NSString *SPTriggerTableName  = @"TriggerTableName";
+static const NSString *SPTriggerEvent      = @"TriggerEvent";
+static const NSString *SPTriggerActionTime = @"TriggerActionTime";
+static const NSString *SPTriggerStatement  = @"TriggerStatement";
+static const NSString *SPTriggerDefiner    = @"TriggerDefiner";
+static const NSString *SPTriggerCreated    = @"TriggerCreated";
+static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
+
 @interface SPTableTriggers (PrivateAPI)
 
 - (void)_editTriggerAtIndex:(NSInteger)index;
@@ -48,7 +58,7 @@
 #pragma mark Initialization
 
 /**
- * init
+ * Init
  */
 - (id)init
 {
@@ -493,13 +503,13 @@
 	{
 		NSMutableArray *temp = [[NSMutableArray alloc] init];
 
-		[temp addObject:[trigger objectForKey:@"trigger"]];
-		[temp addObject:[trigger objectForKey:@"event"]];
-		[temp addObject:[trigger objectForKey:@"timing"]];
-		[temp addObject:[trigger objectForKey:@"statement"]];
-		[temp addObject:[trigger objectForKey:@"definer"]];
-		[temp addObject:([trigger objectForKey:@"created"]) ? [trigger objectForKey:@"created"] : @""];
-		[temp addObject:[trigger objectForKey:@"sql_mode"]];
+		[temp addObject:[trigger objectForKey:SPTriggerName]];
+		[temp addObject:[trigger objectForKey:SPTriggerEvent]];
+		[temp addObject:[trigger objectForKey:SPTriggerActionTime]];
+		[temp addObject:[trigger objectForKey:SPTriggerStatement]];
+		[temp addObject:[trigger objectForKey:SPTriggerDefiner]];
+		[temp addObject:([trigger objectForKey:SPTriggerCreated]) ? [trigger objectForKey:SPTriggerCreated] : @""];
+		[temp addObject:[trigger objectForKey:SPTriggerSQLMode]];
 
 		[data addObject:temp];
 
@@ -534,11 +544,11 @@
 	
 	// Cache the original trigger's name and statement in the event that the editing process fails and
 	// we need to recreate it.
-	editTriggerName       = [trigger objectForKey:@"trigger"];
-	editTriggerStatement  = [trigger objectForKey:@"statement"];
-	editTriggerTableName  = [trigger objectForKey:@"table"];
-	editTriggerEvent      = [trigger objectForKey:@"event"];
-	editTriggerActionTime = [trigger objectForKey:@"timing"];
+	editTriggerName       = [trigger objectForKey:SPTriggerName];
+	editTriggerStatement  = [trigger objectForKey:SPTriggerStatement];
+	editTriggerTableName  = [trigger objectForKey:SPTriggerTableName];
+	editTriggerEvent      = [trigger objectForKey:SPTriggerEvent];
+	editTriggerActionTime = [trigger objectForKey:SPTriggerActionTime];
 	
 	[triggerNameTextField setStringValue:editTriggerName];
 	[triggerStatementTextView setString:editTriggerStatement];
@@ -584,6 +594,8 @@
 
 /**
  * Refresh the displayed trigger, optionally forcing a refresh of the underlying cache.
+ *
+ * @param classAllCaches Indicates whether all the caches should be refreshed
  */
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches
 {
@@ -601,14 +613,14 @@
 		for (NSDictionary *trigger in triggers)
 		{
 			[triggerData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[trigger objectForKey:@"Table"], @"table",
-									[trigger objectForKey:@"Trigger"], @"trigger",
-									[trigger objectForKey:@"Event"], @"event",
-									[trigger objectForKey:@"Timing"], @"timing",
-									[trigger objectForKey:@"Statement"], @"statement",
-									[trigger objectForKey:@"Definer"], @"definer",
-									[trigger objectForKey:@"Created"], @"created",
-									[trigger objectForKey:@"sql_mode"], @"sql_mode",
+									[trigger objectForKey:@"Table"],     SPTriggerTableName,
+									[trigger objectForKey:@"Trigger"],   SPTriggerName,
+									[trigger objectForKey:@"Event"],     SPTriggerEvent,
+									[trigger objectForKey:@"Timing"],    SPTriggerActionTime,
+									[trigger objectForKey:@"Statement"], SPTriggerStatement,
+									[trigger objectForKey:@"Definer"],   SPTriggerDefiner,
+									[trigger objectForKey:@"Created"],   SPTriggerCreated,
+									[trigger objectForKey:@"sql_mode"],  SPTriggerSQLMode,
 									nil]];
 			
 		}

@@ -23,8 +23,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="6701"/>
 			<integer value="6735"/>
-			<integer value="25"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5763,7 +5763,7 @@
 																			<object class="NSMutableArray" key="NSTableColumns">
 																				<bool key="EncodedWithXMLCoder">YES</bool>
 																				<object class="NSTableColumn" id="900454738">
-																					<string key="NSIdentifier">table</string>
+																					<string key="NSIdentifier">TriggerTableName</string>
 																					<double key="NSWidth">116</double>
 																					<double key="NSMinWidth">8</double>
 																					<double key="NSMaxWidth">1000</double>
@@ -5793,7 +5793,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="849108098">
-																					<string key="NSIdentifier">trigger</string>
+																					<string key="NSIdentifier">TriggerName</string>
 																					<double key="NSWidth">100</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028230607370965e+38</double>
@@ -5820,7 +5820,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="684549484">
-																					<string key="NSIdentifier">event</string>
+																					<string key="NSIdentifier">TriggerEvent</string>
 																					<double key="NSWidth">85</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028230607370965e+38</double>
@@ -5847,7 +5847,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="676095135">
-																					<string key="NSIdentifier">timing</string>
+																					<string key="NSIdentifier">TriggerActionTime</string>
 																					<double key="NSWidth">121</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028230607370965e+38</double>
@@ -5874,7 +5874,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="805441036">
-																					<string key="NSIdentifier">statement</string>
+																					<string key="NSIdentifier">TriggerStatement</string>
 																					<double key="NSWidth">68</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028230607370965e+38</double>
@@ -5901,7 +5901,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="266935210">
-																					<string key="NSIdentifier">definer</string>
+																					<string key="NSIdentifier">TriggerDefiner</string>
 																					<double key="NSWidth">71</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028230607370965e+38</double>
@@ -5928,7 +5928,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="619233826">
-																					<string key="NSIdentifier">created</string>
+																					<string key="NSIdentifier">TriggerCreated</string>
 																					<double key="NSWidth">49</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028234663852886e+38</double>
@@ -5955,7 +5955,7 @@
 																					<reference key="NSTableView" ref="496402806"/>
 																				</object>
 																				<object class="NSTableColumn" id="496712">
-																					<string key="NSIdentifier">sql_mode</string>
+																					<string key="NSIdentifier">TriggerSQLMode</string>
 																					<double key="NSWidth">60</double>
 																					<double key="NSMinWidth">10</double>
 																					<double key="NSMaxWidth">3.4028234663852886e+38</double>
