@@ -25,13 +25,6 @@
 
 @class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, BWAnchoredButtonBar;
 
-// Constants
-extern NSString *SPNewIndexIndexName;
-extern NSString *SPNewIndexIndexType;
-extern NSString *SPNewIndexIndexedColumns;
-extern NSString *SPNewIndexStorageType;
-extern NSString *SPNewIndexKeyBlockSize;
-
 @interface SPIndexesController : NSWindowController 
 {
 	// Controllers

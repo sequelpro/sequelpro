@@ -28,11 +28,11 @@
 #import "SPServerSupport.h"
 
 // Constants
-NSString *SPNewIndexIndexName      = @"IndexName";
-NSString *SPNewIndexIndexType      = @"IndexType";
-NSString *SPNewIndexIndexedColumns = @"IndexedColumns";
-NSString *SPNewIndexStorageType    = @"IndexStorageType";
-NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
+static const NSString *SPNewIndexIndexName      = @"IndexName";
+static const NSString *SPNewIndexIndexType      = @"IndexType";
+static const NSString *SPNewIndexIndexedColumns = @"IndexedColumns";
+static const NSString *SPNewIndexStorageType    = @"IndexStorageType";
+static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 @interface SPIndexesController (PrivateAPI)
 

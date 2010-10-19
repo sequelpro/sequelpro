@@ -23,6 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+/**
+ * This header should be used to define constants that are used globally (i.e. among multiple classes/files).
+ * Constants that need only be defined for a particular class should be done within the implementation file
+ * of said class. Try to avoid the use of macros to define constants as much as possible as they do not incur
+ * type checking when used and cannot be tested for equality.
+ */
+
 // View modes
 typedef enum {
 	SPStructureViewMode	  = 1,
