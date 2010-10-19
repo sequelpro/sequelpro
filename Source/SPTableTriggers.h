@@ -23,7 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
 @interface SPTableTriggers : NSObject 
@@ -68,6 +67,7 @@
 
 // IB action methods
 - (IBAction)addTrigger:(id)sender;
+- (IBAction)editTrigger:(id)sender;
 - (IBAction)removeTrigger:(id)sender;
 - (IBAction)closeTriggerSheet:(id)sender;
 - (IBAction)confirmAddTrigger:(id)sender;

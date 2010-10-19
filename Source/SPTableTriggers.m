@@ -34,6 +34,7 @@
 
 @interface SPTableTriggers (PrivateAPI)
 
+- (void)_editTriggerAtIndex:(NSInteger)index;
 - (void)_toggleConfirmAddTriggerButtonEnabled;
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
 
@@ -42,6 +43,9 @@
 @implementation SPTableTriggers
 
 @synthesize connection;
+
+#pragma mark -
+#pragma mark Initialization
 
 /**
  * init
@@ -275,6 +279,14 @@
 }
 
 /**
+ * Edits the selected trigger.
+ */
+- (IBAction)editTrigger:(id)sender
+{
+	[self _editTriggerAtIndex:[triggersTableView selectedRow]];
+}
+
+/**
  * Trigger a refresh of the displayed triggers via the interface.
  */
 - (IBAction)refreshTriggers:(id)sender
@@ -309,54 +321,13 @@
 /**
  * Double-click action on table cells - for the time being, return NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Start Edit panel
-	if (([triggerData count] > rowIndex) && ([triggerData objectAtIndex:rowIndex] != NSNotFound))
-	{
-		NSDictionary *trigger = [triggerData objectAtIndex:rowIndex];
-
-		// Cache the original trigger's name and statement in the event that the editing process fails and
-		// we need to recreate it.
-		editTriggerName       = [trigger objectForKey:@"trigger"];
-		editTriggerStatement  = [trigger objectForKey:@"statement"];
-		editTriggerTableName  = [trigger objectForKey:@"table"];
-		editTriggerEvent      = [trigger objectForKey:@"event"];
-		editTriggerActionTime = [trigger objectForKey:@"timing"];
-
-		[triggerNameTextField setStringValue:editTriggerName];
-		[triggerStatementTextView setString:editTriggerStatement];
-
-		// Timin title is different then what we have saved in the database (case difference)
-		for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
-		{
-			if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]]) {
-				[triggerActionTimePopUpButton selectItemAtIndex:i];
-				break;
-			}
-		}
-
-		// Event title is different then what we have saved in the database (case difference)
-		for (NSUInteger i = 0; i < [[triggerEventPopUpButton itemArray] count]; i++)
-		{
-			if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]]) {
-				[triggerEventPopUpButton selectItemAtIndex:i];
-				break;
-			}
-		}
-
-		// Change button label from Add to Edit
-		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Save", @"Save trigger button label")];
-		
-		isEdit = YES;
-
-		[NSApp beginSheet:addTriggerPanel
-		   modalForWindow:[tableDocumentInstance parentWindow]
-			modalDelegate:self
-		   didEndSelector:nil
-			  contextInfo:nil];
+	if (([triggerData count] > rowIndex) && ([triggerData objectAtIndex:rowIndex] != NSNotFound)) {
+		[self _editTriggerAtIndex:rowIndex];
 	}
 
 	return NO;
@@ -365,7 +336,7 @@
 /**
  * Disable row selection while the document is working.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
 	return (![tableDocumentInstance isWorking]);
 }
@@ -472,22 +443,19 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	SEL action = [menuItem action];
+	
 	// Remove row
-	if ([menuItem action] == @selector(removeTrigger:)) {
+	if (action == @selector(removeTrigger:)) {
 		[menuItem setTitle:([triggersTableView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Delete Triggers", @"delete triggers menu item") : NSLocalizedString(@"Delete Trigger", @"delete trigger menu item")];
 
 		return ([triggersTableView numberOfSelectedRows] > 0);
 	}
+	else if (action == @selector(editTrigger:)) {
+		return ([triggersTableView numberOfSelectedRows] == 1);
+	}
 
 	return YES;
-}
-
-/**
- * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's name.
- */
-- (void)controlTextDidChange:(NSNotification *)notification
-{
-	[self _toggleConfirmAddTriggerButtonEnabled];
 }
 
 /**
@@ -542,23 +510,68 @@
 }
 
 #pragma mark -
+#pragma mark Textfield delegate methods
 
 /**
- * Dealloc.
+ * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's name.
  */
-- (void)dealloc
+- (void)controlTextDidChange:(NSNotification *)notification
 {
-	[triggerData release], triggerData = nil;
-
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	[super dealloc];
+	[self _toggleConfirmAddTriggerButtonEnabled];
 }
 
-@end
+#pragma mark -
+#pragma mark Private API
 
-@implementation SPTableTriggers (PrivateAPI)
+/**
+ * Presents the edit sheet for the trigger at the supplied index.
+ *
+ * @param index The index of the trigger to edit
+ */
+- (void)_editTriggerAtIndex:(NSInteger)index
+{
+	NSDictionary *trigger = [triggerData objectAtIndex:index];
+	
+	// Cache the original trigger's name and statement in the event that the editing process fails and
+	// we need to recreate it.
+	editTriggerName       = [trigger objectForKey:@"trigger"];
+	editTriggerStatement  = [trigger objectForKey:@"statement"];
+	editTriggerTableName  = [trigger objectForKey:@"table"];
+	editTriggerEvent      = [trigger objectForKey:@"event"];
+	editTriggerActionTime = [trigger objectForKey:@"timing"];
+	
+	[triggerNameTextField setStringValue:editTriggerName];
+	[triggerStatementTextView setString:editTriggerStatement];
+	
+	// Timin title is different then what we have saved in the database (case difference)
+	for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
+	{
+		if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]]) {
+			[triggerActionTimePopUpButton selectItemAtIndex:i];
+			break;
+		}
+	}
+	
+	// Event title is different then what we have saved in the database (case difference)
+	for (NSUInteger i = 0; i < [[triggerEventPopUpButton itemArray] count]; i++)
+	{
+		if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]]) {
+			[triggerEventPopUpButton selectItemAtIndex:i];
+			break;
+		}
+	}
+	
+	// Change button label from Add to Edit
+	[confirmAddTriggerButton setTitle:NSLocalizedString(@"Save", @"Save trigger button label")];
+	
+	isEdit = YES;
+	
+	[NSApp beginSheet:addTriggerPanel
+	   modalForWindow:[tableDocumentInstance parentWindow]
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+}
 
 /**
  * Enables or disables the confirm add trigger button based on the values of the trigger's name
@@ -575,33 +588,48 @@
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches
 {
 	[triggerData removeAllObjects];
-
+	
 	if ([tablesListInstance tableType] == SPTableTypeTable) {
-
+		
 		if (clearAllCaches) {
 			[tableDataInstance resetAllData];
 			[tableDataInstance updateTriggersForCurrentTable];
 		}
-
+		
 		NSArray *triggers = ([[tableDocumentInstance serverSupport] supportsTriggers]) ? [tableDataInstance triggers] : nil;
-
+		
 		for (NSDictionary *trigger in triggers)
 		{
 			[triggerData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									 [trigger objectForKey:@"Table"], @"table",
-									 [trigger objectForKey:@"Trigger"], @"trigger",
-									 [trigger objectForKey:@"Event"], @"event",
-									 [trigger objectForKey:@"Timing"], @"timing",
-									 [trigger objectForKey:@"Statement"], @"statement",
- 									 [trigger objectForKey:@"Definer"], @"definer",
-									 [trigger objectForKey:@"Created"], @"created",
-									 [trigger objectForKey:@"sql_mode"], @"sql_mode",
-									 nil]];
-
+									[trigger objectForKey:@"Table"], @"table",
+									[trigger objectForKey:@"Trigger"], @"trigger",
+									[trigger objectForKey:@"Event"], @"event",
+									[trigger objectForKey:@"Timing"], @"timing",
+									[trigger objectForKey:@"Statement"], @"statement",
+									[trigger objectForKey:@"Definer"], @"definer",
+									[trigger objectForKey:@"Created"], @"created",
+									[trigger objectForKey:@"sql_mode"], @"sql_mode",
+									nil]];
+			
 		}
 	}
-
+	
 	[triggersTableView reloadData];
+}
+
+#pragma mark -
+
+/**
+ * Dealloc.
+ */
+- (void)dealloc
+{
+	[triggerData release], triggerData = nil;
+
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[super dealloc];
 }
 
 @end
