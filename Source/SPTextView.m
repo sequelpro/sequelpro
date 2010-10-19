@@ -29,7 +29,6 @@
 #import "SPArrayAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPNarrowDownCompletion.h"
-#import "SPConstants.h"
 #import "SPQueryController.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"

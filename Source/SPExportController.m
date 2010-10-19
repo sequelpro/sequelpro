@@ -32,7 +32,6 @@
 #import "SPTableContent.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
-#import "SPConstants.h"
 #import "SPGrowlController.h"
 #import "SPExportFile.h"
 #import "SPAlertSheets.h"

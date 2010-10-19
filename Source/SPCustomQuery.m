@@ -39,7 +39,6 @@
 #import "SPTooltip.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPQueryController.h"
-#import "SPConstants.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"

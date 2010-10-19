@@ -25,7 +25,6 @@
 
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
-#import "SPConstants.h"
 
 @implementation SPDataCellFormatter
 

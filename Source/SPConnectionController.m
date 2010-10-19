@@ -28,7 +28,6 @@
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 
 @interface SPConnectionController (PrivateAPI)

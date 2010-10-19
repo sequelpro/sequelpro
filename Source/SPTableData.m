@@ -29,7 +29,6 @@
 #import "SPTablesList.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPServerSupport.h"

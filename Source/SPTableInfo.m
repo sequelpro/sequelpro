@@ -27,7 +27,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
-#import "SPConstants.h"
 #import "SPStringAdditions.h"
 
 @interface SPTableInfo (PrivateAPI)

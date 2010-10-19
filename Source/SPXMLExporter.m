@@ -29,7 +29,6 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPFileHandle.h"
-#import "SPConstants.h"
 #import "SPExportUtilities.h"
 
 @implementation SPXMLExporter

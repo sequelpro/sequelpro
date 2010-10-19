@@ -23,11 +23,11 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindowController.h"
-#import "SPConstants.h"
 #import "SPDatabaseDocument.h"
+#import "PSMTabDragAssistant.h"
+
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
-#import "PSMTabDragAssistant.h"
 
 @interface SPWindowController (PrivateAPI)
 

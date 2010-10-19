@@ -27,7 +27,6 @@
 #import "ImageAndTextCell.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
-#import "SPConstants.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"

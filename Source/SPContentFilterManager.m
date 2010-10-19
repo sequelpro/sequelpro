@@ -28,7 +28,6 @@
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
 #import "SPTableContent.h"
-#import "SPConstants.h"
 #import "SPConnectionController.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")

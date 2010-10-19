@@ -27,7 +27,6 @@
 #import "SPTableContent.h"
 #import "SPTableStructure.h"
 #import "SPCustomQuery.h"
-#import "SPConstants.h"
 #import "SPTableRelations.h"
 #import "SPPrintAccessory.h"
 #import "MGTemplateEngine.h"

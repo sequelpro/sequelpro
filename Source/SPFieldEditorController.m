@@ -32,7 +32,6 @@
 #import "RegexKitLite.h"
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
-#import "SPConstants.h"
 #import "SPGeometryDataView.h"
 
 @implementation SPFieldEditorController

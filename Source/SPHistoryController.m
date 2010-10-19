@@ -25,7 +25,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPTableContent.h"
 #import "SPTablesList.h"
-#import "SPConstants.h"
 #import "SPHistoryController.h"
 #import "SPStringAdditions.h"
 #import "SPMainThreadTrampoline.h"

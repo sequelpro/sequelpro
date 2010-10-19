@@ -46,7 +46,6 @@
 #import "RegexKitLite.h"
 #import "SPContentFilterManager.h"
 #import "SPNotLoaded.h"
-#import "SPConstants.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"

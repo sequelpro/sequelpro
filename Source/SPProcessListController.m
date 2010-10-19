@@ -26,7 +26,6 @@
 #import "SPProcessListController.h"
 #import "SPArrayAdditions.h"
 #import "SPDatabaseDocument.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 
 #define TABLEVIEW_ID_COLUMN_IDENTIFIER @"Id"

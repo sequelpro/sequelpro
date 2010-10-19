@@ -26,8 +26,8 @@
 
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
-#import "SPConstants.h"
 #import "RegexKitLite.h"
+#import "SPConstants.h"
 
 int main(int argc, const char *argv[])
 {

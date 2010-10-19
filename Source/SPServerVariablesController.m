@@ -26,7 +26,6 @@
 #import "SPServerVariablesController.h"
 #import "SPArrayAdditions.h"
 #import "SPDatabaseDocument.h"
-#import "SPConstants.h"
 
 @interface SPServerVariablesController (PrivateAPI)
 

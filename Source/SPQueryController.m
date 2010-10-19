@@ -26,7 +26,6 @@
 #import "SPQueryController.h"
 #import "SPConsoleMessage.h"
 #import "SPArrayAdditions.h"
-#import "SPConstants.h"
 #import "SPCustomQuery.h"
 
 #import "pthread.h"

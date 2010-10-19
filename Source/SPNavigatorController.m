@@ -25,7 +25,6 @@
 #import "SPNavigatorController.h"
 #import "RegexKitLite.h"
 #import "SPNavigatorOutlineView.h"
-#import "SPConstants.h"
 #import "ImageAndTextCell.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"

@@ -26,7 +26,6 @@
 #import "SPSSHTunnel.h"
 #import "RegexKitLite.h"
 #import "SPKeychain.h"
-#import "SPConstants.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPAlertSheets.h"
 

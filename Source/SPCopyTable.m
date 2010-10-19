@@ -32,7 +32,6 @@
 #import "SPTableRelations.h"
 #import "SPCustomQuery.h"
 #import "SPNotLoaded.h"
-#import "SPConstants.h"
 #import "SPDataStorage.h"
 #import "SPTextAndLinkCell.h"
 

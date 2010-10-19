@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDotExporter.h"
-#import "SPConstants.h"
 #import "SPFileHandle.h"
 #import "SPArrayAdditions.h"
 #import "SPTableData.h"

@@ -31,7 +31,6 @@
 #import "SPSQLParser.h"
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPIndexesController.h"

@@ -24,15 +24,14 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 /**
+ * @class SPFileHandle SPFileHandle.h
+ *
+ * @author Rowan Beentje
+ *
  * Provides a class which aims to duplicate some of the most-used functionality
  * of NSFileHandle, while also transparently supporting gzip and bzip2 compressed content
  * on reading; gzip and bzip2 compression is also supported on writing.
  */
-
-#import <Cocoa/Cocoa.h>
-
-#import "SPConstants.h"
-
 @interface SPFileHandle : NSObject 
 {
 	void *wrappedFile;

@@ -33,12 +33,9 @@
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "ImageAndTextCell.h"
-#import "SPConstants.h"
 #import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
-#import "SPConstants.h"
-
 
 @interface NSTableView (MovingSelectedRow)
 

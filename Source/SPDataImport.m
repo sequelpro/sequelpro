@@ -36,13 +36,13 @@
 #import "SPStringAdditions.h"
 #import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "SPFieldMapperController.h"
 #import "SPMainThreadTrampoline.h"
 #import "SPNotLoaded.h"
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
+
 #import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")

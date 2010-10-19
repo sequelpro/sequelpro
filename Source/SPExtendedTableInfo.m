@@ -28,7 +28,6 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "SPStringAdditions.h"
-#import "SPConstants.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPAlertSheets.h"

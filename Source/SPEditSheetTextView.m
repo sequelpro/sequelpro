@@ -25,7 +25,6 @@
 #import "SPEditSheetTextView.h"
 #import "SPTextViewAdditions.h"
 #import "SPFieldEditorController.h"
-#import "SPConstants.h"
 
 @implementation SPEditSheetTextView
 

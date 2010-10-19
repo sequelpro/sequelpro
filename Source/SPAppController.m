@@ -30,7 +30,6 @@
 #import "SPAboutController.h"
 #import "SPDataImport.h"
 #import "SPEncodingPopupAccessory.h"
-#import "SPConstants.h"
 #import "SPWindowController.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>

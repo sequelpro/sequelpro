@@ -48,8 +48,6 @@
  * explicity called.
  */
 
-#import "SPConstants.h"
-
 @class MCPConnection, SPExportFile;
 
 @interface SPExporter : NSOperation

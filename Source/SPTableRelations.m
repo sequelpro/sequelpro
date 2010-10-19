@@ -28,7 +28,6 @@
 #import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPStringAdditions.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 
 @interface SPTableRelations (PrivateAPI)

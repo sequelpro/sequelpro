@@ -37,7 +37,6 @@
 #import "SPDatabaseData.h"
 #import "NSMutableArray-MultipleSort.h"
 #import "NSNotificationAdditions.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 #import "SPNavigatorController.h"
 #import "SPMainThreadTrampoline.h"

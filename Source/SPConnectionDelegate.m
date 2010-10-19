@@ -27,7 +27,6 @@
 #import "SPConnectionController.h"
 #import "SPQueryController.h"
 #import "SPKeychain.h"
-#import "SPConstants.h"
 #import "SPAlertSheets.h"
 
 @implementation SPDatabaseDocument (SPConnectionDelegate)

@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTextAndLinkCell.h"
-#import "SPConstants.h"
 
 @implementation SPTextAndLinkCell
 

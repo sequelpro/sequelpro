@@ -24,7 +24,6 @@
 
 #import "SPStringAdditions.h"
 #import "SPTextViewAdditions.h"
-#import "SPConstants.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 

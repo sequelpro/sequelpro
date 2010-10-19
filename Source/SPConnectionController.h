@@ -29,7 +29,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
-#import "SPConstants.h"
 
 @class BWAnchoredButtonBar;
 

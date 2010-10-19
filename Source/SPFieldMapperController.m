@@ -28,7 +28,6 @@
 #import "SPTablesList.h"
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
-#import "SPConstants.h"
 #import "SPNotLoaded.h"
 #import "SPTextView.h"
 
