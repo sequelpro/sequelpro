@@ -175,11 +175,11 @@
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# Sequel Pro SQL dump\n"];
-	[metaString appendFormat:@"# Version %@\n#\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
+	[metaString appendFormat:@"# %@ %@\n#\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[metaString appendFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
-	[metaString appendFormat:@"# Host: %@ (MySQL %@)\n", [self sqlDatabaseHost], [self sqlDatabaseVersion]];
-	[metaString appendFormat:@"# Database: %@\n", [self sqlDatabaseName]];
-	[metaString appendFormat:@"# Generation Time: %@\n", [NSDate date]];
+	[metaString appendFormat:@"# %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [self sqlDatabaseHost], [self sqlDatabaseVersion]];
+	[metaString appendFormat:@"# %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [self sqlDatabaseName]];
+	[metaString appendFormat:@"# %@: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
 	[metaString appendString:@"# ************************************************************\n\n\n"];
 	
 	// Add commands to store the client encodings used when importing and set to UTF8 to preserve data
@@ -221,7 +221,7 @@
 		lastProgressValue = 0;
 		
 		// Add the name of table
-		[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Dump of table %@\n# ------------------------------------------------------------\n\n", tableName] dataUsingEncoding:[self exportOutputEncoding]]];
+		[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# %@ %@\n# ------------------------------------------------------------\n\n", NSLocalizedString(@"Dump of table", @"sql export dump of table label"), tableName] dataUsingEncoding:[self exportOutputEncoding]]];
 		
 		// Determine whether this table is a table or a view via the CREATE TABLE command, and keep the create table syntax
 		queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];

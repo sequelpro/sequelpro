@@ -54,11 +54,11 @@
 	
 	// Write the file header and the first table name
 	[file writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
-					  NSLocalizedString(@"Host", @"csv export host heading"),
+					  NSLocalizedString(@"Host", @"export header host label"),
 					  [tableDocumentInstance host], 
-					  NSLocalizedString(@"Database", @"csv export database heading"),
+					  NSLocalizedString(@"Database", @"export header database label"),
 					  [tableDocumentInstance database], 
-					  NSLocalizedString(@"Generation Time", @"csv export generation time heading"),
+					  NSLocalizedString(@"Generation Time", @"export header generation time label"),
 					  [NSDate date], 
 					  lineEnding, 
 					  lineEnding,
@@ -80,11 +80,11 @@
 	[header setString:@"<?xml version=\"1.0\"?>\n\n"];
 	[header appendString:@"<!--\n-\n"];
 	[header appendString:@"- Sequel Pro XML dump\n"];
-	[header appendFormat:@"- Version %@\n-\n", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
+	[header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
-	[header appendFormat:@"- Host: %@ (MySQL %@)\n", [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]];
-	[header appendFormat:@"- Database: %@\n", [tableDocumentInstance database]];
-	[header appendFormat:@"- Generation Time: %@\n", [NSDate date]];
+	[header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]];
+	[header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [tableDocumentInstance database]];
+	[header appendFormat:@"- %@ Time: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
 	[header appendString:@"-\n-->\n\n"];
 	
 	if (exportSource == SPTableExport) {
