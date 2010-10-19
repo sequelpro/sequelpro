@@ -26,7 +26,8 @@
 
 @implementation SPEncodingPopupAccessory
 
-+ (NSView *)encodingAccessory:(NSUInteger)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup {
++ (NSView *)encodingAccessory:(NSUInteger)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup 
+{
 	SPEncodingPopupAccessory *owner = [[[SPEncodingPopupAccessory alloc] init] autorelease];
 	// Rather than caching, load the accessory view everytime, as it might appear in multiple panels simultaneously.
 	if (![NSBundle loadNibNamed:@"EncodingPopupView" owner:owner])  {
@@ -43,8 +44,8 @@
  * Secondary key is the actual encoding value, which works well enough. 
  * We treat Unicode encodings as special case, putting them at top of the list.
  */
-static int encodingCompare(const void *firstPtr, const void *secondPtr) {
-
+static int encodingCompare(const void *firstPtr, const void *secondPtr) 
+{
 	CFStringEncoding first = *(CFStringEncoding *)firstPtr;
 	CFStringEncoding second = *(CFStringEncoding *)secondPtr;
 	CFStringEncoding macEncodingForFirst = CFStringGetMostCompatibleMacStringEncoding(first);

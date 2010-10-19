@@ -32,7 +32,7 @@
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
 
-#define COLUMNIDNAME @"NameColumn"
+static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 @interface SPUserManager (PrivateAPI)
 
@@ -104,7 +104,7 @@
 {
 	[tabView selectTabViewItemAtIndex:0];
 	
-	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:COLUMNIDNAME];
+	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:SPTableViewNameColumnID];
 	ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
 	
 	[imageAndTextCell setEditable:NO];

@@ -37,8 +37,6 @@
  OTHERWISE, EVEN IF APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#import <Cocoa/Cocoa.h>
-
 #define INDENT_AMOUNT 17
 
 @interface ImageAndTextCell : NSTextFieldCell

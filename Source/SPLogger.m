@@ -203,6 +203,9 @@ int isSPLeaksLog(struct direct *entry)
 	return (strstr(entry->d_name, "sp.leaks") != NULL);
 }
 
+#pragma mark -
+#pragma mark Private API
+
 - (void)_initLogFile
 {
 	NSArray *paths = NSSearchPathForDirectoriesInDomains (NSDesktopDirectory, NSUserDomainMask, YES);

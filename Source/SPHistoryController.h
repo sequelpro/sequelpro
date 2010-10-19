@@ -22,8 +22,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 @class SPDatabaseDocument, SPTableContent, SPTablesList;
 
 @interface SPHistoryController : NSObject 

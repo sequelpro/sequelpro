@@ -34,7 +34,8 @@
 
 @implementation SPDataStorage
 
-static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorage* self, NSUInteger numExtraRows) {
+static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorage* self, NSUInteger numExtraRows) 
+{
 	typedef void (*SPDSEnsureCapacityMethodPtr)(SPDataStorage*, SEL, NSUInteger);
 	static SPDSEnsureCapacityMethodPtr SPDSEnsureCapacity;
 	if (!SPDSEnsureCapacity) SPDSEnsureCapacity = (SPDSEnsureCapacityMethodPtr)[self methodForSelector:@selector(_ensureCapacityForAdditionalRowCount:)];

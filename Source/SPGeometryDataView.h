@@ -22,12 +22,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
-
 @interface SPGeometryDataView : NSView
 {
-	
 	NSWindow *geometryDataWindow;
 	
 	NSString *type;

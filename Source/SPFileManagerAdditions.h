@@ -22,9 +22,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-#import <Foundation/Foundation.h>
-
 @interface NSFileManager (SPFileManagerAdditions)
 
 - (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory error:(NSError **)errorOut;

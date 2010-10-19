@@ -28,7 +28,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 
-#define TABLEVIEW_ID_COLUMN_IDENTIFIER @"Id"
+static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 @interface SPProcessListController (PrivateAPI)
 
@@ -80,7 +80,7 @@
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	
 	// Show/hide table columns
-	[[processListTableView tableColumnWithIdentifier:TABLEVIEW_ID_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPProcessListShowProcessID]];
+	[[processListTableView tableColumnWithIdentifier:SPTableViewIDColumnIdentifier] setHidden:![prefs boolForKey:SPProcessListShowProcessID]];
 	
 	// Set the process table view's vertical gridlines if required
 	[processListTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -284,7 +284,7 @@
  */
 - (IBAction)toggleShowProcessID:(id)sender
 {
-	[[processListTableView tableColumnWithIdentifier:TABLEVIEW_ID_COLUMN_IDENTIFIER] setHidden:([sender state])];
+	[[processListTableView tableColumnWithIdentifier:SPTableViewIDColumnIdentifier] setHidden:([sender state])];
 }
 
 /**

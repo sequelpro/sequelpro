@@ -290,7 +290,6 @@
  */
 - (NSPoint)_normalizePoint:(NSPoint)aPoint
 {
-
 	aPoint.x*=zoom_factor;
 	aPoint.y*=zoom_factor;
 	aPoint.x-=x_min;
@@ -305,14 +304,12 @@
  */
 - (void)_drawPoint:(NSPoint)aPoint
 {
-
 	NSBezierPath *circlePath = [NSBezierPath bezierPath];
 	[circlePath appendBezierPathWithOvalInRect:NSMakeRect(aPoint.x-5,aPoint.y-5,10,10)];
 	[pointStrokeColor setStroke];
 	[pointFillColor setFill];
 	[circlePath stroke];
 	[circlePath fill];
-
 }
 
 @end

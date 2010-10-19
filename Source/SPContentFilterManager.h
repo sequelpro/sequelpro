@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 @class BWAnchoredButtonBar, SPDatabaseDocument;
 
 @interface NSObject (SPContentFilterManagerDelegate)
@@ -39,6 +37,7 @@
 	
 	SPDatabaseDocument *tableDocumentInstance;
 	NSURL *delegatesFileURL;
+	
 	IBOutlet id encodingPopUp;
 	IBOutlet id contentFilterTableView;
 	IBOutlet id contentFilterNameTextField;

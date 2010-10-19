@@ -33,7 +33,6 @@
 
 - (NSString *)stringForObjectValue:(id)anObject
 {
-
 	// Truncate the string for speed purposes if it's very long - improves table scrolling speed.
 	if ([(NSString *)anObject length] > 150) {
 		return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:147]]);

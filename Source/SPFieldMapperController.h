@@ -22,11 +22,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
-#import "SPTableView.h"
 
-@class SPTextView;
+@class SPTextView, SPTableView;
 
 @interface SPFieldMapperController : NSWindowController 
 {

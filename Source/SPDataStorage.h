@@ -72,28 +72,32 @@
 #pragma mark -
 #pragma mark Cached method calls to remove obj-c messaging overhead in tight loops
 
-static inline void SPDataStorageAddRow(SPDataStorage* self, NSArray* row) {
+static inline void SPDataStorageAddRow(SPDataStorage* self, NSArray* row) 
+{
 	typedef void (*SPDSAddRowMethodPtr)(SPDataStorage*, SEL, NSArray*);
 	static SPDSAddRowMethodPtr SPDSAddRow;
 	if (!SPDSAddRow) SPDSAddRow = (SPDSAddRowMethodPtr)[self methodForSelector:@selector(addRowWithContents:)];
 	SPDSAddRow(self, @selector(addRowWithContents:), row);
 }
 
-static inline void SPDataStorageReplaceRow(SPDataStorage* self, NSUInteger rowIndex, NSArray* row) {
+static inline void SPDataStorageReplaceRow(SPDataStorage* self, NSUInteger rowIndex, NSArray* row) 
+{
 	typedef void (*SPDSReplaceRowMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSArray*);
 	static SPDSReplaceRowMethodPtr SPDSReplaceRow;
 	if (!SPDSReplaceRow) SPDSReplaceRow = (SPDSReplaceRowMethodPtr)[self methodForSelector:@selector(replaceRowAtIndex:withRowContents:)];
 	SPDSReplaceRow(self, @selector(replaceRowAtIndex:withRowContents:), rowIndex, row);
 }
 
-static inline void SPDataStorageReplaceObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex, id newObject) {
+static inline void SPDataStorageReplaceObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex, id newObject) 
+{
 	typedef void (*SPDSObjectReplaceMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger, id);
 	static SPDSObjectReplaceMethodPtr SPDSObjectReplace;
 	if (!SPDSObjectReplace) SPDSObjectReplace = (SPDSObjectReplaceMethodPtr)[self methodForSelector:@selector(replaceObjectInRow:column:withObject:)];
 	SPDSObjectReplace(self, @selector(replaceObjectInRow:column:withObject:), rowIndex, colIndex, newObject);
 }
 
-static inline id SPDataStorageObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex) {
+static inline id SPDataStorageObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex) 
+{
 	typedef id (*SPDSObjectFetchMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger);
 	static SPDSObjectFetchMethodPtr SPDSObjectFetch;
 	if (!SPDSObjectFetch) SPDSObjectFetch = (SPDSObjectFetchMethodPtr)[self methodForSelector:@selector(cellDataAtRow:column:)];

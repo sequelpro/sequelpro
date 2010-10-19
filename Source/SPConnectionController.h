@@ -23,7 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
 #import "SPDatabaseDocument.h"

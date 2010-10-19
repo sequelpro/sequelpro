@@ -30,6 +30,7 @@
 #import "SPStringAdditions.h"
 #import "SPNotLoaded.h"
 #import "SPTextView.h"
+#import "SPTableView.h"
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 

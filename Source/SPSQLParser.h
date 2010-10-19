@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 /*
  * Define the length of the character cache to use when parsing instead of accessing
  * via characterAtIndex:.  There is a balance here between updating the cache very

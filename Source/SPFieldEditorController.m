@@ -111,15 +111,15 @@
 				[qlTypesItems addObject:type];
 			}
 		}
+		
 		qlTypes = [NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes];
 		[qlTypesItems release];
 
 		fieldType = @"";
 		fieldEncoding = @"";
-
 	}
+	
 	return self;
-
 }
 
 /**

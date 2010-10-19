@@ -22,8 +22,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 static inline id NSArrayObjectAtIndex(NSArray *self, NSUInteger i) 
 {
 	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);

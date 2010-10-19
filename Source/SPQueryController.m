@@ -32,10 +32,10 @@
 
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 
-// Table view column identifiers
-#define TABLEVIEW_MESSAGE_COLUMN_IDENTIFIER    @"message"
-#define TABLEVIEW_DATE_COLUMN_IDENTIFIER       @"messageDate"
-#define TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER @"messageConnection"
+// Table view column identifier constants
+static const NSString *SPTableViewMessageColumnID    = @"message";
+static const NSString *SPTableViewDateColumnID       = @"messageDatw";
+static const NSString *SPTableViewConnectionColumnID = @"messageConnection";
 
 @interface SPQueryController (PrivateAPI)
 
@@ -164,8 +164,8 @@ static SPQueryController *sharedQueryController = nil;
 	[self setWindowFrameAutosaveName:@"QueryConsole"];
 
 	// Show/hide table columns
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPConsoleShowTimestamps]];
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER] setHidden:![prefs boolForKey:SPConsoleShowConnections]];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:![prefs boolForKey:SPConsoleShowTimestamps]];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:![prefs boolForKey:SPConsoleShowConnections]];
 
 	showSelectStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowSelectsAndShows];
 	showHelpStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowHelps];
@@ -211,8 +211,8 @@ static SPQueryController *sharedQueryController = nil;
 
 		NSUInteger i = [rows firstIndex];
 
-		BOOL dateColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] isHidden];
-		BOOL connectionColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER] isHidden];
+		BOOL dateColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
+		BOOL connectionColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
 
 		[string setString:@""];
 
@@ -278,7 +278,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_DATE_COLUMN_IDENTIFIER] setHidden:([sender state])];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:([sender state])];
 }
 
 /**
@@ -286,7 +286,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)toggleShowConnections:(id)sender
 {
-	[[consoleTableView tableColumnWithIdentifier:TABLEVIEW_CONNECTION_COLUMN_IDENTIFIER] setHidden:([sender state])];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:([sender state])];
 }
 
 /**
@@ -365,7 +365,7 @@ static SPQueryController *sharedQueryController = nil;
 
 	id object = [[messagesVisibleSet objectAtIndex:row] valueForKey:[tableColumn identifier]];
 
-	if ([[tableColumn identifier] isEqualToString:TABLEVIEW_DATE_COLUMN_IDENTIFIER]) {
+	if ([[tableColumn identifier] isEqualToString:SPTableViewDateColumnID]) {
 
 		returnValue = [dateFormatter stringFromDate:(NSDate *)object];
 	}

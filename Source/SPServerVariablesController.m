@@ -39,6 +39,9 @@
 
 @synthesize connection;
 
+#pragma mark -
+#pragma mark Initialisation
+
 /**
  * Initialisation
  */

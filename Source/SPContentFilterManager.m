@@ -35,10 +35,6 @@
 #define SP_NAME_REQUIRED_PLACEHOLDER_STRING      NSLocalizedString(@"[name required]", @"displayed when new content filter has empty Name field (ContentFilterManager)")
 #define SP_FILE_PARSER_ERROR_TITLE_STRING        NSLocalizedString(@"Error while reading data file", @"error while reading data file")
 
-@interface SPContentFilterManager (PrivateAPI)
-
-@end
-
 @implementation SPContentFilterManager
 
 /**

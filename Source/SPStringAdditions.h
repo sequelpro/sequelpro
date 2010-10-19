@@ -23,14 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 /*
  * NSStringUTF8String(@"a String") function can be used to speed up
  * the convertion from a NSString to NSData or const char* resp.
  * NSData *d = [aStr UTF8String];  :== NSData *d = NSStringUTF8String(aStr);
  */
-static inline const char* NSStringUTF8String(NSString* self) {
+static inline const char* NSStringUTF8String(NSString* self) 
+{
 	typedef const char* (*SPUTF8StringMethodPtr)(NSString*, SEL);
 	static SPUTF8StringMethodPtr SPNSStringGetUTF8String;
 	if (!SPNSStringGetUTF8String) SPNSStringGetUTF8String = (SPUTF8StringMethodPtr)[NSString instanceMethodForSelector:@selector(UTF8String)];
@@ -38,7 +37,8 @@ static inline const char* NSStringUTF8String(NSString* self) {
 	return to_return;
 }
 
-static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAttributedString* self, NSString* aStr, id aValue, NSRange aRange) {
+static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAttributedString* self, NSString* aStr, id aValue, NSRange aRange) 
+{
 	typedef void (*SPMutableAttributedStringAddAttributeValueRangeMethodPtr)(NSMutableAttributedString*, SEL, NSString*, id, NSRange);
 	static SPMutableAttributedStringAddAttributeValueRangeMethodPtr SPMutableAttributedStringAddAttributeValueRange;
 	if (!SPMutableAttributedStringAddAttributeValueRange) SPMutableAttributedStringAddAttributeValueRange = (SPMutableAttributedStringAddAttributeValueRangeMethodPtr)[self methodForSelector:@selector(addAttribute:value:range:)];
@@ -46,7 +46,8 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	return;
 }
 
-static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedString* self, NSString* aStr, NSUInteger index, NSRangePointer range) {
+static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedString* self, NSString* aStr, NSUInteger index, NSRangePointer range) 
+{
 	typedef id (*SPMutableAttributedStringAttributeAtIndexMethodPtr)(NSMutableAttributedString*, SEL, NSString*, NSUInteger, NSRangePointer);
 	static SPMutableAttributedStringAttributeAtIndexMethodPtr SPMutableAttributedStringAttributeAtIndex;
 	if (!SPMutableAttributedStringAttributeAtIndex) SPMutableAttributedStringAttributeAtIndex = (SPMutableAttributedStringAttributeAtIndexMethodPtr)[self methodForSelector:@selector(attribute:atIndex:effectiveRange:)];

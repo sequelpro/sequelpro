@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 /*
  * This class provides a string class intended for CSV parsing.  Unlike SPSQLParser, this
  * does not extend NSMutableString and instead provides only a subset of similar methods.
@@ -109,6 +107,7 @@
 
 /* Initialisation and teardown */
 #pragma mark -
+
 - (id) init;
 - (id) initWithString:(NSString *)aString;
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)enc error:(NSError **)error;

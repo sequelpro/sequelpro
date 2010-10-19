@@ -22,16 +22,15 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
 #import <MCPKit/MCPKit.h>
 
-
 /**
- * @class SPExportFile SPExportFile.h
+ * @class SPFieldEditorController SPFieldEditorController.h
  *
  * @author Hans-Jörg Bibiko
  *
- * This class offers a sheet for editing different kind of data such as text, blobs (including images) as editSheet and bit fields as bitSheet. 
+ * This class offers a sheet for editing different kind of data such as text, blobs (including images) as 
+ * editSheet and bit fields as bitSheet. 
  */
 @interface SPFieldEditorController : NSWindowController
 {

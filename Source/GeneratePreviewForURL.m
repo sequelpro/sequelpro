@@ -22,12 +22,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <Cocoa/Cocoa.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
+
 #import "SPDataAdditions.h"
 #import "SPStringAdditions.h"
-#import <Cocoa/Cocoa.h>
 #import "SPEditorTokens.h"
 
 /* -----------------------------------------------------------------------------

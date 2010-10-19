@@ -25,16 +25,6 @@
 
 #import <MCPKit/MCPKit.h>
 
-// Constants
-/*extern NSString *SPTriggerName;
-extern NSString *SPTriggerTableName;
-extern NSString *SPTriggerEvent;
-extern NSString *SPTriggerActionTime;
-extern NSString *SPTriggerStatement;
-extern NSString *SPTriggerDefiner;
-extern NSString *SPTriggerCreated;
-extern NSString *SPTriggerSQLMode;*/
-
 @interface SPTableTriggers : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
