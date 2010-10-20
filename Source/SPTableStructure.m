@@ -869,47 +869,46 @@ closes the keySheet
 }
 
 /**
- * tries to write row to mysql-db
+ * Tries to write row to mysql-db
  * returns YES if row written to db, otherwies NO
  * returns YES if no row is beeing edited and nothing has to be written to db
  */
 - (BOOL)addRowToDB;
 {
+	if ((!isEditingRow) || (currentlyEditingRow == -1)) return YES;
 
-	if (!isEditingRow || currentlyEditingRow == -1)
-		return YES;
-
-	if (alertSheetOpened)
-		return NO;
+	if (alertSheetOpened) return NO;
 
 	NSInteger code;
-	NSDictionary *theRow;
 	NSMutableString *queryString;
-
+	BOOL fieldDefIncludesLen = NO;
+	
 	NSString *theRowType = @"";
 	NSString *theRowExtra = @"";
 	
 	BOOL specialFieldTypes = NO;
 
-	theRow = [tableFields objectAtIndex:currentlyEditingRow];
+	NSDictionary *theRow = [tableFields objectAtIndex:currentlyEditingRow];
 
-	if([theRow objectForKey:@"type"])
+	if ([theRow objectForKey:@"type"])
 		theRowType = [[[theRow objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
-	if([theRow objectForKey:@"Extra"])
+	if ([theRow objectForKey:@"Extra"])
 		theRowExtra = [[[theRow objectForKey:@"Extra"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
-	if(isEditingNewRow)
+	if (isEditingNewRow) {
 		queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@", 
-			[selectedTable backtickQuotedString], 
-			[[theRow objectForKey:@"name"] backtickQuotedString], 
-			theRowType];
-	else
+					   [selectedTable backtickQuotedString], 
+					   [[theRow objectForKey:@"name"] backtickQuotedString], 
+					   theRowType];
+	}
+	else {
 		queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@", 
-			[selectedTable backtickQuotedString], 
-			[[oldRow objectForKey:@"name"] backtickQuotedString], 
-			[[theRow objectForKey:@"name"] backtickQuotedString], 
-			theRowType];
+					   [selectedTable backtickQuotedString], 
+					   [[oldRow objectForKey:@"name"] backtickQuotedString], 
+					   [[theRow objectForKey:@"name"] backtickQuotedString], 
+					   theRowType];
+	}
 
 	// Check for pre-defined field type SERIAL
 	if([theRowType isEqualToString:@"SERIAL"]) {
@@ -942,6 +941,7 @@ closes the keySheet
 
 	// Check for Length specification
 	else if ([theRow objectForKey:@"length"] && [[[theRow objectForKey:@"length"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length]) {
+		fieldDefIncludesLen = YES;
 		[queryString appendFormat:@"(%@)", [theRow objectForKey:@"length"]];
 	}
 
@@ -975,8 +975,7 @@ closes the keySheet
 			}
 
 		}
-
-		else if([self _isFieldTypeNumeric:theRowType] && ![theRowType isEqualToString:@"BIT"]) {
+		else if ([self _isFieldTypeNumeric:theRowType] && (![theRowType isEqualToString:@"BIT"])) {
 
 			if ([[theRow objectForKey:@"unsigned"] integerValue] == 1) {
 				[queryString appendString:@"\n UNSIGNED"];
@@ -989,7 +988,8 @@ closes the keySheet
 
 		if ([[theRow objectForKey:@"null"] integerValue] == 0 || [theRowExtra isEqualToString:@"SERIAL DEFAULT VALUE"]) {
 			[queryString appendString:@"\n NOT NULL"];
-		} else {
+		} 
+		else {
 			[queryString appendString:@"\n NULL"];
 		}
 
@@ -1024,11 +1024,9 @@ closes the keySheet
 			}
 		}
 
-		if (![theRowExtra isEqualToString:@""] && ![theRowExtra isEqualToString:@"NONE"])
-		{
+		if (![theRowExtra isEqualToString:@""] && ![theRowExtra isEqualToString:@"NONE"]) {
 			[queryString appendFormat:@"\n %@", theRowExtra];
 		}
-
 	}
 
 	// Any column comments
@@ -1044,7 +1042,7 @@ closes the keySheet
 		}
 	}
 
-	// Asks the user to add an index to query if auto_increment is set and field isn't indexed
+	// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
 	if ([theRowExtra isEqualToString:@"AUTO_INCREMENT"] && (![theRow objectForKey:@"Key"] || [[theRow objectForKey:@"Key"] isEqualToString:@""]))
 	{
 		[chooseKeyButton selectItemAtIndex:0];
@@ -1061,9 +1059,28 @@ closes the keySheet
 
 		if (code) {
 			// User wants to add PRIMARY KEY
-			if ([chooseKeyButton indexOfSelectedItem] == 0 ) {
+			if ([chooseKeyButton indexOfSelectedItem] == 0) {
 				[queryString appendString:@"\n PRIMARY KEY"];
-
+				
+				// If the field isn't set to be unsigned and we're making it the primary key then make it unsigned
+				if (![[theRow objectForKey:@"unsigned"] boolValue]) {
+					
+					// Find the occurrence of the table name and data type so we know where to insert the 
+					// UNSIGNED keyword.
+					NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
+					
+					NSInteger index = (range.location + range.length);
+					
+					// If the field definition's data type includes the length then we must take this into
+					// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the
+					// parentheses used.
+					if (fieldDefIncludesLen) {
+						index += ([[theRow objectForKey:@"length"] length] + 2); 
+					}
+					
+					[queryString insertString:@" UNSIGNED" atIndex:index];
+				}
+								
 				// Add AFTER ... only if the user added a new field
 				if (isEditingNewRow) {
 					[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
@@ -1083,7 +1100,7 @@ closes the keySheet
 	else if (isEditingNewRow) {
 		[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 	}
-
+	
 	// Execute query
 	[mySQLConnection queryString:queryString];
 
