@@ -223,7 +223,6 @@
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
-- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
 - (NSDictionary *)getDbStructure;
 - (NSArray *)allSchemaKeys;
 

@@ -38,101 +38,21 @@ typedef struct {
 	BOOL	*lastPingSuccessPointer;
 } MCPConnectionPingDetails;
 
-@protocol MCPConnectionProxy;
-
 @class MCPResult, MCPStreamingResult;
-
-@interface NSObject (MCPConnectionDelegate)
-
-/**
- *
- */
-- (void)willQueryString:(NSString *)query connection:(id)connection;
-
-/**
- *
- */
-- (void)queryGaveError:(NSString *)error connection:(id)connection;
-
-/**
- *
- */
-- (void)showErrorWithTitle:(NSString *)error message:(NSString *)connection;
-
-/**
- *
- */
-- (NSString *)keychainPasswordForConnection:(id)connection;
-
-/**
- *
- */
-- (NSString *)onReconnectShouldSelectDatabase:(id)connection;
-
-/**
- *
- */
-- (void)noConnectionAvailable:(id)connection;
-
-/**
- *
- */
-- (MCPConnectionCheck)connectionLost:(id)connection;
-
-/**
- *
- */
-- (NSString *)connectionID;
-
-/**
- *
- */
-- (NSString *)database;
-
-/**
- *
- */
-- (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname;
-
-/**
- *
- */
-- (NSArray*)allDatabaseNames;
-
-/**
- *
- */
-- (NSArray*)allSystemDatabaseNames;
-
-/**
- *
- */
-- (NSArray*)allTableNames;
-
-/**
- *
- */
-- (NSArray*)allViewNames;
-
-/**
- *
- */
-- (NSArray*)allSchemaKeys;
-
-@end
+@protocol MCPConnectionProxy, MCPConnectionDelegate;
 
 @interface MCPConnection : NSObject 
 {
-	MYSQL			 *mConnection;     /* The inited MySQL connection. */
-	BOOL			 mConnected;       /* Reflect the fact that the connection is already in place or not. */
-	NSStringEncoding mEncoding;        /* The encoding used by MySQL server, to ISO-1 default. */
-	NSTimeZone		 *mTimeZone;       /* The time zone of the session. */
-	NSUInteger       mConnectionFlags; /* The flags to be used for the connection to the database. */
+	MYSQL			 *mConnection; 
+	BOOL			 mConnected;
+	NSStringEncoding mEncoding;
+	NSTimeZone		 *mTimeZone;
+	NSUInteger       mConnectionFlags;
 	
-	id delegate; /* Connection delegate */
+	id <MCPConnectionDelegate> delegate;
     
-	/* Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings */
-    /* Always lock the connection first. Don't use this lock directly, use the lockConnection method! */
+	// Anything that performs a mysql_net_read is not thread-safe: mysql queries, pings
+    // Always lock the connection first. Don't use this lock directly, use the lockConnection method!
 	NSConditionLock *connectionLock; 
 
 	BOOL useKeepAlive;

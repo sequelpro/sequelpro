@@ -25,6 +25,8 @@
 
 #import "SPDatabaseDocument.h"
 
-@interface SPDatabaseDocument (SPConnectionDelegate)
+#import <MCPKit/MCPConnectionDelegate.h>
+
+@interface SPDatabaseDocument (SPConnectionDelegate) <MCPConnectionDelegate>
 
 @end

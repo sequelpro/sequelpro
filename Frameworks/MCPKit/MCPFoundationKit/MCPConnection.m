@@ -60,6 +60,25 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 @end
 
+/**
+ * Note that these aren't actually delegate methods, but are defined because queryDbStructureWithUserInfo needs
+ * them. We define them here to supress compiler warnings.
+ *
+ * TODO: Remove along with queryDbStructureWithUserInfo
+ */
+@interface MCPConnection (MCPConnectionDelegate)
+
+- (NSString *)database;
+- (NSString *)connectionID;
+
+- (NSArray *)allDatabaseNames;
+- (NSArray *)allSystemDatabaseNames;
+- (NSArray *)allTableNames;
+- (NSArray *)allViewNames;
+- (NSArray *)allSchemaKeys;
+
+@end
+
 @implementation MCPConnection
 
 // Synthesize ivars
@@ -2222,6 +2241,8 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 /**
  * Updates the dict containing the structure of all available databases (mainly for completion/navigator)
  * executed on a new connection.
+ *
+ * TODO: Split this entire method out of MCPKit if possible
  */
 - (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo
 {
@@ -2331,7 +2352,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 		return;
 	}
 
-	// Retrieve the tables and views for this database from SPTablesList (TODO: split out of MCPKit)
+	// Retrieve the tables and views for this database from SPTablesList
 	NSMutableArray *tablesAndViews = [NSMutableArray array];
 	for (id aTable in [[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableNames]) {
 		NSDictionary *aTableDict = [NSDictionary dictionaryWithObjectsAndKeys:

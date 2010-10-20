@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  MCPKit.h
+//  MCPConnectionDelegate.h
 //  MCPKit
 //
-//  Created by Serge Cohen (serge.cohen@m4x.org) on 08/12/2001.
-//  Copyright (c) 2001 Serge Cohen. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on October 20, 2010.
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  Forked by the Sequel Pro team (sequelpro.com), April 2009
 //
@@ -26,19 +26,56 @@
 //  More info at <http://mysql-cocoa.sourceforge.net/>
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
+@protocol MCPConnectionDelegate
 
-#import <MCPKit/MCPConstants.h>
-#import <MCPKit/MCPNull.h>
-#import <MCPKit/MCPResult.h>
-#import <MCPKit/MCPStreamingResult.h>
-#import <MCPKit/MCPConnection.h>
-#import <MCPKit/MCPNumber.h>
-#import <MCPKit/MCPResultPlus.h>
-#import <MCPKit/MCPFastQueries.h>
-#import <MCPKit/MCPGeometryData.h>
+/**
+ *
+ * @param query
+ * @param connection
+ */
+- (void)willQueryString:(NSString *)query connection:(id)connection;
 
-#import <MCPKit/MCPConnectionProxy.h>
-#import <MCPKit/MCPConnectionDelegate.h>
+/**
+ *
+ * @param error
+ * @param connection
+ */
+- (void)queryGaveError:(NSString *)error connection:(id)connection;
 
-#import "mysql.h"
+/**
+ *
+ *
+ * @param error
+ * @param message
+ */
+- (void)showErrorWithTitle:(NSString *)error message:(NSString *)message;
+
+/**
+ *
+ *
+ * @param connection
+ */
+- (NSString *)keychainPasswordForConnection:(id)connection;
+
+/**
+ *
+ *
+ * @param connection
+ */
+- (NSString *)onReconnectShouldSelectDatabase:(id)connection;
+
+/**
+ *
+ *
+ * @param connection
+ */
+- (void)noConnectionAvailable:(id)connection;
+
+/**
+ *
+ *
+ * @param connection
+ */
+- (MCPConnectionCheck)connectionLost:(id)connection;
+
+@end
