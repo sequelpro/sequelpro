@@ -34,7 +34,7 @@
 
 // Table view column identifier constants
 static const NSString *SPTableViewMessageColumnID    = @"message";
-static const NSString *SPTableViewDateColumnID       = @"messageDatw";
+static const NSString *SPTableViewDateColumnID       = @"messageDate";
 static const NSString *SPTableViewConnectionColumnID = @"messageConnection";
 
 @interface SPQueryController (PrivateAPI)
