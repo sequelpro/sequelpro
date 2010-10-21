@@ -64,7 +64,7 @@
  */
 - (id)init
 {
-	if (self = [super initWithWindowNibName:@"ExportDialog"]) {
+	if ((self = [super initWithWindowNibName:@"ExportDialog"])) {
 		
 		[self setExportCancelled:NO];
 		[self setExportToMultipleFiles:YES];
