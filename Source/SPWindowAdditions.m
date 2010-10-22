@@ -33,42 +33,39 @@
  */
 - (CGFloat)toolbarHeight
 {
-    NSRect windowFrame;
+	NSRect windowFrame;
 	CGFloat toolbarHeight = 0.0;
-	
-    if (([self toolbar]) && ([[self toolbar] isVisible])) {
-        windowFrame = [NSWindow contentRectForFrameRect:[self frame] styleMask:[self styleMask]];
-        
+
+	if ([self toolbar] && [[self toolbar] isVisible]) {
+		windowFrame   = [NSWindow contentRectForFrameRect:[self frame] styleMask:[self styleMask]];
 		toolbarHeight = NSHeight(windowFrame) - NSHeight([[self contentView] frame]);
-    }
-	
-    return toolbarHeight;
+	}
+
+	return toolbarHeight;
 }
 
 /**
  * Resizes this window to the size of the supplied view.
  */
 - (void)resizeForContentView:(NSView *)view titleBarVisible:(BOOL)visible
-{	
+{
 	NSSize viewSize = [view frame].size;
-	NSRect frame	= [self frame];
-	
-	if ((viewSize.height) < [self contentMinSize].height) {
+	NSRect frame    = [self frame];
+
+	if (viewSize.height < [self contentMinSize].height) {
 		viewSize.height = [self contentMinSize].height;
 	}
-	
+
 	CGFloat newHeight = (viewSize.height + [self toolbarHeight]);
-	
+
 	// If the title bar is visible add 22 pixels to new height of window.
-	if (visible) { 
-        newHeight += 22; 
-    }
-	
+	if (visible) newHeight += 22;
+
 	frame.origin.y += frame.size.height - newHeight;
-	
+
 	frame.size.height = newHeight;
 	frame.size.width  = viewSize.width; 
-	
+
 	[self setFrame:frame display:YES animate:YES];
 }
 
@@ -77,13 +74,18 @@
  */
 - (void)swipeWithEvent:(NSEvent *)anEvent
 {
-	if([[self delegate] isKindOfClass:[SPDatabaseDocument class]] 
-		&& [[self delegate] valueForKeyPath:@"spHistoryControllerInstance"]
-		&& ![[self delegate] isWorking])
+
+	if(![[self delegate] isKindOfClass:[SPWindowController class]] || ![[[self delegate] documents] count]) return;
+
+	id frontDoc = [[self delegate] selectedTableDocument];
+
+	if( frontDoc && [frontDoc isKindOfClass:[SPDatabaseDocument class]]
+		&& [frontDoc valueForKeyPath:@"spHistoryControllerInstance"]
+		&& ![frontDoc isWorking])
 		if([anEvent deltaX] == -1.0f)
-			[[[self delegate] valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
+			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
 		else if([anEvent deltaX] == 1.0f)
-			[[[self delegate] valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goBackInHistory"];
+			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goBackInHistory"];
 }
 
 @end

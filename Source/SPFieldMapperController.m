@@ -282,8 +282,10 @@
 	for(NSInteger i=0; i < [fieldMappingGlobalValues count]; i++)
 		if([[fieldMappingGlobalValuesSQLMarked objectAtIndex:i] boolValue])
 			[globals addObject:[fieldMappingGlobalValues objectAtIndex:i]];
-		else
+		else if([[fieldMappingGlobalValues objectAtIndex:i] isKindOfClass:[NSNull class]])
 			[globals addObject:[NSString stringWithFormat:@"'%@'", [fieldMappingGlobalValues objectAtIndex:i]]];
+		else
+			[globals addObject:[NSString stringWithFormat:@"'%@'", [[fieldMappingGlobalValues objectAtIndex:i] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 
 	return globals;
 }
@@ -1070,6 +1072,9 @@
 
 - (IBAction)removeGlobalValue:(id)sender
 {
+
+	[globalValuesTableView abortEditing];
+
 	NSIndexSet *indexes = [globalValuesTableView selectedRowIndexes];
 
 	// get last index
@@ -1105,26 +1110,26 @@
 - (IBAction)closeGlobalValuesSheet:(id)sender
 {
 
-	// Ensure all changes are stored before ordering out
-	[globalValuesTableView validateEditing];
-	if ([globalValuesTableView numberOfSelectedRows] == 1)
-		[globalValuesSheet makeFirstResponder:globalValuesTableView];
+		// Ensure all changes are stored before ordering out
+		[globalValuesTableView validateEditing];
+		if ([globalValuesTableView numberOfSelectedRows] == 1)
+			[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
-	// Replace the current map pair with the last selected global value
-	if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
+		// Replace the current map pair with the last selected global value
+		if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
 
-		[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
+			[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
 
-		// Set corresponding operator to doImport if not set to isEqual
-		if([fieldMappingOperatorArray objectAtIndex:[fieldMapperTableView selectedRow]] != isEqual)
-			[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
+			// Set corresponding operator to doImport if not set to isEqual
+			if([fieldMappingOperatorArray objectAtIndex:[fieldMapperTableView selectedRow]] != isEqual)
+				[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImport];
 
-		[fieldMapperTableView reloadData];
+			[fieldMapperTableView reloadData];
 
-		// Set alignment popup to "custom order"
-		[alignByPopup selectItemWithTag:3];
+			// Set alignment popup to "custom order"
+			[alignByPopup selectItemWithTag:3];
 
-	}
+		}
 
 	[NSApp endSheet:globalValuesSheet returnCode:[sender tag]];
 }
@@ -1467,6 +1472,9 @@
 	if (newTableMode && [menuItem action] == @selector(setAllTypesTo:)) {
 		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
 		[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableTypes objectAtIndex:row]]];
+	}
+	else if (!newTableMode && [menuItem action] == @selector(insertNULLValue:)) {
+		return ([[globalValuesTableView selectedRowIndexes] count] == 1) ? YES : NO;
 	}
 	else if (!newTableMode && [menuItem action] == @selector(editColumn:)) {
 		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
