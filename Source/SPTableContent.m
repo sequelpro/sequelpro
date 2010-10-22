@@ -3621,13 +3621,12 @@
 
 			}
 
-
 			// Reload table after each editing due to complex declarations
 			if(isFirstChangeInView) {
 				// Set up the table details for the new table, and trigger an interface update
 				// if the view was modified for the very first time
 				NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-												tableForColumn, @"name",
+												selectedTable, @"name",
 												[tableDataInstance columns], @"columns",
 												[tableDataInstance columnNames], @"columnNames",
 												[tableDataInstance getConstraints], @"constraints",
