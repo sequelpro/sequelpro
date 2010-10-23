@@ -1259,6 +1259,7 @@
 	NSInteger mapColumn;
 	id cellData;
 	NSInteger mappingArrayCount = [fieldMappingArray count];
+	NSString *re = @"(?<!\\\\)\\$(\\d+)";
 
 	for (i = 0; i < mappingArrayCount; i++) {
 
@@ -1275,8 +1276,34 @@
 			// Append the data
 			// - check for global values
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
-				// Global variables are coming wrapped in ' ' if there're not marked as SQL 
-				 [setString appendString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+				NSMutableString *globalVar = [NSMutableString string];
+				if([NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn) isKindOfClass:[NSNull class]]) {
+					[globalVar setString:@"NULL"];
+				} else {
+					[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+					// Global variables are coming wrapped in ' ' if there're not marked as SQL.
+					// If global variable contains column placeholders $1 etc. replace them.
+					if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
+						while([globalVar isMatchedByRegex:re]) {
+							[globalVar flushCachedRegexData];
+							NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
+							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
+							if(colIndex > 0 && colIndex <= [csvRowArray count]) {
+								NSString *colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
+								// escape column string for ' or " if the char just before $… is a " or '
+								if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '\'')
+									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
+								else if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '"')
+									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
+								else
+									[globalVar replaceCharactersInRange:aRange withString:colStr];
+							} else {
+								[globalVar replaceCharactersInRange:aRange withString:@""];
+							}
+						}
+					}
+				}
+				[setString appendString:globalVar];
 			} else {
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
@@ -1299,8 +1326,34 @@
 			// Append the data
 			// - check for global values
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
-				// Global variables are coming wrapped in ' ' if there're not marked as SQL 
-				[whereString appendFormat:@"=%@", NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+				NSMutableString *globalVar = [NSMutableString string];
+				if([NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn) isKindOfClass:[NSNull class]]) {
+					[globalVar setString:@"NULL"];
+				} else {
+					[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+					// Global variables are coming wrapped in ' ' if there're not marked as SQL.
+					// If global variable contains column placeholders $1 etc. replace them.
+					if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
+						while([globalVar isMatchedByRegex:re]) {
+							[globalVar flushCachedRegexData];
+							NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
+							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
+							if(colIndex > 0 && colIndex <= [csvRowArray count]) {
+								NSString *colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
+								// escape column string for ' or " if the char just before $… is a " or '
+								if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '\'')
+									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
+								else if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '"')
+									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
+								else
+									[globalVar replaceCharactersInRange:aRange withString:colStr];
+							} else {
+								[globalVar replaceCharactersInRange:aRange withString:@""];
+							}
+						}
+					}
+				}
+				[whereString appendFormat:@"=%@", globalVar];
 			} else {
 				cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 
@@ -1331,6 +1384,7 @@
 	NSInteger mapColumn;
 	id cellData;
 	NSInteger mappingArrayCount = [fieldMappingArray count];
+	NSString *re = @"(?<!\\\\)\\$(\\d+)";
 
 	for (i = 0; i < mappingArrayCount; i++) {
 
@@ -1344,8 +1398,34 @@
 		// Append the data
 		// - check for global values
 		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
-			// Global variables are coming wrapped in ' ' if there're not marked as SQL 
-			[valueString appendString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+			NSMutableString *globalVar = [NSMutableString string];
+			if([NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn) isKindOfClass:[NSNull class]]) {
+				[globalVar setString:@"NULL"];
+			} else {
+				[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+				// Global variables are coming wrapped in ' ' if there're not marked as SQL.
+				// If global variable contains column placeholders $1 etc. replace them.
+				if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
+					while([globalVar isMatchedByRegex:re]) {
+						[globalVar flushCachedRegexData];
+						NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
+						NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
+						if(colIndex > 0 && colIndex <= [csvRowArray count]) {
+							NSString *colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
+							// escape column string for ' or " if the char just before $… is a " or '
+							if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '\'')
+								[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
+							else if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '"')
+								[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
+							else
+								[globalVar replaceCharactersInRange:aRange withString:colStr];
+						} else {
+							[globalVar replaceCharactersInRange:aRange withString:@""];
+						}
+					}
+				}
+			}
+			[valueString appendString:globalVar];
 		} else {
 			cellData = NSArrayObjectAtIndex(csvRowArray, mapColumn);
 

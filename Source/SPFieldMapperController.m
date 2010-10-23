@@ -280,10 +280,8 @@
 {
 	NSMutableArray *globals = [NSMutableArray array];
 	for(NSInteger i=0; i < [fieldMappingGlobalValues count]; i++)
-		if([[fieldMappingGlobalValuesSQLMarked objectAtIndex:i] boolValue])
+		if([[fieldMappingGlobalValuesSQLMarked objectAtIndex:i] boolValue] || [[fieldMappingGlobalValues objectAtIndex:i] isKindOfClass:[NSNull class]])
 			[globals addObject:[fieldMappingGlobalValues objectAtIndex:i]];
-		else if([[fieldMappingGlobalValues objectAtIndex:i] isKindOfClass:[NSNull class]])
-			[globals addObject:[NSString stringWithFormat:@"'%@'", [fieldMappingGlobalValues objectAtIndex:i]]];
 		else
 			[globals addObject:[NSString stringWithFormat:@"'%@'", [[fieldMappingGlobalValues objectAtIndex:i] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 
@@ -1053,6 +1051,35 @@
 {
 	addGlobalSheetIsOpen = YES;
 
+	// Init insert pulldown menu
+
+	// Remove all dynamic menu items
+	while([insertPullDownButton numberOfItems] > 5)
+		[insertPullDownButton removeItemAtIndex:[insertPullDownButton numberOfItems]-1];
+
+	// Add recent global value menu
+	if([prefs objectForKey:SPGlobalValueHistory] && [[prefs objectForKey:SPGlobalValueHistory] isKindOfClass:[NSArray class]] && [[prefs objectForKey:SPGlobalValueHistory] count])
+		for(id item in [prefs objectForKey:SPGlobalValueHistory])
+			[recentGlobalValueMenu addItemWithTitle:item action:@selector(insertRecentGlobalValue:) keyEquivalent:@""];
+
+	// Add column placeholder
+	NSInteger i = 0;
+	if([fieldMappingImportArray count] && [[fieldMappingImportArray objectAtIndex:0] count]) {
+		for(id item in [fieldMappingImportArray objectAtIndex:0]) {
+			i++;
+			if ([item isNSNull]) {
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, [prefs objectForKey:SPNullValue]]];
+			} else if ([item isSPNotLoaded]) {
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, @"DEFAULT"]];
+			} else {
+				if([item length] > 20)
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@…", i, [item substringToIndex:20]]];
+				else
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@", i, item]];
+			}
+		}
+	}
+
 	[NSApp beginSheet:globalValuesSheet
 		modalForWindow:[self window]
 		modalDelegate:self
@@ -1219,6 +1246,27 @@
 		[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
 		[onupdateTextView setEditable:NO];
 	}
+}
+
+- (IBAction)insertPulldownValue:(id)sender
+{
+
+	if([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
+
+	NSInteger index = [sender indexOfItem:[sender selectedItem]] - 4;
+	if([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)])
+		[[[NSApp keyWindow] firstResponder] insertText:[NSString stringWithFormat:@"$%ld", index]];
+
+}
+
+- (IBAction)insertRecentGlobalValue:(id)sender
+{
+
+	if([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
+
+	if([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)])
+		[[[NSApp keyWindow] firstResponder] insertText:[sender title]];
+
 }
 
 #pragma mark -
@@ -1782,14 +1830,36 @@
 			}
 			[self validateImportButton];
 		}
-		// Refresh table
-		// [aTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.01];
 	}
 	else if(aTableView == globalValuesTableView) {
-		if ([[aTableColumn identifier] isEqualToString:@"global_value"])
+		if ([[aTableColumn identifier] isEqualToString:@"global_value"]) {
+
 			[fieldMappingGlobalValues replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:anObject];
-		else if ([[aTableColumn identifier] isEqualToString:@"sql"])
+
+			// If anObject contains $1 etc. enable SQL checkbox
+			if([anObject isMatchedByRegex:@"(?<!\\\\)\\$\\d+"])
+				[fieldMappingGlobalValuesSQLMarked replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:[NSNumber numberWithInteger:1]];
+
+			// Store anObject as recent global value if it's new
+			NSMutableArray *recents = [NSMutableArray array];
+			if([prefs objectForKey:SPGlobalValueHistory] && [[prefs objectForKey:SPGlobalValueHistory] isKindOfClass:[NSArray class]] && [[prefs objectForKey:SPGlobalValueHistory] count])
+				[recents setArray:[prefs objectForKey:SPGlobalValueHistory]];
+			if([recents containsObject:anObject])
+				[recents removeObject:anObject];
+			[recents insertObject:anObject atIndex:0];
+			while([recents count] > 20)
+				[recents removeObjectAtIndex:[recents count]-1];
+			if([recents count])
+				[prefs setObject:recents forKey:SPGlobalValueHistory];
+
+			// Re-init recent menu
+			[recentGlobalValueMenu removeAllItems];
+			for(id item in recents)
+				[recentGlobalValueMenu addItemWithTitle:item action:@selector(insertRecentGlobalValue:) keyEquivalent:@""];
+
+		} else if ([[aTableColumn identifier] isEqualToString:@"sql"]) {
 			[fieldMappingGlobalValuesSQLMarked replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:anObject];
+		}
 	}
 }
 

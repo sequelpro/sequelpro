@@ -62,6 +62,8 @@
 	IBOutlet NSButton *removeGlobalValueButton;
 	IBOutlet NSButton *insertNULLValueButton;
 	IBOutlet id replaceAfterSavingCheckBox;
+	IBOutlet NSPopUpButton *insertPullDownButton;
+	IBOutlet NSMenu *recentGlobalValueMenu;
 
 	IBOutlet id ignoreCheckBox;
 	IBOutlet id ignoreUpdateCheckBox;
@@ -175,6 +177,8 @@
 - (IBAction)insertNULLValue:(id)sender;
 - (IBAction)closeGlobalValuesSheet:(id)sender;
 - (IBAction)advancedCheckboxValidation:(id)sender;
+- (IBAction)insertPulldownValue:(id)sender;
+- (IBAction)insertRecentGlobalValue:(id)sender;
 
 - (IBAction)newTable:(id)sender;
 - (IBAction)newTableInfo:(id)sender;

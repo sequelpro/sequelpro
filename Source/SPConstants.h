@@ -352,6 +352,7 @@ extern NSString *SPBlobTextEditorSpellCheckingEnabled;
 extern NSString *SPUniqueSchemaDelimiter;
 extern NSString *SPLastImportIntoNewTableEncoding;
 extern NSString *SPLastImportIntoNewTableType;
+extern NSString *SPGlobalValueHistory;
 
 
 // URLs

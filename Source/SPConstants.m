@@ -179,6 +179,7 @@ NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellChecking
 NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
 NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncoding";
 NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType";
+NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";

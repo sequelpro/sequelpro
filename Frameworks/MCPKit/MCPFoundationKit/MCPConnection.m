@@ -2551,7 +2551,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
 
 					// Query for procedures and functions
-					query = [NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\'"]];
+					query = [NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
 					encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
 					queryCString = [encodedQueryData bytes];
 					queryCStringLength = [encodedQueryData length];
