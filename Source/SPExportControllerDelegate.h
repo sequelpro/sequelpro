@@ -1,10 +1,11 @@
 //
 //  $Id$
 //
-//  Sequel-Pro.pch
+//  SPExportControllerDelegate.h
 //  sequel-pro
 //
-//  Copyright (c) 2010 Sequel Pro Team. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on October 23, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,12 +23,15 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifdef __OBJC__
-	#import <Cocoa/Cocoa.h>
+#import "SPExportController.h"
 
-	// Nearly every class uses constants
-	#import "SPConstants.h"
-	
-	// Make all our custom additions available
-	#import "SPCategoryAdditions.h"
-#endif
+/**
+ * @category SPExportControllerDelegate SPExportControllerDelegate.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Export controller delegate category.
+ */
+@interface SPExportController (SPExportControllerDelegate)
+
+@end

@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPGrowlController.h"
-#import "SPMainThreadTrampoline.h"
 
 #include <mach/mach_time.h>
 

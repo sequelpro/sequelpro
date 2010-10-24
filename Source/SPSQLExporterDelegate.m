@@ -26,7 +26,6 @@
 #import "SPSQLExporterDelegate.h"
 #import "SPSQLExporter.h"
 #import "SPDatabaseDocument.h"
-#import "SPMainThreadTrampoline.h"
 
 @implementation SPExportController (SPSQLExporterDelegate)
 

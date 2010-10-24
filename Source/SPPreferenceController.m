@@ -24,14 +24,11 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPPreferenceController.h"
-#import "SPWindowAdditions.h"
 #import "SPFavoriteTextFieldCell.h"
 #import "SPKeychain.h"
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
-#import "SPColorAdditions.h"
 #import "SPColorWellCell.h"
-#import "SPFileManagerAdditions.h"
 #import "SPAlertSheets.h"
 
 @interface SPPreferenceController (PrivateAPI)

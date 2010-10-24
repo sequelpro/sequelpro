@@ -26,8 +26,6 @@
 #import "SPTableContent.h"
 #import "SPTablesList.h"
 #import "SPHistoryController.h"
-#import "SPStringAdditions.h"
-#import "SPMainThreadTrampoline.h"
 
 @implementation SPHistoryController
 

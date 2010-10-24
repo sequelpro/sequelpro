@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPServerVariablesController.h"
-#import "SPArrayAdditions.h"
 #import "SPDatabaseDocument.h"
 
 @interface SPServerVariablesController (PrivateAPI)

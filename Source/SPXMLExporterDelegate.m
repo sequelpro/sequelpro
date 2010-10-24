@@ -25,10 +25,8 @@
 
 #import "SPXMLExporterDelegate.h"
 #import "SPXMLExporter.h"
-#import "SPMainThreadTrampoline.h"
 #import "SPDatabaseDocument.h"
 #import "SPFileHandle.h"
-#import "SPStringAdditions.h"
 
 @implementation SPExportController (SPXMLExporterDelegate)
 

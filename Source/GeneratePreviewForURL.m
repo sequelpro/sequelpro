@@ -28,7 +28,6 @@
 #include <QuickLook/QuickLook.h>
 
 #import "SPDataAdditions.h"
-#import "SPStringAdditions.h"
 #import "SPEditorTokens.h"
 
 /* -----------------------------------------------------------------------------

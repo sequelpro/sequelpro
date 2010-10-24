@@ -26,8 +26,6 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPCSVExporter.h"
-#import "SPArrayAdditions.h"
-#import "SPStringAdditions.h"
 #import "SPFileHandle.h"
 #import "SPTableData.h"
 #import "SPExportUtilities.h"

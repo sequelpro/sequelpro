@@ -55,7 +55,6 @@
 //	See more possible syntaxa in SPTooltip to init a tooltip
 
 #import "SPTooltip.h"
-#import "SPTextViewAdditions.h"
 
 #include <tgmath.h>
 

@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPCSVParser.h"
-#import "SPNotLoaded.h"
 
 /**
  * Please see the header files for a general description of the purpose of this class.

@@ -106,12 +106,6 @@
 	// XML
 	IBOutlet NSTextField *exportXMLNULLValuesAsTextField;
 	
-	// HTML
-	IBOutlet NSButton *exportHTMLIncludeStructureCheck;
-	
-	// PDF
-	IBOutlet NSButton *exportPDFIncludeStructureCheck;
-	
 	/**
 	 * Cancellation flag
 	 */

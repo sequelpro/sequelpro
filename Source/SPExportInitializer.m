@@ -26,12 +26,10 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPExportInitializer.h"
-#import "SPStringAdditions.h"
 #import "SPTableData.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPGrowlController.h"
-#import "SPMainThreadTrampoline.h"
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
 #import "SPAlertSheets.h"

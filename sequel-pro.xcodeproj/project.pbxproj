@@ -60,6 +60,7 @@
 		1740FABB0FC4372F00CF3699 /* SPDatabaseData.m in Sources */ = {isa = PBXBuildFile; fileRef = 1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */; };
 		174CE11E10AB80B5008F892B /* DatabaseProcessList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 174CE11C10AB80B5008F892B /* DatabaseProcessList.xib */; };
 		174CE14210AB9281008F892B /* SPProcessListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CE14110AB9281008F892B /* SPProcessListController.m */; };
+		175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
 		177E792E0FCB54EC00E9E122 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792B0FCB54EC00E9E122 /* database-small.png */; };
 		177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792C0FCB54EC00E9E122 /* dummy-small.png */; };
@@ -573,6 +574,9 @@
 		174CE11D10AB80B5008F892B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseProcessList.xib; sourceTree = "<group>"; };
 		174CE14010AB9281008F892B /* SPProcessListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListController.h; sourceTree = "<group>"; };
 		174CE14110AB9281008F892B /* SPProcessListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessListController.m; sourceTree = "<group>"; };
+		175EC63312733B36009A7C0F /* SPExportControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportControllerDelegate.h; sourceTree = "<group>"; };
+		175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportControllerDelegate.m; sourceTree = "<group>"; };
+		175EC64C12733CDF009A7C0F /* SPCategoryAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCategoryAdditions.h; sourceTree = "<group>"; };
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
 		177E792B0FCB54EC00E9E122 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
@@ -1594,10 +1598,10 @@
 		17DC8825126B222D00E9AAEC /* Third Party */ = {
 			isa = PBXGroup;
 			children = (
-				5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */,
-				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
 				58C34F5110B86CAE00D37E14 /* NSNotificationAdditions.h */,
 				58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */,
+				5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */,
+				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
 				17DC8826126B22F200E9AAEC /* Views */,
 				58B909A111C3B8EC000826E5 /* Localization */,
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
@@ -1978,6 +1982,8 @@
 				17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */,
 				17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */,
 				17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */,
+				175EC63312733B36009A7C0F /* SPExportControllerDelegate.h */,
+				175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */,
 				17F90E451210B41100274C98 /* Model */,
 				173C836C11AAD24300B8B084 /* Exporters */,
 				173C837C11AAD2C500B8B084 /* Delegate Protocols */,
@@ -2244,6 +2250,7 @@
 		B57747D60F7A8990003B34F9 /* Category Additions */ = {
 			isa = PBXGroup;
 			children = (
+				175EC64C12733CDF009A7C0F /* SPCategoryAdditions.h */,
 				B52460D30F8EF92300171639 /* SPArrayAdditions.h */,
 				B52460D40F8EF92300171639 /* SPArrayAdditions.m */,
 				1789343A0F30C1DD0097539A /* SPStringAdditions.h */,
@@ -2910,6 +2917,7 @@
 				BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */,
 				17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */,
 				1798AB911267924D000D946A /* SPAppleScriptSupport.m in Sources */,
+				175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

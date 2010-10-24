@@ -22,9 +22,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPStringAdditions.h"
-#import "SPTextViewAdditions.h"
-
 @implementation NSTextView (SPTextViewAdditions)
 
 /*

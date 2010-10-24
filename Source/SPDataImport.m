@@ -33,13 +33,9 @@
 #import "SPSQLParser.h"
 #import "SPCSVParser.h"
 #import "SPTableData.h"
-#import "SPStringAdditions.h"
-#import "SPArrayAdditions.h"
 #import "RegexKitLite.h"
 #import "SPAlertSheets.h"
 #import "SPFieldMapperController.h"
-#import "SPMainThreadTrampoline.h"
-#import "SPNotLoaded.h"
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
 

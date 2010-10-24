@@ -24,13 +24,13 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <OCMock/OCMock.h>
+
 #import "SPAlertSheets.h"
 #import "SPDatabaseCopyTest.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
 #import "MCPConnection.h"
 #import "SPDatabaseInfo.h"
-#import "SPStringAdditions.h"
 #import "SPLogger.h"
 
 @implementation SPDatabaseCopyTest

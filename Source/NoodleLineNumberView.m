@@ -31,7 +31,6 @@
 // functionality and adds selection by clicking on the ruler.
 
 #import "NoodleLineNumberView.h"
-#import "SPArrayAdditions.h"
 
 #include <tgmath.h>
 

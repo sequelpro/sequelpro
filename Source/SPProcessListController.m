@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPProcessListController.h"
-#import "SPArrayAdditions.h"
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 

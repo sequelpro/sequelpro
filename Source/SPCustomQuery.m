@@ -26,10 +26,6 @@
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
 #import "SPGrowlController.h"
-#import "SPStringAdditions.h"
-#import "SPTextViewAdditions.h"
-#import "SPArrayAdditions.h"
-#import "SPDataAdditions.h"
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
@@ -42,7 +38,6 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
-#import "SPMainThreadTrampoline.h"
 #import "SPCopyTable.h"
 #import "SPGeometryDataView.h"
 

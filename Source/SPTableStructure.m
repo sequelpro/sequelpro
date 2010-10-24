@@ -29,10 +29,7 @@
 #import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPSQLParser.h"
-#import "SPStringAdditions.h"
-#import "SPArrayAdditions.h"
 #import "SPAlertSheets.h"
-#import "SPMainThreadTrampoline.h"
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
 

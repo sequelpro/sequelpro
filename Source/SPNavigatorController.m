@@ -28,9 +28,9 @@
 #import "ImageAndTextCell.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
-#import "SPArrayAdditions.h"
 #import "SPLogger.h"
 #import "SPTooltip.h"
+
 #import <objc/runtime.h>
 
 static SPNavigatorController *sharedNavigatorController = nil;

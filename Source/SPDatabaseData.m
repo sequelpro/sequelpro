@@ -24,7 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDatabaseData.h"
-#import "SPStringAdditions.h"
 #import "SPServerSupport.h"
 #import "SPDatabaseCharacterSets.h"
 

@@ -30,16 +30,22 @@
 #import "SPTablesList.h"
 #import "SPTableData.h"
 #import "SPTableContent.h"
-#import "SPArrayAdditions.h"
-#import "SPStringAdditions.h"
 #import "SPGrowlController.h"
 #import "SPExportFile.h"
 #import "SPAlertSheets.h"
+
+// Constants
+static const NSUInteger SPExportUIPadding = 20;
+
+static const NSString *SPTableViewStructureColumnID = @"structure";
+static const NSString *SPTableViewContentColumnID   = @"content";
+static const NSString *SPTableViewDropColumnID      = @"drop";
 
 @interface SPExportController (PrivateAPI)
 
 - (void)_switchTab;
 - (void)_checkForDatabaseChanges;
+- (void)_displayExportTypeOptions:(BOOL)display;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -123,6 +129,11 @@
 	
 	// If found the set the default path to the user's desktop, otherwise use their home directory
 	[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
+	
+	// Accept Core Animation
+	[exportOptionsTabBar wantsLayer];
+	[exportTablelistScrollView wantsLayer];
+	[exportTableListButtonBar wantsLayer];
 }
 
 #pragma mark -
@@ -499,7 +510,7 @@
  */
 - (IBAction)toggleSQLIncludeStructure:(id)sender
 {
-	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(![sender state])];
+	[[exportTableList tableColumnWithIdentifier:SPTableViewStructureColumnID] setHidden:(![sender state])];
 	
 	[self _toggleExportButtonOnBackgroundThread];
 }
@@ -509,7 +520,7 @@
  */
 - (IBAction)toggleSQLIncludeContent:(id)sender
 {
-	[[exportTableList tableColumnWithIdentifier:@"content"] setHidden:(![sender state])];
+	[[exportTableList tableColumnWithIdentifier:SPTableViewContentColumnID] setHidden:(![sender state])];
 	
 	[self _toggleExportButtonOnBackgroundThread];
 }
@@ -519,7 +530,7 @@
  */
 - (IBAction)toggleSQLIncludeDropSyntax:(id)sender
 {
-	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(![sender state])];
+	[[exportTableList tableColumnWithIdentifier:SPTableViewDropColumnID] setHidden:(![sender state])];
 	
 	[self _toggleExportButtonOnBackgroundThread];
 }
@@ -533,64 +544,6 @@
 
 	// Ensure UI validation
 	[self switchInput:exportInputPopUpButton];
-}
-
-#pragma mark -
-#pragma mark Table view datasource methods
-
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
-{
-	return [tables count];
-}
-
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{		
-	return NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], [exportTableList columnWithIdentifier:[tableColumn identifier]]);
-}
-
-- (void)tableView:(NSTableView *)tableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{	
-	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
-
-	[self _toggleExportButtonOnBackgroundThread];
-}
-
-#pragma mark -
-#pragma mark Table view delegate methods
-
-- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
-{
-	return (tableView != exportTableList);
-}
-
-- (BOOL)tableView:(NSTableView *)tableView shouldTrackCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	return (tableView == exportTableList);
-}
-
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-}
-
-#pragma mark -
-#pragma mark Tabview delegate methods
-
-- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	[tabViewItem setView:exporterView];
-		
-	[self _switchTab];
-}
-
-#pragma mark -
-#pragma mark Combo box delegate methods
-
-- (void)comboBoxSelectionDidChange:(NSNotification *)notification
-{
-	if ([notification object] == exportCSVFieldsTerminatedField) {
-		[self updateDisplayedExportFilename];
-	}
 }
 
 #pragma mark -
@@ -728,17 +681,18 @@
 		[[[exportInputPopUpButton menu] itemAtIndex:SPQueryExport] setEnabled:((enable) && ([[customQueryInstance currentResult] count] > 1))];
 	}
 	
-	[[exportTableList tableColumnWithIdentifier:@"structure"] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
-	[[exportTableList tableColumnWithIdentifier:@"drop"] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
+	[[exportTableList tableColumnWithIdentifier:SPTableViewStructureColumnID] setHidden:(isSQL) ? (![exportSQLIncludeStructureCheck state]) : YES];
+	[[exportTableList tableColumnWithIdentifier:SPTableViewDropColumnID] setHidden:(isSQL) ? (![exportSQLIncludeDropSyntaxCheck state]) : YES];
 	
-	[[[exportTableList tableColumnWithIdentifier:@"content"] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
+	[[[exportTableList tableColumnWithIdentifier:SPTableViewContentColumnID] headerCell] setStringValue:(enable) ? @"" : @"C"]; 
 	
 	// Set the tooltip
-	[[exportTableList tableColumnWithIdentifier:@"content"] setHeaderToolTip:(enable) ? @"" : NSLocalizedString(@"Include content", @"include content table column tooltip")];
+	[[exportTableList tableColumnWithIdentifier:SPTableViewContentColumnID] setHeaderToolTip:(enable) ? @"" : NSLocalizedString(@"Include content", @"include content table column tooltip")];
 	
 	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
+	[self _displayExportTypeOptions:(isSQL || isCSV || isXML)];
 	[self updateAvailableExportFilenameTokens];
 	
 	if (!showCustomFilenameView) [self updateDisplayedExportFilename];
@@ -772,6 +726,32 @@
 	else {
 		[self initializeExportUsingSelectedOptions];
 	}
+}
+
+/**
+ * Toggles the display of the export type options view.
+ *
+ * @param display A BOOL indicating whether or not the view should be visible
+ */
+- (void)_displayExportTypeOptions:(BOOL)display
+{
+	NSRect windowFrame = [[exportTablelistScrollView window] frame];
+	NSRect viewFrame   = [exportTablelistScrollView frame];
+	NSRect barFrame    = [exportTableListButtonBar frame];
+	
+	NSUInteger padding = (2 * SPExportUIPadding);
+	
+	CGFloat width  = (!display) ? (windowFrame.size.width - (padding + 2)) : (windowFrame.size.width - ([exportOptionsTabBar frame].size.width + (padding + 4)));
+	CGFloat width2 = (!display) ? (windowFrame.size.width - (padding + 2)) : (windowFrame.size.width - ([exportTableListButtonBar frame].size.width + (padding + 4)));
+	
+	[NSAnimationContext beginGrouping];
+	[[NSAnimationContext currentContext] setDuration:0.3];
+	
+	[[exportOptionsTabBar animator] setHidden:(!display)];
+	[[exportTablelistScrollView animator] setFrame:NSMakeRect(viewFrame.origin.x, viewFrame.origin.y, width, viewFrame.size.height)];
+	[[exportTableListButtonBar animator] setFrame:NSMakeRect(barFrame.origin.x, barFrame.origin.y, width, barFrame.size.height)];
+	
+	[NSAnimationContext endGrouping];
 }
 
 /**

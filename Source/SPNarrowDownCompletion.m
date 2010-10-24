@@ -30,8 +30,6 @@
 #import <tgmath.h>
 
 #import "SPNarrowDownCompletion.h"
-#import "SPArrayAdditions.h"
-#import "SPStringAdditions.h"
 #import "ImageAndTextCell.h"
 #import "SPQueryController.h"
 #import "RegexKitLite.h"

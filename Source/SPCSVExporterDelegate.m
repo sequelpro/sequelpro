@@ -28,7 +28,6 @@
 #import "SPCSVExporter.h"
 #import "SPCSVExporterDelegate.h"
 #import "SPDatabaseDocument.h"
-#import "SPMainThreadTrampoline.h"
 #import "SPFileHandle.h"
 
 @implementation SPExportController (SPCSVExporterDelegate)

@@ -30,7 +30,6 @@
 #import "SPTableCopy.h"
 #import "MCPConnection.h"
 #import "SPDatabaseInfo.h"
-#import "SPStringAdditions.h"
 #import "SPLogger.h"
 
 @implementation SPDatabaseRenameTest
@@ -53,7 +52,7 @@
 {
 	id mockConnection = [OCMockObject niceMockForClass:[MCPConnection class]];
 	
-	eturn mockConnection;
+	return mockConnection;
 }
 
 - (id)getMockDBInfo 

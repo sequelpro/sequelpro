@@ -25,8 +25,6 @@
 #import "SPUserManager.h"
 #import "SPUserMO.h"
 #import "ImageAndTextCell.h"
-#import "SPArrayAdditions.h"
-#import "SPStringAdditions.h"
 #import "SPGrowlController.h"
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"

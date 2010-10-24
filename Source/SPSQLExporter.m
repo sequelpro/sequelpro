@@ -27,8 +27,6 @@
 
 #import "SPSQLExporter.h"
 #import "SPTablesList.h"
-#import "SPArrayAdditions.h"
-#import "SPStringAdditions.h"
 #import "SPFileHandle.h"
 #import "SPExportUtilities.h"
 #import "SPTableData.h"

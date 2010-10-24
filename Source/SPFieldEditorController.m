@@ -23,10 +23,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFieldEditorController.h"
-#import "SPStringAdditions.h"
-#import "SPArrayAdditions.h"
-#import "SPTextViewAdditions.h"
-#import "SPDataAdditions.h"
 #import "QLPreviewPanel.h"
 #import "SPDataCellFormatter.h"
 #import "RegexKitLite.h"
