@@ -167,6 +167,8 @@
 /**
  * Exports the contents of the supplied array of tables or data array.
  *
+ * Note that at least one of these parameters must not be nil.
+ *
  * @param exportTables An array of table/view names to be exported (can be nil).
  * @param dataArray    A MySQL result set array to be exported (can be nil).
  */
