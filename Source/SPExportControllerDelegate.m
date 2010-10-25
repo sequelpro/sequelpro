@@ -50,11 +50,6 @@
 #pragma mark -
 #pragma mark Table view delegate methods
 
-- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
-{
-	return (tableView != exportTableList);
-}
-
 - (BOOL)tableView:(NSTableView *)tableView shouldTrackCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	return (tableView == exportTableList);
