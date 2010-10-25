@@ -88,8 +88,11 @@
  */
 - (IBAction)selectCurrentLine:(id)sender
 {
-	[self doCommandBySelector:@selector(moveToBeginningOfLine:)];
-	[self doCommandBySelector:@selector(moveToEndOfLineAndModifySelection:)];
+	NSRange lineRange = [[self string] lineRangeForRange:[self selectedRange]];
+	if(lineRange.location != NSNotFound && lineRange.length)
+		[self setSelectedRange:lineRange];
+	else
+		NSBeep();
 }
 
 /*
