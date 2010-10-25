@@ -112,7 +112,7 @@
 	NSMutableString *wkt = [NSMutableString string];
 
 	if (bufferLength < WKB_HEADER_SIZE)
-		return @"Header Error";
+		return @"";
 
 	memcpy(&srid, &geoBuffer[0], SIZEOF_STORED_UINT32);
 	ptr += SIZEOF_STORED_UINT32;
@@ -726,7 +726,7 @@
 	NSUInteger ptr = BUFFER_START;  // pointer to geoBuffer while parsing
 
 	if (bufferLength < WKB_HEADER_SIZE)
-		return @"Header Error";
+		return @"-1";
 
 	byteOrder = geoBuffer[ptr];
 
