@@ -1058,12 +1058,16 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (IBAction)addGlobalSourceVariable:(id)sender
 {
+
+	// Since it can be called via keyboard short-cut as well bail the call if sheet is already open
+	if(addGlobalSheetIsOpen) return;
+
 	addGlobalSheetIsOpen = YES;
 
 	// Init insert pulldown menu
 
 	// Remove all dynamic menu items
-	while([insertPullDownButton numberOfItems] > 5)
+	while([insertPullDownButton numberOfItems] > (([[self selectedImportMethod] isEqualToString:@"UPDATE"]) ? 6 : 5))
 		[insertPullDownButton removeItemAtIndex:[insertPullDownButton numberOfItems]-1];
 
 	// Add recent global value menu
@@ -1601,7 +1605,7 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 		if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID] && [importFieldNamesHeaderSwitch state] == NSOnState) {
 
 			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
-				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
+				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"User-defined value", @"user-defined value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
 
 			if(fieldMappingCurrentRow)
 				return [NSString stringWithFormat:@"%@: %@",
@@ -1613,11 +1617,10 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 
 		else if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID] && [importFieldNamesHeaderSwitch state] == NSOffState) {
-			id value = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
-			if(value)
-				return [value description];
+			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
+				return NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
 			else
-				return @"";
+				return NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
 		}
 
 		else if([[aTableColumn identifier] isEqualToString:SPTableViewOperatorColumnID]) {
@@ -1645,6 +1648,7 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 {
 
 	if(aTableView == fieldMapperTableView) {
+		
 		if ([[aTableColumn identifier] isEqualToString:SPTableViewTargetFieldColumnID]) {
 			if([toBeEditedRowIndexes containsIndex:rowIndex]) {
 				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableColumnNames objectAtIndex:rowIndex]] autorelease];
@@ -1689,9 +1693,11 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID]) {
+
 			// Check if all global value was deleted, if so set assigned field as doNotImport
-			if([[fieldMappingArray objectAtIndex:rowIndex] intValue] >= [fieldMappingButtonOptions count])
+			if([[fieldMappingArray objectAtIndex:rowIndex] intValue] >= [fieldMappingButtonOptions count]) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doNotImport];
+			}
 
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 
