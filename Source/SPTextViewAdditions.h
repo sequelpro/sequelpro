@@ -39,6 +39,8 @@
 - (IBAction)doTranspose:(id)sender;
 - (IBAction)doRemoveDiacritics:(id)sender;
 - (IBAction)insertNULLvalue:(id)sender;
+- (IBAction)moveSelectionLineUp:(id)sender;
+- (IBAction)moveSelectionLineDown:(id)sender;
 
 - (void)makeTextSizeLarger;
 - (void)makeTextSizeSmaller;

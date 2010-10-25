@@ -399,7 +399,65 @@
 
 }
 
-/*
+/**
+ * Move selected lines or current line one line up
+ */
+- (IBAction)moveSelectionLineUp:(id)sender;
+{
+	NSRange currentSelection = [self selectedRange];
+	NSRange lineRange = [[self string] lineRangeForRange:currentSelection];
+	if(lineRange.location > 0) {
+		NSRange beforeLineRange = [[self string] lineRangeForRange:NSMakeRange(lineRange.location-1, 0)];
+		NSRange insertPoint = NSMakeRange(beforeLineRange.location, 0);
+		NSString *currentLine = [[self string] substringWithRange:lineRange];
+		BOOL lastLine = NO;
+		if([currentLine characterAtIndex:[currentLine length]-1] != '\n') {
+			currentLine = [NSString stringWithFormat:@"%@\n", currentLine];
+			lastLine = YES;
+		}
+		[self setSelectedRange:lineRange];
+		[self insertText:@""];
+		[self setSelectedRange:insertPoint];
+		[self insertText:currentLine];
+		if(lastLine) {
+			[self setSelectedRange:NSMakeRange([[self string] length]-1,1)];
+			[self insertText:@""];
+			
+		}
+		if(currentSelection.length)
+			insertPoint.length+=[currentLine length];
+		[self setSelectedRange:insertPoint];
+	}
+}
+
+/**
+ * Move selected lines or current line one line down
+ */
+- (IBAction)moveSelectionLineDown:(id)sender
+{
+
+	NSRange currentSelection = [self selectedRange];
+	NSRange lineRange = [[self string] lineRangeForRange:currentSelection];
+	if(NSMaxRange(lineRange) < [[self string] length]) {
+		NSRange afterLineRange = [[self string] lineRangeForRange:NSMakeRange(NSMaxRange(lineRange)+1, 0)];
+		NSRange insertPoint = NSMakeRange(lineRange.location + afterLineRange.length, 0);
+		NSString *currentLine = [[self string] substringWithRange:lineRange];
+		[self setSelectedRange:lineRange];
+		[self insertText:@""];
+		[self setSelectedRange:insertPoint];
+		if([[self string] characterAtIndex:insertPoint.location-1] != '\n') {
+			[self insertText:@"\n"];
+			insertPoint.location++;
+			currentLine = [currentLine substringToIndex:[currentLine length]-1];
+		}
+		[self insertText:currentLine];
+		if(currentSelection.length)
+			insertPoint.length+=[currentLine length];
+		[self setSelectedRange:insertPoint];
+	}
+}
+
+/**
  * Increase the textView's font size by 1
  */
 - (void)makeTextSizeLarger
@@ -428,7 +486,7 @@
 #pragma mark -
 #pragma mark multi-touch trackpad support
 
-/*
+/**
  * Trackpad two-finger zooming gesture for in/decreasing the font size
  */
 - (void) magnifyWithEvent:(NSEvent *)anEvent
