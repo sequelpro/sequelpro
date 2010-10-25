@@ -439,7 +439,7 @@
 	NSRange currentSelection = [self selectedRange];
 	NSRange lineRange = [[self string] lineRangeForRange:currentSelection];
 	if(NSMaxRange(lineRange) < [[self string] length]) {
-		NSRange afterLineRange = [[self string] lineRangeForRange:NSMakeRange(NSMaxRange(lineRange)+1, 0)];
+		NSRange afterLineRange = [[self string] lineRangeForRange:NSMakeRange(NSMaxRange(lineRange), 0)];
 		NSRange insertPoint = NSMakeRange(lineRange.location + afterLineRange.length, 0);
 		NSString *currentLine = [[self string] substringWithRange:lineRange];
 		[self setSelectedRange:lineRange];
