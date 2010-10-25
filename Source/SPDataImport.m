@@ -1285,16 +1285,13 @@
 							NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
 							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
 							if(colIndex > 0 && colIndex <= [csvRowArray count]) {
-								NSString *colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
-								// escape column string for ' or " if the char just before $… is a " or '
-								if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '\'')
-									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
-								else if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '"')
-									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
+								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
+								if(colStr == [NSNull null])
+									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
 								else
-									[globalVar replaceCharactersInRange:aRange withString:colStr];
+									[globalVar replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"'%@'", [(NSString*)colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 							} else {
-								[globalVar replaceCharactersInRange:aRange withString:@""];
+								[globalVar replaceCharactersInRange:aRange withString:@"GLOBAL_SQL_EXPRESSION_ERROR"];
 							}
 						}
 					}
@@ -1335,16 +1332,13 @@
 							NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
 							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
 							if(colIndex > 0 && colIndex <= [csvRowArray count]) {
-								NSString *colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
-								// escape column string for ' or " if the char just before $… is a " or '
-								if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '\'')
-									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
-								else if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '"')
-									[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
+								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
+								if(colStr == [NSNull null])
+									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
 								else
-									[globalVar replaceCharactersInRange:aRange withString:colStr];
+									[globalVar replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"'%@'", [(NSString*)colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 							} else {
-								[globalVar replaceCharactersInRange:aRange withString:@""];
+								[globalVar replaceCharactersInRange:aRange withString:@"GLOBAL_SQL_EXPRESSION_ERROR"];
 							}
 						}
 					}
@@ -1400,23 +1394,20 @@
 			} else {
 				[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
 				// Global variables are coming wrapped in ' ' if there're not marked as SQL.
-				// If global variable contains column placeholders $1 etc. replace them.
+				// If global variable contains column placeholders $1 etc. replace them by escaped 'csv content' or NULL.
 				if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
 					while([globalVar isMatchedByRegex:re]) {
 						[globalVar flushCachedRegexData];
 						NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
 						NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
 						if(colIndex > 0 && colIndex <= [csvRowArray count]) {
-							NSString *colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
-							// escape column string for ' or " if the char just before $… is a " or '
-							if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '\'')
-								[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]];
-							else if(aRange.location && [globalVar characterAtIndex:aRange.location-1] == '"')
-								[globalVar replaceCharactersInRange:aRange withString:[colStr stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
+							id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
+							if(colStr == [NSNull null])
+								[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
 							else
-								[globalVar replaceCharactersInRange:aRange withString:colStr];
+								[globalVar replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"'%@'", [(NSString*)colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 						} else {
-							[globalVar replaceCharactersInRange:aRange withString:@""];
+							[globalVar replaceCharactersInRange:aRange withString:@"GLOBAL_SQL_EXPRESSION_ERROR"];
 						}
 					}
 				}

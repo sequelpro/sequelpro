@@ -31,6 +31,16 @@
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
+// Constants
+static const NSString *SPTableViewImportValueColumnID = @"import_value";
+static const NSString *SPTableViewTypeColumnID        = @"type";
+static const NSString *SPTableViewTargetFieldColumnID = @"target_field";
+static const NSString *SPTableViewOperatorColumnID    = @"operator";
+static const NSString *SPTableViewValueIndexColumnID  = @"value_index";
+static const NSString *SPTableViewGlobalValueColumnID = @"global_value";
+static const NSString *SPTableViewSqlColumnID         = @"sql";
+
+
 @implementation SPFieldMapperController
 
 @synthesize sourcePath;
@@ -276,11 +286,13 @@
 - (NSArray*)fieldMappingGlobalValueArray
 {
 	NSMutableArray *globals = [NSMutableArray array];
-	for(NSInteger i=0; i < [fieldMappingGlobalValues count]; i++)
-		if([[fieldMappingGlobalValuesSQLMarked objectAtIndex:i] boolValue] || [[fieldMappingGlobalValues objectAtIndex:i] isKindOfClass:[NSNull class]])
-			[globals addObject:[fieldMappingGlobalValues objectAtIndex:i]];
+	for(NSInteger i=0; i < [fieldMappingGlobalValues count]; i++) {
+		id glob = NSArrayObjectAtIndex(fieldMappingGlobalValues, i);
+		if([NSArrayObjectAtIndex(fieldMappingGlobalValuesSQLMarked, i) boolValue] || glob == [NSNull null])
+			[globals addObject:glob];
 		else
-			[globals addObject:[NSString stringWithFormat:@"'%@'", [[fieldMappingGlobalValues objectAtIndex:i] stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
+			[globals addObject:[NSString stringWithFormat:@"'%@'", [(NSString*)glob stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
+	}
 
 	return globals;
 }
@@ -289,7 +301,7 @@
 {
 	NSInteger i = 0;
 	for(id item in fieldMappingArray) {
-		if([item intValue] >= numberOfImportColumns && [fieldMappingOperatorArray objectAtIndex:i] != doNotImport)
+		if([item intValue] >= numberOfImportColumns && NSArrayObjectAtIndex(fieldMappingOperatorArray, i) != doNotImport)
 			return YES;
 		i++;
 	}
@@ -1562,7 +1574,7 @@
 
 	if(aTableView == fieldMapperTableView) {
 		// A click at the operator column's header toggle all operators
-		if ([[aTableColumn identifier] isEqualToString:@"operator"]
+		if ([[aTableColumn identifier] isEqualToString:SPTableViewOperatorColumnID]
 				&& [self numberOfRowsInTableView:aTableView]
 				&& [fieldMappingOperatorArray count]
 				&& [fieldMappingTableColumnNames count]) {
@@ -1586,7 +1598,7 @@
 
 		if ([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
 
-		if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOnState) {
+		if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID] && [importFieldNamesHeaderSwitch state] == NSOnState) {
 
 			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
 				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Global value", @"global value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
@@ -1600,10 +1612,15 @@
 
 		}
 
-		else if([[aTableColumn identifier] isEqualToString:@"import_value"] && [importFieldNamesHeaderSwitch state] == NSOffState)
-			return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
+		else if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID] && [importFieldNamesHeaderSwitch state] == NSOffState) {
+			id value = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
+			if(value)
+				return [value description];
+			else
+				return @"";
+		}
 
-		else if([[aTableColumn identifier] isEqualToString:@"operator"]) {
+		else if([[aTableColumn identifier] isEqualToString:SPTableViewOperatorColumnID]) {
 			if([aCell objectValue] == doImport)
 				return NSLocalizedString(@"Import field", @"import field operator tooltip");
 			else if([aCell objectValue] == doNotImport)
@@ -1614,11 +1631,11 @@
 				return @"";
 		}
 
-		else if([[aTableColumn identifier] isEqualToString:@"target_field"])
+		else if([[aTableColumn identifier] isEqualToString:SPTableViewTargetFieldColumnID])
 			return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
 	}
 	else if(aTableView == globalValuesTableView) {
-		if ([[aTableColumn identifier] isEqualToString:@"global_value"])
+		if ([[aTableColumn identifier] isEqualToString:SPTableViewGlobalValueColumnID])
 			return [fieldMappingGlobalValues objectAtIndex:numberOfImportColumns + rowIndex];
 	}
 	return @"";
@@ -1628,7 +1645,7 @@
 {
 
 	if(aTableView == fieldMapperTableView) {
-		if ([[aTableColumn identifier] isEqualToString:@"target_field"]) {
+		if ([[aTableColumn identifier] isEqualToString:SPTableViewTargetFieldColumnID]) {
 			if([toBeEditedRowIndexes containsIndex:rowIndex]) {
 				NSTextFieldCell *b = [[[NSTextFieldCell alloc] initTextCell:[fieldMappingTableColumnNames objectAtIndex:rowIndex]] autorelease];
 				[b setEditable:YES];
@@ -1651,7 +1668,7 @@
 			}
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewTypeColumnID]) {
 			if([toBeEditedRowIndexes containsIndex:rowIndex]) {
 				[aTableColumn setDataCell:typeComboxBox];
 				return [fieldMappingTableTypes objectAtIndex:rowIndex];
@@ -1671,8 +1688,13 @@
 			}
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID]) {
+			// Check if all global value was deleted, if so set assigned field as doNotImport
+			if([[fieldMappingArray objectAtIndex:rowIndex] intValue] >= [fieldMappingButtonOptions count])
+				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:doNotImport];
+
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
+
 				NSPopUpButtonCell *c = [aTableColumn dataCell];
 				NSMenu *m = [c menu];
 				[m setAutoenablesItems:NO];
@@ -1685,7 +1707,8 @@
 				if([[self selectedImportMethod] isEqualToString:@"UPDATE"])
 					[c addItemWithTitle:NSLocalizedString(@"Match Field", @"match field menu item")];
 				[m addItem:[NSMenuItem separatorItem]];
-				[c addItemWithTitle:NSLocalizedString(@"Add Value or Expression…", @"add global value or expression menu item")];
+				NSMenuItem *menuItem = [m addItemWithTitle:NSLocalizedString(@"Add Value or Expression…", @"add global value or expression menu item") action:@selector(addGlobalSourceVariable:) keyEquivalent:@"g"];
+				[menuItem setKeyEquivalentModifierMask:(NSAlternateKeyMask|NSCommandKeyMask)];
 				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
 				[[m itemAtIndex:[c numberOfItems]-1] setEnabled:NO];
 
@@ -1699,7 +1722,7 @@
 			}
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewOperatorColumnID]) {
 			if ([[aTableColumn dataCell] isKindOfClass:[NSPopUpButtonCell class]]) {
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] removeAllItems];
 				[(NSPopUpButtonCell *)[aTableColumn dataCell] addItemsWithTitles:fieldMappingOperatorOptions];
@@ -1710,15 +1733,15 @@
 
 
 	else if(aTableView == globalValuesTableView) {
-		if ([[aTableColumn identifier] isEqualToString:@"value_index"]) {
+		if ([[aTableColumn identifier] isEqualToString:SPTableViewValueIndexColumnID]) {
 			return [NSString stringWithFormat:@"%ld.", numberOfImportColumns + rowIndex + 1];
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"global_value"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewGlobalValueColumnID]) {
 			return [fieldMappingGlobalValues objectAtIndex:numberOfImportColumns + rowIndex];
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"sql"])
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewSqlColumnID])
 			return [fieldMappingGlobalValuesSQLMarked objectAtIndex:numberOfImportColumns + rowIndex];
 
 	}
@@ -1743,7 +1766,7 @@
 {
 
 	if(aTableView == fieldMapperTableView) {
-		if ([[aTableColumn identifier] isEqualToString:@"import_value"]) {
+		if ([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID]) {
 			if([anObject integerValue] > [fieldMappingButtonOptions count]) {
 				// Ignore field - set operator to doNotImport
 				if([anObject integerValue] == [fieldMappingButtonOptions count]+1) {
@@ -1797,7 +1820,7 @@
 
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"target_field"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewTargetFieldColumnID]) {
 			if(newTableMode || [toBeEditedRowIndexes containsIndex:rowIndex]) {
 				if([(NSString*)anObject length]) {
 					[fieldMappingTableColumnNames replaceObjectAtIndex:rowIndex withObject:anObject];
@@ -1805,7 +1828,7 @@
 			}
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewTypeColumnID]) {
 			if(newTableMode || [toBeEditedRowIndexes containsIndex:rowIndex]) {
 				if([(NSString*)anObject length]) {
 					[fieldMappingTableTypes replaceObjectAtIndex:rowIndex withObject:anObject];
@@ -1817,7 +1840,7 @@
 			}
 		}
 
-		else if ([[aTableColumn identifier] isEqualToString:@"operator"]) {
+		else if ([[aTableColumn identifier] isEqualToString:SPTableViewOperatorColumnID]) {
 			if([fieldMappingOperatorArray objectAtIndex:rowIndex] == doNotImport) {
 				[fieldMappingOperatorArray replaceObjectAtIndex:rowIndex withObject:anObject];
 				[fieldMappingArray replaceObjectAtIndex:rowIndex withObject:lastDisabledCSVFieldcolumn];
@@ -1829,7 +1852,7 @@
 		}
 	}
 	else if(aTableView == globalValuesTableView) {
-		if ([[aTableColumn identifier] isEqualToString:@"global_value"]) {
+		if ([[aTableColumn identifier] isEqualToString:SPTableViewGlobalValueColumnID]) {
 
 			[fieldMappingGlobalValues replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:anObject];
 
@@ -1854,7 +1877,7 @@
 			for(id item in recents)
 				[recentGlobalValueMenu addItemWithTitle:item action:@selector(insertRecentGlobalValue:) keyEquivalent:@""];
 
-		} else if ([[aTableColumn identifier] isEqualToString:@"sql"]) {
+		} else if ([[aTableColumn identifier] isEqualToString:SPTableViewSqlColumnID]) {
 			[fieldMappingGlobalValuesSQLMarked replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:anObject];
 		}
 	}
