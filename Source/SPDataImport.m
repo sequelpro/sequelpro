@@ -384,15 +384,19 @@
 	fileTotalLength = [[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
 
+	// If importing a bzipped file, use indeterminate progress bars as no progress is available
+	BOOL useIndeterminate = NO;
+	if ([sqlFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
+
 	// Reset progress interface
 	[errorsView setString:@""];
 	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
 	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[[singleProgressBar onMainThread] setIndeterminate:NO];
+	[[singleProgressBar onMainThread] setIndeterminate:useIndeterminate];
 	[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
 	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
 	[[singleProgressBar onMainThread] startAnimation:self];
-				
+
 	// Open the progress sheet
 	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[[singleProgressSheet onMainThread] makeKeyWindow];
@@ -1467,9 +1471,16 @@
 	if ([pathExtension isEqualToString:@"SQL"]) {
 		[importFormatPopup selectItemWithTitle:@"SQL"];
 		[self changeFormat:self];
-	} else if ([pathExtension isEqualToString:@"CSV"]) {
+	} else if ([pathExtension isEqualToString:@"CSV"] || [pathExtension isEqualToString:@"TSV"]) {
 		[importFormatPopup selectItemWithTitle:@"CSV"];
 		[self changeFormat:self];
+
+		// Set the cell delineator based on extension
+		if ([pathExtension isEqualToString:@"CSV"]) {
+			[importFieldsTerminatedField setStringValue:@","];
+		} else if ([pathExtension isEqualToString:@"TSV"]) {
+			[importFieldsTerminatedField setStringValue:@"\\t"];
+		}
 
 		// Try to detect the line endings using "file"
 		NSTask *fileTask = [[NSTask alloc] init];

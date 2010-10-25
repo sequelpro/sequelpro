@@ -396,10 +396,11 @@
 								[sqlString appendString:data];
 								
 								[data release];
+
+								[sqlString appendString:@"'"];
 							}
-							
-							[sqlString appendString:@"'"];
 						} 
+
 						// GEOMETRY data types directly as hex data
 						else if ([object isKindOfClass:[MCPGeometryData class]]) {
 							[sqlString appendFormat:@"X'%@'", [connection prepareBinaryData:[object data]]];
