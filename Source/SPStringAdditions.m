@@ -382,7 +382,7 @@
 
 	NSString *geomStr = [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
-	if(![self rangeOfString:@")"].length || [self length] < 5) return @"";
+	if(![self rangeOfString:@")"].length || [self length] < 5) return @"NULL";
 
 	// No SRID
 	if([geomStr hasSuffix:@")"])

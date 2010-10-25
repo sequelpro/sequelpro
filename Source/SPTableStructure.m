@@ -1546,7 +1546,7 @@ returns a dictionary containing enum/set field names as key and possible values 
 		if(anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"]) {
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
-			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"]) {
+			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || [self _isFieldTypeGeometry:[currentRow objectForKey:@"type"]]) {
 				[currentRow setObject:@"" forKey:@"default"];
 				[currentRow setObject:@"" forKey:@"length"];
 			}
@@ -1897,9 +1897,9 @@ would result in a position change.
 		else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
 			[aCell setEnabled:([self _isFieldTypeAllowBinary:theRowType])];
 		}
-		// TEXT or BLOB fields don't allow a DEFAULT
+		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
 		else if([[aTableColumn identifier] isEqualToString:@"default"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"]) ? NO : YES];
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [self _isFieldTypeGeometry:theRowType]) ? NO : YES];
 		}
 		// Check allow NULL
 		else if([[aTableColumn identifier] isEqualToString:@"null"]) {

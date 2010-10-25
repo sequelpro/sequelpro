@@ -2389,9 +2389,6 @@
 		{
 			[rowValue setString:@"CURRENT_TIMESTAMP"];
 
-		} else if ( [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"geometry"] ) {
-			[rowValue setString:([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString]];
-		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else if ( [rowObject isNSNull]
 				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
 
@@ -2399,6 +2396,9 @@
 			//	problem: when a number isn't set, sequel-pro enters 0
 			//	-> second if argument isn't necessary!
 			[rowValue setString:@"NULL"];
+		} else if ( [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"geometry"] ) {
+			[rowValue setString:([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString]];
+		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else {
 
 			// I don't believe any of these class matches are ever met at present.
