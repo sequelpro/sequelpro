@@ -12,6 +12,7 @@
 
 # Ensure the path to the application has been supplied - should have occurred when the
 # script was run by selecting "Distribution" target and building.
+
 if [ $# -eq 0 ]
 then
     echo 'The path to the application must be supplied when running this script.'

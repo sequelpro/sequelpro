@@ -9,6 +9,12 @@
 ##
 ## Description: Localizes all of the application's NIB files. This script should only be run by Xcode.
 
+if [ "${BUILT_PRODUCTS_DIR}x" == 'x' ]
+then
+	echo 'This script should only be run by Xcode. Exiting...'
+	exit 1
+fi
+
 echo "Running genstrings to update 'Localizable.strings'..."
 
 # Update 'Localizable.strings' by running genstrings(1)

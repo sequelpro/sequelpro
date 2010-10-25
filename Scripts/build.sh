@@ -11,6 +11,12 @@
 ##              into Xcode's 'Run Scripts' build phase to make it easier to work with. As such this script
 ##              can only be run by Xcode.
 
+if [ "${BUILT_PRODUCTS_DIR}x" == 'x' ]
+then
+	echo 'This script should only be run by Xcode. Exiting...'
+	exit 1
+fi
+
 BUILD_PRODUCT="${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}"
 
 echo 'Updating build version...'

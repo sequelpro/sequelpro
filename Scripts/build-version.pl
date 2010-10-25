@@ -11,6 +11,7 @@
 ##              Subversion revision.
 
 use strict;
+use warnings;
 
 die "$0: Must be run from within Xcode. Exiting..." unless $ENV{"BUILT_PRODUCTS_DIR"};
 
