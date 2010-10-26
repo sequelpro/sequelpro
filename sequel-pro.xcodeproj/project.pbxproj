@@ -1356,8 +1356,6 @@
 				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
-				17E641520EF01EF6001BC333 /* SPDataImport.h */,
-				17E641530EF01EF6001BC333 /* SPDataImport.m */,
 				17E641540EF01EF6001BC333 /* SPTableStructure.h */,
 				17E641550EF01EF6001BC333 /* SPTableStructure.m */,
 				17D38EBA12771A1C00672B13 /* SPTableStructureDelegate.h */,
@@ -1390,8 +1388,6 @@
 				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
 				17E641600EF01F15001BC333 /* SPTablesList.h */,
 				17E641610EF01F15001BC333 /* SPTablesList.m */,
-				BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */,
-				BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */,
 				BC27779E11514B940034DF6A /* SPNavigatorController.h */,
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
@@ -1600,6 +1596,17 @@
 			name = Icons;
 			sourceTree = "<group>";
 		};
+		17D38EFB12777B2300672B13 /* Data Import */ = {
+			isa = PBXGroup;
+			children = (
+				17E641520EF01EF6001BC333 /* SPDataImport.h */,
+				17E641530EF01EF6001BC333 /* SPDataImport.m */,
+				BCE0025B11173D2A009DA533 /* SPFieldMapperController.h */,
+				BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */,
+			);
+			name = "Data Import";
+			sourceTree = "<group>";
+		};
 		17DC8825126B222D00E9AAEC /* Third Party */ = {
 			isa = PBXGroup;
 			children = (
@@ -1778,6 +1785,7 @@
 				173E70A6107FF61D008733C9 /* Main View Controllers */,
 				173E70D2107FF687008733C9 /* Subview Controllers */,
 				173E70D4107FF6E7008733C9 /* Data Controllers */,
+				17D38EFB12777B2300672B13 /* Data Import */,
 				17F5B1491048C4C000FC794F /* Data Export */,
 				173E70D5107FF7AF008733C9 /* Other */,
 			);
