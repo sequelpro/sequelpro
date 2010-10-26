@@ -2294,10 +2294,10 @@
 					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
 					[tip flushCachedRegexData];
 					[item setToolTip:tip];
-					[tip release];
 				} else {
 					[item setToolTip:@""];
 				}
+				[tip release];
 			}
 			[item setTag:i];
 			[menu addItem:item];
