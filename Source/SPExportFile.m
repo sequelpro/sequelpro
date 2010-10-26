@@ -220,7 +220,9 @@
  */
 - (void)dealloc
 {
-	if (exportFileHandle) [exportFileHandle release], exportFileHandle = nil; 
+	if (exportFileHandle) [exportFileHandle release], exportFileHandle = nil;
+	
+	[super dealloc];
 }
 
 @end
