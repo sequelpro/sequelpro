@@ -1487,6 +1487,7 @@
 		[[dataCell formatter] setFieldType:[columnDefinition objectForKey:@"type"]];
 		[theCol setDataCell:dataCell];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
+		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@", [columnDefinition objectForKey:@"name"], [columnDefinition objectForKey:@"type"], ([columnDefinition objectForKey:@"char_length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"char_length"]] : @""]];
 
 		// Set the width of this column to saved value if exists and maps to a real column
 		if ([columnDefinition objectForKey:@"org_name"] && [(NSString *)[columnDefinition objectForKey:@"org_name"] length]) {
