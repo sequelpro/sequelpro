@@ -123,7 +123,7 @@
 		if(anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"]) {
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
-			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || [self _isFieldTypeGeometry:[currentRow objectForKey:@"type"]]) {
+			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]]) {
 				[currentRow setObject:@"" forKey:@"default"];
 				[currentRow setObject:@"" forKey:@"length"];
 			}
@@ -465,23 +465,23 @@
 		
 		// Only string fields allow encoding settings
 		if(([[aTableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([self _isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
 		}
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
 		else if([[aTableColumn identifier] isEqualToString:@"collation"]){
- 			[aCell setEnabled:([self _isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+ 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
 		}
 		// Check if UNSIGNED and ZEROFILL is allowed
 		else if([[aTableColumn identifier] isEqualToString:@"zerofill"] || [[aTableColumn identifier] isEqualToString:@"unsigned"]) {
-			[aCell setEnabled:([self _isFieldTypeNumeric:theRowType])];
+			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:theRowType])];
 		}
 		// Check if BINARY is allowed
 		else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
-			[aCell setEnabled:([self _isFieldTypeAllowBinary:theRowType])];
+			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:theRowType])];
 		}
 		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
 		else if([[aTableColumn identifier] isEqualToString:@"default"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [self _isFieldTypeGeometry:theRowType]) ? NO : YES];
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
 		}
 		// Check allow NULL
 		else if([[aTableColumn identifier] isEqualToString:@"null"]) {
@@ -489,7 +489,7 @@
 		}
 		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
 		else if([[aTableColumn identifier] isEqualToString:@"length"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [self _isFieldTypeDate:theRowType] || [self _isFieldTypeGeometry:theRowType]) ? NO : YES];
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeDate:theRowType] || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
 		}
 		else {
 			[aCell setEnabled:YES];

@@ -36,11 +36,6 @@
 @interface SPTableStructure (PrivateAPI)
 
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
-- (BOOL)_isFieldTypeNumeric:(NSString*)aType;
-- (BOOL)_isFieldTypeDate:(NSString*)aType;
-- (BOOL)_isFieldTypeString:(NSString*)aType;
-- (BOOL)_isFieldTypeGeometry:(NSString*)aType;
-- (BOOL)_isFieldTypeAllowBinary:(NSString*)aType;
 
 @end
 
@@ -55,15 +50,18 @@
 - (id)init
 {
 	if ((self = [super init])) {
+		
 		tableFields = [[NSMutableArray alloc] init];
 		oldRow      = [[NSMutableDictionary alloc] init];
 		enumFields  = [[NSMutableDictionary alloc] init];
-		typeSuggestions = nil;
-
-		currentlyEditingRow = -1;
+		
 		defaultValues = nil;
 		selectedTable = nil;
+		typeSuggestions = nil;
+		currentlyEditingRow = -1;
 
+		fieldValidation = [[SPTableFieldValidation alloc] init];
+		
 		prefs = [NSUserDefaults standardUserDefaults];
 	}
 
@@ -82,6 +80,8 @@
 	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[indexesTableView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 
+	// Note that changing the contents or ordering of this array will affect the implementation of 
+	// SPTableFieldValidation. See it's implementation file for more details.
 	typeSuggestions = [[NSArray arrayWithObjects:
 		@"TINYINT",
 		@"SMALLINT",
@@ -131,7 +131,8 @@
 		@"MULTIPOLYGON",
 		@"GEOMETRYCOLLECTION",
 		nil] retain];
-		// Hint: _isFieldTypeDate and _isFieldTypeNumeric must be changed if typeSuggestions was changed!
+	
+	[fieldValidation setFieldTypes:typeSuggestions];
 	
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -148,21 +149,23 @@
 
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
-	for(NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
-	for(NSTableColumn *col in [tableSourceView tableColumns]) {
-		if([col isHidden]) {
-			if([[col identifier] isEqualToString:@"Key"])
+	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
+	
+	for (NSTableColumn *col in [tableSourceView tableColumns]) 
+	{
+		if ([col isHidden]) {
+			if ([[col identifier] isEqualToString:@"Key"])
 				[[viewColumnsMenu itemWithTag:7] setState:NSOffState];
-			else if([[col identifier] isEqualToString:@"encoding"])
+			else if ([[col identifier] isEqualToString:@"encoding"])
 				[[viewColumnsMenu itemWithTag:10] setState:NSOffState];
-			else if([[col identifier] isEqualToString:@"collation"])
+			else if ([[col identifier] isEqualToString:@"collation"])
 				[[viewColumnsMenu itemWithTag:11] setState:NSOffState];
-			else if([[col identifier] isEqualToString:@"comment"])
+			else if ([[col identifier] isEqualToString:@"comment"])
 				[[viewColumnsMenu itemWithTag:12] setState:NSOffState];
 		}
 	}
+	
 	[tableSourceView reloadData];
-
 }
 
 #pragma mark -
@@ -207,7 +210,9 @@
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
 					   [mySQLConnection getLastErrorMessage]]);
 		}
+		
 		if (indexResult) [indexResult release];
+		
 		return;
 	}
 
@@ -216,8 +221,10 @@
 	[indexResult release];
 
 	// Set the Key column
-	for(NSDictionary* theIndex in theTableIndexes) {
-		for(id field in theTableFields) {
+	for (NSDictionary* theIndex in theTableIndexes) 
+	{
+		for (id field in theTableFields) 
+		{
 			if([[field objectForKey:@"name"] isEqualToString:[theIndex objectForKey:@"Column_name"]]) {
 				if([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"])
 					[field setObject:@"PRI" forKey:@"Key"];
@@ -308,7 +315,6 @@
 		// For timestamps check to see whether "on update CURRENT_TIMESTAMP"  and set Extra accordingly
 		else if ([type isEqualToString:@"TIMESTAMP"] && [[theField objectForKey:@"onupdatetimestamp"] integerValue])
 			[theField setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
-
 	}
 
 	// Set up the table details for the new table, and request an data/interface update
@@ -706,6 +712,14 @@
 }
 
 #pragma mark -
+#pragma mark Other IB action methods
+
+- (IBAction)unhideIndexesView:(id)sender
+{
+	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
+}
+
+#pragma mark -
 #pragma mark Index sheet methods
 
 /**
@@ -729,39 +743,23 @@
 #pragma mark Additional methods
 
 /**
- * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
- */
-- (void)setConnection:(MCPConnection *)theConnection
-{
-	mySQLConnection = theConnection;
-
-	// Set the indexes controller connection
-	[indexesController setConnection:mySQLConnection];
-
-	// Set up tableView
-	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:SPDefaultPasteboardDragType, nil]];
-}
-
-/**
  * Try table's auto_increment to a specific value
  *
  * @param valueAsString The new auto_increment integer as NSString
  */
 - (void)setAutoIncrementTo:(NSString*)valueAsString
 {
-
 	NSString *selTable = nil;
 
 	// if selectedTable is nil try to get the name from SPTablesList
-	if(selectedTable == nil || ![selectedTable length])
+	if (selectedTable == nil || ![selectedTable length])
 		selTable = [tablesListInstance tableName];
 	else
 		selTable = [NSString stringWithString:selectedTable];
 
-	if(selTable == nil || ![selTable length])
-		return;
+	if (selTable == nil || ![selTable length]) return;
 
-	if(valueAsString == nil || ![valueAsString length]) {
+	if (valueAsString == nil || ![valueAsString length]) {
 		// reload data and bail
 		[tableDataInstance resetAllData];
 		[extendedTableInfoInstance loadTable:selTable];
@@ -792,7 +790,6 @@
 	}
 
 	[tableInfoInstance tableChanged:nil];
-
 }
 
 /**
@@ -943,7 +940,7 @@
 	if(!specialFieldTypes) {
 
 
-		if([self _isFieldTypeString:theRowType]) {
+		if ([fieldValidation isFieldTypeString:theRowType]) {
 			// Add CHARSET
 			NSString *fieldEncoding = @"";
 			if([[theRow objectForKey:@"encoding"] integerValue] > 0) {
@@ -970,7 +967,7 @@
 			}
 
 		}
-		else if ([self _isFieldTypeNumeric:theRowType] && (![theRowType isEqualToString:@"BIT"])) {
+		else if ([fieldValidation isFieldTypeNumeric:theRowType] && (![theRowType isEqualToString:@"BIT"])) {
 
 			if ([[theRow objectForKey:@"unsigned"] integerValue] == 1) {
 				[queryString appendString:@"\n UNSIGNED"];
@@ -1010,7 +1007,7 @@
 				[queryString appendFormat:@"\n DEFAULT %@", [theRow objectForKey:@"default"]];
 			}
 			// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages
-			else if (![[theRow objectForKey:@"default"] length] && ([self _isFieldTypeNumeric:theRowType] || [self _isFieldTypeDate:theRowType])) {
+			else if (![[theRow objectForKey:@"default"] length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType])) {
 				;
 			}
 			// Otherwise, use the provided default
@@ -1161,40 +1158,12 @@
 }
 
 /**
- * Perform the action requested in the Add Row error sheet.
- */
-- (void)addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-
-	// Order out current sheet to suppress overlapping of sheets
-	[[alert window] orderOut:nil];
-
-	alertSheetOpened = NO;
-
-	// Remain in edit mode - reselect the row and resume editing
-	if (returnCode == NSAlertDefaultReturn) {
-
-		// Problem: reentering edit mode for first cell doesn't function
-		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
-		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
-	}
-
-	// Discard changes and cancel editing
-	else {
-		[self cancelRowEditing];
-	}
-
-	[tableSourceView reloadData];
-}
-
-/**
  * A method to show an error sheet after a short delay, so that it can
  * be called from within an endSheet selector. This should be called on
  * the main thread.
  */
--(void)showErrorSheetWith:(NSDictionary *)errorDictionary
+- (void)showErrorSheetWith:(NSDictionary *)errorDictionary
 {
-
 	// If this method has been called directly, invoke a delay.  Invoking the delay
 	// on the main thread ensures the timer fires on the main thread.
 	if (![errorDictionary objectForKey:@"delayed"]) {
@@ -1208,28 +1177,6 @@
 	SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"),
 			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[errorDictionary objectForKey:@"message"]);
-}
-
-/**
- * This method is called as part of Key Value Observing which is used to watch for preference changes which effect the interface.
- */
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-	// Display table veiew vertical gridlines preference changed
-	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
-        [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	}
-	// Use monospaced fonts preference changed
-	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
-
-		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-
-		[tableSourceView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[indexesTableView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-
-		[tableSourceView reloadData];
-		[indexesTableView reloadData];
-	}
 }
 
 /**
@@ -1273,12 +1220,77 @@
 	alertSheetOpened = NO;
 }
 
+/**
+ * Perform the action requested in the Add Row error sheet.
+ */
+- (void)addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	// Order out current sheet to suppress overlapping of sheets
+	[[alert window] orderOut:nil];
+	
+	alertSheetOpened = NO;
+	
+	// Remain in edit mode - reselect the row and resume editing
+	if (returnCode == NSAlertDefaultReturn) {
+		
+		// Problem: reentering edit mode for first cell doesn't function
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
+		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
+	}
+	
+	// Discard changes and cancel editing
+	else {
+		[self cancelRowEditing];
+	}
+	
+	[tableSourceView reloadData];
+}
+
 #pragma mark -
-#pragma mark Getter methods
+#pragma mark KVO methods
 
 /**
-get the default value for a specified field
-*/
+ * This method is called as part of Key Value Observing which is used to watch for preference changes which effect the interface.
+ */
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	// Display table veiew vertical gridlines preference changed
+	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
+        [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	}
+	// Use monospaced fonts preference changed
+	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
+		
+		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		
+		[tableSourceView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[indexesTableView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		
+		[tableSourceView reloadData];
+		[indexesTableView reloadData];
+	}
+}
+
+#pragma mark -
+#pragma mark Accessors
+
+/**
+ * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
+ */
+- (void)setConnection:(MCPConnection *)theConnection
+{
+	mySQLConnection = theConnection;
+	
+	// Set the indexes controller connection
+	[indexesController setConnection:mySQLConnection];
+	
+	// Set up tableView
+	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:SPDefaultPasteboardDragType, nil]];
+}
+
+/**
+ * Get the default value for a specified field
+ */
 - (NSString *)defaultValueForField:(NSString *)field
 {
 	if ( ![defaultValues objectForKey:field] ) {
@@ -1291,8 +1303,8 @@ get the default value for a specified field
 }
 
 /**
-returns an array containing the field names of the selected table
-*/
+ * Returns an array containing the field names of the selected table
+ */
 - (NSArray *)fieldNames
 {
 	NSMutableArray *tempArray = [NSMutableArray array];
@@ -1314,8 +1326,8 @@ returns an array containing the field names of the selected table
 }
 
 /**
-returns a dictionary containing enum/set field names as key and possible values as array
-*/
+ * Returns a dictionary containing enum/set field names as key and possible values as array
+ */
 - (NSDictionary *)enumFields
 {
 	return [NSDictionary dictionaryWithDictionary:enumFields];
@@ -1449,75 +1461,8 @@ returns a dictionary containing enum/set field names as key and possible values 
 	[refreshIndexesButton setEnabled:YES];
 }
 
-- (IBAction)unhideIndexesView:(id)sender
-{
-	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
-}
-
 #pragma mark -
-#pragma mark Private API methods
-
-/**
- * Return if aType is numeric according to typeSuggestions's position
- * Hint: This must be changed if typeSuggestions was changed!
- */
-- (BOOL)_isFieldTypeNumeric:(NSString*)aType
-{
-	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-
-	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
-
-	return ([typeSuggestions indexOfObject:type] < 17);
-}
-
-/**
- * Return if aType is a date or time according to typeSuggestions's position
- * Hint: This must be changed if typeSuggestions was changed!
- */
-- (BOOL)_isFieldTypeDate:(NSString*)aType
-{
-	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-
-	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
-
-	return ([typeSuggestions indexOfObject:type] > 32 && [typeSuggestions indexOfObject:type] < 38);
-}
-
-/**
- * Return if aType is a geometry to typeSuggestions's position
- * Hint: This must be changed if typeSuggestions was changed!
- */
-- (BOOL)_isFieldTypeGeometry:(NSString*)aType
-{
-	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-
-	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
-
-	return ([typeSuggestions indexOfObject:type] > 38);
-}
-
-/**
- * Return if aType is a string type
- */
-- (BOOL)_isFieldTypeString:(NSString*)aType
-{
-	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-
-	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
-
-	return ([typeSuggestions indexOfObject:type] > 17 && [typeSuggestions indexOfObject:type] < 32);
-}
-/**
- * Return if aType is a string type
- */
-- (BOOL)_isFieldTypeAllowBinary:(NSString*)aType
-{
-	NSString *type = [[aType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-
-	if(![typeSuggestions containsObject:type]) return YES; // for safety reasons
-
-	return ([typeSuggestions indexOfObject:type] > 17 && [typeSuggestions indexOfObject:type] < 24);
-}
+#pragma mark Private API
 
 /**
  * Removes a field from the current table and the dependent foreign key if specified.
@@ -1598,6 +1543,8 @@ returns a dictionary containing enum/set field names as key and possible values 
 	[oldRow release];
 	[enumFields release];
 	[typeSuggestions release];
+	
+	[fieldValidation release], fieldValidation = nil;
 
 	if (defaultValues) [defaultValues release];
 	if (selectedTable) [selectedTable release];

@@ -110,6 +110,7 @@
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
 		17D38EBC12771A1C00672B13 /* SPTableStructureDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */; };
+		17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */; };
 		17DC8E75126F4AB600E9AAEC /* MCPConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DC8E74126F4AB600E9AAEC /* MCPConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
 		17DD52B7115071D0007D8950 /* SPPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* SPPrintTemplate.html */; };
@@ -665,6 +666,8 @@
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
 		17D38EBA12771A1C00672B13 /* SPTableStructureDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableStructureDelegate.h; sourceTree = "<group>"; };
 		17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructureDelegate.m; sourceTree = "<group>"; };
+		17D38F6E1279E23A00672B13 /* SPTableFieldValidation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFieldValidation.h; sourceTree = "<group>"; };
+		17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFieldValidation.m; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17DC8E74126F4AB600E9AAEC /* MCPConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnectionDelegate.h; sourceTree = "<group>"; };
 		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
@@ -1356,10 +1359,7 @@
 				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
-				17E641540EF01EF6001BC333 /* SPTableStructure.h */,
-				17E641550EF01EF6001BC333 /* SPTableStructure.m */,
-				17D38EBA12771A1C00672B13 /* SPTableStructureDelegate.h */,
-				17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */,
+				17D38F691279E17D00672B13 /* Table Structure */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
 			name = "Main View Controllers";
@@ -1605,6 +1605,19 @@
 				BCE0025C11173D2A009DA533 /* SPFieldMapperController.m */,
 			);
 			name = "Data Import";
+			sourceTree = "<group>";
+		};
+		17D38F691279E17D00672B13 /* Table Structure */ = {
+			isa = PBXGroup;
+			children = (
+				17E641540EF01EF6001BC333 /* SPTableStructure.h */,
+				17E641550EF01EF6001BC333 /* SPTableStructure.m */,
+				17D38EBA12771A1C00672B13 /* SPTableStructureDelegate.h */,
+				17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */,
+				17D38F6E1279E23A00672B13 /* SPTableFieldValidation.h */,
+				17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */,
+			);
+			name = "Table Structure";
 			sourceTree = "<group>";
 		};
 		17DC8825126B222D00E9AAEC /* Third Party */ = {
@@ -2932,6 +2945,7 @@
 				1798AB911267924D000D946A /* SPAppleScriptSupport.m in Sources */,
 				175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */,
 				17D38EBC12771A1C00672B13 /* SPTableStructureDelegate.m in Sources */,
+				17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

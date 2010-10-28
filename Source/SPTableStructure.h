@@ -25,6 +25,8 @@
 
 #import <MCPKit/MCPKit.h>
 
+@class SPTableFieldValidation;
+
 @interface SPTableStructure : NSObject 
 {
 	IBOutlet id tablesListInstance;
@@ -60,6 +62,8 @@
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
 	MCPResult *indexResult;
+	
+	SPTableFieldValidation *fieldValidation;
 
 	NSString *selectedTable;
 	NSMutableArray *tableFields;
@@ -100,7 +104,7 @@
 - (BOOL)addRowToDB;
 - (void)setAutoIncrementTo:(NSString*)valueAsString;
 
-// Getter methods
+// Accessors
 - (NSString *)defaultValueForField:(NSString *)field;
 - (NSArray *)fieldNames;
 - (NSDictionary *)enumFields;
