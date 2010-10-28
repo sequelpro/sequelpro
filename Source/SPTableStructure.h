@@ -33,6 +33,7 @@
 	IBOutlet id tableInfoInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id indexesController;
+	IBOutlet id databaseDataInstance;
 
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
@@ -54,11 +55,8 @@
 	IBOutlet NSButton *indexesShowButton;
 
 	IBOutlet id viewColumnsMenu;
-
 	IBOutlet id encodingPopupCell;
-
-	id databaseDataInstance;
-
+	
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
 	MCPResult *indexResult;
@@ -67,17 +65,18 @@
 	NSMutableArray *tableFields;
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
-	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 	NSInteger currentlyEditingRow;
 	NSUserDefaults *prefs;
 	NSArray *collations;
 	NSArray *typeSuggestions;
+	
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 }
 
-// Table methods
+// Table loading
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;
-- (void) setTableDetails:(NSDictionary *)tableDetails;
+- (void)setTableDetails:(NSDictionary *)tableDetails;
 
 // Edit methods
 - (IBAction)addField:(id)sender;

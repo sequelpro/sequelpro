@@ -39,6 +39,7 @@ NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode
 NSString *SPDefaultMonospacedFontName            = @"Monaco";
 
 // Table view drag types
+NSString *SPDefaultPasteboardDragType            = @"SequelProPasteboard";
 NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
 NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 

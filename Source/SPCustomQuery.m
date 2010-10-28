@@ -2128,9 +2128,9 @@
 	if ( aTableView == queryFavoritesView ) {
 		if ([pboardTypes count] == 1 && row != -1)
 		{
-			if ([[pboardTypes objectAtIndex:0] isEqualToString:@"SequelProPasteboard"]==YES && operation==NSTableViewDropAbove)
+			if ([[pboardTypes objectAtIndex:0] isEqualToString:SPDefaultPasteboardDragType]==YES && operation==NSTableViewDropAbove)
 			{
-				originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+				originalRow = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] intValue];
 
 				if (row != originalRow && row != (originalRow+1))
 				{
@@ -2151,7 +2151,7 @@
 	NSMutableDictionary *draggedRow;
 
 	if ( aTableView == queryFavoritesView ) {
-		originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] intValue];
+		originalRow = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] intValue];
 		destinationRow = row;
 
 		if ( destinationRow > originalRow )

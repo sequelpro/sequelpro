@@ -160,8 +160,8 @@
 	if ( ![self saveRowOnDeselect] ) return NO;
 	
 	if ([rows count] == 1) {
-		[pboard declareTypes:[NSArray arrayWithObject:@"SequelProPasteboard"] owner:nil];
-		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:@"SequelProPasteboard"];
+		[pboard declareTypes:[NSArray arrayWithObject:SPDefaultPasteboardDragType] owner:nil];
+		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
 		return YES;
 	} 
 	else {
@@ -184,11 +184,11 @@
 	NSInteger originalRow;
 	
 	// Ensure the drop is of the correct type
-	if (operation == NSTableViewDropAbove && row != -1 && [pboardTypes containsObject:@"SequelProPasteboard"]) {
+	if (operation == NSTableViewDropAbove && row != -1 && [pboardTypes containsObject:SPDefaultPasteboardDragType]) {
 		
 		// Ensure the drag originated within this table
 		if ([info draggingSource] == tableView) {
-			originalRow = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] integerValue];
+			originalRow = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] integerValue];
 			
 			if (row != originalRow && row != (originalRow+1)) {
 				return NSDragOperationMove;
@@ -212,7 +212,7 @@
 	NSDictionary *originalRow;
 	
 	// Extract the original row position from the pasteboard and retrieve the details
-	originalRowIndex = [[[info draggingPasteboard] stringForType:@"SequelProPasteboard"] integerValue];
+	originalRowIndex = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] integerValue];
 	originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];

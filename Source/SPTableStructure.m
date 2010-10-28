@@ -133,9 +133,6 @@
 		nil] retain];
 		// Hint: _isFieldTypeDate and _isFieldTypeNumeric must be changed if typeSuggestions was changed!
 	
-
-	databaseDataInstance = [tableDocumentInstance valueForKeyPath:@"databaseDataInstance"];
-
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -193,7 +190,7 @@
 	[theTableFields setArray:[NSArray array]];
 
 	// Make a mutable copy out of the cached [tableDataInstance columns] since we're adding infos
-	for(id col in [tableDataInstance columns])
+	for (id col in [tableDataInstance columns])
 		[theTableFields addObject:[[col mutableCopy] autorelease]];
 
 	// Retrieve the indexes for the table
@@ -712,7 +709,7 @@
 #pragma mark Index sheet methods
 
 /**
- * Closes the current sheet and stops the modal session
+ * Closes the current sheet and stops the modal session.
  */
 - (IBAction)closeSheet:(id)sender
 {
@@ -721,13 +718,12 @@
 }
 
 /**
-closes the keySheet
-*/
+ * Closes the key sheet.
+ */
 - (IBAction)closeKeySheet:(id)sender
 {
 	[NSApp stopModalWithCode:[sender tag]];
 }
-
 
 #pragma mark -
 #pragma mark Additional methods
@@ -743,7 +739,7 @@ closes the keySheet
 	[indexesController setConnection:mySQLConnection];
 
 	// Set up tableView
-	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:@"SequelProPasteboard", nil]];
+	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:SPDefaultPasteboardDragType, nil]];
 }
 
 /**

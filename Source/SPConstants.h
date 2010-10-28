@@ -211,9 +211,9 @@ extern NSString *SPKillProcessConnectionMode;
 extern NSString *SPDefaultMonospacedFontName;
 
 // Table view drag types
+extern NSString *SPDefaultPasteboardDragType;
 extern NSString *SPFavoritesPasteboardDragType;
 extern NSString *SPContentFilterPasteboardDragType;
-extern NSString *SPQueryFavortiesPasteboardDragType;
 
 // File extensions
 extern NSString *SPFileExtensionDefault;
