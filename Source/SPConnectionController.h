@@ -25,22 +25,13 @@
 
 #import <MCPKit/MCPKit.h>
 
-#import "SPDatabaseDocument.h"
-#import "SPKeychain.h"
-#import "SPSSHTunnel.h"
+#import "SPConnectionControllerDelegate.h"
 
-@class BWAnchoredButtonBar;
+@class SPDatabaseDocument, SPKeychain, SPSSHTunnel, BWAnchoredButtonBar;
 
 @interface NSObject (BWAnchoredButtonBar)
 
 - (void)setSplitViewDelegate:(id)splitViewDelegate;
-
-@end
-
-@interface NSObject (SPConnectionControllerDelegate)
-
-- (void)connectionControllerInitiatingConnection:(id)controller;
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
 
 @end
 
@@ -52,7 +43,7 @@
 
 @interface SPConnectionController : NSObject 
 {
-	id delegate;
+	id <SPConnectionControllerDelegate> delegate;
 	
 	SPDatabaseDocument *tableDocument;
 	NSView *databaseConnectionSuperview;
@@ -144,7 +135,7 @@
     SPFavoritesSortItem previousSortItem, currentSortItem;
 }
 
-@property (readwrite, assign) id delegate;
+@property (readwrite, assign) id <SPConnectionControllerDelegate> delegate;
 @property (readwrite, assign) NSInteger type;
 @property (readwrite, retain) NSString *name;
 @property (readwrite, retain) NSString *host;

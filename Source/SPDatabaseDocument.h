@@ -35,10 +35,12 @@
 	   SPWindowController,
 	   SPServerSupport;
 
+@protocol SPConnectionControllerDelegate;
+
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface SPDatabaseDocument : NSObject <NSUserInterfaceValidations>
+@interface SPDatabaseDocument : NSObject <NSUserInterfaceValidations, SPConnectionControllerDelegate>
 {
 	// IBOutlets
 	IBOutlet id tablesListInstance;

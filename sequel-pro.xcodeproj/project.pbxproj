@@ -668,6 +668,7 @@
 		17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructureDelegate.m; sourceTree = "<group>"; };
 		17D38F6E1279E23A00672B13 /* SPTableFieldValidation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFieldValidation.h; sourceTree = "<group>"; };
 		17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFieldValidation.m; sourceTree = "<group>"; };
+		17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDelegate.h; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
 		17DC8E74126F4AB600E9AAEC /* MCPConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPConnectionDelegate.h; sourceTree = "<group>"; };
 		17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPStringAdditions.h; sourceTree = "<group>"; };
@@ -1347,8 +1348,6 @@
 			children = (
 				17E641480EF01EF6001BC333 /* SPCustomQuery.h */,
 				17E641490EF01EF6001BC333 /* SPCustomQuery.m */,
-				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
-				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */,
 				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
 				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
@@ -1359,6 +1358,7 @@
 				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
+				17D38FC2127B0C9500672B13 /* Connection View */,
 				17D38F691279E17D00672B13 /* Table Structure */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
@@ -1618,6 +1618,16 @@
 				17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */,
 			);
 			name = "Table Structure";
+			sourceTree = "<group>";
+		};
+		17D38FC2127B0C9500672B13 /* Connection View */ = {
+			isa = PBXGroup;
+			children = (
+				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
+				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
+				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegate.h */,
+			);
+			name = "Connection View";
 			sourceTree = "<group>";
 		};
 		17DC8825126B222D00E9AAEC /* Third Party */ = {

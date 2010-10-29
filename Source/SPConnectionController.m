@@ -24,11 +24,14 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionController.h"
+#import "SPDatabaseDocument.h"
 #import "SPAppController.h"
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPAlertSheets.h"
+#import "SPKeychain.h"
+#import "SPSSHTunnel.h"
 
 @interface SPConnectionController (PrivateAPI)
 
