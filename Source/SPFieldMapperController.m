@@ -813,12 +813,14 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 		columnCounter = 0;
 		for(id col in row) {
-			if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < [col length]) {
-				maxLengthOfSourceColumns[columnCounter] = [col length];
-			}
-			if(typeOfSourceColumns[columnCounter] == 1) {
-				if(![[[NSNumber numberWithLongLong:[col longLongValue]] stringValue] isEqualToString:col])
-					typeOfSourceColumns[columnCounter] = 0;
+			if(col && col != [NSNull null]) {
+				if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < [col length]) {
+					maxLengthOfSourceColumns[columnCounter] = [col length];
+				}
+				if(typeOfSourceColumns[columnCounter] == 1) {
+					if(![[[NSNumber numberWithLongLong:[col longLongValue]] stringValue] isEqualToString:col])
+						typeOfSourceColumns[columnCounter] = 0;
+				}
 			}
 			columnCounter++;
 		}
