@@ -46,7 +46,7 @@
 /**
  * @property delegate Exporter delegate
  */
-@property(readwrite, assign) NSObject *delegate;
+@property(readwrite, assign) NSObject <SPXMLExporterProtocol> *delegate;
 
 /**
  * @property xmlDataArray Data array

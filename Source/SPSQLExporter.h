@@ -62,7 +62,7 @@
 /**
  * @property delegate Exporter delegate
  */
-@property(readwrite, assign) NSObject *delegate;
+@property(readwrite, assign) NSObject <SPSQLExporterProtocol> *delegate;
 
 /**
  * @property sqlExportTables Tables

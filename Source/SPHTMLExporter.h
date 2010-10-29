@@ -41,7 +41,7 @@
 /**
  * @property delegate Exporter delegate
  */
-@property(readwrite, assign) NSObject *delegate;
+@property(readwrite, assign) NSObject <SPHTMLExporterProtocol> *delegate;
 
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 

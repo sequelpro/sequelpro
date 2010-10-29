@@ -53,7 +53,7 @@
 /**
  * @property delegate Exporter delegate
  */
-@property(readwrite, assign) NSObject *delegate;
+@property(readwrite, assign) NSObject <SPDotExporterProtocol> *delegate;
 
 /**
  * @property dotExportTables Table information
