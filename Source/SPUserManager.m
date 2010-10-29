@@ -739,7 +739,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
     {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to remove host", @"error removing host message"), 
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, 
-						  NSLocalizedString(@"This user doesn't seem have any hosts associated with it. The user will be removed unless one is added", @"error removing host informative message"));
+						  NSLocalizedString(@"This user doesn't seem to have any associated hosts and will be removed unless a host is added.", @"error removing host informative message"));
     }
 }
 

@@ -423,6 +423,14 @@
 
 		[editSheetProgressBar stopAnimation:self];
 
+		// The field editor sheet runs as sheet thus a NSTextView won't respond to the Find Panel
+		// since the Find Panel validate its buttons against [[NSApp mainWindow] firstResponder] == NSTextView.
+		// After ordering out this sheet SPCopyTable remains the first responder thus set it hard.
+		// This only works in conjunction with [NSTextView becomeFirstResponder] and [NSTextView resignFirstResponder]
+		// which has to return YES.
+		if([[self window] firstResponder] == editTextView)
+			[[NSApp mainWindow] makeFirstResponder:[[self window] firstResponder]];
+
 	}
 
 }
@@ -507,6 +515,7 @@
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
+			[[NSApp mainWindow] makeFirstResponder:editTextView];
 			break;
 		case 1: // image
 			[editTextView setHidden:YES];

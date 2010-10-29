@@ -2319,11 +2319,6 @@
 											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
 											nil]];
 
-			// Preserve focus and restore selection indexes if appropriate
-			[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
-			if (selectionIndexToRestore)
-				[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-
 			return NO;
 
 		}
@@ -3418,12 +3413,6 @@
 		NSUInteger column = [[contextInfo objectForKey:@"column"] integerValue];
 		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
 
-		// if ([data isKindOfClass:[NSString class]]
-		// 	&& [data isEqualToString:[prefs objectForKey:SPNullValue]]
-		// 	&& [[NSArrayObjectAtIndex(dataColumns, column) objectForKey:@"null"] boolValue])
-		// {
-		// 	data = [[NSNull null] retain];
-		// }
 		if(isFieldEditable) {
 			[self tableView:customQueryView setObjectValue:[[data copy] autorelease] forTableColumn:[customQueryView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
 		}
@@ -3434,7 +3423,11 @@
 		fieldEditor = nil;
 	}
 
-	// [[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
+	// Preserve focus and restore selection indexes if appropriate
+	[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
+	if (selectionIndexToRestore)
+		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+
 }
 
 #pragma mark -

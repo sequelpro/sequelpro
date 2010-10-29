@@ -327,4 +327,21 @@
 	[self saveChangedFontInUserDefaults];
 }
 
+/**
+ * Needed to allow Find Panel inside the textView if it runs in a sheet
+ */
+- (BOOL)becomeFirstResponder
+{
+	return YES;
+}
+
+/**
+ * Needed to allow Find Panel inside the textView if it runs in a sheet
+ */
+- (BOOL)resignFirstResponder
+{
+	return YES;
+}
+
+
 @end
