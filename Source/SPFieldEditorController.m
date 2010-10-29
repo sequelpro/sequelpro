@@ -48,6 +48,10 @@
 		_isEditable = NO;
 		_isBlob = NO;
 		_allowNULL = YES;
+		_isGeometry = NO;
+		contextInfo = nil;
+		callerInstance = nil;
+		doGroupDueToChars = NO;
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -60,7 +64,7 @@
 		allowUndo = NO;
 		selectionChanged = NO;
 
-		tmpDirPath = NSTemporaryDirectory();
+		tmpDirPath = [NSTemporaryDirectory() retain];
 		tmpFileName = nil;
 
 		NSMenu *menu = [editSheetQuickLookButton menu];
@@ -109,7 +113,7 @@
 			}
 		}
 		
-		qlTypes = [NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes];
+		qlTypes = [[NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes] retain];
 		[qlTypesItems release];
 
 		fieldType = @"";
@@ -131,8 +135,11 @@
 	if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
 		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
 
-	if ( esUndoManager ) [esUndoManager release];
 	if ( sheetEditData ) [sheetEditData release];
+	if ( qlTypes ) [qlTypes release];
+	if ( tmpDirPath ) [tmpDirPath release];
+	if ( esUndoManager ) [esUndoManager release];
+	if ( contextInfo ) [contextInfo release];
 	[super dealloc];
 }
 
@@ -191,17 +198,23 @@
  * 
  * @param theWindow The window for displaying the sheet.
  * 
- * @return If SPFieldEditorController was closed by "OK" and the field was editable it returns the edited value, otherwise it returns nil.
+ * @param sender The calling instance.
+ * 
+ * @param contextInfo context info for processing the edited data in sender.
+ * 
  */
-- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
-		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
+- (void)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
+		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow 
+		sender:(id)sender contextInfo:(NSDictionary*)theContextInfo
 {
 
 	usedSheet = nil;
 
 	_isEditable = isEditable;
+	contextInfo = [theContextInfo retain];
+	callerInstance = sender;
 
-	BOOL _isGeometry = ([[fieldType uppercaseString] isEqualToString:@"GEOMETRY"]) ? YES : NO;
+	_isGeometry = ([[fieldType uppercaseString] isEqualToString:@"GEOMETRY"]) ? YES : NO;
 
 	// Set field label
 	NSMutableString *label = [NSMutableString string];
@@ -247,7 +260,7 @@
 
 		usedSheet = bitSheet;
 
-		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
 
 	} else {
 
@@ -304,7 +317,7 @@
 		[editSheetSegmentControl setEnabled:YES forSegment:1];
 
 		// Set window's min size since no segment and quicklook buttons are hidden
-		if (_isBlob || _isBINARY) {
+		if (_isBlob || _isBINARY || _isGeometry) {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
 			[usedSheet setMinSize:NSMakeSize(560, 200)];
 		} else {
@@ -315,7 +328,7 @@
 		[editTextView setEditable:_isEditable];
 		[editImage setEditable:_isEditable];
 
-		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
 
 		[editSheetProgressBar startAnimation:self];
 
@@ -337,16 +350,16 @@
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
 		} else if ([sheetEditData isKindOfClass:[MCPGeometryData class]]) {
-				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
-				image = [v thumbnailImage];
-				stringValue = [[sheetEditData wktString] retain];
-				[hexTextView setString:@""];
-				[hexTextView setHidden:YES];
-				[hexTextScrollView setHidden:YES];
-				[editSheetSegmentControl setEnabled:NO forSegment:2];
-				[editSheetSegmentControl setSelectedSegment:0];
-				[editTextView setHidden:NO];
-				[editTextScrollView setHidden:NO];
+			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
+			image = [v thumbnailImage];
+			stringValue = [[sheetEditData wktString] retain];
+			[hexTextView setString:@""];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[editSheetSegmentControl setEnabled:NO forSegment:2];
+			[editSheetSegmentControl setSelectedSegment:0];
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
 		} else {
 			stringValue = [sheetEditData retain];
 
@@ -403,8 +416,8 @@
 			else
 				[usedSheet makeFirstResponder:editImage];
 
-			[stringValue release], stringValue = nil;
 		}
+		if(stringValue) [stringValue release], stringValue = nil;
 
 		editSheetWillBeInitialized = NO;
 
@@ -412,102 +425,12 @@
 
 	}
 
-	// wait for editSheet
-	NSModalSession session = [NSApp beginModalSessionForWindow:usedSheet];
-	NSInteger cycleCounter = 0;
-	BOOL doGroupDueToChars = NO;
-	BOOL findPanelIsOpen   = NO;
+}
 
-	id textFinder = [objc_getClass("NSTextFinder") sharedTextFinder];
-	id textFinderPanel = nil;
-
-	for (;;) {
-
-
-		// Break the run loop if editSheet was closed
-		if ([NSApp runModalSession:session] != NSRunContinuesResponse
-			|| ![usedSheet isVisible])
-			break;
-
-		// Execute code on DefaultRunLoop (like displaying a tooltip)
-		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-								 beforeDate:[NSDate distantFuture]];
-
-
-		if([[textFinder findPanel:NO] isVisible]) {
-			textFinderPanel = [textFinder findPanel:NO];
-			[textFinderPanel setWorksWhenModal:YES];
-			// [textFinderPanel setLevel:NSDockWindowLevel];
-			findPanelIsOpen = YES;
-		} else {
-			findPanelIsOpen = NO;
-		}
-
-		// Allow undo grouping if user typed a ' ' (for word level undo)
-		// or a RETURN but not for each char due to writing speed
-		if([[NSApp currentEvent] type] == NSKeyDown
-			&& 	(
-				[[[NSApp currentEvent] charactersIgnoringModifiers] isEqualToString:@" "]
-				|| [[NSApp currentEvent] keyCode] == 36
-				|| [[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
-				)) {
-			doGroupDueToChars=YES;
-		}
-
-		// If conditions match create an undo group
-		if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
-			allowUndo = NO;
-			wasCutPaste = NO;
-			doGroupDueToChars = NO;
-			selectionChanged = NO;
-
-			cycleCounter = 0;
-			while([esUndoManager groupingLevel] > 0) {
-				[esUndoManager endUndoGrouping];
-				cycleCounter++;
-			}
-			while([esUndoManager groupingLevel] < cycleCounter)
-				[esUndoManager beginUndoGrouping];
-
-			cycleCounter = 0;
-		}
-
-	}
-	[NSApp endModalSession:session];
-	[usedSheet orderOut:nil];
-	[NSApp endSheet:usedSheet];
-
-	// For safety reasons inform QuickLook to quit
-	quickLookCloseMarker = 1;
-
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
-
-	// Close findPanel for convenience
-	if(findPanelIsOpen && textFinderPanel) {
-		[textFinderPanel close];
-	}
-
-	return ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
-}
-
-/**
- * Establish and return an UndoManager for editTextView
- */
-- (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
-{
-	if (!esUndoManager)
-		esUndoManager = [[NSUndoManager alloc] init];
-
-	return esUndoManager;
-}
-
-/**
- * Set variable if something in editTextView was cutted or pasted for creating better undo grouping.
- */
-- (void)setWasCutPaste
-{
-	wasCutPaste = YES;
 }
 
 /**
@@ -530,7 +453,10 @@
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
 			return;
 		}
-		[NSApp stopModal];
+
+		editSheetReturnCode = 1;
+	}
+	else if(sender == bitSheetOkButton && _isEditable) {
 		editSheetReturnCode = 1;
 	}
 
@@ -546,7 +472,13 @@
 		}
 	}
 
-	[NSApp abortModal];
+	[NSApp endSheet:usedSheet returnCode:1];
+	[usedSheet orderOut:self];
+
+	if(callerInstance) {
+		id returnData = ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
+		[callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+	}
 
 }
 
@@ -766,6 +698,7 @@
  */
 - (void)createTemporaryQuickLookFileOfType:(NSString *)type treatAsText:(BOOL)isText
 {
+
 	// Create a temporary file name to store the data as file
 	// since QuickLook only works on files.
 	// Alternate the file name to suppress caching by using counter%2.
@@ -1139,23 +1072,6 @@
 }
 
 /**
- * Close the bitSheet and abort the running modal session.
- */
-- (IBAction)closeBitSheet:(id)sender
-{
-
-	editSheetReturnCode = 0;
-
-	if(sender == bitSheetOkButton && _isEditable) {
-		[NSApp stopModal];
-		editSheetReturnCode = 1;
-	}
-
-	[NSApp abortModal];
-
-}
-
-/**
  * Selector of any operator in the bitSheet. The different buttons will be distinguished by the sender's tag.
  */
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
@@ -1428,9 +1344,34 @@
 	return NO;
 }
 
+/** 
+ * Establish and return an UndoManager for editTextView
+ */
+- (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
+{
+	if (!esUndoManager)
+		esUndoManager = [[NSUndoManager alloc] init];
+
+	return esUndoManager;
+}
+
+/**
+ * Set variable if something in editTextView was cutted or pasted for creating better undo grouping.
+ */
+- (void)setWasCutPaste
+{
+	wasCutPaste = YES;
+}
+
+
 - (void)setAllowedUndo
 {
 	allowUndo = YES;
+}
+
+- (void)setDoGroupDueToChars
+{
+	doGroupDueToChars = YES;
 }
 
 /**
@@ -1439,7 +1380,33 @@
  */
 - (void)textDidChange:(NSNotification *)aNotification
 {
-	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.2];
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(setAllowedUndo) 
+								object:nil];
+
+	// If conditions match create an undo group
+	NSInteger cycleCounter;
+	if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
+		NSLog(@"did");
+		allowUndo = NO;
+		wasCutPaste = NO;
+		doGroupDueToChars = NO;
+		selectionChanged = NO;
+
+		cycleCounter = 0;
+		while([esUndoManager groupingLevel] > 0) {
+			[esUndoManager endUndoGrouping];
+			cycleCounter++;
+		}
+		while([esUndoManager groupingLevel] < cycleCounter)
+			[esUndoManager beginUndoGrouping];
+
+		cycleCounter = 0;
+	}
+
+	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.09];
+
 }
 
 @end

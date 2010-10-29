@@ -131,12 +131,15 @@
 	IBOutlet NSTextField *bitSheetBitLabel56;
 
 	id usedSheet;
+	id callerInstance;
+	NSDictionary *contextInfo;
 
 	id sheetEditData;
 	BOOL editSheetWillBeInitialized;
 	BOOL _isBlob;
 	BOOL _isEditable;
 	BOOL _allowNULL;
+	BOOL doGroupDueToChars;
 	NSInteger quickLookCloseMarker;
 	NSStringEncoding encoding;
 	NSString *fieldType;
@@ -157,7 +160,7 @@
 	NSDictionary *qlTypes;
 
 	NSInteger editSheetReturnCode;
-
+	BOOL _isGeometry;
 	NSUndoManager *esUndoManager;
 }
 
@@ -169,7 +172,6 @@
 - (IBAction)quickLookFormatButton:(id)sender;
 - (IBAction)dropImage:(id)sender;
 
-- (IBAction)closeBitSheet:(id)sender;
 - (IBAction)bitSheetSelectBit0:(id)sender;
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender;
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender;
@@ -177,7 +179,8 @@
 - (void)updateBitSheet;
 
 - (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
-	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow;
+	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
+	withSender:(id)sender contextInfo:(NSDictionary*)theContextInfo;
 
 - (void)setTextMaxLength:(NSUInteger)length;
 - (void)setFieldType:(NSString*)aType;
@@ -193,5 +196,6 @@
 - (void)textViewDidChangeSelection:(NSNotification *)notification;
 
 - (void)setWasCutPaste;
+- (void)setDoGroupDueToChars;
 
 @end

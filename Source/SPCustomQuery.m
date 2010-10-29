@@ -2273,7 +2273,8 @@
 
 		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
 
-			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+			if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+			fieldEditor = [[SPFieldEditorController alloc] init];
 
 			// Remember edited row for reselecting and setting the scroll view after reload
 			editedRow = rowIndex;
@@ -2305,19 +2306,18 @@
 			if ([originalData isNSNull])
 				originalData = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 
-			id editData = [[fieldEditor editWithObject:originalData
-									fieldName:[columnDefinition objectForKey:@"name"]
-									usingEncoding:[mySQLConnection stringEncoding] 
-									isObjectBlob:isBlob 
-									isEditable:isFieldEditable 
-									withWindow:[tableDocumentInstance parentWindow]] retain];
-
-			if ( editData )
-				[self tableView:aTableView setObjectValue:[editData copy] forTableColumn:aTableColumn row:rowIndex];
-
-			[fieldEditor release];
-
-			if ( editData ) [editData release];
+			[fieldEditor editWithObject:originalData
+							fieldName:[columnDefinition objectForKey:@"name"]
+							usingEncoding:[mySQLConnection stringEncoding] 
+							isObjectBlob:isBlob 
+							isEditable:isFieldEditable 
+							withWindow:[tableDocumentInstance parentWindow]
+								sender:self
+						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											[NSNumber numberWithInteger:rowIndex], @"row",
+											[aTableColumn identifier], @"column",
+											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
+											nil]];
 
 			// Preserve focus and restore selection indexes if appropriate
 			[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
@@ -3410,6 +3410,33 @@
 	return YES;
 }
 
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo
+{
+
+	if (data && contextInfo) {
+		NSUInteger row = [[contextInfo objectForKey:@"row"] integerValue];
+		NSUInteger column = [[contextInfo objectForKey:@"column"] integerValue];
+		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
+
+		// if ([data isKindOfClass:[NSString class]]
+		// 	&& [data isEqualToString:[prefs objectForKey:SPNullValue]]
+		// 	&& [[NSArrayObjectAtIndex(dataColumns, column) objectForKey:@"null"] boolValue])
+		// {
+		// 	data = [[NSNull null] retain];
+		// }
+		if(isFieldEditable) {
+			[self tableView:customQueryView setObjectValue:[[data copy] autorelease] forTableColumn:[customQueryView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
+		}
+	}
+
+	if(fieldEditor) {
+		[fieldEditor release];
+		fieldEditor = nil;
+	}
+
+	// [[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
+}
+
 #pragma mark -
 
 - (id)init
@@ -3702,6 +3729,8 @@
 	[usedQuery release];
 	[resultData release];
 	[favoritesManager release];
+
+	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
 
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 	if (mySQLversion) [mySQLversion release];

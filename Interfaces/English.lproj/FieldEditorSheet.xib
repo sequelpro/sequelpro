@@ -3607,22 +3607,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">closeBitSheet:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="824786228"/>
-					</object>
-					<int key="connectionID">328</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeBitSheet:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="883245768"/>
-					</object>
-					<int key="connectionID">329</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
 						<string key="label">bitSheetSelectBit0:</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="656999524"/>
@@ -4900,6 +4884,22 @@
 						<reference key="destination" ref="702566211"/>
 					</object>
 					<int key="connectionID">529</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeEditSheet:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="883245768"/>
+					</object>
+					<int key="connectionID">530</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closeEditSheet:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="824786228"/>
+					</object>
+					<int key="connectionID">531</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -7180,9 +7180,9 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{344, 658}, {411, 218}}</string>
+					<string>{{344, 538}, {411, 218}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{344, 658}, {411, 218}}</string>
+					<string>{{344, 538}, {411, 218}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
@@ -7256,7 +7256,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">529</int>
+			<int key="maxID">531</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

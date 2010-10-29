@@ -246,11 +246,6 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 			}
 		}
 
-		// If the field is of type BIT, then allocate the binary buffer
-		if (fieldDefinitions[i].type == FIELD_TYPE_BIT) {
-			buf = malloc(fieldDefinitions[i].length + 1);
-		}
-
 		// If the data hasn't already been detected as NULL - in which case it will have been
 		// set to NSNull - process the data by type
 
@@ -293,6 +288,8 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 
 				case FIELD_TYPE_BIT:
 					// Get a binary representation of the data
+
+					buf = malloc(fieldDefinitions[i].length + 1);
 					_bytes2bin(theData, fieldLengths[i], fieldDefinitions[i].length, buf);
 
 					cellData = (theData != NULL) ? [NSString stringWithUTF8String:buf] : @"";

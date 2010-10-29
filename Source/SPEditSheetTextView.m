@@ -64,7 +64,7 @@
 	[super cut:sender];
 }
 
-/*
+/**
  * Validate undo and redo menu items
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
@@ -99,9 +99,7 @@
 		return;
 	}
 
-	// NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
-	// unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if(curFlags & NSCommandKeyMask) {
@@ -117,6 +115,15 @@
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
+	}
+
+	// Allow undo grouping if user typed a ' ' (for word level undo)
+	// or a RETURN but not for each char due to writing speed
+	if([charactersIgnMod isEqualToString:@" "]
+		|| [theEvent keyCode] == 36
+		|| [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
+		) {
+		[[self delegate] setDoGroupDueToChars];
 	}
 
 	[super keyDown: theEvent];

@@ -27,7 +27,7 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView;
+@class SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
 
 @interface SPTableContent : NSObject 
 {	
@@ -133,6 +133,7 @@
 	NSColor *blackColor;
 	NSColor *lightGrayColor;
 
+	SPFieldEditorController *fieldEditor;
 }
 
 // Table loading methods and information
@@ -200,6 +201,7 @@
 - (void)autosizeColumns;
 - (BOOL)saveRowOnDeselect;
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 // Retrieving and setting table state
 - (NSString *) sortColumnName;

@@ -46,7 +46,7 @@
 #define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
-@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView;
+@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView, SPFieldEditorController;
 
 @interface SPCustomQuery : NSObject
 {
@@ -109,6 +109,8 @@
 
 	IBOutlet NSButton *queryInfoButton;
 	IBOutlet BWSplitView *queryInfoPaneSplitView;
+
+	SPFieldEditorController *fieldEditor;
 
 	SPQueryFavoriteManager *favoritesManager;
 
@@ -247,5 +249,7 @@
 - (void)addHistoryEntry:(NSString *)entryString;
 
 - (void)historyItemsHaveBeenUpdated:(id)manager;
+
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end

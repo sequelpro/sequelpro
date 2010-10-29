@@ -2873,12 +2873,51 @@
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
--(void)showErrorSheetWith:(id)error
+- (void)showErrorSheetWith:(id)error
 {
 	// error := first object is the title , second the message, only one button OK
 	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"),
 			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[error objectAtIndex:1]);
+}
+
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo
+{
+
+	if (data && contextInfo) {
+		NSUInteger row = [[contextInfo objectForKey:@"row"] integerValue];
+		NSUInteger column = [[contextInfo objectForKey:@"column"] integerValue];
+		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
+		if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
+			[oldRow setArray:[tableValues rowContentsAtIndex:row]];
+			isEditingRow = YES;
+			currentlyEditingRow = row;
+		}
+
+		if ([data isKindOfClass:[NSString class]]
+			&& [data isEqualToString:[prefs objectForKey:SPNullValue]]
+			&& [[NSArrayObjectAtIndex(dataColumns, column) objectForKey:@"null"] boolValue])
+		{
+			data = [[NSNull null] retain];
+		}
+		if(isFieldEditable) {
+			if([tablesListInstance tableType] == SPTableTypeView) {
+				// since in a view we're editing a field rather than a row
+				isEditingRow = NO;
+				// update the field and refresh the table
+				[self tableView:tableContentView setObjectValue:[[data copy] autorelease] forTableColumn:[tableContentView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
+			} else {
+				[tableValues replaceObjectInRow:row column:column withObject:[[data copy] autorelease]];
+			}
+		}
+	}
+
+	if(fieldEditor) {
+		[fieldEditor release];
+		fieldEditor = nil;
+	}
+
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
 }
 
 #pragma mark -
@@ -3899,7 +3938,8 @@
 				}
 			}
 
-			SPFieldEditorController *fieldEditor = [[SPFieldEditorController alloc] init];
+			if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+			fieldEditor = [[SPFieldEditorController alloc] init];
 
 			[fieldEditor setTextMaxLength:fieldLength];
 			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
@@ -3910,44 +3950,18 @@
 			if ([cellValue isNSNull])
 				cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 
-			id editData = [[fieldEditor editWithObject:cellValue
-										 fieldName:[[aTableColumn headerCell] stringValue]
-									 usingEncoding:[mySQLConnection stringEncoding]
-									  isObjectBlob:isBlob
-										isEditable:isFieldEditable
-										withWindow:[tableDocumentInstance parentWindow]] retain];
-
-			if (editData) {
-				if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
-					[oldRow setArray:[tableValues rowContentsAtIndex:rowIndex]];
-					isEditingRow = YES;
-					currentlyEditingRow = rowIndex;
-				}
-
-				if ([editData isKindOfClass:[NSString class]]
-					&& [editData isEqualToString:[prefs objectForKey:SPNullValue]]
-					&& [[NSArrayObjectAtIndex(dataColumns, [[aTableColumn identifier] integerValue]) objectForKey:@"null"] boolValue])
-				{
-					[editData release];
-					editData = [[NSNull null] retain];
-				}
-				if(isFieldEditable) {
-					if([tablesListInstance tableType] == SPTableTypeView) {
-						// since in a view we're editing a field rather than a row
-						isEditingRow = NO;
-						// update the field and refresh the table
-						[self tableView:aTableView setObjectValue:[[editData copy] autorelease] forTableColumn:aTableColumn row:rowIndex];
-					} else {
-						[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:[[editData copy] autorelease]];
-					}
-				}
-			}
-
-			[fieldEditor release];
-
-			if (editData) [editData release];
-
-			[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
+			[fieldEditor editWithObject:cellValue
+							 fieldName:[[aTableColumn headerCell] stringValue]
+						 usingEncoding:[mySQLConnection stringEncoding]
+						  isObjectBlob:isBlob
+							isEditable:isFieldEditable
+							withWindow:[tableDocumentInstance parentWindow]
+								sender:self
+						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											[NSNumber numberWithInteger:rowIndex], @"row",
+											[aTableColumn identifier], @"column",
+											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
+											nil]];
 
 			return NO;
 		}
@@ -4465,6 +4479,8 @@
 	// to prevent crashes for deferred actions
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:tableContentView];
+
+	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
 
 	[self clearTableLoadTimer];
 	[tableValues release];
