@@ -4204,9 +4204,6 @@
 		// Call the field editor sheet
 		[self tableView:tableContentView shouldEditTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], column) row:row];
 
-		// Reset the field editor
-		[tableContentView editColumn:column row:row withEvent:nil select:YES];
-
 		return NO;
 
 	}

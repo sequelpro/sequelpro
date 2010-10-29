@@ -3599,9 +3599,6 @@
 		// Call the field editor sheet
 		[self tableView:customQueryView shouldEditTableColumn:NSArrayObjectAtIndex([customQueryView tableColumns], column) row:row];
 
-		// Reset the field editor
-		[customQueryView editColumn:column row:row withEvent:nil select:YES];
-
 		return NO;
 
 	}
