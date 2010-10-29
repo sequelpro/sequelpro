@@ -1388,7 +1388,6 @@
 	// If conditions match create an undo group
 	NSInteger cycleCounter;
 	if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
-		NSLog(@"did");
 		allowUndo = NO;
 		wasCutPaste = NO;
 		doGroupDueToChars = NO;
