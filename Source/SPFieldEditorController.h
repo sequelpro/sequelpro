@@ -130,6 +130,8 @@
 	IBOutlet NSTextField *bitSheetBitLabel48;
 	IBOutlet NSTextField *bitSheetBitLabel56;
 
+	id usedSheet;
+
 	id sheetEditData;
 	BOOL editSheetWillBeInitialized;
 	BOOL _isBlob;

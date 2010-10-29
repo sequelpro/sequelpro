@@ -29,6 +29,7 @@
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
 #import "SPGeometryDataView.h"
+#include <objc/objc-runtime.h>
 
 @implementation SPFieldEditorController
 
@@ -196,7 +197,7 @@
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 {
 
-	id usedSheet;
+	usedSheet = nil;
 
 	_isEditable = isEditable;
 
@@ -304,11 +305,11 @@
 
 		// Set window's min size since no segment and quicklook buttons are hidden
 		if (_isBlob || _isBINARY) {
-			[editSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
-			[editSheet setMinSize:NSMakeSize(560, 200)];
+			[usedSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
+			[usedSheet setMinSize:NSMakeSize(560, 200)];
 		} else {
-			[editSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
-			[editSheet setMinSize:NSMakeSize(340, 150)];
+			[usedSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
+			[usedSheet setMinSize:NSMakeSize(340, 150)];
 		}
 
 		[editTextView setEditable:_isEditable];
@@ -398,9 +399,9 @@
 
 			// Set focus
 			if(image == nil || _isGeometry)
-				[editSheet makeFirstResponder:editTextView];
+				[usedSheet makeFirstResponder:editTextView];
 			else
-				[editSheet makeFirstResponder:editImage];
+				[usedSheet makeFirstResponder:editImage];
 
 			[stringValue release], stringValue = nil;
 		}
@@ -415,7 +416,13 @@
 	NSModalSession session = [NSApp beginModalSessionForWindow:usedSheet];
 	NSInteger cycleCounter = 0;
 	BOOL doGroupDueToChars = NO;
+	BOOL findPanelIsOpen   = NO;
+
+	id textFinder = [objc_getClass("NSTextFinder") sharedTextFinder];
+	id textFinderPanel = nil;
+
 	for (;;) {
+
 
 		// Break the run loop if editSheet was closed
 		if ([NSApp runModalSession:session] != NSRunContinuesResponse
@@ -425,6 +432,16 @@
 		// Execute code on DefaultRunLoop (like displaying a tooltip)
 		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
 								 beforeDate:[NSDate distantFuture]];
+
+
+		if([[textFinder findPanel:NO] isVisible]) {
+			textFinderPanel = [textFinder findPanel:NO];
+			[textFinderPanel setWorksWhenModal:YES];
+			// [textFinderPanel setLevel:NSDockWindowLevel];
+			findPanelIsOpen = YES;
+		} else {
+			findPanelIsOpen = NO;
+		}
 
 		// Allow undo grouping if user typed a ' ' (for word level undo)
 		// or a RETURN but not for each char due to writing speed
@@ -465,6 +482,11 @@
 
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
+
+	// Close findPanel for convenience
+	if(findPanelIsOpen && textFinderPanel) {
+		[textFinderPanel close];
+	}
 
 	return ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
 }
@@ -535,7 +557,7 @@
 {
 	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
 											   file:@""
-									 modalForWindow:[self window]
+									 modalForWindow:usedSheet
 									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
 										contextInfo:NULL];
 }
@@ -552,7 +574,7 @@
 			[editImage setHidden:YES];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
-			[[self window] makeFirstResponder:editTextView];
+			[usedSheet makeFirstResponder:editTextView];
 			break;
 		case 1: // image
 			[editTextView setHidden:YES];
@@ -560,10 +582,10 @@
 			[editImage setHidden:NO];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
-			[[self window] makeFirstResponder:editImage];
+			[usedSheet makeFirstResponder:editImage];
 			break;
 		case 2: // hex - load on demand
-			[[self window] makeFirstResponder:hexTextView];
+			[usedSheet makeFirstResponder:hexTextView];
 			if([[hexTextView string] isEqualToString:@""]) {
 				[editSheetProgressBar startAnimation:self];
 				if([sheetEditData isKindOfClass:[NSData class]]) {
@@ -602,7 +624,7 @@
 
 	[panel beginSheetForDirectory:nil
 							   file:fileDefault
-					 modalForWindow:[self window]
+					 modalForWindow:usedSheet
 					  modalDelegate:self
 					 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
 						contextInfo:NULL];
@@ -1191,7 +1213,7 @@
  */
 - (IBAction)bitSheetSelectBit0:(id)sender
 {
-	[[self window] makeFirstResponder:[self valueForKeyPath:@"bitSheetBitButton0"]];
+	[usedSheet makeFirstResponder:[self valueForKeyPath:@"bitSheetBitButton0"]];
 }
 
 /**
