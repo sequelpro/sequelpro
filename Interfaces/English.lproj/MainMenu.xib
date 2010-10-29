@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="159"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -907,8 +907,7 @@
 											</object>
 											<object class="NSMenuItem" id="418923160">
 												<reference key="NSMenu" ref="302471527"/>
-												<bool key="NSIsHidden">YES</bool>
-												<string key="NSTitle">Scroll to Selection</string>
+												<string key="NSTitle">Jump to Selection</string>
 												<string key="NSKeyEquiv">j</string>
 												<int key="NSKeyEquivModMask">1048576</int>
 												<int key="NSMnemonicLoc">2147483647</int>
@@ -3042,6 +3041,14 @@
 					</object>
 					<int key="connectionID">1173</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">centerSelectionInVisibleArea:</string>
+						<reference key="source" ref="63651044"/>
+						<reference key="destination" ref="418923160"/>
+					</object>
+					<int key="connectionID">1175</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -4881,7 +4888,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{762, 389}, {160, 43}}</string>
+					<string>{{559, 393}, {160, 43}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
@@ -4932,7 +4939,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{762, 299}, {238, 103}}</string>
+					<string>{{559, 303}, {238, 103}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4947,7 +4954,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{482, 359}, {280, 303}}</string>
+					<string>{{279, 363}, {280, 303}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -4959,7 +4966,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{749, 252}, {259, 63}}</string>
+					<string>{{559, 323}, {259, 63}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4979,7 +4986,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{334, 662}, {511, 20}}</string>
+					<string>{{131, 666}, {511, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -5127,7 +5134,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{762, 309}, {210, 143}}</string>
+					<string>{{559, 313}, {210, 143}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
@@ -5287,7 +5294,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1173</int>
+			<int key="maxID">1177</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -9979,6 +9986,7 @@
 							<string>doSelectionUpperCase:</string>
 							<string>doTranspose:</string>
 							<string>insertNULLvalue:</string>
+							<string>jumpToSelection:</string>
 							<string>moveSelectionLineDown:</string>
 							<string>moveSelectionLineUp:</string>
 							<string>selectCurrentLine:</string>
@@ -9987,6 +9995,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10018,6 +10027,7 @@
 							<string>doSelectionUpperCase:</string>
 							<string>doTranspose:</string>
 							<string>insertNULLvalue:</string>
+							<string>jumpToSelection:</string>
 							<string>moveSelectionLineDown:</string>
 							<string>moveSelectionLineUp:</string>
 							<string>selectCurrentLine:</string>
@@ -10064,6 +10074,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">insertNULLvalue:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">jumpToSelection:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
