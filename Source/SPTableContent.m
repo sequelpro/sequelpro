@@ -4196,7 +4196,7 @@
 
 	// Check if current edited field is a blob
 	if ((fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"])
-		&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"]))
+		&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"] || [multipleLineEditingButton state] == NSOnState))
 	{
 		// Cancel editing
 		[control abortEditing];
