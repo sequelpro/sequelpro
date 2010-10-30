@@ -47,7 +47,13 @@
 
 	NSUserDefaults *prefs;
 
+	NSRange fieldEditorSelectedRange;
+
 }
+
+
+- (void)setFieldEditorSelectedRange:(NSRange)aRange;
+- (NSRange)fieldEditorSelectedRange;
 
 /*!
 	@method	 copy:

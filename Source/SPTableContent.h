@@ -134,7 +134,13 @@
 	NSColor *lightGrayColor;
 
 	SPFieldEditorController *fieldEditor;
+	NSRange fieldEditorSelectedRange;
+
 }
+
+
+- (void)setFieldEditorSelectedRange:(NSRange)aRange;
+- (NSRange)fieldEditorSelectedRange;
 
 // Table loading methods and information
 - (void) loadTable:(NSString *)aTable;

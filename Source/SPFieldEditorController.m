@@ -29,6 +29,7 @@
 #import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
 #import "SPGeometryDataView.h"
+#import "SPCopyTable.h"
 #include <objc/objc-runtime.h>
 
 @implementation SPFieldEditorController
@@ -403,8 +404,11 @@
 			}
 
 			// Locate the caret in editTextView
-			// (to select all takes a bit time for large data)
-			[editTextView setSelectedRange:NSMakeRange(0,0)];
+			// (restore a given selection coming from the in-cell editing mode)
+			NSRange selRange = [callerInstance fieldEditorSelectedRange];
+			[editTextView setSelectedRange:selRange];
+			[callerInstance setFieldEditorSelectedRange:NSMakeRange(0,0)];
+			
 
 			// If the string content is NULL select NULL for convenience
 			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])

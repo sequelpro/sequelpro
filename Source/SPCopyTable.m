@@ -38,6 +38,16 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 @implementation SPCopyTable
 
+- (void)setFieldEditorSelectedRange:(NSRange)aRange
+{
+	fieldEditorSelectedRange = aRange;
+}
+
+- (NSRange)fieldEditorSelectedRange
+{
+	return fieldEditorSelectedRange;
+}
+
 - (void)copy:(id)sender
 {
 	NSString *tmp = nil;

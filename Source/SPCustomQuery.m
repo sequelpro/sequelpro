@@ -3436,6 +3436,16 @@
 
 }
 
+- (void)setFieldEditorSelectedRange:(NSRange)aRange
+{
+	[customQueryView setFieldEditorSelectedRange:aRange];
+}
+
+- (NSRange)fieldEditorSelectedRange
+{
+	return [customQueryView fieldEditorSelectedRange];
+}
+
 #pragma mark -
 
 - (id)init
@@ -3599,6 +3609,9 @@
 	// Check if current edited field is a blob or should be displayed in field editor sheet
 	if (isBlob || [multipleLineEditingButton state] == NSOnState)
 	{
+
+		[customQueryView setFieldEditorSelectedRange:[fieldEditor selectedRange]];
+
 		// Cancel editing
 		[control abortEditing];
 
@@ -3680,6 +3693,9 @@
  */
 - (void)awakeFromNib
 {
+
+	[customQueryView setFieldEditorSelectedRange:NSMakeRange(0,0)];
+
 	// Set pre-defined menu tags
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];

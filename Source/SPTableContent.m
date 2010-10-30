@@ -171,6 +171,8 @@
 	[paginationView setFrame:paginationViewFrame];
 	[contentViewPane addSubview:paginationView];
 
+	[tableContentView setFieldEditorSelectedRange:NSMakeRange(0,0)];
+
 	// Init Filter Table GUI
 	[filterTableDistinctMenuItem setState:(filterTableDistinct) ? NSOnState : NSOffState];
 	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
@@ -4210,6 +4212,8 @@
 	if ((fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"])
 		&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"] || [multipleLineEditingButton state] == NSOnState))
 	{
+		[tableContentView setFieldEditorSelectedRange:[fieldEditor selectedRange]];
+
 		// Cancel editing
 		[control abortEditing];
 
@@ -4473,6 +4477,16 @@
 			[[tableDocumentInstance parentWindow] makeFirstResponder:compareField];
 		}
 	}
+}
+
+- (void)setFieldEditorSelectedRange:(NSRange)aRange
+{
+	[tableContentView setFieldEditorSelectedRange:aRange];
+}
+
+- (NSRange)fieldEditorSelectedRange
+{
+	return [tableContentView fieldEditorSelectedRange];
 }
 
 #pragma mark -
