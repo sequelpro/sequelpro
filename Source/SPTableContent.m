@@ -2884,9 +2884,15 @@
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo
 {
 
+	NSInteger row = -1;
+	NSInteger column = -1;
+
+	if(contextInfo) {
+		row = [[contextInfo objectForKey:@"row"] integerValue];
+		column = [[contextInfo objectForKey:@"column"] integerValue];
+	}
+
 	if (data && contextInfo) {
-		NSUInteger row = [[contextInfo objectForKey:@"row"] integerValue];
-		NSUInteger column = [[contextInfo objectForKey:@"column"] integerValue];
 		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
 		if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
 			[oldRow setArray:[tableValues rowContentsAtIndex:row]];
@@ -2918,6 +2924,9 @@
 	}
 
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
+
+	if(row > -1 && column > -1)
+		[tableContentView editColumn:column row:row withEvent:nil select:YES];
 }
 
 #pragma mark -

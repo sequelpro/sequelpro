@@ -739,21 +739,8 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	// RETURN or ENTER invoke editing mode for selected row
 	// by calling tableView:shouldEditTableColumn: to validate
 
-	// TODO: find a better solution HansJB
 	if([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
-		if([[self delegate] isKindOfClass:[SPCustomQuery class]] || [[self delegate] isKindOfClass:[SPTableContent class]]) {
-			[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];;
-		} else {
-			for(id item in [self tableColumns]) {
-				// Run in fieldEditorMode?
-				if(![[self delegate] tableView:self shouldEditTableColumn:item row:[self selectedRow]])
-					;
-				else {
-					[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
-					break;
-				}
-			}
-		}
+		[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 		return;
 	}
 	
@@ -763,7 +750,6 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 		if ([[self delegate] cancelRowEditing]) return;
 	}
 
-	// TODO: find a better solution HansJB
 	else if ([theEvent keyCode] == 48 && ([[self delegate] isKindOfClass:[SPCustomQuery class]] 
 		|| [[self delegate] isKindOfClass:[SPTableContent class]])) {
 		[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];

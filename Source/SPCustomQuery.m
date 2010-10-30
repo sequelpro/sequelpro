@@ -3408,9 +3408,15 @@
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo
 {
 
+	NSInteger row = -1;
+	NSInteger column = -1;
+
+	if(contextInfo) {
+		row = [[contextInfo objectForKey:@"row"] integerValue];
+		column = [[contextInfo objectForKey:@"column"] integerValue];
+	}
+
 	if (data && contextInfo) {
-		NSUInteger row = [[contextInfo objectForKey:@"row"] integerValue];
-		NSUInteger column = [[contextInfo objectForKey:@"column"] integerValue];
 		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
 
 		if(isFieldEditable) {
@@ -3427,6 +3433,9 @@
 	[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
 	if (selectionIndexToRestore)
 		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+
+	if(row > -1 && column > -1)
+		[customQueryView editColumn:column row:row withEvent:nil select:YES];
 
 }
 
