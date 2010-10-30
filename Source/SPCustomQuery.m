@@ -3434,9 +3434,6 @@
 	if (selectionIndexToRestore)
 		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 
-	if(row > -1 && column > -1)
-		[customQueryView editColumn:column row:row withEvent:nil select:YES];
-
 }
 
 #pragma mark -

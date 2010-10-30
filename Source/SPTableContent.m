@@ -2569,6 +2569,9 @@
  */
 - (BOOL)cancelRowEditing
 {
+
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
+
 	if (!isEditingRow) return NO;
 	if (isEditingNewRow) {
 		tableRowsCount--;
