@@ -103,6 +103,8 @@
 	NSDictionary *targetTableDetails;
 	NSMutableArray *geometryFields;
 	NSMutableIndexSet *geometryFieldsMapIndex;
+	NSMutableArray *bitFields;
+	NSMutableIndexSet *bitFieldsMapIndex;
 
 	NSSavePanel *currentExportPanel;
 }

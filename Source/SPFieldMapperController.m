@@ -1370,7 +1370,9 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 		CGFloat minDist = 1e6;
 		NSInteger minIndex = 0;
 		for(j=0; j < [fileHeaderNames count]; j++) {
-			NSString *headerName = [NSArrayObjectAtIndex(fileHeaderNames,j) lowercaseString];
+			id fileHeaderName = NSArrayObjectAtIndex(fileHeaderNames,j);
+			if([fileHeaderName isKindOfClass:[NSNull class]] || [fileHeaderName isSPNotLoaded]) continue;
+			NSString *headerName = [(NSString*)fileHeaderName lowercaseString];
 			CGFloat dist = [[NSArrayObjectAtIndex(tableHeaderNames,i) lowercaseString] levenshteinDistanceWithWord:headerName];
 			if(dist < minDist && ![matchedHeaderNames containsObject:headerName]) {
 				minDist = dist;

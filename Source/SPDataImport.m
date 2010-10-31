@@ -65,6 +65,8 @@
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
 		geometryFields = [[NSMutableArray alloc] init];
 		geometryFieldsMapIndex = [[NSMutableIndexSet alloc] init];
+		bitFields = [[NSMutableArray alloc] init];
+		bitFieldsMapIndex = [[NSMutableIndexSet alloc] init];
 		fieldMappingArray = nil;
 		fieldMappingGlobalValueArray = nil;
 		fieldMappingTableColumnNames = nil;
@@ -687,6 +689,8 @@
 
 	[geometryFields removeAllObjects];
 	[geometryFieldsMapIndex removeAllIndexes];
+	[bitFields removeAllObjects];
+	[bitFieldsMapIndex removeAllIndexes];
 
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
@@ -906,6 +910,11 @@
 								// Store column index for each geometry field to be able to apply GeomFromText() while importing
 								if([geometryFields containsObject:fieldName = NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) ])
 									[geometryFieldsMapIndex addIndex:i];
+								[insertBaseString appendString:[fieldName backtickQuotedString]];
+							} else if([bitFields count]) {
+								// Store column index for each bit field to be able to wrap it into b'…' while importing
+								if([bitFields containsObject:fieldName = NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) ])
+									[bitFieldsMapIndex addIndex:i];
 								[insertBaseString appendString:[fieldName backtickQuotedString]];
 							} else {
 								[insertBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
@@ -1220,10 +1229,13 @@
 	targetTableDetails = [selectedTableData informationForTable:selectedTableTarget];
 	[selectedTableData release];
 
-	// Store all field names which are of typegrouping 'geometry'
-	for(NSDictionary *field in [targetTableDetails objectForKey:@"columns"])
+	// Store all field names which are of typegrouping 'geometry' and 'bit'
+	for(NSDictionary *field in [targetTableDetails objectForKey:@"columns"]) {
 		if([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"])
-		[geometryFields addObject:[field objectForKey:@"name"]];
+			[geometryFields addObject:[field objectForKey:@"name"]];
+		if([[field objectForKey:@"typegrouping"] isEqualToString:@"bit"])
+			[bitFields addObject:[field objectForKey:@"name"]];
+	}
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
@@ -1277,10 +1289,13 @@
 			// - check for global values
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 				NSMutableString *globalVar = [NSMutableString string];
-				if([NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn) isKindOfClass:[NSNull class]]) {
+				id insertItem = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
+				if([insertItem isKindOfClass:[NSNull class]]) {
+					[globalVar setString:@"NULL"];
+				} else if([insertItem isSPNotLoaded]) {
 					[globalVar setString:@"NULL"];
 				} else {
-					[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+					[globalVar setString:insertItem];
 					// Global variables are coming wrapped in ' ' if there're not marked as SQL.
 					// If global variable contains column placeholders $1 etc. replace them.
 					if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
@@ -1292,6 +1307,8 @@
 								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
 								if(colStr == [NSNull null])
 									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
+								else if([colStr isSPNotLoaded])
+									[globalVar replaceCharactersInRange:aRange withString:@""];
 								else
 									[globalVar replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"'%@'", [(NSString*)colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 							} else {
@@ -1324,10 +1341,13 @@
 			// - check for global values
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 				NSMutableString *globalVar = [NSMutableString string];
-				if([NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn) isKindOfClass:[NSNull class]]) {
+				id insertItem = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
+				if([insertItem isKindOfClass:[NSNull class]]) {
+					[globalVar setString:@"NULL"];
+				} else if([insertItem isSPNotLoaded]) {
 					[globalVar setString:@"NULL"];
 				} else {
-					[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+					[globalVar setString:insertItem];
 					// Global variables are coming wrapped in ' ' if there're not marked as SQL.
 					// If global variable contains column placeholders $1 etc. replace them.
 					if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
@@ -1339,6 +1359,8 @@
 								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
 								if(colStr == [NSNull null])
 									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
+								else if([colStr isSPNotLoaded])
+									[globalVar replaceCharactersInRange:aRange withString:@""];
 								else
 									[globalVar replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"'%@'", [(NSString*)colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 							} else {
@@ -1393,10 +1415,13 @@
 		// - check for global values
 		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 			NSMutableString *globalVar = [NSMutableString string];
-			if([NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn) isKindOfClass:[NSNull class]]) {
+			id insertItem = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
+			if([insertItem isKindOfClass:[NSNull class]]) {
+				[globalVar setString:@"NULL"];
+			} else if([insertItem isSPNotLoaded]) {
 				[globalVar setString:@"NULL"];
 			} else {
-				[globalVar setString:NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn)];
+				[globalVar setString:insertItem];
 				// Global variables are coming wrapped in ' ' if there're not marked as SQL.
 				// If global variable contains column placeholders $1 etc. replace them by escaped 'csv content' or NULL.
 				if([globalVar rangeOfString:@"$"].length && [globalVar isMatchedByRegex:re]) {
@@ -1408,6 +1433,8 @@
 							id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
 							if(colStr == [NSNull null])
 								[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
+							else if([colStr isSPNotLoaded])
+								[globalVar replaceCharactersInRange:aRange withString:@""];
 							else
 								[globalVar replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"'%@'", [(NSString*)colStr stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 						} else {
@@ -1430,6 +1457,8 @@
 				// Apply GeomFromText() for each geometry field
 				if([geometryFields count] && [geometryFieldsMapIndex containsIndex:i]) {
 					[valueString appendString:[(NSString*)cellData getGeomFromTextString]];
+				} else if([bitFields count] && [bitFieldsMapIndex containsIndex:i]) {
+					[valueString appendFormat:@"b'%@'", [mySQLConnection prepareString:cellData]];
 				} else {
 					[valueString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];
 				}
@@ -1586,6 +1615,8 @@
 	if (fieldMappingImportArray) [fieldMappingImportArray release];
 	if (geometryFields) [geometryFields release];
 	if (geometryFieldsMapIndex) [geometryFieldsMapIndex release];
+	if (bitFields) [bitFields release];
+	if (bitFieldsMapIndex) [bitFieldsMapIndex release];
 
 	if (lastFilename) [lastFilename release];
 	if (prefs) [prefs release];
