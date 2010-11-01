@@ -114,8 +114,20 @@
 		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
 
 			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
-			if(isCurrentExtraAutoIncrement)
+			if(isCurrentExtraAutoIncrement) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
+				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
+				if ((![currentRow objectForKey:@"Key"] || [[currentRow objectForKey:@"Key"] isEqualToString:@""])) {
+					[chooseKeyButton selectItemAtIndex:0];
+
+					[NSApp beginSheet:keySheet
+					   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
+					   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						  contextInfo:@"autoincrementindex" ];
+				}
+			} else {
+				autoIncrementIndex = nil;
+			}
 
 			id dataCell = [aTableColumn dataCell];
 			[dataCell removeAllItems];

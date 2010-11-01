@@ -75,6 +75,7 @@
 	NSArray *typeSuggestions;
 	NSArray *extraFieldSuggestions;
 	BOOL isCurrentExtraAutoIncrement;
+	NSString *autoIncrementIndex;
 	
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 }
@@ -95,9 +96,6 @@
 
 // Index sheet methods
 - (IBAction)closeSheet:(id)sender;
-
-// Key sheet methods
-- (IBAction)closeKeySheet:(id)sender;
 
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;

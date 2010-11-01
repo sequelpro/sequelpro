@@ -61,6 +61,7 @@
 		extraFieldSuggestions = nil;
 		currentlyEditingRow = -1;
 		isCurrentExtraAutoIncrement = NO;
+		autoIncrementIndex = nil;
 
 		fieldValidation = [[SPTableFieldValidation alloc] init];
 		
@@ -337,6 +338,7 @@
 	[[self onMainThread] setTableDetails:tableDetails];
 
 	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
+	autoIncrementIndex = nil;
 
 	// Send the query finished/work complete notification
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -718,6 +720,7 @@
 	}
 	isEditingRow = NO;
 	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
+	autoIncrementIndex = nil;
 	[tableSourceView reloadData];
 	currentlyEditingRow = -1;
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
@@ -732,6 +735,7 @@
 	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
 }
 
+
 #pragma mark -
 #pragma mark Index sheet methods
 
@@ -742,14 +746,6 @@
 {
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
-}
-
-/**
- * Closes the key sheet.
- */
-- (IBAction)closeKeySheet:(id)sender
-{
-	[NSApp stopModalWithCode:[sender tag]];
 }
 
 #pragma mark -
@@ -1047,66 +1043,53 @@
 		}
 	}
 
-	// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
-	if ([theRowExtra isEqualToString:@"AUTO_INCREMENT"] && (![theRow objectForKey:@"Key"] || [[theRow objectForKey:@"Key"] isEqualToString:@""]))
-	{
-		[chooseKeyButton selectItemAtIndex:0];
-
-		[NSApp beginSheet:keySheet
-		   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
-		   didEndSelector:nil
-			  contextInfo:nil];
-
-		code = [NSApp runModalForWindow:keySheet];
-
-		[NSApp endSheet:keySheet];
-		[keySheet orderOut:nil];
-
-		if (code) {
-			// User wants to add PRIMARY KEY
-			if ([chooseKeyButton indexOfSelectedItem] == 0) {
-				[queryString appendString:@"\n PRIMARY KEY"];
+	// Process index if given for fields set to AUTO_INCREMENT 
+	if (autoIncrementIndex) {
+		// User wants to add PRIMARY KEY
+		if ([autoIncrementIndex isEqualToString:@"PRIMARY KEY"]) {
+			[queryString appendString:@"\n PRIMARY KEY"];
+			
+			// If the field isn't set to be unsigned and we're making it the primary key then make it unsigned
+			if (![[theRow objectForKey:@"unsigned"] boolValue]) {
 				
-				// If the field isn't set to be unsigned and we're making it the primary key then make it unsigned
-				if (![[theRow objectForKey:@"unsigned"] boolValue]) {
-					
-					// Find the occurrence of the table name and data type so we know where to insert the 
-					// UNSIGNED keyword.
-					NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
-					
-					NSInteger index = (range.location + range.length);
-					
-					// If the field definition's data type includes the length then we must take this into
-					// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the
-					// parentheses used.
-					if (fieldDefIncludesLen) {
-						index += ([[theRow objectForKey:@"length"] length] + 2); 
-					}
-					
-					[queryString insertString:@" UNSIGNED" atIndex:index];
+				// Find the occurrence of the table name and data type so we know where to insert the 
+				// UNSIGNED keyword.
+				NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
+				
+				NSInteger index = (range.location + range.length);
+				
+				// If the field definition's data type includes the length then we must take this into
+				// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the
+				// parentheses used.
+				if (fieldDefIncludesLen) {
+					index += ([[theRow objectForKey:@"length"] length] + 2); 
 				}
-								
-				// Add AFTER ... only if the user added a new field
-				if (isEditingNewRow) {
-					[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
-				}
+				
+				[queryString insertString:@" UNSIGNED" atIndex:index];
 			}
-			else {
-				// Add AFTER ... only if the user added a new field
-				if (isEditingNewRow) {
-					[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
-				}
-
-				[queryString appendFormat:@"\n, ADD %@ (%@)", [chooseKeyButton titleOfSelectedItem], [[theRow objectForKey:@"name"] backtickQuotedString]];
+							
+			// Add AFTER ... only if the user added a new field
+			if (isEditingNewRow) {
+				[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 			}
 		}
+		else {
+			// Add AFTER ... only if the user added a new field
+			if (isEditingNewRow) {
+				[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+			}
+
+			[queryString appendFormat:@"\n, ADD %@ (%@)", autoIncrementIndex, [[theRow objectForKey:@"name"] backtickQuotedString]];
+		}
 	}
+
 	// Add AFTER ... only if the user added a new field
 	else if (isEditingNewRow) {
 		[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 	}
 
 	isCurrentExtraAutoIncrement = NO;
+	autoIncrementIndex = nil;
 
 	// Execute query
 	[mySQLConnection queryString:queryString];
@@ -1233,6 +1216,18 @@
 		[[sheet window] orderOut:nil];
 
 	alertSheetOpened = NO;
+
+	if(contextInfo && [contextInfo isEqualToString:@"autoincrementindex"]) {
+		if(returnCode) {
+			autoIncrementIndex = [chooseKeyButton titleOfSelectedItem];
+		} else {
+			autoIncrementIndex = nil;
+			if([tableSourceView selectedRow] > -1 && [extraFieldSuggestions count])
+				[[tableFields objectAtIndex:[tableSourceView selectedRow]] setObject:[extraFieldSuggestions objectAtIndex:0] forKey:@"Extra"];
+			[tableSourceView reloadData];
+			isCurrentExtraAutoIncrement = NO;
+		}
+	}
 }
 
 /**
