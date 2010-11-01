@@ -65,7 +65,18 @@
 				[[tableColumn dataCell] addItemWithTitle:[collation objectForKey:@"COLLATION_NAME"]];
 		}
 	}
-	
+
+	else if([[tableColumn identifier] isEqualToString:@"Extra"]) {
+		id dataCell = [tableColumn dataCell];
+		[dataCell removeAllItems];
+		// Populate Extra suggestion popup button
+		for (id item in extraFieldSuggestions) {
+			if(!(isCurrentExtraAutoIncrement && [item isEqualToString:@"auto_increment"])) {
+				[dataCell addItemWithObjectValue:item];
+			}
+		}
+	}
+
 	return [NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:[tableColumn identifier]];
 }
 
@@ -98,13 +109,21 @@
 			[tableSourceView reloadData];
 		}
 	}
-	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
+	// Set null field to "do not allow NULL" for auto_increment Extra and reset Extra suggestion list
 	else if([[aTableColumn identifier] isEqualToString:@"Extra"]) {
 		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
-			if([[[currentRow objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"]) {
+
+			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
+			if(isCurrentExtraAutoIncrement)
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
-			}
+
+			id dataCell = [aTableColumn dataCell];
+			[dataCell removeAllItems];
+			[dataCell addItemsWithObjectValues:extraFieldSuggestions];
+			[dataCell noteNumberOfItemsChanged];
+			[dataCell reloadData];
 			[tableSourceView reloadData];
+
 		}
 	}
 	// Reset default to "" if field doesn't allow NULL and current default is set to NULL

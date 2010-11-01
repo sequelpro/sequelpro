@@ -34,6 +34,8 @@
 @implementation SPTableData
 
 @synthesize isWorking;
+@synthesize tableHasAutoIncrementField;
+;
 
 /**
  * Init class.
@@ -51,6 +53,8 @@
 		tableCreateSyntax = nil;
 		mySQLConnection = nil;
 		isWorking = NO;
+		tableHasAutoIncrementField = NO;
+
 	}
 
 	return self;
@@ -385,6 +389,7 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
+	tableHasAutoIncrementField = NO;
 
 	if( [tableListInstance tableType] == SPTableTypeTable || [tableListInstance tableType] == SPTableTypeView ) {
 		tableData = [self informationForTable:[tableListInstance tableName]];
@@ -424,6 +429,8 @@
 	NSDictionary *viewData = [self informationForView:[tableListInstance tableName]];
 	NSDictionary *columnData;
 	NSEnumerator *enumerator;
+
+	tableHasAutoIncrementField = NO;
 
 	if (viewData == nil) {
 		[columns removeAllObjects];
@@ -1244,6 +1251,7 @@
 		// Whether fields should auto-increment
 		} else if ([detailString isEqualToString:@"AUTO_INCREMENT"]) {
 			[fieldDetails setValue:boolYES forKey:@"autoincrement"];
+			tableHasAutoIncrementField = YES;
 
 		// Field defaults
 		} else if ([detailString isEqualToString:@"DEFAULT"] && (definitionPartsIndex + 1 < partsArrayLength)) {

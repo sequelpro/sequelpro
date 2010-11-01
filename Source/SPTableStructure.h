@@ -58,7 +58,7 @@
 
 	IBOutlet id viewColumnsMenu;
 	IBOutlet id encodingPopupCell;
-	
+
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
 	MCPResult *indexResult;
@@ -73,6 +73,8 @@
 	NSUserDefaults *prefs;
 	NSArray *collations;
 	NSArray *typeSuggestions;
+	NSArray *extraFieldSuggestions;
+	BOOL isCurrentExtraAutoIncrement;
 	
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 }

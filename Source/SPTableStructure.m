@@ -58,7 +58,9 @@
 		defaultValues = nil;
 		selectedTable = nil;
 		typeSuggestions = nil;
+		extraFieldSuggestions = nil;
 		currentlyEditingRow = -1;
+		isCurrentExtraAutoIncrement = NO;
 
 		fieldValidation = [[SPTableFieldValidation alloc] init];
 		
@@ -79,6 +81,14 @@
 	// Set the strutcture and index view's font
 	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[indexesTableView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+
+	extraFieldSuggestions = [[NSArray arrayWithObjects:
+		@"None",
+		@"auto_increment",
+		@"on update CURRENT_TIMESTAMP",
+		@"SERIAL DEFAULT VALUE",
+		nil
+	] retain];
 
 	// Note that changing the contents or ordering of this array will affect the implementation of 
 	// SPTableFieldValidation. See it's implementation file for more details.
@@ -325,6 +335,8 @@
 									theTableEnumLists, @"enumLists",
 									nil];
 	[[self onMainThread] setTableDetails:tableDetails];
+
+	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
 
 	// Send the query finished/work complete notification
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -705,6 +717,7 @@
 		[tableFields replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 	}
 	isEditingRow = NO;
+	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
 	[tableSourceView reloadData];
 	currentlyEditingRow = -1;
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
@@ -1092,7 +1105,9 @@
 	else if (isEditingNewRow) {
 		[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
 	}
-	
+
+	isCurrentExtraAutoIncrement = NO;
+
 	// Execute query
 	[mySQLConnection queryString:queryString];
 
@@ -1543,7 +1558,8 @@
 	[oldRow release];
 	[enumFields release];
 	[typeSuggestions release];
-	
+	[extraFieldSuggestions release];
+
 	[fieldValidation release], fieldValidation = nil;
 
 	if (defaultValues) [defaultValues release];
