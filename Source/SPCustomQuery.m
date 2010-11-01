@@ -849,6 +849,9 @@
 	if (selectionIndexToRestore)
 		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 
+	if(reloadingExistingResult)
+		[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
+
 	[queryRunningPool release];
 
 }
@@ -1952,7 +1955,6 @@
 										(numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", [columnDefinition objectForKey:@"org_table"]]);
 
 		}
-
 	}
 }
 
