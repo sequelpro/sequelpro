@@ -3555,7 +3555,7 @@
 	}
 
 	if (!_isConnected || _isWorkingLevel) {
-		return ([menuItem action] == @selector(newWindow:) || [menuItem action] == @selector(terminate:) || [menuItem action] == @selector(closeTab:) || [menuItem action] == @selector(newTab:));
+		return ([menuItem action] == @selector(newWindow:) || [menuItem action] == @selector(terminate:) || [menuItem action] == @selector(closeTab:));
 	}
 
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))

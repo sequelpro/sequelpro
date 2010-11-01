@@ -109,7 +109,11 @@
 		
 		return NO;
 	}
-	
+	if([menuItem action] == @selector(newTab:))
+	{
+		return ([[self frontDocumentWindow] attachedSheet] == nil);
+	}
+
 	return YES;
 }
 
