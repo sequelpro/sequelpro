@@ -137,7 +137,12 @@
  */
 - (void)rightMouseDown:(NSEvent *)event
 {
-	if ([[self delegate] tableView:self shouldSelectRow:[self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]]]) {
+	if ([[self delegate] respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
+		if ([[self delegate] tableView:self shouldSelectRow:[self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]]]) {
+			[super rightMouseDown:event];
+		}
+	}
+	else {
 		[super rightMouseDown:event];
 	}
 }
