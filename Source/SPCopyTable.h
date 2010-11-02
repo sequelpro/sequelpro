@@ -37,13 +37,13 @@
 		is in similar format. The values for each cell are obtained via the
 		objects description method
 */
-@interface SPCopyTable : SPTableView 
+@interface SPCopyTable : SPTableView
 {
-	id tableInstance;				// the table content view instance
-	id mySQLConnection;				// current MySQL connection
-	NSArray* columnDefinitions;		// array of NSDictionary containing info about columns
-	NSString* selectedTable;		// the name of the current selected table
-	SPDataStorage* tableStorage;	// the underlying storage array holding the table data
+	id tableInstance;                 // the table content view instance
+	id mySQLConnection;               // current MySQL connection
+	NSArray* columnDefinitions;       // array of NSDictionary containing info about columns
+	NSString* selectedTable;          // the name of the current selected table
+	SPDataStorage* tableStorage;      // the underlying storage array holding the table data
 
 	NSUserDefaults *prefs;
 
@@ -51,9 +51,7 @@
 
 }
 
-
-- (void)setFieldEditorSelectedRange:(NSRange)aRange;
-- (NSRange)fieldEditorSelectedRange;
+@property(readwrite,assign) NSRange fieldEditorSelectedRange;
 
 /*!
 	@method	 copy:
@@ -65,15 +63,15 @@
 - (void)copy:(id)sender;
 
 /*!
-	@method	 validateMenuItem:
-	@abstract   Dynamically enable Copy menu item for the table view
-	@discussion Will only enable the Copy item when something is selected in
-	  this table view
-	@param	  anItem the menu item being validated
-	@result	 YES if there is at least one row selected & the menu item is
-	  copy, NO otherwise
+	@method	 draggedRowsAsTabString:
+	@abstract   getter of the dragged rows of the table for drag
+	@discussion For the dragged rows returns a single string with each row
+	   separated by a newline and then for each column value separated by a 
+	   tab. Values are from the objects description method, so make sure it
+	   returns something meaningful. 
+	@result	 The above described string, or nil if nothing selected
 */
-- (BOOL)validateMenuItem:(NSMenuItem*)anItem;
+- (NSString *)draggedRowsAsTabString;
 
 /*!
 	@method	 draggingSourceOperationMaskForLocal:
@@ -93,17 +91,6 @@
 	@result	 The above described string, or nil if nothing selected
 */
 - (NSString *)selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders;
-
-/*!
-	@method	 draggedRowsAsTabString:
-	@abstract   getter of the dragged rows of the table for drag
-	@discussion For the dragged rows returns a single string with each row
-	   separated by a newline and then for each column value separated by a 
-	   tab. Values are from the objects description method, so make sure it
-	   returns something meaningful. 
-	@result	 The above described string, or nil if nothing selected
-*/
-- (NSString *)draggedRowsAsTabString;
 
 /*
  * Generate a string in form of INSERT INTO <table> VALUES () of 
@@ -132,7 +119,7 @@
 		while this accesses it.
 	@result A dictionary - mapped by column identifier - of the column widths to use
 */
-- (NSDictionary *) autodetectColumnWidths;
+- (NSDictionary *)autodetectColumnWidths;
 
 /*!
 	@method  autodetectWidthForColumnDefinition:maxRows:
@@ -152,6 +139,17 @@
  * column definition, using the stored data and the specified font.
  */
 - (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition maxRows:(NSUInteger)rowsToCheck;
+
+/*!
+	@method	 validateMenuItem:
+	@abstract   Dynamically enable Copy menu item for the table view
+	@discussion Will only enable the Copy item when something is selected in
+	  this table view
+	@param	  anItem the menu item being validated
+	@result	 YES if there is at least one row selected & the menu item is
+	  copy, NO otherwise
+*/
+- (BOOL)validateMenuItem:(NSMenuItem*)anItem;
 
 - (BOOL)isCellEditingMode;
 - (BOOL)isCellComplex;

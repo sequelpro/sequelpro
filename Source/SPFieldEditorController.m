@@ -113,14 +113,14 @@
 				[qlTypesItems addObject:type];
 			}
 		}
-		
+
 		qlTypes = [[NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes] retain];
 		[qlTypesItems release];
 
 		fieldType = @"";
 		fieldEncoding = @"";
 	}
-	
+
 	return self;
 }
 
@@ -144,68 +144,30 @@
 	[super dealloc];
 }
 
-/**
- * Set the maximum text length of the underlying table field for input validation.
- *
- * @param length The maximum text length
- */
-- (void)setTextMaxLength:(NSUInteger)length
-{
-	maxTextLength = length;
-}
-
-/**
- * Set the field type of the underlying table field for input validation.
- *
- * @param aType The field type which will be used for dispatching which sheet will be shown. If type == BIT the bitSheet will be used otherwise the editSheet.
- */
-- (void)setFieldType:(NSString*)aType
-{
-	fieldType = aType;
-}
-
-/**
- * Set the field encoding of the underlying table field for displaying it to the user.
- *
- * @param aEncoding encoding
- */
-- (void)setFieldEncoding:(NSString*)aEncoding
-{
-	fieldEncoding = aEncoding;
-}
-
-/**
- * Set if underlying table field allows NULL for several validations.
- *
- * @param allowNULL If allowNULL is YES NULL value is allowed for the underlying table field
- */
-- (void)setAllowNULL:(BOOL)allowNULL
-{
-	_allowNULL = allowNULL;
-}
+#pragma mark -
 
 /**
  * Main method for editing data. It will validate several settings and display a modal sheet for theWindow whioch waits until the user closes the sheet.
  *
  * @param data The to be edited table field data.
- * 
+ *
  * @param fieldName The name of the currently edited table field.
- * 
+ *
  * @param anEncoding The used encoding while editing.
- * 
+ *
  * @param isFieldBlob If YES the underlying table field is a TEXT/BLOB field. This setting handles several controls which are offered in the sheet to the user.
- * 
+ *
  * @param isEditable If YES the underlying table field is editable, if NO the field is not editable and the SPFieldEditorController sheet do not show a "OK" button for saving.
- * 
+ *
  * @param theWindow The window for displaying the sheet.
- * 
+ *
  * @param sender The calling instance.
- * 
+ *
  * @param contextInfo context info for processing the edited data in sender.
- * 
+ *
  */
 - (void)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
-		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow 
+		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 		sender:(id)sender contextInfo:(NSDictionary*)theContextInfo
 {
 
@@ -251,10 +213,10 @@
 		NSInteger i = 0;
 		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
 		if([bitSheetNULLButton state] == NSOffState)
-			for(i=0; i<maxBit; i++) 
-				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] 
+			for( i = 0; i<maxBit; i++ )
+				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]]
 					setState:([sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
-		for(i=maxBit; i<64; i++)
+		for( i = maxBit; i<64; i++ )
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
 
 		[self updateBitSheet];
@@ -408,7 +370,6 @@
 			NSRange selRange = [callerInstance fieldEditorSelectedRange];
 			[editTextView setSelectedRange:selRange];
 			[callerInstance setFieldEditorSelectedRange:NSMakeRange(0,0)];
-			
 
 			// If the string content is NULL select NULL for convenience
 			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
@@ -437,6 +398,127 @@
 
 	}
 
+}
+
+/**
+ * Set the maximum text length of the underlying table field for input validation.
+ *
+ * @param length The maximum text length
+ */
+- (void)setTextMaxLength:(NSUInteger)length
+{
+	maxTextLength = length;
+}
+
+/**
+ * Set the field type of the underlying table field for input validation.
+ *
+ * @param aType The field type which will be used for dispatching which sheet will be shown. If type == BIT the bitSheet will be used otherwise the editSheet.
+ */
+- (void)setFieldType:(NSString*)aType
+{
+	fieldType = aType;
+}
+
+/**
+ * Set the field encoding of the underlying table field for displaying it to the user.
+ *
+ * @param aEncoding encoding
+ */
+- (void)setFieldEncoding:(NSString*)aEncoding
+{
+	fieldEncoding = aEncoding;
+}
+
+/**
+ * Set if underlying table field allows NULL for several validations.
+ *
+ * @param allowNULL If allowNULL is YES NULL value is allowed for the underlying table field
+ */
+- (void)setAllowNULL:(BOOL)allowNULL
+{
+	_allowNULL = allowNULL;
+}
+
+/**
+ * Segement controller for text/image/hex buttons in editSheet
+ */
+- (IBAction)segmentControllerChanged:(id)sender
+{
+	switch([sender selectedSegment]){
+		case 0: // text
+			[editTextView setHidden:NO];
+			[editTextScrollView setHidden:NO];
+			[editImage setHidden:YES];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[usedSheet makeFirstResponder:editTextView];
+			[[NSApp mainWindow] makeFirstResponder:editTextView];
+			break;
+		case 1: // image
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editImage setHidden:NO];
+			[hexTextView setHidden:YES];
+			[hexTextScrollView setHidden:YES];
+			[usedSheet makeFirstResponder:editImage];
+			break;
+		case 2: // hex - load on demand
+			[usedSheet makeFirstResponder:hexTextView];
+			if([[hexTextView string] isEqualToString:@""]) {
+				[editSheetProgressBar startAnimation:self];
+				if([sheetEditData isKindOfClass:[NSData class]]) {
+					[hexTextView setString:[sheetEditData dataToFormattedHexString]];
+				} else {
+					[hexTextView setString:[[sheetEditData dataUsingEncoding:encoding allowLossyConversion:YES] dataToFormattedHexString]];
+				}
+				[editSheetProgressBar stopAnimation:self];
+			}
+			[editTextView setHidden:YES];
+			[editTextScrollView setHidden:YES];
+			[editImage setHidden:YES];
+			[hexTextView setHidden:NO];
+			[hexTextScrollView setHidden:NO];
+			break;
+	}
+}
+
+/**
+ * Open the open file panel to load a file (text/image) into the editSheet
+ */
+- (IBAction)openEditSheet:(id)sender
+{
+	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
+											   file:@""
+									 modalForWindow:usedSheet
+									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
+										contextInfo:NULL];
+}
+
+/**
+ * Open the save file panel to save the content of the editSheet according to its type as NSData or NSString atomically into the past file.
+ */
+- (IBAction)saveEditSheet:(id)sender
+{
+
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	NSString *fileDefault = @"";
+
+	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[MCPGeometryData class]]) {
+		[panel setRequiredFileType:@"pdf"];
+		[panel setAllowsOtherFileTypes:NO];
+	} else {
+		[panel setAllowsOtherFileTypes:YES];
+	}
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setExtensionHidden:NO];
+
+	[panel beginSheetForDirectory:nil
+							   file:fileDefault
+					 modalForWindow:usedSheet
+					  modalDelegate:self
+					 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
+						contextInfo:NULL];
 }
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
@@ -495,133 +577,6 @@
 }
 
 /**
- * Open the open file panel to load a file (text/image) into the editSheet
- */
-- (IBAction)openEditSheet:(id)sender
-{
-	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
-											   file:@""
-									 modalForWindow:usedSheet
-									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-										contextInfo:NULL];
-}
-
-/**
- * Segement controller for text/image/hex buttons in editSheet
- */
-- (IBAction)segmentControllerChanged:(id)sender
-{
-	switch([sender selectedSegment]){
-		case 0: // text
-			[editTextView setHidden:NO];
-			[editTextScrollView setHidden:NO];
-			[editImage setHidden:YES];
-			[hexTextView setHidden:YES];
-			[hexTextScrollView setHidden:YES];
-			[usedSheet makeFirstResponder:editTextView];
-			[[NSApp mainWindow] makeFirstResponder:editTextView];
-			break;
-		case 1: // image
-			[editTextView setHidden:YES];
-			[editTextScrollView setHidden:YES];
-			[editImage setHidden:NO];
-			[hexTextView setHidden:YES];
-			[hexTextScrollView setHidden:YES];
-			[usedSheet makeFirstResponder:editImage];
-			break;
-		case 2: // hex - load on demand
-			[usedSheet makeFirstResponder:hexTextView];
-			if([[hexTextView string] isEqualToString:@""]) {
-				[editSheetProgressBar startAnimation:self];
-				if([sheetEditData isKindOfClass:[NSData class]]) {
-					[hexTextView setString:[sheetEditData dataToFormattedHexString]];
-				} else {
-					[hexTextView setString:[[sheetEditData dataUsingEncoding:encoding allowLossyConversion:YES] dataToFormattedHexString]];
-				}
-				[editSheetProgressBar stopAnimation:self];
-			}
-			[editTextView setHidden:YES];
-			[editTextScrollView setHidden:YES];
-			[editImage setHidden:YES];
-			[hexTextView setHidden:NO];
-			[hexTextScrollView setHidden:NO];
-			break;
-	}
-}
-
-/**
- * Open the save file panel to save the content of the editSheet according to its type as NSData or NSString atomically into the past file.
- */
-- (IBAction)saveEditSheet:(id)sender
-{
-
-	NSSavePanel *panel = [NSSavePanel savePanel];
-	NSString *fileDefault = @"";
-
-	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[MCPGeometryData class]]) {
-		[panel setRequiredFileType:@"pdf"];
-		[panel setAllowsOtherFileTypes:NO];
-	} else {
-		[panel setAllowsOtherFileTypes:YES];
-	}
-	[panel setCanSelectHiddenExtension:YES];
-	[panel setExtensionHidden:NO];
-
-	[panel beginSheetForDirectory:nil
-							   file:fileDefault
-					 modalForWindow:usedSheet
-					  modalDelegate:self
-					 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
-						contextInfo:NULL];
-}
-
-/**
- * Save file panel didEndSelector. If the returnCode == NSOKButton it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-
-		[editSheetProgressBar startAnimation:self];
-
-		NSString *fileName = [panel filename];
-
-		// Write binary field types directly to the file
-		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
-			[sheetEditData writeToFile:fileName atomically:YES];
-
-		}
-		else if ( [sheetEditData isKindOfClass:[MCPGeometryData class]] ) {
-
-			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
-
-				[[editTextView string] writeToFile:fileName
-											  atomically:YES
-												encoding:encoding
-												   error:NULL];
-
-			} else if (editImage != nil){
-
-				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
-				NSData *pdf = [v pdfData];
-				if(pdf)
-					[pdf writeToFile:fileName atomically:YES];
-
-			}
-		}
-		// Write other field types' representations to the file via the current encoding
-		else {
-			[[sheetEditData description] writeToFile:fileName
-										  atomically:YES
-											encoding:encoding
-											   error:NULL];
-		}
-
-		[editSheetProgressBar stopAnimation:self];
-	}
-}
-
-/**
  * Open file panel didEndSelector. If the returnCode == NSOKButton it opens the selected file in the editSheet.
  */
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo
@@ -649,7 +604,6 @@
 
 		// set the image preview, string contents and hex representation
 		[editImage setImage:image];
-
 
 		if(contents)
 			[editTextView setString:contents];
@@ -687,6 +641,70 @@
 	}
 }
 
+/**
+ * Save file panel didEndSelector. If the returnCode == NSOKButton it writes the current content of editSheet according to its type as NSData or NSString atomically into the past file.
+ */
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if (returnCode == NSOKButton) {
+
+		[editSheetProgressBar startAnimation:self];
+
+		NSString *fileName = [panel filename];
+
+		// Write binary field types directly to the file
+		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
+			[sheetEditData writeToFile:fileName atomically:YES];
+
+		}
+		else if ( [sheetEditData isKindOfClass:[MCPGeometryData class]] ) {
+
+			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
+
+				[[editTextView string] writeToFile:fileName
+										atomically:YES
+										  encoding:encoding
+											 error:NULL];
+
+			} else if (editImage != nil){
+
+				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
+				NSData *pdf = [v pdfData];
+				if(pdf)
+					[pdf writeToFile:fileName atomically:YES];
+
+			}
+		}
+		// Write other field types' representations to the file via the current encoding
+		else {
+			[[sheetEditData description] writeToFile:fileName
+										  atomically:YES
+											encoding:encoding
+											   error:NULL];
+		}
+
+		[editSheetProgressBar stopAnimation:self];
+	}
+}
+
+#pragma mark -
+#pragma mark Drop methods
+
+/**
+ * If the image was deleted reset all views in editSheet.
+ * The actual dropped image process is handled by (processUpdatedImageData:).
+ */
+- (IBAction)dropImage:(id)sender
+{
+	if ( [editImage image] == nil ) {
+		if (nil != sheetEditData) [sheetEditData release];
+		sheetEditData = [[NSData alloc] init];
+		[editTextView setString:@""];
+		[hexTextView setString:@""];
+		return;
+	}
+}
+
 #pragma mark -
 #pragma mark QuickLook
 
@@ -703,7 +721,7 @@
 
 /**
  * Create a temporary file in NSTemporaryDirectory() with the chosen extension type which will be called by Apple's Quicklook generator
- * 
+ *
  * @param type The type as file extension for Apple's default Quicklook generator.
  *
  * @param isText If YES the content of editSheet will be treates as pure text.
@@ -753,7 +771,7 @@
 
 /**
  * Opens QuickLook for current data if QuickLook is available
- * 
+ *
  * @param type The type as file extension for Apple's default Quicklook generator.
  *
  * @param isText If YES the content of editSheet will be treates as pure text.
@@ -841,7 +859,6 @@
 	}
 
 }
-
 
 /**
  * QuickLook delegate for SDK 10.6. Set the Quicklook delegate to self and suppress setShowsAddToiPhotoButton since the format is unknow.
@@ -932,9 +949,9 @@
 	// Return the App's middle point
 	NSRect mwf = [[NSApp mainWindow] frame];
 	return NSMakeRect(
-					  mwf.origin.x+mwf.size.width/2,
-					  mwf.origin.y+mwf.size.height/2,
-					  5, 5);
+				  mwf.origin.x+mwf.size.width/2,
+				  mwf.origin.y+mwf.size.height/2,
+				  5, 5);
 }
 
 // QuickLook delegates for SDK 10.6
@@ -982,7 +999,7 @@
 
 /**
  * Invoked if the imageView was changed or a file dragged and dropped onto it.
- * 
+ *
  * @param data The image data. If data == nil the reset all views in editSheet.
  */
 - (void)processUpdatedImageData:(NSData *)data
@@ -1017,21 +1034,6 @@
 	editSheetWillBeInitialized = NO;
 }
 
-/**
- * If the image was deleted reset all views in editSheet.
- * The actual dropped image process is handled by (processUpdatedImageData:).
- */
-- (IBAction)dropImage:(id)sender
-{
-	if ( [editImage image] == nil ) {
-		if (nil != sheetEditData) [sheetEditData release];
-		sheetEditData = [[NSData alloc] init];
-		[editTextView setString:@""];
-		[hexTextView setString:@""];
-		return;
-	}
-}
-
 #pragma mark -
 #pragma mark BIT Field Sheet
 
@@ -1042,7 +1044,6 @@
 {
 	NSInteger i = 0;
 	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
-
 
 	if([bitSheetNULLButton state] == NSOnState) {
 		if ( sheetEditData != nil ) {
@@ -1059,7 +1060,8 @@
 
 	NSMutableString *bitString = [NSMutableString string];
 	[bitString setString:@""];
-	for(i=0; i<maxBit; i++) [bitString appendString:@"0"];
+	for( i = 0; i<maxBit; i++ )
+		[bitString appendString:@"0"];
 
 	NSUInteger intValue = 0;
 	NSUInteger bitValue = 0x1;
@@ -1096,15 +1098,15 @@
 
 	switch([sender tag]) {
 		case 0: // all to 1
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOnState];
 		break;
 		case 1: // all to 0
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
 		break;
 		case 2: // negate
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:![[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state]];
 		break;
 		case 3: // shift left
@@ -1156,13 +1158,13 @@
 	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
 
 	if([sender state] == NSOnState) {
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
 		[bitSheetHexTextField setEnabled:NO];
 		[bitSheetIntegerTextField setEnabled:NO];
 		[bitSheetOctalTextField setEnabled:NO];
 	} else {
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:YES];
 		[bitSheetHexTextField setEnabled:YES];
 		[bitSheetIntegerTextField setEnabled:YES];
@@ -1184,7 +1186,7 @@
 }
 
 #pragma mark -
-#pragma mark Delegates
+#pragma mark TextView delegate methods
 
 /**
  * Performs interface validation for various controls. Esp. if user changed the value in bitSheetIntegerTextField or bitSheetHexTextField.
@@ -1200,7 +1202,7 @@
 
 		NSUInteger intValue = strtoull([[bitSheetIntegerTextField stringValue] UTF8String], NULL, 0);
 
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
@@ -1224,7 +1226,7 @@
 
 		[[NSScanner scannerWithString:[bitSheetHexTextField stringValue]] scanHexLongLong: &intValue];
 
-		for(i=0; i<maxBit; i++) 
+		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
@@ -1337,9 +1339,6 @@
 
 }
 
-#pragma -
-#pragma TextView delegate methods
-
 /**
  * Traps enter and return key and closes editSheet instead of inserting a linebreak when user hits return.
  */
@@ -1357,36 +1356,6 @@
 	return NO;
 }
 
-/** 
- * Establish and return an UndoManager for editTextView
- */
-- (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
-{
-	if (!esUndoManager)
-		esUndoManager = [[NSUndoManager alloc] init];
-
-	return esUndoManager;
-}
-
-/**
- * Set variable if something in editTextView was cutted or pasted for creating better undo grouping.
- */
-- (void)setWasCutPaste
-{
-	wasCutPaste = YES;
-}
-
-
-- (void)setAllowedUndo
-{
-	allowUndo = YES;
-}
-
-- (void)setDoGroupDueToChars
-{
-	doGroupDueToChars = YES;
-}
-
 /**
  * Traps any editing in editTextView to allow undo grouping only if the text buffer was really changed.
  * Inform the run loop delayed for larger undo groups.
@@ -1394,8 +1363,8 @@
 - (void)textDidChange:(NSNotification *)aNotification
 {
 
-	[NSObject cancelPreviousPerformRequestsWithTarget:self 
-								selector:@selector(setAllowedUndo) 
+	[NSObject cancelPreviousPerformRequestsWithTarget:self
+								selector:@selector(setAllowedUndo)
 								object:nil];
 
 	// If conditions match create an undo group
@@ -1419,6 +1388,44 @@
 
 	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.09];
 
+}
+
+#pragma mark -
+#pragma mark UndoManager methods
+
+/**
+ * Establish and return an UndoManager for editTextView
+ */
+- (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
+{
+	if (!esUndoManager)
+		esUndoManager = [[NSUndoManager alloc] init];
+
+	return esUndoManager;
+}
+
+/**
+ * Set variable if something in editTextView was cutted or pasted for creating better undo grouping.
+ */
+- (void)setWasCutPaste
+{
+	wasCutPaste = YES;
+}
+
+/**
+ * Will be invoke delayed for creating better undo grouping according to type speed (see [self textDidChange:]).
+ */
+- (void)setAllowedUndo
+{
+	allowUndo = YES;
+}
+
+/**
+ * Will be set if according to characters typed in editTextView for creating better undo grouping.
+ */
+- (void)setDoGroupDueToChars
+{
+	doGroupDueToChars = YES;
 }
 
 @end

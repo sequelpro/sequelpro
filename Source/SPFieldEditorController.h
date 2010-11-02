@@ -162,6 +162,7 @@
 	NSInteger editSheetReturnCode;
 	BOOL _isGeometry;
 	NSUndoManager *esUndoManager;
+
 }
 
 - (IBAction)closeEditSheet:(id)sender;
