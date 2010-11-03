@@ -502,9 +502,20 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	if (mConnected) {
 		[self cancelCurrentQuery];
 		mConnected = NO;
-		
-		// Small pause for cleanup.
-		usleep(100000);
+
+		// Allow any pings or query cleanups to complete - within a time limit.
+		uint64_t startTime_t, currentTime_t;
+		Nanoseconds elapsedNanoseconds;
+		startTime_t = mach_absolute_time();
+		do {
+			usleep(100000);
+
+			currentTime_t = mach_absolute_time() - startTime_t	;
+			elapsedNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+			if (((double)UnsignedWideToUInt64(elapsedNanoseconds)) * 1e-9 > 10) break;
+		} while (![self tryLockConnection]);
+		[self unlockConnection];
+
 		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 	}
@@ -544,6 +555,20 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	// Close the connection if it exists.
 	if (mConnected) {
+
+		// Allow any pings or query cleanups to complete - within a time limit.
+		uint64_t startTime_t, currentTime_t;
+		Nanoseconds elapsedNanoseconds;
+		startTime_t = mach_absolute_time();
+		do {
+			usleep(100000);
+
+			currentTime_t = mach_absolute_time() - startTime_t	;
+			elapsedNanoseconds = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
+			if (((double)UnsignedWideToUInt64(elapsedNanoseconds)) * 1e-9 > 10) break;
+		} while (![self tryLockConnection]);
+		[self unlockConnection];
+
 		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 	}
