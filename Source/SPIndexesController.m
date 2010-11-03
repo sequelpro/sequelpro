@@ -716,7 +716,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 		else {
 			[tableData resetAllData];
-			[tablesList setStatusRequiresReload:YES];
+			[dbDocument setStatusRequiresReload:YES];
 
 			[tableStructure loadTable:table];
 		}
@@ -795,7 +795,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	}
 	else {
 		[tableData resetAllData];
-		[tablesList setStatusRequiresReload:YES];
+		[dbDocument setStatusRequiresReload:YES];
 
 		[tableStructure loadTable:table];
 	}

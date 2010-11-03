@@ -231,6 +231,7 @@
 		588B2CCA0FE5641E00EC5FC0 /* ssh-disconnected.png in Resources */ = {isa = PBXBuildFile; fileRef = 588B2CC70FE5641E00EC5FC0 /* ssh-disconnected.png */; };
 		589235321020C1230011DE00 /* SPHistoryController.m in Sources */ = {isa = PBXBuildFile; fileRef = 589235301020C1230011DE00 /* SPHistoryController.m */; };
 		589582151154F8F400EDCC28 /* SPMainThreadTrampoline.m in Sources */ = {isa = PBXBuildFile; fileRef = 589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */; };
+		5897FE4F127DE86D0047897C /* SPDatabaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5897FE4E127DE86D0047897C /* SPDatabaseViewController.m */; };
 		589ED05B11E0ACD100C1DCEA /* DMLocalizedNib.m in Sources */ = {isa = PBXBuildFile; fileRef = 589ED05A11E0ACD100C1DCEA /* DMLocalizedNib.m */; };
 		58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */ = {isa = PBXBuildFile; fileRef = 58A137CC123ED5E6000B1B75 /* titlebarlock.png */; };
 		58A8A72711A0149100B95749 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58A8A72611A0149100B95749 /* MainWindow.xib */; };
@@ -866,6 +867,8 @@
 		589235311020C1230011DE00 /* SPHistoryController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHistoryController.h; sourceTree = "<group>"; };
 		589582131154F8F400EDCC28 /* SPMainThreadTrampoline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMainThreadTrampoline.h; sourceTree = "<group>"; };
 		589582141154F8F400EDCC28 /* SPMainThreadTrampoline.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMainThreadTrampoline.m; sourceTree = "<group>"; };
+		5897FE4D127DE86D0047897C /* SPDatabaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseViewController.h; sourceTree = "<group>"; };
+		5897FE4E127DE86D0047897C /* SPDatabaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseViewController.m; sourceTree = "<group>"; };
 		589ED05A11E0ACD100C1DCEA /* DMLocalizedNib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMLocalizedNib.m; sourceTree = "<group>"; };
 		58A137CC123ED5E6000B1B75 /* titlebarlock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = titlebarlock.png; sourceTree = "<group>"; };
 		58A8A72411A0148400B95749 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainWindow.xib; sourceTree = "<group>"; };
@@ -1356,6 +1359,8 @@
 				29FA88221114619E00D1AF3D /* SPTableTriggers.m */,
 				17E6414E0EF01EF6001BC333 /* SPTableContent.h */,
 				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
+				5897FE4D127DE86D0047897C /* SPDatabaseViewController.h */,
+				5897FE4E127DE86D0047897C /* SPDatabaseViewController.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
 				17D38FC2127B0C9500672B13 /* Connection View */,
@@ -2513,7 +2518,6 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -2956,6 +2960,7 @@
 				175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */,
 				17D38EBC12771A1C00672B13 /* SPTableStructureDelegate.m in Sources */,
 				17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */,
+				5897FE4F127DE86D0047897C /* SPDatabaseViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

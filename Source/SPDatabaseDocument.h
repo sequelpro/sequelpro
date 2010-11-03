@@ -139,6 +139,16 @@
 	
 	MCPConnection *mySQLConnection;
 
+	NSInteger currentTabIndex;
+
+	NSString *selectedTableName;
+	NSInteger selectedTableType;
+
+	BOOL structureLoaded;
+	BOOL contentLoaded;
+	BOOL statusLoaded;
+	BOOL triggersLoaded;
+
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSUserDefaults *prefs;
@@ -292,11 +302,9 @@
 - (IBAction)toggleNavigator:(id)sender;
 
 // Accessor methods
-- (NSView *)parentView;
 - (NSString *)host;
 - (NSString *)name;
 - (NSString *)database;
-- (NSString *)table;
 - (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
@@ -315,12 +323,6 @@
 - (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)importFromClipboard:(id)sender;
-- (IBAction)viewStructure:(id)sender;
-- (IBAction)viewContent:(id)sender;
-- (IBAction)viewQuery:(id)sender;
-- (IBAction)viewStatus:(id)sender;
-- (IBAction)viewRelations:(id)sender;
-- (IBAction)viewTriggers:(id)sender;
 - (IBAction)addConnectionToFavorites:(id)sender;
 - (BOOL)isCustomQuerySelected;
 

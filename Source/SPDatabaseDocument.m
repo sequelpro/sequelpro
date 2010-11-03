@@ -87,6 +87,15 @@
 		chooseDatabaseButton = nil;
 		chooseDatabaseToolbarItem = nil;
 		connectionController = nil;
+
+		selectedTableName = nil;
+		selectedTableType = SPTableTypeNone;
+
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
+		triggersLoaded = NO;
+
 		selectedDatabase = nil;
 		mySQLConnection = nil;
 		mySQLVersion = nil;
@@ -1218,12 +1227,12 @@
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-				[self updateWindowTitle:self];
+				[[self onMainThread] updateWindowTitle:self];
 			}
 		} else {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
-			[self updateWindowTitle:self];
+			[[self onMainThread] updateWindowTitle:self];
 		}
 	}
 
@@ -1634,19 +1643,19 @@
 
 	// Update the selected menu item
 	if (useLatin1Transport) {
-		[self updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
+		[[self onMainThread] updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[NSString stringWithFormat:@"%@-", mysqlEncoding]]];
 	} else {
-		[self updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:mysqlEncoding]];
+		[[self onMainThread] updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:mysqlEncoding]];
 	}
 
 	// Update the stored connection encoding to prevent switches
 	[mySQLConnection storeEncodingForRestoration];
 
-	// Reload stuff as appropriate
+	// Reload views as appropriate
 	if (reloadViews) {
-		if ([tablesListInstance structureLoaded]) [tableSourceInstance reloadTable:self];
-		if ([tablesListInstance contentLoaded]) [tableContentInstance reloadTable:self];
-		if ([tablesListInstance statusLoaded]) [extendedTableInfoInstance reloadTable:self];
+		[self setStructureRequiresReload:YES];
+		[self setContentRequiresReload:YES];
+		[self setStatusRequiresReload:YES];
 	}
 }
 
@@ -2617,16 +2626,6 @@
 #pragma mark -
 #pragma mark Accessor methods
 
-
-/**
- * Returns the parent view, which in its turn contains the database view for this
- * connection.
- */
-- (NSView *)parentView
-{
-	return parentView;
-}
-
 /**
  * Returns the host
  */
@@ -2731,14 +2730,6 @@
 - (NSString *)database
 {
 	return selectedDatabase;
-}
-
-/**
- * Returns the currently selected table (passing the request to SPTablesList)
- */
-- (NSString *)table
-{
-	return [tablesListInstance tableName];
 }
 
 /**
@@ -3711,113 +3702,6 @@
 	return YES;
 }
 
-- (IBAction)viewStructure:(id)sender
-{
-	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
-		return;
-	}
-
-	[tableTabView selectTabViewItemAtIndex:0];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
-	[spHistoryControllerInstance updateHistoryEntries];
-	
-	[prefs setInteger:SPStructureViewMode forKey:SPLastViewMode];
-}
-
-- (IBAction)viewContent:(id)sender
-{
-
-	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
-		return;
-	}
-
-	[tableTabView selectTabViewItemAtIndex:1];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableContent];
-	[spHistoryControllerInstance updateHistoryEntries];
-	
-	[prefs setInteger:SPContentViewMode forKey:SPLastViewMode];
-}
-
-- (IBAction)viewQuery:(id)sender
-{
-
-	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
-		return;
-	}
-
-	[tableTabView selectTabViewItemAtIndex:2];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarCustomQuery];
-	[spHistoryControllerInstance updateHistoryEntries];
-
-	// Set the focus on the text field
-	[parentWindow makeFirstResponder:customQueryTextView];
-	
-	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
-}
-
-- (IBAction)viewStatus:(id)sender
-{
-
-	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
-		return;
-	}
-
-	[tableTabView selectTabViewItemAtIndex:3];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableInfo];
-	[spHistoryControllerInstance updateHistoryEntries];
-
-	// Refresh data
-	if([self table] && [[self table] length]) {
-		[tableDataInstance resetAllData];
-		[extendedTableInfoInstance loadTable:[self table]];
-	}
-	
-	[parentWindow makeFirstResponder:[extendedTableInfoInstance valueForKeyPath:@"tableCreateSyntaxTextView"]];
-
-	[prefs setInteger:SPTableInfoViewMode forKey:SPLastViewMode];
-}
-
-- (IBAction)viewRelations:(id)sender
-{
-
-	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
-		return;
-	}
-
-	[tableTabView selectTabViewItemAtIndex:4];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableRelations];
-	[spHistoryControllerInstance updateHistoryEntries];
-	
-	[prefs setInteger:SPRelationsViewMode forKey:SPLastViewMode];
-}
-
-- (IBAction)viewTriggers:(id)sender
-{
-
-	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
-		return;
-	}	
-	
-	[tableTabView selectTabViewItemAtIndex:5];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableTriggers];
-	[spHistoryControllerInstance updateHistoryEntries];
-	
-	[prefs setInteger:SPTriggersViewMode forKey:SPLastViewMode];
-}
-
-
 /**
  * Adds the current database connection details to the user's favorites if it doesn't already exist.
  */
@@ -4491,7 +4375,7 @@
 - (void)connectionControllerConnectAttemptFailed:(id)controller
 {
 	// Reset the window title
-	[self updateWindowTitle:self];
+	[[self onMainThread] updateWindowTitle:self];
 }
 
 #pragma mark -
@@ -4721,6 +4605,7 @@
 	[printWebView release];
 	[taskProgressWindow close];
 	
+	if (selectedTableName) [selectedTableName release];
 	if (connectionController) [connectionController release];
 	if (processListController) [processListController release];
 	if (serverVariablesController) [serverVariablesController release];
@@ -4854,7 +4739,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-	[self updateWindowTitle:self];
+	[[self onMainThread] updateWindowTitle:self];
 }
 
 /**
@@ -4893,7 +4778,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-	[self updateWindowTitle:self];
+	[[self onMainThread] updateWindowTitle:self];
 }
 
 /**

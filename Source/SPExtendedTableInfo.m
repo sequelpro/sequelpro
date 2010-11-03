@@ -102,7 +102,7 @@
 
 	if ([connection getLastErrorID] == 0) {
 		// Reload the table's data
-		[tablesListInstance updateSelectionWithTaskString:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
+		[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
 	}
 	else {
 		[sender selectItemWithTitle:currentType];

@@ -56,7 +56,6 @@
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
 	IBOutlet id copyTableContentSwitch;
-	IBOutlet id tabView;
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
@@ -101,7 +100,7 @@
 	BOOL tableListIsSelectable;
 	BOOL tableListContainsViews;
 
-	BOOL structureLoaded, contentLoaded, statusLoaded, triggersLoaded, alertSheetOpened;
+	BOOL alertSheetOpened;
 }
 
 // IBAction methods
@@ -117,8 +116,6 @@
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
-- (void)updateSelectionWithTaskString:(NSString *)taskString;
-- (void)updateSelectionTask;
 - (void)setSelection:(NSDictionary *)selectionDetails;
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
@@ -139,17 +136,11 @@
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
 - (NSString *)selectedDatabase;
-- (BOOL)structureLoaded;
-- (BOOL)contentLoaded;
-- (BOOL)statusLoaded;
 
 // Setters
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
 - (BOOL)selectItemWithName:(NSString *)theName;
-
-// Tabview delegate methods
-- (void)loadTabTask:(NSTabViewItem *)tabViewItem;
 
 // Table list filter interaction
 - (void) showFilter;

@@ -84,7 +84,7 @@
 {
 	if (self = [super init]) {
 		tableDocument = theTableDocument;
-		databaseConnectionSuperview = [tableDocument parentView];
+		databaseConnectionSuperview = [tableDocument databaseView];
 		databaseConnectionView = [tableDocument valueForKey:@"contentViewSplitter"];
 		connectionKeychainItemName = nil;
 		connectionKeychainItemAccount = nil;

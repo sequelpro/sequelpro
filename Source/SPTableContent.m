@@ -2005,8 +2005,8 @@
 	NSUInteger i;
 
 	// Load table if not already done
-	if ( ![tablesListInstance contentLoaded] ) {
-		[self loadTable:[tablesListInstance tableName]];
+	if ( ![tableDocumentInstance contentLoaded] ) {
+		[self loadTable:[tableDocumentInstance table]];
 	}
 
 	tableColumns = [tableContentView tableColumns];
@@ -2060,8 +2060,8 @@
 	NSUInteger i;
 
 	// Load the table if not already loaded
-	if ( ![tablesListInstance contentLoaded] ) {
-		[self loadTable:[tablesListInstance tableName]];
+	if ( ![tableDocumentInstance contentLoaded] ) {
+		[self loadTable:[tableDocumentInstance table]];
 	}
 
 	tableColumns = [tableContentView tableColumns];

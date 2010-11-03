@@ -413,7 +413,7 @@
 
 	// If the same table was selected, mark the content as requiring a reload
 	if ([historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-		[tablesListInstance setContentRequiresReload:YES];
+		[theDocument setContentRequiresReload:YES];
 	}
 
 	// Update the database and table name if necessary

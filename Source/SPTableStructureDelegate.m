@@ -338,11 +338,11 @@
 	} 
 	else {
 		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
+		[tableDocumentInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
 		
 		// Mark the content table cache for refresh
-		[tablesListInstance setContentRequiresReload:YES];
+		[tableDocumentInstance setContentRequiresReload:YES];
 		
 		if ( originalRowIndex < destinationRowIndex ) {
 			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex-1] byExtendingSelection:NO];

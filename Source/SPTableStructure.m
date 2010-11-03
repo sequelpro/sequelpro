@@ -352,7 +352,7 @@
 - (IBAction)reloadTable:(id)sender
 {
 	[tableDataInstance resetAllData];
-	[tablesListInstance setStatusRequiresReload:YES];
+	[tableDocumentInstance setStatusRequiresReload:YES];
 
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
@@ -1100,11 +1100,11 @@
 		currentlyEditingRow = -1;
 
 		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
+		[tableDocumentInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
 
 		// Mark the content table for refresh
-		[tablesListInstance setContentRequiresReload:YES];
+		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInt:[tablesListInstance tableType]], @"affectedItemType", nil]];
@@ -1322,8 +1322,8 @@
 	id field;
 
 	//load table if not already done
-	if ( ![tablesListInstance structureLoaded] ) {
-		[self loadTable:[tablesListInstance tableName]];
+	if ( ![tableDocumentInstance structureLoaded] ) {
+		[self loadTable:[tableDocumentInstance table]];
 	}
 
 	//get field names
@@ -1525,11 +1525,11 @@
 	}
 	else {
 		[tableDataInstance resetAllData];
-		[tablesListInstance setStatusRequiresReload:YES];
+		[tableDocumentInstance setStatusRequiresReload:YES];
 		[self loadTable:selectedTable];
 
 		// Mark the content table cache for refresh
-		[tablesListInstance setContentRequiresReload:YES];
+		[tableDocumentInstance setContentRequiresReload:YES];
 	}
 
 	[tableDocumentInstance endTask];

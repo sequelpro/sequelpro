@@ -1120,11 +1120,7 @@
 		// If import was done into a new table or the table selected for import is also selected in the content view,
 		// update the content view - on the main thread to avoid crashes.
 		if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
-			if ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
-				[tableContentInstance performSelectorOnMainThread:@selector(reloadTable:) withObject:nil waitUntilDone:YES];
-			} else {
-				[tablesListInstance setContentRequiresReload:YES];
-			}
+			[tableDocumentInstance setContentRequiresReload:YES];
 		}
 
 	}

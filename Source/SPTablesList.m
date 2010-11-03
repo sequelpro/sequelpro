@@ -620,15 +620,6 @@
 }
 
 /**
- * Selects customQuery tab and passes query to customQueryInstance
- */
-- (void)doPerformQueryService:(NSString *)query
-{
-	[tabView selectTabViewItemAtIndex:2];
-	[customQueryInstance doPerformQueryService:query];
-}
-
-/**
  * Performs interface validation for various controls.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
@@ -665,135 +656,6 @@
 }
 
 /**
- * Updates the current table selection.  Triggered most times tableViewSelectionDidChange:
- * fires, and also as a result of certain table actions.
- */
-- (void)updateSelectionWithTaskString:(NSString *)taskString
-{
-	if (![mySQLConnection isConnected] || [tablesListView selectedRow] < 0) {
-		return;
-	}
-	id selectedItem = [filteredTables objectAtIndex:[tablesListView selectedRow]];
-	if(![selectedItem isKindOfClass:[NSString class]]) {
-		return;
-	}
-
-	// If there is a multiple or blank selection, clear all views directly.
-	if ( [tablesListView numberOfSelectedRows] != 1 || ![(NSString *)selectedItem length] ) {
-
-		// Update the selection variables and the interface
-		[self performSelectorOnMainThread:@selector(setSelection:) withObject:nil waitUntilDone:YES];
-
-		// Add a history entry
-		[spHistoryControllerInstance updateHistoryEntries];
-
-		// Notify listeners of the table change now that the state is fully set up
-		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
-
-		return;
-	}
-
-	// Otherwise, set up a task
-	[tableDocumentInstance startTaskWithDescription:taskString];
-
-	// If on the main thread, fire up a thread to deal with view changes and data loading, else perform inline
-	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(updateSelectionTask) toTarget:self withObject:nil];
-	} else {
-		[self updateSelectionTask];
-	}
-}
-
-- (void) updateSelectionTask
-{
-	NSAutoreleasePool *selectionChangePool = [[NSAutoreleasePool alloc] init];
-	NSString *tableEncoding = nil;
-	NSString *previousEncoding = [mySQLConnection encoding];
-	BOOL changeEncoding = ![previousEncoding isEqualToString:@"utf8"];
-	if (changeEncoding) {
-		[mySQLConnection storeEncodingForRestoration];
-		[mySQLConnection setEncoding:@"utf8"];
-	}
-
-	// Update selection variables and interface
-	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										[filteredTables objectAtIndex:[tablesListView selectedRow]], @"name",
-										[filteredTableTypes objectAtIndex:[tablesListView selectedRow]], @"type",
-										nil];
-	[self performSelectorOnMainThread:@selector(setSelection:) withObject:selectionDetails waitUntilDone:YES];
-
-	// Ensure status information is cached on the working thread
-	[tableDataInstance updateStatusInformationForCurrentTable];
-
-	// Check the encoding if appropriate to determine if an encoding change is required
-	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
-
-		// tableEncoding == nil indicates that there was an error while retrieving table data
-		tableEncoding = [tableDataInstance tableEncoding];
-
-		// If encoding is set to Autodetect, update the connection character set encoding
-		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] intValue] == SPEncodingAutodetect) {
-			if (tableEncoding != nil && ![tableEncoding isEqualToString:previousEncoding]) {
-				[tableDocumentInstance setConnectionEncoding:tableEncoding reloadingViews:NO];
-				changeEncoding = NO;
-			}
-		}
-	}
-
-	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
-
-	// Notify listeners of the table change now that the state is fully set up.
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:tableDocumentInstance];
-
-	// Restore view states as appropriate
-	[spHistoryControllerInstance restoreViewStates];
-
-	structureLoaded = NO;
-	contentLoaded = NO;
-	statusLoaded = NO;
-	triggersLoaded = NO;
-	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
-		if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStructure ) {
-			[tableSourceInstance loadTable:selectedTableName];
-			structureLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewContent ) {
-			if(tableEncoding == nil) {
-				[tableContentInstance loadTable:nil];
-			} else {
-				[tableContentInstance loadTable:selectedTableName];
-			}
-			contentLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStatus ) {
-			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
-			statusLoaded = YES;
-		} else if ( [tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewTriggers ) {
-			[[tableTriggersInstance onMainThread] loadTriggers];
-			triggersLoaded = YES;
-		}
-	} else {
-
-		// if we are not looking at a table or view, clear these
-		[tableSourceInstance loadTable:nil];
-		[tableContentInstance loadTable:nil];
-		[[extendedTableInfoInstance onMainThread] loadTable:nil];
-		[[tableTriggersInstance onMainThread] loadTriggers];
-	}
-
-	// Update the "Show Create Syntax" window if it's already opened
-	// according to the selected table/view/proc/func
-	if([[tableDocumentInstance getCreateTableSyntaxWindow] isVisible])
-		[tableDocumentInstance performSelectorOnMainThread:@selector(showCreateTableSyntax:) withObject:self waitUntilDone:YES];
-
-	// Add a history entry
-	[spHistoryControllerInstance updateHistoryEntries];
-
-	// Empty the loading pool and exit the thread
-	[tableDocumentInstance endTask];
-	[selectionChangePool drain];
-}
-
-/**
  * Takes a dictionary of selection details, containing the selection name
  * and type, and updates stored variables and the table list interface to
  * match.
@@ -814,18 +676,6 @@
 		else {
 			selectedTableName = nil;
 		}
-
-		selectedTableType = SPTableTypeNone;
-
-		[tableSourceInstance loadTable:nil];
-		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance loadTable:nil];
-		[tableTriggersInstance loadTriggers];
-
-		structureLoaded = NO;
-		contentLoaded = NO;
-		statusLoaded = NO;
-		triggersLoaded = NO;
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
@@ -922,9 +772,6 @@
 		[[tableSubMenu itemAtIndex:9] setHidden:NO];
 		[[tableSubMenu itemAtIndex:10] setHidden:NO];
 
-		// set window title
-		[tableDocumentInstance updateWindowTitle:self];
-
 		return;
 	}
 
@@ -947,10 +794,7 @@
 		[tablesListView reloadData];
 	}
 
-	// Reset the table information caches
-	[tableDataInstance resetAllData];
-
-	// Show menu separatoes
+	// Show menu separators
 	[separatorTableMenuItem setHidden:NO];
 	[separatorTableContextMenuItem setHidden:NO];
 	[separatorTableMenuItem2 setHidden:NO];
@@ -1094,9 +938,6 @@
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 	}
-
-	// set window title
-	[tableDocumentInstance updateWindowTitle:self];
 }
 
 #pragma mark -
@@ -1259,48 +1100,10 @@
 	return tableTypes;
 }
 
-/**
- * Returns YES if table source has already been loaded
- */
-- (BOOL)structureLoaded
-{
-	return structureLoaded;
-}
-
-/**
- * Returns YES if table content has already been loaded
- */
-- (BOOL)contentLoaded
-{
-	return contentLoaded;
-}
-
-/**
- * Returns YES if table status has already been loaded
- */
-- (BOOL)statusLoaded
-{
-	return statusLoaded;
-}
 
 #pragma mark -
 #pragma mark Setter methods
 
-/**
- * Mark the content table for refresh when it's next switched to
- */
-- (void)setContentRequiresReload:(BOOL)reload
-{
-	contentLoaded = !reload;
-}
-
-/**
- * Mark the exteded table info for refresh when it's next switched to
- */
-- (void)setStatusRequiresReload:(BOOL)reload
-{
-	statusLoaded = !reload;
-}
 
 /**
  * Select an item using the provided name; returns YES if the
@@ -1343,7 +1146,7 @@
 			selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemIndex]];
 			selectedTableType = [[tableTypes objectAtIndex:itemIndex] integerValue];
 			[self updateFilter:self];
-			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), theName]];
+			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 		}
 	}
 
@@ -1428,31 +1231,10 @@
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:newTableName];
 
-		// if the 'table' is a view or a table, reload the currently selected view
+		// if the 'table' is a view or a table, ensure data is reloaded
 		if (selectedTableType == SPTableTypeTable || selectedTableType == SPTableTypeView)
 		{
-			statusLoaded = NO;
-			structureLoaded = NO;
-			contentLoaded = NO;
-			triggersLoaded = NO;
-			switch ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]]) {
-				case SPTableViewStructure:
-				[tableSourceInstance loadTable:newTableName];
-				structureLoaded = YES;
-				break;
-				case SPTableViewContent:
-				[tableContentInstance loadTable:newTableName];
-				contentLoaded = YES;
-				break;
-				case SPTableViewStatus:
-				[extendedTableInfoInstance loadTable:newTableName];
-				statusLoaded = YES;
-				break;
-				case SPTableViewTriggers:
-				[tableTriggersInstance loadTriggers];
-				triggersLoaded = YES;
-				break;
-			}
+			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 		}
 	}
 	@catch (NSException * myException) {
@@ -1516,28 +1298,18 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
+	if ([tablesListView numberOfSelectedRows] != 1) {
 
-	if([tablesListView selectedRow] < 0) {
-		// Reset all
-		if (selectedTableName) [selectedTableName release];
-		selectedTableName = nil;
+		// Ensure the state is cleared
+		if ([tableDocumentInstance table]) [tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
+		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
 		selectedTableType = SPTableTypeNone;
-		[tableSourceInstance loadTable:nil];
-		[tableContentInstance loadTable:nil];
-		[extendedTableInfoInstance loadTable:nil];
-		[tableTriggersInstance loadTriggers];
-		structureLoaded = NO;
-		contentLoaded = NO;
-		statusLoaded = NO;
-		triggersLoaded = NO;
-		[self updateSelectionWithTaskString:NSLocalizedString(@"Reloading...", @"Reloading table task string")];
 		return;
 	}
 
-	id selectedItem = [filteredTables objectAtIndex:[tablesListView selectedRow]];
+	NSInteger selectedRowIndex = [tablesListView selectedRow];
 
-	if(![selectedItem isKindOfClass:[NSString class]]) {
-		[self updateSelectionWithTaskString:NSLocalizedString(@"Reloading...", @"Reloading table task string")];
+	if (![[filteredTables objectAtIndex:selectedRowIndex] isKindOfClass:[NSString class]]) {
 		return;
 	}
 
@@ -1545,32 +1317,28 @@
 	if ([tableDocumentInstance isWorking]) tableListIsSelectable = NO;
 
 	// Perform no action if the selected table hasn't actually changed - reselection etc
-	if ([tablesListView numberOfSelectedRows] == 1
-		&& [(NSString *)selectedItem length]
-		&& [selectedTableName isEqualToString:(NSString *)selectedItem]
-		&& selectedTableType == [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue])
-	{
+	NSString *newName = [filteredTables objectAtIndex:selectedRowIndex];
+	NSInteger newType = [[filteredTableTypes objectAtIndex:selectedRowIndex] integerValue];
+	if ([selectedTableName isEqualToString:newName] && selectedTableType == newType) {
 		return;
 	}
 
 	// Save existing scroll position and details
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	NSString *tableName = @"data";
-	if ([tablesListView numberOfSelectedRows] == 1 && [selectedItem isKindOfClass:[NSString class]] && [(NSString *)selectedItem length])
-		tableName = [filteredTables objectAtIndex:[tablesListView selectedRow]];
-	[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), tableName]];
+	if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+	selectedTableName = [[NSString alloc] initWithString:newName];
+	selectedTableType = newType;
+	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
-	if([[SPNavigatorController sharedNavigatorController] syncMode] && [tablesListView numberOfSelectedRows] == 1) {
+	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
 		NSMutableString *schemaPath = [NSMutableString string];
 		[schemaPath setString:[tableDocumentInstance connectionID]];
 		if([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
 			[schemaPath appendString:SPUniqueSchemaDelimiter];
 			[schemaPath appendString:[tableDocumentInstance database]];
-			if(tableName && [tableName length]) {
-				[schemaPath appendString:SPUniqueSchemaDelimiter];
-				[schemaPath appendString:tableName];
-			}
+			[schemaPath appendString:SPUniqueSchemaDelimiter];
+			[schemaPath appendString:selectedTableName];
 		}
 		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
 	}
@@ -1682,57 +1450,7 @@
 }
 
 #pragma mark -
-#pragma mark TabView delegate methods
-
-/**
- * Loads structure or source if tab selected the first time,
- * using a threaded load if currently on the main thread.
- */
-- (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
-	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(loadTabTask:) toTarget:self withObject:tabViewItem];
-	} else {
-		[self loadTabTask:tabViewItem];
-	}
-}
-- (void)loadTabTask:(NSTabViewItem *)tabViewItem
-{
-	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
-
-	if ([tablesListView numberOfSelectedRows] == 1
-		&& ([self tableType] == SPTableTypeTable || [self tableType] == SPTableTypeView) )
-	{
-
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStructure) && !structureLoaded ) {
-			[tableSourceInstance loadTable:selectedTableName];
-			structureLoaded = YES;
-		}
-
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewContent) && !contentLoaded ) {
-			[tableContentInstance loadTable:selectedTableName];
-			contentLoaded = YES;
-		}
-
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewStatus) && !statusLoaded ) {
-			[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
-			statusLoaded = YES;
-		}
-
-		if ( ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewTriggers) && !triggersLoaded ) {
-			[[tableTriggersInstance onMainThread] loadTriggers];
-			triggersLoaded = YES;
-		}
-	}
-	else {
-		[tableSourceInstance loadTable:nil];
-		[tableContentInstance loadTable:nil];
-	}
-
-	[tableDocumentInstance endTask];
-	[tabLoadPool drain];
-}
+#pragma mark Interface validation
 
 /**
  * Menu item interface validation
@@ -1949,10 +1667,6 @@
 		filteredTables = tables;
 		tableTypes = [[NSMutableArray alloc] init];
 		filteredTableTypes = tableTypes;
-		structureLoaded = NO;
-		contentLoaded = NO;
-		statusLoaded = NO;
-		triggersLoaded = NO;
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
 		tableListContainsViews = NO;
@@ -2159,11 +1873,7 @@
 	}
 
 	// Ensure the the table's content view is updated to show that it has been truncated
-	if ([tabView indexOfTabViewItem:[tabView selectedTabViewItem]] == SPTableViewContent) {
-		[tableContentInstance reloadTable:self];
-	} else {
-		[self setContentRequiresReload:YES];
-	}
+	[tableDocumentInstance setContentRequiresReload:YES];
 
 	[tableDataInstance resetStatusData];
 }
@@ -2233,17 +1943,16 @@
 			[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeTable] atIndex:addItemAtIndex];
 		}
 
-		// Set the selected table name and type, and then use updateFilter and updateSelection to update the filter list and selection.
+		// Set the selected table name and type, and then update the filter list and the
+		// selection.
 		if (selectedTableName) [selectedTableName release];
-
 		selectedTableName = [[NSString alloc] initWithString:tableName];
 		selectedTableType = SPTableTypeTable;
 
 		[self updateFilter:self];
-
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 
-		[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+		[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 		// Query the structure of all databases in the background (mainly for completion)
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
@@ -2439,7 +2148,7 @@
 			selectedTableType = tblType;
 			[self updateFilter:self];
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
-			[self updateSelectionWithTaskString:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTableName]];
+			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 			// Query the structure of all databases in the background (mainly for completion)
 			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
