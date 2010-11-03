@@ -23,80 +23,38 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class BWAnchoredButtonBar, SPKeychain;
+#import "SPPreferencePane.h"
 
+@class SPGeneralPreferencePane,
+	   SPTablesPreferencePane,
+	   SPFavoritesPreferencePane,
+	   SPNotificationsPreferencePane,
+	   SPEditorPreferencePane,
+	   SPAutoUpdatePreferencePane,
+	   SPNetworkPreferencePane;
+
+/**
+ * @class SPPreferenceController SPPreferenceController.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Main preferences window controller.
+ */
 @interface SPPreferenceController : NSWindowController
-{
-	IBOutlet NSWindow *preferencesWindow;
-	
-	IBOutlet NSView *generalView;
-	IBOutlet NSView *notificationsView;
-	IBOutlet NSView *tablesView;
-	IBOutlet NSView *favoritesView;
-	IBOutlet NSView *autoUpdateView;
-	IBOutlet NSView *networkView;
-	IBOutlet NSView *editorView;
-	
-	IBOutlet NSPopUpButton *defaultFavoritePopup;
-	
-	IBOutlet NSTableView *favoritesTableView;
-	IBOutlet NSArrayController *favoritesController;
-	
-	IBOutlet NSTabView *favoritesTabView;
-	IBOutlet NSSecureTextField *standardPasswordField;
-	IBOutlet NSSecureTextField *socketPasswordField;
-	IBOutlet NSSecureTextField *sshSQLPasswordField;
-	IBOutlet NSSecureTextField *sshPasswordField;
-	IBOutlet NSTextField *favoriteNameTextField;
-	IBOutlet NSTextField *favoriteUserTextField;
-	IBOutlet NSTextField *favoriteHostTextField;
-	IBOutlet NSTextField *favoriteUserTextFieldSocket;
-	IBOutlet NSTextField *favoriteUserTextFieldSSH;
-	IBOutlet NSTextField *favoriteHostTextFieldSSH;
-	IBOutlet NSButton *sshSSHKeyButton;
-	IBOutlet NSButton *standardSSLKeyFileButton;
-	IBOutlet NSButton *standardSSLCertificateButton;
-	IBOutlet NSButton *standardSSLCACertButton;
-	IBOutlet NSButton *socketSSLKeyFileButton;
-	IBOutlet NSButton *socketSSLCertificateButton;
-	IBOutlet NSButton *socketSSLCACertButton;
-	IBOutlet NSMenuItem *favoritesSortByMenuItem;
-	IBOutlet NSView *sshKeyLocationHelp;
-	IBOutlet NSView *sslKeyFileLocationHelp;
-	IBOutlet NSView *sslCertificateLocationHelp;
-	IBOutlet NSView *sslCACertLocationHelp;
-
-	IBOutlet NSWindow *enterNameWindow;
-	IBOutlet NSTextField *enterNameLabel;
-	IBOutlet NSTextField *enterNameInputField;
-	IBOutlet NSTextField *enterNameAlertField;
-	IBOutlet NSTextField *colorThemeName;
-	IBOutlet NSTextField *colorThemeNameLabel;
-	IBOutlet id themeNameSaveButton;
-	IBOutlet NSTableView *editThemeListTable;
-	IBOutlet NSWindow *editThemeListWindow;
-	IBOutlet id removeThemeButton;
-	IBOutlet id duplicateThemeButton;
-	IBOutlet NSMenuItem *saveThemeMenuItem;
-
-	IBOutlet id tableCell;
-
-	IBOutlet NSTableView *colorSettingTableView;
-	IBOutlet NSMenu *themeSelectionMenu;
-	NSArray *editorColors;
-	NSArray *editorNameForColors;
-	NSUInteger colorRow;
-
-	IBOutlet NSTextField *editorFontName;
-	IBOutlet NSTextField *globalResultTableFontName;
-	
-	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
-
-	SPKeychain *keychain;
-	NSDictionary *currentFavorite;
+{	
+	// Preference pane controllers
+	IBOutlet SPGeneralPreferencePane       *generalPreferencePane;
+	IBOutlet SPTablesPreferencePane        *tablesPreferencePane;
+	IBOutlet SPFavoritesPreferencePane     *favoritesPreferencePane;
+	IBOutlet SPNotificationsPreferencePane *notificationsPreferencePane;
+	IBOutlet SPEditorPreferencePane        *editorPreferencePane;
+	IBOutlet SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;
+	IBOutlet SPNetworkPreferencePane       *networkPreferencePane;
 
 	NSToolbar *toolbar;
+	NSArray *preferencePanes;
 	
+	// Toolbar items
 	NSToolbarItem *generalItem;
 	NSToolbarItem *notificationsItem;
 	NSToolbarItem *tablesItem;
@@ -105,64 +63,22 @@
 	NSToolbarItem *networkItem;
 	NSToolbarItem *editorItem;
 	NSToolbarItem *shortcutItem;
-
-	NSUserDefaults *prefs;
 	
-	BOOL favoriteNameFieldWasTouched;
-	NSInteger favoriteType, fontChangeTarget;
-	
-	BOOL reverseFavoritesSort;
-	SPFavoritesSortItem previousSortItem, currentSortItem;
-	
-	NSString *themePath;
-	NSInteger checkForUnsavedThemeSheetStatus;
-	NSArray *editThemeListItems;
+	NSUInteger fontChangeTarget;
 }
 
-- (void)applyRevisionChanges;
+@property (readonly) SPGeneralPreferencePane       *generalPreferencePane;
+@property (readonly) SPTablesPreferencePane        *tablesPreferencePane;
+@property (readonly) SPFavoritesPreferencePane     *favoritesPreferencePane;
+@property (readonly) SPNotificationsPreferencePane *notificationsPreferencePane;
+@property (readonly) SPEditorPreferencePane        *editorPreferencePane;
+@property (readonly) SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;
+@property (readonly) SPNetworkPreferencePane       *networkPreferencePane;
 
-// IBAction methods
-- (IBAction)addFavorite:(id)sender;
-- (IBAction)removeFavorite:(id)sender;
-- (IBAction)duplicateFavorite:(id)sender;
-- (IBAction)updateDefaultFavorite:(id)sender;
-- (IBAction)showCustomQueryFontPanel:(id)sender;
-- (IBAction)showGlobalResultTableFontPanel:(id)sender;
-- (IBAction)setDefaultColors:(id)sender;
-- (IBAction)sortFavorites:(id)sender;
-- (IBAction)reverseFavoritesSortOrder:(id)sender;
-- (IBAction)makeSelectedFavoriteDefault:(id)sender;
-- (IBAction)exportColorScheme:(id)sender;
-- (IBAction)importColorScheme:(id)sender;
-- (IBAction)saveAsColorScheme:(id)sender;
-- (IBAction)loadColorScheme:(id)sender;
-- (IBAction)closePanelSheet:(id)sender;
-- (IBAction)duplicateTheme:(id)sender;
-- (IBAction)removeTheme:(id)sender;
-- (IBAction)chooseKeyLocation:(id)sender;
-
-// Toolbar item IBAction methods
-- (IBAction)displayGeneralPreferences:(id)sender;
-- (IBAction)displayTablePreferences:(id)sender;
-- (IBAction)displayFavoritePreferences:(id)sender;
-- (IBAction)displayNotificationPreferences:(id)sender;
-- (IBAction)displayAutoUpdatePreferences:(id)sender;
-- (IBAction)displayNetworkPreferences:(id)sender;
-- (IBAction)displayEditorPreferences:(id)sender;
-
-// Other
-- (void)updateDefaultFavoritePopup;
-- (void)selectFavorites:(NSArray *)favorite;
-- (void)changeFont:(id)sender;
-- (IBAction)favoriteTypeDidChange:(id)sender;
-- (void)updateFavoritePasswordsFromField:(NSControl *)passwordControl;
-- (void)updateColorSchemeSelectionMenu;
-- (void)saveColorThemeAtPath:(NSString*)path;
-- (BOOL)loadColorSchemeFromFile:(NSString*)filename;
-- (BOOL)checkForUnsavedTheme;
-- (void)updateDisplayColorThemeName;
-- (NSArray *)getAvailableThemes;
-- (void)checkForUnsavedThemeDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
-
+/**
+ * @property fontChangeTarget Indicates which font was changed (1 for global table font, 2 for custom 
+ * query font).
+ */
+@property (readwrite, assign) NSUInteger fontChangeTarget;
 
 @end

@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPPreferencePane.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on October 31, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,27 +23,19 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate protocol.
- */
-@protocol SPConnectionControllerDelegate
+#import "SPPreferencePaneProtocol.h"
 
 /**
- * Called when the connection controller starts initiating the connection process.
+ * @class SPPreferencePane SPPreferencePane.h
  *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerInitiatingConnection:(id)controller;
-
-/**
- * Called when the connection controller's connection attempt failed.
+ * @author Stuart Connolly http://stuconnolly.com/
  *
- * @param controller The calling connection controller
+ * This class is designed to be the parent of all preference pane controllers. It simply provides access
+ * to the user's default as well as being a subclass of NSViewController itself.
  */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+@interface SPPreferencePane : NSViewController 
+{
+	NSUserDefaults *prefs;
+}
 
 @end

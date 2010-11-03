@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPGeneralPreferencePane.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
@@ -23,27 +23,25 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate protocol.
- */
-@protocol SPConnectionControllerDelegate
+#import "SPPreferencePane.h"
 
 /**
- * Called when the connection controller starts initiating the connection process.
+ * @class SPGeneralPreferencePane SPGeneralPreferencePane.h
  *
- * @param controller The calling connection controller
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * General preference pane controller.
  */
-- (void)connectionControllerInitiatingConnection:(id)controller;
+@interface SPGeneralPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
+{	
+	IBOutlet NSPopUpButton *defaultFavoritePopup;
+	
+	IBOutlet NSArrayController *favoritesController;
+}
 
-/**
- * Called when the connection controller's connection attempt failed.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+- (IBAction)updateDefaultFavorite:(id)sender;
+
+- (void)updateDefaultFavoritePopup;
+- (void)resetDefaultFavoritePopupSelection;
 
 @end

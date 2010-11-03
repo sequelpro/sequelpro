@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPTablesPreferencePane.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on October 31, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,27 +23,22 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate protocol.
- */
-@protocol SPConnectionControllerDelegate
+#import "SPPreferencePane.h"
 
 /**
- * Called when the connection controller starts initiating the connection process.
+ * @class SPTablesPreferencePane SPTablesPreferencePane.h
  *
- * @param controller The calling connection controller
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Tables preference pane controller.
  */
-- (void)connectionControllerInitiatingConnection:(id)controller;
+@interface SPTablesPreferencePane : SPPreferencePane <SPPreferencePaneProtocol>
+{
+	IBOutlet NSTextField *globalResultTableFontName;
+}
 
-/**
- * Called when the connection controller's connection attempt failed.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+- (IBAction)showGlobalResultTableFontPanel:(id)sender;
+
+- (void)updateDisplayedTableFontName;
 
 @end

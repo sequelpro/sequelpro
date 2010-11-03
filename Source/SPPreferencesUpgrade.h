@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPPreferencesUpgrade.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
@@ -24,26 +24,14 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 /**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
+ * @class SPPreferencesUpgrade SPPreferencesUpgrade.h
  *
- * @author Stuart Connolly http://stuconnolly.com/ 
+ * @author Stuart Connolly http://stuconnolly.com/
  *
- * Connection controller delegate protocol.
+ * This class provides a single function for upgrading the user's preferences between revisions.
  */
-@protocol SPConnectionControllerDelegate
+@interface SPPreferencesUpgrade : NSObject
 
-/**
- * Called when the connection controller starts initiating the connection process.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerInitiatingConnection:(id)controller;
-
-/**
- * Called when the connection controller's connection attempt failed.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+void SPApplyRevisionChanges(void);
 
 @end

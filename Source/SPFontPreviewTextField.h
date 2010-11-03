@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPFontPreviewTextField.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  This is a heavily modified version of JVFontPreviewField from
+//  the Colloquy Project <http://colloquy.info/>
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,27 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate protocol.
- */
-@protocol SPConnectionControllerDelegate
+@interface SPFontPreviewTextField : NSTextField 
+{
+	NSFont *_actualFont;
+}
 
-/**
- * Called when the connection controller starts initiating the connection process.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerInitiatingConnection:(id)controller;
-
-/**
- * Called when the connection controller's connection attempt failed.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+- (void)setFont:(NSFont *)font;
 
 @end

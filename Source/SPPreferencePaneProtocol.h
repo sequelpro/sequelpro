@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPPreferencePaneProtocol.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
@@ -24,26 +24,54 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 /**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
+ * @protocol SPPreferencePane SPPreferencePane.h
  *
  * @author Stuart Connolly http://stuconnolly.com/ 
  *
- * Connection controller delegate protocol.
+ * Protocol that all preference pane controllers should conform to.
  */
-@protocol SPConnectionControllerDelegate
+@protocol SPPreferencePaneProtocol
 
 /**
- * Called when the connection controller starts initiating the connection process.
+ * Returns the preference pane's view.
  *
- * @param controller The calling connection controller
+ * @return The pane's NSView instance
  */
-- (void)connectionControllerInitiatingConnection:(id)controller;
+- (NSView *)preferencePaneView;
 
 /**
- * Called when the connection controller's connection attempt failed.
+ * Returns the preference pane's toolbar item icon/image.
  *
- * @param controller The calling connection controller
+ * @return The pane's NSImage instance
  */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+- (NSImage *)preferencePaneIcon;
+
+/**
+ * Returns the preference pane's name.
+ *
+ * @return The pane's name
+ */
+- (NSString *)preferencePaneName;
+
+/**
+ * Returns the preference pane's toolbar item identifier.
+ *
+ * @return The pane's identifier
+ */
+- (NSString *)preferencePaneIdentifier;
+
+/**
+ * Returns the preference pane's toolbar item tooltip.
+ *
+ * @return The pane's tooltip
+ */
+- (NSString *)preferencePaneToolTip;
+
+/**
+ * Indicates whether or not the preference pane can be resized.
+ *
+ * @return A BOOL indicating resizability
+ */
+- (BOOL)preferencePaneAllowsResizing;
 
 @end

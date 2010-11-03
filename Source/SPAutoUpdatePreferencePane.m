@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPAutoUpdatePreferencePane.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on October 31, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,27 +23,41 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @protocol SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate protocol.
- */
-@protocol SPConnectionControllerDelegate
+#import "SPAutoUpdatePreferencePane.h"
 
-/**
- * Called when the connection controller starts initiating the connection process.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerInitiatingConnection:(id)controller;
+@implementation SPAutoUpdatePreferencePane
 
-/**
- * Called when the connection controller's connection attempt failed.
- *
- * @param controller The calling connection controller
- */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+#pragma mark -
+#pragma mark Preference pane protocol methods
+
+- (NSView *)preferencePaneView
+{
+	return [self view];
+}
+
+- (NSImage *)preferencePaneIcon
+{
+	return [NSImage imageNamed:@"toolbar-preferences-autoupdate"];
+}
+
+- (NSString *)preferencePaneName
+{
+	return NSLocalizedString(@"Auto Update", @"auto update preference pane name");
+}
+
+- (NSString *)preferencePaneIdentifier
+{
+	return SPPreferenceToolbarAutoUpdate;
+}
+
+- (NSString *)preferencePaneToolTip
+{
+	return NSLocalizedString(@"Auto Update Preferences", @"auto update preference pane tooltip");
+}
+
+- (BOOL)preferencePaneAllowsResizing
+{
+	return NO;
+}
 
 @end
