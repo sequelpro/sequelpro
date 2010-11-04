@@ -364,14 +364,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(!aDbName) {
 
 				// Try to suggest only items which are uniquely valid for the parsed string
-				NSArray *uniqueSchema = [[SPNavigatorController sharedNavigatorController] getUniqueDbIdentifierFor:[aTableName lowercaseString] andConnection:[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] connectionID]];
+				NSArray *uniqueSchema = [[SPNavigatorController sharedNavigatorController] getUniqueDbIdentifierFor:[aTableName lowercaseString] andConnection:[[[self delegate] valueForKeyPath:@"tableDocumentInstance"] connectionID]  ignoreFields:YES];
 				NSInteger uniqueSchemaKind = [[uniqueSchema objectAtIndex:0] intValue];
 
 				// If no db name but table name check if table name is a valid name in the current selected db
-			 	if(aTableName && [aTableName length] 
+			 	if(uniqueSchemaKind == 2 && aTableName && [aTableName length] 
 						&& [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] isKindOfClass:[NSDictionary class]]
-						&& [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]]] 
-						&& uniqueSchemaKind == 2) {
+						&& [[dbs objectForKey:currentDb] objectForKey:[NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]]] )
+				{
 					aTableNameExists = YES;
 					aTableName = [uniqueSchema objectAtIndex:1];
 					aTableName_id = [NSString stringWithFormat:@"%@%@%@", currentDb, SPUniqueSchemaDelimiter, aTableName];
@@ -379,7 +379,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 
 				// If no db name but table name check if table name is a valid db name
-				if(!aTableNameExists && aTableName && [aTableName length] && uniqueSchemaKind == 1) {
+				if(uniqueSchemaKind == 1 && !aTableNameExists && aTableName && [aTableName length]) {
 					aDbName_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, [uniqueSchema objectAtIndex:1]];
 					aTableNameExists = NO;
 				}
@@ -766,7 +766,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 								object:nil];
 
 	// Check for table name aliases
-	if(tableDocumentInstance && customQueryInstance) {
+	if(dbBrowseMode && tableDocumentInstance && customQueryInstance) {
 		NSString *theDb = (dbName == nil) ? [NSString stringWithString:currentDb] : [NSString stringWithString:dbName];
 		NSString *connectionID = [tableDocumentInstance connectionID];
 		NSString *conID = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, theDb];

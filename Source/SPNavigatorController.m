@@ -508,13 +508,23 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
  * Otherwise it return 0. Mainly used for completion to know whether a `foo`. can only be 
  * a db name or a table name.
  */
-- (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID
+- (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID ignoreFields:(BOOL)ignoreFields
 {
 
 	NSString *SPUniqueSchemaDelimiter = @"￸";
 
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH[c] %@", [NSString stringWithFormat:@"%@%@", SPUniqueSchemaDelimiter, [term lowercaseString]]];
-	NSArray *result = [[allSchemaKeys objectForKey:connectionID] filteredArrayUsingPredicate:predicate];
+	NSMutableArray *result = [NSMutableArray arrayWithCapacity:5];
+
+	NSString *re = [NSString stringWithFormat:@"%@.*?%@.*?%@", SPUniqueSchemaDelimiter, SPUniqueSchemaDelimiter, SPUniqueSchemaDelimiter];
+	for(id r in [[allSchemaKeys objectForKey:connectionID] filteredArrayUsingPredicate:predicate]) {
+		if(ignoreFields) {
+			if(![r isMatchedByRegex:re])
+				[result addObject:r];
+		} else {
+			[result addObject:r];
+		}
+	}
 
 	if([result count] < 1 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 	if([result count] == 1) {

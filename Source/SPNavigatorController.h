@@ -77,7 +77,7 @@
 
 - (NSDictionary *)dbStructureForConnection:(NSString*)connectionID;
 - (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID;
-- (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID;
+- (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID ignoreFields:(BOOL)ignoreFields;
 
 - (BOOL)isUpdatingConnection:(NSString*)connectionID;
 - (BOOL)isUpdating;
