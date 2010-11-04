@@ -658,7 +658,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		while(start > 0 && doParsing) {
 			currentCharacter = [[self string] characterAtIndex:--start];
-			if(!(backticksCounter%2) && ([whiteSpaceCharSet characterIsMember:currentCharacter] || currentCharacter == ',')) {
+			if(!(backticksCounter%2) && ([whiteSpaceCharSet characterIsMember:currentCharacter] || currentCharacter == ',' || currentCharacter == '(')) {
 				start++;
 				break;
 			}
