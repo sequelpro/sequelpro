@@ -3249,6 +3249,14 @@
 	return numberOfQueries;
 }
 
+/**
+ * Returns the range of the current active query.
+ */
+- (NSRange)currentQueryRange
+{
+	return currentQueryRange;
+}
+
 - (NSString *)buildHistoryString
 {
 	return [[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] componentsJoinedByString:@";\n"];

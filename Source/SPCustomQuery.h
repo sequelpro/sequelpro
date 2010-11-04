@@ -244,7 +244,7 @@
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 - (NSUInteger)numberOfQueries;
-
+- (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;
 - (void)addHistoryEntry:(NSString *)entryString;
 

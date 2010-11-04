@@ -31,6 +31,7 @@
 #import "SPTablesList.h"
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
+#import "RegexKitLite.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -764,6 +765,44 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 								selector:@selector(doAutoCompletion) 
 								object:nil];
 
+	// Check for table name aliases
+	if(tableDocumentInstance && customQueryInstance) {
+		NSString *theDb = (dbName == nil) ? [NSString stringWithString:currentDb] : [NSString stringWithString:dbName];
+		NSString *connectionID = [tableDocumentInstance connectionID];
+		NSString *conID = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, theDb];
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		if(theDb && dbs != nil && [dbs count] && [dbs objectForKey:conID] && [[dbs objectForKey:conID] isKindOfClass:[NSDictionary class]]) {
+			NSArray *allTables = [[dbs objectForKey:conID] allKeys];
+			// Check if found table name is known, if not parse for aliases
+			if(![allTables containsObject:[NSString stringWithFormat:@"%@%@%@", conID, SPUniqueSchemaDelimiter, tableName]]) {
+				NSString* currentQuery = [[self string] substringWithRange:[customQueryInstance currentQueryRange]];
+				NSRange aliasRange = [currentQuery rangeOfRegex:[NSString stringWithFormat:@"(?i)\\s`?(\\S+?)`?\\s+(AS\\s+)?`?%@`?", tableName] capture:1L];
+				if(aliasRange.length) {
+					NSString *alias = [[currentQuery substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+					// If alias refers to db.table split it
+					if([alias rangeOfString:@"."].length) {
+						NSRange dbRange = [alias rangeOfRegex:@"^`?(.*?)`?\\." capture:1L];
+						NSRange tbRange = [alias rangeOfRegex:@"\\.`?(.*?)`?$" capture:1L];
+						NSString *db = [[alias substringWithRange:dbRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+						NSString *tb = [[alias substringWithRange:tbRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+						conID = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
+						if([dbs objectForKey:conID] && [[dbs objectForKey:conID] isKindOfClass:[NSDictionary class]]) {
+							allTables = [[dbs objectForKey:conID] allKeys];
+							if([allTables containsObject:[NSString stringWithFormat:@"%@%@%@", conID, SPUniqueSchemaDelimiter, tb]]) {
+								tableName = tb;
+								dbName = db;
+							}
+						}
+					} else {
+						if([allTables containsObject:[NSString stringWithFormat:@"%@%@%@", conID, SPUniqueSchemaDelimiter, alias]]) {
+							tableName = alias;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
 	completionIsOpen = YES;
 	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
@@ -1229,33 +1268,34 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if (tablesListInstance && [tablesListInstance selectedDatabase])
 			currentDb = [tablesListInstance selectedDatabase];
 
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
-
-		if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
-			NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
-			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
-			[desc release];
-			for(id table in sortedTables) {
-				NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
-				NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
-				switch(structtype) {
-					case 0:
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
-					break;
-					case 1:
-					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
-					break;
-				}
-			}
-		} else {
-			arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
-			if(arr == nil) {
-				arr = [NSArray array];
-			}
-			for(id w in arr)
-				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
+		// TODO HansJB
+		// NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		// 
+		// if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
+		// 	NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
+		// 	NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
+		// 	NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+		// 	[desc release];
+		// 	for(id table in sortedTables) {
+		// 		NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
+		// 		NSInteger structtype = [[theTable objectForKey:@"  struct_type  "] intValue];
+		// 		switch(structtype) {
+		// 			case 0:
+		// 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
+		// 			break;
+		// 			case 1:
+		// 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:table, @"display", @"table-view-small-square", @"image", currentDb, @"path", @"", @"isRef", nil]];
+		// 			break;
+		// 		}
+		// 	}
+		// } else {
+		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
+		if(arr == nil) {
+			arr = [NSArray array];
 		}
+		for(id w in arr)
+			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
+		// }
 	}
 	else if([kind isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
 		arr = [NSArray arrayWithArray:[[[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
