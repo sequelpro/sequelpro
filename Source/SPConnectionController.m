@@ -1051,7 +1051,7 @@
 	[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:[favorites count]-1] byExtendingSelection:NO];
 	[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 
-	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
+	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
 }
 
 /**
@@ -1120,24 +1120,24 @@
     }
     NSMutableDictionary *draggedFavorite = [favorites objectAtIndex:dragRow];
     [favorites removeObjectAtIndex:dragRow];
-    if (row > [favorites count])
+    if (row > dragRow)
     {
         row--;
     }
     [favorites insertObject:draggedFavorite atIndex:row];
     [aTableView reloadData];
-    [aTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
     
 	// reset the prefs with the new order
     NSMutableArray *reorderedFavorites = [[NSMutableArray alloc] initWithArray:favorites];
     [reorderedFavorites removeObjectAtIndex:0];
     [prefs setObject:reorderedFavorites forKey:SPFavorites];
 	
-	[[[NSApp delegate] preferenceController] updateDefaultFavoritePopup];
+	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
     
 	[reorderedFavorites release];
     
 	[self updateFavorites];
+    [aTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
     
 	acceptedDrop = YES;
 	
