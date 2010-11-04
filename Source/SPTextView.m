@@ -658,7 +658,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		while(start > 0 && doParsing) {
 			currentCharacter = [[self string] characterAtIndex:--start];
-			if(!(backticksCounter%2) && [whiteSpaceCharSet characterIsMember:currentCharacter]) {
+			if(!(backticksCounter%2) && ([whiteSpaceCharSet characterIsMember:currentCharacter] || currentCharacter == ',')) {
 				start++;
 				break;
 			}
@@ -776,21 +776,22 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Check if found table name is known, if not parse for aliases
 			if(![allTables containsObject:[NSString stringWithFormat:@"%@%@%@", conID, SPUniqueSchemaDelimiter, tableName]]) {
 				NSString *currentQuery = [[self string] substringWithRange:[customQueryInstance currentQueryRange]];
-				NSArray *matches = [currentQuery componentsMatchedByRegex:[NSString stringWithFormat:@"(?i)\\s`?(\\S+?)`?\\s+(AS\\s+)?`?%@`?\\b", tableName]];
+				NSString *re = [NSString stringWithFormat:@"(?i)[\\s,]`?(\\S+?)`?\\s+(AS\\s+)?`?%@`?\\b", tableName];
+				NSArray *matches = [currentQuery componentsMatchedByRegex:re];
 				for(NSString* m in matches) {
-					NSRange aliasRange = [m rangeOfRegex:[NSString stringWithFormat:@"(?i)\\s`?(\\S+?)`?\\s+(AS\\s+)?`?%@`?\\b", tableName] capture:1L];
+					NSRange aliasRange = [m rangeOfRegex:re capture:1L];
 					if(aliasRange.length) {
 						NSString *alias = [[m substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
-						// If alias refers to db.table split it
+						// If alias refers to db.table split and check it
 						if([alias rangeOfString:@"."].length) {
 							NSRange dbRange = [alias rangeOfRegex:@"^`?(.*?)`?\\." capture:1L];
 							NSRange tbRange = [alias rangeOfRegex:@"\\.`?(.*?)`?$" capture:1L];
 							NSString *db = [[alias substringWithRange:dbRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
 							NSString *tb = [[alias substringWithRange:tbRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
-							conID = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
-							if([dbs objectForKey:conID] && [[dbs objectForKey:conID] isKindOfClass:[NSDictionary class]]) {
-								allTables = [[dbs objectForKey:conID] allKeys];
-								if([allTables containsObject:[NSString stringWithFormat:@"%@%@%@", conID, SPUniqueSchemaDelimiter, tb]]) {
+							NSString *curConID = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, db];
+							if([dbs objectForKey:curConID] && [[dbs objectForKey:curConID] isKindOfClass:[NSDictionary class]]) {
+								allTables = [[dbs objectForKey:curConID] allKeys];
+								if([allTables containsObject:[NSString stringWithFormat:@"%@%@%@", curConID, SPUniqueSchemaDelimiter, tb]]) {
 									tableName = tb;
 									dbName = db;
 									break;
