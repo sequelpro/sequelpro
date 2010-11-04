@@ -644,7 +644,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for(NSUInteger i=0; i<[lineHead length]; i++)
 			if([lineHead characterAtIndex:i]=='`') caretIsInsideBackticks = !caretIsInsideBackticks;
 			
-		NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+		NSMutableCharacterSet *breakCharSet = [NSMutableCharacterSet characterSetWithCharactersInString:@",;(+=-*/%><~&|^"];
+		[breakCharSet formUnionWithCharacterSet:[NSCharacterSet whitespaceCharacterSet]];
 		NSUInteger start = caretPos;
 		NSInteger backticksCounter = (caretIsInsideBackticks) ? 1 : 0;
 		NSInteger pointCounter     = 0;
@@ -658,7 +659,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		while(start > 0 && doParsing) {
 			currentCharacter = [[self string] characterAtIndex:--start];
-			if(!(backticksCounter%2) && ([whiteSpaceCharSet characterIsMember:currentCharacter] || currentCharacter == ',' || currentCharacter == '(')) {
+			if(!(backticksCounter%2) && [breakCharSet characterIsMember:currentCharacter]) {
 				start++;
 				break;
 			}
