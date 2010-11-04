@@ -63,10 +63,10 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	NSArray *xmlRow = nil;
+	NSArray *fieldNames = nil;
 	NSString *dataConversionString = nil;
 	MCPStreamingResult *streamingResult = nil;
 	
-	NSMutableArray *xmlTags = [NSMutableArray array];
 	NSMutableString *xmlString = [NSMutableString string];
 	NSMutableString *xmlItem = [NSMutableString string];
 	
@@ -94,26 +94,17 @@
 	if ((![self xmlDataArray]) && [self xmlTableName]) {
 		totalRows = [[[[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self xmlTableName] backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
 		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self xmlTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
+	
+		[xmlString appendFormat:@"\t<table_data name=\"%@\">\n\n", [self xmlTableName]];
 	}
 	else {
 		totalRows = [[self xmlDataArray] count];
 	}
 	
 	// Set up an array of encoded field names as opening and closing tags
-	xmlRow = ([self xmlDataArray]) ? [[self xmlDataArray] objectAtIndex:0] : [streamingResult fetchFieldNames];
-	
-	for (i = 0; i < [xmlRow count]; i++) 
-	{
-		[xmlTags addObject:[NSMutableArray array]];
-		
-		[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"\t\t<%@>", [[[xmlRow objectAtIndex:i] description] HTMLEscapeString]]];
-		[[xmlTags objectAtIndex:i] addObject:[NSString stringWithFormat:@"</%@>\n", [[[xmlRow objectAtIndex:i] description] HTMLEscapeString]]];
-	}
+	fieldNames = ([self xmlDataArray]) ? [[self xmlDataArray] objectAtIndex:0] : [streamingResult fetchFieldNames];
 	
 	[[self exportOutputFile] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
-	
-	// Write an opening tag in the form of the table name
-	[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"\t<%@>\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
 	
 	// Set up the starting row, which is 0 for streaming result sets and
 	// 1 for supplied arrays which include the column headers as the first row.
@@ -176,6 +167,7 @@
 				return;
 			}
 			
+			BOOL dataIsNULL = NO;
 			id data = NSArrayObjectAtIndex(xmlRow, i);
 			
 			// Retrieve the contents of this tag
@@ -190,7 +182,7 @@
 				[dataConversionString release];
 			} 
 			else if ([data isKindOfClass:[NSNull class]]) {
-				[xmlItem setString:[self xmlNULLString]];
+				dataIsNULL = YES;
 			}
 			else if ([data isKindOfClass:[MCPGeometryData class]]) {
 				[xmlItem setString:[data wktString]];
@@ -198,15 +190,19 @@
 			else {
 				[xmlItem setString:[data description]];
 			}
+						
+			[xmlString appendFormat:@"\t\t<field name=\"%@\"", [[NSArrayObjectAtIndex(fieldNames, i) description] HTMLEscapeString]];
 			
-			// Add the opening and closing tag and the contents to the XML string
-			[xmlString appendString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(xmlTags, i), 0)];
-			[xmlString appendString:[xmlItem HTMLEscapeString]];
-			[xmlString appendString:NSArrayObjectAtIndex(NSArrayObjectAtIndex(xmlTags, i), 1)];
+			if (dataIsNULL) {
+				[xmlString appendString:@" xsi:nil=\"true\" \\>\n"];
+			}
+			else {
+				[xmlString appendFormat:@">%@</field>\n", [xmlItem HTMLEscapeString]];
+			}
 		}
 		
-		[xmlString appendString:@"\t</row>\n"];
-		
+		[xmlString appendString:@"\t</row>\n\n"];
+				
 		// Record the total length for use with pool flushing
 		currentPoolDataLength += [xmlString length];
 		
@@ -239,8 +235,9 @@
 		if ([self xmlDataArray] && totalRows == currentRowIndex) break;
 	}
 	
-	// Write the closing tag for the table
-	[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
+	if ((![self xmlDataArray]) && [self xmlTableName]) {
+		[[self exportOutputFile] writeData:[@"\t</table_data>\n\n" dataUsingEncoding:[self exportOutputEncoding]]];
+	}
 	
 	// Write data to disk
 	[[[self exportOutputFile] exportFileHandle] synchronizeFile];
