@@ -776,7 +776,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// Check if found table name is known, if not parse for aliases
 			if(![allTables containsObject:[NSString stringWithFormat:@"%@%@%@", conID, SPUniqueSchemaDelimiter, tableName]]) {
 				NSString* currentQuery = [[self string] substringWithRange:[customQueryInstance currentQueryRange]];
-				NSRange aliasRange = [currentQuery rangeOfRegex:[NSString stringWithFormat:@"(?i)\\s`?(\\S+?)`?\\s+(AS\\s+)?`?%@`?", tableName] capture:1L];
+				NSRange aliasRange = [currentQuery rangeOfRegex:[NSString stringWithFormat:@"(?i)\\s`?(\\S+?)`?\\s+(AS\\s+)?`?%@`?\\b", tableName] capture:1L];
 				if(aliasRange.length) {
 					NSString *alias = [[currentQuery substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
 					// If alias refers to db.table split it
