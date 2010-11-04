@@ -318,9 +318,13 @@
 				
 				// If required create a single file handle for all XML exports 
 				if (![self exportToMultipleFiles]) {
-					[singleExportFile setExportFileNeedsXMLHeader:YES];
-					
-					[exportFiles addObject:singleExportFile];
+					if (!singleFileHandleSet) {
+						[singleExportFile setExportFileNeedsXMLHeader:YES];
+						
+						[exportFiles addObject:singleExportFile];
+						
+						singleFileHandleSet = YES;
+					}
 					
 					[xmlExporter setExportOutputFile:singleExportFile];
 				}
@@ -394,10 +398,10 @@
 	}
 		
 	NSMutableArray *problemFiles = [[NSMutableArray alloc] init];
-	
+		
 	// Create the actual file handles while dealing with errors (e.g. file already exists, etc) during creation
 	for (SPExportFile *exportFile in exportFiles)
-	{
+	{		
 		if ([exportFile createExportFileHandle:NO] == SPExportFileHandleCreated) {
 
 			[exportFile setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
@@ -491,26 +495,38 @@
 {	
 	SPXMLExporter *xmlExporter = [[SPXMLExporter alloc] initWithDelegate:self];
 	
-	// Depeding on the export source, set the table name or data array
-	if (exportSource == SPTableExport) {
-		[xmlExporter setXmlTableName:table];
-	}
-	else {
+	// if required set the data array
+	if (exportSource != SPTableExport) {
 		[xmlExporter setXmlDataArray:dataArray];
 	}
 	
 	// Regardless of the export source, set exporter's table name as it's used in the output
 	// of table and table content exports.
-	[xmlExporter setXmlTableName:[tablesListInstance tableName]];
+	[xmlExporter setXmlTableName:table];
 	
 	[xmlExporter setXmlNULLString:[exportXMLNULLValuesAsTextField stringValue]];
 	
 	// If required create separate files
 	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
-		[exportFilename setString:[[exportPathField stringValue] stringByAppendingPathComponent:table]];
+		
+		if (createCustomFilename) {
+			
+			// Create custom filename based on the selected format
+			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:table]];
+			
+			// If the user chose to use a custom filename format and we exporting to multiple files, make
+			// sure the table name is included to ensure the output files are unique.
+			if (exportTableCount > 1) {
+				[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
+			}
+		}
+		else {
+			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
+		}
+		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-								
-		SPExportFile *file = [SPExportFile exportFileAtPath:exportFilename];
+										
+		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[file setExportFileNeedsXMLHeader:YES];
 		
