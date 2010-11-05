@@ -154,7 +154,10 @@
 		if(anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"]) {
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
-			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]]) {
+			if([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] 
+					|| [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] 
+					|| [fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]]
+					|| ([fieldValidation isFieldTypeDate:[currentRow objectForKey:@"type"]] && ![[currentRow objectForKey:@"type"] isEqualToString:@"YEAR"])) {
 				[currentRow setObject:@"" forKey:@"default"];
 				[currentRow setObject:@"" forKey:@"length"];
 			}
@@ -520,7 +523,7 @@
 		}
 		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
 		else if([[aTableColumn identifier] isEqualToString:@"length"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeDate:theRowType] || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
+			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || ([fieldValidation isFieldTypeDate:theRowType] && ![theRowType isEqualToString:@"YEAR"]) || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
 		}
 		else {
 			[aCell setEnabled:YES];
