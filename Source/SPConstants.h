@@ -83,6 +83,13 @@ enum {
 };
 typedef NSUInteger SPSQLExportInsertDivider;
 
+// XML export formats
+enum {
+	SPXMLExportMySQLFormat = 0,
+	SPXMLExportPlainFormat = 1
+};
+typedef NSUInteger SPXMLExportFormat;
+
 // Table row count query usage levels
 typedef enum {
 	SPRowCountFetchNever   = 0,

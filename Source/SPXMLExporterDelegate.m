@@ -69,8 +69,16 @@
 		// If we're exporting to multiple files then close the file handle of the exporter
 		// that just finished, ensuring its data is written to disk.
 		if (exportToMultipleFiles) {
-			[[exporter exportOutputFile] writeData:[(exportSource == SPTableExport) ? @"</database>\n</mysqldump>\n" : @"</resultset>\n" dataUsingEncoding:[connection stringEncoding]]];
+			NSString *string = @"";
 			
+			if ([exporter xmlFormat] == SPXMLExportMySQLFormat) {
+				string = (exportSource == SPTableExport) ? @"</database>\n</mysqldump>\n" : @"</resultset>\n";;
+			}
+			else if ([exporter xmlFormat] == SPXMLExportPlainFormat) {
+				string = [NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]];
+			}
+			
+			[[exporter exportOutputFile] writeData:[string dataUsingEncoding:[connection stringEncoding]]];
 			[[exporter exportOutputFile] close]; 
 		}
 		
@@ -82,9 +90,16 @@
 	}
 	// Otherwise if the exporter list is empty, close the progress sheet
 	else {
-		[[exporter exportOutputFile] writeData:[(exportSource == SPTableExport) ? @"</database>\n</mysqldump>\n" : @"</resultset>\n" dataUsingEncoding:[connection stringEncoding]]];
+		NSString *string = @"";
 		
-		// Close the last exporter's file handle
+		if ([exporter xmlFormat] == SPXMLExportMySQLFormat) {
+			string = (exportSource == SPTableExport) ? @"</database>\n</mysqldump>\n" : @"</resultset>\n";;
+		}
+		else if ([exporter xmlFormat] == SPXMLExportPlainFormat) {
+			string = [NSString stringWithFormat:@"</%@>\n", [[tableDocumentInstance database] HTMLEscapeString]];
+		}
+		
+		[[exporter exportOutputFile] writeData:[string dataUsingEncoding:[connection stringEncoding]]];
 		[[exporter exportOutputFile] close]; 
 		
 		[NSApp endSheet:exportProgressWindow returnCode:0];

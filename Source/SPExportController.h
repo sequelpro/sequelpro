@@ -104,6 +104,9 @@
 	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
 	
 	// XML
+	IBOutlet NSPopUpButton *exportXMLFormatPopUpButton;
+	IBOutlet NSButton *exportXMLIncludeStructure;
+	IBOutlet NSButton *exportXMLIncludeContent;
 	IBOutlet NSTextField *exportXMLNULLValuesAsTextField;
 	
 	/**
@@ -239,6 +242,7 @@
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
 - (IBAction)exportCustomQueryResultAsFormat:(id)sender;
 
+- (IBAction)toggleXMLOutputFormat:(id)sender;
 - (IBAction)toggleSQLIncludeStructure:(id)sender;
 - (IBAction)toggleSQLIncludeContent:(id)sender;
 - (IBAction)toggleSQLIncludeDropSyntax:(id)sender;

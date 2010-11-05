@@ -493,6 +493,23 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 }
 
 /**
+ * Toggles the options available depending on the selected XML output format.
+ */
+- (IBAction)toggleXMLOutputFormat:(id)sender
+{
+	if ([sender indexOfSelectedItem] == SPXMLExportMySQLFormat) {
+		[exportXMLIncludeStructure setEnabled:YES];
+		[exportXMLIncludeContent setEnabled:YES];
+		[exportXMLNULLValuesAsTextField setEnabled:NO];
+	}
+	else if ([sender indexOfSelectedItem] == SPXMLExportPlainFormat) {
+		[exportXMLIncludeStructure setEnabled:NO];
+		[exportXMLIncludeContent setEnabled:NO];
+		[exportXMLNULLValuesAsTextField setEnabled:YES];
+	}
+}
+
+/**
  * Toggles the display of the advanced options box.
  */
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender

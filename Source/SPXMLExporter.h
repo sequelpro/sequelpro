@@ -41,27 +41,47 @@
 
 	NSString *xmlTableName;
 	NSString *xmlNULLString;
+	
+	BOOL xmlOutputIncludeStructure;
+	BOOL xmlOutputIncludeContent;
+	
+	SPXMLExportFormat xmlFormat;
 }
 
 /**
  * @property delegate Exporter delegate
  */
-@property(readwrite, assign) NSObject <SPXMLExporterProtocol> *delegate;
+@property (readwrite, assign) NSObject <SPXMLExporterProtocol> *delegate;
 
 /**
  * @property xmlDataArray Data array
  */
-@property(readwrite, retain) NSArray *xmlDataArray;
+@property (readwrite, retain) NSArray *xmlDataArray;
 
 /**
  * @property xmlTableName Table name
  */
-@property(readwrite, retain) NSString *xmlTableName;
+@property (readwrite, retain) NSString *xmlTableName;
 
 /**
  * @property xmlNULLString XML NULL string
  */
-@property(readwrite, retain) NSString *xmlNULLString;
+@property (readwrite, retain) NSString *xmlNULLString;
+
+/**
+ * @property xmlOutputIncludeStructure Include table structure
+ */
+@property (readwrite, assign) BOOL xmlOutputIncludeStructure;
+
+/**
+ * @property xmlOutputIncludeContent Include table content
+ */
+@property (readwrite, assign) BOOL xmlOutputIncludeContent;
+
+/**
+ * @property xmlFormat
+ */
+@property (readwrite, assign) SPXMLExportFormat xmlFormat;
 
 - (id)initWithDelegate:(NSObject *)exportDelegate;
 

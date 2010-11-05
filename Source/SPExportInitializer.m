@@ -503,7 +503,10 @@
 	// Regardless of the export source, set exporter's table name as it's used in the output
 	// of table and table content exports.
 	[xmlExporter setXmlTableName:table];
-	
+
+	[xmlExporter setXmlFormat:[exportXMLFormatPopUpButton indexOfSelectedItem]];
+	[xmlExporter setXmlOutputIncludeStructure:[exportXMLIncludeStructure state]];
+	[xmlExporter setXmlOutputIncludeContent:[exportXMLIncludeContent state]];
 	[xmlExporter setXmlNULLString:[exportXMLNULLValuesAsTextField stringValue]];
 	
 	// If required create separate files

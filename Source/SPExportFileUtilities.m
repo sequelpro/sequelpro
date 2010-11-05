@@ -86,13 +86,16 @@
 	[header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [tableDocumentInstance database]];
 	[header appendFormat:@"- %@ Time: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
 	[header appendString:@"-\n-->\n\n"];
-	[header appendFormat:@"<%@ xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n", (exportSource == SPTableExport) ? @"mysqldump" : @"resultset"];
 	
-	if (exportSource == SPTableExport) {
-		[header appendFormat:@"<database name=\"%@\">\n\n", [tableDocumentInstance database]];
+	if ([exportXMLFormatPopUpButton indexOfSelectedItem] == SPXMLExportMySQLFormat) {
+		[header appendFormat:@"<%@ xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n", (exportSource == SPTableExport) ? @"mysqldump" : @"resultset"];
+		
+		if (exportSource == SPTableExport) {
+			[header appendFormat:@"<database name=\"%@\">\n\n", [tableDocumentInstance database]];
+		}
 	}
 	else {
-		[header appendString:@"\n"];
+		[header appendFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]];
 	}
 	
 	[file writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];	
