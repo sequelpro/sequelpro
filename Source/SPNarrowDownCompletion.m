@@ -956,12 +956,18 @@
 
 	// Insert common prefix automatically
 	if([[self filterString] length] < [commonPrefix length]) {
+		NSUInteger currentSelectionPosition = [theView selectedRange].location;
 		NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
 		[mutablePrefix appendString:toInsert];
 		theCharRange.length += [toInsert length];
 		theParseRange.length += [toInsert length];
 		[theView insertText:[toInsert lowercaseString]];
 		commonPrefixWasInsertedByAutoComplete = YES;
+
+		// Restore the text selection location, and clearly mark the autosuggested text
+		[theView setSelectedRange:NSMakeRange(currentSelectionPosition, 0)];
+		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3], NSMakeRange(currentSelectionPosition, [toInsert length]));
+
 		[self checkSpaceForAllowedCharacter];
 	}
 }

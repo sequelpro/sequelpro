@@ -2694,6 +2694,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
 		tokenEnd = tokenRange.location+tokenRange.length-1;
+
 		// Check the end of the token
 		if (textBufferSizeIncreased 
 			&& allowToCheckForUpperCase 
@@ -2703,23 +2704,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
 			// @try catch() for catching valid index esp. after deleteBackward:
+		{
+	
+			NSString* curTokenString = [selfstr substringWithRange:tokenRange];
+			BOOL doIt = NO;
+			@try
 			{
-		
-				NSString* curTokenString = [selfstr substringWithRange:tokenRange];
-				BOOL doIt = NO;
-				@try
-				{
-					doIt = ![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length];
-				} @catch(id ae) { doIt = NO; }
-		
-				if(doIt)
-				{
-					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
-					[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
-					[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
-				}
+				doIt = ![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length];
+			} @catch(id ae) { doIt = NO; }
+	
+			if(doIt)
+			{
+				// Register it for undo works only partly for now, at least the uppercased keyword will be selected
+				[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
+				[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
 			}
-		
+		}
+
 		NSMutableAttributedStringAddAttributeValueRange(textStore, NSForegroundColorAttributeName, tokenColor, tokenRange);
 		
 		// if(!allowToCheckForUpperCase) continue;
