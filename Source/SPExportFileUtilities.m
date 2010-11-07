@@ -88,11 +88,17 @@
 	[header appendString:@"-\n-->\n\n"];
 	
 	if ([exportXMLFormatPopUpButton indexOfSelectedItem] == SPXMLExportMySQLFormat) {
-		[header appendFormat:@"<%@ xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n", (exportSource == SPTableExport) ? @"mysqldump" : @"resultset"];
+		
+		NSString *tag = @"";
 		
 		if (exportSource == SPTableExport) {
-			[header appendFormat:@"<database name=\"%@\">\n\n", [tableDocumentInstance database]];
+			tag = [NSString stringWithFormat:@"<mysqldump xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<database name=\"%@\">\n\n", [tableDocumentInstance database]];
 		}
+		else {
+			tag = [NSString stringWithFormat:@"<resultset statement=\"%@\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n\n", (exportSource == SPFilteredExport) ? [tableContentInstance usedQuery] : [customQueryInstance usedQuery]];
+		}
+		
+		[header appendString:tag];
 	}
 	else {
 		[header appendFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]];
