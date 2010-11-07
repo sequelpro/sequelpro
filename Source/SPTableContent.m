@@ -950,7 +950,7 @@
 	NSMutableString *clause = [[NSMutableString alloc] init];
 	[clause setString:[filter objectForKey:@"Clause"]];
 
-	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:(caseSensitive) ? @"BINARY" : @""];
+	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY " withString:(caseSensitive) ? @"BINARY " : @""];
 	[clause flushCachedRegexData];
 	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:([fieldField titleOfSelectedItem]) ? [[fieldField titleOfSelectedItem] backtickQuotedString] : @""];
 	[clause flushCachedRegexData];
