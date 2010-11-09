@@ -48,6 +48,7 @@ NSString *SPFileExtensionDefault                 = @"spf";
 NSString *SPBundleFileExtension                  = @"spfs";
 NSString *SPFileExtensionSQL                     = @"sql";
 NSString *SPColorThemeFileExtension              = @"spTheme";
+NSString *SPUserBundleFileExtension              = @"spBundle";
 
 // File names
 NSString *SPHTMLPrintTemplate                    = @"SPPrintTemplate";

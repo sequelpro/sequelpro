@@ -227,6 +227,7 @@ extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
 extern NSString *SPBundleFileExtension;
 extern NSString *SPColorThemeFileExtension;
+extern NSString *SPUserBundleFileExtension;
 
 // File names
 extern NSString *SPHTMLPrintTemplate;

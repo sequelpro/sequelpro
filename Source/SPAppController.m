@@ -460,6 +460,9 @@
 				return;
 			}
 		}
+		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) {
+			NSLog(@"Be patient…");
+		}
 		else {
 			NSLog(@"Only files with the extensions ‘%@’, ‘%@’, ‘%@’ or ‘%@’ are allowed.", SPFileExtensionDefault, SPBundleFileExtension, SPColorThemeFileExtension, SPFileExtensionSQL);
 		}
