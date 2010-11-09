@@ -143,6 +143,4 @@
 
 - (BOOL)isSnippetMode;
 
-- (NSString *)runBashCommand:(NSString *)command;
-
 @end

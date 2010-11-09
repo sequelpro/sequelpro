@@ -402,6 +402,110 @@
 }
 
 /**
+ * Run self as BASH command(s) and return the result.
+ * This task can be interrupted by pressing ⌘.
+ *
+ * @param shellEnvironment A dictionary of environment variable values whose keys are the variable names.
+ *
+ * @param path The current directory for the bash command. If path is nil, the current directory is inherited from the process that created the receiver (normally /).
+ *
+ * @param theError If not nil and the bash command failed it contains the returned error message as NSLocalizedDescriptionKey
+ * 
+ */
+- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError
+{
+	BOOL userTerminated = NO;
+
+	NSTask *bashTask = [[NSTask alloc] init];
+	[bashTask setLaunchPath: @"/bin/bash"];
+
+	if(shellEnvironment != nil && [shellEnvironment isKindOfClass:[NSDictionary class]] && [shellEnvironment count])
+		[bashTask setEnvironment:shellEnvironment];
+
+	if(path != nil)
+		[bashTask setCurrentDirectoryPath:path];
+
+	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", self, nil]];
+
+	NSPipe *stdout_pipe = [NSPipe pipe];
+	[bashTask setStandardOutput:stdout_pipe];
+	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
+
+	NSPipe *stderr_pipe = [NSPipe pipe];
+	[bashTask setStandardError:stderr_pipe];
+	NSFileHandle *stderr_file = [stderr_pipe fileHandleForReading];
+	[bashTask launch];
+
+	// Listen to ⌘. to terminate
+	while(1) {
+		if(![bashTask isRunning] || [bashTask processIdentifier] == 0) break;
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                   untilDate:[NSDate distantPast]
+                                      inMode:NSDefaultRunLoopMode
+                                     dequeue:YES];
+		usleep(10000);
+		if(!event) continue;
+		if ([event type] == NSKeyDown) {
+			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+				[bashTask terminate];
+				userTerminated = YES;
+				break;
+			}
+		} else {
+			[NSApp sendEvent:event];
+		}
+	}
+
+	[bashTask waitUntilExit];
+
+	if(userTerminated) {
+		if(bashTask) [bashTask release];
+		NSBeep();
+		NSLog(@"“%@” was terminated by user.", self);
+		return @"";
+	}
+
+	// If return from bash re-activate Sequel Pro
+	[NSApp activateIgnoringOtherApps:YES];
+
+	NSInteger status = [bashTask terminationStatus];
+	NSData *outdata  = [stdout_file readDataToEndOfFile];
+	NSData *errdata  = [stderr_file readDataToEndOfFile];
+
+	if(outdata != nil) {
+		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] autorelease];
+		if(bashTask) [bashTask release];
+		if(stdout != nil) {
+			if (status == 0) {
+				return [stdout description];
+			} else {
+				if(theError != NULL) {
+					*theError = [[[NSError alloc] initWithDomain:NSPOSIXErrorDomain 
+															code:status 
+														userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+																		[[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease],
+																		NSLocalizedDescriptionKey, 
+																		nil]] autorelease];
+				} else {
+					NSBeep();
+				}
+				return @"";
+			}
+		} else {
+			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", self);
+			NSBeep();
+		}
+	} else {
+		if(bashTask) [bashTask release];
+		NSLog(@"Couldn't read data from command “%@”.", self);
+		NSBeep();
+		return @"";
+	}
+
+}
+
+/**
  * Returns the minimum of a, b and c.
  */
 - (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c

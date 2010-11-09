@@ -75,4 +75,6 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
 
+- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError;
+
 @end

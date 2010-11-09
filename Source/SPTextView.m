@@ -1711,10 +1711,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(tagRange.length) {
 				[theHintString flushCachedRegexData];
 				NSRange cmdRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\(\\s*(.*)\\s*\\)" capture:1L];
-				if(cmdRange.length)
-					[theHintString replaceCharactersInRange:tagRange withString:[self runBashCommand:[theHintString substringWithRange:cmdRange]]];
-				else
+				if(cmdRange.length) {
+					NSError *err = nil;
+					NSString *cmdResult = [[theHintString substringWithRange:cmdRange] runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
+					if(err == nil) {
+						[theHintString replaceCharactersInRange:tagRange withString:cmdResult];
+					} else {
+						NSString *errorMessage  = [err localizedDescription];
+						SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+										  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [theHintString substringWithRange:cmdRange], errorMessage]);
+					}
+				} else {
 					[theHintString replaceCharactersInRange:tagRange withString:@""];
+				}
 			}
 			[theHintString flushCachedRegexData];
 
@@ -1844,92 +1853,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	if(snip)[snip release];
-
-}
-
-/**
- * Run 'command' as BASH command(s) and return the result.
- * This task can be interrupted by pressing ⌘.
- */
-- (NSString *)runBashCommand:(NSString *)command
-{
-	BOOL userTerminated = NO;
-
-	NSTask *bashTask = [[NSTask alloc] init];
-	[bashTask setLaunchPath: @"/bin/bash"];
-	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", command, nil]];
-
-	NSPipe *stdout_pipe = [NSPipe pipe];
-	[bashTask setStandardOutput:stdout_pipe];
-	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
-
-	NSPipe *stderr_pipe = [NSPipe pipe];
-	[bashTask setStandardError:stderr_pipe];
-	NSFileHandle *stderr_file = [stderr_pipe fileHandleForReading];
-	[bashTask launch];
-
-	// Listen to ⌘. to terminate
-	while(1) {
-		if(![bashTask isRunning] || [bashTask processIdentifier] == 0) break;
-		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                   untilDate:[NSDate distantPast]
-                                      inMode:NSDefaultRunLoopMode
-                                     dequeue:YES];
-		usleep(10000);
-		if(!event) continue;
-		if ([event type] == NSKeyDown) {
-			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
-				[bashTask terminate];
-				userTerminated = YES;
-				break;
-			}
-		} else {
-			[NSApp sendEvent:event];
-		}
-	}
-
-	[bashTask waitUntilExit];
-
-	if(userTerminated) {
-		if(bashTask) [bashTask release];
-		NSBeep();
-		NSLog(@"“%@” was terminated by user.", command);
-		return @"";
-	}
-
-	// If return from bash re-activate Sequel Pro
-	[NSApp activateIgnoringOtherApps:YES];
-
-	NSInteger status = [bashTask terminationStatus];
-	NSData *outdata  = [stdout_file readDataToEndOfFile];
-	NSData *errdata  = [stderr_file readDataToEndOfFile];
-
-	if(outdata != nil) {
-		NSString *stdout = [[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding];
-		NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
-		if(bashTask) [bashTask release];
-		if(stdout != nil) {
-			if (status == 0) {
-				return [stdout autorelease];
-			} else {
-				NSString *error  = [[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), command, [error description]]);
-				[stdout release];
-				NSBeep();
-				return @"";
-			}
-		} else {
-			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", command);
-			NSBeep();
-		}
-	} else {
-		if(bashTask) [bashTask release];
-		NSLog(@"Couldn't read data from command “%@”.", command);
-		NSBeep();
-		return @"";
-	}
 
 }
 
