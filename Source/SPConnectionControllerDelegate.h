@@ -23,6 +23,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPConnectionController.h"
+
 /**
  * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
  *
@@ -30,6 +32,6 @@
  *
  * Connection controller delegate/data source category.
  */
-@implementation SPConnectionController (SPConnectionControllerDelegate)
+@interface SPConnectionController (SPConnectionControllerDelegate)
 
 @end
