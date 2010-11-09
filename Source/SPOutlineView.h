@@ -1,5 +1,5 @@
 //
-//  $Id: SPUserManager.m 856 2009-06-12 05:31:39Z mltownsend $
+//  $Id$
 //
 //  SPOutlineView.h
 //  sequel-pro

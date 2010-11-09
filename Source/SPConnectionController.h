@@ -25,9 +25,9 @@
 
 #import <MCPKit/MCPKit.h>
 
-#import "SPConnectionControllerDelegate.h"
+#import "SPConnectionControllerDelegateProtocol.h"
 
-@class SPDatabaseDocument, SPKeychain, SPSSHTunnel, BWAnchoredButtonBar;
+@class SPDatabaseDocument, SPKeychain, SPSSHTunnel, BWAnchoredButtonBar, SPFavoriteNode;
 
 @interface NSObject (BWAnchoredButtonBar)
 
@@ -43,7 +43,7 @@
 
 @interface SPConnectionController : NSObject 
 {
-	id <SPConnectionControllerDelegate> delegate;
+	id <SPConnectionControllerDelegateProtocol> delegate;
 	
 	SPDatabaseDocument *tableDocument;
 	NSView *databaseConnectionSuperview;
@@ -133,9 +133,11 @@
 	BOOL mySQLConnectionCancelled;
 	
     SPFavoritesSortItem previousSortItem, currentSortItem;
+	
+	SPFavoriteNode *favoritesRoot;
 }
 
-@property (readwrite, assign) id <SPConnectionControllerDelegate> delegate;
+@property (readwrite, assign) id <SPConnectionControllerDelegateProtocol> delegate;
 @property (readwrite, assign) NSInteger type;
 @property (readwrite, retain) NSString *name;
 @property (readwrite, retain) NSString *host;

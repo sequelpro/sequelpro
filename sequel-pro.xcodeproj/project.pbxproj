@@ -121,6 +121,8 @@
 		17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */; };
 		17D390C8127B65AF00672B13 /* SPGeneralPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */; };
 		17D390CB127B6BF800672B13 /* SPPreferencesUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D390CA127B6BF800672B13 /* SPPreferencesUpgrade.m */; };
+		17D3C22212859E070047709F /* SPFavoriteNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C22112859E070047709F /* SPFavoriteNode.m */; };
+		17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */; };
 		17D3DC201281816E002A163A /* SPDatabaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DC1F1281816E002A163A /* SPDatabaseViewController.m */; };
 		17DC8E75126F4AB600E9AAEC /* MCPConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DC8E74126F4AB600E9AAEC /* MCPConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
@@ -696,12 +698,16 @@
 		17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructureDelegate.m; sourceTree = "<group>"; };
 		17D38F6E1279E23A00672B13 /* SPTableFieldValidation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFieldValidation.h; sourceTree = "<group>"; };
 		17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFieldValidation.m; sourceTree = "<group>"; };
-		17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDelegate.h; sourceTree = "<group>"; };
+		17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDelegateProtocol.h; sourceTree = "<group>"; };
 		17D390A8127B556F00672B13 /* SPPreferencePaneProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferencePaneProtocol.h; sourceTree = "<group>"; };
 		17D390C6127B65AF00672B13 /* SPGeneralPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGeneralPreferencePane.h; sourceTree = "<group>"; };
 		17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGeneralPreferencePane.m; sourceTree = "<group>"; };
 		17D390C9127B6BF800672B13 /* SPPreferencesUpgrade.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferencesUpgrade.h; sourceTree = "<group>"; };
 		17D390CA127B6BF800672B13 /* SPPreferencesUpgrade.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferencesUpgrade.m; sourceTree = "<group>"; };
+		17D3C22012859E070047709F /* SPFavoriteNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteNode.h; sourceTree = "<group>"; };
+		17D3C22112859E070047709F /* SPFavoriteNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoriteNode.m; sourceTree = "<group>"; };
+		17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDelegate.h; sourceTree = "<group>"; };
+		17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerDelegate.m; sourceTree = "<group>"; };
 		17D3DC1E1281816E002A163A /* SPDatabaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseViewController.h; sourceTree = "<group>"; };
 		17D3DC1F1281816E002A163A /* SPDatabaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseViewController.m; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
@@ -1660,9 +1666,13 @@
 		17D38FC2127B0C9500672B13 /* Connection View */ = {
 			isa = PBXGroup;
 			children = (
+				17D3C22012859E070047709F /* SPFavoriteNode.h */,
+				17D3C22112859E070047709F /* SPFavoriteNode.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
-				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegate.h */,
+				17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */,
+				17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */,
+				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
 			);
 			name = "Connection View";
 			sourceTree = "<group>";
@@ -3054,6 +3064,8 @@
 				1785EB6A127DD79300F468C8 /* SPEditorPreferencePane.m in Sources */,
 				17FDB04C1280778B00DBBBC2 /* SPFontPreviewTextField.m in Sources */,
 				17D3DC201281816E002A163A /* SPDatabaseViewController.m in Sources */,
+				17D3C22212859E070047709F /* SPFavoriteNode.m in Sources */,
+				17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

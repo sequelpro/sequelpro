@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPFavoriteNode.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 8, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,13 +23,32 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate/data source category.
- */
-@implementation SPConnectionController (SPConnectionControllerDelegate)
+#import "SPFavoriteNode.h"
+
+@implementation SPFavoriteNode
+
+@synthesize isGroup;
+@synthesize favorite;
+@synthesize children;
+
+- (id)init
+{
+	if ((self = [super init])) {
+		[self setIsGroup:NO];
+		
+		[self setFavorite:nil];
+		[self setChildren:[[NSMutableArray alloc] init]];
+	}
+	
+	return self;
+}
+
+- (void)dealloc
+{
+	if (favorite) [favorite release], favorite = nil;
+	if (children) [children release], children = nil;
+	
+	[super dealloc];
+}
 
 @end

@@ -32,10 +32,13 @@
 #import "SPAlertSheets.h"
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
+#import "SPFavoriteNode.h"
+#import "SPTableTextFieldCell.h"
 
 @interface SPConnectionController (PrivateAPI)
 
 - (void)_sortFavorites;
+- (void)_buildFavoritesTree;
 - (void)_restoreConnectionInterface;
 - (void)_mySQLConnectionEstablished;
 - (void)_initiateMySQLConnectionInBackground;
@@ -122,6 +125,9 @@
 		// Load favorites
 		[self updateFavorites];
 		
+		// Expand the favorites heading
+		[favoritesTable expandItem:[[favoritesRoot children] objectAtIndex:0]];
+				
 		// Register an observer for changes within the favorites
 		[prefs addObserver:self forKeyPath:SPFavorites options:NSKeyValueObservingOptionNew context:NULL];
 
@@ -823,7 +829,7 @@
  * Sorts the favorites table view based on the selected sort by item.
  */
 - (void)sortFavorites:(id)sender
-{
+{	
     previousSortItem = currentSortItem;
 	currentSortItem  = [[sender menu] indexOfItem:sender];
 	
@@ -858,14 +864,21 @@
 - (void)updateFavorites
 {
 	[favoritesTable deselectAll:self];
+	
 	if (favorites) [favorites release];
+	
 	if ([prefs objectForKey:SPFavorites]) {
 		favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]];
-	} else {
+	} 
+	else {
 		favorites = [[NSMutableArray alloc] init];
 	}
-	[favorites insertObject:[NSDictionary dictionaryWithObject:NSLocalizedString(@"FAVORITES", @"Favorites title at the top of the sidebar") forKey:@"name"] atIndex:0];
+	
+	[self _buildFavoritesTree];
+	
 	[favoritesTable reloadData];
+	
+	[favoritesTable expandItem:[[favoritesRoot children] objectAtIndex:0]];
 }
 
 /**
@@ -887,6 +900,7 @@
 	
 	// Update key-value properties from the selected favourite, using empty strings where not found
 	NSDictionary *fav = [self selectedFavorite];
+	
 	[self setType:([fav objectForKey:@"type"] ? [[fav objectForKey:@"type"] integerValue] : SPTCPIPConnection)];
 	[self setName:([fav objectForKey:@"name"] ? [fav objectForKey:@"name"] : @"")];
 	[self setHost:([fav objectForKey:@"host"] ? [fav objectForKey:@"host"] : @"")];
@@ -956,10 +970,9 @@
  */
 - (id)selectedFavorite
 {
-	if ([favoritesTable selectedRow] == -1)
-		return nil;
+	if ([favoritesTable selectedRow] == -1) return nil;
 	
-	return [favorites objectAtIndex:[favoritesTable selectedRow]];
+	return [favorites objectAtIndex:([favoritesTable selectedRow] - 1)];
 }
 
 /**
@@ -1066,194 +1079,6 @@
 }
 
 #pragma mark -
-#pragma mark TableView drag & drop delegate methods
-
-- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
-{
-    NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
-    [pboard declareTypes:[NSArray arrayWithObject:favoritesPBoardType] owner:self];
-    [pboard setData:archivedData forType:favoritesPBoardType];
-    return YES;
-}
-
-- (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
-{
-    if (row == 0) return NSDragOperationNone;
-    if ([info draggingSource] == aTableView)
-    {
-        [aTableView setDropRow:row dropOperation:NSTableViewDropAbove];
-        return NSDragOperationMove;
-    }
-    return NSDragOperationNone;
-}
-
-- (BOOL)tableView:(NSTableView *)aTableView acceptDrop:(id <NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)operation
-{
-    BOOL acceptedDrop = NO;
-    
-	if ((row == 0) || ([info draggingSource] != aTableView))  return acceptedDrop;
-	
-	// Disable all automatic sorting
-	currentSortItem = -1;
-	reverseFavoritesSort = NO;
-	
-	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
-	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
-	
-	// Remove sort descriptors
-	[favorites sortUsingDescriptors:[NSArray array]];
-	
-	// Uncheck sort by menu items
-	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
-	{
-		[menuItem setState:NSOffState];
-	}
-	
-    NSPasteboard* pboard = [info draggingPasteboard];
-    NSData* rowData = [pboard dataForType:favoritesPBoardType];
-    NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
-    NSInteger dragRow = [rowIndexes firstIndex];
-    NSInteger defaultConnectionRow = [prefs integerForKey:SPLastFavoriteIndex];
-    if (defaultConnectionRow == dragRow)
-    {
-        [prefs setInteger:row forKey:SPLastFavoriteIndex];
-    }
-    NSMutableDictionary *draggedFavorite = [favorites objectAtIndex:dragRow];
-    [favorites removeObjectAtIndex:dragRow];
-    if (row > dragRow)
-    {
-        row--;
-    }
-    [favorites insertObject:draggedFavorite atIndex:row];
-    [aTableView reloadData];
-    
-	// reset the prefs with the new order
-    NSMutableArray *reorderedFavorites = [[NSMutableArray alloc] initWithArray:favorites];
-    [reorderedFavorites removeObjectAtIndex:0];
-    [prefs setObject:reorderedFavorites forKey:SPFavorites];
-	
-	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
-    
-	[reorderedFavorites release];
-    
-	[self updateFavorites];
-    [aTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-    
-	acceptedDrop = YES;
-	
-    return acceptedDrop;
-}
-
-#pragma mark -
-#pragma mark Favorites tableview datasource methods
-
-/**
- * Returns the number of favorites to display
- */
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
-{
-	return [favorites count];
-}
-
-/**
- * Returns the favorite names to be displayed in the table
- */
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	return [[favorites objectAtIndex:rowIndex] objectForKey:@"name"];
-}
-
-#pragma mark -
-#pragma mark Favorites tableview delegate methods
-
-/**
- * Loads a favorite, if any are selected.
- */
-- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
-{
-	if ([favoritesTable numberOfSelectedRows] == 1) {
-		[self updateFavoriteSelection:self];
-		[addToFavoritesButton setEnabled:NO];
-	} else {
-		[addToFavoritesButton setEnabled:YES];
-	}
-}
-
-/**
- * Display the title row
- */
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
-{
-	return (rowIndex == 0);	
-}
-
-/**
- * Don't allow the title row to be selected
- */
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
-{
-	return (rowIndex != 0);
-}
-
-/**
- * Set the title row to display with extra height
- */
-- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
-{
-	return (row == 0) ? 25 : 17;
-}
-
-/**
- * Control the display of rows within the favorites table
- */
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];			
-	if (rowIndex == 0) {
-		[(ImageAndTextCell *)aCell setIndentationLevel:0];
-	} else {
-		[(ImageAndTextCell *)aCell setIndentationLevel:1];
-	}
-	if([favoritesTable isEnabled])
-		[(ImageAndTextCell *)aCell setTextColor:[NSColor blackColor]];
-	else
-		[(ImageAndTextCell *)aCell setTextColor:[NSColor grayColor]];
-}
-
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * When the split view is resized, trigger a resize in the hidden table
- * width as well, to keep the connection view and connected view in synch.
- * Use this rather than splitViewDidResizeSubviews: as the latter is not
- * forwarded by the BWAnchoredButtonBar.
- */
-- (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex
-{
-	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
-	
-	return proposedPosition;
-}
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 445);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 80);
-}
-
-#pragma mark -
 #pragma mark Menu Validation
 
 -(BOOL)validateMenuItem:(NSMenuItem *)menuItem
@@ -1316,9 +1141,47 @@
 	[favorites removeObjectAtIndex:0];
 	[favorites sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
 	[favorites insertObject:first atIndex:0];
+	
+	// Rebuild the favorites tree
+	[self _buildFavoritesTree];
+	
 	[favoritesTable reloadData];
+	
+	[favoritesTable expandItem:[[favoritesRoot children] objectAtIndex:0]];
     
 	[first release];
+}
+
+/**
+ *
+ */
+- (void)_buildFavoritesTree
+{
+	if (favoritesRoot) [favoritesRoot release], favoritesRoot = nil;
+	
+	favoritesRoot = [[SPFavoriteNode alloc] init];
+	
+	SPFavoriteNode *favoritesNode = [[SPFavoriteNode alloc] init];
+	
+	[favoritesNode setIsGroup:YES];
+	[favoritesNode setFavorite:[NSDictionary dictionaryWithObject:NSLocalizedString(@"FAVORITES", @"Favorites title at the top of the sidebar") forKey:@"name"]];
+	
+	
+	for (NSDictionary *favorite in favorites)
+	{
+		SPFavoriteNode *node2 = [[SPFavoriteNode alloc] init];
+		
+		[node2 setFavorite:favorite];
+		[node2 setIsGroup:NO];
+		
+		[[favoritesNode children] addObject:node2];
+		
+		[node2 release];
+	}
+	
+	[[favoritesRoot children] addObject:favoritesNode];
+	
+	[favoritesNode release];
 }
 
 /**

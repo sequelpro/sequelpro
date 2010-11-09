@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPFavoriteNode.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 8, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,13 +23,15 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate/data source category.
- */
-@implementation SPConnectionController (SPConnectionControllerDelegate)
+@interface SPFavoriteNode : NSObject 
+{
+	BOOL isGroup;
+	NSDictionary *favorite;
+	NSMutableArray *children;
+}
+
+@property (readwrite, assign) BOOL isGroup;
+@property (readwrite, retain) NSDictionary *favorite;
+@property (readwrite, retain) NSMutableArray *children;
 
 @end

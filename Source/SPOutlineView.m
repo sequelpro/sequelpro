@@ -1,5 +1,5 @@
 //
-//  $Id: SPUserManager.m 856 2009-06-12 05:31:39Z mltownsend $
+//  $Id$
 //
 //  SPOutlineView.m
 //  sequel-pro
@@ -39,6 +39,42 @@
 	}
 	else {
 		[super keyDown:theEvent];
+	}
+}
+
+/**
+ * Right-click at row will select that row before ordering out the contextual menu
+ * if not more than one row is selected.
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event
+{	
+	// If more than one row is selected only return the default contextual menu
+	if ([self numberOfSelectedRows] > 1) return [self menu];
+	
+	// Right-click at a row will select that row before ordering out the context menu
+	NSInteger row = [self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]];
+	
+	if ((row >= 0) && (row < [self numberOfRows])) {
+		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+		[[self window] makeFirstResponder:self];
+	}
+	
+	return [self menu];
+}
+
+/**
+ * To prevent right-clicking in a column's 'group' heading, ask the delegate if we support selecting it
+ * as this normally doesn't apply to left-clicks. If we do support selecting this row, simply pass on the event.
+ */
+- (void)rightMouseDown:(NSEvent *)event
+{
+	if ([[self delegate] respondsToSelector:@selector(outlineView:shouldSelectItem:)]) {
+		if ([[self delegate] outlineView:self shouldSelectItem:[self itemAtRow:[self rowAtPoint:[self convertPoint:[event locationInWindow] fromView:nil]]]]) {
+			[super rightMouseDown:event];
+		}
+	}
+	else {
+		[super rightMouseDown:event];
 	}
 }
 
