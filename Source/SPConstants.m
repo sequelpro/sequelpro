@@ -57,6 +57,7 @@ NSString *SPHTMLHelpTemplate                     = @"SPMySQLHelpTemplate";
 
 // Folder names
 NSString *SPThemesSupportFolder                  = @"Themes";
+NSString *SPBundleSupportFolder                  = @"Bundles";
 
 // Preference key constants
 // General Prefpane

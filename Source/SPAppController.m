@@ -461,7 +461,37 @@
 			}
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) {
-			NSLog(@"Be patient…");
+
+			NSFileManager *fm = [NSFileManager defaultManager];
+
+			NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder error:nil];
+
+			if(!bundlePath) return;
+
+			if(![fm fileExistsAtPath:bundlePath isDirectory:nil]) {
+				if(![fm createDirectoryAtPath:bundlePath withIntermediateDirectories:YES attributes:nil error:nil]) {
+					NSBeep();
+					return;
+				}
+			}
+
+			NSString *newPath = [NSString stringWithFormat:@"%@/%@", bundlePath, [filename lastPathComponent]];
+			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
+				if(![fm copyItemAtPath:filename toPath:newPath error:nil]) {
+					NSBeep();
+					return;
+				}
+			} else {
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing bundle file", @"error while installing bundle file")]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The bundle ‘%@’ already exists.", @"the bundle ‘%@’ already exists."), [filename lastPathComponent]]];
+
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				return;
+			}
 		}
 		else {
 			NSLog(@"Only files with the extensions ‘%@’, ‘%@’, ‘%@’ or ‘%@’ are allowed.", SPFileExtensionDefault, SPBundleFileExtension, SPColorThemeFileExtension, SPFileExtensionSQL);

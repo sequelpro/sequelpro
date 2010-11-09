@@ -236,6 +236,7 @@ extern NSString *SPHTMLHelpTemplate;
 
 // Folder names
 extern NSString *SPThemesSupportFolder;
+extern NSString *SPBundleSupportFolder;
 
 // Preference key constants
 // General Prefpane

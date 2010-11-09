@@ -85,6 +85,9 @@
 	NSColor *otherTextColor;
 	NSRange queryRange;
 	BOOL shouldHiliteQuery;
+
+	NSArray *bundleItems;
+
 }
 
 @property(retain) NSColor* queryHiliteColor;
@@ -142,5 +145,7 @@
 - (void)insertFileContentOfFile:(NSString *)aPath;
 
 - (BOOL)isSnippetMode;
+
+- (void)reloadBundleItems;
 
 @end

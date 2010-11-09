@@ -130,6 +130,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	isProcessingMirroredSnippets = NO;
 	completionWasRefreshed = NO;
 
+	bundleItems = nil;
+
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
 	[scrollView setHasHorizontalRuler:NO];
@@ -186,6 +188,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTextColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords options:NSKeyValueObservingOptionNew context:NULL];
+
 }
 
 - (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion
@@ -2900,8 +2903,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[[menu itemAtIndex:5] setHidden:YES];
 		[[menu itemAtIndex:6] setHidden:YES];
 	}
-	
-    return menu;
+
+	if(bundleItems && [bundleItems count]) {
+		// TODO add bundle sub menu;
+	}
+
+return menu;
 }
 
 /**
@@ -3319,6 +3326,48 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 }
 
+#pragma mark -
+
+- (void)reloadBundleItems
+{
+	NSFileManager *fm = [NSFileManager defaultManager];
+	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder error:nil];
+
+	if(bundlePath) {
+		NSError *error = nil;
+		NSArray *foundBundles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:&error];
+		if (foundBundles && [foundBundles count]) {
+			for(NSString* bundle in foundBundles) {
+				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
+
+				NSError *readError = nil;
+				NSString *convError = nil;
+				NSPropertyListFormat format;
+				NSDictionary *cmdData = nil;
+				if(bundleItems) [bundleItems retain];
+				NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/info.plist", bundlePath, bundle] options:NSUncachedRead error:&readError];
+
+				cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+				if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+					NSLog(@"“%@/info.plist” file couldn't be read.", bundle);
+					NSBeep();
+					if (cmdData) [cmdData release];
+				} else {
+					if([cmdData objectForKey:@"name"] && [[cmdData objectForKey:@"name"] length]
+						&& [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"])
+						[bundleItems addObject:[cmdData objectForKey:@"name"]];
+					if (cmdData) [cmdData release];
+				}
+
+			}
+		}
+	}
+}
+
+#pragma mark -
+
 - (void) dealloc
 {
 
@@ -3340,6 +3389,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTextColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
+
+	if(bundleItems) [bundleItems retain];
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 	[prefs release];
