@@ -44,6 +44,7 @@
 {
 	if ((self = [super init])) {
 		_sessionURL = nil;
+		aboutController = nil;
 		_spfSessionDocData = [[NSMutableDictionary alloc] init];
 		
 		[NSApp setDelegate:self];
@@ -66,10 +67,8 @@
  */
 - (void)awakeFromNib
 {
-
 	// Set up the prefs controller
 	prefsController = [[SPPreferenceController alloc] init];
-	aboutController = nil;
 
 	// Set Sparkle delegate
 	[[SUUpdater sharedUpdater] setDelegate:self];
@@ -926,7 +925,8 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[prefsController release], prefsController = nil;
-	[aboutController release], aboutController = nil;
+	
+	if (aboutController) [aboutController release], aboutController = nil;
 	
 	if (_sessionURL) [_sessionURL release], _sessionURL = nil;
 	if (_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
