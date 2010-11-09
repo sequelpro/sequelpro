@@ -1153,7 +1153,7 @@
 }
 
 /**
- *
+ * Builds a tree structure from the user's connection favorties by wrapping them in SPFavoriteNode instances.
  */
 - (void)_buildFavoritesTree
 {
@@ -1161,11 +1161,11 @@
 	
 	favoritesRoot = [[SPFavoriteNode alloc] init];
 	
+	// Add a dummy item to represent the favorites heading
 	SPFavoriteNode *favoritesNode = [[SPFavoriteNode alloc] init];
 	
 	[favoritesNode setIsGroup:YES];
 	[favoritesNode setFavorite:[NSDictionary dictionaryWithObject:NSLocalizedString(@"FAVORITES", @"Favorites title at the top of the sidebar") forKey:@"name"]];
-	
 	
 	for (NSDictionary *favorite in favorites)
 	{

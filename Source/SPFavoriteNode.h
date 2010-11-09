@@ -23,6 +23,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+/**
+ * @class SPFavoriteNode SPFavoriteNode.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * This class is designed to be a simple wrapper around a connection favorite to allow us to easily represent
+ * them in a tree structure for use in an outline view.
+ */
 @interface SPFavoriteNode : NSObject 
 {
 	BOOL isGroup;
@@ -30,8 +38,19 @@
 	NSMutableArray *children;
 }
 
+/**
+ * @property isGroup Indicates whether this node is a group item
+ */
 @property (readwrite, assign) BOOL isGroup;
+
+/**
+ * @property favorite The actual favorite dictionary
+ */
 @property (readwrite, retain) NSDictionary *favorite;
+
+/**
+ * @property children This node's children
+ */
 @property (readwrite, retain) NSMutableArray *children;
 
 @end
