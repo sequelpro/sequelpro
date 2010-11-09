@@ -35,12 +35,16 @@ NSString* const DirectoryLocationDomain = @"DirectoryLocationDomain";
 
 @implementation NSFileManager (SPFileManagerAdditions)
 
-/*
+/**
  * Return the application support folder of the current application for 'subDirectory'.
  * If this folder doesn't exist it will be created. If 'subDirectory' == nil it only returns
  * the application support folder of the current application.
  */
 - (NSString*)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory error:(NSError **)errorOut
+{
+	return [self applicationSupportDirectoryForSubDirectory:subDirectory createIfNotExists:YES error:errorOut];
+}
+- (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory createIfNotExists:(BOOL)create error:(NSError **)errorOut;
 {
 	//  Based on Matt Gallagher on 06 May 2010
 	//
@@ -113,14 +117,18 @@ NSString* const DirectoryLocationDomain = @"DirectoryLocationDomain";
 			}
 			return nil;
 		}
-	
-		// Create the path if it doesn't exist
-		NSError *error = nil;
-		BOOL success = [self createDirectoryAtPath:resolvedPath withIntermediateDirectories:YES attributes:nil error:&error];
-		if (!success)  {
-			if (errorOut) {
-				*errorOut = error;
+
+		if(create) {
+			// Create the path if it doesn't exist
+			NSError *error = nil;
+			BOOL success = [self createDirectoryAtPath:resolvedPath withIntermediateDirectories:YES attributes:nil error:&error];
+			if (!success)  {
+				if (errorOut) {
+					*errorOut = error;
+				}
+				return nil;
 			}
+		} else {
 			return nil;
 		}
 	}

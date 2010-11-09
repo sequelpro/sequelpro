@@ -130,7 +130,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	isProcessingMirroredSnippets = NO;
 	completionWasRefreshed = NO;
 
-	bundleItems = nil;
+	bundleItems = [[NSMutableArray alloc] initWithCapacity:1];
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -2904,8 +2904,42 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[[menu itemAtIndex:6] setHidden:YES];
 	}
 
-	if(bundleItems && [bundleItems count]) {
-		// TODO add bundle sub menu;
+	[self reloadBundleItems];
+
+	// Remove 'Bundles' sub menu and separator
+	NSMenuItem *bItem = [menu itemWithTag:10000000];
+	if(bItem) {
+		NSInteger sepIndex = [menu indexOfItem:bItem]-1;
+		[menu removeItemAtIndex:sepIndex];
+		[menu removeItem:bItem];
+	}
+
+	// Add 'Bundles' sub menu for custom query editor only so far if bundles with scope 'editor' were found
+	if(customQueryInstance && bundleItems && [bundleItems count]) {
+		[menu addItem:[NSMenuItem separatorItem]];
+		NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundles", @"bundles menu item label") action:nil keyEquivalent:@""];
+		[bundleSubMenuItem setTag:10000000];
+		NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
+		NSInteger i = 0;
+		for(NSDictionary *item in bundleItems) {
+			NSString *keyEq = [item objectForKey:@"keyEquivalent"];
+			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:@"label"] action:@selector(executeBundleItem:) keyEquivalent:[keyEq substringFromIndex:[keyEq length]-1]] autorelease];
+			NSUInteger mask = 0;
+			if([keyEq rangeOfString:@"^"].length)
+				mask = mask | NSControlKeyMask;
+			if([keyEq rangeOfString:@"@"].length)
+				mask = mask | NSCommandKeyMask;
+			if([keyEq rangeOfString:@"~"].length)
+				mask = mask | NSAlternateKeyMask;
+			[mItem setKeyEquivalentModifierMask:mask];
+			if([item objectForKey:@"tooltip"])
+				[mItem setToolTip:[item objectForKey:@"tooltip"]];
+			[mItem setTag:1000000 + i++];
+			[bundleMenu addItem:mItem];
+		}
+		[menu addItem:bundleSubMenuItem];
+		[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+		[bundleSubMenuItem release];
 	}
 
 return menu;
@@ -3330,8 +3364,8 @@ return menu;
 
 - (void)reloadBundleItems
 {
-	NSFileManager *fm = [NSFileManager defaultManager];
-	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder error:nil];
+	return; //TODO
+	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
 
 	if(bundlePath) {
 		NSError *error = nil;
@@ -3344,8 +3378,9 @@ return menu;
 				NSString *convError = nil;
 				NSPropertyListFormat format;
 				NSDictionary *cmdData = nil;
-				if(bundleItems) [bundleItems retain];
-				NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/info.plist", bundlePath, bundle] options:NSUncachedRead error:&readError];
+				[bundleItems removeAllObjects];
+				NSString *infoPath = [NSString stringWithFormat:@"%@/%@/info.plist", bundlePath, bundle];
+				NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
 
 				cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
 						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
@@ -3356,13 +3391,23 @@ return menu;
 					if (cmdData) [cmdData release];
 				} else {
 					if([cmdData objectForKey:@"name"] && [[cmdData objectForKey:@"name"] length]
-						&& [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"])
-						[bundleItems addObject:[cmdData objectForKey:@"name"]];
+						&& [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"]) {
+						[bundleItems addObject:[NSDictionary dictionaryWithObjectsAndKeys:[cmdData objectForKey:@"name"], @"label", infoPath, @"path", [cmdData objectForKey:@"keyEquivalent"], @"keyEquivalent", nil]];
+					}
 					if (cmdData) [cmdData release];
 				}
 
 			}
 		}
+	}
+
+}
+
+- (IBAction)executeBundleItem:(id)sender
+{
+	NSInteger idx = [sender tag] - 1000000;
+	if(idx >=0 && idx < [bundleItems count]) {
+		NSLog(@"%@", [[bundleItems objectAtIndex:idx] objectForKey:@"path"]);
 	}
 }
 
@@ -3390,7 +3435,7 @@ return menu;
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
 
-	if(bundleItems) [bundleItems retain];
+	if(bundleItems) [bundleItems release];
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 	[prefs release];

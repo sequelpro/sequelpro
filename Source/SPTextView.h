@@ -86,7 +86,7 @@
 	NSRange queryRange;
 	BOOL shouldHiliteQuery;
 
-	NSArray *bundleItems;
+	NSMutableArray *bundleItems;
 
 }
 
@@ -147,5 +147,7 @@
 - (BOOL)isSnippetMode;
 
 - (void)reloadBundleItems;
+
+- (IBAction)executeBundleItem:(id)sender;
 
 @end
