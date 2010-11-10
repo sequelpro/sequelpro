@@ -110,9 +110,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			return nil;
 		}
 		
-		encoding = [[NSString alloc] initWithString:@"latin1"];
+		encoding = [[NSString alloc] initWithString:@"utf8"];
 		previousEncoding = nil;
-		stringEncoding = NSISOLatin1StringEncoding;
+		stringEncoding = NSUTF8StringEncoding;
 		encodingUsesLatin1Transport = NO;
 		previousEncodingUsesLatin1Transport = NO;
 		mConnectionFlags = kMCPConnectionDefaultOption;
@@ -414,6 +414,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		// ensure that automatic reconnection is explicitly disabled - now handled manually.
 		my_bool falseBool = FALSE;
 		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &falseBool);
+
+		// Set the connection encoding to utf8
+		mysql_options(mConnection, MYSQL_SET_CHARSET_NAME, [encoding UTF8String]);
 	}
 
 	// Set the host as appropriate
@@ -1327,14 +1330,26 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 	const char *theSocket = [self cStringFromString:socket];
 	void	   *theRet;
 	
+	// Disconnect if it was already connected
 	if (mConnected) {
-		// Disconnect if it was already connected
-		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
-		mConnection = NULL;
-		mConnected = NO;
-		[self init];
+		[self disconnect];
+		mConnection = mysql_init(NULL);
+		if (mConnection == NULL) return NO;
 	}
 	
+	if (mConnection != NULL) {
+
+		// Ensure the custom timeout option is set
+		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+
+		// ensure that automatic reconnection is explicitly disabled - now handled manually.
+		my_bool falseBool = FALSE;
+		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &falseBool);
+
+		// Set the connection encoding to utf8
+		mysql_options(mConnection, MYSQL_SET_CHARSET_NAME, [encoding UTF8String]);
+	}
+
 	if ([host isEqualToString:@""]) {
 		theHost = NULL;
 	}
@@ -1911,24 +1926,25 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 		void *connectionSetupStatus;
 
 		mysql_options(killerConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+		mysql_options(killerConnection, MYSQL_SET_CHARSET_NAME, "utf8");
 
 		// Set up the host, socket and password as per the connect method
 		if (!connectionHost || ![connectionHost length]) {
 			theHost = NULL;
 		} else {
-			theHost = [self cStringFromString:connectionHost];
+			theHost = [connectionHost UTF8String];
 		}
 		if (connectionSocket == nil || ![connectionSocket length]) {
 			theSocket = kMCPConnectionDefaultSocket;
 		} else {
-			theSocket = [self cStringFromString:connectionSocket];
+			theSocket = [connectionSocket UTF8String];
 		}
 		if (!connectionPassword) {
 			if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-				thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+				thePass = [[delegate keychainPasswordForConnection:self] UTF8String];
 			}
 		} else {		
-			thePass = [self cStringFromString:connectionPassword];
+			thePass = [connectionPassword UTF8String];
 		}
 		if (useSSL) {
 			mysql_ssl_set(mConnection,
@@ -2426,24 +2442,25 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 	MYSQL *structConnection = mysql_init(NULL);
 	if (structConnection) {
-		const char *theLogin = [self cStringFromString:connectionLogin];
+		const char *theLogin = [connectionLogin UTF8String];
 		const char *theHost;
 		const char *thePass = NULL;
 		const char *theSocket;
 		void *connectionSetupStatus;
 
 		mysql_options(structConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+		mysql_options(structConnection, MYSQL_SET_CHARSET_NAME, "utf8");
 
 		// Set up the host, socket and password as per the connect method
 		if (!connectionHost || ![connectionHost length]) {
 			theHost = NULL;
 		} else {
-			theHost = [self cStringFromString:connectionHost];
+			theHost = [connectionHost UTF8String];
 		}
 		if (connectionSocket == nil || ![connectionSocket length]) {
 			theSocket = kMCPConnectionDefaultSocket;
 		} else {
-			theSocket = [self cStringFromString:connectionSocket];
+			theSocket = [connectionSocket UTF8String];
 		}
 		if (useSSL) {
 			mysql_ssl_set(mConnection,
@@ -2455,10 +2472,10 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 		}
 		if (!connectionPassword) {
 			if (delegate && [delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-				thePass = [self cStringFromString:[delegate keychainPasswordForConnection:self]];
+				thePass = [[delegate keychainPasswordForConnection:self] UTF8String];
 			}
 		} else {
-			thePass = [self cStringFromString:connectionPassword];
+			thePass = [connectionPassword UTF8String];
 		}
 
 		// Connect

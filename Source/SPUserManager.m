@@ -1090,10 +1090,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			
 			NSString *username = [[[user parent] valueForKey:@"user"] tickQuotedString];
 			NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
-			
+
             createStatement = ([serverSupport supportsCreateUser]) ? 
-				[NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY PASSWORD %@", username, host, password] : 
-				[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ IDENTIFIED BY PASSWORD %@", username, host, password];
+				[NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password] : 
+				[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password];
 		}
         else if ([user parent] && [[user parent] valueForKey:@"user"]) {
 				
