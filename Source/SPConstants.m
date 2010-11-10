@@ -51,6 +51,7 @@ NSString *SPColorThemeFileExtension              = @"spTheme";
 NSString *SPUserBundleFileExtension              = @"spBundle";
 
 // File names
+NSString *SPFavoritesDataFile                    = @"Favorites.plist";
 NSString *SPHTMLPrintTemplate                    = @"SPPrintTemplate";
 NSString *SPHTMLTableInfoPrintTemplate           = @"SPTableInfoPrintTemplate";
 NSString *SPHTMLHelpTemplate                     = @"SPMySQLHelpTemplate";
@@ -58,6 +59,7 @@ NSString *SPHTMLHelpTemplate                     = @"SPMySQLHelpTemplate";
 // Folder names
 NSString *SPThemesSupportFolder                  = @"Themes";
 NSString *SPBundleSupportFolder                  = @"Bundles";
+NSString *SPDataSupportFolder                    = @"Data";
 
 // Preference key constants
 // General Prefpane

@@ -80,16 +80,6 @@ static SPLogger *logger = nil;
     }
 }
 
-- (id)copyWithZone:(NSZone *)zone { return self; }
-
-- (id)retain { return self; }
-
-- (NSUInteger)retainCount { return NSUIntegerMax; }
-
-- (void)release {}
-
-- (id)autorelease { return self; }
-
 - (id)init
 {
 	if ((self = [super init])) {

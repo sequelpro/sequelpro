@@ -25,9 +25,11 @@
 
 #import <Growl/Growl.h>
 
+#import "SPSingleton.h"
+
 @class SPDatabaseDocument;
 
-@interface SPGrowlController : NSObject <GrowlApplicationBridgeDelegate>
+@interface SPGrowlController : SPSingleton <GrowlApplicationBridgeDelegate>
 {
 	NSString *timingNotificationName;
 	double timingNotificationStart;

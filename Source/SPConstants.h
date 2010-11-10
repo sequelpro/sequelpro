@@ -230,6 +230,7 @@ extern NSString *SPColorThemeFileExtension;
 extern NSString *SPUserBundleFileExtension;
 
 // File names
+extern NSString *SPFavoritesDataFile;
 extern NSString *SPHTMLPrintTemplate;
 extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
@@ -237,6 +238,7 @@ extern NSString *SPHTMLHelpTemplate;
 // Folder names
 extern NSString *SPThemesSupportFolder;
 extern NSString *SPBundleSupportFolder;
+extern NSString *SPDataSupportFolder;
 
 // Preference key constants
 // General Prefpane

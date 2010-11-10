@@ -66,20 +66,6 @@ static SPGrowlController *sharedGrowlController = nil;
 }
 
 /**
- * The following base protocol methods are implemented to ensure the singleton status of this class.
- */
-
-- (id)copyWithZone:(NSZone *)zone { return self; }
-
-- (id)retain { return self; }
-
-- (NSUInteger)retainCount { return NSUIntegerMax; }
-
-- (id)autorelease { return self; }
-
-- (void)release { }
-
-/**
  * Posts a Growl notification using the supplied details and default values.
  * Calls the notification after a tiny delay to allow isKeyWindow to have updated
  * after tasks.

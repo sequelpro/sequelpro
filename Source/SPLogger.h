@@ -23,7 +23,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPLogger : NSObject 
+#import "SPSingleton.h"
+
+@interface SPLogger : SPSingleton 
 {
 	/**
 	 * Dump leaks on termination flag.
