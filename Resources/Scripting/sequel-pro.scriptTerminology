@@ -8,7 +8,7 @@
 			"PluralName" = "applications";
 			"Description" = "Sequel Pro's top level scripting object.";
 		};
-		"TableDocument" = {
+		"SPDatabaseDocument" = {
 			"Name" = "document";
 			"PluralName" = "documents";
 			"Description" = "A Sequel Pro document.";

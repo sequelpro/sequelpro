@@ -302,5 +302,15 @@
 			</dict>
 		</dict>
 	</array>
-</dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Sequel Pro URL scheme</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sequelpro</string>
+			</array>
+		</dict>
+	</array></dict>
 </plist>

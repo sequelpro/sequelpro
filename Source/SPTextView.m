@@ -3513,13 +3513,67 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if([cmdData objectForKey:@"command"] && [[cmdData objectForKey:@"command"] length]) {
 
 			NSString *cmd = [cmdData objectForKey:@"command"];
+			NSString *inputAction = @"";
+			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
+			NSString *inputTempFileName = @"/tmp/sp_bundle_task_input";
 			NSRange currentWordRange, currentQueryRange, currentSelectionRange, currentLineRange;
+
+			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
+
+			if([cmdData objectForKey:@"input"])
+				inputAction = [[cmdData objectForKey:@"input"] lowercaseString];
+			if([cmdData objectForKey:@"input_fallback"])
+				inputFallBackAction = [[cmdData objectForKey:@"input_fallback"] lowercaseString];
+
+			currentSelectionRange = [self selectedRange];
+			currentWordRange = [self getRangeForCurrentWord];
+			if(customQueryInstance && [customQueryInstance currentQueryRange].length) {
+				currentQueryRange = [customQueryInstance currentQueryRange];
+			} else {
+				currentQueryRange = currentSelectionRange;
+			}
+			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+
+			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
+			if([inputAction isEqualToString:@"selectedtext"]) {
+				if(!currentSelectionRange.length) {
+					if([inputFallBackAction isEqualToString:@"currentword"])
+						replaceRange = currentWordRange;
+					else if([inputFallBackAction isEqualToString:@"currentline"])
+						replaceRange = currentLineRange;
+					else if([inputFallBackAction isEqualToString:@"currentquery"])
+						replaceRange = currentQueryRange;
+					else if([inputAction isEqualToString:@"entirecontent"])
+						replaceRange = NSMakeRange(0,[[self string] length]);
+				} else {
+					replaceRange = currentSelectionRange;
+				}
+				
+			}
+			else if([inputAction isEqualToString:@"entirecontent"]) {
+				replaceRange = NSMakeRange(0,[[self string] length]);
+			}
+
+			NSError *inputFileError = nil;
+			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
+			[input writeToFile:inputTempFileName
+					  atomically:YES
+						encoding:NSUTF8StringEncoding
+						   error:&inputFileError];
+
+			if(inputFileError != nil) {
+				NSString *errorMessage  = [inputFileError localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				if (cmdData) [cmdData release];
+				return;
+			}
 
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
+			[env setObject:inputTempFileName forKey:@"SP_BUNDLE_INPUT_FILE"];
 
-			currentSelectionRange = [self selectedRange];
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
 
@@ -3529,19 +3583,12 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if (tablesListInstance && [tablesListInstance tableName])
 				[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
 
-
-			if(customQueryInstance && [customQueryInstance currentQueryRange].length) {
-				currentQueryRange = [customQueryInstance currentQueryRange];
+			if(customQueryInstance && [customQueryInstance currentQueryRange].length)
 				[env setObject:[[self string] substringWithRange:[customQueryInstance currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
-			} else {
-				currentQueryRange = currentSelectionRange;
-			}
 
-			currentWordRange = [self getRangeForCurrentWord];
 			if(currentWordRange.length)
 				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:@"SP_CURRENT_WORD"];
 
-			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
 			if(currentLineRange.length)
 				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:@"SP_CURRENT_LINE"];
 
@@ -3555,27 +3602,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 
 				else if([action isEqualToString:@"insertassnippet"]) {
-					NSString *inputAction = @"";
-					NSString *inputFallBackAction = @"";
-					if([cmdData objectForKey:@"input"])
-						inputAction = [[cmdData objectForKey:@"input"] lowercaseString];
-					if([cmdData objectForKey:@"input_fallback"])
-						inputFallBackAction = [[cmdData objectForKey:@"input_fallback"] lowercaseString];
-					NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
-					if([inputAction isEqualToString:@"selectedtext"]) {
-						if(!currentSelectionRange.length) {
-							if([inputFallBackAction isEqualToString:@"currentword"])
-								replaceRange = currentWordRange;
-							else if([inputFallBackAction isEqualToString:@"currentline"])
-								replaceRange = currentLineRange;
-							else if([inputFallBackAction isEqualToString:@"currentquery"])
-								replaceRange = currentQueryRange;
-							else if([inputAction isEqualToString:@"entirecontent"])
-								replaceRange = NSMakeRange(0,[[self string] length]);
-						} else {
-							replaceRange = currentSelectionRange;
-						}
-					}
 					[self insertAsSnippet:output atRange:replaceRange];
 				}
 
@@ -3586,27 +3612,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				}
 
 				else if([action isEqualToString:@"replaceselection"]) {
-					NSString *inputAction = @"";
-					NSString *inputFallBackAction = @"";
-					if([cmdData objectForKey:@"input"])
-						inputAction = [[cmdData objectForKey:@"input"] lowercaseString];
-					if([cmdData objectForKey:@"input_fallback"])
-						inputFallBackAction = [[cmdData objectForKey:@"input_fallback"] lowercaseString];
-					NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
-					if([inputAction isEqualToString:@"selectedtext"]) {
-						if(!currentSelectionRange.length) {
-							if([inputFallBackAction isEqualToString:@"currentword"])
-								replaceRange = currentWordRange;
-							else if([inputFallBackAction isEqualToString:@"currentline"])
-								replaceRange = currentLineRange;
-							else if([inputFallBackAction isEqualToString:@"currentquery"])
-								replaceRange = currentQueryRange;
-							else if([inputAction isEqualToString:@"entirecontent"])
-								replaceRange = NSMakeRange(0,[[self string] length]);
-						} else {
-							replaceRange = currentSelectionRange;
-						}
-					}
 					[self shouldChangeTextInRange:replaceRange replacementString:output];
 					[self replaceCharactersInRange:replaceRange withString:output];
 				}
@@ -3624,9 +3629,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 			}
+
+			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
+
 		}
-		
+
 		if (cmdData) [cmdData release];
+
 	}
 
 }

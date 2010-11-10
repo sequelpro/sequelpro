@@ -60,6 +60,7 @@
 {
 	// Register application defaults
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
+
 }
 
 /**
@@ -67,6 +68,10 @@
  */
 - (void)awakeFromNib
 {
+
+	// Register url scheme handle
+	[[NSAppleEventManager sharedAppleEventManager] setEventHandler:self andSelector:@selector(handleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+
 	// Set up the prefs controller
 	prefsController = [[SPPreferenceController alloc] init];
 
@@ -496,6 +501,18 @@
 			NSLog(@"Only files with the extensions ‘%@’, ‘%@’, ‘%@’ or ‘%@’ are allowed.", SPFileExtensionDefault, SPBundleFileExtension, SPColorThemeFileExtension, SPFileExtensionSQL);
 		}
 	}
+}
+
+#pragma mark -
+#pragma mark URL scheme handler
+
+/**
+ * “sequelpro://” url dispatcher
+ */
+- (void)handleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+	NSURL *url = [NSURL URLWithString:[[event paramDescriptorForKeyword:keyDirectObject] stringValue]];
+	NSLog(@"url = %@", url); 
 }
 
 #pragma mark -
