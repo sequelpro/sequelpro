@@ -87,6 +87,9 @@
 	BOOL shouldHiliteQuery;
 
 	NSMutableArray *bundleItems;
+	NSMutableArray *bundleCategories;
+	NSMutableArray *bundleUsedScopes;
+	NSMutableDictionary *bundleKeyEquivalents;
 
 }
 

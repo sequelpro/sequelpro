@@ -131,6 +131,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	completionWasRefreshed = NO;
 
 	bundleItems = [[NSMutableArray alloc] initWithCapacity:1];
+	bundleCategories = [[NSMutableArray alloc] initWithCapacity:1];
+	bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
+	bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
@@ -2122,6 +2125,20 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 	}
 
+	// Check for assign key equivalents inside user-defined bundle commands
+	if([bundleKeyEquivalents count]) {
+		for(NSString* key in [bundleKeyEquivalents allKeys]) {
+			NSArray *keyData = [bundleKeyEquivalents objectForKey:key];
+			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[bundleKeyEquivalents objectForKey:key] objectAtIndex:1] intValue] & curFlags) {
+				NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
+				[item setToolTip:[[bundleKeyEquivalents objectForKey:key] objectAtIndex:2]];
+				[item setTag:0];
+				[self executeBundleItem:item];
+				return;
+			}
+		}
+	}
+
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if ([prefs boolForKey:SPCustomQueryAutoPairCharacters] && characters && [characters length] == 1) {
 
@@ -2917,32 +2934,57 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Add 'Bundles' sub menu for custom query editor only so far if bundles with scope 'editor' were found
 	if(customQueryInstance && bundleItems && [bundleItems count]) {
 		[menu addItem:[NSMenuItem separatorItem]];
+
+		NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
 		NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundles", @"bundles menu item label") action:nil keyEquivalent:@""];
 		[bundleSubMenuItem setTag:10000000];
-		NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
-		NSInteger i = 0;
-		for(NSDictionary *item in bundleItems) {
-			NSString *keyEq = [item objectForKey:@"keyEquivalent"];
-			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:@"label"] action:@selector(executeBundleItem:) keyEquivalent:[keyEq substringFromIndex:[keyEq length]-1]] autorelease];
-			NSUInteger mask = 0;
-			if([keyEq rangeOfString:@"^"].length)
-				mask = mask | NSControlKeyMask;
-			if([keyEq rangeOfString:@"@"].length)
-				mask = mask | NSCommandKeyMask;
-			if([keyEq rangeOfString:@"~"].length)
-				mask = mask | NSAlternateKeyMask;
-			[mItem setKeyEquivalentModifierMask:mask];
-			if([item objectForKey:@"tooltip"])
-				[mItem setToolTip:[item objectForKey:@"tooltip"]];
-			[mItem setTag:1000000 + i++];
-			[bundleMenu addItem:mItem];
-		}
+
 		[menu addItem:bundleSubMenuItem];
 		[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+
+		NSMutableArray *categorySubMenus = [NSMutableArray array];
+		NSMutableArray *categoryMenus = [NSMutableArray array];
+		if([bundleCategories count]) {
+			for(NSString* title in bundleCategories) {
+				[categorySubMenus addObject:[[[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""] autorelease]];
+				[categoryMenus addObject:[[[NSMenu alloc] init] autorelease]];
+				[bundleMenu addItem:[categorySubMenus lastObject]];
+				[bundleMenu setSubmenu:[categoryMenus lastObject] forItem:[categorySubMenus lastObject]];
+			}
+		}
+
+		NSInteger i = 0;
+		for(NSDictionary *item in bundleItems) {
+
+			NSString *keyEq;
+			if([item objectForKey:@"keyEquivalent"])
+				keyEq = [[item objectForKey:@"keyEquivalent"] objectAtIndex:0];
+			else
+				keyEq = @"";
+
+			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:@"label"] action:@selector(executeBundleItem:) keyEquivalent:keyEq] autorelease];
+
+			if([keyEq length])
+				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:@"keyEquivalent"] objectAtIndex:1] intValue]];
+
+			if([item objectForKey:@"tooltip"])
+				[mItem setToolTip:[item objectForKey:@"tooltip"]];
+
+			[mItem setTag:1000000 + i++];
+
+			if([item objectForKey:@"category"]) {
+				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:@"category"]]] addItem:mItem];
+			} else {
+				[bundleMenu addItem:mItem];
+			}
+		}
+
 		[bundleSubMenuItem release];
+
 	}
 
-return menu;
+	return menu;
+
 }
 
 /**
@@ -3364,13 +3406,17 @@ return menu;
 
 - (void)reloadBundleItems
 {
-	return; //TODO
+
 	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
 
 	if(bundlePath) {
 		NSError *error = nil;
 		NSArray *foundBundles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:&error];
 		if (foundBundles && [foundBundles count]) {
+			[bundleItems removeAllObjects];
+			[bundleUsedScopes removeAllObjects];
+			[bundleCategories removeAllObjects];
+			[bundleKeyEquivalents removeAllObjects];
 			for(NSString* bundle in foundBundles) {
 				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
 
@@ -3378,7 +3424,6 @@ return menu;
 				NSString *convError = nil;
 				NSPropertyListFormat format;
 				NSDictionary *cmdData = nil;
-				[bundleItems removeAllObjects];
 				NSString *infoPath = [NSString stringWithFormat:@"%@/%@/info.plist", bundlePath, bundle];
 				NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
 
@@ -3391,13 +3436,42 @@ return menu;
 					if (cmdData) [cmdData release];
 				} else {
 					if([cmdData objectForKey:@"name"] && [[cmdData objectForKey:@"name"] length]
-						&& [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"]) {
-						[bundleItems addObject:[NSDictionary dictionaryWithObjectsAndKeys:[cmdData objectForKey:@"name"], @"label", infoPath, @"path", [cmdData objectForKey:@"keyEquivalent"], @"keyEquivalent", nil]];
+						&& [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"])
+					{
+						if(![bundleUsedScopes containsObject:@"editor"])
+							[bundleUsedScopes addObject:@"editor"];
+						if([cmdData objectForKey:@"category"] && ![bundleCategories containsObject:[cmdData objectForKey:@"category"]])
+							[bundleCategories addObject:[cmdData objectForKey:@"category"]];
+						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
+						[aDict setObject:[cmdData objectForKey:@"name"] forKey:@"label"];
+						[aDict setObject:infoPath forKey:@"path"];
+						if([cmdData objectForKey:@"keyEquivalent"] && [[cmdData objectForKey:@"keyEquivalent"] length]) {
+							NSString *theKey = [cmdData objectForKey:@"keyEquivalent"];
+							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
+							NSUInteger mask = 0;
+							if([theKey rangeOfString:@"^"].length)
+								mask = mask | NSControlKeyMask;
+							if([theKey rangeOfString:@"@"].length)
+								mask = mask | NSCommandKeyMask;
+							if([theKey rangeOfString:@"~"].length)
+								mask = mask | NSAlternateKeyMask;
+							if(![[theChar lowercaseString] isEqualToString:theChar])
+								mask = mask | NSShiftKeyMask;
+							[bundleKeyEquivalents setObject:[NSArray arrayWithObjects:[theChar lowercaseString], [NSNumber numberWithInteger:mask], infoPath, nil] forKey:[cmdData objectForKey:@"keyEquivalent"]];
+							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:@"keyEquivalent"];
+						}
+						if([cmdData objectForKey:@"tooltip"] && [[cmdData objectForKey:@"tooltip"] length])
+							[aDict setObject:[cmdData objectForKey:@"tooltip"] forKey:@"tooltip"];
+						if([cmdData objectForKey:@"category"] && [[cmdData objectForKey:@"category"] length])
+							[aDict setObject:[cmdData objectForKey:@"category"] forKey:@"category"];
+						[bundleItems addObject:aDict];
 					}
 					if (cmdData) [cmdData release];
 				}
-
 			}
+			NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"label" ascending:YES] autorelease];
+			[bundleItems sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+			[bundleCategories sortUsingSelector:@selector(compare:)];
 		}
 	}
 
@@ -3408,6 +3482,10 @@ return menu;
 	NSInteger idx = [sender tag] - 1000000;
 	if(idx >=0 && idx < [bundleItems count]) {
 		NSLog(@"%@", [[bundleItems objectAtIndex:idx] objectForKey:@"path"]);
+	} else {
+		if([sender tag] == 0 && [[sender toolTip] length]) {
+			NSLog(@"%@", [sender toolTip]);
+		}
 	}
 }
 
@@ -3436,6 +3514,9 @@ return menu;
 	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
 
 	if(bundleItems) [bundleItems release];
+	if(bundleUsedScopes) [bundleUsedScopes release];
+	if(bundleCategories) [bundleCategories release];
+	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 	[prefs release];
