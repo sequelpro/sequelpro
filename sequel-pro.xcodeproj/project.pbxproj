@@ -125,6 +125,7 @@
 		17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */; };
 		17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C66D128AD4710047709F /* SPFavoritesController.m */; };
 		17D3C671128AD8160047709F /* SPSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C670128AD8160047709F /* SPSingleton.m */; };
+		17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */; };
 		17D3DC201281816E002A163A /* SPDatabaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DC1F1281816E002A163A /* SPDatabaseViewController.m */; };
 		17DC8E75126F4AB600E9AAEC /* MCPConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DC8E74126F4AB600E9AAEC /* MCPConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17DCC5C7115C202700F89A00 /* MCPStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */; };
@@ -714,6 +715,8 @@
 		17D3C66D128AD4710047709F /* SPFavoritesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesController.m; sourceTree = "<group>"; };
 		17D3C66F128AD8160047709F /* SPSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSingleton.h; sourceTree = "<group>"; };
 		17D3C670128AD8160047709F /* SPSingleton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSingleton.m; sourceTree = "<group>"; };
+		17D3C6D1128B1C900047709F /* SPFavoritesOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesOutlineView.h; sourceTree = "<group>"; };
+		17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesOutlineView.m; sourceTree = "<group>"; };
 		17D3DC1E1281816E002A163A /* SPDatabaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseViewController.h; sourceTree = "<group>"; };
 		17D3DC1F1281816E002A163A /* SPDatabaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseViewController.m; sourceTree = "<group>"; };
 		17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Unit Tests-Info.plist"; path = "Plists/Unit Tests-Info.plist"; sourceTree = "<group>"; };
@@ -1849,6 +1852,8 @@
 			children = (
 				173C44D61044A6AF001F3A30 /* SPOutlineView.h */,
 				173C44D71044A6B0001F3A30 /* SPOutlineView.m */,
+				17D3C6D1128B1C900047709F /* SPFavoritesOutlineView.h */,
+				17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */,
 				BC4DF1961158FB280059FABD /* SPNavigatorOutlineView.h */,
 				BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */,
 			);
@@ -3078,6 +3083,7 @@
 				17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */,
 				17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */,
 				17D3C671128AD8160047709F /* SPSingleton.m in Sources */,
+				17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

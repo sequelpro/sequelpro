@@ -110,7 +110,7 @@
 																</object>
 																<object class="NSTextFieldCell" key="NSDataCell" id="93569184">
 																	<int key="NSCellFlags">69336641</int>
-																	<int key="NSCellFlags2">133120</int>
+																	<int key="NSCellFlags2">137216</int>
 																	<string key="NSContents">Text Cell</string>
 																	<reference key="NSSupport" ref="26"/>
 																	<reference key="NSControlView" ref="1012579052"/>
@@ -154,7 +154,7 @@
 															</object>
 														</object>
 														<double key="NSRowHeight">17</double>
-														<int key="NSTvFlags">373293056</int>
+														<int key="NSTvFlags">104857600</int>
 														<reference key="NSDelegate"/>
 														<reference key="NSDataSource"/>
 														<int key="NSColumnAutoresizingStyle">5</int>
@@ -6162,7 +6162,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>SPOutlineView</string>
+					<string>SPFavoritesOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>SPTableTextFieldCell</string>
@@ -7261,17 +7261,24 @@
 					<reference key="sourceIdentifier" ref="968459546"/>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">SPFlippedView</string>
-					<string key="superclassName">NSView</string>
-					<reference key="sourceIdentifier" ref="968459546"/>
+					<string key="className">SPConnectionController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPConnectionControllerDelegate.h</string>
+					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">SPOutlineView</string>
+					<string key="className">SPFavoritesOutlineView</string>
 					<string key="superclassName">NSOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Source/SPOutlineView.h</string>
+						<string key="minorKey">Source/SPFavoritesOutlineView.h</string>
 					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPFlippedView</string>
+					<string key="superclassName">NSView</string>
+					<reference key="sourceIdentifier" ref="968459546"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPTableTextFieldCell</string>

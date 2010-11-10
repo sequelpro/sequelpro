@@ -1,10 +1,11 @@
 //
 //  $Id$
 //
-//  SPOutlineView.m
+//  SPFavoritesOutlineView.h
 //  sequel-pro
 //
-//  Created by Mark Townsend on Aug 25, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on November 10, 2010
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,24 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPOutlineView.h"
-
-@implementation SPOutlineView
-
-- (BOOL)acceptsFirstResponder
-{
-	return YES;
-}
-
-- (void)keyDown:(NSEvent *)theEvent
-{
-	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
-		
-		[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
-	}
-	else {
-		[super keyDown:theEvent];
-	}
-}
+@interface SPFavoritesOutlineView : NSOutlineView
 
 @end
