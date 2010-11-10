@@ -241,7 +241,9 @@
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow setContentView:taskProgressLayer];
 
-	[contentViewSplitter setDelegate:self];	
+	[[customQueryInstance valueForKeyPath:@"textView"] reloadBundleItems];
+
+	[contentViewSplitter setDelegate:self];
 }
 
 /**

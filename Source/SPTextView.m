@@ -2129,7 +2129,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([bundleKeyEquivalents count]) {
 		for(NSString* key in [bundleKeyEquivalents allKeys]) {
 			NSArray *keyData = [bundleKeyEquivalents objectForKey:key];
-			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[bundleKeyEquivalents objectForKey:key] objectAtIndex:1] intValue] & curFlags) {
+			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[bundleKeyEquivalents objectForKey:key] objectAtIndex:1] intValue] == curFlags) {
 				NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
 				[item setToolTip:[[bundleKeyEquivalents objectForKey:key] objectAtIndex:2]];
 				[item setTag:0];
@@ -3448,12 +3448,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 						if([cmdData objectForKey:@"keyEquivalent"] && [[cmdData objectForKey:@"keyEquivalent"] length]) {
 							NSString *theKey = [cmdData objectForKey:@"keyEquivalent"];
 							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
+							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
 							NSUInteger mask = 0;
-							if([theKey rangeOfString:@"^"].length)
+							if([theMods rangeOfString:@"^"].length)
 								mask = mask | NSControlKeyMask;
-							if([theKey rangeOfString:@"@"].length)
+							if([theMods rangeOfString:@"@"].length)
 								mask = mask | NSCommandKeyMask;
-							if([theKey rangeOfString:@"~"].length)
+							if([theMods rangeOfString:@"~"].length)
 								mask = mask | NSAlternateKeyMask;
 							if(![[theChar lowercaseString] isEqualToString:theChar])
 								mask = mask | NSShiftKeyMask;
@@ -3480,13 +3481,154 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (IBAction)executeBundleItem:(id)sender
 {
 	NSInteger idx = [sender tag] - 1000000;
+	NSString *infoPath = nil;
 	if(idx >=0 && idx < [bundleItems count]) {
-		NSLog(@"%@", [[bundleItems objectAtIndex:idx] objectForKey:@"path"]);
+		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:@"path"];
 	} else {
 		if([sender tag] == 0 && [[sender toolTip] length]) {
-			NSLog(@"%@", [sender toolTip]);
+			infoPath = [sender toolTip];
 		}
 	}
+
+	if(!infoPath) {
+		NSBeep();
+		return;
+	}
+
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+	NSDictionary *cmdData = nil;
+	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSLog(@"“%@” file couldn't be read.", infoPath);
+		NSBeep();
+		if (cmdData) [cmdData release];
+		return;
+	} else {
+		if([cmdData objectForKey:@"command"] && [[cmdData objectForKey:@"command"] length]) {
+
+			NSString *cmd = [cmdData objectForKey:@"command"];
+			NSError *err = nil;
+			NSRange currentWordRange, currentQueryRange, currentSelectionRange, currentLineRange;
+
+			NSMutableDictionary *env = [NSMutableDictionary dictionary];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
+
+			currentSelectionRange = [self selectedRange];
+			if(currentSelectionRange.length)
+				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
+
+			if (tablesListInstance && [tablesListInstance selectedDatabase])
+				[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
+
+			if (tablesListInstance && [tablesListInstance tableName])
+				[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
+
+
+			if(customQueryInstance && [customQueryInstance currentQueryRange].length) {
+				currentQueryRange = [customQueryInstance currentQueryRange];
+				[env setObject:[[self string] substringWithRange:[customQueryInstance currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
+			} else {
+				currentQueryRange = currentSelectionRange;
+			}
+
+			currentWordRange = [self getRangeForCurrentWord];
+			if(currentWordRange.length)
+				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:@"SP_CURRENT_WORD"];
+
+			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+			if(currentLineRange.length)
+				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:@"SP_CURRENT_LINE"];
+
+			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
+
+			if(err == nil && [cmdData objectForKey:@"output"] && [[cmdData objectForKey:@"output"] length] && ![[cmdData objectForKey:@"output"] isEqualToString:@"nop"]) {
+				NSString *action = [[cmdData objectForKey:@"output"] lowercaseString];
+
+				if([action isEqualToString:@"insertastext"]) {
+					[self insertText:output];
+				}
+
+				else if([action isEqualToString:@"insertassnippet"]) {
+					NSString *inputAction = @"";
+					NSString *inputFallBackAction = @"";
+					if([cmdData objectForKey:@"input"])
+						inputAction = [[cmdData objectForKey:@"input"] lowercaseString];
+					if([cmdData objectForKey:@"input_fallback"])
+						inputFallBackAction = [[cmdData objectForKey:@"input_fallback"] lowercaseString];
+					NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
+					if([inputAction isEqualToString:@"selectedtext"]) {
+						if(!currentSelectionRange.length) {
+							if([inputFallBackAction isEqualToString:@"currentword"])
+								replaceRange = currentWordRange;
+							else if([inputFallBackAction isEqualToString:@"currentline"])
+								replaceRange = currentLineRange;
+							else if([inputFallBackAction isEqualToString:@"currentquery"])
+								replaceRange = currentQueryRange;
+							else if([inputAction isEqualToString:@"entirecontent"])
+								replaceRange = NSMakeRange(0,[[self string] length]);
+						} else {
+							replaceRange = currentSelectionRange;
+						}
+					}
+					[self insertAsSnippet:output atRange:replaceRange];
+				}
+
+				else if([action isEqualToString:@"replacecontent"]) {
+					if([[self string] length])
+						[self setSelectedRange:NSMakeRange(0,[[self string] length])];
+					[self insertText:output];
+				}
+
+				else if([action isEqualToString:@"replaceselection"]) {
+					NSString *inputAction = @"";
+					NSString *inputFallBackAction = @"";
+					if([cmdData objectForKey:@"input"])
+						inputAction = [[cmdData objectForKey:@"input"] lowercaseString];
+					if([cmdData objectForKey:@"input_fallback"])
+						inputFallBackAction = [[cmdData objectForKey:@"input_fallback"] lowercaseString];
+					NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
+					if([inputAction isEqualToString:@"selectedtext"]) {
+						if(!currentSelectionRange.length) {
+							if([inputFallBackAction isEqualToString:@"currentword"])
+								replaceRange = currentWordRange;
+							else if([inputFallBackAction isEqualToString:@"currentline"])
+								replaceRange = currentLineRange;
+							else if([inputFallBackAction isEqualToString:@"currentquery"])
+								replaceRange = currentQueryRange;
+							else if([inputAction isEqualToString:@"entirecontent"])
+								replaceRange = NSMakeRange(0,[[self string] length]);
+						} else {
+							replaceRange = currentSelectionRange;
+						}
+					}
+					[self shouldChangeTextInRange:replaceRange replacementString:output];
+					[self replaceCharactersInRange:replaceRange withString:output];
+				}
+
+				else if([action isEqualToString:@"showastexttooltip"]) {
+					[SPTooltip showWithObject:output];
+				}
+
+				else if([action isEqualToString:@"showashtmltooltip"]) {
+					[SPTooltip showWithObject:output ofType:@"html"];
+				}
+
+			} else {
+				NSString *errorMessage  = [err localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+			}
+		}
+		
+		if (cmdData) [cmdData release];
+	}
+
 }
 
 #pragma mark -
