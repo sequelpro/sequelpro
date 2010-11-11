@@ -305,6 +305,7 @@ void SPMigrateConnectionFavoritesData(void)
 {	
 	NSError *error = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	
 	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
 	
@@ -316,10 +317,11 @@ void SPMigrateConnectionFavoritesData(void)
 	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
 	
 	// Only proceed if the new favorites plist doesn't already exist
-	if (![fileManager fileExistsAtPath:favoritesFile]) {
-		NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:SPFavorites] forKey:SPFavoriteChildrenKey] forKey:SPFavoritesRootKey];
+	if (![fileManager fileExistsAtPath:favoritesFile]) {	
 		
-		NSError *error = nil;
+		NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [prefs objectForKey:SPFavorites], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
+		
+		error = nil;
 		NSString *errorString = nil;
 		
 		NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites
@@ -333,7 +335,7 @@ void SPMigrateConnectionFavoritesData(void)
 			}
 			else {
 				// Only uncomment when migration is complete
-				//[[NSUserDefaults standardUserDefaults] removeObjectForKey:SPFavorites];
+				//[prefs removeObjectForKey:SPFavorites];
 			}
 		}
 		else if (errorString) {

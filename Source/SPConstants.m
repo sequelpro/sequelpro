@@ -220,6 +220,7 @@ NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcut
 // Connection favorite keys
 NSString *SPFavoritesRootKey                             = @"Favorites Root";
 NSString *SPFavoriteChildrenKey                          = @"Children";
+NSString *SPFavoritesGroupNameKey                        = @"Name";
 NSString *SPFavoriteIDKey                                = @"id";
 NSString *SPFavoriteNameKey                              = @"name";
 NSString *SPFavoriteDatabaseKey                          = @"database";

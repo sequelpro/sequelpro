@@ -400,6 +400,7 @@ extern NSString *SPPreferenceToolbarShortcuts;
 // Connection favorite keys
 extern NSString *SPFavoritesRootKey;
 extern NSString *SPFavoriteChildrenKey;
+extern NSString *SPFavoritesGroupNameKey;
 extern NSString *SPFavoriteIDKey;
 extern NSString *SPFavoriteNameKey;
 extern NSString *SPFavoriteDatabaseKey;

@@ -32,6 +32,7 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPWindowController.h"
 #import "SPPreferencesUpgrade.h"
+#import "SPFavoritesController.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -64,6 +65,8 @@
 
 	// Migrate old connection favorites to the app's support directory (only uncomment when ready)
 	//SPMigrateConnectionFavoritesData();
+	
+	[SPFavoritesController sharedFavoritesController];
 }
 
 /**

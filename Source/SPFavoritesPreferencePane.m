@@ -743,7 +743,7 @@
 
 - (NSString *)preferencePaneName
 {
-	return NSLocalizedString(@"Favorites", @"favorites preference pane name");
+	return NSLocalizedString(@"Favorites", @"favorites label");
 }
 
 - (NSString *)preferencePaneIdentifier
