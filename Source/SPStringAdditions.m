@@ -419,8 +419,17 @@
 	NSTask *bashTask = [[NSTask alloc] init];
 	[bashTask setLaunchPath: @"/bin/bash"];
 
+	NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
+	[theEnv setDictionary:shellEnvironment];
+
+	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
+	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
+	// Furthermore this id is used to communicate with the called command as file name.
+	NSString *processID = [NSString stringWithNewUUID];
+	[theEnv setObject:processID forKey:@"SP_PROCESS_ID"];
+	[[[[NSApp mainWindow] delegate] selectedTableDocument] setProcessID:processID];
 	if(shellEnvironment != nil && [shellEnvironment isKindOfClass:[NSDictionary class]] && [shellEnvironment count])
-		[bashTask setEnvironment:shellEnvironment];
+		[bashTask setEnvironment:theEnv];
 
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];

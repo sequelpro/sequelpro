@@ -508,11 +508,57 @@
 
 /**
  * “sequelpro://” url dispatcher
+ *
+ * sequelpro://PROCESS_ID@command/parameter1/parameter2/...
+ *    parameters has to be escaped according to RFC 1808  eg %3F for a '?'
+ *
  */
 - (void)handleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
+
 	NSURL *url = [NSURL URLWithString:[[event paramDescriptorForKeyword:keyDirectObject] stringValue]];
-	NSLog(@"url = %@", url); 
+	
+	NSString *command = [url host];
+	NSString *passedProcessID = [url user];
+	NSArray *parameter;
+	NSArray *pathComponents = [url pathComponents];
+	if([pathComponents count] > 1)
+		parameter = [pathComponents subarrayWithRange:NSMakeRange(1,[[url pathComponents] count]-1)];
+	else
+		parameter = [NSArray array];
+
+	NSString *activeProcessID = [[[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
+
+	SPDatabaseDocument *processDocument = nil;
+
+	// Try to find the SPDatabaseDocument which sent the the url scheme command
+	// For speed check the front most first otherwise iterate through all
+	if(passedProcessID) {
+		if([activeProcessID isEqualToString:passedProcessID]) {
+			processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
+		} else {
+			for (NSWindow *aWindow in [NSApp orderedWindows]) {
+				if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+					for(SPDatabaseDocument *doc in [[aWindow windowController] documents]) {
+						if([doc processID] && [[doc processID] isEqualToString:passedProcessID]) {
+							processDocument = doc;
+							break;
+						}
+					}
+				}
+				if(processDocument) break;
+			}
+		}
+	}
+
+	if(processDocument)
+		NSLog(@"process doc ID: %@\n%@", [processDocument processID], [processDocument tabTitleForTooltip]);
+	else
+		NSLog(@"No corresponding doc found");
+	NSLog(@"param: %@", parameter);
+	NSLog(@"command: %@", command);
+	NSLog(@"command id: %@", passedProcessID);
+
 }
 
 #pragma mark -

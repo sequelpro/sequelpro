@@ -72,6 +72,7 @@
 @synthesize parentTabViewItem;
 @synthesize isProcessing;
 @synthesize serverSupport;
+@synthesize processID;
 
 - (id)init
 {
@@ -4626,6 +4627,7 @@
 	if (titleAccessoryView) [titleAccessoryView release];
 	if (taskProgressWindow) [taskProgressWindow release];
 	if (serverSupport) [serverSupport release];
+	if (processID) [processID release];
 	
 	[super dealloc];
 }

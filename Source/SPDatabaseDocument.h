@@ -202,11 +202,13 @@
 	NSWindow *parentWindow;
 	NSTabViewItem *parentTabViewItem;
 	BOOL isProcessing;
+	NSString *processID;
 }
 
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
 @property (readwrite, assign) BOOL isProcessing;
+@property (readwrite, retain) NSString *processID;
 @property (readonly) SPServerSupport *serverSupport;
 
 - (BOOL)isUntitled;
