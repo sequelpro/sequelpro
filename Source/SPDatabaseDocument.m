@@ -4402,10 +4402,11 @@
 			NSString *tableName = [params objectAtIndex:1];
 			if([tableName length]) {
 				[tablesListInstance selectItemWithName:tableName];
-				return;
 			}
 		}
+		return;
 	}
+
 	else if([command isEqualToString:@"SelectDatabase"]) {
 		if (_isWorkingLevel) return;
 		if([params count] > 1) {
@@ -4416,9 +4417,63 @@
 					tableName = [params objectAtIndex:2];
 				}
 				[self selectDatabase:dbName item:tableName];
-				return;
 			}
 		}
+		return;
+	}
+
+	else if([command isEqualToString:@"ExecuteQuery"]) {
+		if (_isWorkingLevel) return;
+		NSString *outputFormat = @"tab";
+		if([params count] == 2)
+			outputFormat = [params objectAtIndex:1];
+
+		NSString *queryFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_%@", docProcessID];
+		NSString *resultFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_%@", docProcessID];
+		NSString *metaFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_META_%@", docProcessID];
+		NSString *statusFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_STATUS_%@", docProcessID];
+		NSFileManager *fm = [NSFileManager defaultManager];
+		NSString *status = @"0";
+		BOOL isDir;
+		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
+
+			NSError *inError = nil;
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+
+			[fm removeItemAtPath:queryFileName error:nil];
+			[fm removeItemAtPath:resultFileName error:nil];
+			[fm removeItemAtPath:metaFileName error:nil];
+			[fm removeItemAtPath:statusFileName error:nil];
+
+			if(inError == nil && query && [query length]) {
+				SPFileHandle *fh = [SPFileHandle fileHandleForWritingAtPath:resultFileName];
+				if(!fh)
+					NSLog(@"Couldn't create file handle to %@", resultFileName);
+				MCPResult *theResult = [mySQLConnection queryString:query];
+				[theResult setReturnDataAsStrings:YES];
+				if ([mySQLConnection queryErrored]) {
+					[fh writeData:[[NSString stringWithFormat:@"Error.\nMySQL said: %@", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+					status = @"1";
+				} else {
+					if ([theResult numOfRows]) [theResult dataSeek:0];
+					NSInteger i;
+					NSArray *theRow;
+					for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+						theRow = [theResult fetchRowAsArray];
+						[fh writeData:[[theRow componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
+						[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+					}
+				}
+				[fh closeFile];
+			}
+		}
+		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
+		if(!succeed) {
+			NSBeep();
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+		}
+		return;
 	}
 
 	NSLog(@"received: %@", commandDict);
