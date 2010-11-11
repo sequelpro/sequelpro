@@ -147,9 +147,9 @@
 		NSInteger tableRow = [prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite];
 					
 		if (tableRow < [favorites count]) {
-			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue];
+			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:SPFavoriteTypeKey] integerValue];
 			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:(tableRow + 1)] byExtendingSelection:NO];
-			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
+			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:SPFavoriteTypeKey] integerValue] animating:NO];
 			[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 		} 
 		else {
@@ -900,25 +900,30 @@
 	// Update key-value properties from the selected favourite, using empty strings where not found
 	NSDictionary *fav = [self selectedFavorite];
 	
-	[self setType:([fav objectForKey:@"type"] ? [[fav objectForKey:@"type"] integerValue] : SPTCPIPConnection)];
-	[self setName:([fav objectForKey:@"name"] ? [fav objectForKey:@"name"] : @"")];
-	[self setHost:([fav objectForKey:@"host"] ? [fav objectForKey:@"host"] : @"")];
-	[self setSocket:([fav objectForKey:@"socket"] ? [fav objectForKey:@"socket"] : @"")];
-	[self setUser:([fav objectForKey:@"user"] ? [fav objectForKey:@"user"] : @"")];
-	[self setPort:([fav objectForKey:@"port"] ? [fav objectForKey:@"port"] : @"")];
-	[self setUseSSL:([fav objectForKey:@"useSSL"] ? [[fav objectForKey:@"useSSL"] intValue] : NSOffState)];
-	[self setSslKeyFileLocationEnabled:([fav objectForKey:@"sslKeyFileLocationEnabled"] ? [[fav objectForKey:@"sslKeyFileLocationEnabled"] intValue] : NSOffState)];
-	[self setSslKeyFileLocation:([fav objectForKey:@"sslKeyFileLocation"] ? [fav objectForKey:@"sslKeyFileLocation"] : @"")];
-	[self setSslCertificateFileLocationEnabled:([fav objectForKey:@"sslCertificateFileLocationEnabled"] ? [[fav objectForKey:@"sslCertificateFileLocationEnabled"] intValue] : NSOffState)];
-	[self setSslCertificateFileLocation:([fav objectForKey:@"sslCertificateFileLocation"] ? [fav objectForKey:@"sslCertificateFileLocation"] : @"")];
-	[self setSslCACertFileLocationEnabled:([fav objectForKey:@"sslCACertFileLocationEnabled"] ? [[fav objectForKey:@"sslCACertFileLocationEnabled"] intValue] : NSOffState)];
-	[self setSslCACertFileLocation:([fav objectForKey:@"sslCACertFileLocation"] ? [fav objectForKey:@"sslCACertFileLocation"] : @"")];
-	[self setDatabase:([fav objectForKey:@"database"] ? [fav objectForKey:@"database"] : @"")];
-	[self setSshHost:([fav objectForKey:@"sshHost"] ? [fav objectForKey:@"sshHost"] : @"")];
-	[self setSshUser:([fav objectForKey:@"sshUser"] ? [fav objectForKey:@"sshUser"] : @"")];
-	[self setSshKeyLocationEnabled:([fav objectForKey:@"sshKeyLocationEnabled"] ? [[fav objectForKey:@"sshKeyLocationEnabled"] intValue] : NSOffState)];
-	[self setSshKeyLocation:([fav objectForKey:@"sshKeyLocation"] ? [fav objectForKey:@"sshKeyLocation"] : @"")];
-	[self setSshPort:([fav objectForKey:@"sshPort"] ? [fav objectForKey:@"sshPort"] : @"")];
+	// Standard details
+	[self setType:([fav objectForKey:SPFavoriteTypeKey] ? [[fav objectForKey:SPFavoriteTypeKey] integerValue] : SPTCPIPConnection)];
+	[self setName:([fav objectForKey:SPFavoriteNameKey] ? [fav objectForKey:SPFavoriteNameKey] : @"")];
+	[self setHost:([fav objectForKey:SPFavoriteHostKey] ? [fav objectForKey:SPFavoriteHostKey] : @"")];
+	[self setSocket:([fav objectForKey:SPFavoriteSocketKey] ? [fav objectForKey:SPFavoriteSocketKey] : @"")];
+	[self setUser:([fav objectForKey:SPFavoriteUserKey] ? [fav objectForKey:SPFavoriteUserKey] : @"")];
+	[self setPort:([fav objectForKey:SPFavoritePortKey] ? [fav objectForKey:SPFavoritePortKey] : @"")];
+	[self setDatabase:([fav objectForKey:SPFavoriteDatabaseKey] ? [fav objectForKey:SPFavoriteDatabaseKey] : @"")];
+	
+	// SSL details
+	[self setUseSSL:([fav objectForKey:SPFavoriteUseSSLKey] ? [[fav objectForKey:SPFavoriteUseSSLKey] intValue] : NSOffState)];
+	[self setSslKeyFileLocationEnabled:([fav objectForKey:SPFavoriteSSLKeyFileLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSLKeyFileLocationEnabledKey] intValue] : NSOffState)];
+	[self setSslKeyFileLocation:([fav objectForKey:SPFavoriteSSLKeyFileLocationKey] ? [fav objectForKey:SPFavoriteSSLKeyFileLocationKey] : @"")];
+	[self setSslCertificateFileLocationEnabled:([fav objectForKey:SPFavoriteSSLCertificateFileLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSLCertificateFileLocationEnabledKey] intValue] : NSOffState)];
+	[self setSslCertificateFileLocation:([fav objectForKey:SPFavoriteSSLCertificateFileLocationKey] ? [fav objectForKey:SPFavoriteSSLCertificateFileLocationKey] : @"")];
+	[self setSslCACertFileLocationEnabled:([fav objectForKey:SPFavoriteSSLCACertFileLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSLCACertFileLocationEnabledKey] intValue] : NSOffState)];
+	[self setSslCACertFileLocation:([fav objectForKey:SPFavoriteSSLCACertFileLocationKey] ? [fav objectForKey:SPFavoriteSSLCACertFileLocationKey] : @"")];
+	
+	// SSH details
+	[self setSshHost:([fav objectForKey:SPFavoriteSSHHostKey] ? [fav objectForKey:SPFavoriteSSHHostKey] : @"")];
+	[self setSshUser:([fav objectForKey:SPFavoriteSSHUserKey] ? [fav objectForKey:SPFavoriteSSHUserKey] : @"")];
+	[self setSshKeyLocationEnabled:([fav objectForKey:SPFavoriteSSHKeyLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSHKeyLocationEnabledKey] intValue] : NSOffState)];
+	[self setSshKeyLocation:([fav objectForKey:SPFavoriteSSHKeyLocationKey] ? [fav objectForKey:SPFavoriteSSHKeyLocationKey] : @"")];
+	[self setSshPort:([fav objectForKey:SPFavoriteSSHPortKey] ? [fav objectForKey:SPFavoriteSSHPortKey] : @"")];
 
 	// Trigger an interface update
 	[self resizeTabViewToConnectionType:[self type] animating:YES];
@@ -927,7 +932,9 @@
 	// keychain details so we can pass around only those details if the password doesn't change
 	connectionKeychainItemName = [[keychain nameForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]] retain];
 	connectionKeychainItemAccount = [[keychain accountForUser:[self valueForKeyPath:@"selectedFavorite.user"] host:(([self type] == SPSocketConnection)?@"localhost":[self valueForKeyPath:@"selectedFavorite.host"]) database:[self valueForKeyPath:@"selectedFavorite.database"]] retain];
+	
 	[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
+	
 	if (![[self password] length]) {
 		[self setPassword:nil];
 		[connectionKeychainItemName release], connectionKeychainItemName = nil;
@@ -937,7 +944,9 @@
 	// And the same for the SSH password
 	connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]] retain];
 	connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[self valueForKeyPath:@"selectedFavorite.sshUser"] sshHost:[self valueForKeyPath:@"selectedFavorite.sshHost"]] retain];
+	
 	[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
+	
 	if (![[self sshPassword] length]) {
 		[self setSshPassword:nil];
 		[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
@@ -946,21 +955,18 @@
 	
 	[prefs setInteger:([favoritesTable selectedRow] - 1) forKey:SPLastFavoriteIndex];
 
-
 	// Set first responder to password field if it is empty
-	switch([self type]) {
+	switch ([self type]) 
+	{
 		case SPTCPIPConnection:
-		if(![[standardPasswordField stringValue] length])
-			[[tableDocument parentWindow] makeFirstResponder:standardPasswordField];
-		break;
+			if (![[standardPasswordField stringValue] length]) [[tableDocument parentWindow] makeFirstResponder:standardPasswordField];
+			break;
 		case SPSocketConnection:
-		if(![[socketPasswordField stringValue] length])
-			[[tableDocument parentWindow] makeFirstResponder:socketPasswordField];
-		break;
+			if (![[socketPasswordField stringValue] length]) [[tableDocument parentWindow] makeFirstResponder:socketPasswordField];
+			break;
 		case SPSSHTunnelConnection:
-		if(![[sshPasswordField stringValue] length])
-			[[tableDocument parentWindow] makeFirstResponder:sshPasswordField];
-		break;
+			if (![[sshPasswordField stringValue] length]) [[tableDocument parentWindow] makeFirstResponder:sshPasswordField];
+			break;
 	}
 }
 
@@ -982,9 +988,11 @@
 {
 	NSString *thePassword, *theSSHPassword;
 	NSNumber *favoriteid = [NSNumber numberWithInteger:[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	NSString *favoriteName = [[self name] length]?[self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user]:@"anonymous", (([self type] == SPSocketConnection)?@"localhost":[self host])];
-	if (![[self name] length] && [self database] && ![[self database] isEqualToString:@""])
+	NSString *favoriteName = [[self name] length] ? [self name]:[NSString stringWithFormat:@"%@@%@", ([self user] && [[self user] length])?[self user] : @"anonymous", (([self type] == SPSocketConnection) ? @"localhost" : [self host])];
+	
+	if (![[self name] length] && [self database] && ![[self database] isEqualToString:@""]) {
 		favoriteName = [NSString stringWithFormat:@"%@ %@", [self database], favoriteName];
+	}
 	
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
@@ -1003,14 +1011,19 @@
 	
 	// Construct the favorite details - cannot use only dictionaryWithObjectsAndKeys for possible nil values.
 	NSMutableDictionary *newFavorite = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithInteger:[self type]], @"type",
-										favoriteName, @"name",
-										favoriteid, @"id",
+										[NSNumber numberWithInteger:[self type]], SPFavoriteTypeKey,
+										favoriteName, SPFavoriteNameKey,
+										favoriteid, SPFavoriteIDKey,
 										nil];
-	if ([self host]) [newFavorite setObject:[self host] forKey:@"host"];
-	if ([self socket]) [newFavorite setObject:[self socket] forKey:@"socket"];
-	if ([self user]) [newFavorite setObject:[self user] forKey:@"user"];
-	if ([self port]) [newFavorite setObject:[self port] forKey:@"port"];
+	
+	// Standard details
+	if ([self host])     [newFavorite setObject:[self host] forKey:SPFavoriteHostKey];
+	if ([self socket])   [newFavorite setObject:[self socket] forKey:SPFavoriteSocketKey];
+	if ([self user])     [newFavorite setObject:[self user] forKey:SPFavoriteUserKey];
+	if ([self port])     [newFavorite setObject:[self port] forKey:SPFavoritePortKey];
+	if ([self database]) [newFavorite setObject:[self database] forKey:SPFavoriteDatabaseKey];
+	
+	// SSL details
 	if ([self useSSL]) [newFavorite setObject:[NSNumber numberWithInt:[self useSSL]] forKey:@"useSSL"];
 	[newFavorite setObject:[NSNumber numberWithInt:[self sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
 	if ([self sslKeyFileLocation]) [newFavorite setObject:[self sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
@@ -1018,41 +1031,44 @@
 	if ([self sslCertificateFileLocation]) [newFavorite setObject:[self sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
 	[newFavorite setObject:[NSNumber numberWithInt:[self sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
 	if ([self sslCACertFileLocation]) [newFavorite setObject:[self sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
-	if ([self database]) [newFavorite setObject:[self database] forKey:@"database"];
-	if ([self sshHost]) [newFavorite setObject:[self sshHost] forKey:@"sshHost"];
-	if ([self sshUser]) [newFavorite setObject:[self sshUser] forKey:@"sshUser"];
-	[newFavorite setObject:[NSNumber numberWithInt:[self sshKeyLocationEnabled]] forKey:@"sshKeyLocationEnabled"];
-	if ([self sshKeyLocation]) [newFavorite setObject:[self sshKeyLocation] forKey:@"sshKeyLocation"];
-	if ([self sshPort]) [newFavorite setObject:[self sshPort] forKey:@"sshPort"];
+	
+	// SSH details
+	if ([self sshHost]) [newFavorite setObject:[self sshHost] forKey:SPFavoriteSSHHostKey];
+	if ([self sshUser]) [newFavorite setObject:[self sshUser] forKey:SPFavoriteSSHUserKey];
+	if ([self sshPort]) [newFavorite setObject:[self sshPort] forKey:SPFavoriteSSHPortKey];
+	[newFavorite setObject:[NSNumber numberWithInt:[self sshKeyLocationEnabled]] forKey:SPFavoriteSSHKeyLocationEnabledKey];
+	if ([self sshKeyLocation]) [newFavorite setObject:[self sshKeyLocation] forKey:SPFavoriteSSHKeyLocationKey];
 
 	// Add the new favorite to the user defaults array
-	NSMutableArray *currentFavorites;
-	if ([prefs objectForKey:SPFavorites]) {
-		currentFavorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]];
-	} else {
-		currentFavorites = [[NSMutableArray alloc] init];
-	}
+	NSMutableArray *currentFavorites = ([prefs objectForKey:SPFavorites]) ? [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]] : [[NSMutableArray alloc] init];
+
 	[currentFavorites addObject:newFavorite];
+	
 	[prefs setObject:[NSArray arrayWithArray:currentFavorites] forKey:SPFavorites];
+	
 	[currentFavorites release];
 
 	// Add the password to keychain as appropriate
 	thePassword = [self password];
+	
 	if (mySQLConnection && connectionKeychainItemName) {
 		thePassword = [keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount];
 	}
-	if (thePassword && ![thePassword isEqualToString:@""]) {
+	
+	if (thePassword && (![thePassword isEqualToString:@""])) {
 		[keychain addPassword:thePassword
 					  forName:[keychain nameForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%lld", [favoriteid longLongValue]]]
-					  account:[keychain accountForUser:[self user] host:(([self type] == SPSocketConnection)?@"localhost":[self host]) database:[self database]]];
+					  account:[keychain accountForUser:[self user] host:(([self type] == SPSocketConnection) ? @"localhost" : [self host]) database:[self database]]];
 	}
 
 	// Add the SSH password to keychain as appropriate
 	theSSHPassword = [self sshPassword];
+	
 	if (mySQLConnection && connectionSSHKeychainItemName) {
 		theSSHPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 	}
-	if (theSSHPassword && ![theSSHPassword isEqualToString:@""]) {
+	
+	if (theSSHPassword && (![theSSHPassword isEqualToString:@""])) {
 		[keychain addPassword:theSSHPassword
 					  forName:[keychain nameForSSHForFavoriteName:favoriteName id:[NSString stringWithFormat:@"%lld", [favoriteid longLongValue]]]
 					  account:[keychain accountForSSHUser:[self sshUser] sshHost:[self sshHost]]];
@@ -1060,9 +1076,11 @@
 
 	// Update the favorites list and selection
 	[self updateFavorites];
+	
 	[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:[favorites count]-1] byExtendingSelection:NO];
 	[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 
+	// Update the favorites popup button in the preferences
 	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
 }
 
