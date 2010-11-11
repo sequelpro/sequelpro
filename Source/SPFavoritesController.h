@@ -25,11 +25,27 @@
 
 #import "SPSingleton.h"
 
+/**
+ * @class SPFavoritesController SPFavoritesController.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Connection favorites controller that provides a single point of access for managing the user's connection
+ * favorites in memory and on disk.
+ */
 @interface SPFavoritesController : SPSingleton 
 {
-	NSDictionary *favorties;
+	NSDictionary *favorites;
 }
 
-- (SPFavoritesController *)sharedFavoritesController;
+/**
+ * @property favorites Favorites data dictionary
+ */
+@property (readonly) NSDictionary *favorites;
+
++ (SPFavoritesController *)sharedFavoritesController;
+
+- (void)saveFavorites;
+- (void)reloadFavoritesWithSave:(BOOL)save;
 
 @end

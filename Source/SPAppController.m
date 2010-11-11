@@ -31,6 +31,7 @@
 #import "SPDataImport.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPWindowController.h"
+#import "SPPreferencesUpgrade.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -61,6 +62,8 @@
 	// Register application defaults
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
 
+	// Migrate old connection favorites to the app's support directory (only uncomment when ready)
+	//SPMigrateConnectionFavoritesData();
 }
 
 /**
@@ -68,7 +71,6 @@
  */
 - (void)awakeFromNib
 {
-
 	// Register url scheme handle
 	[[NSAppleEventManager sharedAppleEventManager] setEventHandler:self andSelector:@selector(handleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
 

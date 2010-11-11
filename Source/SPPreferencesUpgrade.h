@@ -33,5 +33,6 @@
 @interface SPPreferencesUpgrade : NSObject
 
 void SPApplyRevisionChanges(void);
+void SPMigrateConnectionFavoritesData(void);
 
 @end

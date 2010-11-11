@@ -216,3 +216,19 @@ NSString *SPPreferenceToolbarAutoUpdate          = @"SPPreferenceToolbarAutoUpda
 NSString *SPPreferenceToolbarNetwork             = @"SPPreferenceToolbarNetwork";
 NSString *SPPreferenceToolbarEditor              = @"SPPreferenceToolbarEditor";
 NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcuts";
+
+// Connection favorite keys
+NSString *SPFavoritesRootKey                     = @"Favorites Root";
+NSString *SPFavoriteChildrenKey                  = @"Children";
+NSString *SPFavoriteIDKey                        = @"id";
+NSString *SPFavoriteNameKey                      = @"name";
+NSString *SPFavoriteDatabaseKey                  = @"database";
+NSString *SPFavoriteHostKey                      = @"host";
+NSString *SPFavoritePortKey                      = @"port";
+NSString *SPFavoriteUserKey                      = @"user";
+NSString *SPFavoriteTypeKey                      = @"type";
+NSString *SPFavoriteSocketKey                    = @"socket";
+NSString *SPFavoriteSSHHostKey                   = @"sshHost";
+NSString *SPFavoriteSSHPortKey                   = @"sshPort";
+NSString *SPFavoriteSSHUserKey                   = @"sshUser";
+NSString *SPFavoriteSSHKeyLocationKey            = @"sshKeyLocationEnabled";

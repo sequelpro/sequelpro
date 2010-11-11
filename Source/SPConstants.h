@@ -241,6 +241,7 @@ extern NSString *SPBundleSupportFolder;
 extern NSString *SPDataSupportFolder;
 
 // Preference key constants
+//
 // General Prefpane
 extern NSString *SPDefaultFavorite;
 extern NSString *SPSelectLastFavoriteUsed;
@@ -365,14 +366,13 @@ extern NSString *SPLastImportIntoNewTableEncoding;
 extern NSString *SPLastImportIntoNewTableType;
 extern NSString *SPGlobalValueHistory;
 
-
 // URLs
 extern NSString *SPDonationsURL;
 extern NSString *SPMySQLSearchURL;
 extern NSString *SPDevURL;
 
 // Toolbar constants
-
+//
 // Main window toolbar
 extern NSString *SPMainToolbarDatabaseSelection;
 extern NSString *SPMainToolbarHistoryNavigation;
@@ -396,3 +396,19 @@ extern NSString *SPPreferenceToolbarAutoUpdate;
 extern NSString *SPPreferenceToolbarNetwork;
 extern NSString *SPPreferenceToolbarEditor;
 extern NSString *SPPreferenceToolbarShortcuts;
+
+// Connection favorite keys
+extern NSString *SPFavoritesRootKey;
+extern NSString *SPFavoriteChildrenKey;
+extern NSString *SPFavoriteIDKey;
+extern NSString *SPFavoriteNameKey;
+extern NSString *SPFavoriteDatabaseKey;
+extern NSString *SPFavoriteHostKey;
+extern NSString *SPFavoritePortKey;
+extern NSString *SPFavoriteUserKey;
+extern NSString *SPFavoriteTypeKey;
+extern NSString *SPFavoriteSocketKey;
+extern NSString *SPFavoriteSSHHostKey;
+extern NSString *SPFavoriteSSHPortKey;
+extern NSString *SPFavoriteSSHUserKey;
+extern NSString *SPFavoriteSSHKeyLocationKey;

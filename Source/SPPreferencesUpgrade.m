@@ -297,4 +297,52 @@ void SPApplyRevisionChanges(void)
 	[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];
 }
 
+/**
+ * Attempts to migrate the user's connection favorites from their preference file to the new Favaorites
+ * plist in the application's support 'Data' directory.
+ */
+void SPMigrateConnectionFavoritesData(void)
+{	
+	NSError *error = nil;
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
+	
+	if (error) {
+		NSLog(@"Error loading favorites: %@", [error localizedDescription]);
+		return;
+	}
+	
+	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
+	
+	// Only proceed if the new favorites plist doesn't already exist
+	if (![fileManager fileExistsAtPath:favoritesFile]) {
+		NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObject:[[NSUserDefaults standardUserDefaults] objectForKey:SPFavorites] forKey:SPFavoriteChildrenKey] forKey:SPFavoritesRootKey];
+		
+		NSError *error = nil;
+		NSString *errorString = nil;
+		
+		NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites
+																	   format:NSPropertyListXMLFormat_v1_0
+															 errorDescription:&errorString];
+		if (plistData) {
+			[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
+			
+			if (error) {
+				NSLog(@"Error migrating favorites data: %@", [error localizedDescription]);
+			}
+			else {
+				// Only uncomment when migration is complete
+				//[[NSUserDefaults standardUserDefaults] removeObjectForKey:SPFavorites];
+			}
+		}
+		else if (errorString) {
+			NSLog(@"Error converting migrating favorites data to plist format: %@", errorString);
+			
+			[errorString release];
+			return;
+		}
+	}
+}
+
 @end
