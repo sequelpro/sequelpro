@@ -146,24 +146,26 @@
 {	
 	SPFavoriteNode *node = (item == nil ? favoritesRoot : (SPFavoriteNode *)item);
 	
-	return [[node children] count];
+	return [[node nodeChildren] count];
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
 {
 	SPFavoriteNode *node = (item == nil ? favoritesRoot : (SPFavoriteNode *)item);
 	
-	return [[node children] objectAtIndex:index];
+	return NSArrayObjectAtIndex([node nodeChildren], index);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {	
-	return [(SPFavoriteNode *)item isGroup];
+	return [(SPFavoriteNode *)item nodeIsGroup];
 }
 
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-	return [[(SPFavoriteNode *)item favorite] objectForKey:@"name"];
+	SPFavoriteNode *node = (SPFavoriteNode *)item;
+	
+	return ([node nodeIsGroup]) ? [node nodeName] : [[node nodeFavorite] objectForKey:SPFavoriteNameKey];
 }
 
 #pragma mark -
@@ -171,7 +173,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
 {
-	return [(SPFavoriteNode *)item isGroup];
+	return [(SPFavoriteNode *)item nodeIsGroup];
 }
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
@@ -197,17 +199,17 @@
 		[(SPTableTextFieldCell *)cell setTextColor:[NSColor grayColor]];
 	}
 	
-	[(SPTableTextFieldCell *)cell setImage:([(SPFavoriteNode *)item isGroup]) ? nil : [NSImage imageNamed:@"database-small"]];
+	[(SPTableTextFieldCell *)cell setImage:([(SPFavoriteNode *)item nodeIsGroup]) ? nil : [NSImage imageNamed:@"database-small"]];
 }
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
-	return ([item isGroup]) ? 22 : 17;
+	return ([item nodeIsGroup]) ? 22 : 17;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
-	return (![item isGroup]);
+	return (![item nodeIsGroup]);
 }
 
 @end

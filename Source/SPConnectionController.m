@@ -126,7 +126,7 @@
 		[self updateFavorites];
 		
 		// Expand the favorites heading
-		[favoritesTable expandItem:[[favoritesRoot children] objectAtIndex:0]];
+		[favoritesTable expandItem:[[favoritesRoot nodeChildren] objectAtIndex:0]];
 				
 		// Register an observer for changes within the favorites
 		[prefs addObserver:self forKeyPath:SPFavorites options:NSKeyValueObservingOptionNew context:NULL];
@@ -144,11 +144,11 @@
 		// Sort the favourites to match prefs and select the appropriate row - if a valid sort option is selected
 		if (currentSortItem > -1) [self _sortFavorites];
 		
-		NSInteger tableRow = ([prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite] + 1);
-		
+		NSInteger tableRow = [prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite];
+					
 		if (tableRow < [favorites count]) {
 			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue];
-			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:tableRow] byExtendingSelection:NO];
+			[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:(tableRow + 1)] byExtendingSelection:NO];
 			[self resizeTabViewToConnectionType:[[[favorites objectAtIndex:tableRow] objectForKey:@"type"] integerValue] animating:NO];
 			[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 		} 
@@ -878,7 +878,7 @@
 	
 	[favoritesTable reloadData];
 	
-	[favoritesTable expandItem:[[favoritesRoot children] objectAtIndex:0]];
+	[favoritesTable expandItem:[[favoritesRoot nodeChildren] objectAtIndex:0]];
 }
 
 /**
@@ -886,7 +886,6 @@
  */
 - (void)updateFavoriteSelection:(id)sender
 {
-
 	// If nothing is selected, return without updating the interface
 	if (![self selectedFavorite]) return;
 
@@ -1109,21 +1108,18 @@
  */
 - (void)_sortFavorites
 {
-    NSString *sortKey = @"";
+    NSString *sortKey = SPFavoriteNameKey;
 	
 	switch (currentSortItem)
 	{
 		case SPFavoritesSortNameItem:
-			sortKey = @"name";
+			sortKey = SPFavoriteNameKey;
 			break;
 		case SPFavoritesSortHostItem:
-			sortKey = @"host";
+			sortKey = SPFavoriteHostKey;
 			break;
 		case SPFavoritesSortTypeItem:
-			sortKey = @"type";
-			break;
-		default:
-			sortKey = @"name";
+			sortKey = SPFavoriteTypeKey;
 			break;
 	}
 	
@@ -1147,7 +1143,7 @@
 	
 	[favoritesTable reloadData];
 	
-	[favoritesTable expandItem:[[favoritesRoot children] objectAtIndex:0]];
+	[favoritesTable expandItem:[[favoritesRoot nodeChildren] objectAtIndex:0]];
     
 	[first release];
 }
@@ -1164,22 +1160,21 @@
 	// Add a dummy item to represent the favorites heading
 	SPFavoriteNode *favoritesNode = [[SPFavoriteNode alloc] init];
 	
-	[favoritesNode setIsGroup:YES];
-	[favoritesNode setFavorite:[NSDictionary dictionaryWithObject:NSLocalizedString(@"FAVORITES", @"Favorites title at the top of the sidebar") forKey:@"name"]];
+	[favoritesNode setNodeIsGroup:YES];
+	[favoritesNode setNodeName:NSLocalizedString(@"FAVORITES", @"Favorites title at the top of the sidebar")];
 	
 	for (NSDictionary *favorite in favorites)
 	{
 		SPFavoriteNode *node2 = [[SPFavoriteNode alloc] init];
 		
-		[node2 setFavorite:favorite];
-		[node2 setIsGroup:NO];
+		[node2 setNodeFavorite:favorite];
 		
-		[[favoritesNode children] addObject:node2];
+		[[favoritesNode nodeChildren] addObject:node2];
 		
 		[node2 release];
 	}
 	
-	[[favoritesRoot children] addObject:favoritesNode];
+	[[favoritesRoot nodeChildren] addObject:favoritesNode];
 	
 	[favoritesNode release];
 }

@@ -769,18 +769,18 @@
  */
 - (void)_sortFavorites
 {		
-	NSString *sortKey = @"";
+	NSString *sortKey = SPFavoriteNameKey;
 	
 	switch (currentSortItem)
 	{
 		case SPFavoritesSortNameItem:
-			sortKey = @"name";
+			sortKey = SPFavoriteNameKey;
 			break;
 		case SPFavoritesSortHostItem:
-			sortKey = @"host";
+			sortKey = SPFavoriteHostKey;
 			break;
 		case SPFavoritesSortTypeItem:
-			sortKey = @"type";
+			sortKey = SPFavoriteTypeKey;
 			break;
 	}
 	

@@ -27,17 +27,18 @@
 
 @implementation SPFavoriteNode
 
-@synthesize isGroup;
-@synthesize favorite;
-@synthesize children;
+@synthesize nodeIsGroup;
+@synthesize nodeName;
+@synthesize nodeFavorite;
+@synthesize nodeChildren;
 
 - (id)init
 {
 	if ((self = [super init])) {
-		[self setIsGroup:NO];
-		
-		[self setFavorite:nil];
-		[self setChildren:[[NSMutableArray alloc] init]];
+		[self setNodeIsGroup:NO];
+		[self setNodeName:nil];
+		[self setNodeFavorite:nil];
+		[self setNodeChildren:[[NSMutableArray alloc] init]];
 	}
 	
 	return self;
@@ -45,8 +46,9 @@
 
 - (void)dealloc
 {
-	if (favorite) [favorite release], favorite = nil;
-	if (children) [children release], children = nil;
+	if (nodeName) [nodeName release], nodeName = nil;
+	if (nodeFavorite) [nodeFavorite release], nodeFavorite = nil;
+	if (nodeChildren) [nodeChildren release], nodeChildren = nil;
 	
 	[super dealloc];
 }
