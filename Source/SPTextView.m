@@ -3510,13 +3510,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if (cmdData) [cmdData release];
 		return;
 	} else {
-		if([cmdData objectForKey:@"command"] && [[cmdData objectForKey:@"command"] length]) {
+		if([cmdData objectForKey:@"command"] && [[cmdData objectForKey:@"command"] length] && [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"]) {
 
 			NSString *cmd = [cmdData objectForKey:@"command"];
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
-			NSString *inputTempFileName = @"/tmp/sp_bundle_task_input";
+			NSString *inputTempFileName = @"/tmp/SP_BUNDLE_TASK_INPUT";
 			NSRange currentWordRange, currentQueryRange, currentSelectionRange, currentLineRange;
 
 			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
@@ -3553,21 +3553,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			}
 			else if([inputAction isEqualToString:@"entirecontent"]) {
 				replaceRange = NSMakeRange(0,[[self string] length]);
-			}
-
-			NSError *inputFileError = nil;
-			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
-			[input writeToFile:inputTempFileName
-					  atomically:YES
-						encoding:NSUTF8StringEncoding
-						   error:&inputFileError];
-
-			if(inputFileError != nil) {
-				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
-				if (cmdData) [cmdData release];
-				return;
 			}
 
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
@@ -3613,7 +3598,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(currentLineRange.length)
 				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:@"SP_CURRENT_LINE"];
 
+			NSError *inputFileError = nil;
+			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
+			[input writeToFile:inputTempFileName
+					  atomically:YES
+						encoding:NSUTF8StringEncoding
+						   error:&inputFileError];
+
+			if(inputFileError != nil) {
+				NSString *errorMessage  = [inputFileError localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				if (cmdData) [cmdData release];
+				return;
+			}
+
 			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
+
+			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
 
 			if(err == nil && [cmdData objectForKey:@"output"]) {
 				if([[cmdData objectForKey:@"output"] length] && ![[cmdData objectForKey:@"output"] isEqualToString:@"nop"]) {
@@ -3651,8 +3653,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 			}
-
-			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
 
 		}
 

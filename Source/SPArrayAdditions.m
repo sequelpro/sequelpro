@@ -70,7 +70,7 @@
 		if ([result length])
 			[result appendString:@" "];
 
-		[result appendString:[NSString stringWithFormat:@"\"%@\"", [component stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]]];
+		[result appendFormat:@"\"%@\"", [component stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]];
 	}
 	return result;
 }
@@ -108,6 +108,19 @@
 	return result;
 }
 
+- (NSString *)componentsJoinedAsCSV
+{
+	NSMutableString *result = [NSMutableString string];
+	[result setString:@""];
+
+	for (NSString *component in self)
+	{
+		if ([result length])
+			[result appendString: @","];
+		[result appendFormat:@"\"%@\"", [[component description] stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+	}
+	return result;
+}
 
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes
 {

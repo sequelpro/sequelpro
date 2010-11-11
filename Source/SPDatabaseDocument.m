@@ -4423,10 +4423,15 @@
 	}
 
 	else if([command isEqualToString:@"ExecuteQuery"]) {
+
+		// Bail if document is busy
 		if (_isWorkingLevel) return;
+
 		NSString *outputFormat = @"tab";
 		if([params count] == 2)
 			outputFormat = [params objectAtIndex:1];
+
+		BOOL writeAsCsv = ([outputFormat isEqualToString:@"csv"]) ? YES : NO;
 
 		NSString *queryFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_%@", docProcessID];
 		NSString *resultFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_%@", docProcessID];
@@ -4446,27 +4451,42 @@
 			[fm removeItemAtPath:statusFileName error:nil];
 
 			if(inError == nil && query && [query length]) {
+
 				SPFileHandle *fh = [SPFileHandle fileHandleForWritingAtPath:resultFileName];
-				if(!fh)
-					NSLog(@"Couldn't create file handle to %@", resultFileName);
+				if(!fh) NSLog(@"Couldn't create file handle to %@", resultFileName);
+
 				MCPResult *theResult = [mySQLConnection queryString:query];
 				[theResult setReturnDataAsStrings:YES];
 				if ([mySQLConnection queryErrored]) {
-					[fh writeData:[[NSString stringWithFormat:@"Error.\nMySQL said: %@", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+					[fh writeData:[[NSString stringWithFormat:@"MySQL said: %@", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 					status = @"1";
 				} else {
+
+					// write header
+					if(writeAsCsv)
+						[fh writeData:[[[theResult fetchFieldNames] componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
+					else
+						[fh writeData:[[[theResult fetchFieldNames] componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
+					[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+
+					// write data
 					if ([theResult numOfRows]) [theResult dataSeek:0];
 					NSInteger i;
 					NSArray *theRow;
 					for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 						theRow = [theResult fetchRowAsArray];
-						[fh writeData:[[theRow componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
+						if(writeAsCsv)
+							[fh writeData:[[theRow componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
+						else
+							[fh writeData:[[theRow componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
 						[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 					}
 				}
 				[fh closeFile];
 			}
 		}
+
+		// write status file as notification that query was finished
 		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 		if(!succeed) {
 			NSBeep();
