@@ -551,6 +551,15 @@
 		}
 	}
 
+
+	if(processDocument && command && [command isEqualToString:@"passToDoc"]) {
+		NSMutableDictionary *cmdDict = [NSMutableDictionary dictionary];
+		[cmdDict setObject:parameter forKey:@"parameter"];
+		[cmdDict setObject:passedProcessID forKey:@"id"];
+		[processDocument handleSchemeCommand:cmdDict];
+		return;
+	}
+
 	if(processDocument)
 		NSLog(@"process doc ID: %@\n%@", [processDocument processID], [processDocument tabTitleForTooltip]);
 	else

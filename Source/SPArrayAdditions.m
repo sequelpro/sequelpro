@@ -60,6 +60,21 @@
 	return result;
 }
 
+- (NSString *)componentsJoinedBySpacesAndQuoted
+{
+	NSMutableString *result = [NSMutableString string];
+	[result setString:@""];
+	
+	for (NSString *component in self)
+	{
+		if ([result length])
+			[result appendString:@" "];
+
+		[result appendString:[NSString stringWithFormat:@"\"%@\"", [component stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""]]];
+	}
+	return result;
+}
+
 - (NSString *)componentsJoinedByPeriodAndBacktickQuoted
 {
 	NSMutableString *result = [NSMutableString string];

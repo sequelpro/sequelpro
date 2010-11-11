@@ -353,4 +353,7 @@
 - (void)setParentWindow:(NSWindow *)aWindow;
 - (NSWindow *)parentWindow;
 
+// Scripting
+- (void)handleSchemeCommand:(NSDictionary*)commandDict;
+
 @end

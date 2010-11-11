@@ -452,7 +452,7 @@
                                    untilDate:[NSDate distantPast]
                                       inMode:NSDefaultRunLoopMode
                                      dequeue:YES];
-		usleep(10000);
+		usleep(1000);
 		if(!event) continue;
 		if ([event type] == NSKeyDown) {
 			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
@@ -461,6 +461,7 @@
 				userTerminated = YES;
 				break;
 			}
+			[NSApp sendEvent:event];
 		} else {
 			[NSApp sendEvent:event];
 		}

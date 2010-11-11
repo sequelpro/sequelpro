@@ -3580,6 +3580,27 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if (tablesListInstance && [tablesListInstance selectedDatabase])
 				[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
 
+			if (tablesListInstance && [tablesListInstance allDatabaseNames])
+				[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_DATABASES"];
+
+			if (tablesListInstance && [tablesListInstance allTableNames])
+				[env setObject:[[tablesListInstance allTableNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_TABLES"];
+
+			if (tablesListInstance && [tablesListInstance allViewNames])
+				[env setObject:[[tablesListInstance allViewNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_VIEWS"];
+
+			if (tablesListInstance && [tablesListInstance allFunctionNames])
+				[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_FUNCTIONS"];
+
+			if (tablesListInstance && [tablesListInstance allProcedureNames])
+				[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_PROCEDURES"];
+
+			if(tableDocumentInstance && [tableDocumentInstance mySQLVersion])
+				[env setObject:[tableDocumentInstance mySQLVersion] forKey:@"SP_RDBMS_VERSION"];
+
+			if(1)
+				[env setObject:@"mysql" forKey:@"SP_RDBMS_TYPE"];
+
 			if (tablesListInstance && [tablesListInstance tableName])
 				[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
 
@@ -3594,36 +3615,37 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
 
-			if(err == nil && [cmdData objectForKey:@"output"] && [[cmdData objectForKey:@"output"] length] && ![[cmdData objectForKey:@"output"] isEqualToString:@"nop"]) {
-				NSString *action = [[cmdData objectForKey:@"output"] lowercaseString];
+			if(err == nil && [cmdData objectForKey:@"output"]) {
+				if([[cmdData objectForKey:@"output"] length] && ![[cmdData objectForKey:@"output"] isEqualToString:@"nop"]) {
+					NSString *action = [[cmdData objectForKey:@"output"] lowercaseString];
 
-				if([action isEqualToString:@"insertastext"]) {
-					[self insertText:output];
+					if([action isEqualToString:@"insertastext"]) {
+						[self insertText:output];
+					}
+
+					else if([action isEqualToString:@"insertassnippet"]) {
+						[self insertAsSnippet:output atRange:replaceRange];
+					}
+
+					else if([action isEqualToString:@"replacecontent"]) {
+						if([[self string] length])
+							[self setSelectedRange:NSMakeRange(0,[[self string] length])];
+						[self insertText:output];
+					}
+
+					else if([action isEqualToString:@"replaceselection"]) {
+						[self shouldChangeTextInRange:replaceRange replacementString:output];
+						[self replaceCharactersInRange:replaceRange withString:output];
+					}
+
+					else if([action isEqualToString:@"showastexttooltip"]) {
+						[SPTooltip showWithObject:output];
+					}
+
+					else if([action isEqualToString:@"showashtmltooltip"]) {
+						[SPTooltip showWithObject:output ofType:@"html"];
+					}
 				}
-
-				else if([action isEqualToString:@"insertassnippet"]) {
-					[self insertAsSnippet:output atRange:replaceRange];
-				}
-
-				else if([action isEqualToString:@"replacecontent"]) {
-					if([[self string] length])
-						[self setSelectedRange:NSMakeRange(0,[[self string] length])];
-					[self insertText:output];
-				}
-
-				else if([action isEqualToString:@"replaceselection"]) {
-					[self shouldChangeTextInRange:replaceRange replacementString:output];
-					[self replaceCharactersInRange:replaceRange withString:output];
-				}
-
-				else if([action isEqualToString:@"showastexttooltip"]) {
-					[SPTooltip showWithObject:output];
-				}
-
-				else if([action isEqualToString:@"showashtmltooltip"]) {
-					[SPTooltip showWithObject:output ofType:@"html"];
-				}
-
 			} else {
 				NSString *errorMessage  = [err localizedDescription];
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,

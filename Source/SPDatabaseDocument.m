@@ -4382,6 +4382,49 @@
 }
 
 #pragma mark -
+#pragma mark Scheme scripting methods
+
+- (void)handleSchemeCommand:(NSDictionary*)commandDict
+{
+
+	NSArray *params = [commandDict objectForKey:@"parameter"];
+	if(![params count]) return;
+	
+	NSString *command = [params objectAtIndex:0];
+	NSString *docProcessID = [self processID];
+	if(!docProcessID) docProcessID = @"";
+
+	// Authenticate command
+	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) return;
+
+	if([command isEqualToString:@"SelectTable"]) {
+		if([params count] == 2) {
+			NSString *tableName = [params objectAtIndex:1];
+			if([tableName length]) {
+				[tablesListInstance selectItemWithName:tableName];
+				return;
+			}
+		}
+	}
+	else if([command isEqualToString:@"SelectDatabase"]) {
+		if (_isWorkingLevel) return;
+		if([params count] > 1) {
+			NSString *dbName = [params objectAtIndex:1];
+			NSString *tableName = nil;
+			if([dbName length]) {
+				if([params count] == 3) {
+					tableName = [params objectAtIndex:2];
+				}
+				[self selectDatabase:dbName item:tableName];
+				return;
+			}
+		}
+	}
+
+	NSLog(@"received: %@", commandDict);
+}
+
+#pragma mark -
 #pragma mark Text field delegate methods
 
 /**
