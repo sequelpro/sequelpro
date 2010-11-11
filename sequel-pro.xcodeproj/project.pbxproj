@@ -1677,8 +1677,6 @@
 		17D38FC2127B0C9500672B13 /* Connection View */ = {
 			isa = PBXGroup;
 			children = (
-				17D3C22012859E070047709F /* SPFavoriteNode.h */,
-				17D3C22112859E070047709F /* SPFavoriteNode.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */,
@@ -1921,6 +1919,8 @@
 				BCA6271B1031B9D40047E5D5 /* SPTooltip.m */,
 				17D3C66F128AD8160047709F /* SPSingleton.h */,
 				17D3C670128AD8160047709F /* SPSingleton.m */,
+				17D3C22012859E070047709F /* SPFavoriteNode.h */,
+				17D3C22112859E070047709F /* SPFavoriteNode.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,

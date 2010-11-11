@@ -98,6 +98,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
 	NSString *favoritesBackupFile = [dataPath stringByAppendingPathComponent:[@"~" stringByAppendingString:SPFavoritesDataFile]];
 	
+	// If the favorites data file already exists, attempt to move it to keep as a backup
 	if ([fileManager fileExistsAtPath:favoritesFile]) {
 		[fileManager moveItemAtPath:favoritesFile toPath:favoritesBackupFile error:&error];
 	}
@@ -107,6 +108,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		
 		error = nil;
 		
+		// We can't move it so try and delete it
 		if (![fileManager removeItemAtPath:favoritesFile error:&error] && error) {
 			NSLog(@"Unable to delete existing favorites data file during save. Something is wrong, permissions perhaps: %@", [error localizedDescription]);
 			return;
@@ -123,9 +125,11 @@ static SPFavoritesController *sharedFavoritesController = nil;
 			if (error) {
 				NSLog(@"Error writing favorites data. Restoring backup if available: %@", [error localizedDescription]);
 				
+				// Restore the original data file
 				[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:NULL];
 			}
 			else {
+				// Remove the original backup
 				[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
 			}
 		}
@@ -173,6 +177,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
 	
+	// If the favorites data file already exists use it, otherwise create an empty one
 	if ([fileManager fileExistsAtPath:favoritesFile]) {
 		favorites = [[NSDictionary alloc] initWithContentsOfFile:favoritesFile];
 	}
