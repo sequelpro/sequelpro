@@ -35,13 +35,13 @@
  */
 @interface SPFavoritesController : SPSingleton 
 {
-	NSDictionary *favorites;
+	NSMutableDictionary *favorites;
 }
 
 /**
  * @property favorites Favorites data dictionary
  */
-@property (readonly) NSDictionary *favorites;
+@property (readonly) NSMutableDictionary *favorites;
 
 + (SPFavoritesController *)sharedFavoritesController;
 
