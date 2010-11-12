@@ -406,6 +406,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		if (mConnection == NULL) return NO;
 	}
 
+	[self lockConnection];
+
 	if (mConnection != NULL) {
 
 		// Ensure the custom timeout option is set
@@ -457,8 +459,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	thePass = NULL;
 
 	if (theRet != mConnection) {
+		[self unlockConnection];
 		[self setLastErrorMessage:nil];
-		
+
 		lastQueryErrorId = mysql_errno(mConnection);
 		
 		return mConnected = NO;
@@ -477,6 +480,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	encodingUsesLatin1Transport = NO;
 	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
+	[self unlockConnection];
 	[self timeZone]; // Getting the timezone used by the server.
 	
 	// Only attempt to set the max allowed packet if we have a connection
@@ -578,6 +582,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	mConnected = NO;
 	isDisconnecting = NO;
+	[self lockConnection];
 
 	// If no network is present, loop for a short period waiting for one to become available
 	uint64_t elapsedTime_t, networkWaitStartTime_t = mach_absolute_time();
@@ -642,6 +647,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		[connectionProxy setConnectionStateChangeSelector:@selector(connectionProxyStateChange:) delegate:self];
 	}
 
+	[self unlockConnection];
 	if (!connectionProxy || [connectionProxy state] == PROXY_STATE_CONNECTED) {
 		
 		// Attempt to reinitialise the connection - if this fails, it will still be set to NULL.
