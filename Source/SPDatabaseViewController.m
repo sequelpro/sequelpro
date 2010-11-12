@@ -434,15 +434,11 @@
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
 
-	// Reset all loaded views
+	// Mark that all loaded views require their data reloading
 	structureLoaded = NO;
 	contentLoaded = NO;
 	statusLoaded = NO;
 	triggersLoaded = NO;
-	[tableSourceInstance loadTable:nil];
-	[tableContentInstance loadTable:nil];
-	[[extendedTableInfoInstance onMainThread] loadTable:nil];
-	[[tableTriggersInstance onMainThread] loadTriggers];
 
 	// Load the currently selected view if looking at a table or view
 	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
@@ -468,6 +464,14 @@
 				break;
 		}
 	}
+
+	// Clear any views which haven't been loaded as they weren't visible.  Note
+	// that this should be done after reloading visible views, instead of clearing all
+	// views, to reduce UI operations and avoid resetting state unnecessarily.
+	if (!structureLoaded) [tableSourceInstance loadTable:nil];
+	if (!contentLoaded) [tableContentInstance loadTable:nil];
+	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
+	if (!triggersLoaded) [[tableTriggersInstance onMainThread] loadTriggers];
 
 	// Update the "Show Create Syntax" window if it's already opened
 	// according to the selected table/view/proc/func
