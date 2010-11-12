@@ -241,3 +241,39 @@ NSString *SPFavoriteSSLCertificateFileLocationEnabledKey = @"sslCertificateFileL
 NSString *SPFavoriteSSLCertificateFileLocationKey        = @"sslCertificateFileLocation";
 NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocationEnabled";
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
+
+// Bundle Files and Bundle Editor
+NSString *SPBundleScopeQueryEditor              = @"editor";
+NSString *SPBundleScopeDataTable                = @"dataTable";
+NSString *SPBundleScopeInputField               = @"inputField";
+NSString *SPBundleScopeGeneral                  = @"general";
+NSString *SPBundleInputSourceSelectedText       = @"selectedText";
+NSString *SPBundleInputSourceEntireContent      = @"entireContent";
+NSString *SPBundleInputSourceCurrentWord        = @"currentWord";
+NSString *SPBundleInputSourceCurrentQuery       = @"currentQuery";
+NSString *SPBundleInputSourceCurrentLine        = @"currentLine";
+NSString *SPBundleInputSourceNone               = @"None";
+NSString *SPBundleOutputActionNone              = @"None";
+NSString *SPBundleOutputActionInsertAsText      = @"insertAsText";
+NSString *SPBundleOutputActionInsertAsSnippet   = @"insertAsSnippet";
+NSString *SPBundleOutputActionReplaceSelection  = @"replaceSelection";
+NSString *SPBundleOutputActionReplaceContent    = @"replaceContent";
+NSString *SPBundleOutputActionShowAsTextTooltip = @"showAsTextTooltip";
+NSString *SPBundleOutputActionShowAsHTMLTooltip = @"showAsHTMLTooltip";
+NSString *SPBundleFileCommandKey                = @"command";
+NSString *SPBundleFileScopeKey                  = @"scope";
+NSString *SPBundleFileNameKey                   = @"name";
+NSString *SPBundleFileCategoryKey               = @"category";
+NSString *SPBundleFileInputSourceKey            = @"input";
+NSString *SPBundleFileInputSourceFallBackKey    = @"input_fallback";
+NSString *SPBundleFileOutputActionKey           = @"output";
+NSString *SPBundleFileKeyEquivalentKey          = @"keyEquivalent";
+NSString *SPBundleFileTooltipKey                = @"tooltip";
+NSString *SPBundleFileName                      = @"info.plist";
+NSString *SPBundleTaskInputFilePath             = @"/tmp/SP_BUNDLE_TASK_INPUT";
+
+// sequel URL scheme
+NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
+NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
+NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_STATUS_";
+NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";

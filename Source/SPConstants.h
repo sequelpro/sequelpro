@@ -421,3 +421,39 @@ extern NSString *SPFavoriteSSLCertificateFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCertificateFileLocationKey;
 extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
+
+// Bundle Files and Bundle Editor
+extern NSString *SPBundleScopeQueryEditor;
+extern NSString *SPBundleScopeDataTable;
+extern NSString *SPBundleScopeInputField;
+extern NSString *SPBundleScopeGeneral;
+extern NSString *SPBundleInputSourceSelectedText;
+extern NSString *SPBundleInputSourceEntireContent;
+extern NSString *SPBundleInputSourceCurrentWord;
+extern NSString *SPBundleInputSourceCurrentQuery;
+extern NSString *SPBundleInputSourceCurrentLine;
+extern NSString *SPBundleInputSourceNone;
+extern NSString *SPBundleOutputActionNone;
+extern NSString *SPBundleOutputActionInsertAsText;
+extern NSString *SPBundleOutputActionInsertAsSnippet;
+extern NSString *SPBundleOutputActionReplaceSelection;
+extern NSString *SPBundleOutputActionReplaceContent;
+extern NSString *SPBundleOutputActionShowAsTextTooltip;
+extern NSString *SPBundleOutputActionShowAsHTMLTooltip;
+extern NSString *SPBundleFileCommandKey;
+extern NSString *SPBundleFileScopeKey;
+extern NSString *SPBundleFileNameKey;
+extern NSString *SPBundleFileCategoryKey;
+extern NSString *SPBundleFileInputSourceKey;
+extern NSString *SPBundleFileInputSourceFallBackKey;
+extern NSString *SPBundleFileOutputActionKey;
+extern NSString *SPBundleFileKeyEquivalentKey;
+extern NSString *SPBundleFileTooltipKey;
+extern NSString *SPBundleFileName;
+extern NSString *SPBundleTaskInputFilePath;
+
+// sequel URL scheme
+extern NSString *SPURLSchemeQueryInputPathHeader;
+extern NSString *SPURLSchemeQueryResultPathHeader;
+extern NSString *SPURLSchemeQueryResultStatusPathHeader;
+extern NSString *SPURLSchemeQueryResultMetaPathHeader;
