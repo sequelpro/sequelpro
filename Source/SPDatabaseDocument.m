@@ -4455,7 +4455,7 @@
 				SPFileHandle *fh = [SPFileHandle fileHandleForWritingAtPath:resultFileName];
 				if(!fh) NSLog(@"Couldn't create file handle to %@", resultFileName);
 
-				MCPResult *theResult = [mySQLConnection queryString:query];
+				MCPStreamingResult *theResult = [mySQLConnection streamingQueryString:query];
 				[theResult setReturnDataAsStrings:YES];
 				if ([mySQLConnection queryErrored]) {
 					[fh writeData:[[NSString stringWithFormat:@"MySQL said: %@", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -4469,17 +4469,68 @@
 						[fh writeData:[[[theResult fetchFieldNames] componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
 					[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 
+					NSArray *columnDefinition = [theResult fetchResultFieldsStructure];
+
 					// write data
-					if ([theResult numOfRows]) [theResult dataSeek:0];
-					NSInteger i;
+					NSInteger i, j;
 					NSArray *theRow;
-					for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-						theRow = [theResult fetchRowAsArray];
-						if(writeAsCsv)
-							[fh writeData:[[theRow componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
-						else
-							[fh writeData:[[theRow componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
-						[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+					NSMutableString *result = [NSMutableString string];
+
+					if(writeAsCsv) {
+						for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+							[result setString:@""];
+							theRow = [theResult fetchNextRowAsArray];
+							for( j = 0 ; j < [theRow count] ; j++ ) {
+								if([result length]) [result appendString:@","];
+								id cell = NSArrayObjectAtIndex(theRow, j);
+								if([cell isKindOfClass:[NSNull class]])
+									[result appendString:@"\"NULL\""];
+								else if([cell isKindOfClass:[MCPGeometryData class]])
+									[result appendFormat:@"\"%@\"", [cell wktString]];
+								else if([cell isKindOfClass:[NSData class]]) {
+									NSString *displayString = [[NSString alloc] initWithData:cell encoding:[mySQLConnection stringEncoding]];
+									if (!displayString) displayString = [[NSString alloc] initWithData:cell encoding:NSASCIIStringEncoding];
+									if (displayString) {
+										[result appendFormat:@"\"%@\"", [displayString stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+										[displayString release];
+									} else {
+										[result appendString:@"\"\""];
+									}
+								}
+								else
+									[result appendFormat:@"\"%@\"", [[cell description] stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+							}
+							[result appendString:@"\n"];
+							[fh writeData:[result dataUsingEncoding:NSUTF8StringEncoding]];
+						}
+					}
+					else {
+						for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+							[result setString:@""];
+							theRow = [theResult fetchNextRowAsArray];
+							for( j = 0 ; j < [theRow count] ; j++ ) {
+								if([result length]) [result appendString:@"\t"];
+								id cell = NSArrayObjectAtIndex(theRow, j);
+								if([cell isKindOfClass:[NSNull class]])
+									[result appendString:@"NULL"];
+								else if([cell isKindOfClass:[MCPGeometryData class]])
+									[result appendFormat:@"%@", [cell wktString]];
+								else if([cell isKindOfClass:[NSData class]]) {
+									NSString *displayString = [[NSString alloc] initWithData:cell encoding:[mySQLConnection stringEncoding]];
+									if (!displayString) displayString = [[NSString alloc] initWithData:cell encoding:NSASCIIStringEncoding];
+									if (displayString) {
+										[result appendFormat:@"%@", [[displayString stringByReplacingOccurrencesOfString:@"\n" withString:@"↵"] stringByReplacingOccurrencesOfString:@"\t" withString:@"⇥"]];
+										[displayString release];
+									} else {
+										[result appendString:@""];
+									}
+								}
+								else
+									[result appendString:[[[cell description] stringByReplacingOccurrencesOfString:@"\n" withString:@"↵"] stringByReplacingOccurrencesOfString:@"\t" withString:@"⇥"]];
+							}
+							[result appendString:@"\n"];
+							[fh writeData:[result dataUsingEncoding:NSUTF8StringEncoding]];
+						}
 					}
 				}
 				[fh closeFile];
