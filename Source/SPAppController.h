@@ -26,14 +26,18 @@
 #import <Cocoa/Cocoa.h>
 #import <FeedbackReporter/FRFeedbackReporter.h>
 
-@class SPPreferenceController, SPAboutController, SPDatabaseDocument;
+@class SPPreferenceController, SPAboutController, SPDatabaseDocument, SPBundleEditorController;
 
 @interface SPAppController : NSObject <FRFeedbackReporterDelegate>
 {
+
+	IBOutlet NSWindow* bundleEditorWindow;
+
 	BOOL isNewFavorite;
 	
 	SPAboutController *aboutController;
 	SPPreferenceController *prefsController;
+	SPBundleEditorController *bundleEditorController;
 
 	id encodingPopUp;
 
@@ -62,6 +66,8 @@
 - (IBAction)provideFeedback:(id)sender;
 - (IBAction)provideTranslationFeedback:(id)sender;
 - (IBAction)viewKeyboardShortcuts:(id)sender;
+- (IBAction)openBundleEditor:(id)sender;
+- (IBAction)reloadBundles:(id)sender;
 
 // Getters
 - (SPPreferenceController *)preferenceController;

@@ -32,6 +32,7 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPWindowController.h"
 #import "SPPreferencesUpgrade.h"
+#import "SPBundleEditorController.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -835,6 +836,18 @@
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_KEYBOARDSHORTCUTS]];
 }
 
+- (IBAction)openBundleEditor:(id)sender
+{
+	if (!bundleEditorController) bundleEditorController = [[SPBundleEditorController alloc] init];
+
+	[bundleEditorController showWindow:self];
+}
+
+- (IBAction)reloadBundles:(id)sender
+{
+	
+}
+
 #pragma mark -
 #pragma mark Feedback reporter delegate methods
 
@@ -1001,6 +1014,7 @@
 	[prefsController release], prefsController = nil;
 	
 	if (aboutController) [aboutController release], aboutController = nil;
+	if (bundleEditorController) [bundleEditorController release], bundleEditorController = nil;
 	
 	if (_sessionURL) [_sessionURL release], _sessionURL = nil;
 	if (_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;

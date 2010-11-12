@@ -394,6 +394,7 @@
 		BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC65C3B0107CE3EE003F7B02 /* ImportAccessory.xib */; };
 		BC675A141072039C00C5ACD4 /* SPContentFilterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */; };
 		BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC675A15107203BA00C5ACD4 /* ContentFilterManager.xib */; };
+		BC68BFC7128D4EAE004907D9 /* SPBundleEditorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */; };
 		BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F15040F7C433C00579954 /* SPEditorTokens.h */; };
 		BC6D709E120C4C9F008027B5 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		BC85F5D012193B7D00E255B5 /* SPColorAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */; };
@@ -408,6 +409,7 @@
 		BCB56197106F893F00167321 /* ContentFilters.plist in Resources */ = {isa = PBXBuildFile; fileRef = BCB56196106F893F00167321 /* ContentFilters.plist */; };
 		BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */ = {isa = PBXBuildFile; fileRef = BCB5619A106F8A1B00167321 /* EditorQuickLookTypes.plist */; };
 		BCBB3C17121158790011F962 /* SPQLPluginConnectionBundleTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = BCBB3C15121158790011F962 /* SPQLPluginConnectionBundleTemplate.html */; };
+		BCCB747A128D4FD100339E25 /* BundleEditor.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCCB7478128D4FD100339E25 /* BundleEditor.xib */; };
 		BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */; };
 		BCCDED68115940CB00285E65 /* sync_arrows_01.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */; };
 		BCCDED69115940CB00285E65 /* sync_arrows_02.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */; };
@@ -1109,6 +1111,8 @@
 		BC675A121072039C00C5ACD4 /* SPContentFilterManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPContentFilterManager.h; sourceTree = "<group>"; };
 		BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPContentFilterManager.m; sourceTree = "<group>"; };
 		BC675A16107203BA00C5ACD4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ContentFilterManager.xib; sourceTree = "<group>"; };
+		BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleEditorController.h; sourceTree = "<group>"; };
+		BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBundleEditorController.m; sourceTree = "<group>"; };
 		BC85F5CE12193B7D00E255B5 /* SPColorAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorAdditions.h; sourceTree = "<group>"; };
 		BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorAdditions.m; sourceTree = "<group>"; };
 		BC878A6F121A836F00AE5066 /* SPColorWellCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorWellCell.h; sourceTree = "<group>"; };
@@ -1127,6 +1131,7 @@
 		BCB56198106F8A1600167321 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = English; path = English.lproj/EditorQuickLookTypes.plist; sourceTree = "<group>"; };
 		BCBB3C16121158790011F962 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = English; path = English.lproj/SPQLPluginConnectionBundleTemplate.html; sourceTree = "<group>"; };
 		BCBB3C181211589D0011F962 /* German */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = German; path = German.lproj/SPQLPluginConnectionBundleTemplate.html; sourceTree = "<group>"; };
+		BCCB7479128D4FD100339E25 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/BundleEditor.xib; sourceTree = "<group>"; };
 		BCCBD7FB104408B000D4C50A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SaveSPFAccessory.xib; sourceTree = "<group>"; };
 		BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = sync_arrows_01.tiff; sourceTree = "<group>"; };
 		BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = sync_arrows_02.tiff; sourceTree = "<group>"; };
@@ -1895,6 +1900,8 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
+				BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */,
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
 				58A8A78F11A036C000B95749 /* SPWindowController.h */,
@@ -2078,6 +2085,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				BCCB7478128D4FD100339E25 /* BundleEditor.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 				58A8A72611A0149100B95749 /* MainWindow.xib */,
 				17E642060EF020CB001BC333 /* DBView.xib */,
@@ -2624,7 +2632,6 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -2812,6 +2819,7 @@
 				17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */,
 				58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */,
 				58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */,
+				BCCB747A128D4FD100339E25 /* BundleEditor.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3084,6 +3092,7 @@
 				17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */,
 				17D3C671128AD8160047709F /* SPSingleton.m in Sources */,
 				17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */,
+				BC68BFC7128D4EAE004907D9 /* SPBundleEditorController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3420,6 +3429,14 @@
 				BCBB3C181211589D0011F962 /* German */,
 			);
 			name = SPQLPluginConnectionBundleTemplate.html;
+			sourceTree = "<group>";
+		};
+		BCCB7478128D4FD100339E25 /* BundleEditor.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BCCB7479128D4FD100339E25 /* English */,
+			);
+			name = BundleEditor.xib;
 			sourceTree = "<group>";
 		};
 		BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */ = {
