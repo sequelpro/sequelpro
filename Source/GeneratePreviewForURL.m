@@ -394,17 +394,17 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			// compose the html and perform syntax highlighting
 
 			// read the file and try to get a proper encoding
-			NSString *sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
-			NSMutableString *sqlHTML = [NSMutableString string];
-			NSString *truncatedString = @"";
+			NSString *sqlText = [[NSString alloc] initWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
+			NSMutableString *sqlHTML = [[NSMutableString alloc] init];
+			NSString *truncatedString = [[NSString alloc] init];
 
 			if(readError != nil) {
 				// cocoa tries to detect the encoding
-				sqlText = [NSString stringWithContentsOfFile:[myURL path] usedEncoding:&sqlEncoding error:&readError];
+				sqlText = [[NSString alloc] initWithContentsOfFile:[myURL path] usedEncoding:&sqlEncoding error:&readError];
 				// fall back to latin1 if no sqlText couldn't read
 				if(sqlText == nil) {
 					sqlEncoding = NSISOLatin1StringEncoding;
-					sqlText = [NSString stringWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
+					sqlText = [[NSString alloc] initWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
 				}
 			}
 
@@ -415,8 +415,12 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 				// truncate large files since Finder blocks
 				if([filesize unsignedLongValue] > kMaxSQLFileSize) {
-					sqlText = [sqlText substringToIndex:kMaxSQLFileSize-1];
-					truncatedString = @"\n ✂ ...";
+					NSString *truncatedSqlText = [[NSString alloc] initWithString:[sqlText substringToIndex:kMaxSQLFileSize-1]];
+					[sqlText release];
+					sqlText = [[NSString alloc] initWithString:truncatedSqlText];
+					[truncatedSqlText release];
+					[truncatedString release];
+					truncatedString = [[NSString alloc] initWithString:@"\n ✂ ..."];
 				}
 
 				NSRange textRange = NSMakeRange(0, [sqlText length]);
@@ -467,6 +471,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 				}
 				[sqlHTML appendString:truncatedString];
+				[sqlText release];
+				[truncatedString release];
 			}
 
 			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
@@ -475,7 +481,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				sqlHTML
 			]];
 
-		previewHeight = 495;
+			previewHeight = 495;
+			[sqlHTML release];
 
 		} else {
 
