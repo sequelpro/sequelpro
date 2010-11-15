@@ -50,13 +50,13 @@
 	<key>CFPlugInUnloadFunction</key>
 	<string></string>
 	<key>QLNeedsToBeRunInMainThread</key>
-	<false/>
+	<true/>
 	<key>QLPreviewHeight</key>
 	<integer>280</integer>
 	<key>QLPreviewWidth</key>
 	<integer>600</integer>
 	<key>QLSupportsConcurrentRequests</key>
-	<false/>
+	<true/>
 	<key>QLThumbnailMinimumSize</key>
 	<real>17</real>
 </dict>

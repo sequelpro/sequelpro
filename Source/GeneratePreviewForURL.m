@@ -53,10 +53,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
 {
 
+	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
 	NSURL *myURL = (NSURL *)url;
 	NSString *urlExtension = [[[myURL path] pathExtension] lowercaseString];
-
-	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
 	NSError *templateReadError = nil;
 
@@ -65,14 +65,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		return noErr;
 	}
 
-	// Get current Sequel Pro's set of file icons
-	NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
-
-	// just in case
-	if(!iconImages || [iconImages count] < 1)
-		iconImages = [NSArray arrayWithObject:[NSImage imageNamed:NSImageNameStopProgressTemplate]];
-
-	NSMutableString *html;
+	NSString *html = @"";
 	NSString *template = nil;
 
 	if (QLPreviewRequestIsCancelled(preview)) {
@@ -87,12 +80,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	// Dispatch different fiel extensions
 	if([urlExtension isEqualToString:@"spf"]) {
 
-		NSImage *iconImage;
-		if([iconImages count] > 0)
-			iconImage = [iconImages objectAtIndex:1];
-		else
-			iconImage = [iconImages objectAtIndex:0];
-
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
@@ -105,7 +92,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 			if(spf) [spf release], spf = nil;
-			if(html) [html release], html = nil;
 			if(pool) [pool release], pool = nil;
 			return noErr;
 		}
@@ -117,7 +103,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 			if (template == nil || ![template length] || templateReadError != nil) {
 				if(spf) [spf release], spf = nil;
-				if(html) [html release], html = nil;
 				if(pool) [pool release], pool = nil;
 				return noErr;
 			}
@@ -153,8 +138,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			}
 
 			// compose the html
-			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-				[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
+			html = [NSString stringWithFormat:template,
 				[spf objectForKey:@"rdbms_type"],
 				[spf objectForKey:@"rdbms_version"],
 				[name stringByReplacingOccurrencesOfString:@" " withString:@"&nbsp;"],
@@ -164,57 +148,41 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
 				[dateFormatter stringFromDate:[fileAttributes fileModificationDate]],
 				autoConnect
-			]];
+			];
 
 			[dateFormatter release];
 		}
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"content filters"]) {
 
-			NSImage *iconImage;
-			if([iconImages count] > 0)
-				iconImage = [iconImages objectAtIndex:1];
-			else
-				iconImage = [iconImages objectAtIndex:0];
-
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
 				if(spf) [spf release], spf = nil;
-				if(html) [html release], html = nil;
 				if(pool) [pool release], pool = nil;
 				return noErr;
 			}
 			// compose the html
-			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-				[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
+			html = [NSString stringWithFormat:template,
 				[NSString stringWithContentsOfFile:[myURL path] encoding:NSUTF8StringEncoding error:nil]
-			]];
+			];
 		}
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"query favorites"]) {
-
-			NSImage *iconImage;
-			if([iconImages count] > 0)
-				iconImage = [iconImages objectAtIndex:1];
-			else
-				iconImage = [iconImages objectAtIndex:0];
 
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
 				if(spf) [spf release], spf = nil;
-				if(html) [html release], html = nil;
 				if(pool) [pool release], pool = nil;
 				return noErr;
 			}
 			// compose the html
-			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-				[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
+			html = [NSString stringWithFormat:template,
 				[NSString stringWithContentsOfFile:[myURL path] encoding:NSUTF8StringEncoding error:nil]
-			]];
+			];
 		}
 
 		[spf release];
@@ -223,13 +191,10 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	else if([urlExtension isEqualToString:@"spfs"]) {
 
-		NSImage *iconImage = [iconImages objectAtIndex:0];
-
 		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
-			if(html) [html release], html = nil;
 			if(pool) [pool release], pool = nil;
 			return noErr;
 		}
@@ -238,7 +203,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (windowTemplate == nil || ![windowTemplate length] || templateReadError != nil) {
-			if(html) [html release], html = nil;
 			if(pool) [pool release], pool = nil;
 			return noErr;
 		}
@@ -255,7 +219,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 			if(spf) [spf release], spf = nil;
-			if(html) [html release], html = nil;
 			if(pool) [pool release], pool = nil;
 			return noErr;
 		}
@@ -359,24 +322,20 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		if(connectionCounter > 1)
 			previewHeight = 495;
 
-		html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-			[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
+		html = [NSString stringWithFormat:template,
 			connectionCounter,
 			spfsHTML
-		]];
+		];
 		
 
 	}
 
 	else if([urlExtension isEqualToString:@"sql"]) {
 
-		NSImage *iconImage = [iconImages objectAtIndex:0];
-
 		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginSQLTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
-			if(html) [html release], html = nil;
 			if(pool) [pool release], pool = nil;
 			return noErr;
 		}
@@ -395,7 +354,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 			// read the file and try to get a proper encoding
 			NSString *sqlText = [[NSString alloc] initWithContentsOfFile:[myURL path] encoding:sqlEncoding error:&readError];
-			NSMutableString *sqlHTML = [[NSMutableString alloc] init];
+			NSMutableString *sqlHTML = [[NSMutableString alloc] initWithCapacity:[sqlText length]];
 			NSString *truncatedString = [[NSString alloc] init];
 
 			if(readError != nil) {
@@ -464,48 +423,81 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 					}
 
 					tokenRange = NSMakeRange(yyuoffset, yyuleng);
+
 					if(skipFontTag)
-						[sqlHTML appendString:[sqlText substringWithRange:tokenRange]];
+						[sqlHTML appendString:[[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
 					else
-						[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [sqlText substringWithRange:tokenRange]];
+						[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
 
 				}
 				[sqlHTML appendString:truncatedString];
 				[sqlText release];
 				[truncatedString release];
+
 			}
 
-			html = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:template,
-				[[iconImage TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0],
+			html = [NSString stringWithFormat:template,
 				[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
-				sqlHTML
-			]];
-
+				[[sqlHTML stringByReplacingOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;"] stringByReplacingOccurrencesOfString:@"\n" withString:@"<br>"]
+			];
 			previewHeight = 495;
 			[sqlHTML release];
 
 		} else {
 
 			// No file attributes were read, bail for safety reasons
-			if(html) [html release], html = nil;
 			if(pool) [pool release], pool = nil;
 			return noErr;
 
 		}
 
 	}
-	NSMutableDictionary *props;
-	props = [[[NSMutableDictionary alloc] init] autorelease];
+
+	NSMutableDictionary *props,*imgProps;
+	NSData *image;
+
+	NSImage *iconImage;
+
+	// Get current Sequel Pro's set of file icons
+	NSArray *iconImages = [[[NSWorkspace sharedWorkspace] iconForFile:[myURL path]] representations];
+
+	// just in case
+	if(!iconImages || [iconImages count] < 1)
+		iconImages = [NSArray arrayWithObject:[NSImage imageNamed:NSImageNameStopProgressTemplate]];
+
+	if([iconImages count] > 0)
+		iconImage = [iconImages objectAtIndex:1];
+	else
+		iconImage = [iconImages objectAtIndex:0];
+
+	image = [[iconImage TIFFRepresentation] retain];
+
+	props    = [[NSMutableDictionary alloc] init];
+	imgProps = [[NSMutableDictionary alloc] init];
+
 	[props setObject:[NSNumber numberWithInt:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
 	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
+
+	if(image) {
+		[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
+		[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
+	}
+
+	[props setObject:[NSDictionary dictionaryWithObject:imgProps forKey:@"icon.tiff"] forKey:(NSString *)kQLPreviewPropertyAttachmentsKey];
+	[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
+	[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
+
 	QLPreviewRequestSetDataRepresentation(preview,
 										  (CFDataRef)[html dataUsingEncoding:NSUTF8StringEncoding],
 										  kUTTypeHTML, 
 										  (CFDictionaryRef)props
 										  );
 
-	if(html) [html release], html = nil;
-	if(pool) [pool release], pool = nil;
+	[props release];
+	[imgProps release];
+	if(image) [image release], image = nil;
+	[pool release];
+
 	return noErr;
 
 }
