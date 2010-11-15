@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="1178"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1746,37 +1746,11 @@
 						<reference key="NSOnImage" ref="625762401"/>
 						<reference key="NSMixedImage" ref="315854375"/>
 						<string key="NSAction">submenuAction:</string>
+						<int key="NSTag">6</int>
 						<object class="NSMenu" key="NSSubmenu" id="893886621">
 							<string key="NSTitle">Bundles</string>
 							<object class="NSMutableArray" key="NSMenuItems">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSMenuItem" id="397365423">
-									<reference key="NSMenu" ref="893886621"/>
-									<string key="NSTitle">Open Bundle Editor</string>
-									<string key="NSKeyEquiv">b</string>
-									<int key="NSKeyEquivModMask">1835008</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-								<object class="NSMenuItem" id="340987940">
-									<reference key="NSMenu" ref="893886621"/>
-									<string key="NSTitle">Reload Bundles</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
-								<object class="NSMenuItem" id="834721625">
-									<reference key="NSMenu" ref="893886621"/>
-									<bool key="NSIsDisabled">YES</bool>
-									<bool key="NSIsSeparator">YES</bool>
-									<string key="NSTitle"/>
-									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="625762401"/>
-									<reference key="NSMixedImage" ref="315854375"/>
-								</object>
 							</object>
 						</object>
 					</object>
@@ -1789,7 +1763,7 @@
 						<reference key="NSOnImage" ref="625762401"/>
 						<reference key="NSMixedImage" ref="315854375"/>
 						<string key="NSAction">submenuAction:</string>
-						<int key="NSTag">6</int>
+						<int key="NSTag">7</int>
 						<object class="NSMenu" key="NSSubmenu" id="850647710">
 							<object class="NSMutableString" key="NSTitle">
 								<characters key="NS.bytes">Window</characters>
@@ -1881,7 +1855,7 @@
 						<reference key="NSOnImage" ref="625762401"/>
 						<reference key="NSMixedImage" ref="315854375"/>
 						<string key="NSAction">submenuAction:</string>
-						<int key="NSTag">7</int>
+						<int key="NSTag">8</int>
 						<object class="NSMenu" key="NSSubmenu" id="1021151289">
 							<object class="NSMutableString" key="NSTitle">
 								<characters key="NS.bytes">Help</characters>
@@ -3091,22 +3065,6 @@
 						<reference key="destination" ref="418923160"/>
 					</object>
 					<int key="connectionID">1175</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">reloadBundles:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="340987940"/>
-					</object>
-					<int key="connectionID">1184</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">openBundleEditor:</string>
-						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="397365423"/>
-					</object>
-					<int key="connectionID">1185</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4526,26 +4484,8 @@
 						<reference key="object" ref="893886621"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="397365423"/>
-							<reference ref="340987940"/>
-							<reference ref="834721625"/>
 						</object>
 						<reference key="parent" ref="558064231"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1180</int>
-						<reference key="object" ref="397365423"/>
-						<reference key="parent" ref="893886621"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1181</int>
-						<reference key="object" ref="340987940"/>
-						<reference key="parent" ref="893886621"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1183</int>
-						<reference key="object" ref="834721625"/>
-						<reference key="parent" ref="893886621"/>
 					</object>
 				</object>
 			</object>
@@ -4620,9 +4560,6 @@
 					<string>1178.IBPluginDependency</string>
 					<string>1179.IBEditorWindowLastContentRect</string>
 					<string>1179.IBPluginDependency</string>
-					<string>1180.IBPluginDependency</string>
-					<string>1181.IBPluginDependency</string>
-					<string>1183.IBPluginDependency</string>
 					<string>129.IBPluginDependency</string>
 					<string>129.ImportedFromIB2</string>
 					<string>130.IBEditorWindowLastContentRect</string>
@@ -4938,7 +4875,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{781, 372}, {271, 173}}</string>
+					<string>{{578, 550}, {271, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{561, 605}, {181, 43}}</string>
@@ -5010,10 +4947,7 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{435, 670}, {234, 53}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{435, 717}, {64, 6}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>

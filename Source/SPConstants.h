@@ -151,8 +151,9 @@ typedef enum
 	SPMainMenuView      = 3,
 	SPMainMenuDatabase  = 4,
 	SPMainMenuTable     = 5,
-	SPMainMenuWindow    = 6,
-	SPMainMenuHelp      = 7
+	SPMainMenuBundles   = 6,
+	SPMainMenuWindow    = 7,
+	SPMainMenuHelp      = 8
 } SPMainMenuTags;
 
 // Encoding constants

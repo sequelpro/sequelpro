@@ -715,16 +715,18 @@
 	NSInteger i = 0;
 	for(NSDictionary *item in bundleItems) {
 
-		NSString *keyEq = @"";
-		// if([item objectForKey:SPBundleFileKeyEquivalentKey])
-		// 	keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
-		// else
-		// 	keyEq = @"";
+		NSString *keyEq;
+		if([item objectForKey:SPBundleFileKeyEquivalentKey])
+			keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
+		else
+			keyEq = @"";
 
 		NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForInputField:) keyEquivalent:keyEq] autorelease];
 
 		if([keyEq length])
 			[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
+
+		[mItem setTarget:[[NSApp mainWindow] firstResponder]];
 
 		if([item objectForKey:SPBundleFileTooltipKey])
 			[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
@@ -744,6 +746,21 @@
 
 }
 
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
+{
+
+	if([menuItem action] == @selector(executeBundleItemForEditor:))
+	{
+		return NO;
+	}
+	if([menuItem action] == @selector(executeBundleItemForInputField:))
+	{
+		return YES;
+	}
+
+	return YES;
+
+}
 #pragma mark -
 #pragma mark multi-touch trackpad support
 

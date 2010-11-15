@@ -2991,7 +2991,17 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  * Disable the search in the MySQL help function when getRangeForCurrentWord returns zero length. 
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
-{	
+{
+
+	if([menuItem action] == @selector(executeBundleItemForEditor:))
+	{
+		return YES;
+	}
+	if([menuItem action] == @selector(executeBundleItemForInputField:))
+	{
+		return NO;
+	}
+
 	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
 	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
