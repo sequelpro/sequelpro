@@ -126,7 +126,98 @@
 		[[self delegate] setDoGroupDueToChars];
 	}
 
+	// Check for assign key equivalents inside user-defined bundle commands
+	NSDictionary *keyEquivalents = [[NSApp delegate] bundleKeyEquivalentsForScope:SPBundleScopeInputField];
+	if([keyEquivalents count]) {
+		for(NSString* key in [keyEquivalents allKeys]) {
+			NSArray *keyData = [keyEquivalents objectForKey:key];
+			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[keyEquivalents objectForKey:key] objectAtIndex:1] intValue] == curFlags) {
+				NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
+				[item setToolTip:[[keyEquivalents objectForKey:key] objectAtIndex:2]];
+				[item setTag:0];
+				[self executeBundleItemForInputField:item];
+				return;
+			}
+		}
+	}
+
 	[super keyDown: theEvent];
+
+}
+
+/**
+ * Add Bundle menu items.
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event 
+{
+
+	NSMenu *menu = [[self class] defaultMenu];
+
+	// Remove 'Bundles' sub menu and separator
+	NSMenuItem *bItem = [menu itemWithTag:10000000];
+	if(bItem) {
+		NSInteger sepIndex = [menu indexOfItem:bItem]-1;
+		[menu removeItemAtIndex:sepIndex];
+		[menu removeItem:bItem];
+	}
+
+	if([[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
+
+	[[NSApp delegate] reloadBundles:self];
+
+	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeInputField];
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
+
+	// Add 'Bundles' sub menu
+	[menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
+	NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundles", @"bundles menu item label") action:nil keyEquivalent:@""];
+	[bundleSubMenuItem setTag:10000000];
+
+	[menu addItem:bundleSubMenuItem];
+	[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+
+	NSMutableArray *categorySubMenus = [NSMutableArray array];
+	NSMutableArray *categoryMenus = [NSMutableArray array];
+	if([bundleCategories count]) {
+		for(NSString* title in bundleCategories) {
+			[categorySubMenus addObject:[[[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""] autorelease]];
+			[categoryMenus addObject:[[[NSMenu alloc] init] autorelease]];
+			[bundleMenu addItem:[categorySubMenus lastObject]];
+			[bundleMenu setSubmenu:[categoryMenus lastObject] forItem:[categorySubMenus lastObject]];
+		}
+	}
+
+	NSInteger i = 0;
+	for(NSDictionary *item in bundleItems) {
+
+		NSString *keyEq;
+		if([item objectForKey:SPBundleFileKeyEquivalentKey])
+			keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
+		else
+			keyEq = @"";
+
+		NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForInputField:) keyEquivalent:keyEq] autorelease];
+
+		if([keyEq length])
+			[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
+
+		if([item objectForKey:SPBundleFileTooltipKey])
+			[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
+
+		[mItem setTag:1000000 + i++];
+
+		if([item objectForKey:SPBundleFileCategoryKey]) {
+			[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
+		} else {
+			[bundleMenu addItem:mItem];
+		}
+	}
+
+	[bundleSubMenuItem release];
+
+	return menu;
 
 }
 

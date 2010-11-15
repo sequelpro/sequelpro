@@ -242,8 +242,6 @@
 	[taskProgressWindow setAlphaValue:0.0];
 	[taskProgressWindow setContentView:taskProgressLayer];
 
-	[[customQueryInstance valueForKeyPath:@"textView"] reloadBundleItems];
-
 	[contentViewSplitter setDelegate:self];
 }
 
@@ -4433,10 +4431,10 @@
 
 		BOOL writeAsCsv = ([outputFormat isEqualToString:@"csv"]) ? YES : NO;
 
-		NSString *queryFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_%@", docProcessID];
-		NSString *resultFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_%@", docProcessID];
-		NSString *metaFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_META_%@", docProcessID];
-		NSString *statusFileName = [NSString stringWithFormat:@"/private/tmp/SP_QUERY_RESULT_STATUS_%@", docProcessID];
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
+		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
 		NSFileManager *fm = [NSFileManager defaultManager];
 		NSString *status = @"0";
 		BOOL isDir;

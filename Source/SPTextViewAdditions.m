@@ -22,6 +22,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPAlertSheets.h"
+#import "SPTooltip.h"
+
 @implementation NSTextView (SPTextViewAdditions)
 
 /*
@@ -482,6 +485,264 @@
 	[self setEditable:editableStatus];
 }
 
+- (IBAction)executeBundleItemForInputField:(id)sender
+{
+
+	NSInteger idx = [sender tag] - 1000000;
+	NSString *infoPath = nil;
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
+	if(idx >=0 && idx < [bundleItems count]) {
+		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
+	} else {
+		if([sender tag] == 0 && [[sender toolTip] length]) {
+			infoPath = [sender toolTip];
+		}
+	}
+
+	if(!infoPath) {
+		NSBeep();
+		return;
+	}
+
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+	NSDictionary *cmdData = nil;
+	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSLog(@"“%@” file couldn't be read.", infoPath);
+		NSBeep();
+		if (cmdData) [cmdData release];
+		return;
+	} else {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+
+			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
+			NSString *inputAction = @"";
+			NSString *inputFallBackAction = @"";
+			NSError *err = nil;
+
+			NSRange currentWordRange, currentSelectionRange, currentLineRange;
+
+			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
+
+			if([cmdData objectForKey:SPBundleFileInputSourceKey])
+				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
+			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
+				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
+
+			currentSelectionRange = [self selectedRange];
+			currentWordRange = [self getRangeForCurrentWord];
+			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+
+			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
+			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
+				if(!currentSelectionRange.length) {
+					if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])
+						replaceRange = currentWordRange;
+					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentLine])
+						replaceRange = currentLineRange;
+					else if([inputAction isEqualToString:SPBundleInputSourceEntireContent])
+						replaceRange = NSMakeRange(0,[[self string] length]);
+				} else {
+					replaceRange = currentSelectionRange;
+				}
+
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceEntireContent]) {
+				replaceRange = NSMakeRange(0, [[self string] length]);
+			}
+
+			NSMutableDictionary *env = [NSMutableDictionary dictionary];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
+			[env setObject:SPBundleTaskInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+
+			if(currentSelectionRange.length)
+				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
+
+			if(![[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) {
+
+				id tablesListInstance = [[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] valueForKeyPath:@"tablesListInstance"];
+
+				if (tablesListInstance && [tablesListInstance selectedDatabase])
+					[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
+
+				if (tablesListInstance && [tablesListInstance allDatabaseNames])
+					[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_DATABASES"];
+
+				if (tablesListInstance && [tablesListInstance allTableNames])
+					[env setObject:[[tablesListInstance allTableNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_TABLES"];
+
+				if (tablesListInstance && [tablesListInstance allViewNames])
+					[env setObject:[[tablesListInstance allViewNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_VIEWS"];
+
+				if (tablesListInstance && [tablesListInstance allFunctionNames])
+					[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_FUNCTIONS"];
+
+				if (tablesListInstance && [tablesListInstance allProcedureNames])
+					[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_PROCEDURES"];
+
+				if (tablesListInstance && [tablesListInstance tableName])
+					[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
+
+				if([[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] && [[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] mySQLVersion])
+					[env setObject:[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] mySQLVersion] forKey:@"SP_RDBMS_VERSION"];
+
+			}
+
+			if(1)
+				[env setObject:@"mysql" forKey:@"SP_RDBMS_TYPE"];
+
+			if(currentWordRange.length)
+				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:@"SP_CURRENT_WORD"];
+
+			if(currentLineRange.length)
+				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:@"SP_CURRENT_LINE"];
+
+			NSError *inputFileError = nil;
+			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
+			[input writeToFile:SPBundleTaskInputFilePath
+					  atomically:YES
+						encoding:NSUTF8StringEncoding
+						   error:&inputFileError];
+
+			if(inputFileError != nil) {
+				NSString *errorMessage  = [inputFileError localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				if (cmdData) [cmdData release];
+				return;
+			}
+
+			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
+
+			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
+
+			if(err == nil && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
+					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+
+					if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
+						[self insertText:output];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
+						[self insertAsSnippet:output atRange:replaceRange];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
+						if([[self string] length])
+							[self setSelectedRange:NSMakeRange(0, [[self string] length])];
+						[self insertText:output];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
+						[self shouldChangeTextInRange:replaceRange replacementString:output];
+						[self replaceCharactersInRange:replaceRange withString:output];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
+						[SPTooltip showWithObject:output];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
+						[SPTooltip showWithObject:output ofType:@"html"];
+					}
+				}
+			} else {
+				NSString *errorMessage  = [err localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+			}
+
+		}
+
+		if (cmdData) [cmdData release];
+
+	}
+
+}
+
+/**
+ * Add Bundle menu items.
+ */
+- (NSMenu *)menuForEvent:(NSEvent *)event 
+{
+
+	NSMenu *menu = [[self class] defaultMenu];
+
+	// Remove 'Bundles' sub menu and separator
+	NSMenuItem *bItem = [menu itemWithTag:10000000];
+	if(bItem) {
+		NSInteger sepIndex = [menu indexOfItem:bItem]-1;
+		[menu removeItemAtIndex:sepIndex];
+		[menu removeItem:bItem];
+	}
+
+	if([[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
+
+	[[NSApp delegate] reloadBundles:self];
+
+	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeInputField];
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
+
+	// Add 'Bundles' sub menu
+	[menu addItem:[NSMenuItem separatorItem]];
+
+	NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
+	NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundles", @"bundles menu item label") action:nil keyEquivalent:@""];
+	[bundleSubMenuItem setTag:10000000];
+
+	[menu addItem:bundleSubMenuItem];
+	[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+
+	NSMutableArray *categorySubMenus = [NSMutableArray array];
+	NSMutableArray *categoryMenus = [NSMutableArray array];
+	if([bundleCategories count]) {
+		for(NSString* title in bundleCategories) {
+			[categorySubMenus addObject:[[[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""] autorelease]];
+			[categoryMenus addObject:[[[NSMenu alloc] init] autorelease]];
+			[bundleMenu addItem:[categorySubMenus lastObject]];
+			[bundleMenu setSubmenu:[categoryMenus lastObject] forItem:[categorySubMenus lastObject]];
+		}
+	}
+
+	NSInteger i = 0;
+	for(NSDictionary *item in bundleItems) {
+
+		NSString *keyEq = @"";
+		// if([item objectForKey:SPBundleFileKeyEquivalentKey])
+		// 	keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
+		// else
+		// 	keyEq = @"";
+
+		NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForInputField:) keyEquivalent:keyEq] autorelease];
+
+		if([keyEq length])
+			[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
+
+		if([item objectForKey:SPBundleFileTooltipKey])
+			[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
+
+		[mItem setTag:1000000 + i++];
+
+		if([item objectForKey:SPBundleFileCategoryKey]) {
+			[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
+		} else {
+			[bundleMenu addItem:mItem];
+		}
+	}
+
+	[bundleSubMenuItem release];
+
+	return menu;
+
+}
 
 #pragma mark -
 #pragma mark multi-touch trackpad support

@@ -42,6 +42,8 @@
 - (IBAction)moveSelectionLineUp:(id)sender;
 - (IBAction)moveSelectionLineDown:(id)sender;
 
+- (IBAction)executeBundleItemForInputField:(id)sender;
+
 - (void)makeTextSizeLarger;
 - (void)makeTextSizeSmaller;
 

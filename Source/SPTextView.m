@@ -130,11 +130,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	isProcessingMirroredSnippets = NO;
 	completionWasRefreshed = NO;
 
-	bundleItems = [[NSMutableArray alloc] initWithCapacity:1];
-	bundleCategories = [[NSMutableArray alloc] initWithCapacity:1];
-	bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
-	bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
-
 	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:scrollView];
 	[scrollView setVerticalRulerView:lineNumberView];
 	[scrollView setHasHorizontalRuler:NO];
@@ -2126,14 +2121,15 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Check for assign key equivalents inside user-defined bundle commands
-	if([bundleKeyEquivalents count]) {
-		for(NSString* key in [bundleKeyEquivalents allKeys]) {
-			NSArray *keyData = [bundleKeyEquivalents objectForKey:key];
-			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[bundleKeyEquivalents objectForKey:key] objectAtIndex:1] intValue] == curFlags) {
+	NSDictionary *keyEquivalents = [[NSApp delegate] bundleKeyEquivalentsForScope:SPBundleScopeQueryEditor];
+	if([keyEquivalents count]) {
+		for(NSString* key in [keyEquivalents allKeys]) {
+			NSArray *keyData = [keyEquivalents objectForKey:key];
+			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[keyEquivalents objectForKey:key] objectAtIndex:1] intValue] == curFlags) {
 				NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
-				[item setToolTip:[[bundleKeyEquivalents objectForKey:key] objectAtIndex:2]];
+				[item setToolTip:[[keyEquivalents objectForKey:key] objectAtIndex:2]];
 				[item setTag:0];
-				[self executeBundleItem:item];
+				[self executeBundleItemForEditor:item];
 				return;
 			}
 		}
@@ -2921,7 +2917,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[[menu itemAtIndex:6] setHidden:YES];
 	}
 
-	[self reloadBundleItems];
+	[[NSApp delegate] reloadBundles:self];
 
 	// Remove 'Bundles' sub menu and separator
 	NSMenuItem *bItem = [menu itemWithTag:10000000];
@@ -2930,6 +2926,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[menu removeItemAtIndex:sepIndex];
 		[menu removeItem:bItem];
 	}
+
+	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeQueryEditor];
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeQueryEditor];
 
 	// Add 'Bundles' sub menu for custom query editor only so far if bundles with scope 'editor' were found
 	if(customQueryInstance && bundleItems && [bundleItems count]) {
@@ -2957,23 +2956,23 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		for(NSDictionary *item in bundleItems) {
 
 			NSString *keyEq;
-			if([item objectForKey:@"keyEquivalent"])
-				keyEq = [[item objectForKey:@"keyEquivalent"] objectAtIndex:0];
+			if([item objectForKey:SPBundleFileKeyEquivalentKey])
+				keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
 			else
 				keyEq = @"";
 
-			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:@"label"] action:@selector(executeBundleItem:) keyEquivalent:keyEq] autorelease];
+			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForEditor:) keyEquivalent:keyEq] autorelease];
 
 			if([keyEq length])
-				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:@"keyEquivalent"] objectAtIndex:1] intValue]];
+				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
 
-			if([item objectForKey:@"tooltip"])
-				[mItem setToolTip:[item objectForKey:@"tooltip"]];
+			if([item objectForKey:SPBundleFileTooltipKey])
+				[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
 
 			[mItem setTag:1000000 + i++];
 
-			if([item objectForKey:@"category"]) {
-				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:@"category"]]] addItem:mItem];
+			if([item objectForKey:SPBundleFileCategoryKey]) {
+				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
 			} else {
 				[bundleMenu addItem:mItem];
 			}
@@ -3404,86 +3403,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 #pragma mark -
 
-- (void)reloadBundleItems
+- (IBAction)executeBundleItemForEditor:(id)sender
 {
 
-	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
-
-	if(bundlePath) {
-		NSError *error = nil;
-		NSArray *foundBundles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:&error];
-		if (foundBundles && [foundBundles count]) {
-			[bundleItems removeAllObjects];
-			[bundleUsedScopes removeAllObjects];
-			[bundleCategories removeAllObjects];
-			[bundleKeyEquivalents removeAllObjects];
-			for(NSString* bundle in foundBundles) {
-				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
-
-				NSError *readError = nil;
-				NSString *convError = nil;
-				NSPropertyListFormat format;
-				NSDictionary *cmdData = nil;
-				NSString *infoPath = [NSString stringWithFormat:@"%@/%@/info.plist", bundlePath, bundle];
-				NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
-
-				cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-				if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-					NSLog(@"“%@/info.plist” file couldn't be read.", bundle);
-					NSBeep();
-					if (cmdData) [cmdData release];
-				} else {
-					if([cmdData objectForKey:@"name"] && [[cmdData objectForKey:@"name"] length]
-						&& [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"])
-					{
-						if(![bundleUsedScopes containsObject:@"editor"])
-							[bundleUsedScopes addObject:@"editor"];
-						if([cmdData objectForKey:@"category"] && ![bundleCategories containsObject:[cmdData objectForKey:@"category"]])
-							[bundleCategories addObject:[cmdData objectForKey:@"category"]];
-						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
-						[aDict setObject:[cmdData objectForKey:@"name"] forKey:@"label"];
-						[aDict setObject:infoPath forKey:@"path"];
-						if([cmdData objectForKey:@"keyEquivalent"] && [[cmdData objectForKey:@"keyEquivalent"] length]) {
-							NSString *theKey = [cmdData objectForKey:@"keyEquivalent"];
-							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
-							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
-							NSUInteger mask = 0;
-							if([theMods rangeOfString:@"^"].length)
-								mask = mask | NSControlKeyMask;
-							if([theMods rangeOfString:@"@"].length)
-								mask = mask | NSCommandKeyMask;
-							if([theMods rangeOfString:@"~"].length)
-								mask = mask | NSAlternateKeyMask;
-							if(![[theChar lowercaseString] isEqualToString:theChar])
-								mask = mask | NSShiftKeyMask;
-							[bundleKeyEquivalents setObject:[NSArray arrayWithObjects:[theChar lowercaseString], [NSNumber numberWithInteger:mask], infoPath, nil] forKey:[cmdData objectForKey:@"keyEquivalent"]];
-							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:@"keyEquivalent"];
-						}
-						if([cmdData objectForKey:@"tooltip"] && [[cmdData objectForKey:@"tooltip"] length])
-							[aDict setObject:[cmdData objectForKey:@"tooltip"] forKey:@"tooltip"];
-						if([cmdData objectForKey:@"category"] && [[cmdData objectForKey:@"category"] length])
-							[aDict setObject:[cmdData objectForKey:@"category"] forKey:@"category"];
-						[bundleItems addObject:aDict];
-					}
-					if (cmdData) [cmdData release];
-				}
-			}
-			NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"label" ascending:YES] autorelease];
-			[bundleItems sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-			[bundleCategories sortUsingSelector:@selector(compare:)];
-		}
-	}
-
-}
-
-- (IBAction)executeBundleItem:(id)sender
-{
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeQueryEditor];
 	if(idx >=0 && idx < [bundleItems count]) {
-		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:@"path"];
+		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
 		if([sender tag] == 0 && [[sender toolTip] length]) {
 			infoPath = [sender toolTip];
@@ -3510,21 +3437,21 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if (cmdData) [cmdData release];
 		return;
 	} else {
-		if([cmdData objectForKey:@"command"] && [[cmdData objectForKey:@"command"] length] && [cmdData objectForKey:@"scope"] && [[cmdData objectForKey:@"scope"] isEqualToString:@"editor"]) {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
 
-			NSString *cmd = [cmdData objectForKey:@"command"];
+			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
-			NSString *inputTempFileName = @"/tmp/SP_BUNDLE_TASK_INPUT";
+
 			NSRange currentWordRange, currentQueryRange, currentSelectionRange, currentLineRange;
 
-			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
+			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
 
-			if([cmdData objectForKey:@"input"])
-				inputAction = [[cmdData objectForKey:@"input"] lowercaseString];
-			if([cmdData objectForKey:@"input_fallback"])
-				inputFallBackAction = [[cmdData objectForKey:@"input_fallback"] lowercaseString];
+			if([cmdData objectForKey:SPBundleFileInputSourceKey])
+				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
+			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
+				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
 
 			currentSelectionRange = [self selectedRange];
 			currentWordRange = [self getRangeForCurrentWord];
@@ -3536,28 +3463,28 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
 
 			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
-			if([inputAction isEqualToString:@"selectedtext"]) {
+			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
 				if(!currentSelectionRange.length) {
-					if([inputFallBackAction isEqualToString:@"currentword"])
+					if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])
 						replaceRange = currentWordRange;
-					else if([inputFallBackAction isEqualToString:@"currentline"])
+					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentLine])
 						replaceRange = currentLineRange;
-					else if([inputFallBackAction isEqualToString:@"currentquery"])
+					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
 						replaceRange = currentQueryRange;
-					else if([inputAction isEqualToString:@"entirecontent"])
+					else if([inputAction isEqualToString:SPBundleInputSourceEntireContent])
 						replaceRange = NSMakeRange(0,[[self string] length]);
 				} else {
 					replaceRange = currentSelectionRange;
 				}
 				
 			}
-			else if([inputAction isEqualToString:@"entirecontent"]) {
-				replaceRange = NSMakeRange(0,[[self string] length]);
+			else if([inputAction isEqualToString:SPBundleInputSourceEntireContent]) {
+				replaceRange = NSMakeRange(0, [[self string] length]);
 			}
 
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-			[env setObject:inputTempFileName forKey:@"SP_BUNDLE_INPUT_FILE"];
+			[env setObject:SPBundleTaskInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
 
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
@@ -3600,7 +3527,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSError *inputFileError = nil;
 			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
-			[input writeToFile:inputTempFileName
+			[input writeToFile:SPBundleTaskInputFilePath
 					  atomically:YES
 						encoding:NSUTF8StringEncoding
 						   error:&inputFileError];
@@ -3615,36 +3542,37 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
 
-			[[NSFileManager defaultManager] removeItemAtPath:inputTempFileName error:nil];
+			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
 
-			if(err == nil && [cmdData objectForKey:@"output"]) {
-				if([[cmdData objectForKey:@"output"] length] && ![[cmdData objectForKey:@"output"] isEqualToString:@"nop"]) {
-					NSString *action = [[cmdData objectForKey:@"output"] lowercaseString];
+			if(err == nil && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
+					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
-					if([action isEqualToString:@"insertastext"]) {
+					if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
 						[self insertText:output];
 					}
 
-					else if([action isEqualToString:@"insertassnippet"]) {
+					else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
 						[self insertAsSnippet:output atRange:replaceRange];
 					}
 
-					else if([action isEqualToString:@"replacecontent"]) {
+					else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
 						if([[self string] length])
-							[self setSelectedRange:NSMakeRange(0,[[self string] length])];
+							[self setSelectedRange:NSMakeRange(0, [[self string] length])];
 						[self insertText:output];
 					}
 
-					else if([action isEqualToString:@"replaceselection"]) {
+					else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
 						[self shouldChangeTextInRange:replaceRange replacementString:output];
 						[self replaceCharactersInRange:replaceRange withString:output];
 					}
 
-					else if([action isEqualToString:@"showastexttooltip"]) {
+					else if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
 						[SPTooltip showWithObject:output];
 					}
 
-					else if([action isEqualToString:@"showashtmltooltip"]) {
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
 						[SPTooltip showWithObject:output ofType:@"html"];
 					}
 				}
@@ -3685,11 +3613,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTextColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryAutoUppercaseKeywords];
-
-	if(bundleItems) [bundleItems release];
-	if(bundleUsedScopes) [bundleUsedScopes release];
-	if(bundleCategories) [bundleCategories release];
-	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 	[prefs release];

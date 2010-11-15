@@ -449,6 +449,9 @@ extern NSString *SPBundleFileInputSourceFallBackKey;
 extern NSString *SPBundleFileOutputActionKey;
 extern NSString *SPBundleFileKeyEquivalentKey;
 extern NSString *SPBundleFileTooltipKey;
+extern NSString *SPBundleInternLabelKey;
+extern NSString *SPBundleInternPathToFileKey;
+extern NSString *SPBundleInternKeyEquivalentKey;
 extern NSString *SPBundleFileName;
 extern NSString *SPBundleTaskInputFilePath;
 

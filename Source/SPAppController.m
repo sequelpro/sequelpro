@@ -48,7 +48,12 @@
 		_sessionURL = nil;
 		aboutController = nil;
 		_spfSessionDocData = [[NSMutableDictionary alloc] init];
-		
+
+		bundleItems = [[NSMutableDictionary alloc] initWithCapacity:1];
+		bundleCategories = [[NSMutableDictionary alloc] initWithCapacity:1];
+		bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
+		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
+
 		[NSApp setDelegate:self];
 	}
 
@@ -103,6 +108,8 @@
 
 	// Report any crashes
 	[[FRFeedbackReporter sharedReporter] reportIfCrash];
+
+	[self reloadBundles:self];
 }
 
 /**
@@ -845,7 +852,94 @@
 
 - (IBAction)reloadBundles:(id)sender
 {
-	
+	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
+
+	if(bundlePath) {
+		NSError *error = nil;
+		NSArray *foundBundles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:&error];
+		if (foundBundles && [foundBundles count]) {
+			[bundleItems removeAllObjects];
+			[bundleUsedScopes removeAllObjects];
+			[bundleCategories removeAllObjects];
+			[bundleKeyEquivalents removeAllObjects];
+			for(NSString* bundle in foundBundles) {
+				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
+
+				NSError *readError = nil;
+				NSString *convError = nil;
+				NSPropertyListFormat format;
+				NSDictionary *cmdData = nil;
+				NSString *infoPath = [NSString stringWithFormat:@"%@/%@/%@", bundlePath, bundle, SPBundleFileName];
+				NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+				cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+				if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+					NSLog(@"“%@/%@” file couldn't be read.", bundle, SPBundleFileName);
+					NSBeep();
+					if (cmdData) [cmdData release];
+				} else {
+					if([cmdData objectForKey:SPBundleFileNameKey] && [[cmdData objectForKey:SPBundleFileNameKey] length] && [cmdData objectForKey:SPBundleFileScopeKey])
+					{
+
+						NSArray *scopes = [[cmdData objectForKey:SPBundleFileScopeKey] componentsSeparatedByString:@" "];
+						for(NSString *scope in scopes) {
+							if(![bundleUsedScopes containsObject:scope]) {
+								[bundleUsedScopes addObject:scope];
+								[bundleItems setObject:[NSMutableArray array] forKey:scope];
+								[bundleCategories setObject:[NSMutableArray array] forKey:scope];
+								[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
+							}
+
+							if([cmdData objectForKey:SPBundleFileCategoryKey] && ![bundleCategories containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
+								[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
+						}
+
+						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
+						[aDict setObject:[cmdData objectForKey:SPBundleFileNameKey] forKey:SPBundleInternLabelKey];
+						[aDict setObject:infoPath forKey:SPBundleInternPathToFileKey];
+
+						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
+							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
+							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
+							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
+							NSUInteger mask = 0;
+							if([theMods rangeOfString:@"^"].length)
+								mask = mask | NSControlKeyMask;
+							if([theMods rangeOfString:@"@"].length)
+								mask = mask | NSCommandKeyMask;
+							if([theMods rangeOfString:@"~"].length)
+								mask = mask | NSAlternateKeyMask;
+							if(![[theChar lowercaseString] isEqualToString:theChar])
+								mask = mask | NSShiftKeyMask;
+							for(NSString* scope in scopes)
+								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSArray arrayWithObjects:[theChar lowercaseString], 
+									[NSNumber numberWithInteger:mask], infoPath, nil] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
+							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
+						}
+						
+						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
+							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
+
+						if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length])
+							[aDict setObject:[cmdData objectForKey:SPBundleFileCategoryKey] forKey:SPBundleFileCategoryKey];
+
+						for(NSString* scope in scopes)
+							[[bundleItems objectForKey:scope] addObject:aDict];
+					}
+					if (cmdData) [cmdData release];
+				}
+			}
+
+			NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:SPBundleInternLabelKey ascending:YES] autorelease];
+			for(NSString* scope in [bundleItems allKeys]) {
+				[[bundleItems objectForKey:scope] sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+				[[bundleCategories objectForKey:scope] sortUsingSelector:@selector(compare:)];
+			}
+
+		}
+	}
 }
 
 #pragma mark -
@@ -982,6 +1076,21 @@
 	return @"";
 }
 
+- (NSArray *)bundleCategoriesForScope:(NSString*)scope
+{
+	return [bundleCategories objectForKey:scope];
+}
+
+- (NSArray *)bundleItemsForScope:(NSString*)scope
+{
+	return [bundleItems objectForKey:scope];
+}
+
+- (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope
+{
+	return [bundleKeyEquivalents objectForKey:scope];
+}
+
 /**
  * Sparkle updater delegate method. Called just before the updater relaunches Sequel Pro and we need to make
  * sure that no sheets are currently open, which will prevent the app from being quit. 
@@ -1010,15 +1119,20 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
+
+	if(bundleItems) [bundleItems release];
+	if(bundleUsedScopes) [bundleUsedScopes release];
+	if(bundleCategories) [bundleCategories release];
+	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
+
 	[prefsController release], prefsController = nil;
-	
+
 	if (aboutController) [aboutController release], aboutController = nil;
 	if (bundleEditorController) [bundleEditorController release], bundleEditorController = nil;
-	
+
 	if (_sessionURL) [_sessionURL release], _sessionURL = nil;
 	if (_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
-	
+
 	[super dealloc];
 }
 

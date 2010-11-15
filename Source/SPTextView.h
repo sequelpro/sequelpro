@@ -86,11 +86,6 @@
 	NSRange queryRange;
 	BOOL shouldHiliteQuery;
 
-	NSMutableArray *bundleItems;
-	NSMutableArray *bundleCategories;
-	NSMutableArray *bundleUsedScopes;
-	NSMutableDictionary *bundleKeyEquivalents;
-
 }
 
 @property(retain) NSColor* queryHiliteColor;
@@ -149,8 +144,6 @@
 
 - (BOOL)isSnippetMode;
 
-- (void)reloadBundleItems;
-
-- (IBAction)executeBundleItem:(id)sender;
+- (IBAction)executeBundleItemForEditor:(id)sender;
 
 @end

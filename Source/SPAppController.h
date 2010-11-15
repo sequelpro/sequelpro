@@ -43,6 +43,12 @@
 
 	NSURL *_sessionURL;
 	NSMutableDictionary *_spfSessionDocData;
+
+	NSMutableDictionary *bundleItems;
+	NSMutableDictionary *bundleCategories;
+	NSMutableArray *bundleUsedScopes;
+	NSMutableDictionary *bundleKeyEquivalents;
+
 }
 
 // Window management
@@ -84,5 +90,8 @@
 
 // Others
 - (NSString *)contentOfFile:(NSString *)aPath;
+- (NSArray *)bundleCategoriesForScope:(NSString*)scope;
+- (NSArray *)bundleItemsForScope:(NSString*)scope;
+- (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope;
 
 @end
