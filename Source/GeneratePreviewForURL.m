@@ -60,24 +60,14 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	NSError *templateReadError = nil;
 
-	if (QLPreviewRequestIsCancelled(preview)) {
-		if(pool) [pool release], pool = nil;
-		return noErr;
-	}
-
 	NSString *html = @"";
 	NSString *template = nil;
-
-	if (QLPreviewRequestIsCancelled(preview)) {
-		if(pool) [pool release], pool = nil;
-		return noErr;
-	}
 
 	NSInteger previewHeight = 280;
 
 	NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[myURL path] error:nil];
 
-	// Dispatch different fiel extensions
+	// Dispatch different file extensions
 	if([urlExtension isEqualToString:@"spf"]) {
 
 		NSError *readError = nil;
@@ -429,6 +419,15 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 					else
 						[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
 
+					if (QLPreviewRequestIsCancelled(preview)) {
+						if(sqlHTML) [sqlHTML release], sqlHTML = nil;
+						if(truncatedString) [truncatedString release], sqlHTML = nil;
+						if(sqlText) [sqlText release], sqlHTML = nil;
+						if(pool) [pool release], pool = nil;
+						return noErr;
+					}
+
+
 				}
 				[sqlHTML appendString:truncatedString];
 				[sqlText release];
@@ -470,10 +469,10 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	else
 		iconImage = [iconImages objectAtIndex:0];
 
-	image = [[iconImage TIFFRepresentation] retain];
+	image = [iconImage TIFFRepresentation];
 
-	props    = [[NSMutableDictionary alloc] init];
-	imgProps = [[NSMutableDictionary alloc] init];
+	props    = [[NSMutableDictionary alloc] initWithCapacity:6];
+	imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
 
 	[props setObject:[NSNumber numberWithInt:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
 	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
@@ -485,6 +484,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	[props setObject:[NSDictionary dictionaryWithObject:imgProps forKey:@"icon.tiff"] forKey:(NSString *)kQLPreviewPropertyAttachmentsKey];
 	[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
+	[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
 	[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
 
 	QLPreviewRequestSetDataRepresentation(preview,
@@ -495,7 +495,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	[props release];
 	[imgProps release];
-	if(image) [image release], image = nil;
+
 	[pool release];
 
 	return noErr;
