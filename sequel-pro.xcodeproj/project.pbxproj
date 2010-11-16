@@ -388,6 +388,7 @@
 		BC2C8E220FA8C2DB008468C7 /* SPMySQLHelpTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = BC2C8E210FA8C2DB008468C7 /* SPMySQLHelpTemplate.html */; };
 		BC30C011111C98BD002701C9 /* DataMigrationDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */; };
 		BC32F242121D66260067305E /* SPFileManagerAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC32F241121D66260067305E /* SPFileManagerAdditions.m */; };
+		BC34F3281292AD6F000DA1AA /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
 		BC398A2D121D526200BE3EF4 /* SPCopyTable.m in Sources */ = {isa = PBXBuildFile; fileRef = BC398A2C121D526200BE3EF4 /* SPCopyTable.m */; };
 		BC4DF1981158FB280059FABD /* SPNavigatorOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC4DF1971158FB280059FABD /* SPNavigatorOutlineView.m */; };
 		BC5AD7FF10FB262F008769E3 /* field-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC5AD7FE10FB262F008769E3 /* field-small-square.tiff */; };
@@ -2906,6 +2907,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC34F3281292AD6F000DA1AA /* SPConstants.m in Sources */,
 				BC6D709E120C4C9F008027B5 /* SPEditorTokens.l in Sources */,
 				BC0E1487120AAB5C00E52E25 /* SPStringAdditions.m in Sources */,
 				BC0E1486120AAB5600E52E25 /* SPDataAdditions.m in Sources */,
