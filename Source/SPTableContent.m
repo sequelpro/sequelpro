@@ -3997,7 +3997,7 @@
 		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
 		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
-			tmp = [tableContentView selectedRowsAsSqlInserts];
+			tmp = [tableContentView rowsAsSqlInsertsOnlySelectedRows:YES];
 		else
 			tmp = [tableContentView draggedRowsAsTabString];
 

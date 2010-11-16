@@ -82,21 +82,32 @@
 - (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 /*!
-	@method	 selectedRowsAsTabStringWithHeaders
-	@abstract   getter of the selected rows of the table for copy
-	@discussion For the selected rows returns a single string with each row
+	@method	 rowsAsTabStringWithHeaders:onlySelectedRows:
+	@abstract   getter of the selected rows or all of the table for copy
+	@discussion For the selected rows or all returns a single string with each row
 	   separated by a newline and then for each column value separated by a 
 	   tab. Values are from the objects description method, so make sure it
 	   returns something meaningful. 
 	@result	 The above described string, or nil if nothing selected
 */
-- (NSString *)selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders;
+- (NSString *)rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected;
+
+/*!
+	@method	 rowsAsCsvStringWithHeaders:onlySelectedRows:
+	@abstract   getter of the selected rows or all of the table csv formatted
+	@discussion For the selected rows or all returns a single string with each row
+	   separated by a newline and then for each column value separated by a 
+	   , wherby each cell will be wrapped into quotes. Values are from the objects description method, so make sure it
+	   returns something meaningful. 
+	@result	 The above described string, or nil if nothing selected
+*/
+- (NSString *)rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected;
 
 /*
  * Generate a string in form of INSERT INTO <table> VALUES () of 
- * currently selected rows. Support blob data as well.
+ * currently selected rows or all. Support blob data as well.
  */
-- (NSString *)selectedRowsAsSqlInserts;
+- (NSString *)rowsAsSqlInsertsOnlySelectedRows:(BOOL)onlySelected;
 
 /*
  * Set all necessary data from the table content view.

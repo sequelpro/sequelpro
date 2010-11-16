@@ -81,7 +81,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSString *tmp = nil;
 
 	if([sender tag] == MENU_EDIT_COPY_AS_SQL) {
-		tmp = [self selectedRowsAsSqlInserts];
+		tmp = [self rowsAsSqlInsertsOnlySelectedRows:YES];
 		if ( nil != tmp )
 		{
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -92,7 +92,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			[pb setString:tmp forType:NSStringPboardType];
 		}
 	} else {
-		tmp = [self selectedRowsAsTabStringWithHeaders:([sender tag] == MENU_EDIT_COPY_WITH_COLUMN)];
+		tmp = [self rowsAsTabStringWithHeaders:([sender tag] == MENU_EDIT_COPY_WITH_COLUMN) onlySelectedRows:YES];
 		if ( nil != tmp )
 		{
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -113,11 +113,15 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
  * Get selected rows a string of newline separated lines of tab separated fields
  * the value in each field is from the objects description method
  */
-- (NSString *) selectedRowsAsTabStringWithHeaders:(BOOL)withHeaders
+- (NSString *) rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected
 {
-	if ([self numberOfSelectedRows] == 0) return nil;
+	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
 
-	NSIndexSet *selectedRows = [self selectedRowIndexes];
+	NSIndexSet *selectedRows;
+	if(onlySelected)
+		selectedRows = [self selectedRowIndexes];
+	else
+		selectedRows = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [tableStorage count])];
 
 	NSArray *columns = [self tableColumns];
 	NSUInteger numColumns = [columns count];
@@ -127,7 +131,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	if (withHeaders) {
 		NSUInteger i;
 		for( i = 0; i < numColumns; i++ ){
-			[result appendFormat:@"%@\t", [[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]];
+			if([result length])
+				[result appendString:@"\t"];
+			[result appendString:[[NSArrayObjectAtIndex(columns, i) headerCell] stringValue]];
 		}
 		[result appendString:@"\n"];
 	}
@@ -196,19 +202,117 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	return result;
 }
 
+/**
+ * Get selected rows a string of newline separated lines of , separated fields wrapped into quotes
+ * the value in each field is from the objects description method
+ */
+- (NSString *) rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected
+{
+	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
+
+	NSIndexSet *selectedRows;
+	if(onlySelected)
+		selectedRows = [self selectedRowIndexes];
+	else
+		selectedRows = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [tableStorage count])];
+
+	NSArray *columns = [self tableColumns];
+	NSUInteger numColumns = [columns count];
+	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
+
+	// Add the table headers if requested to do so
+	if (withHeaders) {
+		NSUInteger i;
+		for( i = 0; i < numColumns; i++ ){
+			if([result length])
+				[result appendString:@","];
+			[result appendFormat:@"\"%@\"", [[[NSArrayObjectAtIndex(columns, i) headerCell] stringValue] stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+		}
+		[result appendString:@"\n"];
+	}
+
+	NSUInteger c;
+	id cellData = nil;
+
+	// Create an array of table column mappings for fast iteration
+	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	for ( c = 0; c < numColumns; c++ )
+		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+
+	// Loop through the rows, adding their descriptive contents
+	NSUInteger rowIndex = [selectedRows firstIndex];
+	NSString *nullString = [prefs objectForKey:SPNullValue];
+	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
+	Class mcpGeometryData = [MCPGeometryData class];
+
+	while ( rowIndex != NSNotFound )
+	{
+		for ( c = 0; c < numColumns; c++ ) {
+			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
+
+			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
+			// and the string representation of any blobs or binary texts.
+			if (cellData) {
+				if ([cellData isNSNull])
+					[result appendFormat:@"\"%@\",", nullString];
+				else if ([cellData isSPNotLoaded])
+					[result appendFormat:@"\"%@\",", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
+				else if ([cellData isKindOfClass:[NSData class]]) {
+					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
+					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+					if (displayString) {
+						[result appendFormat:@"\"%@\",", [displayString stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+						[displayString release];
+					}
+				}
+				else if ([cellData isKindOfClass:mcpGeometryData]) {
+					[result appendFormat:@"\"%@\",", [cellData wktString]];
+				}
+				else
+					[result appendFormat:@"\"%@\",", [[cellData description] stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+			} else {
+				[result appendString:@","];
+			}
+		}
+
+		// Remove the trailing tab and add the linebreak
+		if ([result length]){
+			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
+		}
+		[result appendString:@"\n"];
+
+		// Select the next row index
+		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
+	}
+
+	// Remove the trailing line end
+	if ([result length]) {
+		[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
+	}
+
+	free(columnMappings);
+
+	return result;
+}
+
 /*
  * Return selected rows as SQL INSERT INTO `foo` VALUES (baz) string.
  * If no selected table name is given `<table>` will be used instead.
  */
-- (NSString *) selectedRowsAsSqlInserts
+- (NSString *) rowsAsSqlInsertsOnlySelectedRows:(BOOL)onlySelected
 {
 
-	if ( [self numberOfSelectedRows] < 1 ) return nil;
+	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
+
+	NSIndexSet *selectedRows;
+	if(onlySelected)
+		selectedRows = [self selectedRowIndexes];
+	else
+		selectedRows = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [tableStorage count])];
 
 	NSArray *columns         = [self tableColumns];
 	NSUInteger numColumns    = [columns count];
 
-	NSIndexSet *selectedRows = [self selectedRowIndexes];
 	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
 
 	id cellData = nil;
@@ -751,20 +855,40 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
 					[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
 
-				// NSError *inputFileError = nil;
-				// NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
-				// [input writeToFile:SPBundleTaskInputFilePath
-				// 		  atomically:YES
-				// 			encoding:NSUTF8StringEncoding
-				// 			   error:&inputFileError];
-				// 
-				// if(inputFileError != nil) {
-				// 	NSString *errorMessage  = [inputFileError localizedDescription];
-				// 	SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-				// 					  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
-				// 	if (cmdData) [cmdData release];
-				// 	return;
-				// }
+				NSError *inputFileError = nil;
+				NSString *input = @"";
+				if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
+					input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES];
+				}
+				else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
+					input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
+				}
+				else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
+					input = [self selectedRowsAsSqlInsertsOnlySelectedRows:YES];
+				}
+				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
+					input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];
+				}
+				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
+					input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO];
+				}
+				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
+					input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
+				}
+				
+				if(input == nil) input = @"";
+				[input writeToFile:SPBundleTaskInputFilePath
+						  atomically:YES
+							encoding:NSUTF8StringEncoding
+							   error:&inputFileError];
+				
+				if(inputFileError != nil) {
+					NSString *errorMessage  = [inputFileError localizedDescription];
+					SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+									  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+					if (cmdData) [cmdData release];
+					return;
+				}
 
 				NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
 
