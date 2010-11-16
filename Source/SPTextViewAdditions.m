@@ -564,39 +564,6 @@
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
 
-			if(![[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) {
-
-				id tablesListInstance = [[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] valueForKeyPath:@"tablesListInstance"];
-
-				if (tablesListInstance && [tablesListInstance selectedDatabase])
-					[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
-
-				if (tablesListInstance && [tablesListInstance allDatabaseNames])
-					[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_DATABASES"];
-
-				if (tablesListInstance && [tablesListInstance allTableNames])
-					[env setObject:[[tablesListInstance allTableNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_TABLES"];
-
-				if (tablesListInstance && [tablesListInstance allViewNames])
-					[env setObject:[[tablesListInstance allViewNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_VIEWS"];
-
-				if (tablesListInstance && [tablesListInstance allFunctionNames])
-					[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_FUNCTIONS"];
-
-				if (tablesListInstance && [tablesListInstance allProcedureNames])
-					[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_PROCEDURES"];
-
-				if (tablesListInstance && [tablesListInstance tableName])
-					[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
-
-				if([[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] && [[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] mySQLVersion])
-					[env setObject:[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] mySQLVersion] forKey:@"SP_RDBMS_VERSION"];
-
-			}
-
-			if(1)
-				[env setObject:@"mysql" forKey:@"SP_RDBMS_TYPE"];
-
 			if(currentWordRange.length)
 				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:@"SP_CURRENT_WORD"];
 
@@ -622,7 +589,7 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
 
-			if(err == nil && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
 				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];

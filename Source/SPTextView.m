@@ -3499,33 +3499,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
 
-			if (tablesListInstance && [tablesListInstance selectedDatabase])
-				[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
-
-			if (tablesListInstance && [tablesListInstance allDatabaseNames])
-				[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_DATABASES"];
-
-			if (tablesListInstance && [tablesListInstance allTableNames])
-				[env setObject:[[tablesListInstance allTableNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_TABLES"];
-
-			if (tablesListInstance && [tablesListInstance allViewNames])
-				[env setObject:[[tablesListInstance allViewNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_VIEWS"];
-
-			if (tablesListInstance && [tablesListInstance allFunctionNames])
-				[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_FUNCTIONS"];
-
-			if (tablesListInstance && [tablesListInstance allProcedureNames])
-				[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_PROCEDURES"];
-
-			if(tableDocumentInstance && [tableDocumentInstance mySQLVersion])
-				[env setObject:[tableDocumentInstance mySQLVersion] forKey:@"SP_RDBMS_VERSION"];
-
-			if(1)
-				[env setObject:@"mysql" forKey:@"SP_RDBMS_TYPE"];
-
-			if (tablesListInstance && [tablesListInstance tableName])
-				[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
-
 			if(customQueryInstance && [customQueryInstance currentQueryRange].length)
 				[env setObject:[[self string] substringWithRange:[customQueryInstance currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
 
@@ -3554,7 +3527,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
 
-			if(err == nil && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
 				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];

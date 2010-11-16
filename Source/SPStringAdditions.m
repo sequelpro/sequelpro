@@ -414,10 +414,50 @@
  */
 - (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError
 {
+
 	BOOL userTerminated = NO;
+	BOOL redirectForScript = NO;
+	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
+	NSString *scriptPath = @"";
+	NSString *scriptContentPath = @"/tmp/SP_SCRIPT_COMMAND";
+
+	[[NSFileManager defaultManager] removeItemAtPath:scriptContentPath error:nil];
+
+	if([self length] > 3 && [self hasPrefix:@"#!"] && [shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]) {
+
+		NSRange firstLineRange = NSMakeRange(2, [self rangeOfString:@"\n"].location - 2);
+
+		[scriptHeaderArguments setArray:[[self substringWithRange:firstLineRange] componentsSeparatedByString:@" "]];
+
+		while([scriptHeaderArguments containsObject:@""])
+			[scriptHeaderArguments removeObject:@""];
+
+		if([scriptHeaderArguments count]) {
+			scriptPath = [scriptHeaderArguments objectAtIndex:0];
+			[scriptHeaderArguments removeObject:scriptPath];
+		}
+
+		BOOL isDir = NO;
+		if([scriptPath hasPrefix:@"/"] && [[NSFileManager defaultManager] fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
+			NSString *script = [self substringWithRange:NSMakeRange(NSMaxRange(firstLineRange), [self length] - NSMaxRange(firstLineRange))];
+			NSError *writeError = nil;
+			[script writeToFile:scriptContentPath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
+			if(writeError == nil) {
+				redirectForScript = YES;
+				[scriptHeaderArguments insertObject:scriptContentPath atIndex:0];
+			} else {
+				NSBeep();
+				NSLog(@"Couldn't write script file.");
+			}
+			
+		}
+	}
 
 	NSTask *bashTask = [[NSTask alloc] init];
-	[bashTask setLaunchPath: @"/bin/bash"];
+	if(redirectForScript)
+		[bashTask setLaunchPath:scriptPath];
+	else
+		[bashTask setLaunchPath:@"/bin/bash"];
 
 	NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 	[theEnv setDictionary:shellEnvironment];
@@ -427,14 +467,27 @@
 	// Furthermore this id is used to communicate with the called command as file name.
 	NSString *processID = [NSString stringWithNewUUID];
 	[theEnv setObject:processID forKey:@"SP_PROCESS_ID"];
-	[[[[NSApp mainWindow] delegate] selectedTableDocument] setProcessID:processID];
-	if(shellEnvironment != nil && [shellEnvironment isKindOfClass:[NSDictionary class]] && [shellEnvironment count])
+	id doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
+	if(!doc) {
+		NSBeep();
+		NSLog(@"No active document found for bash command.");
+		return;
+	}
+	[doc setProcessID:processID];
+
+	if([doc shellVariables])
+		[theEnv addEntriesFromDictionary:[doc shellVariables]];
+
+	if(theEnv != nil && [theEnv count])
 		[bashTask setEnvironment:theEnv];
 
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
 
-	[bashTask setArguments:[NSArray arrayWithObjects: @"-c", self, nil]];
+	if(redirectForScript)
+		[bashTask setArguments:scriptHeaderArguments];
+	else
+		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", self, nil]];
 
 	NSPipe *stdout_pipe = [NSPipe pipe];
 	[bashTask setStandardOutput:stdout_pipe];
@@ -475,6 +528,9 @@
 		NSLog(@"“%@” was terminated by user.", self);
 		return @"";
 	}
+
+	if(redirectForScript)
+		[[NSFileManager defaultManager] removeItemAtPath:scriptContentPath error:nil];
 
 	// If return from bash re-activate Sequel Pro
 	[NSApp activateIgnoringOtherApps:YES];

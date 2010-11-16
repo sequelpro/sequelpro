@@ -905,7 +905,7 @@
 								[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
 							}
 
-							if([cmdData objectForKey:SPBundleFileCategoryKey] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
+							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
 								[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
 						}
 
@@ -983,7 +983,10 @@
 		NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:scope];
 		NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:scope];
 
-		if(![bundleItems count]) continue;
+		if(![bundleItems count]) {
+			k++;
+			continue;
+		}
 
 		NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
 		NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:[scopeTitles objectAtIndex:k] action:nil keyEquivalent:@""];

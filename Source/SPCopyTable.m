@@ -748,39 +748,8 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
 				[env setObject:SPBundleTaskInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
 
-				id tablesListInstance = [[self delegate] valueForKeyPath:@"tablesListInstance"];
-				id tableDocumentInstance = [[self delegate] valueForKeyPath:@"tableDocumentInstance"];
-
-				if (tablesListInstance) {
-					if([tablesListInstance selectedDatabase])
-						[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
-
-					if ([tablesListInstance allDatabaseNames])
-						[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_DATABASES"];
-
-					if ([tablesListInstance allTableNames])
-						[env setObject:[[tablesListInstance allTableNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_TABLES"];
-
-					if ([tablesListInstance allViewNames])
-						[env setObject:[[tablesListInstance allViewNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_VIEWS"];
-
-					if ([tablesListInstance allFunctionNames])
-						[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_FUNCTIONS"];
-
-					if ([tablesListInstance allProcedureNames])
-						[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedBySpacesAndQuoted] forKey:@"SP_ALL_PROCEDURES"];
-
-					if ([tablesListInstance tableName])
-						[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
-
-				}
-
-				if(tableDocumentInstance && [tableDocumentInstance mySQLVersion])
-					[env setObject:[tableDocumentInstance mySQLVersion] forKey:@"SP_RDBMS_VERSION"];
-
-				if(1)
-					[env setObject:@"mysql" forKey:@"SP_RDBMS_TYPE"];
-
+				if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
+					[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
 
 				// NSError *inputFileError = nil;
 				// NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
@@ -801,7 +770,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 				[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
 
-				if(err == nil && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+				if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
 					if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 							&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 						NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];

@@ -355,5 +355,6 @@
 
 // Scripting
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
+- (NSDictionary*)shellVariables;
 
 @end
