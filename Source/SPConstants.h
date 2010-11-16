@@ -433,6 +433,12 @@ extern NSString *SPBundleInputSourceEntireContent;
 extern NSString *SPBundleInputSourceCurrentWord;
 extern NSString *SPBundleInputSourceCurrentQuery;
 extern NSString *SPBundleInputSourceCurrentLine;
+extern NSString *SPBundleInputSourceSelectedTableRowsAsTab;
+extern NSString *SPBundleInputSourceSelectedTableRowsAsCsv;
+extern NSString *SPBundleInputSourceSelectedTableRowsAsSqlInsert;
+extern NSString *SPBundleInputSourceTableRowsAsTab;
+extern NSString *SPBundleInputSourceTableRowsAsCsv;
+extern NSString *SPBundleInputSourceTableRowsAsSqlInsert;
 extern NSString *SPBundleInputSourceNone;
 extern NSString *SPBundleOutputActionNone;
 extern NSString *SPBundleOutputActionInsertAsText;
@@ -455,6 +461,7 @@ extern NSString *SPBundleInternPathToFileKey;
 extern NSString *SPBundleInternKeyEquivalentKey;
 extern NSString *SPBundleFileName;
 extern NSString *SPBundleTaskInputFilePath;
+extern NSString *SPBundleTaskScriptCommandFilePath;
 
 // sequel URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;

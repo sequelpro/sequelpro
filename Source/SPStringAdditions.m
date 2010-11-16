@@ -417,12 +417,15 @@
 
 	BOOL userTerminated = NO;
 	BOOL redirectForScript = NO;
+	BOOL isDir = NO;
+
 	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
 	NSString *scriptPath = @"";
-	NSString *scriptContentPath = @"/tmp/SP_SCRIPT_COMMAND";
 
-	[[NSFileManager defaultManager] removeItemAtPath:scriptContentPath error:nil];
+	[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskScriptCommandFilePath error:nil];
 
+	// Parse first line for magic header #! ; if found save the script content and run the command after #! with that file.
+	// This allows to write perl, ruby, osascript scripts natively.
 	if([self length] > 3 && [self hasPrefix:@"#!"] && [shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]) {
 
 		NSRange firstLineRange = NSMakeRange(2, [self rangeOfString:@"\n"].location - 2);
@@ -437,14 +440,13 @@
 			[scriptHeaderArguments removeObject:scriptPath];
 		}
 
-		BOOL isDir = NO;
 		if([scriptPath hasPrefix:@"/"] && [[NSFileManager defaultManager] fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
 			NSString *script = [self substringWithRange:NSMakeRange(NSMaxRange(firstLineRange), [self length] - NSMaxRange(firstLineRange))];
 			NSError *writeError = nil;
-			[script writeToFile:scriptContentPath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
+			[script writeToFile:SPBundleTaskScriptCommandFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
 			if(writeError == nil) {
 				redirectForScript = YES;
-				[scriptHeaderArguments insertObject:scriptContentPath atIndex:0];
+				[scriptHeaderArguments insertObject:SPBundleTaskScriptCommandFilePath atIndex:0];
 			} else {
 				NSBeep();
 				NSLog(@"Couldn't write script file.");
@@ -475,6 +477,11 @@
 	}
 	[doc setProcessID:processID];
 
+	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, processID] forKey:@"SP_QUERY_FILE_PATH"];
+	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, processID] forKey:@"SP_QUERY_RESULT_FILE_PATH"];
+	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, processID] forKey:@"SP_QUERY_RESULT_STATUS_FILE_PATH"];
+	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, processID] forKey:@"SP_QUERY_RESULT_META_FILE_PATH"];
+
 	if([doc shellVariables])
 		[theEnv addEntriesFromDictionary:[doc shellVariables]];
 
@@ -483,6 +490,8 @@
 
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
+	else if([shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] && [[NSFileManager defaultManager] fileExistsAtPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] isDirectory:&isDir] && isDir)
+		[bashTask setCurrentDirectoryPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]];
 
 	if(redirectForScript)
 		[bashTask setArguments:scriptHeaderArguments];
@@ -530,7 +539,7 @@
 	}
 
 	if(redirectForScript)
-		[[NSFileManager defaultManager] removeItemAtPath:scriptContentPath error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskScriptCommandFilePath error:nil];
 
 	// If return from bash re-activate Sequel Pro
 	[NSApp activateIgnoringOtherApps:YES];
