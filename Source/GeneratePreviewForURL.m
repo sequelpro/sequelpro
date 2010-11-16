@@ -383,6 +383,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				BOOL skipFontTag;
 
 				// now loop through all the tokens
+				NSUInteger poolCount = 0;
+				NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
 				while (token=yylex()){
 					skipFontTag = NO;
 					switch (token) {
@@ -424,20 +426,36 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 						if(truncatedString) [truncatedString release], sqlHTML = nil;
 						if(sqlText) [sqlText release], sqlHTML = nil;
 						if(pool) [pool release], pool = nil;
+						[loopPool release];
 						return noErr;
 					}
 
-
+					poolCount++;
+					if (poolCount > 1000) {
+						poolCount = 0;
+						[loopPool release];
+						loopPool = [[NSAutoreleasePool alloc] init];
+					}
 				}
+				[loopPool release];
+				[sqlHTML appendString:sqlText];
 				[sqlHTML appendString:truncatedString];
 				[sqlText release];
 				[truncatedString release];
 
 			}
 
+			// Wrap lines, and replace tabs with spaces
+			[sqlHTML replaceOccurrencesOfString:@"\n" withString:@"<br>" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+			[sqlHTML replaceOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+
+			// Improve soft wrapping my making more characters wrap points
+			[sqlHTML replaceOccurrencesOfString:@"," withString:@",&#8203;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+			[sqlHTML replaceOccurrencesOfString:@"/" withString:@"/&#8203;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+
 			html = [NSString stringWithFormat:template,
 				[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
-				[[sqlHTML stringByReplacingOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;"] stringByReplacingOccurrencesOfString:@"\n" withString:@"<br>"]
+				sqlHTML
 			];
 			previewHeight = 495;
 			[sqlHTML release];
