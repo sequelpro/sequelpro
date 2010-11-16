@@ -969,11 +969,13 @@
 	// Add installed Bundles
 	[menu addItem:[NSMenuItem separatorItem]];
 
-	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeQueryEditor, nil];
+	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeQueryEditor, SPBundleScopeDataTable, nil];
 	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Fields", @"input fields menu item label"), 
-													 NSLocalizedString(@"Query Editor", @"query editor menu item label"), nil];
+													 NSLocalizedString(@"Query Editor", @"query editor menu item label"), 
+													 NSLocalizedString(@"Data Table", @"data table menu item label"),nil];
 	NSArray *scopeSelector = [NSArray arrayWithObjects:@"executeBundleItemForInputField:", 
-													   @"executeBundleItemForEditor:", nil];
+													   @"executeBundleItemForEditor:",
+													   @"executeBundleItemForDataTable:", nil];
 
 	NSInteger k = 0;
 	for(NSString* scope in scopes) {

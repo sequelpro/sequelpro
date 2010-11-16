@@ -692,55 +692,57 @@
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
 
 	// Add 'Bundles' sub menu
-	[menu addItem:[NSMenuItem separatorItem]];
+	if(bundleItems && [bundleItems count]) {
+		[menu addItem:[NSMenuItem separatorItem]];
 
-	NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
-	NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundles", @"bundles menu item label") action:nil keyEquivalent:@""];
-	[bundleSubMenuItem setTag:10000000];
+		NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
+		NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundles", @"bundles menu item label") action:nil keyEquivalent:@""];
+		[bundleSubMenuItem setTag:10000000];
 
-	[menu addItem:bundleSubMenuItem];
-	[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+		[menu addItem:bundleSubMenuItem];
+		[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
 
-	NSMutableArray *categorySubMenus = [NSMutableArray array];
-	NSMutableArray *categoryMenus = [NSMutableArray array];
-	if([bundleCategories count]) {
-		for(NSString* title in bundleCategories) {
-			[categorySubMenus addObject:[[[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""] autorelease]];
-			[categoryMenus addObject:[[[NSMenu alloc] init] autorelease]];
-			[bundleMenu addItem:[categorySubMenus lastObject]];
-			[bundleMenu setSubmenu:[categoryMenus lastObject] forItem:[categorySubMenus lastObject]];
+		NSMutableArray *categorySubMenus = [NSMutableArray array];
+		NSMutableArray *categoryMenus = [NSMutableArray array];
+		if([bundleCategories count]) {
+			for(NSString* title in bundleCategories) {
+				[categorySubMenus addObject:[[[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""] autorelease]];
+				[categoryMenus addObject:[[[NSMenu alloc] init] autorelease]];
+				[bundleMenu addItem:[categorySubMenus lastObject]];
+				[bundleMenu setSubmenu:[categoryMenus lastObject] forItem:[categorySubMenus lastObject]];
+			}
 		}
-	}
 
-	NSInteger i = 0;
-	for(NSDictionary *item in bundleItems) {
+		NSInteger i = 0;
+		for(NSDictionary *item in bundleItems) {
 
-		NSString *keyEq;
-		if([item objectForKey:SPBundleFileKeyEquivalentKey])
-			keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
-		else
-			keyEq = @"";
+			NSString *keyEq;
+			if([item objectForKey:SPBundleFileKeyEquivalentKey])
+				keyEq = [[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:0];
+			else
+				keyEq = @"";
 
-		NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForInputField:) keyEquivalent:keyEq] autorelease];
+			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForInputField:) keyEquivalent:keyEq] autorelease];
 
-		if([keyEq length])
-			[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
+			if([keyEq length])
+				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
 
-		[mItem setTarget:[[NSApp mainWindow] firstResponder]];
+			[mItem setTarget:[[NSApp mainWindow] firstResponder]];
 
-		if([item objectForKey:SPBundleFileTooltipKey])
-			[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
+			if([item objectForKey:SPBundleFileTooltipKey])
+				[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
 
-		[mItem setTag:1000000 + i++];
+			[mItem setTag:1000000 + i++];
 
-		if([item objectForKey:SPBundleFileCategoryKey]) {
-			[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
-		} else {
-			[bundleMenu addItem:mItem];
+			if([item objectForKey:SPBundleFileCategoryKey]) {
+				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
+			} else {
+				[bundleMenu addItem:mItem];
+			}
 		}
-	}
 
-	[bundleSubMenuItem release];
+		[bundleSubMenuItem release];
+	}
 
 	return menu;
 

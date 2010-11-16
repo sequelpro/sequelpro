@@ -154,6 +154,8 @@
 - (BOOL)isCellEditingMode;
 - (BOOL)isCellComplex;
 
+- (IBAction)executeBundleItemForDataTable:(id)sender;
+
 @end
 
 extern NSInteger MENU_EDIT_COPY;
