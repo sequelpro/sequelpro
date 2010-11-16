@@ -438,7 +438,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 					}
 				}
 				[loopPool release];
-				[sqlHTML appendString:sqlText];
 				[sqlHTML appendString:truncatedString];
 				[sqlText release];
 				[truncatedString release];
@@ -451,7 +450,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 			// Improve soft wrapping my making more characters wrap points
 			[sqlHTML replaceOccurrencesOfString:@"," withString:@",&#8203;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
-			[sqlHTML replaceOccurrencesOfString:@"/" withString:@"/&#8203;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
 
 			html = [NSString stringWithFormat:template,
 				[NSString stringForByteSize:[[fileAttributes objectForKey:NSFileSize] longLongValue]],
