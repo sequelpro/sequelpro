@@ -41,21 +41,28 @@
 	IBOutlet NSButton *inputFieldScopeButton;
 	IBOutlet NSButton *dataTableScopeButton;
 	IBOutlet NSButton *disableCheckBox;
+	IBOutlet NSButton *removeButton;
+	IBOutlet NSMenuItem *duplicateMenuItem;
+	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 
 	IBOutlet NSArrayController *commandBundleArrayController;
 	NSMutableArray *commandBundleArray;
 	
+	NSString *bundlePath;
+	NSString *draggedFilePath;
+	
 
 }
 
-- (IBAction)scopeButtonChanged:(id)sender;
 - (IBAction)inputPopuButtonChanged:(id)sender;
 - (IBAction)duplicateCommandBundle:(id)sender;
 - (IBAction)addCommandBundle:(id)sender;
 - (IBAction)removeCommandBundle:(id)sender;
 - (IBAction)revealCommandBundleInFinder:(id)sender;
 - (IBAction)showHelp:(id)sender;
+- (IBAction)saveAndCloseWindow:(id)sender;
 
+- (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
 
 @end
