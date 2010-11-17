@@ -36,6 +36,8 @@
 	if ((self = [super initWithWindowNibName:@"BundleEditor"])) {
 		commandBundleArray = nil;
 		draggedFilePath = nil;
+		oldBundleName = nil;
+		isTableCellEditing = NO;
 		bundlePath = [[[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil] retain];
 	}
 	
@@ -275,6 +277,21 @@
 #pragma mark -
 #pragma mark NSWindow delegate
 
+/**
+ * Suppress closing of the window if user pressed ESC while inline table cell editing.
+ */
+- (BOOL)windowShouldClose:(id)sender
+{
+
+	if(isTableCellEditing) {
+		[commandsTableView abortEditing];
+		isTableCellEditing = NO;
+		return NO;
+	}
+	return YES;
+
+}
+
 - (void)windowWillClose:(NSNotification *)notification
 {
 	// Release commandBundleArray if window will close to save memory
@@ -286,6 +303,7 @@
 		[draggedFilePath release];
 		draggedFilePath = nil;
 	}
+	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
 
 	return YES;
 }
@@ -303,6 +321,9 @@
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
+	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+	oldBundleName = [[[commandBundleArray objectAtIndex:rowIndex] objectForKey:@"bundleName"] retain];
+	isTableCellEditing = YES;
 	return YES;
 }
 
@@ -320,20 +341,48 @@
 }
 
 /*
- * Save favorite names if inline edited (suppress empty names)
+ * Save spBundle name if inline edited (suppress empty names) and check for renaming and / in the name
  */
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
+	if([aNotification object] != commandsTableView) return;
 
-	if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		if([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length]) {
-			[[commandBundleArray objectAtIndex:rowIndex] setObject:anObject forKey:@"bundleName"];
+	NSString *newBundleName = [[[aNotification userInfo] objectForKey:@"NSFieldEditor"] string];
+
+	BOOL isValid = YES;
+
+	if(newBundleName && [newBundleName length] && ![newBundleName rangeOfString:@"/"].length) {
+
+		NSString *oldName = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, oldBundleName, SPUserBundleFileExtension];
+		NSString *newName = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newBundleName, SPUserBundleFileExtension];
+	
+		BOOL isDir;
+		NSFileManager *fm = [NSFileManager defaultManager];
+		// Check for renaming
+		if([fm fileExistsAtPath:oldName isDirectory:&isDir] && isDir) {
+			if(![fm moveItemAtPath:oldName toPath:newName error:nil]) {
+				isValid = NO;
+			}
 		}
+		// Check if the new name already exists
+		else {
+			if([fm fileExistsAtPath:newName isDirectory:&isDir] && isDir) {
+				isValid = NO;
+			}
+		}
+	} else {
+		isValid = NO;
 	}
 
+	// If not valid reset name to the old one
+	if(!isValid)
+		[[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] setObject:oldBundleName forKey:@"bundleName"];
+	
 	[commandsTableView reloadData];
-}
 
+	isTableCellEditing = NO;
+
+}
 /**
  * Sheet did end method
  */
@@ -423,7 +472,18 @@
 
 	NSDictionary *bundleDict = [commandBundleArray objectAtIndex:[rows firstIndex]];
 	NSString *bundleFileName = [bundleDict objectForKey:@"bundleName"];
+	NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
+
 	draggedFilePath = [[NSString stringWithFormat:@"/tmp/%@.%@", bundleFileName, SPUserBundleFileExtension] retain];
+
+
+	BOOL isDir;
+
+	// Copy possible existing bundle with content
+	if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
+		if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:draggedFilePath error:nil])
+			return NO;
+	}
 
 	// Write temporary bundle data to disk but do not save the dict to Bundles folder
 	if(![self saveBundle:bundleDict atPath:draggedFilePath]) return NO;

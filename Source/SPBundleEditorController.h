@@ -51,7 +51,8 @@
 	
 	NSString *bundlePath;
 	NSString *draggedFilePath;
-	
+	NSString *oldBundleName;
+	BOOL isTableCellEditing;
 
 }
 
