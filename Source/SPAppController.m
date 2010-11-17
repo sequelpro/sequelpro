@@ -872,7 +872,7 @@
 	if(bundlePath) {
 		NSError *error = nil;
 		NSArray *foundBundles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:&error];
-		if (foundBundles && [foundBundles count]) {
+		if (foundBundles && [foundBundles count] && error == nil) {
 			for(NSString* bundle in foundBundles) {
 				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
 

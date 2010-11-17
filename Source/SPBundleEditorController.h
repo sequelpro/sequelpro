@@ -24,9 +24,38 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class SRRecorderControl;
 
 @interface SPBundleEditorController : NSWindowController {
 
+	IBOutlet NSTextView* commandTextView;
+	IBOutlet NSTableView* commandsTableView;
+	IBOutlet NSTextField* nameTextField;
+	IBOutlet NSTextField* tootlipTextField;
+	IBOutlet NSTextField* categoryTextField;
+	IBOutlet NSTextField* fallbackLabelField;
+	IBOutlet NSPopUpButton* inputPopupButton;
+	IBOutlet NSPopUpButton* inputFallbackPopupButton;
+	IBOutlet NSPopUpButton* outputPopupButton;
+	IBOutlet NSButton *editorScopeButton;
+	IBOutlet NSButton *inputFieldScopeButton;
+	IBOutlet NSButton *dataTableScopeButton;
+	IBOutlet NSButton *disableCheckBox;
+	IBOutlet SRRecorderControl *keyEquivalentField;
+
+	IBOutlet NSArrayController *commandBundleArrayController;
+	NSMutableArray *commandBundleArray;
+	
+
 }
+
+- (IBAction)scopeButtonChanged:(id)sender;
+- (IBAction)inputPopuButtonChanged:(id)sender;
+- (IBAction)duplicateCommandBundle:(id)sender;
+- (IBAction)addCommandBundle:(id)sender;
+- (IBAction)removeCommandBundle:(id)sender;
+- (IBAction)revealCommandBundleInFinder:(id)sender;
+- (IBAction)showHelp:(id)sender;
+
 
 @end
