@@ -54,9 +54,32 @@
 	NSString *oldBundleName;
 	BOOL isTableCellEditing;
 
+	NSMenu *inputEditorScopePopUpMenu;
+	NSMenu *inputInputFieldScopePopUpMenu;
+	NSMenu *inputDataTableScopePopUpMenu;
+	NSMenu *inputNonePopUpMenu;
+	NSMenu *outputEditorScopePopUpMenu;
+	NSMenu *outputInputFieldScopePopUpMenu;
+	NSMenu *outputDataTableScopePopUpMenu;
+	NSMenu *inputFallbackEditorScopePopUpMenu;
+	NSMenu *inputFallbackInputFieldScopePopUpMenu;
+
+	NSArray *inputEditorScopeArray;
+	NSArray *inputInputFieldScopeArray;
+	NSArray *inputDataTableScopeArray;
+	NSArray *outputEditorScopeArray;
+	NSArray *outputInputFieldScopeArray;
+	NSArray *outputDataTableScopeArray;
+	NSArray *inputFallbackEditorScopeArray;
+	NSArray *inputFallbackInputFieldScopeArray;
+
+
 }
 
-- (IBAction)inputPopuButtonChanged:(id)sender;
+- (IBAction)inputPopupButtonChanged:(id)sender;
+- (IBAction)inputFallbackPopupButtonChanged:(id)sender;
+- (IBAction)outputPopupButtonChanged:(id)sender;
+- (IBAction)scopeButtonChanged:(id)sender;
 - (IBAction)duplicateCommandBundle:(id)sender;
 - (IBAction)addCommandBundle:(id)sender;
 - (IBAction)removeCommandBundle:(id)sender;

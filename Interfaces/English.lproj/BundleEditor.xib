@@ -23,8 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="899"/>
-			<integer value="730"/>
+			<integer value="686"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -949,6 +948,7 @@
 															<int key="NSvFlags">293</int>
 															<string key="NSFrame">{{16, 11}, {134, 17}}</string>
 															<reference key="NSSuperview" ref="346382683"/>
+															<int key="NSTag">1</int>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSButtonCell" key="NSCell" id="176613618">
 																<int key="NSCellFlags">67239424</int>
@@ -973,6 +973,7 @@
 															<int key="NSvFlags">293</int>
 															<string key="NSFrame">{{158, 11}, {134, 17}}</string>
 															<reference key="NSSuperview" ref="346382683"/>
+															<int key="NSTag">2</int>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSButtonCell" key="NSCell" id="32494124">
 																<int key="NSCellFlags">67239424</int>
@@ -993,6 +994,7 @@
 															<int key="NSvFlags">293</int>
 															<string key="NSFrame">{{300, 11}, {134, 17}}</string>
 															<reference key="NSSuperview" ref="346382683"/>
+															<int key="NSTag">4</int>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSButtonCell" key="NSCell" id="670066090">
 																<int key="NSCellFlags">67239424</int>
@@ -1334,14 +1336,6 @@
 						<reference key="destination" ref="594438970"/>
 					</object>
 					<int key="connectionID">841</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">inputPopuButtonChanged:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="117047836"/>
-					</object>
-					<int key="connectionID">845</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -1690,6 +1684,46 @@
 						<reference key="destination" ref="1055471998"/>
 					</object>
 					<int key="connectionID">910</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">inputPopupButtonChanged:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="117047836"/>
+					</object>
+					<int key="connectionID">911</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">scopeButtonChanged:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="799580933"/>
+					</object>
+					<int key="connectionID">912</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">scopeButtonChanged:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="126436931"/>
+					</object>
+					<int key="connectionID">913</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">scopeButtonChanged:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="594438970"/>
+					</object>
+					<int key="connectionID">914</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">inputFallbackPopupButtonChanged:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1013555552"/>
+					</object>
+					<int key="connectionID">916</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2421,9 +2455,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{96, 115}, {655, 444}}</string>
+					<string>{{106, 275}, {655, 444}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{96, 115}, {655, 444}}</string>
+					<string>{{106, 275}, {655, 444}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{726, 444}</string>
@@ -2580,7 +2614,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">910</int>
+			<int key="maxID">916</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2723,7 +2757,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addCommandBundle:</string>
 							<string>duplicateCommandBundle:</string>
-							<string>inputPopuButtonChanged:</string>
+							<string>inputFallbackPopupButtonChanged:</string>
+							<string>inputPopupButtonChanged:</string>
 							<string>removeCommandBundle:</string>
 							<string>revealCommandBundleInFinder:</string>
 							<string>saveAndCloseWindow:</string>
@@ -2740,6 +2775,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -2748,7 +2784,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addCommandBundle:</string>
 							<string>duplicateCommandBundle:</string>
-							<string>inputPopuButtonChanged:</string>
+							<string>inputFallbackPopupButtonChanged:</string>
+							<string>inputPopupButtonChanged:</string>
 							<string>removeCommandBundle:</string>
 							<string>revealCommandBundleInFinder:</string>
 							<string>saveAndCloseWindow:</string>
@@ -2766,7 +2803,11 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">inputPopuButtonChanged:</string>
+								<string key="name">inputFallbackPopupButtonChanged:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">inputPopupButtonChanged:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

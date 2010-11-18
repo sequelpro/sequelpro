@@ -275,6 +275,7 @@ NSString *SPBundleFileInputSourceFallBackKey                = @"input_fallback";
 NSString *SPBundleFileOutputActionKey                       = @"output";
 NSString *SPBundleFileKeyEquivalentKey                      = @"keyEquivalent";
 NSString *SPBundleFileTooltipKey                            = @"tooltip";
+NSString *SPBundleFileDisabledKey                           = @"disabled";
 NSString *SPBundleInternLabelKey                            = @"label";
 NSString *SPBundleInternPathToFileKey                       = @"path";
 NSString *SPBundleInternKeyEquivalentKey                    = @"keyEquivalent";

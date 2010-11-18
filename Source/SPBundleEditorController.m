@@ -24,6 +24,11 @@
 
 #import "SPBundleEditorController.h"
 
+@interface SPBundleEditorController (PrivateAPI)
+
+- (void)_updateInputPopupButton;
+
+@end
 
 @implementation SPBundleEditorController
 
@@ -47,17 +52,256 @@
 
 - (void)dealloc
 {
+
+	[inputEditorScopePopUpMenu release];
+	[inputInputFieldScopePopUpMenu release];
+	[inputDataTableScopePopUpMenu release];
+	[outputEditorScopePopUpMenu release];
+	[outputInputFieldScopePopUpMenu release];
+	[outputDataTableScopePopUpMenu release];
+	[inputFallbackEditorScopePopUpMenu release];
+	[inputFallbackInputFieldScopePopUpMenu release];
+	[inputNonePopUpMenu release];
+
+	[inputEditorScopeArray release];
+	[inputInputFieldScopeArray release];
+	[inputDataTableScopeArray release];
+	[outputEditorScopeArray release];
+	[outputInputFieldScopeArray release];
+	[outputDataTableScopeArray release];
+	[inputFallbackEditorScopeArray release];
+	[inputFallbackInputFieldScopeArray release];
+
 	if(commandBundleArray) [commandBundleArray release], commandBundleArray = nil;
 	if(bundlePath) [bundlePath release], bundlePath = nil;
+
 	[super dealloc];
+
+}
+
+- (void)awakeFromNib
+{
+
+	inputEditorScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputNonePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	outputEditorScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	outputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	outputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputFallbackEditorScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputFallbackInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+
+	inputEditorScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
+	inputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
+	inputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedTableRowsAsTab, SPBundleInputSourceSelectedTableRowsAsCsv, SPBundleInputSourceSelectedTableRowsAsSqlInsert, SPBundleInputSourceTableRowsAsTab, SPBundleInputSourceTableRowsAsCsv, SPBundleInputSourceTableRowsAsSqlInsert, nil] retain];
+	outputEditorScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, nil] retain];
+	outputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, nil] retain];
+	outputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, nil] retain];
+	inputFallbackEditorScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent, nil] retain];
+	inputFallbackInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceEntireContent, nil] retain];
+
+	NSMutableArray *allPopupScopeItems = [NSMutableArray array];
+	[allPopupScopeItems addObjectsFromArray:inputEditorScopeArray];
+	[allPopupScopeItems addObjectsFromArray:inputInputFieldScopeArray];
+	[allPopupScopeItems addObjectsFromArray:inputDataTableScopeArray];
+	[allPopupScopeItems addObjectsFromArray:outputEditorScopeArray];
+	[allPopupScopeItems addObjectsFromArray:outputInputFieldScopeArray];
+	[allPopupScopeItems addObjectsFromArray:outputDataTableScopeArray];
+	[allPopupScopeItems addObjectsFromArray:inputFallbackEditorScopeArray];
+	[allPopupScopeItems addObjectsFromArray:inputFallbackInputFieldScopeArray];
+
+	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:
+						[NSArray arrayWithObjects:
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Selected Text", @"selected text menu item label"),
+							NSLocalizedString(@"Entire Content", @"entire content menu item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Selected Text", @"selected text menu item label"),
+							NSLocalizedString(@"Entire Content", @"entire content menu item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Selected Rows (TSV)", @"selected rows (TSV) menu item label"),
+							NSLocalizedString(@"Selected Rows (CSV)", @"selected rows (CSV) menu item label"),
+							NSLocalizedString(@"Selected Rows (SQL)", @"selected rows (SQL) menu item label"),
+							NSLocalizedString(@"Table Content (TSV)", @"table content (TSV) menu item label"),
+							NSLocalizedString(@"Table Content (CSV)", @"table content (CSV) menu item label"),
+							NSLocalizedString(@"Table Content (SQL)", @"table content (SQL) menu item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Insert as Text", @"insert as text item label"),
+							NSLocalizedString(@"Insert as Snippet", @"insert as snippet item label"),
+							NSLocalizedString(@"Replace Selection", @"replace selection item label"),
+							NSLocalizedString(@"Replace Entire Content", @"replace entire content item label"),
+							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
+							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Insert as Text", @"insert as text item label"),
+							NSLocalizedString(@"Replace Selection", @"replace selection item label"),
+							NSLocalizedString(@"Replace Entire Content", @"replace entire content item label"),
+							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
+							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
+							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Current Word", @"current word item label"),
+							NSLocalizedString(@"Current Line", @"current line item label"),
+							NSLocalizedString(@"Current Query", @"current query item label"),
+							NSLocalizedString(@"Entire Content", @"entire content item label"),
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Current Word", @"current word item label"),
+							NSLocalizedString(@"Current Line", @"current line item label"),
+							NSLocalizedString(@"Entire Content", @"entire content item label"),
+						nil]
+					forKeys:allPopupScopeItems];
+
+	NSMenuItem *anItem;
+	for(NSString* title in inputEditorScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
+		[inputEditorScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in inputInputFieldScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
+		[inputInputFieldScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in inputDataTableScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
+		[inputDataTableScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in outputEditorScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
+		[outputEditorScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in outputInputFieldScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
+		[outputInputFieldScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in outputDataTableScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
+		[outputDataTableScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in inputFallbackEditorScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputFallbackPopupButtonChanged:) keyEquivalent:@""];
+		[inputFallbackEditorScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in inputFallbackInputFieldScopeArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputFallbackPopupButtonChanged:) keyEquivalent:@""];
+		[inputFallbackInputFieldScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:SPBundleInputSourceNone] action:nil keyEquivalent:@""];
+	[inputNonePopUpMenu addItem:anItem];
+	[anItem release];
+
 }
 
 #pragma mark -
 
 
-- (IBAction)inputPopuButtonChanged:(id)sender
+- (IBAction)inputPopupButtonChanged:(id)sender
 {
-	
+
+	id currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
+
+	NSMenu* senderMenu = [sender menu];
+
+	NSInteger selectedIndex = [senderMenu indexOfItem:sender];
+	NSString *input = SPBundleInputSourceNone;
+	if(senderMenu == inputEditorScopePopUpMenu)
+		input = [inputEditorScopeArray objectAtIndex:selectedIndex];
+	else if(senderMenu == inputInputFieldScopePopUpMenu)
+		input = [inputInputFieldScopeArray objectAtIndex:selectedIndex];
+	else if(senderMenu == inputDataTableScopePopUpMenu)
+		input = [inputDataTableScopeArray objectAtIndex:selectedIndex];
+	else if(senderMenu == inputNonePopUpMenu)
+		input = SPBundleInputSourceNone;
+
+	[currentDict setObject:input forKey:SPBundleFileInputSourceKey];
+
+	[self _updateInputPopupButton];
+
+}
+
+- (IBAction)inputFallbackPopupButtonChanged:(id)sender
+{
+
+	id currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
+
+	NSMenu* senderMenu = [sender menu];
+
+	NSInteger selectedIndex = [senderMenu indexOfItem:sender];
+	NSString *input = SPBundleInputSourceNone;
+	if(senderMenu == inputFallbackEditorScopePopUpMenu)
+		input = [inputFallbackEditorScopeArray objectAtIndex:selectedIndex];
+	else if(senderMenu == inputFallbackInputFieldScopePopUpMenu)
+		input = [inputFallbackInputFieldScopeArray objectAtIndex:selectedIndex];
+
+	[currentDict setObject:input forKey:SPBundleFileInputSourceFallBackKey];
+
+}
+
+- (IBAction)outputPopupButtonChanged:(id)sender
+{
+
+	id currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
+
+	NSMenu* senderMenu = [sender menu];
+
+	NSInteger selectedIndex = [senderMenu indexOfItem:sender];
+	NSString *output = SPBundleOutputActionNone;
+	if(senderMenu == outputEditorScopePopUpMenu)
+		output = [outputEditorScopeArray objectAtIndex:selectedIndex];
+	else if(senderMenu == outputInputFieldScopePopUpMenu)
+		output = [outputInputFieldScopeArray objectAtIndex:selectedIndex];
+	else if(senderMenu == outputDataTableScopePopUpMenu)
+		output = [outputDataTableScopeArray objectAtIndex:selectedIndex];
+
+	[currentDict setObject:output forKey:SPBundleFileOutputActionKey];
+
+}
+
+- (IBAction)scopeButtonChanged:(id)sender
+{
+
+	id currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
+	NSInteger inputMask = [[currentDict objectForKey:SPBundleScopeQueryEditor] intValue] * 1 +
+						[[currentDict objectForKey:SPBundleScopeInputField] intValue] * 2 +
+						[[currentDict objectForKey:SPBundleScopeDataTable] intValue] * 4;
+
+	if(inputMask < 1 || inputMask > 7) {
+		inputMask = 7;
+		NSNumber *on = [NSNumber numberWithInt:1];
+		[currentDict setObject:on forKey:SPBundleScopeQueryEditor];
+		[currentDict setObject:on forKey:SPBundleScopeInputField];
+		[currentDict setObject:on forKey:SPBundleScopeDataTable];
+	}
+
+	[currentDict setObject:[NSNumber numberWithInt:inputMask] forKey:@"inputMask"];
+
+	if(inputMask > 4) {
+		[currentDict setObject:SPBundleInputSourceNone forKey:SPBundleFileInputSourceKey];
+		[currentDict setObject:SPBundleInputSourceNone forKey:SPBundleFileInputSourceFallBackKey];
+		if(![[currentDict objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsTextTooltip] 
+			&& ![[currentDict objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
+			[currentDict setObject:SPBundleOutputActionNone forKey:SPBundleFileOutputActionKey];
+		}
+
+	}
+	if([[currentDict objectForKey:SPBundleFileInputSourceKey] isEqualToString:SPBundleInputSourceSelectedText]) {
+		if(inputMask > 1 && [[currentDict objectForKey:SPBundleFileInputSourceFallBackKey] isEqualToString:SPBundleInputSourceCurrentQuery])
+			[currentDict setObject:SPBundleInputSourceNone forKey:SPBundleFileInputSourceFallBackKey];
+	}
+	if((inputMask == 2 || inputMask == 3) && [[currentDict objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionInsertAsSnippet])
+		[currentDict setObject:SPBundleOutputActionInsertAsText forKey:SPBundleFileOutputActionKey];
+
+	[self _updateInputPopupButton];
+
 }
 
 - (IBAction)duplicateCommandBundle:(id)sender
@@ -182,11 +426,17 @@
 						[bundleCommand addEntriesFromDictionary:cmdData];
 						[bundleCommand setObject:[bundle stringByDeletingPathExtension] forKey:@"bundleName"];
 
+						NSInteger inputMask = 0;
+
+						// Handle stored scopes
 						NSArray *scopes = [[cmdData objectForKey:SPBundleFileScopeKey] componentsSeparatedByString:@" "];
 						for(NSString *scope in scopes) {
 							[bundleCommand setObject:[NSNumber numberWithInt:1] forKey:scope];
+							if([scope isEqualToString:SPBundleScopeQueryEditor]) inputMask += 1;
+							if([scope isEqualToString:SPBundleScopeInputField]) inputMask += 2;
+							if([scope isEqualToString:SPBundleScopeDataTable]) inputMask += 4;
+							[bundleCommand setObject:[NSNumber numberWithInt:inputMask] forKey:@"inputMask"];
 						}
-
 
 						[commandBundleArray addObject:bundleCommand];
 					}
@@ -233,7 +483,7 @@
 		isDir = YES;
 	}
 	
-	// If aPath exists but it's not a folder bails
+	// If aPath exists but it's not a folder bail out
 	if(!isDir) return NO;
 
 	// The command.plist file path
@@ -261,6 +511,7 @@
 	// Remove unnecessary keys
 	[saveDict removeObjectsForKeys:[NSArray arrayWithObjects:
 		@"bundleName",
+		@"inputMask",
 		SPBundleScopeQueryEditor,
 		SPBundleScopeInputField,
 		SPBundleScopeDataTable,
@@ -286,6 +537,7 @@
 	if(isTableCellEditing) {
 		[commandsTableView abortEditing];
 		isTableCellEditing = NO;
+		[[self window] makeFirstResponder:commandsTableView];
 		return NO;
 	}
 	return YES;
@@ -340,6 +592,13 @@
 	return @"";
 }
 
+- (void)tableViewSelectionDidChange:(NSNotification *)aNotification
+{
+	if([aNotification object] != commandsTableView) return;
+
+	[self _updateInputPopupButton];
+}
+
 /*
  * Save spBundle name if inline edited (suppress empty names) and check for renaming and / in the name
  */
@@ -383,6 +642,9 @@
 	isTableCellEditing = NO;
 
 }
+
+#pragma mark -
+
 /**
  * Sheet did end method
  */
@@ -507,3 +769,94 @@
 }
 
 @end
+
+@implementation SPBundleEditorController (PrivateAPI)
+
+- (void)_updateInputPopupButton
+{
+
+	NSInteger anIndex;
+
+	NSDictionary *currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
+
+	NSString *input = [currentDict objectForKey:SPBundleFileInputSourceKey];
+	if(!input || ![input length]) input = SPBundleInputSourceNone;
+
+	NSString *inputfallback = [currentDict objectForKey:SPBundleFileInputSourceFallBackKey];
+	if(!inputfallback || ![inputfallback length]) inputfallback = SPBundleInputSourceNone;
+
+	NSString *output = [currentDict objectForKey:SPBundleFileOutputActionKey];
+	if(!output || ![output length]) output = SPBundleOutputActionNone;
+
+	NSInteger inputMask = [[currentDict objectForKey:@"inputMask"] intValue];
+	switch(inputMask) {
+		case 1:
+		[inputPopupButton setMenu:inputEditorScopePopUpMenu];
+		anIndex = [inputEditorScopeArray indexOfObject:input];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[inputPopupButton selectItemAtIndex:anIndex];
+		[inputFallbackPopupButton setMenu:inputFallbackEditorScopePopUpMenu];
+		anIndex = [inputFallbackEditorScopeArray indexOfObject:inputfallback];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[inputFallbackPopupButton selectItemAtIndex:anIndex];
+		[outputPopupButton setMenu:outputEditorScopePopUpMenu];
+		anIndex = [outputEditorScopeArray indexOfObject:output];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[outputPopupButton selectItemAtIndex:anIndex];
+		break;
+		case 2:
+		case 3:
+		[inputPopupButton setMenu:inputInputFieldScopePopUpMenu];
+		anIndex = [inputInputFieldScopeArray indexOfObject:input];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[inputPopupButton selectItemAtIndex:anIndex];
+		[inputFallbackPopupButton setMenu:inputFallbackInputFieldScopePopUpMenu];
+		anIndex = [inputFallbackInputFieldScopeArray indexOfObject:inputfallback];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[inputFallbackPopupButton selectItemAtIndex:anIndex];
+		[outputPopupButton setMenu:outputInputFieldScopePopUpMenu];
+		anIndex = [outputInputFieldScopeArray indexOfObject:output];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[outputPopupButton selectItemAtIndex:anIndex];
+		break;
+		case 4:
+		[inputPopupButton setMenu:inputDataTableScopePopUpMenu];
+		anIndex = [inputDataTableScopeArray indexOfObject:input];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[inputPopupButton selectItemAtIndex:anIndex];
+		[outputPopupButton setMenu:outputDataTableScopePopUpMenu];
+		anIndex = [outputDataTableScopeArray indexOfObject:output];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[outputPopupButton selectItemAtIndex:anIndex];
+		break;
+		case 5:
+		case 6:
+		case 7:
+		[inputPopupButton setMenu:inputNonePopUpMenu];
+		[inputPopupButton selectItemAtIndex:0];
+		[outputPopupButton setMenu:outputDataTableScopePopUpMenu];
+		anIndex = [outputDataTableScopeArray indexOfObject:output];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[outputPopupButton selectItemAtIndex:anIndex];
+		break;
+		default:
+		[inputPopupButton setMenu:inputNonePopUpMenu];
+		[inputPopupButton selectItemAtIndex:0];
+		[outputPopupButton setMenu:outputDataTableScopePopUpMenu];
+		anIndex = [outputDataTableScopeArray indexOfObject:output];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[outputPopupButton selectItemAtIndex:anIndex];
+	}
+
+	if([input isEqualToString:SPBundleInputSourceSelectedText]) {
+		[inputFallbackPopupButton setHidden:NO];
+		[fallbackLabelField setHidden:NO];
+	} else {
+		[inputFallbackPopupButton setHidden:YES];
+		[fallbackLabelField setHidden:YES];
+	}
+
+}
+
+@end
+
