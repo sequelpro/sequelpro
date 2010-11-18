@@ -455,6 +455,7 @@ extern NSString *SPBundleFileInputSourceKey;
 extern NSString *SPBundleFileInputSourceFallBackKey;
 extern NSString *SPBundleFileOutputActionKey;
 extern NSString *SPBundleFileKeyEquivalentKey;
+extern NSString *SPBundleFileInternalKeyEquivalentKey;
 extern NSString *SPBundleFileTooltipKey;
 extern NSString *SPBundleFileDisabledKey;
 extern NSString *SPBundleInternLabelKey;

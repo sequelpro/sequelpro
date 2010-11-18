@@ -24,11 +24,14 @@
 
 #import "SPBundleEditorController.h"
 
+
 @interface SPBundleEditorController (PrivateAPI)
 
 - (void)_updateInputPopupButton;
 
 @end
+
+#pragma mark -
 
 @implementation SPBundleEditorController
 
@@ -82,6 +85,7 @@
 - (void)awakeFromNib
 {
 
+	// Init all needed menus
 	inputEditorScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -199,10 +203,11 @@
 	[inputNonePopUpMenu addItem:anItem];
 	[anItem release];
 
+	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
+
 }
 
 #pragma mark -
-
 
 - (IBAction)inputPopupButtonChanged:(id)sender
 {
@@ -349,7 +354,8 @@
 
 	[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:commandsTableView];
-
+	if([commandsTableView numberOfSelectedRows] > 0)
+		[commandsTableView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
 
 - (IBAction)removeCommandBundle:(id)sender
@@ -358,7 +364,7 @@
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to remove all selected Bundles? This action cannot be undone.", @"remove all selected bundles informative message")];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to move all selected Bundles to the Trash and remove them respectively?", @"move to trash and remove resp all selected bundles informative message")];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -370,13 +376,31 @@
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 	
 	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeSelectedBundles"];
+
 }
 
 - (IBAction)revealCommandBundleInFinder:(id)sender
 {
+
 	if([commandsTableView numberOfSelectedRows] != 1) return;
+
 	[[NSWorkspace sharedWorkspace] selectFile:[NSString stringWithFormat:@"%@/%@.%@/%@", 
 		bundlePath, [[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] objectForKey:@"bundleName"], SPUserBundleFileExtension, SPBundleFileName] inFileViewerRootedAtPath:nil];
+
+}
+
+- (IBAction)saveBundle:(id)sender
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:SPUserBundleFileExtension];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:NO];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setCanCreateDirectories:YES];
+
+	[panel beginSheetForDirectory:nil file:[[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] objectForKey:@"bundleName"] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveBundle"];
 }
 
 - (IBAction)showHelp:(id)sender
@@ -439,6 +463,7 @@
 						}
 
 						[commandBundleArray addObject:bundleCommand];
+
 					}
 					if (cmdData) [cmdData release];
 				}
@@ -456,9 +481,48 @@
 
 	// Commit all pending edits
 	if([commandBundleArrayController commitEditing]) {
-		NSLog(@"%@", commandBundleArray);
-		[[self window] performClose:self];
+
+		// Make the bundleNames unique since they represent folder names
+		NSMutableDictionary *allNames = [NSMutableDictionary dictionary];
+		NSInteger idx = 0;
+		for(id item in commandBundleArray) {
+			if([allNames objectForKey:[item objectForKey:@"bundleName"]]) {
+				NSInteger i = 0;
+				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:@"bundleName"], i++];
+				while([allNames objectForKey:newName]) {
+					newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:@"bundleName"], i++];
+					if(i>100) {
+						return NO;
+					}
+				}
+				[[commandBundleArray objectAtIndex:idx] setObject:newName forKey:@"bundleName"];
+			} else {
+				[allNames setObject:@"" forKey:[item objectForKey:@"bundleName"]];
+			}
+			idx++;
+		}
+
+		BOOL closeMe = YES;
+		for(id item in commandBundleArray) {
+			if(![self saveBundle:item atPath:nil]) {
+				closeMe = NO;
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while saving “%@”.", @"error while saving “%@”"), [item objectForKey:@"bundleName"]]
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:@""];
+			
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+				break;
+			}
+		}
+		if(closeMe)
+			[[self window] performClose:self];
 	}
+
+	[[NSApp delegate] reloadBundles:self];
+
 }
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath
@@ -525,6 +589,80 @@
 
 }
 
+/**
+ * Sheet did end method
+ */
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
+	if([contextInfo isEqualToString:@"removeSelectedBundles"]) {
+		if (returnCode == NSAlertDefaultReturn) {
+			NSIndexSet *indexes = [commandsTableView selectedRowIndexes];
+
+			// get last index
+			NSUInteger currentIndex = [indexes lastIndex];
+
+			while (currentIndex != NSNotFound) {
+
+				// Move already installed Bundles to Trash
+				NSString *bundleName = [[commandBundleArray objectAtIndex:currentIndex] objectForKey:@"bundleName"];
+				NSString *thePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleName, SPUserBundleFileExtension];
+				if([[NSFileManager defaultManager] fileExistsAtPath:thePath isDirectory:nil]) {
+					NSError *error = nil;
+					NSString *trashDir = [NSHomeDirectory() stringByAppendingPathComponent:@".Trash"];
+
+					// Use a AppleScript script since NSWorkspace performFileOperation or NSFileManager moveItemAtPath 
+					// have problems probably due access rights.
+					NSString *moveToTrahCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", thePath];
+					[moveToTrahCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+					if(error != nil) {
+						NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), thePath]
+														 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+													   alternateButton:nil 
+														  otherButton:nil 
+											informativeTextWithFormat:[error localizedDescription]];
+					
+						[alert setAlertStyle:NSCriticalAlertStyle];
+						[alert runModal];
+						break;
+					}
+				}
+				[commandBundleArray removeObjectAtIndex:currentIndex];
+				// get next index (beginning from the end)
+				currentIndex = [indexes indexLessThanIndex:currentIndex];
+			}
+
+			[commandBundleArrayController rearrangeObjects];
+			[commandsTableView reloadData];
+
+			// Set focus to table view to avoid an unstable state
+			[[self window] makeFirstResponder:commandsTableView];
+
+			[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
+		}
+	} else if([contextInfo isEqualToString:@"saveBundle"]) {
+		if (returnCode == NSOKButton) {
+			if(![self saveBundle:[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] atPath:[sheet filename]]) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"error while saving a Bundle")
+												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+											   alternateButton:nil 
+												  otherButton:nil 
+									informativeTextWithFormat:@""];
+			
+				[alert setAlertStyle:NSCriticalAlertStyle];
+				[alert runModal];
+			}
+		}
+	}
+
+}
+
 #pragma mark -
 #pragma mark NSWindow delegate
 
@@ -561,7 +699,33 @@
 }
 
 #pragma mark -
-#pragma mark TableView datasource methods
+#pragma mark SRRecorderControl delegate
+
+- (void)shortcutRecorder:(SRRecorderControl *)aRecorder keyComboDidChange:(KeyCombo)newKeyCombo
+{
+
+	if([commandsTableView selectedRow] < 0 || [commandsTableView selectedRow] > [commandBundleArray count]) return;
+
+	// Transform KeyCombo struct to KeyBinding.dict format for NSMenuItems
+	NSMutableString *keyEq = [NSMutableString string];
+	[keyEq setString:@""];
+	if(newKeyCombo.code > -1) {
+		if(newKeyCombo.flags & NSControlKeyMask)
+			[keyEq appendString:@"^"];
+		if(newKeyCombo.flags & NSAlternateKeyMask)
+			[keyEq appendString:@"~"];
+		if(newKeyCombo.flags & NSShiftKeyMask)
+			[keyEq appendString:@"$"];
+		if(newKeyCombo.flags & NSCommandKeyMask)
+			[keyEq appendString:@"@"];
+		[keyEq appendString:[aRecorder keyCharsIgnoringModifiers]];
+	}
+	[[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
+
+}
+
+#pragma mark -
+#pragma mark TableView data source and delegate
 
 /**
  * Returns the number of query commandBundleArray.
@@ -604,9 +768,12 @@
  */
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
+
 	if([aNotification object] != commandsTableView) return;
 
 	NSString *newBundleName = [[[aNotification userInfo] objectForKey:@"NSFieldEditor"] string];
+
+	NSInteger selectedTableRow = [commandsTableView selectedRow];
 
 	BOOL isValid = YES;
 
@@ -634,45 +801,14 @@
 	}
 
 	// If not valid reset name to the old one
-	if(!isValid)
-		[[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] setObject:oldBundleName forKey:@"bundleName"];
-	
+	if(!isValid) {
+		if(!oldBundleName) oldBundleName = @"New Name";
+		[[commandBundleArray objectAtIndex:selectedTableRow] setObject:oldBundleName forKey:@"bundleName"];
+	}
+
 	[commandsTableView reloadData];
 
 	isTableCellEditing = NO;
-
-}
-
-#pragma mark -
-
-/**
- * Sheet did end method
- */
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-
-	if([contextInfo isEqualToString:@"removeSelectedBundles"]) {
-		if (returnCode == NSAlertDefaultReturn) {
-			NSIndexSet *indexes = [commandsTableView selectedRowIndexes];
-
-			// get last index
-			NSUInteger currentIndex = [indexes lastIndex];
-
-			while (currentIndex != NSNotFound) {
-				[commandBundleArray removeObjectAtIndex:currentIndex];
-				// get next index (beginning from the end)
-				currentIndex = [indexes indexLessThanIndex:currentIndex];
-			}
-
-			[commandBundleArrayController rearrangeObjects];
-			[commandsTableView reloadData];
-
-			// Set focus to table view to avoid an unstable state
-			[[self window] makeFirstResponder:commandsTableView];
-
-			[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
-		}
-	}
 
 }
 
@@ -685,10 +821,14 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 
+	// Allow to record short-cuts used by the Bundle Editor
+	if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
+
 	SEL action = [menuItem action];
 	
 	if ( (action == @selector(duplicateCommandBundle:)) 
 		|| (action == @selector(revealCommandBundleInFinder:))
+		|| (action == @selector(saveBundle:))
 		) 
 	{
 		return ([commandsTableView numberOfSelectedRows] == 1);
@@ -770,12 +910,16 @@
 
 @end
 
+#pragma mark -
+
 @implementation SPBundleEditorController (PrivateAPI)
 
 - (void)_updateInputPopupButton
 {
 
 	NSInteger anIndex;
+
+	if([commandsTableView selectedRow] < 0 || [commandsTableView selectedRow] > [commandBundleArray count]) return;
 
 	NSDictionary *currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
 

@@ -893,7 +893,7 @@
 					NSBeep();
 					if (cmdData) [cmdData release];
 				} else {
-					if([cmdData objectForKey:SPBundleFileNameKey] && [[cmdData objectForKey:SPBundleFileNameKey] length] && [cmdData objectForKey:SPBundleFileScopeKey])
+					if((![cmdData objectForKey:SPBundleFileDisabledKey] || ![[cmdData objectForKey:SPBundleFileDisabledKey] intValue]) && [cmdData objectForKey:SPBundleFileNameKey] && [[cmdData objectForKey:SPBundleFileNameKey] length] && [cmdData objectForKey:SPBundleFileScopeKey])
 					{
 
 						NSArray *scopes = [[cmdData objectForKey:SPBundleFileScopeKey] componentsSeparatedByString:@" "];
@@ -924,7 +924,7 @@
 								mask = mask | NSCommandKeyMask;
 							if([theMods rangeOfString:@"~"].length)
 								mask = mask | NSAlternateKeyMask;
-							if(![[theChar lowercaseString] isEqualToString:theChar])
+							if([theMods rangeOfString:@"$"].length)
 								mask = mask | NSShiftKeyMask;
 							for(NSString* scope in scopes)
 								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSArray arrayWithObjects:[theChar lowercaseString], 

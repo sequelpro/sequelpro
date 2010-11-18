@@ -23,6 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#import <ShortcutRecorder/ShortcutRecorder.h>
 
 @class SRRecorderControl;
 
@@ -84,6 +85,7 @@
 - (IBAction)addCommandBundle:(id)sender;
 - (IBAction)removeCommandBundle:(id)sender;
 - (IBAction)revealCommandBundleInFinder:(id)sender;
+- (IBAction)saveBundle:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)saveAndCloseWindow:(id)sender;
 

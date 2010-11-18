@@ -469,25 +469,23 @@
 	// Furthermore this id is used to communicate with the called command as file name.
 	NSString *processID = [NSString stringWithNewUUID];
 	[theEnv setObject:processID forKey:@"SP_PROCESS_ID"];
-	id doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
-	if(!doc) {
-		NSBeep();
-		NSLog(@"No active document found for bash command.");
-		return;
+	id doc = nil;
+	if([[[NSApp mainWindow] delegate] respondsToSelector:@selector(selectedTableDocument)])
+		doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
+	if(doc != nil) {
+		[doc setProcessID:processID];
+
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, processID] forKey:@"SP_QUERY_FILE_PATH"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, processID] forKey:@"SP_QUERY_RESULT_FILE_PATH"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, processID] forKey:@"SP_QUERY_RESULT_STATUS_FILE_PATH"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, processID] forKey:@"SP_QUERY_RESULT_META_FILE_PATH"];
+
+		if([doc shellVariables])
+			[theEnv addEntriesFromDictionary:[doc shellVariables]];
+
+		if(theEnv != nil && [theEnv count])
+			[bashTask setEnvironment:theEnv];
 	}
-	[doc setProcessID:processID];
-
-	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, processID] forKey:@"SP_QUERY_FILE_PATH"];
-	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, processID] forKey:@"SP_QUERY_RESULT_FILE_PATH"];
-	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, processID] forKey:@"SP_QUERY_RESULT_STATUS_FILE_PATH"];
-	[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, processID] forKey:@"SP_QUERY_RESULT_META_FILE_PATH"];
-
-	if([doc shellVariables])
-		[theEnv addEntriesFromDictionary:[doc shellVariables]];
-
-	if(theEnv != nil && [theEnv count])
-		[bashTask setEnvironment:theEnv];
-
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
 	else if([shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] && [[NSFileManager defaultManager] fileExistsAtPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] isDirectory:&isDir] && isDir)
