@@ -864,7 +864,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 					input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
 				}
 				else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
-					input = [self selectedRowsAsSqlInsertsOnlySelectedRows:YES];
+					input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
 				}
 				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
 					input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];

@@ -708,17 +708,20 @@
 
 	// Transform KeyCombo struct to KeyBinding.dict format for NSMenuItems
 	NSMutableString *keyEq = [NSMutableString string];
+	NSString *theChar = [[aRecorder keyCharsIgnoringModifiers] lowercaseString];
 	[keyEq setString:@""];
 	if(newKeyCombo.code > -1) {
 		if(newKeyCombo.flags & NSControlKeyMask)
 			[keyEq appendString:@"^"];
 		if(newKeyCombo.flags & NSAlternateKeyMask)
 			[keyEq appendString:@"~"];
-		if(newKeyCombo.flags & NSShiftKeyMask)
+		if(newKeyCombo.flags & NSShiftKeyMask) {
 			[keyEq appendString:@"$"];
+			theChar = [theChar uppercaseString];
+		}
 		if(newKeyCombo.flags & NSCommandKeyMask)
 			[keyEq appendString:@"@"];
-		[keyEq appendString:[aRecorder keyCharsIgnoringModifiers]];
+		[keyEq appendString:theChar];
 	}
 	[[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
@@ -821,9 +824,6 @@
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 
-	// Allow to record short-cuts used by the Bundle Editor
-	if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
-
 	SEL action = [menuItem action];
 	
 	if ( (action == @selector(duplicateCommandBundle:)) 
@@ -831,10 +831,14 @@
 		|| (action == @selector(saveBundle:))
 		) 
 	{
+		// Allow to record short-cuts used by the Bundle Editor
+		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
 		return ([commandsTableView numberOfSelectedRows] == 1);
 	}
 	else if ( (action == @selector(removeCommandBundle:)) )
 	{
+		// Allow to record short-cuts used by the Bundle Editor
+		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
 		return ([commandsTableView numberOfSelectedRows] > 0);
 	}
 
