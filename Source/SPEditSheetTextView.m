@@ -53,14 +53,16 @@
 - (IBAction)paste:(id)sender
 {
 	// Try to create an undo group
-	[[self delegate] setWasCutPaste];
+	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
+		[[self delegate] setWasCutPaste];
 	[super paste:sender];
 }
 
 - (IBAction)cut:(id)sender
 {
 	// Try to create an undo group
-	[[self delegate] setWasCutPaste];
+	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
+		[[self delegate] setWasCutPaste];
 	[super cut:sender];
 }
 
@@ -124,6 +126,12 @@
 		|| [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
 		) {
 		[[self delegate] setDoGroupDueToChars];
+	}
+
+
+	if([[[[self delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
+		[super keyDown: theEvent];
+		return;
 	}
 
 	// Check for assign key equivalents inside user-defined bundle commands
@@ -332,6 +340,8 @@
 {
 	if([[[[self delegate] class] description] isEqualToString:@"SPFieldEditorController"])
 		[[NSUserDefaults standardUserDefaults] setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:@"FieldEditorSheetFont"];
+	else if([[[[self delegate] class] description] isEqualToString:@"SPBundleEditorController"])
+		[[NSUserDefaults standardUserDefaults] setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:@"BundleEditorFont"];
 }
 
 // Action receiver for a font change in the font panel

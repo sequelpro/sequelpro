@@ -24,12 +24,13 @@
 
 #import <Cocoa/Cocoa.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
+#import "SPEditSheetTextView.h"
 
 @class SRRecorderControl;
 
 @interface SPBundleEditorController : NSWindowController {
 
-	IBOutlet NSTextView* commandTextView;
+	IBOutlet id commandTextView;
 	IBOutlet NSTableView* commandsTableView;
 	IBOutlet NSTextField* nameTextField;
 	IBOutlet NSTextField* tootlipTextField;
@@ -74,6 +75,11 @@
 	NSArray *inputFallbackEditorScopeArray;
 	NSArray *inputFallbackInputFieldScopeArray;
 
+	BOOL doGroupDueToChars;
+	BOOL allowUndo;
+	BOOL wasCutPaste;
+	BOOL selectionChanged;
+	NSUndoManager *esUndoManager;
 
 }
 
@@ -90,5 +96,8 @@
 - (IBAction)saveAndCloseWindow:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
+
+- (void)setWasCutPaste;
+- (void)setDoGroupDueToChars;
 
 @end

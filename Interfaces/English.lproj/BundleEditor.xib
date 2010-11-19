@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="686"/>
+			<integer value="820"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -212,7 +212,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">3</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1351,22 +1350,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">delegate</string>
-						<reference key="source" ref="965862131"/>
-						<reference key="destination" ref="1001"/>
-					</object>
-					<int key="connectionID">846</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">commandTextView</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="965862131"/>
-					</object>
-					<int key="connectionID">847</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">outputPopupButton</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="570587248"/>
@@ -1760,6 +1743,14 @@
 						<reference key="destination" ref="18029675"/>
 					</object>
 					<int key="connectionID">921</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">commandTextView</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="965862131"/>
+					</object>
+					<int key="connectionID">925</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2493,6 +2484,7 @@
 					<string>820.IBPluginDependency</string>
 					<string>821.IBPluginDependency</string>
 					<string>822.IBPluginDependency</string>
+					<string>823.CustomClassName</string>
 					<string>823.IBPluginDependency</string>
 					<string>825.IBPluginDependency</string>
 					<string>859.IBAttributePlaceholdersKey</string>
@@ -2728,6 +2720,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>SPEditSheetTextView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
@@ -2766,7 +2759,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">923</int>
+			<int key="maxID">925</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3025,7 +3018,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSTextField</string>
 							<string>NSArrayController</string>
-							<string>NSTextView</string>
+							<string>id</string>
 							<string>NSTableView</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
@@ -3078,7 +3071,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">commandTextView</string>
-								<string key="candidateClassName">NSTextView</string>
+								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">commandsTableView</string>

@@ -459,7 +459,7 @@
 
 			NSString *newPath = [NSString stringWithFormat:@"%@/%@", themePath, [filename lastPathComponent]];
 			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
-				if(![fm copyItemAtPath:filename toPath:newPath error:nil]) {
+				if(![fm moveItemAtPath:filename toPath:newPath error:nil]) {
 					NSBeep();
 					return;
 				}
@@ -492,7 +492,7 @@
 
 			NSString *newPath = [NSString stringWithFormat:@"%@/%@", bundlePath, [filename lastPathComponent]];
 			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
-				if(![fm copyItemAtPath:filename toPath:newPath error:nil]) {
+				if(![fm moveItemAtPath:filename toPath:newPath error:nil]) {
 					NSBeep();
 					return;
 				}

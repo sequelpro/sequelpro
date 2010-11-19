@@ -85,6 +85,8 @@
 - (void)awakeFromNib
 {
 
+	[commandTextView setDelegate:self];
+
 	// Init all needed menus
 	inputEditorScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -204,6 +206,11 @@
 	[anItem release];
 
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
+
+	if([[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]) {
+		NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]];
+		[commandTextView setFont:nf];
+	}
 
 }
 
@@ -453,7 +460,12 @@
 {
 
 	// Suppress parsing if window is already opened
-	if([[self window] isVisible]) return;
+	if([[self window] isVisible]) {
+		[super showWindow:sender];
+		return;
+	}
+
+
 
 	// Order out window
 	[super showWindow:sender];
@@ -513,6 +525,7 @@
 	}
 
 	[commandBundleArrayController setContent:commandBundleArray];
+	[commandBundleArrayController rearrangeObjects];
 	[commandsTableView reloadData];
 
 }
@@ -592,17 +605,23 @@
 
 	// Build scope key
 	NSMutableString *scopes = [NSMutableString string];
-	if([bundle objectForKey:SPBundleScopeQueryEditor]) {
+	if([bundle objectForKey:SPBundleScopeQueryEditor] && [[bundle objectForKey:SPBundleScopeQueryEditor] intValue]) {
 		if([scopes length]) [scopes appendString:@" "];
 		[scopes appendString:SPBundleScopeQueryEditor];
 	}
-	if([bundle objectForKey:SPBundleScopeInputField]) {
+	if([bundle objectForKey:SPBundleScopeInputField] && [[bundle objectForKey:SPBundleScopeInputField] intValue]) {
 		if([scopes length]) [scopes appendString:@" "];
 		[scopes appendString:SPBundleScopeInputField];
 	}
-	if([bundle objectForKey:SPBundleScopeDataTable]) {
+	if([bundle objectForKey:SPBundleScopeDataTable] && [[bundle objectForKey:SPBundleScopeInputField] intValue]) {
 		if([scopes length]) [scopes appendString:@" "];
 		[scopes appendString:SPBundleScopeDataTable];
+	}
+	if(![scopes length]) {
+		// For safety reasons
+		[scopes setString:[NSString stringWithFormat:@"%@ %@ %@", SPBundleScopeQueryEditor, SPBundleScopeInputField, SPBundleScopeDataTable]];
+		[saveDict setObject:SPBundleInputSourceNone forKey:SPBundleFileInputSourceKey];
+		[saveDict setObject:SPBundleOutputActionNone forKey:SPBundleFileOutputActionKey];
 	}
 	[saveDict setObject:scopes forKey:SPBundleFileScopeKey];
 
@@ -961,6 +980,84 @@
 
 }
 
+#pragma mark -
+#pragma mark NSTextView delegates
+
+/**
+ * Traps any editing in editTextView to allow undo grouping only if the text buffer was really changed.
+ * Inform the run loop delayed for larger undo groups.
+ */
+- (void)textDidChange:(NSNotification *)aNotification
+{
+
+	if([aNotification object] != commandTextView) return;
+
+	[NSObject cancelPreviousPerformRequestsWithTarget:self
+								selector:@selector(setAllowedUndo)
+								object:nil];
+
+	// If conditions match create an undo group
+	NSInteger cycleCounter;
+	if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
+		allowUndo = NO;
+		wasCutPaste = NO;
+		doGroupDueToChars = NO;
+		selectionChanged = NO;
+
+		cycleCounter = 0;
+		while([esUndoManager groupingLevel] > 0) {
+			[esUndoManager endUndoGrouping];
+			cycleCounter++;
+		}
+		while([esUndoManager groupingLevel] < cycleCounter)
+			[esUndoManager beginUndoGrouping];
+
+		cycleCounter = 0;
+	}
+
+	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.09];
+
+}
+
+
+#pragma mark -
+#pragma mark UndoManager methods
+
+/**
+ * Establish and return an UndoManager for editTextView
+ */
+- (NSUndoManager*)undoManagerForTextView:(NSTextView*)aTextView
+{
+	if (!esUndoManager)
+		esUndoManager = [[NSUndoManager alloc] init];
+
+	return esUndoManager;
+}
+
+/**
+ * Set variable if something in editTextView was cutted or pasted for creating better undo grouping.
+ */
+- (void)setWasCutPaste
+{
+	wasCutPaste = YES;
+}
+
+/**
+ * Will be invoke delayed for creating better undo grouping according to type speed (see [self textDidChange:]).
+ */
+- (void)setAllowedUndo
+{
+	allowUndo = YES;
+}
+
+/**
+ * Will be set if according to characters typed in editTextView for creating better undo grouping.
+ */
+- (void)setDoGroupDueToChars
+{
+	doGroupDueToChars = YES;
+}
+
 @end
 
 #pragma mark -
@@ -1054,6 +1151,7 @@
 	}
 
 }
+
 
 @end
 
