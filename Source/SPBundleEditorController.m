@@ -453,7 +453,7 @@
 
 - (IBAction)showHelp:(id)sender
 {
-	// [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Bundles", @"Localized help page for bundles - do not localize if no translated webpage is available")]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")]];
 }
 
 - (IBAction)showWindow:(id)sender
