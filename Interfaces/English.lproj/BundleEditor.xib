@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="737"/>
+			<integer value="686"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -202,7 +202,7 @@
 																</object>
 																<object class="NSMenuItem" id="18029675">
 																	<reference key="NSMenu" ref="973574710"/>
-																	<string key="NSTitle">Save Bundle</string>
+																	<string key="NSTitle">Save Bundle…</string>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSMnemonicLoc">2147483647</int>
 																	<reference key="NSOnImage" ref="545549031"/>
@@ -636,13 +636,13 @@
 										<object class="NSButton" id="892755176">
 											<reference key="NSNextResponder" ref="338542681"/>
 											<int key="NSvFlags">268</int>
-											<string key="NSFrame">{{201, 390}, {166, 18}}</string>
+											<string key="NSFrame">{{201, 390}, {201, 18}}</string>
 											<reference key="NSSuperview" ref="338542681"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="1063662617">
 												<int key="NSCellFlags">-2080244224</int>
 												<int key="NSCellFlags2">131072</int>
-												<string key="NSContents">Disable Command</string>
+												<string key="NSContents">Disable Bundle</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="892755176"/>
 												<int key="NSButtonFlags">1211912703</int>
@@ -919,7 +919,7 @@
 											<object class="NSTextFieldCell" key="NSCell" id="434303900">
 												<int key="NSCellFlags">68288064</int>
 												<int key="NSCellFlags2">4326400</int>
-												<string key="NSContents">Name:</string>
+												<string key="NSContents">Menu Label:</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="1032857532"/>
 												<reference key="NSBackgroundColor" ref="90467341"/>
@@ -2404,10 +2404,12 @@
 					<string>685.IBPluginDependency</string>
 					<string>686.IBPluginDependency</string>
 					<string>690.IBPluginDependency</string>
+					<string>691.IBAttributePlaceholdersKey</string>
 					<string>691.IBPluginDependency</string>
 					<string>692.IBAttributePlaceholdersKey</string>
 					<string>692.IBPluginDependency</string>
 					<string>693.IBPluginDependency</string>
+					<string>695.IBAttributePlaceholdersKey</string>
 					<string>695.IBPluginDependency</string>
 					<string>696.IBPluginDependency</string>
 					<string>700.IBPluginDependency</string>
@@ -2443,14 +2445,17 @@
 					<string>754.CustomClassName</string>
 					<string>754.IBPluginDependency</string>
 					<string>754.ImportedFromIB2</string>
+					<string>768.IBAttributePlaceholdersKey</string>
 					<string>768.IBPluginDependency</string>
 					<string>769.IBPluginDependency</string>
 					<string>770.IBEditorWindowLastContentRect</string>
 					<string>770.IBPluginDependency</string>
+					<string>774.IBAttributePlaceholdersKey</string>
 					<string>774.IBPluginDependency</string>
 					<string>775.IBPluginDependency</string>
 					<string>776.IBEditorWindowLastContentRect</string>
 					<string>776.IBPluginDependency</string>
+					<string>780.IBAttributePlaceholdersKey</string>
 					<string>780.IBPluginDependency</string>
 					<string>781.IBPluginDependency</string>
 					<string>782.IBEditorWindowLastContentRect</string>
@@ -2465,18 +2470,24 @@
 					<string>796.IBPluginDependency</string>
 					<string>797.IBPluginDependency</string>
 					<string>798.IBPluginDependency</string>
+					<string>799.IBAttributePlaceholdersKey</string>
 					<string>799.IBPluginDependency</string>
 					<string>800.IBPluginDependency</string>
 					<string>801.IBPluginDependency</string>
 					<string>802.IBPluginDependency</string>
+					<string>804.IBAttributePlaceholdersKey</string>
 					<string>804.IBPluginDependency</string>
+					<string>805.IBAttributePlaceholdersKey</string>
 					<string>805.IBPluginDependency</string>
 					<string>806.IBPluginDependency</string>
+					<string>807.IBAttributePlaceholdersKey</string>
 					<string>807.IBPluginDependency</string>
 					<string>808.IBPluginDependency</string>
+					<string>809.IBAttributePlaceholdersKey</string>
 					<string>809.IBPluginDependency</string>
 					<string>810.IBPluginDependency</string>
 					<string>816.IBPluginDependency</string>
+					<string>817.IBAttributePlaceholdersKey</string>
 					<string>817.IBPluginDependency</string>
 					<string>818.IBPluginDependency</string>
 					<string>820.IBPluginDependency</string>
@@ -2484,6 +2495,7 @@
 					<string>822.IBPluginDependency</string>
 					<string>823.IBPluginDependency</string>
 					<string>825.IBPluginDependency</string>
+					<string>859.IBAttributePlaceholdersKey</string>
 					<string>859.IBPluginDependency</string>
 					<string>860.IBPluginDependency</string>
 					<string>876.IBPluginDependency</string>
@@ -2498,9 +2510,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{224, 50}, {655, 444}}</string>
+					<string>{{218, 278}, {655, 444}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{224, 50}, {655, 444}}</string>
+					<string>{{218, 278}, {655, 444}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{726, 444}</string>
@@ -2509,6 +2521,14 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="233794614"/>
+							<string key="toolTip">Enter a menu category which will be displayed as submenu containing the Bundle command</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
@@ -2520,6 +2540,14 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="209604501"/>
+							<string key="toolTip">Enter the menu label name</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2559,7 +2587,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{274, 2}, {204, 71}}</string>
+					<string>{{268, 230}, {204, 71}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2576,14 +2604,38 @@
 					<string>ImageAndTextCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="117047836"/>
+							<string key="toolTip">Choose the input source for the command. The desired data will be available as UTF-8 encoded file whose name will be passed as shell variable SP_BUNDLE_INPUT_FILE</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{211, 598}, {167, 4}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="570587248"/>
+							<string key="toolTip">Choose the output action of the Bundle command</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{211, 312}, {167, 4}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="1013555552"/>
+							<string key="toolTip">Choose the fallback input source if nothing was selected</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{430, 598}, {167, 4}}</string>
@@ -2611,11 +2663,66 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="70452502"/>
+							<string key="toolTip">Enter the tooltip for the Bundle command menu item</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="62695080"/>
+							<string key="toolTip">Click to record a shortcut for the Bundle command (Please note, not every shortcut will work due to global or Sequel Pro key bindings)</string>
+						</object>
+					</object>
 					<string>net.wafflesoftware.ShortcutRecorder.IB.Leopard</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="799580933"/>
+							<string key="toolTip">Bundle Command will be executable in the Query Editor</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="594438970"/>
+							<string key="toolTip">Bundle Command will be executable in the data tables of the Content View and Custom Query View</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="126436931"/>
+							<string key="toolTip">Bundle Command will be executable in any text input field but not in the Query Editor</string>
+						</object>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="679408795"/>
+							<string type="base64-UTF8" key="toolTip">Q2xvc2UgdGhlIEJ1bmRsZSBFZGl0b3Igd2l0aG91dCBzYXZpbmcgKA/ijospA</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2623,13 +2730,14 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="552615839"/>
+							<string key="toolTip">Save any changes and close the Bundle Editor (⌘S)</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2658,7 +2766,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">921</int>
+			<int key="maxID">923</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

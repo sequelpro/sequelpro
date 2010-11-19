@@ -2186,6 +2186,14 @@
 
 	if([[aCell stringValue] length] < 2 || [tableDocumentInstance isWorking]) return nil;
 
+	// Suppress tooltip if another toolip is already visible, mainly displayed by a Bundle command
+	// TODO has to be improved
+	for(id win in [NSApp orderedWindows]) {
+		if([[[[win contentView] class] description] isEqualToString:@"WebView"]) {
+			return nil;
+		}
+	}
+
 	NSImage *image;
 
 	NSPoint pos = [NSEvent mouseLocation];

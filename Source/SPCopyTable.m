@@ -898,13 +898,15 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 					if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 							&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 						NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+						NSPoint pos = [NSEvent mouseLocation];
+						pos.y -= 16;
 
 						if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
-							[SPTooltip showWithObject:output];
+							[SPTooltip showWithObject:output atLocation:pos];
 						}
 
 						else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
-							[SPTooltip showWithObject:output ofType:@"html"];
+							[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
 						}
 					}
 				} else {

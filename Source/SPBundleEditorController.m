@@ -325,16 +325,56 @@
 	// Store pending changes in Query
 	[[self window] makeFirstResponder:nameTextField];
 
-	// Duplicate a selected favorite if sender == self
+	// Duplicate a selected Bundle if sender == self
 	if (sender == self) {
 		NSDictionary *currentDict = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
 		bundle = [NSMutableDictionary dictionaryWithDictionary:currentDict];
-		[bundle setObject:[NSString stringWithFormat:@"%@_Copy", [bundle objectForKey:@"bundleName"]] forKey:@"bundleName"];
+
+		NSString *bundleFileName = [bundle objectForKey:@"bundleName"];
+		NSString *newFileName = [NSString stringWithFormat:@"%@_Copy", [bundle objectForKey:@"bundleName"]];
+		NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
+		NSString *newBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newFileName, SPUserBundleFileExtension];
+
+		BOOL isDir;
+		BOOL copyingWasSuccessful = YES;
+		// Copy possible existing bundle with content
+		if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
+			if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:newBundleFilePath error:nil])
+				copyingWasSuccessful = NO;
+		}
+		if(!copyingWasSuccessful) {
+			// try again with new name
+			newFileName = [NSString stringWithFormat:@"%@_%ld", newFileName, (NSUInteger)(random() % 35000)];
+			newBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newFileName, SPUserBundleFileExtension];
+			if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
+				if([[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:newBundleFilePath error:nil])
+					copyingWasSuccessful = YES;
+			}
+		}
+		if(!copyingWasSuccessful) {
+
+			[commandsTableView reloadData];
+
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error", @"error")
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											  otherButton:nil 
+								informativeTextWithFormat:NSLocalizedString(@"Error while duplicating Bundle content.", @"error while duplicating Bundle content")];
+		
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert runModal];
+
+			return;
+
+		}
+
+		[bundle setObject:newFileName forKey:@"bundleName"];
+
 	}
-	// Add a new favorite
+	// Add a new Bundle
 	else {
-		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Bundle", @"New Name", @"", nil] 
-						forKeys:[NSArray arrayWithObjects:@"bundleName", @"name", @"command", nil]];
+		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Bundle", @"New Name", @"", SPBundleScopeInputField, [NSNumber numberWithInt:1], nil] 
+						forKeys:[NSArray arrayWithObjects:@"bundleName", SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleScopeInputField, nil]];
 	}
 	if ([commandsTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[commandsTableView selectedRowIndexes] lastIndex]+1;
@@ -354,6 +394,7 @@
 
 	[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:commandsTableView];
+	[self scopeButtonChanged:nil];
 	if([commandsTableView numberOfSelectedRows] > 0)
 		[commandsTableView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
@@ -487,14 +528,7 @@
 		NSInteger idx = 0;
 		for(id item in commandBundleArray) {
 			if([allNames objectForKey:[item objectForKey:@"bundleName"]]) {
-				NSInteger i = 0;
-				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:@"bundleName"], i++];
-				while([allNames objectForKey:newName]) {
-					newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:@"bundleName"], i++];
-					if(i>100) {
-						return NO;
-					}
-				}
+				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:@"bundleName"], (NSUInteger)(random() % 35000)];
 				[[commandBundleArray objectAtIndex:idx] setObject:newName forKey:@"bundleName"];
 			} else {
 				[allNames setObject:@"" forKey:[item objectForKey:@"bundleName"]];
@@ -648,7 +682,22 @@
 		}
 	} else if([contextInfo isEqualToString:@"saveBundle"]) {
 		if (returnCode == NSOKButton) {
-			if(![self saveBundle:[commandBundleArray objectAtIndex:[commandsTableView selectedRow]] atPath:[sheet filename]]) {
+
+			id aBundle = [commandBundleArray objectAtIndex:[commandsTableView selectedRow]];
+
+			NSString *bundleFileName = [aBundle objectForKey:@"bundleName"];
+			NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
+
+			NSString *savePath = [sheet filename];
+
+			BOOL isDir;
+			BOOL copyingWasSuccessful = YES;
+			// Copy possible existing bundle with content
+			if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
+				if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:savePath error:nil])
+					copyingWasSuccessful = NO;
+			}
+			if(!copyingWasSuccessful || ![self saveBundle:aBundle atPath:savePath]) {
 				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"error while saving a Bundle")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 

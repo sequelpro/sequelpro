@@ -268,10 +268,13 @@ static CGFloat slow_in_out (CGFloat t)
 		return pos;
 	// Otherwise return the upper left corner of the current keyWindow
 	} else {
-		pos = [[NSApp keyWindow] frame].origin;
-		pos.x += 5;
-		pos.y += [[NSApp keyWindow] frame].size.height - 23;
+		pos = [NSEvent mouseLocation];
+		pos.y -= 16;
 		return pos;
+		// pos = [[NSApp keyWindow] frame].origin;
+		// pos.x += 5;
+		// pos.y += [[NSApp keyWindow] frame].size.height - 23;
+		// return pos;
 	}
 }
 
@@ -280,6 +283,7 @@ static CGFloat slow_in_out (CGFloat t)
 // ===========
 - (void)setContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
 {
+
 	NSString *fullContent =	@"<html>"
 				@"<head>"
 				@"  <style type='text/css' media='screen'>"
@@ -303,6 +307,7 @@ static CGFloat slow_in_out (CGFloat t)
 
 	fullContent = [NSString stringWithFormat:fullContent, transparent ? @"transparent" : bgColor, content];
 	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
+
 }
 
 - (void)sizeToContent
