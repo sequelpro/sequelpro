@@ -85,8 +85,6 @@
 - (void)awakeFromNib
 {
 
-	[commandTextView setDelegate:self];
-
 	// Init all needed menus
 	inputEditorScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -613,7 +611,7 @@
 		if([scopes length]) [scopes appendString:@" "];
 		[scopes appendString:SPBundleScopeInputField];
 	}
-	if([bundle objectForKey:SPBundleScopeDataTable] && [[bundle objectForKey:SPBundleScopeInputField] intValue]) {
+	if([bundle objectForKey:SPBundleScopeDataTable] && [[bundle objectForKey:SPBundleScopeDataTable] intValue]) {
 		if([scopes length]) [scopes appendString:@" "];
 		[scopes appendString:SPBundleScopeDataTable];
 	}

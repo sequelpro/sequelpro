@@ -382,6 +382,7 @@
 		BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		BC0E14A4120AAC5000E52E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 583CE52C11725642008F148E /* libz.dylib */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
+		BC1944D01297291800A236CD /* SPBundleCommandTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
 		BC2777A011514B940034DF6A /* SPNavigatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC27779F11514B940034DF6A /* SPNavigatorController.m */; };
 		BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2898F2125F4488001B50E1 /* SPGeometryDataView.m */; };
@@ -1094,6 +1095,8 @@
 		BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRKSpinningProgressIndicator.m; sourceTree = "<group>"; };
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
 		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
+		BC1944CE1297291800A236CD /* SPBundleCommandTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleCommandTextView.h; sourceTree = "<group>"; };
+		BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBundleCommandTextView.m; sourceTree = "<group>"; };
 		BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small-square.tiff"; sourceTree = "<group>"; };
 		BC27779E11514B940034DF6A /* SPNavigatorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNavigatorController.h; sourceTree = "<group>"; };
 		BC27779F11514B940034DF6A /* SPNavigatorController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNavigatorController.m; sourceTree = "<group>"; };
@@ -1786,6 +1789,8 @@
 		17DC8829126B337900E9AAEC /* Text Views */ = {
 			isa = PBXGroup;
 			children = (
+				BC1944CE1297291800A236CD /* SPBundleCommandTextView.h */,
+				BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */,
 				17E641800EF01FA8001BC333 /* SPTextView.h */,
 				17E641810EF01FA8001BC333 /* SPTextView.m */,
 				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
@@ -3101,6 +3106,7 @@
 				17D3C671128AD8160047709F /* SPSingleton.m in Sources */,
 				17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */,
 				BC68BFC7128D4EAE004907D9 /* SPBundleEditorController.m in Sources */,
+				BC1944D01297291800A236CD /* SPBundleCommandTextView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

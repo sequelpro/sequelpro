@@ -24,7 +24,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
-#import "SPEditSheetTextView.h"
+#import "SPBundleCommandTextView.h"
 
 @class SRRecorderControl;
 

@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPEditSheetTextView.m
+//  SPBundleCommandTextView.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on June 15, 2009
+//  Created by Hans-Jörg Bibiko on Nov, 19 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,11 +22,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPEditSheetTextView.h"
+#import "SPBundleCommandTextView.h"
 #import "SPTextViewAdditions.h"
-#import "SPFieldEditorController.h"
+#import "SPBundleEditorController.h"
 
-@implementation SPEditSheetTextView
+@implementation SPBundleCommandTextView
 
 - (id)init
 {
@@ -325,7 +325,6 @@
 		{
 			[self insertText:content];
 			[result release];
-			[self insertText:@""]; // Invoke keyword uppercasing
 			return;
 		}
 		// If UNIX "file" failed try cocoa's encoding detection
@@ -334,7 +333,6 @@
 		{
 			[self insertText:content];
 			[result release];
-			[self insertText:@""]; // Invoke keyword uppercasing
 			return;
 		}
 	}
@@ -347,7 +345,7 @@
 // Store the font in the prefs for selected delegates only
 - (void)saveChangedFontInUserDefaults
 {
-	if([[[[self delegate] class] description] isEqualToString:@"SPFieldEditorController"])
+	if([[[[self delegate] class] description] isEqualToString:@"SPBundleEditorController"])
 		[[NSUserDefaults standardUserDefaults] setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:@"FieldEditorSheetFont"];
 }
 
@@ -358,22 +356,5 @@
 	[self setFont:nf];
 	[self saveChangedFontInUserDefaults];
 }
-
-/**
- * Needed to allow Find Panel inside the textView if it runs in a sheet
- */
-- (BOOL)becomeFirstResponder
-{
-	return YES;
-}
-
-/**
- * Needed to allow Find Panel inside the textView if it runs in a sheet
- */
-- (BOOL)resignFirstResponder
-{
-	return YES;
-}
-
 
 @end

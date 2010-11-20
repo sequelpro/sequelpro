@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPEditSheetTextView.h
+//  SPBundleCommandTextView.h
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on June 15, 2009
+//  Created by Hans-Jörg Bibiko on Nov 19, 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPEditSheetTextView : NSTextView
+@interface SPBundleCommandTextView : NSTextView
 {
 	BOOL textWasChanged;
 }
