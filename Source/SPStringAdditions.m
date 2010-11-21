@@ -421,8 +421,10 @@
 
 	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
 	NSString *scriptPath = @"";
+	NSString *stdoutFilePath = @"/tmp/SP_BUNDLE_OUTPUT_FILE";
 
 	[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskScriptCommandFilePath error:nil];
+	[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
 
 	// Parse first line for magic header #! ; if found save the script content and run the command after #! with that file.
 	// This allows to write perl, ruby, osascript scripts natively.
@@ -435,10 +437,8 @@
 		while([scriptHeaderArguments containsObject:@""])
 			[scriptHeaderArguments removeObject:@""];
 
-		if([scriptHeaderArguments count]) {
+		if([scriptHeaderArguments count])
 			scriptPath = [scriptHeaderArguments objectAtIndex:0];
-			[scriptHeaderArguments removeObject:scriptPath];
-		}
 
 		if([scriptPath hasPrefix:@"/"] && [[NSFileManager defaultManager] fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
 			NSString *script = [self substringWithRange:NSMakeRange(NSMaxRange(firstLineRange), [self length] - NSMaxRange(firstLineRange))];
@@ -446,7 +446,7 @@
 			[script writeToFile:SPBundleTaskScriptCommandFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
 			if(writeError == nil) {
 				redirectForScript = YES;
-				[scriptHeaderArguments insertObject:SPBundleTaskScriptCommandFilePath atIndex:0];
+				[scriptHeaderArguments addObject:SPBundleTaskScriptCommandFilePath];
 			} else {
 				NSBeep();
 				NSLog(@"Couldn't write script file.");
@@ -456,10 +456,7 @@
 	}
 
 	NSTask *bashTask = [[NSTask alloc] init];
-	if(redirectForScript)
-		[bashTask setLaunchPath:scriptPath];
-	else
-		[bashTask setLaunchPath:@"/bin/bash"];
+	[bashTask setLaunchPath:@"/bin/bash"];
 
 	NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 	[theEnv setDictionary:shellEnvironment];
@@ -486,19 +483,17 @@
 		if(theEnv != nil && [theEnv count])
 			[bashTask setEnvironment:theEnv];
 	}
+
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
 	else if([shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] && [[NSFileManager defaultManager] fileExistsAtPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] isDirectory:&isDir] && isDir)
 		[bashTask setCurrentDirectoryPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]];
 
+	// STDOUT will be redirected to /tmp/SP_BUNDLE_OUTPUT_FILE in order to avoid nasty pipe programming due to block size reading
 	if(redirectForScript)
-		[bashTask setArguments:scriptHeaderArguments];
+		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath], nil]];
 	else
-		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", self, nil]];
-
-	NSPipe *stdout_pipe = [NSPipe pipe];
-	[bashTask setStandardOutput:stdout_pipe];
-	NSFileHandle *stdout_file = [stdout_pipe fileHandleForReading];
+		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", self, stdoutFilePath], nil]];
 
 	NSPipe *stderr_pipe = [NSPipe pipe];
 	[bashTask setStandardError:stderr_pipe];
@@ -543,21 +538,42 @@
 	[NSApp activateIgnoringOtherApps:YES];
 
 	NSInteger status = [bashTask terminationStatus];
-	NSData *outdata  = [stdout_file readDataToEndOfFile];
 	NSData *errdata  = [stderr_file readDataToEndOfFile];
 
-	if(outdata != nil) {
-		NSString *stdout = [[[NSString alloc] initWithData:outdata encoding:NSUTF8StringEncoding] autorelease];
+	// Check STDERR
+	if([errdata length]) {
+		[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
+		if(theError != NULL) {
+			NSMutableString *errMessage = [[[NSMutableString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
+			[errMessage replaceOccurrencesOfString:SPBundleTaskScriptCommandFilePath withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
+			*theError = [[[NSError alloc] initWithDomain:NSPOSIXErrorDomain 
+													code:status 
+												userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+																errMessage,
+																NSLocalizedDescriptionKey, 
+																nil]] autorelease];
+		} else {
+			NSBeep();
+		}
+		return @"";
+	}
+
+	// Read STDOUT saved to file 
+	if([[NSFileManager defaultManager] fileExistsAtPath:stdoutFilePath isDirectory:nil]) {
+		NSString *stdout = [NSString stringWithContentsOfFile:stdoutFilePath encoding:NSUTF8StringEncoding error:nil];
 		if(bashTask) [bashTask release];
+		[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
 		if(stdout != nil) {
 			if (status == 0) {
-				return [stdout description];
+				return stdout;
 			} else {
 				if(theError != NULL) {
+					NSMutableString *errMessage = [[[NSMutableString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
+					[errMessage replaceOccurrencesOfString:SPBundleTaskScriptCommandFilePath withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
 					*theError = [[[NSError alloc] initWithDomain:NSPOSIXErrorDomain 
 															code:status 
 														userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-																		[[[NSString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease],
+																		errMessage,
 																		NSLocalizedDescriptionKey, 
 																		nil]] autorelease];
 				} else {
@@ -571,8 +587,7 @@
 		}
 	} else {
 		if(bashTask) [bashTask release];
-		NSLog(@"Couldn't read data from command “%@”.", self);
-		NSBeep();
+		[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
 		return @"";
 	}
 
