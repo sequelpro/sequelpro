@@ -3453,10 +3453,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
+			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
 
 			NSRange currentWordRange, currentQueryRange, currentSelectionRange, currentLineRange;
 
-			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
+			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 			if([cmdData objectForKey:SPBundleFileInputSourceKey])
 				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
@@ -3494,7 +3495,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-			[env setObject:SPBundleTaskInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
 
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
@@ -3510,7 +3511,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSError *inputFileError = nil;
 			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
-			[input writeToFile:SPBundleTaskInputFilePath
+			[input writeToFile:bundleInputFilePath
 					  atomically:YES
 						encoding:NSUTF8StringEncoding
 						   error:&inputFileError];
@@ -3525,7 +3526,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
 
-			[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
+			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
 				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 

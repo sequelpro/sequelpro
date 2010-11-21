@@ -37,6 +37,66 @@
 	return self;
 }
 
+- (void)dealloc
+{
+
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
+	[prefs release];
+	[lineNumberView release];
+}
+
+- (void) awakeFromNib
+{
+
+	prefs = [[NSUserDefaults standardUserDefaults] retain];
+
+	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
+
+	if([[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]) {
+		NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]];
+		[self setFont:nf];
+	}
+
+	lineNumberView = [[NoodleLineNumberView alloc] initWithScrollView:commandScrollView];
+	[commandScrollView setVerticalRulerView:lineNumberView];
+	[commandScrollView setHasHorizontalRuler:NO];
+	[commandScrollView setHasVerticalRuler:YES];
+	[commandScrollView setRulersVisible:YES];
+
+	// Re-define tab stops for a better editing
+	[self setTabStops];
+
+}
+
+- (void)drawRect:(NSRect)rect
+{
+	// Draw background only for screen display but not while printing
+	if([NSGraphicsContext currentContextDrawingToScreen]) {
+
+		// Draw textview's background since due to the snippet highlighting we're responsible for it.
+		[[NSColor whiteColor] setFill];
+		NSRectFill(rect);
+
+		if (![self selectedRange].length && [[self string] length]) {
+			NSRange r = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+			NSUInteger rectCount;
+			[[self textStorage] ensureAttributesAreFixedInRange:r];
+			NSRectArray queryRects = [[self layoutManager] rectArrayForCharacterRange: r
+														 withinSelectedCharacterRange: r
+																	  inTextContainer: [self textContainer]
+																			rectCount: &rectCount ];
+			[[NSColor colorWithCalibratedRed:0.95f green:0.95f blue:0.95f alpha:1.0f] setFill];
+			NSRectFillListUsingOperation(queryRects, rectCount, NSCompositeSourceOver);
+		}
+	}
+
+	[super drawRect:rect];
+
+}
+
+#pragma mark -
+
 - (IBAction)undo:(id)sender
 {
 	textWasChanged = NO;
@@ -75,24 +135,53 @@
 	[super cut:sender];
 }
 
-/**
- * Validate undo and redo menu items
- */
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+- (void) setTabStops
 {
-	
-	if ([menuItem action] == @selector(undo:)) {
-		return ([[self undoManager] canUndo]);
-	}
-	if ([menuItem action] == @selector(redo:)) {
-		return ([[self undoManager] canRedo]);
-	}
-	return YES;
-}
+	NSFont *tvFont = [self font];
+	NSInteger i;
+	NSTextTab *aTab;
+	NSMutableArray *myArrayOfTabs;
+	NSMutableParagraphStyle *paragraphStyle;
 
-- (void)textDidChange:(NSNotification *)aNotification
-{
-	textWasChanged = YES;
+	BOOL oldEditableStatus = [self isEditable];
+	[self setEditable:YES];
+
+	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
+	if(tabStopWidth < 1) tabStopWidth = 1;
+
+	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	tabWidth = (float)tabStopWidth * tabWidth;
+
+	NSInteger numberOfTabs = 256/tabStopWidth;
+	myArrayOfTabs = [NSMutableArray arrayWithCapacity:numberOfTabs];
+	aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth];
+	[myArrayOfTabs addObject:aTab];
+	[aTab release];
+	for(i=1; i<numberOfTabs; i++) {
+		aTab = [[NSTextTab alloc] initWithType:NSLeftTabStopType location:tabWidth + ((float)i * tabWidth)];
+		[myArrayOfTabs addObject:aTab];
+		[aTab release];
+	}
+	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+	[paragraphStyle setTabStops:myArrayOfTabs];
+	// Soft wrapped lines are indented slightly
+	[paragraphStyle setHeadIndent:4.0];
+
+	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
+	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
+
+	NSRange range = NSMakeRange(0, [[self textStorage] length]);
+	if ([self shouldChangeTextInRange:range replacementString:nil]) {
+		[[self textStorage] setAttributes:textAttributes range: range];
+		[self didChangeText];
+	}
+	[self setTypingAttributes:textAttributes];
+	[self setDefaultParagraphStyle:paragraphStyle];
+	[self setFont:tvFont];
+
+	[self setEditable:oldEditableStatus];
+
+	[paragraphStyle release];
 }
 
 - (void)keyDown:(NSEvent *)theEvent
@@ -161,6 +250,8 @@
 	[super keyDown: theEvent];
 
 }
+
+#pragma mark -
 
 /*
  * Insert the content of a dragged file path or if ⌘ is pressed
@@ -244,6 +335,9 @@
 		[self insertFileContentOfFile:[sheet helpAnchor]];
 
 }
+
+#pragma mark -
+
 /*
  * Convert a NSPoint, usually the mouse location, to
  * a character index of the text view.
@@ -342,11 +436,37 @@
 	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
 }
 
+#pragma mark -
+
+/**
+ * Validate undo and redo menu items
+ */
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	
+	if ([menuItem action] == @selector(undo:)) {
+		return ([[self undoManager] canUndo]);
+	}
+	if ([menuItem action] == @selector(redo:)) {
+		return ([[self undoManager] canRedo]);
+	}
+	return YES;
+}
+
+#pragma mark -
+
+- (void)textDidChange:(NSNotification *)aNotification
+{
+	textWasChanged = YES;
+}
+
+#pragma mark -
+
 // Store the font in the prefs for selected delegates only
 - (void)saveChangedFontInUserDefaults
 {
 	if([[[[self delegate] class] description] isEqualToString:@"SPBundleEditorController"])
-		[[NSUserDefaults standardUserDefaults] setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:@"FieldEditorSheetFont"];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:@"BundleEditorFont"];
 }
 
 // Action receiver for a font change in the font panel

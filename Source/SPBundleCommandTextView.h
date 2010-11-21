@@ -22,13 +22,22 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "NoodleLineNumberView.h"
+
 @interface SPBundleCommandTextView : NSTextView
 {
+
+	IBOutlet NSScrollView *commandScrollView;
+
+	NSUserDefaults *prefs;
+
 	BOOL textWasChanged;
+	NoodleLineNumberView *lineNumberView;
 }
 
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 - (void)saveChangedFontInUserDefaults;
+- (void) setTabStops;
 
 @end

@@ -205,11 +205,6 @@
 
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
 
-	if([[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]) {
-		NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]];
-		[commandTextView setFont:nf];
-	}
-
 }
 
 #pragma mark -
@@ -980,6 +975,14 @@
 
 #pragma mark -
 #pragma mark NSTextView delegates
+
+/**
+ * Update command text view for highlighting the current edited line
+ */
+- (void)textViewDidChangeSelection:(NSNotification *)aNotification
+{
+	[commandTextView setNeedsDisplay:YES];
+}
 
 /**
  * Traps any editing in editTextView to allow undo grouping only if the text buffer was really changed.

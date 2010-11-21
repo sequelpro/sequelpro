@@ -421,7 +421,8 @@
 
 	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
 	NSString *scriptPath = @"";
-	NSString *stdoutFilePath = @"/tmp/SP_BUNDLE_OUTPUT_FILE";
+	NSString *stdoutFilePath = [NSString stringWithFormat:@"/tmp/SP_BUNDLE_OUTPUT_FILE_%@", [NSString stringWithNewUUID]];
+	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskScriptCommandFilePath, [NSString stringWithNewUUID]];
 
 	[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskScriptCommandFilePath error:nil];
 	[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
@@ -443,10 +444,10 @@
 		if([scriptPath hasPrefix:@"/"] && [[NSFileManager defaultManager] fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
 			NSString *script = [self substringWithRange:NSMakeRange(NSMaxRange(firstLineRange), [self length] - NSMaxRange(firstLineRange))];
 			NSError *writeError = nil;
-			[script writeToFile:SPBundleTaskScriptCommandFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
+			[script writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
 			if(writeError == nil) {
 				redirectForScript = YES;
-				[scriptHeaderArguments addObject:SPBundleTaskScriptCommandFilePath];
+				[scriptHeaderArguments addObject:scriptFilePath];
 			} else {
 				NSBeep();
 				NSLog(@"Couldn't write script file.");
@@ -532,7 +533,7 @@
 	}
 
 	if(redirectForScript)
-		[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskScriptCommandFilePath error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:scriptFilePath error:nil];
 
 	// If return from bash re-activate Sequel Pro
 	[NSApp activateIgnoringOtherApps:YES];

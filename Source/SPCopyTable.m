@@ -840,8 +840,9 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				NSString *inputAction = @"";
 				NSString *inputFallBackAction = @"";
 				NSError *err = nil;
+				NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
 
-				[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
+				[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 				if([cmdData objectForKey:SPBundleFileInputSourceKey])
 					inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
@@ -850,7 +851,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 				NSMutableDictionary *env = [NSMutableDictionary dictionary];
 				[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-				[env setObject:SPBundleTaskInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+				[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
 
 				if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
 					[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
@@ -877,7 +878,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				}
 				
 				if(input == nil) input = @"";
-				[input writeToFile:SPBundleTaskInputFilePath
+				[input writeToFile:bundleInputFilePath
 						  atomically:YES
 							encoding:NSUTF8StringEncoding
 							   error:&inputFileError];
@@ -892,7 +893,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 				NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
 
-				[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskInputFilePath error:nil];
+				[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 				if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
 					if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 

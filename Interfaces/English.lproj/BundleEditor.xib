@@ -468,7 +468,7 @@
 																<int key="NSTCFlags">1</int>
 															</object>
 															<object class="NSTextViewSharedData" key="NSSharedData">
-																<int key="NSFlags">11555</int>
+																<int key="NSFlags">11299</int>
 																<int key="NSTextCheckingTypes">0</int>
 																<nil key="NSMarkedAttributes"/>
 																<object class="NSColor" key="NSBackgroundColor" id="856229010">
@@ -1760,6 +1760,14 @@
 					</object>
 					<int key="connectionID">929</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">commandScrollView</string>
+						<reference key="source" ref="965862131"/>
+						<reference key="destination" ref="179792134"/>
+					</object>
+					<int key="connectionID">931</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1826,6 +1834,7 @@
 							<reference ref="78837987"/>
 						</object>
 						<reference key="parent" ref="358491109"/>
+						<string key="objectName">Bundle Table View</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">729</int>
@@ -1982,6 +1991,7 @@
 							<reference ref="552615839"/>
 						</object>
 						<reference key="parent" ref="358491109"/>
+						<string key="objectName">Bundle Content View</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">774</int>
@@ -1991,6 +2001,7 @@
 							<reference ref="299353121"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Pop Up Button (Output)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">775</int>
@@ -2045,6 +2056,7 @@
 							<reference ref="1025501303"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Text Field (Menu Label)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">696</int>
@@ -2096,6 +2108,7 @@
 							<reference ref="4363123"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Pop Up Button (Input Fallback)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">781</int>
@@ -2122,6 +2135,7 @@
 							<reference ref="748268806"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Text Field (Menu Category)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">702</int>
@@ -2164,6 +2178,7 @@
 							<reference ref="43525095"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Text Field (Tooltip)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">802</int>
@@ -2206,6 +2221,7 @@
 							<reference ref="131002945"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Pop Up Button (Input)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">769</int>
@@ -2301,6 +2317,7 @@
 							<reference ref="965862131"/>
 						</object>
 						<reference key="parent" ref="338542681"/>
+						<string key="objectName">Bordered Scroll View (Command Text View)</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">821</int>
@@ -2510,9 +2527,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{251, 39}, {655, 444}}</string>
+					<string>{{515, 73}, {655, 444}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{251, 39}, {655, 444}}</string>
+					<string>{{515, 73}, {655, 444}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{726, 444}</string>
@@ -2767,7 +2784,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">929</int>
+			<int key="maxID">931</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2904,6 +2921,17 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">SPBundleCommandTextView</string>
 					<string key="superclassName">NSTextView</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">commandScrollView</string>
+						<string key="NS.object.0">NSScrollView</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">commandScrollView</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">commandScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBDocumentRelativeSource</string>
 						<string key="minorKey">../../Source/SPBundleCommandTextView.h</string>
