@@ -452,7 +452,17 @@
 				NSBeep();
 				NSLog(@"Couldn't write script file.");
 			}
-			
+		}
+	} else {
+		[scriptHeaderArguments addObject:@"/bin/sh"];
+		NSError *writeError = nil;
+		[self writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
+		if(writeError == nil) {
+			redirectForScript = YES;
+			[scriptHeaderArguments addObject:scriptFilePath];
+		} else {
+			NSBeep();
+			NSLog(@"Couldn't write script file.");
 		}
 	}
 
@@ -491,10 +501,7 @@
 		[bashTask setCurrentDirectoryPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]];
 
 	// STDOUT will be redirected to /tmp/SP_BUNDLE_OUTPUT_FILE in order to avoid nasty pipe programming due to block size reading
-	if(redirectForScript)
-		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath], nil]];
-	else
-		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", self, stdoutFilePath], nil]];
+	[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath], nil]];
 
 	NSPipe *stderr_pipe = [NSPipe pipe];
 	[bashTask setStandardError:stderr_pipe];
