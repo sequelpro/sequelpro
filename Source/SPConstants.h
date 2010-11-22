@@ -447,6 +447,7 @@ extern NSString *SPBundleOutputActionReplaceSelection;
 extern NSString *SPBundleOutputActionReplaceContent;
 extern NSString *SPBundleOutputActionShowAsTextTooltip;
 extern NSString *SPBundleOutputActionShowAsHTMLTooltip;
+extern NSString *SPBundleOutputActionShowAsHTML;
 extern NSString *SPBundleFileCommandKey;
 extern NSString *SPBundleFileScopeKey;
 extern NSString *SPBundleFileNameKey;

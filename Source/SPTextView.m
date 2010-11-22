@@ -32,6 +32,7 @@
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#import "SPBundleHTMLOutputController.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -3558,6 +3559,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
 						[SPTooltip showWithObject:output ofType:@"html"];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+						[c displayHTMLContent:output withOptions:nil];
 					}
 				}
 			} else {

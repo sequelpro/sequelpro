@@ -266,6 +266,7 @@ NSString *SPBundleOutputActionReplaceSelection              = @"replaceselection
 NSString *SPBundleOutputActionReplaceContent                = @"replacecontent";
 NSString *SPBundleOutputActionShowAsTextTooltip             = @"showastexttooltip";
 NSString *SPBundleOutputActionShowAsHTMLTooltip             = @"showashtmltooltip";
+NSString *SPBundleOutputActionShowAsHTML                    = @"showashtml";
 NSString *SPBundleFileCommandKey                            = @"command";
 NSString *SPBundleFileScopeKey                              = @"scope";
 NSString *SPBundleFileNameKey                               = @"name";

@@ -24,6 +24,7 @@
 
 #import "SPAlertSheets.h"
 #import "SPTooltip.h"
+#import "SPBundleHTMLOutputController.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -620,6 +621,11 @@
 
 					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
 						[SPTooltip showWithObject:output ofType:@"html"];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+						[c displayHTMLContent:output withOptions:nil];
 					}
 				}
 			} else {

@@ -33,6 +33,7 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
+#import "SPBundleHTMLOutputController.h"
 
 NSInteger MENU_EDIT_COPY             = 2001;
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
@@ -908,6 +909,11 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 						else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
 							[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
+						}
+
+						else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+							[c displayHTMLContent:output withOptions:nil];
 						}
 					}
 				} else {

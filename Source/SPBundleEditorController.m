@@ -99,9 +99,9 @@
 	inputEditorScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
 	inputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
 	inputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedTableRowsAsTab, SPBundleInputSourceSelectedTableRowsAsCsv, SPBundleInputSourceSelectedTableRowsAsSqlInsert, SPBundleInputSourceTableRowsAsTab, SPBundleInputSourceTableRowsAsCsv, SPBundleInputSourceTableRowsAsSqlInsert, nil] retain];
-	outputEditorScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, nil] retain];
-	outputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, nil] retain];
-	outputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, nil] retain];
+	outputEditorScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
+	outputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
+	outputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
 	inputFallbackEditorScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent, nil] retain];
 	inputFallbackInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceEntireContent, nil] retain];
 
@@ -137,15 +137,18 @@
 							NSLocalizedString(@"Replace Entire Content", @"replace entire content item label"),
 							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
 							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
+							NSLocalizedString(@"Show as HTML", @"show as html item label"),
 							NSLocalizedString(@"None", @"none menu item label"),
 							NSLocalizedString(@"Insert as Text", @"insert as text item label"),
 							NSLocalizedString(@"Replace Selection", @"replace selection item label"),
 							NSLocalizedString(@"Replace Entire Content", @"replace entire content item label"),
 							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
 							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
+							NSLocalizedString(@"Show as HTML", @"show as html item label"),
 							NSLocalizedString(@"None", @"none menu item label"),
 							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
 							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
+							NSLocalizedString(@"Show as HTML", @"show as html item label"),
 							NSLocalizedString(@"None", @"none menu item label"),
 							NSLocalizedString(@"Current Word", @"current word item label"),
 							NSLocalizedString(@"Current Line", @"current line item label"),

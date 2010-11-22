@@ -26,7 +26,11 @@
 #import "SPBundleHTMLOutputController.h"
 
 
+
 @implementation SPBundleHTMLOutputController
+
+@synthesize docTitle;
+@synthesize initHTMLSourceString;
 
 /**
  * Initialisation
@@ -34,7 +38,7 @@
 - (id)init
 {
 
-	if ((self = [super initWithWindowNibName:@"BundleHTMLOutput"])) {
+	if (self = [super initWithWindowNibName:@"BundleHTMLOutput"]) {
 
 		;
 
@@ -44,28 +48,192 @@
 
 }
 
-- (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
+- (NSString *)windowNibName
 {
-	NSString *fullContent = @"%@";
-	fullContent = [NSString stringWithFormat:fullContent, content];
-	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
-	[[self window] makeKeyAndOrderFront:nil];
+	return @"BundleHTMLOutput";
+}
+
+- (void)windowControllerDidLoadNib:(NSWindowController *) aController
+{
+	[super windowControllerDidLoadNib:aController];
+
+	[webView setContinuousSpellCheckingEnabled:NO];
+	[webView setGroupName:@"SequelProBundleHTMLOutput"];
+	[webView setDrawsBackground:YES];
+	[webView setEditable:NO];
+	[webView setShouldCloseWithWindow:YES];
+	[webView setShouldUpdateWhileOffscreen:YES];
 
 }
 
-// - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
-// {
-// }
-// 
-// - (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame;
-// {
-// }
+- (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
+{
+
+	[[self window] makeKeyAndOrderFront:nil];
+
+	NSString *fullContent = @"%@";
+	fullContent = [NSString stringWithFormat:fullContent, content];
+
+	[self setInitHTMLSourceString:fullContent];
+	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
+
+}
+
+- (void)displayURLString:(NSString *)url withOptions:(NSDictionary *)displayOptions
+{
+
+	[[self window] makeKeyAndOrderFront:nil];
+	[[webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+
+}
+
+- (id)webView
+{
+	return webView;
+}
+
+- (void)updateWindow
+{
+	if (docTitle != nil)
+		[[webView window] setTitle:docTitle];
+	else
+		[[webView window] setTitle:@""];
+}
+
+- (BOOL)canMakeTextLarger
+{
+	return YES;
+}
+
+- (BOOL)canMakeTextSmaller
+{
+	return YES;
+}
 
 - (void)dealloc
 {
-	[webView release];
+	if(webView) [webView release];
 	if(webPreferences) [webPreferences release];
 	[super dealloc];
+}
+
+- (void) keyDown:(NSEvent *)theEvent
+{
+	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
+
+	NSString *characters = [theEvent characters];
+	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
+	unichar insertedCharacter = [characters characterAtIndex:0];
+	long curFlags = ([theEvent modifierFlags] & allFlags);
+
+	if(curFlags & NSCommandKeyMask) {
+		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
+		{
+			[webView makeTextLarger:nil];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
+		{
+			[webView makeTextSmaller:nil];
+			return;
+		}
+		if([theEvent keyCode] == 123) // goBack
+		{
+			if([webView canGoBack])
+				[webView goBack:nil];
+			else
+				[[webView mainFrame] loadHTMLString:[self initHTMLSourceString] baseURL:nil];
+			return;
+		}
+		if([theEvent keyCode] == 124) // goForward
+		{
+			[webView goForward:nil];
+			return;
+		}
+	}
+
+	[super keyDown: theEvent];
+
+}
+
+- (IBAction)printDocument:(id)sender
+{
+	[[[[webView mainFrame] frameView] documentView] print:sender];
+}
+
+#pragma mark -
+
+- (void)windowShouldClose:(NSNotification *)notification
+{
+	[webView close];
+}
+
+#pragma mark -
+
+- (WebView *)webView:(WebView *)sender createWebViewWithRequest:(NSURLRequest *)request
+{
+	if(request != nil) {
+		SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+		[c displayURLString:[[request URL] absoluteString] withOptions:nil];
+		return [c webView];
+	}
+	return nil;
+}
+
+- (void)webViewShow:(WebView *)sender
+{
+	id newWebView = [[NSDocumentController sharedDocumentController] documentForWindow:[sender window]];
+	[newWebView showWindows];
+}
+
+- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
+{
+	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
+
+	switch(navigationType) {
+		case WebNavigationTypeLinkClicked:
+		[[webView mainFrame] loadRequest:request];
+		[listener use];
+		break;
+		case WebNavigationTypeReload:
+		[[webView mainFrame] loadHTMLString:[self initHTMLSourceString] baseURL:nil];
+		break;
+		default:
+		[listener use];
+	}
+}
+
+- (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame
+{
+	// Only report feedback for the main frame.
+	if (frame == [sender mainFrame]) {
+		[self setDocTitle:title];
+		[self updateWindow];
+	}
+}
+
+- (void)webView:(WebView*)sender didFinishLoadForFrame:(WebFrame*)frame;
+{
+	// Only report feedback for the main frame.
+	if (frame == [sender mainFrame]) {
+		[self updateWindow];
+	}
+}
+
+#pragma mark -
+#pragma mark multi-touch trackpad support
+
+/**
+ * Trackpad two-finger zooming gesture for in/decreasing the font size
+ */
+- (void)magnifyWithEvent:(NSEvent *)anEvent
+{
+
+	if([anEvent deltaZ]>2.0)
+		[webView makeTextLarger:nil];
+	else if([anEvent deltaZ]<-2.0)
+		[webView makeTextSmaller:nil];
+
 }
 
 @end

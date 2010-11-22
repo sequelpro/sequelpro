@@ -69,23 +69,4 @@
 	[self setFrame:frame display:YES animate:YES];
 }
 
-/**
- * Three finger multi-touch right/left swipe event to go back/forward in table history.
- */
-- (void)swipeWithEvent:(NSEvent *)anEvent
-{
-
-	if(![[self delegate] isKindOfClass:[SPWindowController class]] || ![[[self delegate] documents] count]) return;
-
-	id frontDoc = [[self delegate] selectedTableDocument];
-
-	if( frontDoc && [frontDoc isKindOfClass:[SPDatabaseDocument class]]
-		&& [frontDoc valueForKeyPath:@"spHistoryControllerInstance"]
-		&& ![frontDoc isWorking])
-		if([anEvent deltaX] == -1.0f)
-			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
-		else if([anEvent deltaX] == 1.0f)
-			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goBackInHistory"];
-}
-
 @end

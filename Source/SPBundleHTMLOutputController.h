@@ -29,10 +29,18 @@
 
 	IBOutlet WebView *webView;
 
-	WebPreferences	*webPreferences;
+	NSString       *docTitle;
+	NSString       *initHTMLSourceString;
+	WebPreferences *webPreferences;
 
 }
 
+@property(readwrite,retain) NSString *docTitle;
+@property(readwrite,retain) NSString *initHTMLSourceString;
+
+- (IBAction)printDocument:(id)sender;
+
 - (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions;
+- (void)displayURLString:(NSString *)url withOptions:(NSDictionary *)displayOptions;
 
 @end
