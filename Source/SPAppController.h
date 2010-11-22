@@ -94,4 +94,6 @@
 - (NSArray *)bundleItemsForScope:(NSString*)scope;
 - (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope;
 
+- (void)handleEventWithURL:(NSURL*)url;
+
 @end

@@ -528,7 +528,11 @@
 {
 
 	NSURL *url = [NSURL URLWithString:[[event paramDescriptorForKeyword:keyDirectObject] stringValue]];
-	
+	[self handleEventWithURL:url];
+}
+
+- (void)handleEventWithURL:(NSURL*)url
+{
 	NSString *command = [url host];
 	NSString *passedProcessID = [url user];
 	NSArray *parameter;
@@ -588,7 +592,6 @@
 	NSLog(@"param: %@", parameter);
 	NSLog(@"command: %@", command);
 	NSLog(@"command id: %@", passedProcessID);
-
 }
 
 #pragma mark -

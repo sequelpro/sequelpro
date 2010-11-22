@@ -190,17 +190,26 @@
 {
 	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
 
-	switch(navigationType) {
-		case WebNavigationTypeLinkClicked:
-		[[webView mainFrame] loadRequest:request];
-		[listener use];
-		break;
-		case WebNavigationTypeReload:
-		[[webView mainFrame] loadHTMLString:[self initHTMLSourceString] baseURL:nil];
-		break;
-		default:
-		[listener use];
+	// sequelpro:// handler
+	if([[[request URL] scheme] isEqualToString:@"sequelpro"] && navigationType == WebNavigationTypeLinkClicked) {
+		[[NSApp delegate] handleEventWithURL:[request URL]];
+		[listener ignore];
+	} else {
+
+		switch(navigationType) {
+			case WebNavigationTypeLinkClicked:
+			[[webView mainFrame] loadRequest:request];
+			[listener use];
+			break;
+			case WebNavigationTypeReload:
+			[[webView mainFrame] loadHTMLString:[self initHTMLSourceString] baseURL:nil];
+			break;
+			default:
+			[listener use];
+		}
+
 	}
+
 }
 
 - (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame
