@@ -401,6 +401,8 @@
 		BC68BFC7128D4EAE004907D9 /* SPBundleEditorController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */; };
 		BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */ = {isa = PBXBuildFile; fileRef = 179F15040F7C433C00579954 /* SPEditorTokens.h */; };
 		BC6D709E120C4C9F008027B5 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
+		BC77C5E1129AA67F009AD832 /* BundleHTMLOutput.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC77C5DF129AA67F009AD832 /* BundleHTMLOutput.xib */; };
+		BC77C5E4129AA69E009AD832 /* SPBundleHTMLOutputController.m in Sources */ = {isa = PBXBuildFile; fileRef = BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */; };
 		BC85F5D012193B7D00E255B5 /* SPColorAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */; };
 		BC878A71121A836F00AE5066 /* SPColorWellCell.m in Sources */ = {isa = PBXBuildFile; fileRef = BC878A70121A836F00AE5066 /* SPColorWellCell.m */; };
 		BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */; };
@@ -1121,6 +1123,9 @@
 		BC675A16107203BA00C5ACD4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/ContentFilterManager.xib; sourceTree = "<group>"; };
 		BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleEditorController.h; sourceTree = "<group>"; };
 		BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBundleEditorController.m; sourceTree = "<group>"; };
+		BC77C5E0129AA67F009AD832 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/BundleHTMLOutput.xib; sourceTree = "<group>"; };
+		BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleHTMLOutputController.h; sourceTree = "<group>"; };
+		BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBundleHTMLOutputController.m; sourceTree = "<group>"; };
 		BC85F5CE12193B7D00E255B5 /* SPColorAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorAdditions.h; sourceTree = "<group>"; };
 		BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorAdditions.m; sourceTree = "<group>"; };
 		BC878A6F121A836F00AE5066 /* SPColorWellCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorWellCell.h; sourceTree = "<group>"; };
@@ -1912,6 +1917,8 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
+				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
 				BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */,
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
@@ -2097,6 +2104,7 @@
 		17E642050EF020A3001BC333 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				BC77C5DF129AA67F009AD832 /* BundleHTMLOutput.xib */,
 				BCCB7478128D4FD100339E25 /* BundleEditor.xib */,
 				1761FD460EF03A6F00331368 /* MainMenu.xib */,
 				58A8A72611A0149100B95749 /* MainWindow.xib */,
@@ -2832,6 +2840,7 @@
 				58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */,
 				58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */,
 				BCCB747A128D4FD100339E25 /* BundleEditor.xib in Resources */,
+				BC77C5E1129AA67F009AD832 /* BundleHTMLOutput.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3107,6 +3116,7 @@
 				17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */,
 				BC68BFC7128D4EAE004907D9 /* SPBundleEditorController.m in Sources */,
 				BC1944D01297291800A236CD /* SPBundleCommandTextView.m in Sources */,
+				BC77C5E4129AA69E009AD832 /* SPBundleHTMLOutputController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3393,6 +3403,14 @@
 				BC675A16107203BA00C5ACD4 /* English */,
 			);
 			name = ContentFilterManager.xib;
+			sourceTree = "<group>";
+		};
+		BC77C5DF129AA67F009AD832 /* BundleHTMLOutput.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BC77C5E0129AA67F009AD832 /* English */,
+			);
+			name = BundleHTMLOutput.xib;
 			sourceTree = "<group>";
 		};
 		BC8B0DAD104004F900FC02EC /* EncodingPopupView.xib */ = {
