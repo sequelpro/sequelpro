@@ -1155,6 +1155,46 @@
 	return YES;
 }
 
+/**
+ * Try to select items using the provided names in theNames; returns YES if at least
+ * one item could be seleceted, otherwise NO.
+ */
+- (BOOL)selectItemsWithNames:(NSArray *)theNames
+{
+	NSInteger i, tableType;
+	NSInteger itemIndex = NSNotFound;
+	NSMutableIndexSet *selectionIndexSet = [NSMutableIndexSet indexSet];
+
+	// Loop through the unfiltered tables/views to find the desired item
+	for(NSString* theName in theNames) {
+		for (i = 0; i < [tables count]; i++) {
+			tableType = [[tableTypes objectAtIndex:i] integerValue];
+			if (tableType == SPTableTypeNone) continue;
+			if ([[tables objectAtIndex:i] isEqualToString:theName]) {
+				[selectionIndexSet addIndex:i];
+			}
+			else if ([[tables objectAtIndex:i] compare:theName options:NSCaseInsensitiveSearch|NSLiteralSearch] == NSOrderedSame)
+				[selectionIndexSet addIndex:i];
+		}
+	}
+
+	// If no match found, return failure
+	if (![selectionIndexSet count]) return NO;
+
+	if (!isTableListFiltered) {
+		[tablesListView selectRowIndexes:selectionIndexSet byExtendingSelection:NO];
+	} else {
+		[tablesListView deselectAll:nil];
+		[listFilterField setStringValue:@""];
+		[self updateFilter:self];
+		[tablesListView selectRowIndexes:selectionIndexSet byExtendingSelection:NO];
+	}
+
+	[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+
+	return YES;
+}
+
 #pragma mark -
 #pragma mark Datasource methods
 

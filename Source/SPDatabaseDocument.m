@@ -4405,6 +4405,23 @@
 		return;
 	}
 
+	if([command isEqualToString:@"SelectTables"]) {
+		if([params count] > 1) {
+			[tablesListInstance selectItemsWithNames:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"ReloadContentTable"]) {
+		[tablesListInstance updateTables:self];
+		return;
+	}
+
+	if([command isEqualToString:@"ReloadTablesList"]) {
+		[tableContentInstance reloadTable:self];
+		return;
+	}
+
 	else if([command isEqualToString:@"SelectDatabase"]) {
 		if (_isWorkingLevel) return;
 		if([params count] > 1) {

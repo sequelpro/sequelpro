@@ -483,10 +483,10 @@
 	if(doc != nil) {
 		[doc setProcessID:processID];
 
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, processID] forKey:@"SP_QUERY_FILE_PATH"];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, processID] forKey:@"SP_QUERY_RESULT_FILE_PATH"];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, processID] forKey:@"SP_QUERY_RESULT_STATUS_FILE_PATH"];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, processID] forKey:@"SP_QUERY_RESULT_META_FILE_PATH"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, processID] forKey:@"SP_QUERY_FILE"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, processID] forKey:@"SP_QUERY_RESULT_FILE"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, processID] forKey:@"SP_QUERY_RESULT_STATUS_FILE"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, processID] forKey:@"SP_QUERY_RESULT_META_FILE"];
 
 		if([doc shellVariables])
 			[theEnv addEntriesFromDictionary:[doc shellVariables]];

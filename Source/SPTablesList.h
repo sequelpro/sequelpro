@@ -141,6 +141,7 @@
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
 - (BOOL)selectItemWithName:(NSString *)theName;
+- (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
 // Table list filter interaction
 - (void) showFilter;
