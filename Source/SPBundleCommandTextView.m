@@ -25,6 +25,7 @@
 #import "SPBundleCommandTextView.h"
 #import "SPTextViewAdditions.h"
 #import "SPBundleEditorController.h"
+#import "RegexKitLite.h"
 
 @implementation SPBundleCommandTextView
 
@@ -96,6 +97,207 @@
 }
 
 #pragma mark -
+
+/**
+ * Shifts the selection, if any, rightwards by indenting any selected lines with one tab.
+ * If the caret is within a line, the selection is not changed after the index; if the selection
+ * has length, all lines crossed by the length are indented and fully selected.
+ * Returns whether or not an indentation was performed.
+ */
+- (BOOL)shiftSelectionRight
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSRange currentLineRange;
+
+	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
+
+	// Indent the currently selected line if the caret is within a single line
+	if ([self selectedRange].length == 0) {
+
+		// Extract the current line range based on the text caret
+		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+
+		// Register the indent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:@"\t"];
+
+		// Insert the new tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:@"\t"];
+
+		return YES;
+	}
+
+	// Otherwise, something is selected
+	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location,0)];
+	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange([self selectedRange])-1,0)]);
+	
+	// Expand selection for first and last line to begin and end resp. but not the last line ending
+	NSRange blockRange = NSMakeRange(firstLineRange.location, lastLineMaxRange - firstLineRange.location);
+	if([textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\n' || [textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\r')
+		blockRange.length--;
+
+	// Replace \n by \n\t of all lines in blockRange
+	NSString *newString;
+	// check for line ending
+	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
+		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+			[[textViewString substringWithRange:blockRange] 
+				stringByReplacingOccurrencesOfString:@"\r" withString:@"\r\t"]];
+	else
+		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+			[[textViewString substringWithRange:blockRange] 
+				stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"]];
+
+	// Register the indent for undo
+	[self shouldChangeTextInRange:blockRange replacementString:newString];
+
+	[self replaceCharactersInRange:blockRange withString:newString];
+
+	[self setSelectedRange:NSMakeRange(blockRange.location, [newString length])];
+
+	if(blockRange.length == [newString length])
+		return NO;
+	else
+		return YES;
+
+}
+
+
+/**
+ * Shifts the selection, if any, leftwards by un-indenting any selected lines by one tab if possible.
+ * If the caret is within a line, the selection is not changed after the undent; if the selection has
+ * length, all lines crossed by the length are un-indented and fully selected.
+ * Returns whether or not an indentation was performed.
+ */
+- (BOOL)shiftSelectionLeft
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSRange currentLineRange;
+
+	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
+
+	// Undent the currently selected line if the caret is within a single line
+	if ([self selectedRange].length == 0) {
+
+		// Extract the current line range based on the text caret
+		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+
+		// Ensure that the line has length and that the first character is a tab
+		if (currentLineRange.length < 1
+			|| ([textViewString characterAtIndex:currentLineRange.location] != '\t' && [textViewString characterAtIndex:currentLineRange.location] != ' '))
+			return NO;
+
+		// Register the undent for undo
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 1) replacementString:@""];
+
+		// Remove the tab
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 1) withString:@""];
+
+		return YES;
+	}
+
+	// Otherwise, something is selected
+	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location,0)];
+	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange([self selectedRange])-1,0)]);
+	
+	// Expand selection for first and last line to begin and end resp. but the last line ending
+	NSRange blockRange = NSMakeRange(firstLineRange.location, lastLineMaxRange - firstLineRange.location);
+	if([textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\n' || [textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\r')
+		blockRange.length--;
+
+	// Check if blockRange starts with SPACE or TAB
+	// (this also catches the first line of the entire text buffer or
+	// if only one line is selected)
+	NSInteger leading = 0;
+	if([textViewString characterAtIndex:blockRange.location] == ' ' 
+		|| [textViewString characterAtIndex:blockRange.location] == '\t')
+		leading++;
+
+	// Replace \n[ \t] by \n of all lines in blockRange
+	NSString *newString;
+	// check for line ending
+	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
+		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+			stringByReplacingOccurrencesOfString:@"\r\t" withString:@"\r"] 
+			stringByReplacingOccurrencesOfString:@"\r " withString:@"\r"];
+	else
+		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+			stringByReplacingOccurrencesOfString:@"\n\t" withString:@"\n"] 
+			stringByReplacingOccurrencesOfString:@"\n " withString:@"\n"];
+
+	// Register the unindent for undo
+	[self shouldChangeTextInRange:blockRange replacementString:newString];
+
+	[self replaceCharactersInRange:blockRange withString:newString];
+
+	[self setSelectedRange:NSMakeRange(blockRange.location, [newString length])];
+
+	if(blockRange.length == [newString length])
+		return NO;
+	else
+		return YES;
+}
+
+/*
+ * Add or remove "-- " for each line in the current query or selection,
+ * if the selection is in-line wrap selection into ⁄* block comments and
+ * place the caret after ⁄* to allow to enter !xxxxxx e.g.
+ */
+- (void)commentOut
+{
+
+	NSRange oldRange = [self selectedRange];
+	NSString *commentString = @"#";
+	
+	if([[self string] hasPrefix:@"#!"] && [[self string] length] > 4) {
+		NSRange firstLineRange = NSMakeRange(2, [[self string] rangeOfString:@"\n"].location - 2);
+		NSString *firstLine = [[self string] substringWithRange:firstLineRange];
+		if([firstLine isMatchedByRegex:@"osascript"]) {
+			commentString = @"--";
+		}
+	}
+
+	// get the current line range
+	NSRange lineRange = [[self string] lineRangeForRange:oldRange];
+	NSMutableString *n = [NSMutableString string];
+
+	// Put "-- " in front of the current line
+	[n setString:[NSString stringWithFormat:@"%@ %@", commentString, [[self string] substringWithRange:lineRange]]];
+
+	// Check if current line is already commented out, if so uncomment it
+	// and preserve the original indention via regex:@"^-- (\\s*)"
+	if([n isMatchedByRegex:[NSString stringWithFormat:@"^%@ \\s*(%@\\s|#)", commentString, commentString]]) {
+		[n replaceOccurrencesOfRegex:[NSString stringWithFormat:@"^%@ \\s*(%@\\s|#)", commentString, commentString]
+			withString:[n substringWithRange:[n rangeOfRegex:[NSString stringWithFormat:@"^%@ (\\s*)", commentString]
+												options:RKLNoOptions
+												inRange:NSMakeRange(0,[n length])
+												capture:1
+												error: nil]]];
+	} else if ([n isMatchedByRegex:[NSString stringWithFormat:@"^%@ \\s*/\\*.*? ?\\*/\\s*$", commentString]]) {
+		[n replaceOccurrencesOfRegex:[NSString stringWithFormat:@"^%@ \\s*/\\* ?", commentString]
+			withString:[n substringWithRange:[n rangeOfRegex:[NSString stringWithFormat:@"^%@ (\\s*)", commentString]
+												options:RKLNoOptions
+												inRange:NSMakeRange(0,[n length])
+												capture:1
+												error: nil]]];
+		[n replaceOccurrencesOfRegex:@" ?\\*/\\s*$"
+			withString:[n substringWithRange:[n rangeOfRegex:@" ?\\*/(\\s*)$"
+												options:RKLNoOptions
+												inRange:NSMakeRange(0,[n length])
+												capture:1
+												error: nil]]];
+	}
+
+	// Replace current line by (un)commented string
+	// The caret will be placed at the beginning of the next line if present to
+	// allow a fast (un)commenting of lines
+	[self setSelectedRange:lineRange];
+	[self insertText:n];
+
+	// Try to create an undo group
+	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
+		[[self delegate] setWasCutPaste];
+
+}
 
 - (IBAction)undo:(id)sender
 {
@@ -215,6 +417,21 @@
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
+		if([charactersIgnMod isEqualToString:@"["]) // decrease text size by 1; ⌘- and numpad -
+		{
+			[self shiftSelectionLeft];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"]"]) // shift right
+		{
+			[self shiftSelectionRight];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"/"]) // shift right
+		{
+			[self commentOut];
+			return;
+		}
 	}
 
 	// Allow undo grouping if user typed a ' ' (for word level undo)
@@ -249,6 +466,57 @@
 
 	[super keyDown: theEvent];
 
+}
+
+/**
+ * Handle special commands - see NSResponder.h for a sample list.
+ * This subclass currently handles insertNewline: in order to preserve indentation
+ * when adding newlines.
+ */
+- (void) doCommandBySelector:(SEL)aSelector
+{
+
+	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
+    if (aSelector == @selector(insertNewline:) || [[NSApp currentEvent] keyCode] == 0x4C)
+	{
+		NSString *textViewString = [[self textStorage] string];
+		NSString *currentLine, *indentString = nil;
+		NSScanner *whitespaceScanner;
+		NSRange currentLineRange;
+		NSUInteger lineCursorLocation;
+
+		// Extract the current line based on the text caret or selection start position
+		currentLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+		currentLine = [[NSString alloc] initWithString:[textViewString substringWithRange:currentLineRange]];
+		lineCursorLocation = [self selectedRange].location - currentLineRange.location;
+
+		// Scan all indentation characters on the line into a string
+		whitespaceScanner = [[NSScanner alloc] initWithString:currentLine];
+		[whitespaceScanner setCharactersToBeSkipped:nil];
+		[whitespaceScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&indentString];
+		[whitespaceScanner release];
+		[currentLine release];
+
+		// Always add the newline, whether or not we want to indent the next line
+		[self insertNewline:self];
+
+		// Replicate the indentation on the previous line if one was found.
+		if (indentString) {
+			if (lineCursorLocation < [indentString length]) {
+				[self insertText:[indentString substringWithRange:NSMakeRange(0, lineCursorLocation)]];
+			} else {
+				[self insertText:indentString];
+			}
+		}
+
+		// Try to create an undo group
+		if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
+			[[self delegate] setWasCutPaste];
+
+		// Return to avoid the original implementation, preventing double linebreaks
+		return;
+	}
+	[super doCommandBySelector:aSelector];
 }
 
 #pragma mark -

@@ -40,4 +40,8 @@
 - (void)saveChangedFontInUserDefaults;
 - (void) setTabStops;
 
+- (BOOL)shiftSelectionRight;
+- (BOOL)shiftSelectionLeft;
+- (void)commentOut;
+
 @end
