@@ -72,6 +72,7 @@
 		filterTableIsSwapped       = NO;
 		lastEditedFilterTableValue = nil;
 		activeFilter               = 0;
+		schemeFilter               = nil;
 
 		selectedTable = nil;
 		sortCol       = nil;
@@ -866,6 +867,12 @@
 - (NSString *)tableFilterString
 {
 
+	// If filter command was passed by sequelpro url scheme
+	if(activeFilter == 2) {
+		if(schemeFilter)
+			return schemeFilter;
+	}
+
 	// Call did come from filter table and is filter table window still open?
 	if(activeFilter == 1 && [filterTableWindow isVisible]) {
 
@@ -1255,6 +1262,11 @@
 
 	if(sender == filterTableFilterButton)
 		activeFilter = 1;
+	else if([sender isKindOfClass:[NSString class]] && [sender length]) {
+		if(schemeFilter) [schemeFilter release], schemeFilter = nil;
+		schemeFilter = [sender retain];
+		activeFilter = 2;
+	}
 	else
 		activeFilter = 0;
 

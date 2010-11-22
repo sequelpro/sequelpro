@@ -562,6 +562,16 @@
 		}
 	}
 
+	while(1) {
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                   untilDate:[NSDate distantPast]
+                                      inMode:NSDefaultRunLoopMode
+                                     dequeue:YES];
+		// if(!event) continue;
+		[NSApp sendEvent:event];
+		if(![processDocument isWorking]) break;
+		usleep(1000);
+	}
 
 	if(processDocument && command && [command isEqualToString:@"passToDoc"]) {
 		NSMutableDictionary *cmdDict = [NSMutableDictionary dictionary];

@@ -4395,6 +4395,29 @@
 	// Authenticate command
 	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) return;
 
+	if([command isEqualToString:@"SelectDocumentView"]) {
+		if([params count] == 2) {
+			NSString *view = [params objectAtIndex:1];
+			if([view length]) {
+				if([[view lowercaseString] hasPrefix:@"str"])
+					[self viewStructure:self];
+				else if([[view lowercaseString] hasPrefix:@"con"])
+					[self viewContent:self];
+				else if([[view lowercaseString] hasPrefix:@"que"])
+					[self viewQuery:self];
+				else if([[view lowercaseString] hasPrefix:@"tab"])
+					[self viewStatus:self];
+				else if([[view lowercaseString] hasPrefix:@"rel"])
+					[self viewRelations:self];
+				else if([[view lowercaseString] hasPrefix:@"tri"])
+					[self viewTriggers:self];
+
+				[self updateWindowTitle:self];
+			}
+		}
+		return;
+	}
+
 	if([command isEqualToString:@"SelectTable"]) {
 		if([params count] == 2) {
 			NSString *tableName = [params objectAtIndex:1];
@@ -4413,16 +4436,16 @@
 	}
 
 	if([command isEqualToString:@"ReloadContentTable"]) {
-		[tablesListInstance updateTables:self];
-		return;
-	}
-
-	if([command isEqualToString:@"ReloadTablesList"]) {
 		[tableContentInstance reloadTable:self];
 		return;
 	}
 
-	else if([command isEqualToString:@"SelectDatabase"]) {
+	if([command isEqualToString:@"ReloadTablesList"]) {
+		[tablesListInstance updateTables:self];
+		return;
+	}
+
+	if([command isEqualToString:@"SelectDatabase"]) {
 		if (_isWorkingLevel) return;
 		if([params count] > 1) {
 			NSString *dbName = [params objectAtIndex:1];
@@ -4437,7 +4460,22 @@
 		return;
 	}
 
-	else if([command isEqualToString:@"ExecuteQuery"]) {
+	if([command isEqualToString:@"ReloadContentTableWithWHEREClause"]) {
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSFileManager *fm = [NSFileManager defaultManager];
+		BOOL isDir;
+		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
+			NSError *inError = nil;
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+			[fm removeItemAtPath:queryFileName error:nil];
+			if(inError == nil && query && [query length]) {
+				[tableContentInstance filterTable:query];
+			}
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"ExecuteQuery"]) {
 
 		// Bail if document is busy
 		if (_isWorkingLevel) return;

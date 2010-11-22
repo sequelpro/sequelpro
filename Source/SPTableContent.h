@@ -107,7 +107,8 @@
 	BOOL filterTableIsSwapped;
 	NSString *filterTableDefaultOperator;
 	NSString *lastEditedFilterTableValue;
-	NSInteger activeFilter; // 0 = default filter; 1 = filter table
+	NSInteger activeFilter; // 0 = default filter; 1 = filter table; 2 = sequelpro url scheme
+	NSString *schemeFilter;
 
 	BOOL sortColumnToRestoreIsAsc;
 	BOOL tableRowsSelectable;
