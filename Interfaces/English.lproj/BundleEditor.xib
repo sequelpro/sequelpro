@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="686"/>
+			<integer value="823"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -446,7 +446,7 @@
 																	<string>public.url</string>
 																</object>
 															</object>
-															<string key="NSFrameSize">{468, 112}</string>
+															<string key="NSFrameSize">{468, 92}</string>
 															<reference key="NSSuperview" ref="971406968"/>
 															<object class="NSTextContainer" key="NSTextContainer" id="1001899575">
 																<object class="NSLayoutManager" key="NSLayoutManager">
@@ -522,7 +522,7 @@
 																</object>
 																<nil key="NSDefaultParagraphStyle"/>
 															</object>
-															<int key="NSTVFlags">6</int>
+															<int key="NSTVFlags">7</int>
 															<string key="NSMaxSize">{468, 1e+07}</string>
 															<string key="NSMinize">{223, 92}</string>
 															<nil key="NSDelegate"/>
@@ -1860,12 +1860,12 @@
 							<reference ref="117047836"/>
 							<reference ref="62695080"/>
 							<reference ref="679408795"/>
-							<reference ref="179792134"/>
 							<reference ref="277233496"/>
 							<reference ref="552615839"/>
 							<reference ref="669651343"/>
 							<reference ref="904079305"/>
 							<reference ref="864339274"/>
+							<reference ref="179792134"/>
 						</object>
 						<reference key="parent" ref="358491109"/>
 						<string key="objectName">Bundle Content View</string>
