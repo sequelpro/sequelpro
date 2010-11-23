@@ -316,6 +316,7 @@
 {
 	NSMutableDictionary *bundle;
 	NSUInteger insertIndex;
+	BOOL wasDuplicated = NO;
 
 	// Store pending changes in Query
 	[[self window] makeFirstResponder:nameTextField];
@@ -362,7 +363,7 @@
 			return;
 
 		}
-
+		wasDuplicated = YES;
 		[bundle setObject:newFileName forKey:@"bundleName"];
 
 	}
@@ -390,7 +391,7 @@
 	[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:commandsTableView];
 	[self scopeButtonChanged:nil];
-	if([commandsTableView numberOfSelectedRows] > 0)
+	if(!wasDuplicated && [commandsTableView numberOfSelectedRows] > 0)
 		[commandsTableView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
 
