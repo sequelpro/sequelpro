@@ -246,403 +246,6 @@
 }
 
 /**
- * Initialise the document with the connection file at the supplied path.
- */
-- (void)initWithConnectionFile:(NSString *)path
-{
-	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
-
-	NSString *encryptpw = nil;
-	NSDictionary *data = nil;
-	NSDictionary *connection = nil;
-	NSDictionary *spf = nil;
-
-	NSInteger connectionType = -1;
-
-	[self updateWindowTitle:self];
-
-	// Clean fields
-	[connectionController setName:@""];
-	[connectionController setUser:@""];
-	[connectionController setHost:@""];
-	[connectionController setPort:@""];
-	[connectionController setSocket:@""];
-	[connectionController setUseSSL:NSOffState];
-	[connectionController setSslKeyFileLocationEnabled:NSOffState];
-	[connectionController setSslKeyFileLocation:nil];
-	[connectionController setSslCertificateFileLocationEnabled:NSOffState];
-	[connectionController setSslCertificateFileLocation:nil];
-	[connectionController setSslCACertFileLocationEnabled:NSOffState];
-	[connectionController setSslCACertFileLocation:nil];
-	[connectionController setSshHost:@""];
-	[connectionController setSshUser:@""];
-	[connectionController setSshKeyLocationEnabled:NSOffState];
-	[connectionController setSshKeyLocation:nil];
-	[connectionController setSshPort:@""];
-	[connectionController setDatabase:@""];
-	[connectionController setPassword:nil];
-	[connectionController setSshPassword:nil];
-
-	// Deselect all favorites
-	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
-	// Suppress the possibility to choose an other connection from the favorites
-	// if a connection should initialized by SPF file. Otherwise it could happen
-	// that the SPF file runs out of sync.
-	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
-
-
-	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
-
-	spf = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		if (spf) [spf release];
-		[self closeAndDisconnect];
-		return;
-	}
-
-	// For dispatching later
-	if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Warning", @"warning")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]]];
-
-		[alert setAlertStyle:NSWarningAlertStyle];
-		[spf release];
-		[self closeAndDisconnect];
-		[alert runModal];
-		return;
-	}
-
-	if(![spf objectForKey:@"data"]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"No data found.", @"no data found")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		[spf release];
-		[self closeAndDisconnect];
-		return;
-	}
-
-	// Ask for a password if SPF file passwords were encrypted as sheet
-	if([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
-
-		if([self isSaveInBundle] && [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"]) {
-			encryptpw = [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"];
-		} else {
-			[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
-			[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), ([self isSaveInBundle]) ? [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent] : [path lastPathComponent]]];
-			[inputTextWindowSecureTextField setStringValue:@""];
-			[inputTextWindowSecureTextField selectText:nil];
-
-			[NSApp beginSheet:inputTextWindow modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
-
-			// wait for encryption password
-			NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
-			for (;;) {
-
-				// Execute code on DefaultRunLoop
-				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
-										 beforeDate:[NSDate distantFuture]];
-
-				// Break the run loop if editSheet was closed
-				if ([NSApp runModalSession:session] != NSRunContinuesResponse 
-					|| ![inputTextWindow isVisible]) 
-					break;
-
-				// Execute code on DefaultRunLoop
-				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
-										 beforeDate:[NSDate distantFuture]];
-
-			}
-			[NSApp endModalSession:session];
-			[inputTextWindow orderOut:nil];
-			[NSApp endSheet:inputTextWindow];
-
-			if(passwordSheetReturnCode) {
-				encryptpw = [inputTextWindowSecureTextField stringValue];
-				if([self isSaveInBundle]) {
-					NSMutableDictionary *spfSessionData = [NSMutableDictionary dictionary];
-					[spfSessionData addEntriesFromDictionary:[[NSApp delegate] spfSessionDocData]];
-					[spfSessionData setObject:encryptpw forKey:@"e_string"];
-					[[NSApp delegate] setSpfSessionDocData:spfSessionData];
-				}
-			} else {
-				[self closeAndDisconnect];
-				[spf release];
-				return;
-			}
-		}
-	}
-
-	if([[spf objectForKey:@"data"] isKindOfClass:[NSDictionary class]])
-		data = [NSDictionary dictionaryWithDictionary:[spf objectForKey:@"data"]];
-	else if([[spf objectForKey:@"data"] isKindOfClass:[NSData class]]) {
-		NSData *decryptdata = nil;
-		decryptdata = [[[NSMutableData alloc] initWithData:[(NSData *)[spf objectForKey:@"data"] dataDecryptedWithPassword:encryptpw]] autorelease];
-		if(decryptdata != nil && [decryptdata length]) {
-			NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:decryptdata] autorelease];
-			data = (NSDictionary *)[unarchiver decodeObjectForKey:@"data"];
-			[unarchiver finishDecoding];
-		}
-		if(data == nil) {
-			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-										   alternateButton:nil 
-											  otherButton:nil 
-								informativeTextWithFormat:NSLocalizedString(@"Wrong data format or password.", @"wrong data format or password")];
-
-			[alert setAlertStyle:NSCriticalAlertStyle];
-			[alert runModal];
-			[self closeAndDisconnect];
-			[spf release];
-			return;
-		}
-	}
-
-	if(data == nil) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"Wrong data format.", @"wrong data format")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		[self closeAndDisconnect];
-		[spf release];
-		return;
-	}
-
-
-	if(![data objectForKey:@"connection"]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"No connection data found.", @"no connection data found")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		[self closeAndDisconnect];
-		[spf release];
-		return;
-	}
-
-	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
-	if(encryptpw != nil) {
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"encrypted"];
-		[spfDocData setObject:encryptpw forKey:@"e_string"];
-	}
-	encryptpw = nil;
-
-	connection = [NSDictionary dictionaryWithDictionary:[data objectForKey:@"connection"]];
-
-	if([connection objectForKey:@"type"]) {
-		if([[connection objectForKey:@"type"] isEqualToString:@"SPTCPIPConnection"])
-			connectionType = SPTCPIPConnection;
-		else if([[connection objectForKey:@"type"] isEqualToString:@"SPSocketConnection"])
-			connectionType = SPSocketConnection;
-		else if([[connection objectForKey:@"type"] isEqualToString:@"SPSSHTunnelConnection"])
-			connectionType = SPSSHTunnelConnection;
-		else
-			connectionType = SPTCPIPConnection;
-
-		[connectionController setType:connectionType];
-		[connectionController resizeTabViewToConnectionType:connectionType animating:NO];
-	}
-
-	if([connection objectForKey:@"name"])
-		[connectionController setName:[connection objectForKey:@"name"]];
-	if([connection objectForKey:@"user"])
-		[connectionController setUser:[connection objectForKey:@"user"]];
-	if([connection objectForKey:@"host"])
-		[connectionController setHost:[connection objectForKey:@"host"]];
-	if([connection objectForKey:@"port"])
-		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
-
-	if([connection objectForKey:@"useSSL"])
-		[connectionController setUseSSL:[[connection objectForKey:@"useSSL"] intValue]];
-	if([connection objectForKey:@"sslKeyFileLocationEnabled"])
-		[connectionController setSslKeyFileLocationEnabled:[[connection objectForKey:@"sslKeyFileLocationEnabled"] intValue]];
-	if([connection objectForKey:@"sslKeyFileLocation"])
-		[connectionController setSslKeyFileLocation:[connection objectForKey:@"sslKeyFileLocation"]];
-	if([connection objectForKey:@"sslCertificateFileLocationEnabled"])
-		[connectionController setSslCertificateFileLocationEnabled:[[connection objectForKey:@"sslCertificateFileLocationEnabled"] intValue]];
-	if([connection objectForKey:@"sslCertificateFileLocation"])
-		[connectionController setSslCertificateFileLocation:[connection objectForKey:@"sslCertificateFileLocation"]];
-	if([connection objectForKey:@"sslCACertFileLocationEnabled"])
-		[connectionController setSslCACertFileLocationEnabled:[[connection objectForKey:@"sslCACertFileLocationEnabled"] intValue]];
-	if([connection objectForKey:@"sslCACertFileLocation"])
-		[connectionController setSslCACertFileLocation:[connection objectForKey:@"sslCACertFileLocation"]];
-
-	if([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length])
-		[self setKeychainID:[connection objectForKey:@"kcid"]];
-
-	// Set password - if not in SPF file try to get it via the KeyChain
-	if([connection objectForKey:@"password"])
-		[connectionController setPassword:[connection objectForKey:@"password"]];
-	else {
-		NSString *pw = [self keychainPasswordForConnection:nil];
-		if(pw)
-			[connectionController setPassword:pw];
-	}
-
-	if(connectionType == SPSocketConnection && [connection objectForKey:@"socket"])
-		[connectionController setSocket:[connection objectForKey:@"socket"]];
-
-	if(connectionType == SPSSHTunnelConnection) {
-		if([connection objectForKey:@"ssh_host"])
-			[connectionController setSshHost:[connection objectForKey:@"ssh_host"]];
-		if([connection objectForKey:@"ssh_user"])
-			[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
-		if([connection objectForKey:@"ssh_keyLocationEnabled"])
-			[connectionController setSshKeyLocationEnabled:[[connection objectForKey:@"ssh_keyLocationEnabled"] intValue]];
-		if([connection objectForKey:@"ssh_keyLocation"])
-			[connectionController setSshKeyLocation:[connection objectForKey:@"ssh_keyLocation"]];
-		if([connection objectForKey:@"ssh_port"])
-			[connectionController setSshPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"ssh_port"] integerValue]]];
-
-		// Set ssh password - if not in SPF file try to get it via the KeyChain
-		if([connection objectForKey:@"ssh_password"])
-			[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
-		else {
-			NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
-			if(sshpw)
-				[connectionController setSshPassword:sshpw];
-		}
-
-	}
-
-	if([connection objectForKey:@"database"])
-		[connectionController setDatabase:[connection objectForKey:@"database"]];
-
-	if([data objectForKey:@"session"]) {
-		spfSession = [[NSDictionary dictionaryWithDictionary:[data objectForKey:@"session"]] retain];
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"include_session"];
-	}
-
-	if(![self isSaveInBundle]) {
-		[self setFileURL:[NSURL fileURLWithPath:path]];
-		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
-	}
-
-	if([spf objectForKey:SPQueryFavorites])
-		[spfPreferences setObject:[spf objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
-	if([spf objectForKey:SPQueryHistory])
-		[spfPreferences setObject:[spf objectForKey:SPQueryHistory] forKey:SPQueryHistory];
-	if([spf objectForKey:SPContentFilters])
-		[spfPreferences setObject:[spf objectForKey:SPContentFilters] forKey:SPContentFilters];
-
-	[spfDocData setObject:[NSNumber numberWithBool:([connection objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
-
-	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
-
-	[connectionController updateSSLInterface:self];
-
-	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
-		[connectionController initiateConnection:self];
-	}
-	[spf release];
-}
-
-/**
- * Restore session from SPF file if given
- */
-- (void)restoreSession
-{
-	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
-
-	// Check and set the table
-	NSArray *tables = [tablesListInstance tables];
-
-	BOOL isSelectedTableDefined = YES;
-
-	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
-		isSelectedTableDefined = NO;
-	}
-
-	// Restore toolbar setting
-	if([spfSession objectForKey:@"isToolbarVisible"])
-		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
-
-	// Reset database view encoding if differs from default
-	if([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
-		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
-
-	if(isSelectedTableDefined) {
-		// Set table content details for restore
-		if([spfSession objectForKey:@"contentSortCol"])
-			[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortCol"] boolValue]];
-		if([spfSession objectForKey:@"contentPageNumber"])
-			[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
-		if([spfSession objectForKey:@"contentViewport"])
-			[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
-		if([spfSession objectForKey:@"contentFilter"])
-			[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
-
-		// Select table
-		[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
-
-		// TODO up to now it doesn't work
-		if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
-			NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-			NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-			NSUInteger i;
-			for(i=0; i<[items count]; i++)
-				[anIndexSet addIndex:(NSUInteger)NSArrayObjectAtIndex(items, i)];
-
-			[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
-		}
-
-		[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
-
-	}
-
-	// Select view
-	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
-		[self viewStructure:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
-		[self viewContent:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
-		[self viewQuery:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
-		[self viewStatus:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
-		[self viewRelations:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
-		[self viewTriggers:self];
-
-	[self updateWindowTitle:self];
-
-	// dealloc spfSession data
-	[spfSession release];
-	spfSession = nil;
-
-	// End the task
-	[self endTask];
-	[taskPool drain];
-}
-
-/**
  * Set the return code for entering the encryption passowrd sheet
  */
 - (IBAction)closePasswordSheet:(id)sender
@@ -2556,7 +2159,7 @@
 {
 	[[NSApp delegate] newWindow:self];
 	SPDatabaseDocument *newTableDocument = [[NSApp delegate] frontDocument];
-	[newTableDocument initWithConnectionFile:[[self fileURL] path]];
+	[newTableDocument setStateFromConnectionFile:[[self fileURL] path]];
 }
 
 /**
@@ -3297,182 +2900,72 @@
 
 	}
 
-	NSString *aString;
+	// Set up the dictionary to save to file, together with a data store
+	NSMutableDictionary *spfStructure = [NSMutableDictionary dictionary];
+	NSMutableDictionary *spfData = [NSMutableDictionary dictionary];
 
-	NSMutableDictionary *spfdata = [NSMutableDictionary dictionary];
-	NSMutableDictionary *connection = [NSMutableDictionary dictionary];
-	NSMutableDictionary *session = nil;
-	NSMutableDictionary *data = [NSMutableDictionary dictionary];
-
-	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
-
-	[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
-	[spfdata setObject:@"connection" forKey:@"format"];
-	[spfdata setObject:@"mysql" forKey:@"rdbms_type"];
+	// Add basic details
+	[spfStructure setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+	[spfStructure setObject:@"connection" forKey:@"format"];
+	[spfStructure setObject:@"mysql" forKey:@"rdbms_type"];
 	if([self mySQLVersion])
-		[spfdata setObject:[self mySQLVersion] forKey:@"rdbms_version"];
+		[spfStructure setObject:[self mySQLVersion] forKey:@"rdbms_version"];
 
-	// Store the preferences - take them from the current document URL to catch renaming
-	[spfdata setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:SPQueryFavorites];
-	[spfdata setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:SPQueryHistory];
-	[spfdata setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:SPContentFilters];
+	// Add auto-connect if appropriate
+	[spfStructure setObject:[spfDocData_temp objectForKey:@"auto_connect"] forKey:@"auto_connect"];
 
-	[spfdata setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
-
-	[spfdata setObject:[spfDocData_temp objectForKey:@"auto_connect"] forKey:@"auto_connect"];
-
-	if([[self keyChainID] length])
-		[connection setObject:[self keyChainID] forKey:@"kcid"];
-	[connection setObject:[self name] forKey:@"name"];
-	[connection setObject:[self host] forKey:@"host"];
-	[connection setObject:[self user] forKey:@"user"];
-
-	[connection setObject:[NSNumber numberWithInt:[connectionController useSSL]] forKey:@"useSSL"];
-	[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
-	[connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
-	[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
-	[connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
-	[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
-	[connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
-
-	switch([connectionController type]) {
-		case SPTCPIPConnection:
-		aString = @"SPTCPIPConnection";
-		break;
-		case SPSocketConnection:
-		aString = @"SPSocketConnection";
-		if ([connectionController socket] && [[connectionController socket] length]) [connection setObject:[connectionController socket] forKey:@"socket"];
-		break;
-		case SPSSHTunnelConnection:
-		aString = @"SPSSHTunnelConnection";
-		[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
-		[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
-		[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
-		if([connectionController sshPort] && [[connectionController sshPort] length])
-			[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
-		break;
-		default:
-		aString = @"SPTCPIPConnection";
-	}
-	[connection setObject:aString forKey:@"type"];
-
-	if([[spfDocData_temp objectForKey:@"save_password"] boolValue]) {
-
-		NSString *pw = [self keychainPasswordForConnection:nil];
-		if(![pw length]) pw = [connectionController password];
-		if (pw) 
-			[connection setObject:pw forKey:@"password"];
-		else
-			[connection setObject:@"" forKey:@"password"];
-
-		if([connectionController type] == SPSSHTunnelConnection) {
-			NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
-			if(![sshpw length]) sshpw = [connectionController sshPassword];
-			if (sshpw)
-				[connection setObject:sshpw forKey:@"ssh_password"];
-			else
-				[connection setObject:@"" forKey:@"ssh_password"];
-		}
-	}
-
-	if([connectionController port] && [[connectionController port] length])
-		[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
-
-	if([[self database] length])
-		[connection setObject:[self database] forKey:@"database"];
+	// Set up the document details to store
+	NSMutableDictionary *stateDetailsToSave = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+												[NSNumber numberWithBool:YES], @"connection",
+												[NSNumber numberWithBool:YES], @"history",
+												nil];
 
 	// Include session data like selected table, view etc. ?
-	if([[spfDocData_temp objectForKey:@"include_session"] boolValue]) {
+	if ([[spfDocData_temp objectForKey:@"include_session"] boolValue])
+		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"session"];
 
-		session = [NSMutableDictionary dictionary];
-
-		if([[self table] length])
-			[session setObject:[self table] forKey:@"table"];
-		if([tableContentInstance sortColumnName])
-			[session setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
-
-		switch([spHistoryControllerInstance currentlySelectedView]){
-			case SPTableViewStructure:
-				aString = @"SP_VIEW_STRUCTURE";
-				break;
-			case SPTableViewContent:
-				aString = @"SP_VIEW_CONTENT";
-				break;
-			case SPTableViewCustomQuery:
-				aString = @"SP_VIEW_CUSTOMQUERY";
-				break;
-			case SPTableViewStatus:
-				aString = @"SP_VIEW_STATUS";
-				break;
-			case SPTableViewRelations:
-				aString = @"SP_VIEW_RELATIONS";
-				break;
-			case SPTableViewTriggers:
-				aString = @"SP_VIEW_TRIGGERS";
-				break;
-			default:
-				aString = @"SP_VIEW_STRUCTURE";
-		}
-		[session setObject:aString forKey:@"view"];
-
-		[session setObject:[NSNumber numberWithBool:[[parentWindow toolbar] isVisible]] forKey:@"isToolbarVisible"];
-		[session setObject:[mySQLConnection encoding] forKey:@"connectionEncoding"];
-
-		[session setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
-		[session setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
-		[session setObject:[NSNumber numberWithFloat:[tableContentInstance tablesListWidth]] forKey:@"windowVerticalDividerPosition"];
-		[session setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
-		if([tableContentInstance filterSettings])
-			[session setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
-
-		if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
-			NSMutableArray *indices = [NSMutableArray array];
-			NSUInteger indexBuffer[[contentSelectedIndexSet count]];
-			NSUInteger limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-			NSUInteger idx;
-			for (idx = 0; idx < limit; idx++) {
-				[indices addObject:[NSNumber numberWithInteger:indexBuffer[idx]]];
-			}
-			[session setObject:indices forKey:@"contentSelectedIndexSet"];
-		}
+	// Include the query editor contents if asked to
+	if ([[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]) {
+		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"query"];
+		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"enablecompression"];
 	}
 
-	if([[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]) {
-		if(session == nil)
-			session = [NSMutableDictionary dictionary];
+	// Add passwords if asked to
+	if ([[spfDocData_temp objectForKey:@"save_password"] boolValue])
+		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"password"];
 
-		if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length] > 50000)
-			[session setObject:[[[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
-		else
-			[session setObject:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] forKey:@"queries"];
-	}
+	// Retrieve details and add to the appropriate dictionaries
+	NSMutableDictionary *stateDetails = [NSMutableDictionary dictionaryWithDictionary:[self stateIncludingDetails:stateDetailsToSave]];
+	[spfStructure setObject:[stateDetails objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+	[spfStructure setObject:[stateDetails objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+	[spfStructure setObject:[stateDetails objectForKey:SPContentFilters] forKey:SPContentFilters];
+	[stateDetails removeObjectsForKeys:[NSArray arrayWithObjects:SPQueryFavorites, SPQueryHistory, SPContentFilters, nil]];
+	[spfData addEntriesFromDictionary:stateDetails];
 
-	[data setObject:connection forKey:@"connection"];
-	if(session != nil)
-		[data setObject:session forKey:@"session"];
-
-	if(![[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
-		[spfdata setObject:data forKey:@"data"];
+	// Determine whether to use encryption when adding the data
+	[spfStructure setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
+	if (![[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
+		[spfStructure setObject:spfData forKey:@"data"];
 	} else {
-		NSMutableData *encryptdata = [[[NSMutableData alloc] init] autorelease];
-		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:encryptdata] autorelease];
-		[archiver encodeObject:data forKey:@"data"];
+		NSMutableData *dataToEncrypt = [[[NSMutableData alloc] init] autorelease];
+		NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:dataToEncrypt] autorelease];
+		[archiver encodeObject:spfData forKey:@"data"];
 		[archiver finishEncoding];
-		[spfdata setObject:[encryptdata dataEncryptedWithPassword:[spfDocData_temp objectForKey:@"e_string"]] forKey:@"data"];
+		[spfStructure setObject:[dataToEncrypt dataEncryptedWithPassword:[spfDocData_temp objectForKey:@"e_string"]] forKey:@"data"];
 	}
 
+	// Convert to plist
 	NSString *err = nil;
-	NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
-											  format:NSPropertyListXMLFormat_v1_0
-									errorDescription:&err];
+	NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfStructure
+															   format:NSPropertyListXMLFormat_v1_0
+													 errorDescription:&err];
 
-	if(err != nil) {
+	if (err != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
-										  otherButton:nil 
-							informativeTextWithFormat:err];
+										   otherButton:nil 
+							 informativeTextWithFormat:err];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
@@ -3481,18 +2974,18 @@
 
 	NSError *error = nil;
 	[plist writeToFile:fileName options:NSAtomicWrite error:&error];
-	if(error != nil){
+	if (error != nil){
 		NSAlert *errorAlert = [NSAlert alertWithError:error];
 		[errorAlert runModal];
 		return NO;
 	}
 
-	if(contextInfo == nil) {
+	if (contextInfo == nil) {
 		// Register and update query favorites, content filter, and history for the (new) file URL
 		NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-		[preferences setObject:[spfdata objectForKey:SPQueryHistory] forKey:SPQueryHistory];
-		[preferences setObject:[spfdata objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
-		[preferences setObject:[spfdata objectForKey:SPContentFilters] forKey:SPContentFilters];
+		[preferences setObject:[spfStructure objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+		[preferences setObject:[spfStructure objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+		[preferences setObject:[spfStructure objectForKey:SPContentFilters] forKey:SPContentFilters];
 		[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL fileURLWithPath:fileName] andContextInfo:preferences];
 
 		[self setFileURL:[NSURL fileURLWithPath:fileName]];
@@ -3509,6 +3002,35 @@
 
 	return YES;
 
+}
+
+/**
+ * Open the currently selected database in a new tab, clearing any table selection.
+ */
+- (IBAction)openDatabaseInNewTab:(id)sender
+{
+
+	// Add a new tab to the window
+	[[parentWindow windowController] addNewConnection:self];
+
+	// Get the current state
+	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										[NSNumber numberWithBool:YES], @"connection",
+										[NSNumber numberWithBool:YES], @"history",
+										[NSNumber numberWithBool:YES], @"session",
+										[NSNumber numberWithBool:YES], @"query",
+										[NSNumber numberWithBool:YES], @"password",
+										nil];
+	NSMutableDictionary *currentState = [NSMutableDictionary dictionaryWithDictionary:[self stateIncludingDetails:allStateDetails]];
+
+	// Ensure it's set to autoconnect, and clear the table
+	[currentState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+	NSMutableDictionary *sessionDict = [NSMutableDictionary dictionaryWithDictionary:[currentState objectForKey:@"session"]];
+	[sessionDict removeObjectForKey:@"table"];
+	[currentState setObject:sessionDict forKey:@"session"];
+
+	// Set the connection on the new tab
+	[[[NSApp delegate] frontDocument] setState:currentState];
 }
 
 /**
@@ -3594,10 +3116,11 @@
 		}
 	}
 
-	if ([menuItem action] == @selector(import:)         ||
-		[menuItem action] == @selector(removeDatabase:) ||
-		[menuItem action] == @selector(copyDatabase:)   ||
-		[menuItem action] == @selector(renameDatabase:) ||
+	if ([menuItem action] == @selector(import:)					||
+		[menuItem action] == @selector(removeDatabase:)			||
+		[menuItem action] == @selector(copyDatabase:)			||
+		[menuItem action] == @selector(renameDatabase:)			||
+		[menuItem action] == @selector(openDatabaseInNewTab:)	||
 		[menuItem action] == @selector(refreshTables:))
 	{
 		return ([self database] != nil);
@@ -4352,6 +3875,611 @@
 
 	} 
 	return [[[self fileURL] path] lastPathComponent];
+}
+
+#pragma mark -
+#pragma mark State saving and setting
+
+/**
+ * Retrieve the current database document state for saving.  A supplied dictionary
+ * determines the level of detail that is required, with the following optional keys:
+ *  - connection: Connection settings (with keychain references where available) and database
+ *  - password: Whether to include passwords in the returned connection details
+ *  - session: Selected table and view, together with content view filter, sort, scroll position
+ *  - history: query history, per-doc query favourites, and per-doc content filters
+ *  - query: custom query editor content
+ *	- enablecompression: large (>50k) custom query editor contents will be stored as compressed data
+ * If none of these are supplied, nil will be returned.
+ */
+- (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn
+{
+	BOOL returnConnection = [[detailsToReturn objectForKey:@"connection"] boolValue];
+	BOOL includePasswords = [[detailsToReturn objectForKey:@"password"] boolValue];
+	BOOL returnSession = [[detailsToReturn objectForKey:@"session"] boolValue];
+	BOOL returnHistory = [[detailsToReturn objectForKey:@"history"] boolValue];
+	BOOL returnQuery = [[detailsToReturn objectForKey:@"query"] boolValue];
+
+	if (!returnConnection && !returnSession && !returnHistory && !returnQuery) return nil;
+	NSMutableDictionary *stateDetails = [NSMutableDictionary dictionary];
+
+	// Add connection details
+	if (returnConnection) {
+		NSMutableDictionary *connection = [NSMutableDictionary dictionary];
+
+		[connection setObject:@"mysql" forKey:@"rdbms_type"];
+
+		NSString *connectionType;
+		switch ([connectionController type]) {
+			case SPTCPIPConnection:
+				connectionType = @"SPTCPIPConnection";
+			break;
+			case SPSocketConnection:
+				connectionType = @"SPSocketConnection";
+				if ([connectionController socket] && [[connectionController socket] length]) [connection setObject:[connectionController socket] forKey:@"socket"];
+			break;
+			case SPSSHTunnelConnection:
+				connectionType = @"SPSSHTunnelConnection";
+				[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
+				[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
+				[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
+				[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
+				if ([connectionController sshPort] && [[connectionController sshPort] length])
+					[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
+			break;
+			default:
+				connectionType = @"SPTCPIPConnection";
+		}
+		[connection setObject:connectionType forKey:@"type"];
+
+		if ([[self keyChainID] length]) [connection setObject:[self keyChainID] forKey:@"kcid"];
+		[connection setObject:[self name] forKey:@"name"];
+		[connection setObject:[self host] forKey:@"host"];
+		[connection setObject:[self user] forKey:@"user"];
+		if([connectionController port] && [[connectionController port] length])
+			[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
+		if([[self database] length])
+			[connection setObject:[self database] forKey:@"database"];
+
+		if (includePasswords) {
+			NSString *pw = [self keychainPasswordForConnection:nil];
+			if (![pw length]) pw = [connectionController password];
+			if (pw) 
+				[connection setObject:pw forKey:@"password"];
+			else
+				[connection setObject:@"" forKey:@"password"];
+
+			if ([connectionController type] == SPSSHTunnelConnection) {
+				NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
+				if(![sshpw length]) sshpw = [connectionController sshPassword];
+				if (sshpw)
+					[connection setObject:sshpw forKey:@"ssh_password"];
+				else
+					[connection setObject:@"" forKey:@"ssh_password"];
+			}
+		}
+
+		[connection setObject:[NSNumber numberWithInt:[connectionController useSSL]] forKey:@"useSSL"];
+		[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
+		[connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
+		[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
+		[connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
+		[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
+		[connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
+
+		[stateDetails setObject:[NSDictionary dictionaryWithDictionary:connection] forKey:@"connection"];
+	}
+		
+	// Add document-specific saved settings
+	if (returnHistory) {
+		[stateDetails setObject:[[SPQueryController sharedQueryController] favoritesForFileURL:[self fileURL]] forKey:SPQueryFavorites];
+		[stateDetails setObject:[[SPQueryController sharedQueryController] historyForFileURL:[self fileURL]] forKey:SPQueryHistory];
+		[stateDetails setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:SPContentFilters];
+	}
+
+	// Set up a session state dictionary for either state or custom query
+	NSMutableDictionary *sessionState = [NSMutableDictionary dictionary];
+
+	// Store session state if appropriate
+	if (returnSession) {
+
+		if ([[self table] length])
+			[sessionState setObject:[self table] forKey:@"table"];
+
+		NSString *currentlySelectedViewName;
+		switch ([spHistoryControllerInstance currentlySelectedView]) {
+			case SPTableViewStructure:
+				currentlySelectedViewName = @"SP_VIEW_STRUCTURE";
+				break;
+			case SPTableViewContent:
+				currentlySelectedViewName = @"SP_VIEW_CONTENT";
+				break;
+			case SPTableViewCustomQuery:
+				currentlySelectedViewName = @"SP_VIEW_CUSTOMQUERY";
+				break;
+			case SPTableViewStatus:
+				currentlySelectedViewName = @"SP_VIEW_STATUS";
+				break;
+			case SPTableViewRelations:
+				currentlySelectedViewName = @"SP_VIEW_RELATIONS";
+				break;
+			case SPTableViewTriggers:
+				currentlySelectedViewName = @"SP_VIEW_TRIGGERS";
+				break;
+			default:
+				currentlySelectedViewName = @"SP_VIEW_STRUCTURE";
+		}
+		[sessionState setObject:currentlySelectedViewName forKey:@"view"];
+
+		[sessionState setObject:[mySQLConnection encoding] forKey:@"connectionEncoding"];
+
+		[sessionState setObject:[NSNumber numberWithBool:[[parentWindow toolbar] isVisible]] forKey:@"isToolbarVisible"];
+		[sessionState setObject:[NSNumber numberWithFloat:[tableContentInstance tablesListWidth]] forKey:@"windowVerticalDividerPosition"];
+
+		if ([tableContentInstance sortColumnName])
+			[sessionState setObject:[tableContentInstance sortColumnName] forKey:@"contentSortCol"];
+		[sessionState setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
+		[sessionState setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
+		[sessionState setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
+		if ([tableContentInstance filterSettings])
+			[sessionState setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
+
+		NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
+		if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
+			NSMutableArray *indices = [NSMutableArray array];
+			NSUInteger indexBuffer[[contentSelectedIndexSet count]];
+			NSUInteger limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
+			NSUInteger idx;
+			for (idx = 0; idx < limit; idx++) {
+				[indices addObject:[NSNumber numberWithInteger:indexBuffer[idx]]];
+			}
+			[sessionState setObject:indices forKey:@"contentSelectedIndexSet"];
+		}
+	}
+
+	// Add the custom query editor content if appropriate
+	if (returnQuery) {
+		NSString *queryString = [[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string];
+		if ([[detailsToReturn objectForKey:@"enablecompression"] boolValue] && [queryString length] > 50000) {
+			[sessionState setObject:[[queryString dataUsingEncoding:NSUTF8StringEncoding] compress] forKey:@"queries"];
+		} else {
+			[sessionState setObject:queryString forKey:@"queries"];
+		}
+	}
+
+	// Store the session state dictionary if either state or custom queries were saved
+	if ([sessionState count])
+		[stateDetails setObject:[NSDictionary dictionaryWithDictionary:sessionState] forKey:@"session"];
+
+	return stateDetails;
+}
+
+/**
+ * Set the state of the document to the supplied dictionary, which should
+ * at least contain a "connection" dictionary of details.
+ * Returns whether the state was set successfully.
+ */
+- (BOOL)setState:(NSDictionary *)stateDetails
+{
+	NSDictionary *connection = nil;
+	NSInteger connectionType = -1;
+
+	// If this document already has a connection, don't proceed.
+	if (mySQLConnection) return NO;
+
+	// Load the connection data from the state dictionary
+	connection = [NSDictionary dictionaryWithDictionary:[stateDetails objectForKey:@"connection"]];
+	if (!connection) return NO;
+
+	[self updateWindowTitle:self];
+
+	// Deselect all favorites on the connection controller
+	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
+
+	// Suppress the possibility to choose an other connection from the favorites
+	// if a connection should initialized by SPF file. Otherwise it could happen
+	// that the SPF file runs out of sync.
+	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
+
+	// Ensure the connection controller is set to a blank slate
+	[connectionController setName:@""];
+	[connectionController setUser:@""];
+	[connectionController setHost:@""];
+	[connectionController setPort:@""];
+	[connectionController setSocket:@""];
+	[connectionController setUseSSL:NSOffState];
+	[connectionController setSslKeyFileLocationEnabled:NSOffState];
+	[connectionController setSslKeyFileLocation:nil];
+	[connectionController setSslCertificateFileLocationEnabled:NSOffState];
+	[connectionController setSslCertificateFileLocation:nil];
+	[connectionController setSslCACertFileLocationEnabled:NSOffState];
+	[connectionController setSslCACertFileLocation:nil];
+	[connectionController setSshHost:@""];
+	[connectionController setSshUser:@""];
+	[connectionController setSshKeyLocationEnabled:NSOffState];
+	[connectionController setSshKeyLocation:nil];
+	[connectionController setSshPort:@""];
+	[connectionController setDatabase:@""];
+	[connectionController setPassword:nil];
+	[connectionController setSshPassword:nil];
+
+	// Set the correct connection type
+	if ([connection objectForKey:@"type"]) {
+		if ([[connection objectForKey:@"type"] isEqualToString:@"SPTCPIPConnection"])
+			connectionType = SPTCPIPConnection;
+		else if ([[connection objectForKey:@"type"] isEqualToString:@"SPSocketConnection"])
+			connectionType = SPSocketConnection;
+		else if ([[connection objectForKey:@"type"] isEqualToString:@"SPSSHTunnelConnection"])
+			connectionType = SPSSHTunnelConnection;
+		else
+			connectionType = SPTCPIPConnection;
+
+		[connectionController setType:connectionType];
+		[connectionController resizeTabViewToConnectionType:connectionType animating:NO];
+	}
+
+	// Set basic details
+	if ([connection objectForKey:@"name"])
+		[connectionController setName:[connection objectForKey:@"name"]];
+	if ([connection objectForKey:@"user"])
+		[connectionController setUser:[connection objectForKey:@"user"]];
+	if ([connection objectForKey:@"host"])
+		[connectionController setHost:[connection objectForKey:@"host"]];
+	if ([connection objectForKey:@"port"])
+		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
+
+	// Set SSL details
+	if ([connection objectForKey:@"useSSL"])
+		[connectionController setUseSSL:[[connection objectForKey:@"useSSL"] intValue]];
+	if ([connection objectForKey:@"sslKeyFileLocationEnabled"])
+		[connectionController setSslKeyFileLocationEnabled:[[connection objectForKey:@"sslKeyFileLocationEnabled"] intValue]];
+	if ([connection objectForKey:@"sslKeyFileLocation"])
+		[connectionController setSslKeyFileLocation:[connection objectForKey:@"sslKeyFileLocation"]];
+	if ([connection objectForKey:@"sslCertificateFileLocationEnabled"])
+		[connectionController setSslCertificateFileLocationEnabled:[[connection objectForKey:@"sslCertificateFileLocationEnabled"] intValue]];
+	if ([connection objectForKey:@"sslCertificateFileLocation"])
+		[connectionController setSslCertificateFileLocation:[connection objectForKey:@"sslCertificateFileLocation"]];
+	if ([connection objectForKey:@"sslCACertFileLocationEnabled"])
+		[connectionController setSslCACertFileLocationEnabled:[[connection objectForKey:@"sslCACertFileLocationEnabled"] intValue]];
+	if ([connection objectForKey:@"sslCACertFileLocation"])
+		[connectionController setSslCACertFileLocation:[connection objectForKey:@"sslCACertFileLocation"]];
+
+	// Set the keychain details if available
+	if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length])
+		[self setKeychainID:[connection objectForKey:@"kcid"]];
+
+	// Set password - if not in SPF file try to get it via the KeyChain
+	if ([connection objectForKey:@"password"])
+		[connectionController setPassword:[connection objectForKey:@"password"]];
+	else {
+		NSString *pw = [self keychainPasswordForConnection:nil];
+		if (pw)
+			[connectionController setPassword:pw];
+	}
+
+	// Set the socket details, whether or not the type is a socket
+	if ([connection objectForKey:@"socket"])
+		[connectionController setSocket:[connection objectForKey:@"socket"]];
+
+	// Set SSH details if available, whether or not the SSH type is currently active (to allow fallback on failure)
+	if ([connection objectForKey:@"ssh_host"])
+		[connectionController setSshHost:[connection objectForKey:@"ssh_host"]];
+	if ([connection objectForKey:@"ssh_user"])
+		[connectionController setSshUser:[connection objectForKey:@"ssh_user"]];
+	if ([connection objectForKey:@"ssh_keyLocationEnabled"])
+		[connectionController setSshKeyLocationEnabled:[[connection objectForKey:@"ssh_keyLocationEnabled"] intValue]];
+	if ([connection objectForKey:@"ssh_keyLocation"])
+		[connectionController setSshKeyLocation:[connection objectForKey:@"ssh_keyLocation"]];
+	if ([connection objectForKey:@"ssh_port"])
+		[connectionController setSshPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"ssh_port"] integerValue]]];
+
+	// Set the SSH password - if not in SPF file try to get it via the KeyChain
+	if ([connection objectForKey:@"ssh_password"])
+		[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
+	else {
+		NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
+		if(sshpw)
+			[connectionController setSshPassword:sshpw];
+	}
+
+	// Restore the selected database if saved
+	if ([connection objectForKey:@"database"])
+		[connectionController setDatabase:[connection objectForKey:@"database"]];
+
+	// Store session details - if provided - for later setting once the connection is established
+	if ([stateDetails objectForKey:@"session"]) {
+		spfSession = [[NSDictionary dictionaryWithDictionary:[stateDetails objectForKey:@"session"]] retain];
+	}
+
+	// Restore favourites and history
+	if ([stateDetails objectForKey:SPQueryFavorites])
+		[spfPreferences setObject:[stateDetails objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+	if ([stateDetails objectForKey:SPQueryHistory])
+		[spfPreferences setObject:[stateDetails objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+	if ([stateDetails objectForKey:SPContentFilters])
+		[spfPreferences setObject:[stateDetails objectForKey:SPContentFilters] forKey:SPContentFilters];
+
+	[connectionController updateSSLInterface:self];
+
+	// Autoconnect if appropriate
+	if ([stateDetails objectForKey:@"auto_connect"] && [[stateDetails valueForKey:@"auto_connect"] boolValue]) {
+		[connectionController initiateConnection:self];
+	}
+}
+
+/**
+ * Initialise the document with the connection file at the supplied path.
+ */
+- (void)setStateFromConnectionFile:(NSString *)path
+{
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+
+	NSString *encryptpw = nil;
+	NSMutableDictionary *data = nil;
+	NSDictionary *spf = nil;
+
+
+	// Read the property list data, and unserialize it.
+	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
+
+	spf = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if (!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										   otherButton:nil 
+							 informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		if (spf) [spf release];
+		[self closeAndDisconnect];
+		return;
+	}
+
+	// If the .spf format is unhandled, error.
+	if (![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Warning", @"warning")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]]];
+
+		[alert setAlertStyle:NSWarningAlertStyle];
+		[spf release];
+		[self closeAndDisconnect];
+		[alert runModal];
+		return;
+	}
+
+	// Error if the expected data source wasn't present in the file
+	if (![spf objectForKey:@"data"]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"No data found.", @"no data found")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		[spf release];
+		[self closeAndDisconnect];
+		return;
+	}
+
+	// Ask for a password if SPF file passwords were encrypted, via a sheet
+	if ([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
+		if([self isSaveInBundle] && [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"]) {
+			encryptpw = [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"];
+		} else {
+			[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
+			[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), ([self isSaveInBundle]) ? [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent] : [path lastPathComponent]]];
+			[inputTextWindowSecureTextField setStringValue:@""];
+			[inputTextWindowSecureTextField selectText:nil];
+
+			[NSApp beginSheet:inputTextWindow modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+
+			// wait for encryption password
+			NSModalSession session = [NSApp beginModalSessionForWindow:inputTextWindow];
+			for (;;) {
+
+				// Execute code on DefaultRunLoop
+				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
+										 beforeDate:[NSDate distantFuture]];
+
+				// Break the run loop if editSheet was closed
+				if ([NSApp runModalSession:session] != NSRunContinuesResponse 
+					|| ![inputTextWindow isVisible]) 
+					break;
+
+				// Execute code on DefaultRunLoop
+				[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode 
+										 beforeDate:[NSDate distantFuture]];
+
+			}
+			[NSApp endModalSession:session];
+			[inputTextWindow orderOut:nil];
+			[NSApp endSheet:inputTextWindow];
+
+			if (passwordSheetReturnCode) {
+				encryptpw = [inputTextWindowSecureTextField stringValue];
+				if ([self isSaveInBundle]) {
+					NSMutableDictionary *spfSessionData = [NSMutableDictionary dictionary];
+					[spfSessionData addEntriesFromDictionary:[[NSApp delegate] spfSessionDocData]];
+					[spfSessionData setObject:encryptpw forKey:@"e_string"];
+					[[NSApp delegate] setSpfSessionDocData:spfSessionData];
+				}
+			} else {
+				[self closeAndDisconnect];
+				[spf release];
+				return;
+			}
+		}
+	}
+
+	if ([[spf objectForKey:@"data"] isKindOfClass:[NSDictionary class]])
+		data = [NSMutableDictionary dictionaryWithDictionary:[spf objectForKey:@"data"]];
+	else if ([[spf objectForKey:@"data"] isKindOfClass:[NSData class]]) {
+		NSData *decryptdata = nil;
+		decryptdata = [[[NSMutableData alloc] initWithData:[(NSData *)[spf objectForKey:@"data"] dataDecryptedWithPassword:encryptpw]] autorelease];
+		if (decryptdata != nil && [decryptdata length]) {
+			NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:decryptdata] autorelease];
+			data = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary *)[unarchiver decodeObjectForKey:@"data"]];
+			[unarchiver finishDecoding];
+		}
+		if (data == nil) {
+			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+										   alternateButton:nil 
+											  otherButton:nil 
+								informativeTextWithFormat:NSLocalizedString(@"Wrong data format or password.", @"wrong data format or password")];
+
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert runModal];
+			[self closeAndDisconnect];
+			[spf release];
+			return;
+		}
+	}
+
+	// Ensure the data was read correctly, and has connection details
+	if (!data || ![data objectForKey:@"connection"]) {
+		NSString *informativeText;
+		if (!data) {
+			informativeText = NSLocalizedString(@"Wrong data format.", @"wrong data format");
+		} else {
+			informativeText = NSLocalizedString(@"No connection data found.", @"no connection data found");
+		}
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:informativeText];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		[self closeAndDisconnect];
+		[spf release];
+		return;
+	}
+
+	// Move favourites and history into the data dictionary to pass to setState:
+	[data setObject:[spf objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
+	[data setObject:[spf objectForKey:SPQueryHistory] forKey:SPQueryHistory];
+	[data setObject:[spf objectForKey:SPContentFilters] forKey:SPContentFilters];
+
+	// Ensure the encryption status is stored in the spfDocData store for future saves
+	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+	if (encryptpw != nil) {
+		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"encrypted"];
+		[spfDocData setObject:encryptpw forKey:@"e_string"];
+	}
+	encryptpw = nil;
+
+	// If session data is available, ensure it is marked for save
+	if ([data objectForKey:@"session"]) {
+		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"include_session"];
+	}
+
+	if (![self isSaveInBundle]) {
+		[self setFileURL:[NSURL fileURLWithPath:path]];
+		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
+	}
+
+	[spfDocData setObject:[NSNumber numberWithBool:([[data objectForKey:@"connection"] objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
+
+	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
+
+	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
+		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+		[data setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+	}
+
+	// Set the state dictionary, triggering an autoconnect if appropriate
+	[self setState:data];
+
+	[spf release];
+}
+
+/**
+ * Restore session from SPF file if given
+ */
+- (void)restoreSession
+{
+	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
+
+	// Check and set the table
+	NSArray *tables = [tablesListInstance tables];
+
+	BOOL isSelectedTableDefined = YES;
+
+	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
+		isSelectedTableDefined = NO;
+	}
+
+	// Restore toolbar setting
+	if([spfSession objectForKey:@"isToolbarVisible"])
+		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
+
+	// Reset database view encoding if differs from default
+	if([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]])
+		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
+
+	if(isSelectedTableDefined) {
+		// Set table content details for restore
+		if([spfSession objectForKey:@"contentSortCol"])
+			[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortColIsAsc"] boolValue]];
+		if([spfSession objectForKey:@"contentPageNumber"])
+			[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
+		if([spfSession objectForKey:@"contentViewport"])
+			[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
+		if([spfSession objectForKey:@"contentFilter"])
+			[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
+
+		// Select table
+		[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+
+		// Restore table selection indexes
+		if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
+			NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
+			NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
+			NSUInteger i;
+			for(i=0; i<[items count]; i++)
+				[anIndexSet addIndex:[NSArrayObjectAtIndex(items, i) integerValue]];
+
+			[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+		}
+
+		[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
+
+	}
+
+	// Select view
+	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
+		[self viewStructure:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
+		[self viewContent:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
+		[self viewQuery:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
+		[self viewStatus:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
+		[self viewRelations:self];
+	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
+		[self viewTriggers:self];
+
+	[self updateWindowTitle:self];
+
+	// dealloc spfSession data
+	[spfSession release];
+	spfSession = nil;
+
+	// End the task
+	[self endTask];
+	[taskPool drain];
 }
 
 #pragma mark -

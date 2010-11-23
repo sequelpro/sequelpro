@@ -284,6 +284,10 @@
 	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] || ![tableDocumentInstance isWorking];
 
 	if (!tableDetails) {
+		
+		// If no table is currently selected, no action required - return.
+		if (!selectedTable) return;
+
 		newTableName = nil;
 	} else {
 		newTableName = [tableDetails objectForKey:@"name"];

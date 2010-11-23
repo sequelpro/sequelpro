@@ -558,6 +558,32 @@
 }
 
 /**
+ * Open the table in a new tab.
+ */
+- (IBAction)openTableInNewTab:(id)sender
+{
+
+	// Add a new tab to the window
+	[[[tableDocumentInstance parentWindow] windowController] addNewConnection:self];
+
+	// Get the state of the document
+	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										[NSNumber numberWithBool:YES], @"connection",
+										[NSNumber numberWithBool:YES], @"history",
+										[NSNumber numberWithBool:YES], @"session",
+										[NSNumber numberWithBool:YES], @"query",
+										[NSNumber numberWithBool:YES], @"password",
+										nil];
+	NSMutableDictionary *documentState = [NSMutableDictionary dictionaryWithDictionary:[tableDocumentInstance stateIncludingDetails:allStateDetails]];
+
+	// Ensure it's set to autoconnect
+	[documentState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+
+	// Set the connection on the new tab
+	[[[NSApp delegate] frontDocument] setState:documentState];
+}
+
+/**
  * Toggle whether the splitview is collapsed.
  */
 - (IBAction)togglePaneCollapse:(id)sender
@@ -701,27 +727,27 @@
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
 					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
-					[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+					[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
 					[truncateTableButton setHidden:NO];
-					[truncateTableContextButton setHidden:NO];
+					[truncateTableContextMenuItem setHidden:NO];
 					break;
 					case SPTableTypeView:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
 					[truncateTableButton setHidden:YES];
-					[truncateTableContextButton setHidden:YES];
+					[truncateTableContextMenuItem setHidden:YES];
 					break;
 					case SPTableTypeProc:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
 					[truncateTableButton setHidden:YES];
-					[truncateTableContextButton setHidden:YES];
+					[truncateTableContextMenuItem setHidden:YES];
 					break;
 					case SPTableTypeFunc:
 					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
 					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
 					[truncateTableButton setHidden:YES];
-					[truncateTableContextButton setHidden:YES];
+					[truncateTableContextMenuItem setHidden:YES];
 					break;
 				}
 
@@ -729,12 +755,14 @@
 				[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Items", @"delete items menu title")];
 				[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Items", @"delete items menu title")];
 				[truncateTableButton setHidden:YES];
-				[truncateTableContextButton setHidden:YES];
+				[truncateTableContextMenuItem setHidden:YES];
 			}
+
 		}
 
 		// Context menu
 		[renameTableContextMenuItem setHidden:YES];
+		[openTableInNewTabContextMenuItem setHidden:YES];
 		[duplicateTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem2 setHidden:NO];
@@ -743,6 +771,7 @@
 
 		// 'Gear' menu
 		[renameTableMenuItem setHidden:YES];
+		[openTableInNewTabMenuItem setHidden:YES];
 		[duplicateTableMenuItem setHidden:YES];
 		[separatorTableMenuItem setHidden:YES];
 		[separatorTableMenuItem2 setHidden:NO];
@@ -828,6 +857,8 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
+		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open View in New Tab", @"open view in new table title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 
@@ -835,8 +866,10 @@
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate View...", @"duplicate view menu title")];
-		[truncateTableContextButton setHidden:YES];
+		[truncateTableContextMenuItem setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
+		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open View in New Tab", @"open view in new table title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 	}
@@ -865,6 +898,8 @@
 		[truncateTableButton setHidden:NO];
 		[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
+		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open Table in New Tab", @"open table in new table title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 
@@ -872,9 +907,11 @@
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Table...", @"duplicate table menu title")];
-		[truncateTableContextButton setHidden:NO];
-		[truncateTableContextButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
+		[truncateTableContextMenuItem setHidden:NO];
+		[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
+		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Table in New Tab", @"open table in new table title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 	}
@@ -896,6 +933,8 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
+		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open Procedure in New Tab", @"open procedure in new table title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 
@@ -903,8 +942,10 @@
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Procedure...", @"duplicate proc menu title")];
-		[truncateTableContextButton setHidden:YES];
+		[truncateTableContextMenuItem setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
+		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Procedure in New Tab", @"open procedure in new table title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 	}
@@ -926,6 +967,8 @@
 		[duplicateTableMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
+		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open Function in New Tab", @"open function in new table title")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 
@@ -933,8 +976,10 @@
 		[renameTableContextMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
 		[duplicateTableContextMenuItem setHidden:NO];
 		[duplicateTableContextMenuItem setTitle:NSLocalizedString(@"Duplicate Function...", @"duplicate func menu title")];
-		[truncateTableContextButton setHidden:YES];
+		[truncateTableContextMenuItem setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
+		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Function in New Tab", @"open function in new table title")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 	}
@@ -1506,7 +1551,7 @@
 		return ([tablesListView numberOfSelectedRows] > 0);
 	}
 
-	if ([menuItem action] == @selector(renameTable:)) {
+	if ([menuItem action] == @selector(renameTable:) || [menuItem action] == @selector(openTableInNewTab:)) {
 		return (([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length]);
 	}
 

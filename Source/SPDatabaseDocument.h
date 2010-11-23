@@ -215,7 +215,6 @@
 - (BOOL)couldCommitCurrentViewActions;
 
 - (void)initQueryEditorWithString:(NSString *)query;
-- (void)initWithConnectionFile:(NSString *)path;
 
 // Connection callback and methods
 - (void)setConnection:(MCPConnection *)theConnection;
@@ -322,6 +321,7 @@
 
 // Menu methods
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
+- (IBAction)openDatabaseInNewTab:(id)sender;
 - (IBAction)saveConnectionSheet:(id)sender;
 - (IBAction)import:(id)sender;
 - (IBAction)importFromClipboard:(id)sender;
@@ -356,5 +356,10 @@
 // Scripting
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
 - (NSDictionary*)shellVariables;
+
+// State saving and setting
+- (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
+- (BOOL)setState:(NSDictionary *)stateDetails;
+- (void)setStateFromConnectionFile:(NSString *)path;
 
 @end

@@ -65,7 +65,6 @@
 	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
 	IBOutlet id truncateTableButton;
-	IBOutlet id truncateTableContextButton;
 	IBOutlet NSSplitView *tableListSplitView;
 	IBOutlet NSSplitView *tableListFilterSplitView;
 	IBOutlet NSButton *tableInfoCollapseButton;
@@ -76,6 +75,7 @@
 	IBOutlet NSMenuItem *removeTableMenuItem;
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
+	IBOutlet NSMenuItem *openTableInNewTabMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem2;
@@ -85,7 +85,9 @@
 	// Table list context menu items
 	IBOutlet NSMenuItem *removeTableContextMenuItem;
 	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
+	IBOutlet NSMenuItem *truncateTableContextMenuItem;
 	IBOutlet NSMenuItem *renameTableContextMenuItem;
+	IBOutlet NSMenuItem *openTableInNewTabContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem2;
@@ -111,6 +113,7 @@
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
 - (IBAction)truncateTable:(id)sender;
+- (IBAction)openTableInNewTab:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
 
 // Additional methods

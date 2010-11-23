@@ -124,9 +124,13 @@
 		
 		return NO;
 	}
-	if([menuItem action] == @selector(newTab:))
+	if ([menuItem action] == @selector(newTab:))
 	{
 		return ([[self frontDocumentWindow] attachedSheet] == nil);
+	}
+	if ([menuItem action] == @selector(duplicateTab:))
+	{
+		return ([[self frontDocument] getConnection] != nil);
 	}
 
 	return YES;
@@ -319,7 +323,7 @@
 				[frontController addNewConnection:self];
 			}
 
-			[[self frontDocument] initWithConnectionFile:filename];
+			[[self frontDocument] setStateFromConnectionFile:filename];
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPBundleFileExtension lowercaseString]]) {
 
@@ -418,7 +422,7 @@
 								[newWindowController addNewConnection:self];
 
 								[[self frontDocument] setIsSavedInBundle:isBundleFile];
-								[[self frontDocument] initWithConnectionFile:fileName];
+								[[self frontDocument] setStateFromConnectionFile:fileName];
 							}
 
 						} else {
@@ -654,6 +658,35 @@
 		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
 		[frontController addNewConnection:self];
 	}
+}
+
+/**
+ * Duplicate the current connection tab
+ */
+- (IBAction)duplicateTab:(id)sender
+{
+	SPDatabaseDocument *theFrontDocument = [self frontDocument];
+	if (!theFrontDocument) return [self newTab:sender];
+
+	// Add a new tab to the window
+	if ([[self frontDocumentWindow] isMiniaturized]) [[self frontDocumentWindow] deminiaturize:self];
+	[[[self frontDocumentWindow] windowController] addNewConnection:self];
+
+	// Get the state of the previously-frontmost document
+	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										[NSNumber numberWithBool:YES], @"connection",
+										[NSNumber numberWithBool:YES], @"history",
+										[NSNumber numberWithBool:YES], @"session",
+										[NSNumber numberWithBool:YES], @"query",
+										[NSNumber numberWithBool:YES], @"password",
+										nil];
+	NSMutableDictionary *theFrontState = [NSMutableDictionary dictionaryWithDictionary:[theFrontDocument stateIncludingDetails:allStateDetails]];
+
+	// Ensure it's set to autoconnect
+	[theFrontState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+
+	// Set the connection on the new tab
+	[[self frontDocument] setState:theFrontState];
 }
 
 /**
