@@ -167,6 +167,8 @@
 
 - (IBAction)executeBundleItemForDataTable:(id)sender;
 
+- (void)selectTableRows:(NSArray*)rowIndices;
+
 @end
 
 extern NSInteger MENU_EDIT_COPY;

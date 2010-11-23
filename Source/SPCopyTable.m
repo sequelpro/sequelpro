@@ -802,6 +802,26 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 }
 
+- (void)selectTableRows:(NSArray*)rowIndices
+{
+
+	if(!rowIndices || ![rowIndices count]) return;
+
+	NSMutableIndexSet *selection = [NSMutableIndexSet indexSet];
+	NSInteger rows = [[self delegate] numberOfRowsInTableView:self];
+	NSUInteger i;
+	if(rows > 0) {
+		for(NSString* idx in rowIndices) {
+			i = [idx longLongValue];
+			if(i >= 0 && i < rows)
+				[selection addIndex:i];
+		}
+
+		[self selectRowIndexes:selection byExtendingSelection:NO];
+	}
+
+}
+
 - (IBAction)executeBundleItemForDataTable:(id)sender
 {
 	NSInteger idx = [sender tag] - 1000000;
@@ -857,6 +877,17 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
 				[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
 
+			if([self numberOfSelectedRows]) {
+				NSMutableArray *sel = [NSMutableArray array];
+				NSIndexSet *selectedRows = [self selectedRowIndexes];
+				NSUInteger rowIndex = [selectedRows firstIndex];
+				while ( rowIndex != NSNotFound ) {
+					[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
+					rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
+				}
+				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:@"SP_SELECTED_ROW_INDICES"];
+			}
+
 			NSError *inputFileError = nil;
 			NSString *input = @"";
 			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
@@ -896,8 +927,8 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
-				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+			if(err == nil && output) {
+				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 					NSPoint pos = [NSEvent mouseLocation];

@@ -607,8 +607,8 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
-				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+			if(err == nil && output) {
+				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 

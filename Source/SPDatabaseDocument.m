@@ -4563,6 +4563,13 @@
 		return;
 	}
 
+	if([command isEqualToString:@"SelectTableRows"]) {
+		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
+			[[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
+		}
+		return;
+	}
+
 	if([command isEqualToString:@"ReloadContentTable"]) {
 		[tableContentInstance reloadTable:self];
 		return;

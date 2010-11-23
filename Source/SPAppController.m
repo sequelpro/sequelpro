@@ -573,15 +573,29 @@
 		}
 	}
 
+	BOOL userTerminated = NO;
+
 	while(1) {
 		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
                                    untilDate:[NSDate distantPast]
                                       inMode:NSDefaultRunLoopMode
                                      dequeue:YES];
-		// if(!event) continue;
+
+		if ([event type] == NSKeyDown) {
+			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+				userTerminated = YES;
+				break;
+			}
+		}
 		[NSApp sendEvent:event];
 		if(![processDocument isWorking]) break;
 		usleep(1000);
+	}
+
+	if(userTerminated) {
+		NSBeep();
+		return;
 	}
 
 	if(processDocument && command && [command isEqualToString:@"passToDoc"]) {
@@ -693,8 +707,8 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
-				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+			if(err == nil && output) {
+				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 					NSPoint pos = [NSEvent mouseLocation];
