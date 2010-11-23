@@ -33,6 +33,9 @@
 #import "SPWindowController.h"
 #import "SPPreferencesUpgrade.h"
 #import "SPBundleEditorController.h"
+#import "SPTooltip.h"
+#import "SPBundleHTMLOutputController.h"
+#import "SPAlertSheets.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -598,6 +601,132 @@
 	NSLog(@"command id: %@", passedProcessID);
 }
 
+- (IBAction)executeBundleItemForApp:(id)sender
+{
+	
+	NSInteger idx = [sender tag] - 1000000;
+	NSString *infoPath = nil;
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeGeneral];
+	if(idx >=0 && idx < [bundleItems count]) {
+		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
+	} else {
+		if([sender tag] == 0 && [[sender toolTip] length]) {
+			infoPath = [sender toolTip];
+		}
+	}
+
+	if(!infoPath) {
+		NSBeep();
+		return;
+	}
+
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+	NSDictionary *cmdData = nil;
+	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSLog(@"“%@” file couldn't be read.", infoPath);
+		NSBeep();
+		if (cmdData) [cmdData release];
+		return;
+	} else {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+
+			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
+			NSString *inputAction = @"";
+			NSString *inputFallBackAction = @"";
+			NSError *err = nil;
+			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
+
+			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+
+			if([cmdData objectForKey:SPBundleFileInputSourceKey])
+				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
+			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
+				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
+
+			NSMutableDictionary *env = [NSMutableDictionary dictionary];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
+			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+
+			NSError *inputFileError = nil;
+			NSString *input = @"";
+			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
+				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
+				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
+				input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
+				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
+				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
+				input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
+			}
+			
+			if(input == nil) input = @"";
+			[input writeToFile:bundleInputFilePath
+					  atomically:YES
+						encoding:NSUTF8StringEncoding
+						   error:&inputFileError];
+			
+			if(inputFileError != nil) {
+				NSString *errorMessage  = [inputFileError localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				if (cmdData) [cmdData release];
+				return;
+			}
+
+			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
+
+			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+
+			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
+					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+					NSPoint pos = [NSEvent mouseLocation];
+					pos.y -= 16;
+
+					if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
+						[SPTooltip showWithObject:output atLocation:pos];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
+						[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+						[c displayHTMLContent:output withOptions:nil];
+					}
+				}
+			} else {
+				NSString *errorMessage  = [err localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+			}
+
+		}
+
+		if (cmdData) [cmdData release];
+
+	}
+
+}
+
 #pragma mark -
 #pragma mark Window management
 
@@ -1001,6 +1130,7 @@
 
 	// Rebuild Bundles main menu item
 
+	// Add default menu items
 	NSMenuItem *anItem;
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bundle Editor", @"bundle editor menu item label") action:@selector(openBundleEditor:) keyEquivalent:@"b"];
 	[anItem setKeyEquivalentModifierMask:(NSCommandKeyMask|NSAlternateKeyMask|NSControlKeyMask)];
@@ -1010,18 +1140,20 @@
 	[menu addItem:anItem];
 	[anItem release];
 
+	// Bail out if no Bundle was installed
 	if(!foundInstalledBundles) return;
 
 	// Add installed Bundles
+	// For each scope add a submenu but not for the last one (should be General always)
 	[menu addItem:[NSMenuItem separatorItem]];
 
-	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeQueryEditor, SPBundleScopeDataTable, nil];
+	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral, nil];
 	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Fields", @"input fields menu item label"), 
-													 NSLocalizedString(@"Query Editor", @"query editor menu item label"), 
-													 NSLocalizedString(@"Data Table", @"data table menu item label"),nil];
+													 NSLocalizedString(@"Data Table", @"data table menu item label"),
+													 NSLocalizedString(@"General", @"general menu item label"),nil];
 	NSArray *scopeSelector = [NSArray arrayWithObjects:@"executeBundleItemForInputField:", 
-													   @"executeBundleItemForEditor:",
-													   @"executeBundleItemForDataTable:", nil];
+													   @"executeBundleItemForDataTable:", 
+													   @"executeBundleItemForApp:", nil];
 
 	NSInteger k = 0;
 	for(NSString* scope in scopes) {
@@ -1034,13 +1166,25 @@
 			continue;
 		}
 
-		NSMenu *bundleMenu = [[[NSMenu alloc] init] autorelease];
-		NSMenuItem *bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:[scopeTitles objectAtIndex:k] action:nil keyEquivalent:@""];
-		[bundleSubMenuItem setTag:10000000];
+		NSMenu *bundleMenu = nil;
+		NSMenuItem *bundleSubMenuItem = nil;
 
-		[menu addItem:bundleSubMenuItem];
-		[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+		// Add last scope (General) not as submenu
+		if(k < [scopes count]-1) {
+			bundleMenu = [[[NSMenu alloc] init] autorelease];
 
+			bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:[scopeTitles objectAtIndex:k] action:nil keyEquivalent:@""];
+			[bundleSubMenuItem setTag:10000000];
+
+			[menu addItem:bundleSubMenuItem];
+			[menu setSubmenu:bundleMenu forItem:bundleSubMenuItem];
+
+		} else {
+			bundleMenu = menu;
+			[menu addItem:[NSMenuItem separatorItem]];
+		}
+
+		// Add found Category submenus
 		NSMutableArray *categorySubMenus = [NSMutableArray array];
 		NSMutableArray *categoryMenus = [NSMutableArray array];
 		if([bundleCategories count]) {
@@ -1078,7 +1222,7 @@
 			}
 		}
 
-		[bundleSubMenuItem release];
+		if(bundleSubMenuItem)[bundleSubMenuItem release];
 		k++;
 	}
 

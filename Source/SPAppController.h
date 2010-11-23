@@ -97,4 +97,6 @@
 
 - (void)handleEventWithURL:(NSURL*)url;
 
+- (IBAction)executeBundleItemForApp:(id)sender;
+
 @end

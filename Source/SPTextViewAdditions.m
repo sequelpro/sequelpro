@@ -25,6 +25,7 @@
 #import "SPAlertSheets.h"
 #import "SPTooltip.h"
 #import "SPBundleHTMLOutputController.h"
+#import "SPCustomQuery.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -528,9 +529,11 @@
 			NSError *err = nil;
 			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
 
-			NSRange currentWordRange, currentSelectionRange, currentLineRange;
+			NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+
+			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"]) ;
 
 			if([cmdData objectForKey:SPBundleFileInputSourceKey])
 				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
@@ -541,6 +544,14 @@
 			currentWordRange = [self getRangeForCurrentWord];
 			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
 
+			if(selfIsQueryEditor) {
+				currentQueryRange = [[self delegate] currentQueryRange];
+			} else {
+				currentQueryRange = currentLineRange;
+			}
+			if(!currentQueryRange.length)
+				currentQueryRange = currentSelectionRange;
+
 			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
 			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
 				if(!currentSelectionRange.length) {
@@ -548,6 +559,8 @@
 						replaceRange = currentWordRange;
 					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentLine])
 						replaceRange = currentLineRange;
+					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
+						replaceRange = currentQueryRange;
 					else if([inputAction isEqualToString:SPBundleInputSourceEntireContent])
 						replaceRange = NSMakeRange(0,[[self string] length]);
 				} else {
@@ -562,6 +575,9 @@
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
 			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+
+			if(selfIsQueryEditor && [[self delegate] currentQueryRange].length)
+				[env setObject:[[self string] substringWithRange:[[self delegate] currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
 
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
@@ -596,26 +612,7 @@
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
 					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
-					if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
-						[self insertText:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
-						[self insertAsSnippet:output atRange:replaceRange];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
-						if([[self string] length])
-							[self setSelectedRange:NSMakeRange(0, [[self string] length])];
-						[self insertText:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
-						[self shouldChangeTextInRange:replaceRange replacementString:output];
-						[self replaceCharactersInRange:replaceRange withString:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
+					if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
 						[SPTooltip showWithObject:output];
 					}
 
@@ -627,6 +624,35 @@
 						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 						[c displayHTMLContent:output withOptions:nil];
 					}
+
+					if([self isEditable]) {
+
+						if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
+							[self insertText:output];
+						}
+
+						else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
+							if([self respondsToSelector:@selector(insertAsSnippet:atRange:)])
+								[self insertAsSnippet:output atRange:replaceRange];
+							else
+								[SPTooltip showWithObject:NSLocalizedString(@"Input Field doesn't support insertion of snippets.", @"input field  doesn't support insertion of snippets.")];
+						}
+
+						else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
+							if([[self string] length])
+								[self setSelectedRange:NSMakeRange(0, [[self string] length])];
+							[self insertText:output];
+						}
+
+						else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
+							[self shouldChangeTextInRange:replaceRange replacementString:output];
+							[self replaceCharactersInRange:replaceRange withString:output];
+						}
+
+					} else {
+						[SPTooltip showWithObject:NSLocalizedString(@"Input Field is not editable.", @"input field is not editable.")];
+					}
+
 				}
 			} else {
 				NSString *errorMessage  = [err localizedDescription];
@@ -722,21 +748,6 @@
 
 }
 
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
-{
-
-	if([menuItem action] == @selector(executeBundleItemForEditor:))
-	{
-		return NO;
-	}
-	if([menuItem action] == @selector(executeBundleItemForInputField:))
-	{
-		return YES;
-	}
-
-	return YES;
-
-}
 #pragma mark -
 #pragma mark multi-touch trackpad support
 

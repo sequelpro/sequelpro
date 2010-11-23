@@ -443,27 +443,6 @@
 		[[self delegate] setDoGroupDueToChars];
 	}
 
-
-	if([[[[self delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
-		[super keyDown: theEvent];
-		return;
-	}
-
-	// Check for assign key equivalents inside user-defined bundle commands
-	NSDictionary *keyEquivalents = [[NSApp delegate] bundleKeyEquivalentsForScope:SPBundleScopeInputField];
-	if([keyEquivalents count]) {
-		for(NSString* key in [keyEquivalents allKeys]) {
-			NSArray *keyData = [keyEquivalents objectForKey:key];
-			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[keyEquivalents objectForKey:key] objectAtIndex:1] intValue] == curFlags) {
-				NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
-				[item setToolTip:[[keyEquivalents objectForKey:key] objectAtIndex:2]];
-				[item setTag:0];
-				[self executeBundleItemForInputField:item];
-				return;
-			}
-		}
-	}
-
 	[super keyDown: theEvent];
 
 }

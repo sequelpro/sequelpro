@@ -2121,21 +2121,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 	}
 
-	// Check for assign key equivalents inside user-defined bundle commands
-	NSDictionary *keyEquivalents = [[NSApp delegate] bundleKeyEquivalentsForScope:SPBundleScopeQueryEditor];
-	if([keyEquivalents count]) {
-		for(NSString* key in [keyEquivalents allKeys]) {
-			NSArray *keyData = [keyEquivalents objectForKey:key];
-			if([[keyData objectAtIndex:0] isEqualToString:charactersIgnMod] && [[[keyEquivalents objectForKey:key] objectAtIndex:1] intValue] == curFlags) {
-				NSMenuItem *item = [[[NSMenuItem alloc] init] autorelease];
-				[item setToolTip:[[keyEquivalents objectForKey:key] objectAtIndex:2]];
-				[item setTag:0];
-				[self executeBundleItemForEditor:item];
-				return;
-			}
-		}
-	}
-
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
 	if ([prefs boolForKey:SPCustomQueryAutoPairCharacters] && characters && [characters length] == 1) {
 
@@ -2928,8 +2913,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		[menu removeItem:bItem];
 	}
 
-	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeQueryEditor];
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeQueryEditor];
+	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeInputField];
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
 
 	// Add 'Bundles' sub menu for custom query editor only so far if bundles with scope 'editor' were found
 	if(customQueryInstance && bundleItems && [bundleItems count]) {
@@ -2962,7 +2947,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			else
 				keyEq = @"";
 
-			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForEditor:) keyEquivalent:keyEq] autorelease];
+			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(executeBundleItemForInputField:) keyEquivalent:keyEq] autorelease];
 
 			if([keyEq length])
 				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
@@ -2993,15 +2978,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
 {
-
-	if([menuItem action] == @selector(executeBundleItemForEditor:))
-	{
-		return YES;
-	}
-	if([menuItem action] == @selector(executeBundleItemForInputField:))
-	{
-		return NO;
-	}
 
 	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
@@ -3414,171 +3390,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 #pragma mark -
 
-- (IBAction)executeBundleItemForEditor:(id)sender
-{
-
-	NSInteger idx = [sender tag] - 1000000;
-	NSString *infoPath = nil;
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeQueryEditor];
-	if(idx >=0 && idx < [bundleItems count]) {
-		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
-	} else {
-		if([sender tag] == 0 && [[sender toolTip] length]) {
-			infoPath = [sender toolTip];
-		}
-	}
-
-	if(!infoPath) {
-		NSBeep();
-		return;
-	}
-
-	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
-	NSDictionary *cmdData = nil;
-	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
-
-	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSLog(@"“%@” file couldn't be read.", infoPath);
-		NSBeep();
-		if (cmdData) [cmdData release];
-		return;
-	} else {
-		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
-
-			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
-			NSString *inputAction = @"";
-			NSString *inputFallBackAction = @"";
-			NSError *err = nil;
-			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
-
-			NSRange currentWordRange, currentQueryRange, currentSelectionRange, currentLineRange;
-
-			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
-
-			if([cmdData objectForKey:SPBundleFileInputSourceKey])
-				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
-			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
-				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
-
-			currentSelectionRange = [self selectedRange];
-			currentWordRange = [self getRangeForCurrentWord];
-			if(customQueryInstance && [customQueryInstance currentQueryRange].length) {
-				currentQueryRange = [customQueryInstance currentQueryRange];
-			} else {
-				currentQueryRange = currentSelectionRange;
-			}
-			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
-
-			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
-			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
-				if(!currentSelectionRange.length) {
-					if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])
-						replaceRange = currentWordRange;
-					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentLine])
-						replaceRange = currentLineRange;
-					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
-						replaceRange = currentQueryRange;
-					else if([inputAction isEqualToString:SPBundleInputSourceEntireContent])
-						replaceRange = NSMakeRange(0,[[self string] length]);
-				} else {
-					replaceRange = currentSelectionRange;
-				}
-				
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceEntireContent]) {
-				replaceRange = NSMakeRange(0, [[self string] length]);
-			}
-
-			NSMutableDictionary *env = [NSMutableDictionary dictionary];
-			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
-
-			if(currentSelectionRange.length)
-				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
-
-			if(customQueryInstance && [customQueryInstance currentQueryRange].length)
-				[env setObject:[[self string] substringWithRange:[customQueryInstance currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
-
-			if(currentWordRange.length)
-				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:@"SP_CURRENT_WORD"];
-
-			if(currentLineRange.length)
-				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:@"SP_CURRENT_LINE"];
-
-			NSError *inputFileError = nil;
-			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
-			[input writeToFile:bundleInputFilePath
-					  atomically:YES
-						encoding:NSUTF8StringEncoding
-						   error:&inputFileError];
-
-			if(inputFileError != nil) {
-				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
-				if (cmdData) [cmdData release];
-				return;
-			}
-
-			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
-
-			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
-
-			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
-				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
-						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
-					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
-
-					if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
-						[self insertText:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
-						[self insertAsSnippet:output atRange:replaceRange];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
-						if([[self string] length])
-							[self setSelectedRange:NSMakeRange(0, [[self string] length])];
-						[self insertText:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
-						[self shouldChangeTextInRange:replaceRange replacementString:output];
-						[self replaceCharactersInRange:replaceRange withString:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
-						[SPTooltip showWithObject:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
-						[SPTooltip showWithObject:output ofType:@"html"];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
-						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
-						[c displayHTMLContent:output withOptions:nil];
-					}
-				}
-			} else {
-				NSString *errorMessage  = [err localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
-			}
-
-		}
-
-		if (cmdData) [cmdData release];
-
-	}
-
-}
 
 #pragma mark -
 

@@ -535,7 +535,7 @@
 	if(userTerminated) {
 		if(bashTask) [bashTask release];
 		NSBeep();
-		NSLog(@"“%@” was terminated by user.", self);
+		NSLog(@"“%@” was terminated by user.", ([self length] > 50) ? [self substringToIndex:50] : self);
 		return @"";
 	}
 

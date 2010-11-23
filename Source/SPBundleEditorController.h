@@ -39,10 +39,7 @@
 	IBOutlet NSPopUpButton* inputPopupButton;
 	IBOutlet NSPopUpButton* inputFallbackPopupButton;
 	IBOutlet NSPopUpButton* outputPopupButton;
-	IBOutlet NSButton *editorScopeButton;
-	IBOutlet NSButton *inputFieldScopeButton;
-	IBOutlet NSButton *dataTableScopeButton;
-	IBOutlet NSButton *disableCheckBox;
+	IBOutlet NSPopUpButton* scopePopupButton;
 	IBOutlet NSButton *removeButton;
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
@@ -56,23 +53,21 @@
 	NSString *oldBundleName;
 	BOOL isTableCellEditing;
 
-	NSMenu *inputEditorScopePopUpMenu;
+	NSMenu *inputGeneralScopePopUpMenu;
 	NSMenu *inputInputFieldScopePopUpMenu;
 	NSMenu *inputDataTableScopePopUpMenu;
 	NSMenu *inputNonePopUpMenu;
-	NSMenu *outputEditorScopePopUpMenu;
+	NSMenu *outputGeneralScopePopUpMenu;
 	NSMenu *outputInputFieldScopePopUpMenu;
 	NSMenu *outputDataTableScopePopUpMenu;
-	NSMenu *inputFallbackEditorScopePopUpMenu;
 	NSMenu *inputFallbackInputFieldScopePopUpMenu;
 
-	NSArray *inputEditorScopeArray;
+	NSArray *inputGeneralScopeArray;
 	NSArray *inputInputFieldScopeArray;
 	NSArray *inputDataTableScopeArray;
-	NSArray *outputEditorScopeArray;
+	NSArray *outputGeneralScopeArray;
 	NSArray *outputInputFieldScopeArray;
 	NSArray *outputDataTableScopeArray;
-	NSArray *inputFallbackEditorScopeArray;
 	NSArray *inputFallbackInputFieldScopeArray;
 
 	BOOL doGroupDueToChars;

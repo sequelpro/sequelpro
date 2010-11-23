@@ -804,131 +804,131 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 - (IBAction)executeBundleItemForDataTable:(id)sender
 {
-		NSInteger idx = [sender tag] - 1000000;
-		NSString *infoPath = nil;
-		NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
-		if(idx >=0 && idx < [bundleItems count]) {
-			infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
-		} else {
-			if([sender tag] == 0 && [[sender toolTip] length]) {
-				infoPath = [sender toolTip];
+	NSInteger idx = [sender tag] - 1000000;
+	NSString *infoPath = nil;
+	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
+	if(idx >=0 && idx < [bundleItems count]) {
+		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
+	} else {
+		if([sender tag] == 0 && [[sender toolTip] length]) {
+			infoPath = [sender toolTip];
+		}
+	}
+
+	if(!infoPath) {
+		NSBeep();
+		return;
+	}
+
+	NSError *readError = nil;
+	NSString *convError = nil;
+	NSPropertyListFormat format;
+	NSDictionary *cmdData = nil;
+	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+		NSLog(@"“%@” file couldn't be read.", infoPath);
+		NSBeep();
+		if (cmdData) [cmdData release];
+		return;
+	} else {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+
+			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
+			NSString *inputAction = @"";
+			NSString *inputFallBackAction = @"";
+			NSError *err = nil;
+			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
+
+			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+
+			if([cmdData objectForKey:SPBundleFileInputSourceKey])
+				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
+			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
+				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
+
+			NSMutableDictionary *env = [NSMutableDictionary dictionary];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
+			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+
+			if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
+				[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
+
+			NSError *inputFileError = nil;
+			NSString *input = @"";
+			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
+				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES];
 			}
-		}
+			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
+				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
+				input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
+				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
+				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO];
+			}
+			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
+				input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
+			}
+			
+			if(input == nil) input = @"";
+			[input writeToFile:bundleInputFilePath
+					  atomically:YES
+						encoding:NSUTF8StringEncoding
+						   error:&inputFileError];
+			
+			if(inputFileError != nil) {
+				NSString *errorMessage  = [inputFileError localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				if (cmdData) [cmdData release];
+				return;
+			}
 
-		if(!infoPath) {
-			NSBeep();
-			return;
-		}
+			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
 
-		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
-		NSDictionary *cmdData = nil;
-		NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-		cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+			if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
+				if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
+						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
+					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+					NSPoint pos = [NSEvent mouseLocation];
+					pos.y -= 16;
 
-		if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			NSLog(@"“%@” file couldn't be read.", infoPath);
-			NSBeep();
-			if (cmdData) [cmdData release];
-			return;
-		} else {
-			if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
-
-				NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
-				NSString *inputAction = @"";
-				NSString *inputFallBackAction = @"";
-				NSError *err = nil;
-				NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
-
-				[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
-
-				if([cmdData objectForKey:SPBundleFileInputSourceKey])
-					inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
-				if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
-					inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
-
-				NSMutableDictionary *env = [NSMutableDictionary dictionary];
-				[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-				[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
-
-				if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
-					[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
-
-				NSError *inputFileError = nil;
-				NSString *input = @"";
-				if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
-					input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES];
-				}
-				else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
-					input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
-				}
-				else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
-					input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
-				}
-				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
-					input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];
-				}
-				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
-					input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO];
-				}
-				else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
-					input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
-				}
-				
-				if(input == nil) input = @"";
-				[input writeToFile:bundleInputFilePath
-						  atomically:YES
-							encoding:NSUTF8StringEncoding
-							   error:&inputFileError];
-				
-				if(inputFileError != nil) {
-					NSString *errorMessage  = [inputFileError localizedDescription];
-					SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-									  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
-					if (cmdData) [cmdData release];
-					return;
-				}
-
-				NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
-
-				[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
-
-				if(err == nil && output && [cmdData objectForKey:SPBundleFileOutputActionKey]) {
-					if([[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
-							&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
-						NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
-						NSPoint pos = [NSEvent mouseLocation];
-						pos.y -= 16;
-
-						if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
-							[SPTooltip showWithObject:output atLocation:pos];
-						}
-
-						else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
-							[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
-						}
-
-						else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
-							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
-							[c displayHTMLContent:output withOptions:nil];
-						}
+					if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
+						[SPTooltip showWithObject:output atLocation:pos];
 					}
-				} else {
-					NSString *errorMessage  = [err localizedDescription];
-					SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-									  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
-				}
 
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
+						[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+						[c displayHTMLContent:output withOptions:nil];
+					}
+				}
+			} else {
+				NSString *errorMessage  = [err localizedDescription];
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 			}
 
-			if (cmdData) [cmdData release];
-
 		}
+
+		if (cmdData) [cmdData release];
 
 	}
+
+}
 
 /**
  * Only have the copy menu item enabled when row(s) are selected in

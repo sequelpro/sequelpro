@@ -144,6 +144,4 @@
 
 - (BOOL)isSnippetMode;
 
-- (IBAction)executeBundleItemForEditor:(id)sender;
-
 @end
