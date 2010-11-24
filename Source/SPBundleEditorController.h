@@ -25,6 +25,7 @@
 #import <Cocoa/Cocoa.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
 #import "SPBundleCommandTextView.h"
+#import "SPOutlineView.h"
 
 @class SRRecorderControl;
 
@@ -32,6 +33,7 @@
 
 	IBOutlet id commandTextView;
 	IBOutlet NSTableView* commandsTableView;
+	IBOutlet id commandsOutlineView;
 	IBOutlet NSTextField* nameTextField;
 	IBOutlet NSTextField* tootlipTextField;
 	IBOutlet NSTextField* categoryTextField;
@@ -45,9 +47,10 @@
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 
-	IBOutlet NSArrayController *commandBundleArrayController;
+	IBOutlet NSTreeController *commandBundleTreeController;
 	NSMutableArray *commandBundleArray;
-	
+	NSMutableDictionary *commandBundleTree;
+
 	NSString *bundlePath;
 	NSString *draggedFilePath;
 	NSString *oldBundleName;
