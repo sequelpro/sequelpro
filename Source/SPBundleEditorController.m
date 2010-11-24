@@ -83,6 +83,8 @@
 - (void)awakeFromNib
 {
 
+	commandBundleArray = [[NSMutableArray alloc] initWithCapacity:1];
+
 	// Init all needed menus
 	inputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -316,7 +318,6 @@
 {
 	NSMutableDictionary *bundle;
 	NSUInteger insertIndex;
-	BOOL wasDuplicated = NO;
 
 	// Store pending changes in Query
 	[[self window] makeFirstResponder:nameTextField];
@@ -363,7 +364,6 @@
 			return;
 
 		}
-		wasDuplicated = YES;
 		[bundle setObject:newFileName forKey:@"bundleName"];
 
 	}
@@ -389,10 +389,11 @@
 	[commandsTableView scrollRowToVisible:[commandsTableView selectedRow]];
 
 	[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
+
+	[self _updateInputPopupButton];
+
 	[[self window] makeFirstResponder:commandsTableView];
-	[self scopeButtonChanged:nil];
-	if(!wasDuplicated && [commandsTableView numberOfSelectedRows] > 0)
-		[commandsTableView editColumn:0 row:insertIndex withEvent:nil select:YES];
+
 }
 
 - (IBAction)removeCommandBundle:(id)sender
@@ -445,11 +446,16 @@
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")]];
 }
 
+- (IBAction)reloadBundles:(id)sender
+{
+	[self showWindow:self];
+}
+
 - (IBAction)showWindow:(id)sender
 {
 
 	// Suppress parsing if window is already opened
-	if([[self window] isVisible]) {
+	if(sender != self && [[self window] isVisible]) {
 		[super showWindow:sender];
 		return;
 	}
@@ -460,8 +466,8 @@
 	[super showWindow:sender];
 
 	// Re-init commandBundleArray
-	if(commandBundleArray) [commandBundleArray release], commandBundleArray = nil;
-	commandBundleArray = [[NSMutableArray alloc] init];
+	[commandBundleArray removeAllObjects];
+	[commandsTableView reloadData];
 
 	// Load all installed bundle items
 	if(bundlePath) {
@@ -500,6 +506,8 @@
 			}
 		}
 	}
+
+	[removeButton setEnabled:([commandsTableView numberOfSelectedRows] > 0)];
 
 	[commandBundleArrayController setContent:commandBundleArray];
 	[commandBundleArrayController rearrangeObjects];
@@ -561,6 +569,8 @@
 		if(![bundle objectForKey:@"bundleName"] || ![[bundle objectForKey:@"bundleName"] length]) {
 			return NO;
 		}
+		if(!bundlePath)
+			bundlePath = [[[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:YES error:nil] retain];
 		aPath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, [bundle objectForKey:@"bundleName"], SPUserBundleFileExtension];
 	}
 
@@ -703,8 +713,9 @@
 
 - (void)windowWillClose:(NSNotification *)notification
 {
-	// Release commandBundleArray if window will close to save memory
-	if(commandBundleArray) [commandBundleArray release], commandBundleArray = nil;
+	// Clear commandBundleArray if window will close to save memory
+	[commandBundleArray removeAllObjects];
+	[commandsTableView reloadData];
 
 	// Remove temporary drag file if any
 	if(draggedFilePath) {
@@ -771,11 +782,15 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 
+	if(![commandBundleArray count]) return @"";
+
 	if([[aTableColumn identifier] isEqualToString:@"name"]) {
 		if(![[commandBundleArray objectAtIndex:rowIndex] objectForKey:@"name"]) return @"...";
 		return [[commandBundleArray objectAtIndex:rowIndex] objectForKey:@"bundleName"];
 	}
+
 	return @"";
+
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification

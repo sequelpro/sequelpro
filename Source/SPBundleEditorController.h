@@ -89,6 +89,7 @@
 - (IBAction)saveBundle:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)saveAndCloseWindow:(id)sender;
+- (IBAction)reloadBundles:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
 
