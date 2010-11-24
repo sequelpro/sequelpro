@@ -329,6 +329,9 @@
 		[tableEncodingButton setEnabled:NO];
 	}
 
+	// Set the focus to the name field
+	[tableSheet makeFirstResponder:tableNameField];
+
 	[NSApp beginSheet:tableSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
