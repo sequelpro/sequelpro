@@ -61,6 +61,8 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 + (NSString *)stringForTimeInterval:(CGFloat)timeInterval;
 + (NSString*)stringWithNewUUID;
 
+
+- (NSString *)rot13;
 - (NSString *)HTMLEscapeString;
 - (NSString *)backtickQuotedString;
 - (NSString *)tickQuotedString;

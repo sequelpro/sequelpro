@@ -31,27 +31,36 @@
 
 @interface SPBundleEditorController : NSWindowController {
 
-	IBOutlet id commandTextView;
-	IBOutlet NSTableView* commandsTableView;
-	IBOutlet id commandsOutlineView;
-	IBOutlet NSTextField* nameTextField;
-	IBOutlet NSTextField* tootlipTextField;
-	IBOutlet NSTextField* categoryTextField;
-	IBOutlet NSTextField* fallbackLabelField;
-	IBOutlet NSPopUpButton* inputPopupButton;
-	IBOutlet NSPopUpButton* inputFallbackPopupButton;
-	IBOutlet NSPopUpButton* outputPopupButton;
-	IBOutlet NSPopUpButton* scopePopupButton;
+	IBOutlet SPBundleCommandTextView *commandTextView;
+	IBOutlet SPOutlineView *commandsOutlineView;
+	IBOutlet NSTextField *authorTextField;
+	IBOutlet NSTextField *contactTextField;
+	IBOutlet NSTextView *descriptionTextView;
+	IBOutlet NSTextField *nameTextField;
+	IBOutlet NSTextField *tooltipTextField;
+	IBOutlet NSTextField *categoryTextField;
+	IBOutlet NSTextField *fallbackLabelField;
+	IBOutlet NSTextField *commandLabelField;
+	IBOutlet NSTextField *authorLabelField;
+	IBOutlet NSTextField *contactLabelField;
+	IBOutlet NSTextField *descriptionLabelField;
+	IBOutlet NSPopUpButton *inputPopupButton;
+	IBOutlet NSPopUpButton *inputFallbackPopupButton;
+	IBOutlet NSPopUpButton *outputPopupButton;
+	IBOutlet NSPopUpButton *scopePopupButton;
 	IBOutlet NSButton *removeButton;
 	IBOutlet NSButton *addButton;
 	IBOutlet NSButton *saveButton;
 	IBOutlet NSButton *cancelButton;
 	IBOutlet NSButton *helpButton;
+	IBOutlet NSButton *showHideMetaButton;
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 	IBOutlet NSButton *disabledCheckbox;
 	IBOutlet NSView *bundleDataView;
+	IBOutlet NSScrollView *commandScrollView;
+	IBOutlet NSScrollView *descriptionScrollView;
 
 	IBOutlet NSTreeController *commandBundleTreeController;
 	NSMutableArray *touchedBundleArray;
@@ -100,6 +109,7 @@
 - (IBAction)showHelp:(id)sender;
 - (IBAction)saveAndCloseWindow:(id)sender;
 - (IBAction)reloadBundles:(id)sender;
+- (IBAction)metaButtonChanged:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
 
