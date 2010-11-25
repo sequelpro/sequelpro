@@ -1170,6 +1170,7 @@
 													   @"executeBundleItemForApp:", nil];
 
 	NSInteger k = 0;
+	BOOL bundleOtherThanGeneralFound = NO;
 	for(NSString* scope in scopes) {
 
 		NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:scope];
@@ -1195,7 +1196,8 @@
 
 		} else {
 			bundleMenu = menu;
-			[menu addItem:[NSMenuItem separatorItem]];
+			if(bundleOtherThanGeneralFound)
+				[menu addItem:[NSMenuItem separatorItem]];
 		}
 
 		// Add found Category submenus
@@ -1220,7 +1222,7 @@
 				keyEq = @"";
 
 			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:NSSelectorFromString([scopeSelector objectAtIndex:k]) keyEquivalent:keyEq] autorelease];
-
+			bundleOtherThanGeneralFound = YES;
 			if([keyEq length])
 				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
 

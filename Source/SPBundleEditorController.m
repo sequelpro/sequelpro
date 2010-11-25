@@ -744,7 +744,11 @@
 	[commandBundleTreeController setContent:commandBundleTree];
 	[commandBundleTreeController rearrangeObjects];
 	[commandsOutlineView reloadData];
-	[commandsOutlineView expandItem:nil expandChildren:YES];
+	[commandsOutlineView expandItem:[commandsOutlineView itemAtRow:0] expandChildren:NO];
+	NSUInteger *selPath[2];
+	selPath[0] = 0;
+	selPath[1] = 0;
+	[commandBundleTreeController setSelectionIndexPath:[NSIndexPath indexPathWithIndexes:&selPath length:2]];
 
 }
 
@@ -1075,6 +1079,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {
+	if([outlineView levelForItem:item] == 0) return NO;
 	return YES;
 }
 
@@ -1115,6 +1120,66 @@
 
 	[self _updateBundleDataView];
 
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
+{
+	if([outlineView levelForItem:item] == 0) return NO;
+	return YES;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	return NO;
+}
+
+- (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tc item:(id)item mouseLocation:(NSPoint)mouseLocation{
+	if([outlineView levelForItem:item] == 0) return NSLocalizedString(@"Installed Bundles", @"Installed Bundles");
+	if([outlineView levelForItem:item] == 1) {
+		NSString *bName = [[item representedObject] objectForKey:kBundleNameKey];
+		NSUInteger k = 0;
+		BOOL found = NO;
+		for(id i in [[commandBundleTreeController arrangedObjects] childNodes]) {
+			for(id j in [i childNodes]) {
+				if([[[j representedObject] objectForKey:kBundleNameKey] isEqualToString:bName]) {
+					found = YES;
+					break;
+				}
+				k++;
+			}
+			if(found) break;
+		}
+		switch([self _scopeIndexForArrangedScopeIndex:k]) {
+			case kInputFieldScopeArrayIndex:
+			return NSLocalizedString(@"Input Field Scope\ncommands will run on each text input field", @"Input Field Scope\ncommands will run on each text input field tooltip");
+			break;
+			case kDataTableScopeArrayIndex:
+			return NSLocalizedString(@"Data Table Scope\ncommands will run on the Content and Query data tables", @"Data Table Scope\ncommands will run on the Content and Query data tables tooltip");
+			break;
+			case kGeneralScopeArrayIndex:
+			return NSLocalizedString(@"General Scope\ncommands will run application-wide", @"General Scope\ncommands will run application-wide tooltip");
+			break;
+			default:
+			return @"";
+		}
+	}
+	if([outlineView levelForItem:item] == 2) {
+		if([[item representedObject] objectForKey:kChildrenKey]) {
+			return [NSString stringWithFormat:@"“%@” %@", [[item representedObject] objectForKey:kBundleNameKey], NSLocalizedString(@"submenu label", @"submenu label")];
+		} else {
+			if([[item representedObject] objectForKey:SPBundleFileTooltipKey] && [[[item representedObject] objectForKey:SPBundleFileTooltipKey] length])
+				return [[item representedObject] objectForKey:SPBundleFileTooltipKey];
+			else
+				return [NSString stringWithFormat:@"“%@” Bundle", [[item representedObject] objectForKey:kBundleNameKey]];
+		}
+	}
+	if([outlineView levelForItem:item] == 3) {
+		if([[item representedObject] objectForKey:SPBundleFileTooltipKey] && [[[item representedObject] objectForKey:SPBundleFileTooltipKey] length])
+			return [[item representedObject] objectForKey:SPBundleFileTooltipKey];
+		else
+			return [NSString stringWithFormat:@"“%@” Bundle", [[item representedObject] objectForKey:kBundleNameKey]];
+	}
+	return @"";
 }
 
 #pragma mark -

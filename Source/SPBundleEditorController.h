@@ -44,10 +44,14 @@
 	IBOutlet NSPopUpButton* scopePopupButton;
 	IBOutlet NSButton *removeButton;
 	IBOutlet NSButton *addButton;
+	IBOutlet NSButton *saveButton;
+	IBOutlet NSButton *cancelButton;
+	IBOutlet NSButton *helpButton;
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 	IBOutlet NSButton *disabledCheckbox;
+	IBOutlet NSView *bundleDataView;
 
 	IBOutlet NSTreeController *commandBundleTreeController;
 	NSMutableArray *touchedBundleArray;
