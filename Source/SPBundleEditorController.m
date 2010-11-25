@@ -27,10 +27,19 @@
 
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
+#define kInputFieldScopeArrayIndex 0
+#define kDataTableScopeArrayIndex 1
+#define kGeneralScopeArrayIndex 2
+#define kDisabledScopeTag 10
 
 @interface SPBundleEditorController (PrivateAPI)
 
 - (void)_updateInputPopupButton;
+- (id)_currentSelectedObject;
+- (id)_currentSelectedNode;
+- (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex;
+- (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex;
+- (NSUInteger)_arrangedCategoryIndexForScopeIndex:(NSUInteger)scopeIndex andCategory:(NSString*)category;
 
 @end
 
@@ -80,6 +89,7 @@
 	if(commandBundleArray) [commandBundleArray release], commandBundleArray = nil;
 	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
+	if(sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
 	if(bundlePath) [bundlePath release], bundlePath = nil;
 
 	[super dealloc];
@@ -92,6 +102,7 @@
 	commandBundleArray = [[NSMutableArray alloc] initWithCapacity:1];
 	touchedBundleArray = [[NSMutableArray alloc] initWithCapacity:1];
 	commandBundleTree = [[NSMutableDictionary alloc] initWithCapacity:1];
+	sortDescriptor = [[NSSortDescriptor alloc] initWithKey:kBundleNameKey ascending:YES selector:@selector(localizedCompare:)];
 
 	[commandBundleTree setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[commandBundleTree setObject:@"BUNDLES" forKey:kBundleNameKey];
@@ -211,25 +222,27 @@
 
 	[inputGeneralScopePopUpMenu removeAllItems];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"General", @"general scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	[anItem setTag:0];
+	[anItem setTag:kGeneralScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Input Field", @"input field scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	[anItem setTag:1];
+	[anItem setTag:kInputFieldScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Data Table", @"data table scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	[anItem setTag:2];
+	[anItem setTag:kDataTableScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
 	[inputGeneralScopePopUpMenu addItem:[NSMenuItem separatorItem]];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Disable Command", @"disable command menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	[anItem setTag:10];
+	[anItem setTag:kDisabledScopeTag];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
 	[scopePopupButton setMenu:inputGeneralScopePopUpMenu];
 
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
+
+	[commandBundleTreeController setSortDescriptors:[NSArray arrayWithObjects:sortDescriptor, nil]];
 
 }
 
@@ -238,7 +251,7 @@
 - (IBAction)inputPopupButtonChanged:(id)sender
 {
 
-	id currentDict = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+	id currentDict = [self _currentSelectedObject];
 
 	NSMenu* senderMenu = [sender menu];
 
@@ -262,7 +275,7 @@
 - (IBAction)inputFallbackPopupButtonChanged:(id)sender
 {
 
-	id currentDict = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+	id currentDict = [self _currentSelectedObject];
 
 	NSMenu* senderMenu = [sender menu];
 
@@ -278,7 +291,7 @@
 - (IBAction)outputPopupButtonChanged:(id)sender
 {
 
-	id currentDict = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+	id currentDict = [self _currentSelectedObject];
 
 	NSMenu* senderMenu = [sender menu];
 
@@ -298,23 +311,52 @@
 - (IBAction)scopeButtonChanged:(id)sender
 {
 
-	id currentDict = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+	id currentDict = [self _currentSelectedObject];
 
 	NSInteger selectedTag = [sender tag];
+	NSString *oldScope = [[currentDict objectForKey:SPBundleFileScopeKey] retain];
 
 	switch(selectedTag) {
-		case 0:
+		case kGeneralScopeArrayIndex:
 		[currentDict setObject:SPBundleScopeGeneral forKey:SPBundleFileScopeKey];
 		break;
-		case 1:
+		case kInputFieldScopeArrayIndex:
 		[currentDict setObject:SPBundleScopeInputField forKey:SPBundleFileScopeKey];
 		break;
-		case 2:
+		case kDataTableScopeArrayIndex:
 		[currentDict setObject:SPBundleScopeDataTable forKey:SPBundleFileScopeKey];
 		break;
 		default:
 		[currentDict setObject:@"" forKey:SPBundleFileScopeKey];
 	}
+
+	if(selectedTag != kDisabledScopeTag && ![[currentDict objectForKey:SPBundleFileScopeKey] isEqualToString:oldScope]) {
+		NSString *newScope = [currentDict objectForKey:SPBundleFileScopeKey];
+		NSUInteger newScopeIndex = [self _arrangedScopeIndexForScopeIndex:selectedTag];
+		NSString *currentCategory = [currentDict objectForKey:SPBundleFileCategoryKey];
+		if(!currentCategory) currentCategory = @"";
+		if([currentCategory length]) {
+			NSUInteger *newIndexPath[4];
+			newIndexPath[0] = 0;
+			newIndexPath[1] = newScopeIndex;
+			newIndexPath[2] = [self _arrangedCategoryIndexForScopeIndex:selectedTag andCategory:currentCategory];
+			newIndexPath[3] = 0;
+			[commandBundleTreeController moveNode:[self _currentSelectedNode] toIndexPath:[NSIndexPath indexPathWithIndexes:newIndexPath length:4]];
+			[commandBundleTreeController rearrangeObjects];
+			[commandsOutlineView reloadData];
+		} else {
+			// Move current Bundle command to according new scope without category
+			NSUInteger *newIndexPath[3];
+			newIndexPath[0] = 0;
+			newIndexPath[1] = newScopeIndex;
+			newIndexPath[2] = 0;
+			[commandBundleTreeController moveNode:[self _currentSelectedNode] toIndexPath:[NSIndexPath indexPathWithIndexes:newIndexPath length:3]];
+			[commandBundleTreeController rearrangeObjects];
+			[commandsOutlineView reloadData];
+		}
+	}
+
+	[oldScope release];
 
 	[self _updateInputPopupButton];
 
@@ -339,9 +381,14 @@
 	NSIndexPath *currentIndexPath = nil;
 	currentIndexPath = [commandBundleTreeController selectionIndexPath];
 
+	if(!currentIndexPath) {
+		NSBeep();
+		return;
+	}
+
 	// Duplicate a selected Bundle if sender == self
 	if (sender == self) {
-		NSDictionary *currentDict = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+		NSDictionary *currentDict = [self _currentSelectedObject];
 		bundle = [NSMutableDictionary dictionaryWithDictionary:currentDict];
 
 		NSString *bundleFileName = [bundle objectForKey:kBundleNameKey];
@@ -383,6 +430,12 @@
 		}
 		[bundle setObject:newFileName forKey:kBundleNameKey];
 
+		// Insert duplicate below selected one
+		NSUInteger *currentPath[[currentIndexPath length]];
+		[currentIndexPath getIndexes:&currentPath];
+		currentPath[[currentIndexPath length]-1] = (NSUInteger)currentPath[[currentIndexPath length]-1] + 1;
+		currentIndexPath = [NSIndexPath indexPathWithIndexes:currentPath length:[currentIndexPath length]];
+
 	}
 	// Add a new Bundle
 	else {
@@ -390,7 +443,7 @@
 		NSString *category = nil;
 		NSString *scope = nil;
 		BOOL lastIndexWasAlreadyFixed = NO;
-		id currentObject = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+		id currentObject = [self _currentSelectedObject];
 
 		// If selected item is one of the main scopes go one item deeper
 		if([currentIndexPath length] == 2) {
@@ -420,14 +473,14 @@
 		}
 
 		// Set current scope
-		switch((NSUInteger)currentPath[1]) {
-			case 0:
+		switch([self _scopeIndexForArrangedScopeIndex:(NSUInteger)currentPath[1]]) {
+			case kInputFieldScopeArrayIndex:
 			scope = SPBundleScopeInputField;
 			break;
-			case 1:
+			case kDataTableScopeArrayIndex:
 			scope = SPBundleScopeDataTable;
 			break;
-			case 2:
+			case kGeneralScopeArrayIndex:
 			scope = SPBundleScopeGeneral;
 			break;
 			default:
@@ -436,7 +489,7 @@
 
 		// Get current category
 		if([currentIndexPath length] > 2 && category == nil) {
-			category = [[[[[commandsOutlineView parentForItem:[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]]] representedObject] objectForKey:kChildrenKey] objectAtIndex:0] objectForKey:SPBundleFileCategoryKey];
+			category = [[[[[commandsOutlineView parentForItem:[self _currentSelectedNode]] representedObject] objectForKey:kChildrenKey] objectAtIndex:0] objectForKey:SPBundleFileCategoryKey];
 		}
 		if(category == nil) category = @"";
 
@@ -490,7 +543,7 @@
 	if([commandsOutlineView numberOfSelectedRows] != 1) return;
 
 	[[NSWorkspace sharedWorkspace] selectFile:[NSString stringWithFormat:@"%@/%@.%@/%@", 
-		bundlePath, [[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] objectForKey:kBundleNameKey], SPUserBundleFileExtension, SPBundleFileName] inFileViewerRootedAtPath:nil];
+		bundlePath, [[self _currentSelectedObject] objectForKey:kBundleNameKey], SPUserBundleFileExtension, SPBundleFileName] inFileViewerRootedAtPath:nil];
 
 }
 
@@ -505,7 +558,7 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:[[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] objectForKey:kBundleNameKey] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveBundle"];
+	[panel beginSheetForDirectory:nil file:[[self _currentSelectedObject] objectForKey:kBundleNameKey] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveBundle"];
 }
 
 - (IBAction)showHelp:(id)sender
@@ -534,9 +587,9 @@
 
 	// Re-init commandBundleArray
 	[commandBundleArray removeAllObjects];
-	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:0] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:1] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:2] setObject:[NSMutableArray array] forKey:kChildrenKey];
+	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kInputFieldScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
+	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kDataTableScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
+	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kGeneralScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[commandsOutlineView reloadData];
 
 	// Load all installed bundle items
@@ -572,7 +625,7 @@
 						if([[cmdData objectForKey:SPBundleFileScopeKey] isEqualToString:SPBundleScopeInputField]) {
 							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length]) {
 								BOOL catExists = NO;
-								id children = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:0] objectForKey:kChildrenKey];
+								id children = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kInputFieldScopeArrayIndex] objectForKey:kChildrenKey];
 								for(id child in children) {
 									if([child isKindOfClass:[NSDictionary class]] && [child objectForKey:kChildrenKey] && [[child objectForKey:kBundleNameKey] isEqualToString:[cmdData objectForKey:SPBundleFileCategoryKey]]) {
 										[[child objectForKey:kChildrenKey] addObject:bundleCommand];
@@ -594,7 +647,7 @@
 						else if([[cmdData objectForKey:SPBundleFileScopeKey] isEqualToString:SPBundleScopeDataTable]) {
 							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length]) {
 								BOOL catExists = NO;
-								id children = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:1] objectForKey:kChildrenKey];
+								id children = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kDataTableScopeArrayIndex] objectForKey:kChildrenKey];
 								for(id child in children) {
 									if([child isKindOfClass:[NSDictionary class]] && [child objectForKey:kChildrenKey] && [[child objectForKey:kBundleNameKey] isEqualToString:[cmdData objectForKey:SPBundleFileCategoryKey]]) {
 										[[child objectForKey:kChildrenKey] addObject:bundleCommand];
@@ -616,7 +669,7 @@
 						else if([[cmdData objectForKey:SPBundleFileScopeKey] isEqualToString:SPBundleScopeGeneral]) {
 							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length]) {
 								BOOL catExists = NO;
-								id children = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:2] objectForKey:kChildrenKey];
+								id children = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kGeneralScopeArrayIndex] objectForKey:kChildrenKey];
 								for(id child in children) {
 									if([child isKindOfClass:[NSDictionary class]] && [child objectForKey:kChildrenKey] && [[child objectForKey:kBundleNameKey] isEqualToString:[cmdData objectForKey:SPBundleFileCategoryKey]]) {
 										[[child objectForKey:kChildrenKey] addObject:bundleCommand];
@@ -824,7 +877,7 @@
 	} else if([contextInfo isEqualToString:@"saveBundle"]) {
 		if (returnCode == NSOKButton) {
 
-			id aBundle = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+			id aBundle = [self _currentSelectedObject];
 
 			NSString *bundleFileName = [aBundle objectForKey:kBundleNameKey];
 			NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
@@ -918,7 +971,7 @@
 			[keyEq appendString:@"@"];
 		[keyEq appendString:theChar];
 	}
-	[[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
+	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
 }
 
@@ -984,7 +1037,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-	if (![self outlineView:outlineView isGroupItem:item]) {
+	if ([[commandBundleTreeController selectionIndexPath] length] > 2) {
 		isTableCellEditing = YES;
 		return YES;
 	}
@@ -998,8 +1051,8 @@
 	if([aNotification object] != commandsOutlineView) return;
 
 	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
-	if(![[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] objectForKey:kChildrenKey])
-		oldBundleName = [[[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] objectForKey:kBundleNameKey] retain];
+	if(![[self _currentSelectedObject] objectForKey:kChildrenKey])
+		oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
 	else
 		if(oldBundleName) [oldBundleName release], oldBundleName = nil;
 		
@@ -1068,50 +1121,88 @@
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
 
-	if([aNotification object] != commandsOutlineView) return;
+	if([aNotification object] == commandsOutlineView) {
 
-	NSString *newBundleName = [[[aNotification userInfo] objectForKey:@"NSFieldEditor"] string];
+		// We edit a category
+		if([[self _currentSelectedObject] objectForKey:kChildrenKey]) {
 
-	BOOL isValid = YES;
+			NSString *newCategoryName = [[[aNotification userInfo] objectForKey:@"NSFieldEditor"] string];
 
-	if(oldBundleName && newBundleName && [newBundleName length] && ![newBundleName rangeOfString:@"/"].length) {
+			// Set the new category for each child
+			for(id item in [[self _currentSelectedObject] objectForKey:kChildrenKey])
+				[item setObject:newCategoryName forKey:SPBundleFileCategoryKey];
 
-		NSString *oldName = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, oldBundleName, SPUserBundleFileExtension];
-		NSString *newName = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newBundleName, SPUserBundleFileExtension];
-	
-		BOOL isDir;
-		NSFileManager *fm = [NSFileManager defaultManager];
-		// Check for renaming
-		if([fm fileExistsAtPath:oldName isDirectory:&isDir] && isDir) {
-			if(![fm moveItemAtPath:oldName toPath:newName error:nil]) {
-				isValid = NO;
-			}
 		}
-		// Check if the new name already exists
+		// We edit a spBundle name
 		else {
-			if([fm fileExistsAtPath:newName isDirectory:&isDir] && isDir) {
+
+			NSString *newBundleName = [[[aNotification userInfo] objectForKey:@"NSFieldEditor"] string];
+
+			BOOL isValid = YES;
+
+			if(oldBundleName && newBundleName && [newBundleName length] && ![newBundleName rangeOfString:@"/"].length) {
+
+				NSString *oldName = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, oldBundleName, SPUserBundleFileExtension];
+				NSString *newName = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newBundleName, SPUserBundleFileExtension];
+	
+				BOOL isDir;
+				NSFileManager *fm = [NSFileManager defaultManager];
+				// Check for renaming
+				if([fm fileExistsAtPath:oldName isDirectory:&isDir] && isDir) {
+					if(![fm moveItemAtPath:oldName toPath:newName error:nil]) {
+						isValid = NO;
+					}
+				}
+				// Check if the new name already exists
+				else {
+					if([fm fileExistsAtPath:newName isDirectory:&isDir] && isDir) {
+						isValid = NO;
+					}
+				}
+			} else {
 				isValid = NO;
 			}
+
+	
+			// If not valid reset name to the old one
+			if(!isValid) {
+				[[self _currentSelectedObject] setObject:oldBundleName forKey:kBundleNameKey];
+			}
+
+			[commandBundleTreeController rearrangeObjects];
+			[commandsOutlineView reloadData];
+
+			if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+			oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
+			if(oldBundleName != nil && ![touchedBundleArray containsObject:oldBundleName])
+				[touchedBundleArray addObject:oldBundleName];
 		}
-	} else {
-		isValid = NO;
+
+		isTableCellEditing = NO;
 	}
+	else if([aNotification object] == categoryTextField) {
 
-	
-	// If not valid reset name to the old one
-	if(!isValid) {
-		[[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] setObject:oldBundleName forKey:kBundleNameKey];
+		// Move Bundle to new category node; if not exists create it
+		NSUInteger scopeIndex = 0;
+		NSString* currentScope = [[self _currentSelectedObject] objectForKey:SPBundleFileScopeKey];
+		if([currentScope isEqualToString:SPBundleScopeDataTable])
+			scopeIndex = kDataTableScopeArrayIndex;
+		else if([currentScope isEqualToString:SPBundleScopeGeneral])
+			scopeIndex = kGeneralScopeArrayIndex;
+		else if([currentScope isEqualToString:SPBundleScopeInputField])
+			scopeIndex = kInputFieldScopeArrayIndex;
+
+		NSIndexPath *currentIndexPath = [commandBundleTreeController selectionIndexPath];
+		NSUInteger *newIndexPath[[currentIndexPath length]];
+		[currentIndexPath getIndexes:&newIndexPath];
+
+		// Set the category index
+		newIndexPath[2] = (NSUInteger)[self _arrangedCategoryIndexForScopeIndex:scopeIndex andCategory:[categoryTextField stringValue]];
+
+		[commandBundleTreeController moveNode:[self _currentSelectedNode] toIndexPath:[NSIndexPath indexPathWithIndexes:newIndexPath length:[currentIndexPath length]]];
+		[commandBundleTreeController rearrangeObjects];
+		[commandsOutlineView reloadData];
 	}
-
-	[commandBundleTreeController rearrangeObjects];
-	[commandsOutlineView reloadData];
-
-	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
-	oldBundleName = [[[[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject] objectForKey:kBundleNameKey] retain];
-	if(oldBundleName != nil && ![touchedBundleArray containsObject:oldBundleName])
-		[touchedBundleArray addObject:oldBundleName];
-	
-	isTableCellEditing = NO;
 
 }
 
@@ -1218,40 +1309,39 @@
 	[commandTextView setNeedsDisplay:YES];
 }
 
-/**
- * Traps any editing in editTextView to allow undo grouping only if the text buffer was really changed.
- * Inform the run loop delayed for larger undo groups.
- */
 - (void)textDidChange:(NSNotification *)aNotification
 {
 
-	if([aNotification object] != commandTextView) return;
+	if([aNotification object] == commandTextView) {
 
-	[NSObject cancelPreviousPerformRequestsWithTarget:self
-								selector:@selector(setAllowedUndo)
-								object:nil];
+		 // Traps any editing in commandTextView to allow undo grouping only if the text buffer was really changed.
+		 // Inform the run loop delayed for larger undo groups.
 
-	// If conditions match create an undo group
-	NSInteger cycleCounter;
-	if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
-		allowUndo = NO;
-		wasCutPaste = NO;
-		doGroupDueToChars = NO;
-		selectionChanged = NO;
+		[NSObject cancelPreviousPerformRequestsWithTarget:self
+									selector:@selector(setAllowedUndo)
+									object:nil];
 
-		cycleCounter = 0;
-		while([esUndoManager groupingLevel] > 0) {
-			[esUndoManager endUndoGrouping];
-			cycleCounter++;
+		// If conditions match create an undo group
+		NSInteger cycleCounter;
+		if( ( wasCutPaste || allowUndo || doGroupDueToChars ) && ![esUndoManager isUndoing] && ![esUndoManager isRedoing] ) {
+			allowUndo = NO;
+			wasCutPaste = NO;
+			doGroupDueToChars = NO;
+			selectionChanged = NO;
+
+			cycleCounter = 0;
+			while([esUndoManager groupingLevel] > 0) {
+				[esUndoManager endUndoGrouping];
+				cycleCounter++;
+			}
+			while([esUndoManager groupingLevel] < cycleCounter)
+				[esUndoManager beginUndoGrouping];
+
+			cycleCounter = 0;
 		}
-		while([esUndoManager groupingLevel] < cycleCounter)
-			[esUndoManager beginUndoGrouping];
 
-		cycleCounter = 0;
+		[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.09];
 	}
-
-	[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.09];
-
 }
 
 
@@ -1306,7 +1396,7 @@
 
 	if([commandsOutlineView selectedRow] < 0) return;
 
-	NSDictionary *currentDict = [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+	NSDictionary *currentDict = [self _currentSelectedObject];
 
 	NSString *input = [currentDict objectForKey:SPBundleFileInputSourceKey];
 	if(!input || ![input length]) input = SPBundleInputSourceNone;
@@ -1321,18 +1411,18 @@
 	if(!scope) scope = SPBundleScopeGeneral;
 
 	if([scope isEqualToString:SPBundleScopeGeneral])
-		[scopePopupButton selectItemWithTag:0];
+		[scopePopupButton selectItemWithTag:kGeneralScopeArrayIndex];
 	else if([scope isEqualToString:SPBundleScopeInputField])
-		[scopePopupButton selectItemWithTag:1];
+		[scopePopupButton selectItemWithTag:kInputFieldScopeArrayIndex];
 	else if([scope isEqualToString:SPBundleScopeDataTable])
-		[scopePopupButton selectItemWithTag:2];
+		[scopePopupButton selectItemWithTag:kDataTableScopeArrayIndex];
 	else
-		[scopePopupButton selectItemWithTag:10];
+		[scopePopupButton selectItemWithTag:kDisabledScopeTag];
 
 	[currentDict setObject:[NSNumber numberWithBool:NO] forKey:SPBundleFileDisabledKey];
 
 	switch([[scopePopupButton selectedItem] tag]) {
-		case 0: // General
+		case kGeneralScopeArrayIndex: // General
 		[inputPopupButton setMenu:inputNonePopUpMenu];
 		[inputPopupButton selectItemAtIndex:0];
 		[outputPopupButton setMenu:outputGeneralScopePopUpMenu];
@@ -1343,7 +1433,7 @@
 		[inputFallbackPopupButton setHidden:YES];
 		[fallbackLabelField setHidden:YES];
 		break;
-		case 1: // Input Field
+		case kInputFieldScopeArrayIndex: // Input Field
 		[inputPopupButton setMenu:inputInputFieldScopePopUpMenu];
 		anIndex = [inputInputFieldScopeArray indexOfObject:input];
 		if(anIndex == NSNotFound) anIndex = 0;
@@ -1357,7 +1447,7 @@
 		if(anIndex == NSNotFound) anIndex = 0;
 		[outputPopupButton selectItemAtIndex:anIndex];
 		break;
-		case 2: // Data Table
+		case kDataTableScopeArrayIndex: // Data Table
 		[inputPopupButton setMenu:inputDataTableScopePopUpMenu];
 		anIndex = [inputDataTableScopeArray indexOfObject:input];
 		if(anIndex == NSNotFound) anIndex = 0;
@@ -1370,7 +1460,7 @@
 		[inputFallbackPopupButton setHidden:YES];
 		[fallbackLabelField setHidden:YES];
 		break;
-		case 10: // Disable command
+		case kDisabledScopeTag: // Disable command
 		[currentDict setObject:[NSNumber numberWithBool:YES] forKey:SPBundleFileDisabledKey];
 		break;
 		default:
@@ -1395,6 +1485,87 @@
 
 }
 
+- (id)_currentSelectedObject
+{
+	return [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
+}
+- (id)_currentSelectedNode
+
+{
+	return [commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]];
+}
+
+- (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex
+{
+
+	NSString *unsortedBundleName = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:scopeIndex] objectForKey:kBundleNameKey];
+
+	if(!unsortedBundleName || ![unsortedBundleName length]) return scopeIndex;
+
+	NSUInteger k = 0;
+	for(id i in [[commandBundleTreeController arrangedObjects] childNodes]) {
+		for(id j in [i childNodes]) {
+			if([[[j representedObject] objectForKey:kBundleNameKey] isEqualToString:unsortedBundleName])
+				return k;
+			k++;
+		}
+	}
+
+	return k;
+
+}
+
+- (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex
+{
+
+	NSString *bName = [[[[[[[commandBundleTreeController arrangedObjects] childNodes] objectAtIndex:0] childNodes] objectAtIndex:scopeIndex] representedObject] objectForKey:kBundleNameKey];
+	NSUInteger k = 0;
+	for(id i in [commandBundleTree objectForKey:kChildrenKey]) {
+		if([[i objectForKey:kBundleNameKey] isEqualToString:bName])
+			return k;
+		k++;
+	}
+	return k;
+}
+
+- (NSUInteger)_arrangedCategoryIndexForScopeIndex:(NSUInteger)scopeIndex andCategory:(NSString*)category
+{
+	NSString *unsortedBundleName = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:scopeIndex] objectForKey:kBundleNameKey];
+
+	if(!unsortedBundleName || ![unsortedBundleName length]) return scopeIndex;
+
+	NSUInteger returnIndex = 0;
+	NSUInteger k = 0;
+	for(id i in [[commandBundleTreeController arrangedObjects] childNodes]) {
+		for(id j in [i childNodes]) {
+			if([[[j representedObject] objectForKey:kBundleNameKey] isEqualToString:unsortedBundleName]) {
+				//Check if category exists; if not created
+				for(id c in [j childNodes]) {
+					if([[[c representedObject] objectForKey:kBundleNameKey] isEqualToString:category] && [[c representedObject] objectForKey:kChildrenKey]) {
+						return returnIndex;
+					}
+					returnIndex++;
+				}
+				NSMutableDictionary *newCat = [NSMutableDictionary dictionary];
+				[newCat setObject:category forKey:kBundleNameKey];
+				[newCat setObject:[NSMutableArray array] forKey:kChildrenKey];
+				NSUInteger *newPath[3];
+				newPath[0] = 0;
+				newPath[1] = k;
+				newPath[2] = 0;
+				[[[j representedObject] objectForKey:kChildrenKey] addObject:newCat];
+				[commandBundleTreeController rearrangeObjects];
+				[commandsOutlineView reloadData];
+				return [self _arrangedCategoryIndexForScopeIndex:scopeIndex andCategory:category];
+
+			}
+			k++;
+		}
+		return 0;
+	}
+
+	return returnIndex;
+}
 
 @end
 

@@ -52,6 +52,7 @@
 	NSMutableArray *commandBundleArray;
 	NSMutableArray *touchedBundleArray;
 	NSMutableDictionary *commandBundleTree;
+	NSSortDescriptor *sortDescriptor;
 
 	NSString *bundlePath;
 	NSString *draggedFilePath;

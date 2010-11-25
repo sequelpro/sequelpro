@@ -55,7 +55,7 @@
 			[[self window] makeFirstResponder:self];
 		}
 
-		if (![[self itemAtRow:[self selectedRow]] isLeaf])
+		if ([self levelForItem:[self itemAtRow:[self selectedRow]]] < 1)
 			return nil;
 		return [self menu];
 	}
