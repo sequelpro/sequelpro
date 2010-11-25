@@ -34,9 +34,10 @@
 
 @interface SPBundleEditorController (PrivateAPI)
 
-- (void)_updateInputPopupButton;
+- (void)_updateBundleDataView;
 - (id)_currentSelectedObject;
 - (id)_currentSelectedNode;
+- (void)_enableBundleDataInput:(BOOL)enabled;
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_arrangedCategoryIndexForScopeIndex:(NSUInteger)scopeIndex andCategory:(NSString*)category;
@@ -54,7 +55,6 @@
 {
 
 	if ((self = [super initWithWindowNibName:@"BundleEditor"])) {
-		commandBundleArray = nil;
 		touchedBundleArray = nil;
 		draggedFilePath = nil;
 		oldBundleName = nil;
@@ -86,7 +86,6 @@
 	[outputDataTableScopeArray release];
 	[inputFallbackInputFieldScopeArray release];
 
-	if(commandBundleArray) [commandBundleArray release], commandBundleArray = nil;
 	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
 	if(sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
@@ -99,7 +98,9 @@
 - (void)awakeFromNib
 {
 
-	commandBundleArray = [[NSMutableArray alloc] initWithCapacity:1];
+	// Init all needed variables; popup menus (with the chance for localization); and set
+	// defaults
+
 	touchedBundleArray = [[NSMutableArray alloc] initWithCapacity:1];
 	commandBundleTree = [[NSMutableDictionary alloc] initWithCapacity:1];
 	sortDescriptor = [[NSSortDescriptor alloc] initWithKey:kBundleNameKey ascending:YES selector:@selector(localizedCompare:)];
@@ -233,11 +234,11 @@
 	[anItem setTag:kDataTableScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
-	[inputGeneralScopePopUpMenu addItem:[NSMenuItem separatorItem]];
-	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Disable Command", @"disable command menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	[anItem setTag:kDisabledScopeTag];
-	[inputGeneralScopePopUpMenu addItem:anItem];
-	[anItem release];
+	// [inputGeneralScopePopUpMenu addItem:[NSMenuItem separatorItem]];
+	// anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Disable Command", @"disable command menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
+	// [anItem setTag:kDisabledScopeTag];
+	// [inputGeneralScopePopUpMenu addItem:anItem];
+	// [anItem release];
 	[scopePopupButton setMenu:inputGeneralScopePopUpMenu];
 
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
@@ -248,6 +249,10 @@
 
 #pragma mark -
 
+/**
+ * Store input source in bundle dict since it is not bound
+ * via key binding and update various GUI elements
+ */
 - (IBAction)inputPopupButtonChanged:(id)sender
 {
 
@@ -268,10 +273,14 @@
 
 	[currentDict setObject:input forKey:SPBundleFileInputSourceKey];
 
-	[self _updateInputPopupButton];
+	[self _updateBundleDataView];
 
 }
 
+/**
+ * Store input fallback source in bundle dict since it is not bound
+ * via key binding.
+ */
 - (IBAction)inputFallbackPopupButtonChanged:(id)sender
 {
 
@@ -288,6 +297,10 @@
 
 }
 
+/**
+ * Store output action in bundle dict since it is not bound
+ * via key binding.
+ */
 - (IBAction)outputPopupButtonChanged:(id)sender
 {
 
@@ -308,6 +321,11 @@
 
 }
 
+/**
+ * If scope was changed store that info in the bundle dict since it is not bound
+ * via key binding. In addition move the selected item to its new scope in the tree.
+ * If a category was set check if the scope also has this category; if not create it.
+ */
 - (IBAction)scopeButtonChanged:(id)sender
 {
 
@@ -358,10 +376,13 @@
 
 	[oldScope release];
 
-	[self _updateInputPopupButton];
+	[self _updateBundleDataView];
 
 }
 
+/**
+ * Duplicate the selected bundle (processed in addCommandBundle:)
+ */
 - (IBAction)duplicateCommandBundle:(id)sender
 {
 	if ([commandsOutlineView numberOfSelectedRows] == 1)
@@ -370,6 +391,11 @@
 		NSBeep();
 }
 
+/**
+ * If sender == self duplicate selected bundle; otherwise add a new bundle -
+ * insert the new item under the selected one and set scope and category resp. according
+ * to current selection in the tree
+ */
 - (IBAction)addCommandBundle:(id)sender
 {
 	NSMutableDictionary *bundle;
@@ -510,12 +536,15 @@
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
-	[self _updateInputPopupButton];
+	[self _updateBundleDataView];
 
 	[[self window] makeFirstResponder:commandsOutlineView];
 
 }
 
+/**
+ * Remove the selected bundle but before ask for confirmation
+ */
 - (IBAction)removeCommandBundle:(id)sender
 {
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected Bundle?", @"remove selected bundle message") 
@@ -537,6 +566,9 @@
 
 }
 
+/**
+ * Reveal selected bundle.spBundle folder in Finder
+ */
 - (IBAction)revealCommandBundleInFinder:(id)sender
 {
 
@@ -547,6 +579,9 @@
 
 }
 
+/**
+ * Open Save Panel for saving the selected bundle to disk
+ */
 - (IBAction)saveBundle:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
@@ -561,16 +596,25 @@
 	[panel beginSheetForDirectory:nil file:[[self _currentSelectedObject] objectForKey:kBundleNameKey] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveBundle"];
 }
 
+/**
+ * Show help web page for Bundle Editor
+ */
 - (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")]];
 }
 
+/**
+ * Reload all installed bundles and order front the Bundle Editor
+ */
 - (IBAction)reloadBundles:(id)sender
 {
 	[self showWindow:self];
 }
 
+/**
+ * Read all installed bundles and order front the Bundle Editor
+ */
 - (IBAction)showWindow:(id)sender
 {
 
@@ -580,13 +624,10 @@
 		return;
 	}
 
-
-
 	// Order out window
 	[super showWindow:sender];
 
-	// Re-init commandBundleArray
-	[commandBundleArray removeAllObjects];
+	// Re-init commandBundleTree
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kInputFieldScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kDataTableScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kGeneralScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
@@ -621,7 +662,6 @@
 						[bundleCommand addEntriesFromDictionary:cmdData];
 						[bundleCommand setObject:[bundle stringByDeletingPathExtension] forKey:kBundleNameKey];
 
-						[commandBundleArray addObject:bundleCommand];
 						if([[cmdData objectForKey:SPBundleFileScopeKey] isEqualToString:SPBundleScopeInputField]) {
 							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length]) {
 								BOOL catExists = NO;
@@ -644,6 +684,7 @@
 								[[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:0] objectForKey:kChildrenKey] addObject:bundleCommand];
 							}
 						}
+
 						else if([[cmdData objectForKey:SPBundleFileScopeKey] isEqualToString:SPBundleScopeDataTable]) {
 							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length]) {
 								BOOL catExists = NO;
@@ -666,6 +707,7 @@
 								[[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:1] objectForKey:kChildrenKey] addObject:bundleCommand];
 							}
 						}
+
 						else if([[cmdData objectForKey:SPBundleFileScopeKey] isEqualToString:SPBundleScopeGeneral]) {
 							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length]) {
 								BOOL catExists = NO;
@@ -688,6 +730,7 @@
 								[[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:2] objectForKey:kChildrenKey] addObject:bundleCommand];
 							}
 						}
+
 					}
 					if (cmdData) [cmdData release];
 				}
@@ -705,6 +748,9 @@
 
 }
 
+/**
+ * Save all touched bundles to disk and close the Bundle Editor window
+ */
 - (IBAction)saveAndCloseWindow:(id)sender
 {
 
@@ -766,6 +812,10 @@
 
 }
 
+/**
+ * Save the passed NSDictionary representing a bundle to disk at path aPath and
+ * return success
+ */
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath
 {
 
@@ -886,11 +936,13 @@
 
 			BOOL isDir;
 			BOOL copyingWasSuccessful = YES;
+
 			// Copy possible existing bundle with content
 			if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
 				if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:savePath error:nil])
 					copyingWasSuccessful = NO;
 			}
+
 			if(!copyingWasSuccessful || ![self saveBundle:aBundle atPath:savePath]) {
 				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"error while saving a Bundle")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -909,12 +961,10 @@
 #pragma mark -
 #pragma mark NSWindow delegate
 
-/**
- * Suppress closing of the window if user pressed ESC while inline table cell editing.
- */
 - (BOOL)windowShouldClose:(id)sender
 {
 
+	// Suppress closing of the window if user pressed ESC while inline table cell editing.
 	if(isTableCellEditing) {
 		[commandsOutlineView abortEditing];
 		isTableCellEditing = NO;
@@ -927,8 +977,7 @@
 
 - (void)windowWillClose:(NSNotification *)notification
 {
-	// Clear commandBundleArray if window will close to save memory
-	[commandBundleArray removeAllObjects];
+	// Clear some stuff if window will close to save memory
 	[touchedBundleArray removeAllObjects];
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:0] setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:1] setObject:[NSMutableArray array] forKey:kChildrenKey];
@@ -978,20 +1027,16 @@
 #pragma mark -
 #pragma mark outline delegates
 
-
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item
 {
 	if([item isKindOfClass:[NSDictionary class]] && [item objectForKey:kChildrenKey])
 		return YES;
-
 	return NO;
 }
 
 - (NSInteger)outlineView:(id)outlineView numberOfChildrenOfItem:(id)item
 {
-
-	if(item == nil)
-		item = commandBundleTree;
+	if(item == nil) item = commandBundleTree;
 	
 	if([item isKindOfClass:[NSDictionary class]])
 		if([item objectForKey:kChildrenKey])
@@ -1007,11 +1052,9 @@
 
 - (id)outlineView:(id)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-
 	if(item && [item respondsToSelector:@selector(objectForKey:)])
 		return [item objectForKey:kBundleNameKey];
 	return @"";
-
 }
 
 - (BOOL)outlineView:outlineView isGroupItem:(id)item
@@ -1045,79 +1088,38 @@
 	return NO;
 }
 
+/**
+ * Validate GUI elements and remember the bundle name after the user
+ * selected another bundle
+ */
 - (void)outlineViewSelectionDidChange:(NSNotification *)aNotification
 {
 
 	if([aNotification object] != commandsOutlineView) return;
 
+	// Remember selected bundle name to reset the name if the user cancelled
+	// the editing of the bundle name
 	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
-	if(![[self _currentSelectedObject] objectForKey:kChildrenKey])
+	if(![[self _currentSelectedObject] objectForKey:kChildrenKey]) {
 		oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
-	else
+		[self _enableBundleDataInput:YES];
+	} else {
+		[self _enableBundleDataInput:NO];
 		if(oldBundleName) [oldBundleName release], oldBundleName = nil;
-		
+	}
+
+	// Remember the selected bundle name in touchedBundleArray to save only those 
+	// bundles which were at least selected by the user to minimize disk activity
 	if(oldBundleName != nil && ![touchedBundleArray containsObject:oldBundleName])
 		[touchedBundleArray addObject:oldBundleName];
-	[self _updateInputPopupButton];
+
+	[self _updateBundleDataView];
 
 }
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
-{
-	if([commandsOutlineView numberOfSelectedRows] != 1 || [items count] != 1 ||
-		![[items objectAtIndex:0] isLeaf]) return NO;
-
-	// Remove old temporary drag file if any
-	if(draggedFilePath) {
-		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
-		[draggedFilePath release];
-		draggedFilePath = nil;
-	}
-
-	NSImage *dragImage;
-	NSPoint dragPosition;
-
-	NSDictionary *bundleDict = [[items objectAtIndex:0] representedObject];
-	NSString *bundleFileName = [bundleDict objectForKey:kBundleNameKey];
-	NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
-
-	draggedFilePath = [[NSString stringWithFormat:@"/tmp/%@.%@", bundleFileName, SPUserBundleFileExtension] retain];
-
-	BOOL isDir;
-
-	// Copy possible existing bundle with content
-	if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
-		if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:draggedFilePath error:nil])
-			return NO;
-	}
-
-	// Write temporary bundle data to disk but do not save the dict to Bundles folder
-	if(![self saveBundle:bundleDict atPath:draggedFilePath]) return NO;
-
-	// Write data to the pasteboard
-	NSArray *fileList = [NSArray arrayWithObjects:draggedFilePath, nil];
-	// NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-	[pboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
-	[pboard setPropertyList:fileList forType:NSFilenamesPboardType];
-
-	// Start the drag operation
-	dragImage = [[NSWorkspace sharedWorkspace] iconForFile:draggedFilePath];
-	dragPosition = [[[self window] contentView] convertPoint:[[NSApp currentEvent] locationInWindow] fromView:nil];
-	dragPosition.x -= 32;
-	dragPosition.y -= 32;
-	[[self window] dragImage:dragImage at:dragPosition offset:NSZeroSize
-		event:[NSApp currentEvent] pasteboard:pboard source:[self window] slideBack:YES];
-
-	return YES;
-}
-
 
 #pragma mark -
 #pragma mark TableView delegate
 
-/*
- * Save spBundle name if inline edited (suppress empty names) and check for renaming and / in the name
- */
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
 
@@ -1193,13 +1195,21 @@
 			scopeIndex = kInputFieldScopeArrayIndex;
 
 		NSIndexPath *currentIndexPath = [commandBundleTreeController selectionIndexPath];
-		NSUInteger *newIndexPath[[currentIndexPath length]];
+		NSUInteger newIndexPathLength = 4;
+		NSUInteger *newIndexPath[newIndexPathLength];
 		[currentIndexPath getIndexes:&newIndexPath];
+		newIndexPath[3] = 0;
 
 		// Set the category index
-		newIndexPath[2] = (NSUInteger)[self _arrangedCategoryIndexForScopeIndex:scopeIndex andCategory:[categoryTextField stringValue]];
+		NSUInteger newCategoryIndex = (NSUInteger)[self _arrangedCategoryIndexForScopeIndex:scopeIndex andCategory:[categoryTextField stringValue]];
+		if(newCategoryIndex == NSNotFound) {
+			newIndexPath[2] = 0;
+			newIndexPathLength--;
+		} else
+			newIndexPath[2] = newCategoryIndex;
 
-		[commandBundleTreeController moveNode:[self _currentSelectedNode] toIndexPath:[NSIndexPath indexPathWithIndexes:newIndexPath length:[currentIndexPath length]]];
+		// Move the selected item to the new category node
+		[commandBundleTreeController moveNode:[self _currentSelectedNode] toIndexPath:[NSIndexPath indexPathWithIndexes:newIndexPath length:newIndexPathLength]];
 		[commandBundleTreeController rearrangeObjects];
 		[commandsOutlineView reloadData];
 	}
@@ -1233,7 +1243,7 @@
 }
 
 #pragma mark -
-#pragma mark TableView drag & drop delegate methods
+#pragma mark OutlineView drag & drop delegate methods
 
 /**
  * Allow for drag-n-drop out of the application as a copy
@@ -1243,14 +1253,13 @@
 	return NSDragOperationMove;
 }
 
-
 /**
- * Drag a table row item as spBundle
+ * Drag selected bundle as spBundle file to eg Finder
  */
-- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)aPboard
+- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
-
-	if([commandsOutlineView numberOfSelectedRows] != 1 || [rows count] != 1) return NO;
+	if([commandsOutlineView numberOfSelectedRows] != 1 || [items count] != 1 ||
+		![[items objectAtIndex:0] isLeaf]) return NO;
 
 	// Remove old temporary drag file if any
 	if(draggedFilePath) {
@@ -1262,12 +1271,11 @@
 	NSImage *dragImage;
 	NSPoint dragPosition;
 
-	NSDictionary *bundleDict = [commandsOutlineView itemAtRow:[rows firstIndex]];
+	NSDictionary *bundleDict = [[items objectAtIndex:0] representedObject];
 	NSString *bundleFileName = [bundleDict objectForKey:kBundleNameKey];
 	NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
 
 	draggedFilePath = [[NSString stringWithFormat:@"/tmp/%@.%@", bundleFileName, SPUserBundleFileExtension] retain];
-
 
 	BOOL isDir;
 
@@ -1282,7 +1290,7 @@
 
 	// Write data to the pasteboard
 	NSArray *fileList = [NSArray arrayWithObjects:draggedFilePath, nil];
-	NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+	// NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 	[pboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
 	[pboard setPropertyList:fileList forType:NSFilenamesPboardType];
 
@@ -1295,7 +1303,6 @@
 		event:[NSApp currentEvent] pasteboard:pboard source:[self window] slideBack:YES];
 
 	return YES;
-
 }
 
 #pragma mark -
@@ -1309,6 +1316,9 @@
 	[commandTextView setNeedsDisplay:YES];
 }
 
+/**
+ * Group text changes to improve the undo behaviour
+ */
 - (void)textDidChange:(NSNotification *)aNotification
 {
 
@@ -1389,7 +1399,10 @@
 
 @implementation SPBundleEditorController (PrivateAPI)
 
-- (void)_updateInputPopupButton
+/**
+ * Update various GUI elements due to scope or input changes
+ */
+- (void)_updateBundleDataView
 {
 
 	NSInteger anIndex;
@@ -1410,6 +1423,7 @@
 	NSString *scope = [currentDict objectForKey:SPBundleFileScopeKey];
 	if(!scope) scope = SPBundleScopeGeneral;
 
+	// Update the scope popup button
 	if([scope isEqualToString:SPBundleScopeGeneral])
 		[scopePopupButton selectItemWithTag:kGeneralScopeArrayIndex];
 	else if([scope isEqualToString:SPBundleScopeInputField])
@@ -1419,8 +1433,7 @@
 	else
 		[scopePopupButton selectItemWithTag:kDisabledScopeTag];
 
-	[currentDict setObject:[NSNumber numberWithBool:NO] forKey:SPBundleFileDisabledKey];
-
+	// Change due scope setting various popup buttons
 	switch([[scopePopupButton selectedItem] tag]) {
 		case kGeneralScopeArrayIndex: // General
 		[inputPopupButton setMenu:inputNonePopUpMenu];
@@ -1461,7 +1474,6 @@
 		[fallbackLabelField setHidden:YES];
 		break;
 		case kDisabledScopeTag: // Disable command
-		[currentDict setObject:[NSNumber numberWithBool:YES] forKey:SPBundleFileDisabledKey];
 		break;
 		default:
 		[inputPopupButton setMenu:inputNonePopUpMenu];
@@ -1472,6 +1484,8 @@
 		[outputPopupButton selectItemAtIndex:anIndex];
 	}
 
+	// If input method is "Selected Text" display fallback input popup
+	// otherwise hide it
 	if([input isEqualToString:SPBundleInputSourceSelectedText]) {
 		[inputFallbackPopupButton setHidden:NO];
 		[fallbackLabelField setHidden:NO];
@@ -1480,21 +1494,31 @@
 		[fallbackLabelField setHidden:YES];
 	}
 
+	// Validate add and remove bundle button in left bar
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
 }
 
+/**
+ * Return the current selected object as NSDictionary
+ */
 - (id)_currentSelectedObject
 {
 	return [[commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]] representedObject];
 }
-- (id)_currentSelectedNode
 
+/**
+ * Return the current selected object as NSTreeNode
+ */
+- (id)_currentSelectedNode
 {
 	return [commandsOutlineView itemAtRow:[commandsOutlineView selectedRow]];
 }
 
+/**
+ * Convert scope index from unsorted index to sorted (arranged) index
+ */
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex
 {
 
@@ -1515,6 +1539,9 @@
 
 }
 
+/**
+ * Convert scope index from sorted (arranged) index to unsorted index
+ */
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex
 {
 
@@ -1528,8 +1555,32 @@
 	return k;
 }
 
+/**
+ * Enable / disable data input
+ */
+- (void)_enableBundleDataInput:(BOOL)enabled
+{
+	[nameTextField setEnabled:enabled];
+	[inputPopupButton setEnabled:enabled];
+	[inputFallbackPopupButton setEnabled:enabled];
+	[scopePopupButton setEnabled:enabled];
+	[commandTextView setEditable:enabled];
+	[outputPopupButton setEnabled:enabled];
+	[disabledCheckbox setEnabled:enabled];
+	[keyEquivalentField setEnabled:enabled];
+	[categoryTextField setEnabled:enabled];
+	[tootlipTextField setEnabled:enabled];
+}
+
+/**
+ * Return that index for the unsorted scopeIndex and given category. If the category
+ * does not exist create a new category node.
+ */
 - (NSUInteger)_arrangedCategoryIndexForScopeIndex:(NSUInteger)scopeIndex andCategory:(NSString*)category
 {
+
+	if(!category || ![category length]) return NSNotFound;
+
 	NSString *unsortedBundleName = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:scopeIndex] objectForKey:kBundleNameKey];
 
 	if(!unsortedBundleName || ![unsortedBundleName length]) return scopeIndex;
@@ -1546,6 +1597,7 @@
 					}
 					returnIndex++;
 				}
+				// Not found ergo create it
 				NSMutableDictionary *newCat = [NSMutableDictionary dictionary];
 				[newCat setObject:category forKey:kBundleNameKey];
 				[newCat setObject:[NSMutableArray array] forKey:kChildrenKey];
@@ -1553,11 +1605,22 @@
 				newPath[0] = 0;
 				newPath[1] = k;
 				newPath[2] = 0;
+				
+				// Add it
 				[[[j representedObject] objectForKey:kChildrenKey] addObject:newCat];
+
+				// Rearrange the tree
 				[commandBundleTreeController rearrangeObjects];
 				[commandsOutlineView reloadData];
-				return [self _arrangedCategoryIndexForScopeIndex:scopeIndex andCategory:category];
 
+				// Find new position in sorted tree
+				returnIndex = 0;
+				for(id c in [j childNodes]) {
+					if([[[c representedObject] objectForKey:kBundleNameKey] isEqualToString:category] && [[c representedObject] objectForKey:kChildrenKey]) {
+						return returnIndex;
+					}
+					returnIndex++;
+				}
 			}
 			k++;
 		}

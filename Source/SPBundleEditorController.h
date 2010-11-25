@@ -47,9 +47,9 @@
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
+	IBOutlet NSButton *disabledCheckbox;
 
 	IBOutlet NSTreeController *commandBundleTreeController;
-	NSMutableArray *commandBundleArray;
 	NSMutableArray *touchedBundleArray;
 	NSMutableDictionary *commandBundleTree;
 	NSSortDescriptor *sortDescriptor;
