@@ -276,9 +276,7 @@
 		selectedTableType = SPTableTypeNone;
 
 		// Clear the views
-		if ([[tablesListInstance selectedTableNames] count] == 1) {
-			[[tablesListInstance onMainThread] setSelection:nil];
-		}
+		[[tablesListInstance onMainThread] setSelectionState:nil];
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 		[[extendedTableInfoInstance onMainThread] loadTable:nil];
@@ -315,7 +313,7 @@
 	}
 
 	// Update the tables list interface - also updates menus to reflect the selected table type
-	[[tablesListInstance onMainThread] setSelection:[NSDictionary dictionaryWithObjectsAndKeys:aTable, @"name", [NSNumber numberWithInteger:aTableType], @"type", nil]];
+	[[tablesListInstance onMainThread] setSelectionState:[NSDictionary dictionaryWithObjectsAndKeys:aTable, @"name", [NSNumber numberWithInteger:aTableType], @"type", nil]];
 
 	// If on the main thread, fire up a thread to deal with view changes and data loading;
 	// if already on a background thread, make the changes on the existing thread.

@@ -685,12 +685,14 @@
 }
 
 /**
+ * Updates application state to match the current selection, including
+ * updating the interface selection if appropriate.
  * Takes a dictionary of selection details, containing the selection name
  * and type, and updates stored variables and the table list interface to
  * match.
  * Should be called on the main thread.
  */
-- (void)setSelection:(NSDictionary *)selectionDetails
+- (void)setSelectionState:(NSDictionary *)selectionDetails
 {
 	// First handle empty or multiple selections
 	if (!selectionDetails || ![selectionDetails objectForKey:@"name"]) {
@@ -1390,6 +1392,7 @@
 
 		// Ensure the state is cleared
 		if ([tableDocumentInstance table]) [tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
+		else [self setSelectionState:nil];
 		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
 		selectedTableType = SPTableTypeNone;
 		return;

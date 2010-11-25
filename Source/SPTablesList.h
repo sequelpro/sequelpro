@@ -119,7 +119,7 @@
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
-- (void)setSelection:(NSDictionary *)selectionDetails;
+- (void)setSelectionState:(NSDictionary *)selectionDetails;
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
 
