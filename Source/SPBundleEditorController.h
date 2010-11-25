@@ -43,12 +43,14 @@
 	IBOutlet NSPopUpButton* outputPopupButton;
 	IBOutlet NSPopUpButton* scopePopupButton;
 	IBOutlet NSButton *removeButton;
+	IBOutlet NSButton *addButton;
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 
 	IBOutlet NSTreeController *commandBundleTreeController;
 	NSMutableArray *commandBundleArray;
+	NSMutableArray *touchedBundleArray;
 	NSMutableDictionary *commandBundleTree;
 
 	NSString *bundlePath;

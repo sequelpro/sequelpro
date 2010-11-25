@@ -23,7 +23,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="962"/>
+			<integer value="899"/>
+			<integer value="730"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -176,7 +177,7 @@
 																</object>
 															</object>
 															<double key="NSRowHeight">20</double>
-															<int key="NSTvFlags">1262485504</int>
+															<int key="NSTvFlags">1128267776</int>
 															<reference key="NSDelegate"/>
 															<reference key="NSDataSource"/>
 															<string key="NSAutosaveName">SPBundleEditorOutlineView</string>
@@ -187,7 +188,6 @@
 															<int key="NSTableViewSelectionHighlightStyle">1</int>
 															<int key="NSTableViewDraggingDestinationStyle">1</int>
 															<float key="NSOutlineViewIndentationPerLevelKey">14</float>
-															<bool key="NSOutlineViewAutosaveExpandedItemsKey">YES</bool>
 														</object>
 													</object>
 													<string key="NSFrame">{{1, 1}, {146, 420}}</string>
@@ -384,7 +384,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">5</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1069,7 +1068,7 @@
 				<bool key="NSAvoidsEmptySelection">YES</bool>
 				<bool key="NSPreservesSelection">YES</bool>
 				<bool key="NSSelectsInsertedObjects">YES</bool>
-				<string key="NSTreeContentChildrenKey">children</string>
+				<string key="NSTreeContentChildrenKey">_children_</string>
 			</object>
 			<object class="NSMenu" id="655873624">
 				<string key="NSTitle"/>
@@ -1107,7 +1106,7 @@
 					</object>
 					<object class="NSMenuItem" id="1055471998">
 						<reference key="NSMenu" ref="655873624"/>
-						<string key="NSTitle">Remove Selected Bundles</string>
+						<string key="NSTitle">Remove Selected Bundle</string>
 						<string type="base64-UTF8" key="NSKeyEquiv">CA</string>
 						<int key="NSKeyEquivModMask">1048576</int>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -1623,6 +1622,14 @@
 						<reference key="destination" ref="655873624"/>
 					</object>
 					<int key="connectionID">991</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">addButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="275669410"/>
+					</object>
+					<int key="connectionID">992</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2347,6 +2354,7 @@
 					<string>962.IBPluginDependency</string>
 					<string>963.IBPluginDependency</string>
 					<string>964.IBPluginDependency</string>
+					<string>965.CustomClassName</string>
 					<string>965.IBPluginDependency</string>
 					<string>967.IBPluginDependency</string>
 					<string>970.IBPluginDependency</string>
@@ -2355,9 +2363,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{226, 478}, {655, 444}}</string>
+					<string>{{182, 102}, {655, 444}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{226, 478}, {655, 444}}</string>
+					<string>{{182, 102}, {655, 444}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{655, 444}</string>
@@ -2414,7 +2422,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="369890801"/>
-							<string key="toolTip">Remove selected Bundles (⌘⌫)</string>
+							<string key="toolTip">Remove selected Bundle (⌘⌫)</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2430,7 +2438,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{239, 290}, {204, 98}}</string>
+					<string>{{276, 237}, {204, 98}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2538,7 +2546,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{151, 519}, {268, 73}}</string>
+					<string>{{151, 519}, {261, 73}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2566,6 +2574,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>SPOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2588,7 +2597,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">991</int>
+			<int key="maxID">992</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2834,8 +2843,8 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addButton</string>
 							<string>categoryTextField</string>
-							<string>commandBundleArrayController</string>
 							<string>commandBundleTreeController</string>
 							<string>commandTextView</string>
 							<string>commandsOutlineView</string>
@@ -2854,8 +2863,8 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
 							<string>NSTextField</string>
-							<string>NSArrayController</string>
 							<string>NSTreeController</string>
 							<string>id</string>
 							<string>id</string>
@@ -2877,8 +2886,8 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addButton</string>
 							<string>categoryTextField</string>
-							<string>commandBundleArrayController</string>
 							<string>commandBundleTreeController</string>
 							<string>commandTextView</string>
 							<string>commandsOutlineView</string>
@@ -2898,12 +2907,12 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="IBToOneOutletInfo">
-								<string key="name">categoryTextField</string>
-								<string key="candidateClassName">NSTextField</string>
+								<string key="name">addButton</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">commandBundleArrayController</string>
-								<string key="candidateClassName">NSArrayController</string>
+								<string key="name">categoryTextField</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">commandBundleTreeController</string>
@@ -2970,6 +2979,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBDocumentRelativeSource</string>
 						<string key="minorKey">../../Source/SPBundleEditorController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPOutlineView</string>
+					<string key="superclassName">NSOutlineView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBDocumentRelativeSource</string>
+						<string key="minorKey">../../Source/SPOutlineView.h</string>
 					</object>
 				</object>
 			</object>
