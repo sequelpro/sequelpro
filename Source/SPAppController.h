@@ -48,6 +48,7 @@
 	NSMutableDictionary *bundleCategories;
 	NSMutableArray *bundleUsedScopes;
 	NSMutableDictionary *bundleKeyEquivalents;
+	NSMutableDictionary *installedBundleUUIDs;
 
 }
 

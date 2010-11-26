@@ -56,6 +56,7 @@
 		bundleCategories = [[NSMutableDictionary alloc] initWithCapacity:1];
 		bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
+		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
 
 		[NSApp setDelegate:self];
 	}
@@ -493,16 +494,92 @@
 			if(![fm fileExistsAtPath:bundlePath isDirectory:nil]) {
 				if(![fm createDirectoryAtPath:bundlePath withIntermediateDirectories:YES attributes:nil error:nil]) {
 					NSBeep();
+					NSLog(@"Couldn't create folder “%@”", bundlePath);
 					return;
 				}
 			}
 
 			NSString *newPath = [NSString stringWithFormat:@"%@/%@", bundlePath, [filename lastPathComponent]];
+
+			NSError *readError = nil;
+			NSString *convError = nil;
+			NSPropertyListFormat format;
+			NSDictionary *cmdData = nil;
+			NSString *infoPath = [NSString stringWithFormat:@"%@/%@", filename, SPBundleFileName];
+			NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+			cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+			if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+				NSLog(@"“%@/%@” file couldn't be read.", filename, SPBundleFileName);
+				NSBeep();
+				if (cmdData) [cmdData release];
+				return;
+			} else {
+				// Check for installed UUIDs
+				if(![cmdData objectForKey:SPBundleFileUUIDKey]) {
+					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing bundle file", @"error while installing bundle file")]
+													 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+												   alternateButton:nil 
+													  otherButton:nil 
+										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The bundle ‘%@’ has no UUID which is necessary to identify installed bundles.", @"the bundle ‘%@’ has no UUID which is necessary to identify installed bundles."), [filename lastPathComponent]]];
+
+					[alert setAlertStyle:NSCriticalAlertStyle];
+					[alert runModal];
+					if (cmdData) [cmdData release];
+					return;
+				}
+				if([[installedBundleUUIDs allKeys] containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Installing bundle file", @"installing bundle file")]
+													 defaultButton:NSLocalizedString(@"Update", @"Update button") 
+												   alternateButton:NSLocalizedString(@"Cancel", @"Cancel button")
+													  otherButton:nil 
+										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A bundle ‘%@’ is already installed. Do you want to update it?", @"a bundle ‘%@’ is already installed. do you want to update it?"), [installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]]];
+
+					[alert setAlertStyle:NSCriticalAlertStyle];
+					NSInteger answer = [alert runModal];
+					if(answer == NSAlertDefaultReturn) {
+						NSError *error = nil;
+						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", newPath];
+						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+						if(error != nil) {
+							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), newPath]
+															 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+														   alternateButton:nil 
+															  otherButton:nil 
+												informativeTextWithFormat:[error localizedDescription]];
+
+							[alert setAlertStyle:NSCriticalAlertStyle];
+							[alert runModal];
+							if (cmdData) [cmdData release];
+							return;
+						}
+					} else {
+						if (cmdData) [cmdData release];
+						return;
+					}
+				}
+			}
+
+			if (cmdData) [cmdData release];
+
 			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
 				if(![fm moveItemAtPath:filename toPath:newPath error:nil]) {
 					NSBeep();
+					NSLog(@"Couldn't move “%@” to “%@”", filename, newPath);
 					return;
 				}
+				// Update Bundle Editor if it was already initialized
+				for(id win in [NSApp windows]) {
+					if([[[[win delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
+						[[win delegate] reloadBundles:nil];
+						break;
+					}
+				}
+				// Update Bundels' menu
+				[self reloadBundles:self];
+
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing bundle file", @"error while installing bundle file")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -1062,6 +1139,7 @@
 	[bundleUsedScopes removeAllObjects];
 	[bundleCategories removeAllObjects];
 	[bundleKeyEquivalents removeAllObjects];
+	[installedBundleUUIDs removeAllObjects];
 
 	// Get main menu "Bundles"'s submenu
 	NSMenu *menu = [[[NSApp mainMenu] itemWithTag:SPMainMenuBundles] submenu];
@@ -1133,7 +1211,10 @@
 									[NSNumber numberWithInteger:mask], infoPath, nil] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
 							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
 						}
-						
+
+						if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length])
+							[installedBundleUUIDs setObject:[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
+
 						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
 							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
 
@@ -1439,6 +1520,7 @@
 	if(bundleUsedScopes) [bundleUsedScopes release];
 	if(bundleCategories) [bundleCategories release];
 	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
+	if(installedBundleUUIDs) [installedBundleUUIDs release];
 
 	[prefsController release], prefsController = nil;
 
