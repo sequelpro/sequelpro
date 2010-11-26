@@ -31,12 +31,14 @@
 
 	NSString       *docTitle;
 	NSString       *initHTMLSourceString;
+	NSString       *windowUUID;
 	WebPreferences *webPreferences;
 
 }
 
 @property(readwrite,retain) NSString *docTitle;
 @property(readwrite,retain) NSString *initHTMLSourceString;
+@property(readwrite,retain) NSString *windowUUID;
 
 - (IBAction)printDocument:(id)sender;
 

@@ -31,6 +31,7 @@
 
 @synthesize docTitle;
 @synthesize initHTMLSourceString;
+@synthesize windowUUID;
 
 /**
  * Initialisation

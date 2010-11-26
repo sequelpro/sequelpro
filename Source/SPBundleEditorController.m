@@ -899,7 +899,13 @@
 
 	// Transform KeyCombo struct to KeyBinding.dict format for NSMenuItems
 	NSMutableString *keyEq = [NSMutableString string];
-	NSString *theChar = [[aRecorder keyCharsIgnoringModifiers] lowercaseString];
+
+	NSString *theChar = @"";
+
+	if([aRecorder objectValue])
+		theChar =[[[aRecorder objectValue] objectForKey:@"characters"] lowercaseString];
+	else
+		theChar =[[aRecorder keyCharsIgnoringModifiers] lowercaseString];
 	[keyEq setString:@""];
 	if(newKeyCombo.code > -1) {
 		if(newKeyCombo.flags & NSControlKeyMask)
@@ -1120,9 +1126,8 @@
 				isValid = NO;
 			}
 
-	
 			// If not valid reset name to the old one
-			if(!isValid) {
+			if(!isValid && oldBundleName) {
 				[[self _currentSelectedObject] setObject:oldBundleName forKey:kBundleNameKey];
 			}
 

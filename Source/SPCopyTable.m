@@ -943,8 +943,21 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 					}
 
 					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
-						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
-						[c displayHTMLContent:output withOptions:nil];
+						BOOL correspondingWindowFound = NO;
+						for(id win in [NSApp windows]) {
+							if([[win delegate] isKindOfClass:[SPBundleHTMLOutputController class]]) {
+								if([[[win delegate] windowUUID] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+									correspondingWindowFound = YES;
+									[[win delegate] displayHTMLContent:output withOptions:nil];
+									break;
+								}
+							}
+						}
+						if(!correspondingWindowFound) {
+							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
+							[c displayHTMLContent:output withOptions:nil];
+						}
 					}
 				}
 			} else {

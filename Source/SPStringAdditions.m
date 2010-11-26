@@ -507,6 +507,8 @@
 	NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 	[theEnv setDictionary:shellEnvironment];
 
+	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appicon" ofType:@"icns"] forKey:@"SP_ICON_FILE"];
+
 	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
 	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
 	// Furthermore this id is used to communicate with the called command as file name.
