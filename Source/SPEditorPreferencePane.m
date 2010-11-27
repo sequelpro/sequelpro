@@ -27,6 +27,7 @@
 #import "SPPreferenceController.h"
 #import "SPColorWellCell.h"
 #import "SPAlertSheets.h"
+#import "SPCategoryAdditions.h"
 
 @interface SPEditorPreferencePane (PrivateAPI)
 
@@ -334,7 +335,7 @@
 	[defaultItem setTarget:self];
 	
 	// Build theme selection submenu
-	[themeSelectionMenu removeAllItems];
+	[themeSelectionMenu compatibleRemoveAllItems];
 	[themeSelectionMenu addItem:defaultItem];
 	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	

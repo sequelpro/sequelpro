@@ -1145,7 +1145,7 @@
 	NSMenu *menu = [[[NSApp mainMenu] itemWithTag:SPMainMenuBundles] submenu];
 
 	// Clean menu
-	[menu removeAllItems];
+	[menu compatibleRemoveAllItems];
 
 	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
 

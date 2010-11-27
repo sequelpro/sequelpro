@@ -1443,6 +1443,9 @@
 	// Disallow selection while the document is working on a task
 	if ([tableDocumentInstance isWorking]) return NO;
 
+	// Allow deselections
+	if (rowIndex == -1) return YES;
+
 	if(![[filteredTables objectAtIndex:rowIndex] isKindOfClass:[NSString class]])
 		return NO;
 

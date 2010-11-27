@@ -28,6 +28,7 @@
 #import "SPTablesList.h"
 #import "SPTextView.h"
 #import "SPTableView.h"
+#import "SPCategoryAdditions.h"
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
@@ -1883,7 +1884,7 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 				[prefs setObject:recents forKey:SPGlobalValueHistory];
 
 			// Re-init recent menu
-			[recentGlobalValueMenu removeAllItems];
+			[recentGlobalValueMenu compatibleRemoveAllItems];
 			for(id item in recents)
 				[recentGlobalValueMenu addItemWithTitle:item action:@selector(insertRecentGlobalValue:) keyEquivalent:@""];
 

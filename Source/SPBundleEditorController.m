@@ -24,6 +24,7 @@
 
 #import "SPBundleEditorController.h"
 #import "SPArrayAdditions.h"
+#import "SPMenuAdditions.h"
 
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
@@ -223,7 +224,7 @@
 	[inputNonePopUpMenu addItem:anItem];
 	[anItem release];
 
-	[inputGeneralScopePopUpMenu removeAllItems];
+	[inputGeneralScopePopUpMenu compatibleRemoveAllItems];
 	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"General", @"general scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kGeneralScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];

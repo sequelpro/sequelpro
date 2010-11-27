@@ -1,11 +1,10 @@
 //
 //  $Id$
 //
-//  SPCategoryAdditions.h
+//  SPMenuAdditions.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 23, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Rowan Beentje on November 27, 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,22 +22,19 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * This header is intended to import all of our custom category additions to classes outwith our control.
- * It is subsequently included in Sequel Pro's precompiled header making all of the additional methods/functions 
- * included in header available to all classes within the application.
- */
-
-#import "SPArrayAdditions.h"
-#import "SPStringAdditions.h"
-#import "SPTextViewAdditions.h"
-#import "SPWindowAdditions.h"
-#import "SPDataAdditions.h"
 #import "SPMenuAdditions.h"
-#import "SPNotLoaded.h"
-#import "SPMainThreadTrampoline.h"
-#import "SPColorAdditions.h"
-#import "SPFileManagerAdditions.h"
 
-#import "NSNotificationAdditions.h"
-#import "NSMutableArray-MultipleSort.h"
+
+@implementation NSMenu (SPMenuAdditions)
+
+// Add a 10.5-compatible removeAllItems
+- (void)compatibleRemoveAllItems
+{
+	if ([self respondsToSelector:@selector(removeAllItems)]) {
+		[self removeAllItems];
+	} else {
+		while ([self numberOfItems]) [self removeItemAtIndex:0];
+	}
+}
+
+@end
