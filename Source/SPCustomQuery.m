@@ -1486,6 +1486,13 @@
 			[[dataCell formatter] setTextLimit:[[columnDefinition objectForKey:@"char_length"] integerValue]];
 		}
 
+		// Set the column to right-aligned for numeric data types
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"integer"]
+			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"float"])
+		{
+			[dataCell setAlignment:NSRightTextAlignment];
+		}
+
 		// Set field type for validations
 		[[dataCell formatter] setFieldType:[columnDefinition objectForKey:@"type"]];
 		[theCol setDataCell:dataCell];

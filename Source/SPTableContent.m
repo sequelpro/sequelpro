@@ -483,6 +483,14 @@
 		} else {
 			dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 		}
+
+		// Set the column to right-aligned for numeric data types
+		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"integer"]
+			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"float"])
+		{
+			[dataCell setAlignment:NSRightTextAlignment];
+		}
+
 		[dataCell setEditable:YES];
 
 		// Set the line break mode and an NSFormatter subclass which truncates long strings for display

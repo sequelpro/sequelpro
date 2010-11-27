@@ -3960,11 +3960,11 @@
 
 		[connection setObject:[NSNumber numberWithInt:[connectionController useSSL]] forKey:@"useSSL"];
 		[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
-		[connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
+		if ([connectionController sslKeyFileLocation]) [connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
 		[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
 		[connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
 		[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
-		[connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
+		if ([connectionController sslCACertFileLocation]) [connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
 
 		[stateDetails setObject:[NSDictionary dictionaryWithDictionary:connection] forKey:@"connection"];
 	}
