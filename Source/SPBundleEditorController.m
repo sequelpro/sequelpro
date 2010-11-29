@@ -385,6 +385,11 @@
 
 }
 
+- (IBAction)triggerButtonChanged:(id)sender
+{
+	
+}
+
 /**
  * Duplicate the selected bundle (processed in addCommandBundle:)
  */

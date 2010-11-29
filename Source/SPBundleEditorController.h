@@ -48,6 +48,7 @@
 	IBOutlet NSPopUpButton *inputFallbackPopupButton;
 	IBOutlet NSPopUpButton *outputPopupButton;
 	IBOutlet NSPopUpButton *scopePopupButton;
+	IBOutlet NSPopUpButton *triggerPopupButton;
 	IBOutlet NSButton *removeButton;
 	IBOutlet NSButton *addButton;
 	IBOutlet NSButton *saveButton;
@@ -101,6 +102,7 @@
 - (IBAction)inputFallbackPopupButtonChanged:(id)sender;
 - (IBAction)outputPopupButtonChanged:(id)sender;
 - (IBAction)scopeButtonChanged:(id)sender;
+- (IBAction)triggerButtonChanged:(id)sender;
 - (IBAction)duplicateCommandBundle:(id)sender;
 - (IBAction)addCommandBundle:(id)sender;
 - (IBAction)removeCommandBundle:(id)sender;
