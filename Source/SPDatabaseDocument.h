@@ -188,7 +188,9 @@
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
-	
+
+	NSMutableArray *runningBASHprocesses;
+
 	NSString *keyChainID;
 	
 	NSThread *printThread;
@@ -355,6 +357,9 @@
 
 // Scripting
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
+- (void)registerBASHCommand:(NSDictionary*)commandDict;
+- (void)unRegisterBASHCommand:(NSInteger)pid;
+- (NSArray*)runningBASHProcesses;
 - (NSDictionary*)shellVariables;
 
 // State saving and setting

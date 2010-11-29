@@ -57,6 +57,7 @@
 		bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
+		runningBASHprocesses = [[NSMutableArray alloc] init];
 
 		[NSApp setDelegate:self];
 	}
@@ -780,7 +781,7 @@
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
+			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil callerDocument:self withName:([cmdData objectForKey:SPBundleFileNameKey])?[cmdData objectForKey:SPBundleFileNameKey]:@"" error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -829,6 +830,26 @@
 
 	}
 
+}
+
+- (void)registerBASHCommand:(NSDictionary*)commandDict
+{
+	[runningBASHprocesses addObject:commandDict];
+}
+
+- (void)unRegisterBASHCommand:(NSInteger)pid
+{
+	for(id cmd in runningBASHprocesses) {
+		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
+			[runningBASHprocesses removeObject:cmd];
+			break;
+		}
+	}
+}
+
+- (NSArray*)runningBASHProcesses
+{
+	return (NSArray*)runningBASHprocesses;
 }
 
 #pragma mark -
@@ -1507,6 +1528,41 @@
 	}
 }
 
+/**
+ * If Sequel Pro is terminating kill all running BASH scripts
+ */
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+{
+
+	// Kill all registered BASH commands
+	for (NSWindow *aWindow in [NSApp orderedWindows]) {
+		if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+			for(SPDatabaseDocument *doc in [[aWindow windowController] documents]) {
+				for(NSDictionary* cmd in [doc runningBASHProcesses]) {
+					NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+					NSTask *killTask = [[NSTask alloc] init];
+					[killTask setLaunchPath:@"/bin/sh"];
+					[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+					[killTask launch];
+					[killTask waitUntilExit];
+					[killTask release];
+				}
+			}
+		}
+	}
+	for(NSDictionary* cmd in [self runningBASHProcesses]) {
+		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+		NSTask *killTask = [[NSTask alloc] init];
+		[killTask setLaunchPath:@"/bin/sh"];
+		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+		[killTask launch];
+		[killTask waitUntilExit];
+		[killTask release];
+	}
+	return YES;
+
+}
+
 #pragma mark -
 
 /**
@@ -1521,6 +1577,7 @@
 	if(bundleCategories) [bundleCategories release];
 	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
 	if(installedBundleUUIDs) [installedBundleUUIDs release];
+	if (runningBASHprocesses) [runningBASHprocesses release];
 
 	[prefsController release], prefsController = nil;
 

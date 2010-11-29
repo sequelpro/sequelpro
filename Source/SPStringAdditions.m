@@ -444,10 +444,14 @@
  *
  * @param path The current directory for the bash command. If path is nil, the current directory is inherited from the process that created the receiver (normally /).
  *
+ * @param caller The SPDatabaseDocument which invoked that command to register the command for cancelling; if nil the command won't be registered.
+ *
+ * @param name The menu title of the command.
+ *
  * @param theError If not nil and the bash command failed it contains the returned error message as NSLocalizedDescriptionKey
  * 
  */
-- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError
+- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerDocument:(id)caller withName:(NSString*)name error:(NSError**)theError
 {
 
 	BOOL userTerminated = NO;
@@ -544,6 +548,16 @@
 	[bashTask setStandardError:stderr_pipe];
 	NSFileHandle *stderr_file = [stderr_pipe fileHandleForReading];
 	[bashTask launch];
+	NSInteger pid = -1;
+	if(caller != nil && [caller respondsToSelector:@selector(registerBASHCommand:)]) {
+		// register command
+		pid = [bashTask processIdentifier];
+		NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:pid], @"pid",
+																		name, @"name",
+																		[[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], @"starttime",
+																		nil];
+		[caller registerBASHCommand:dict];
+	}
 
 	// Listen to ⌘. to terminate
 	while(1) {
@@ -568,6 +582,9 @@
 	}
 
 	[bashTask waitUntilExit];
+
+	// unregister BASH command if it was registered
+	if(pid >= 0) [caller unRegisterBASHCommand:pid];
 
 	if(userTerminated) {
 		if(bashTask) [bashTask release];
@@ -636,6 +653,22 @@
 		return @"";
 	}
 
+}
+
+/**
+ * Run self as BASH command(s) and return the result.
+ * This task can be interrupted by pressing ⌘.
+ *
+ * @param shellEnvironment A dictionary of environment variable values whose keys are the variable names.
+ *
+ * @param path The current directory for the bash command. If path is nil, the current directory is inherited from the process that created the receiver (normally /).
+ *
+ * @param theError If not nil and the bash command failed it contains the returned error message as NSLocalizedDescriptionKey
+ * 
+ */
+- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError
+{
+	return [self runBashCommandWithEnvironment:shellEnvironment atCurrentDirectoryPath:path callerDocument:nil withName:@"" error:theError];
 }
 
 /**

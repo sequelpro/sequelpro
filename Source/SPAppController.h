@@ -50,6 +50,8 @@
 	NSMutableDictionary *bundleKeyEquivalents;
 	NSMutableDictionary *installedBundleUUIDs;
 
+	NSMutableArray *runningBASHprocesses;
+
 }
 
 // Window management
@@ -95,6 +97,9 @@
 - (NSArray *)bundleCategoriesForScope:(NSString*)scope;
 - (NSArray *)bundleItemsForScope:(NSString*)scope;
 - (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope;
+- (void)registerBASHCommand:(NSDictionary*)commandDict;
+- (void)unRegisterBASHCommand:(NSInteger)pid;
+- (NSArray*)runningBASHProcesses;
 
 - (void)handleEventWithURL:(NSURL*)url;
 

@@ -116,6 +116,7 @@
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
+		runningBASHprocesses = [[NSMutableArray alloc] init];
 
 		titleAccessoryView = nil;
 		taskProgressWindow = nil;
@@ -2400,6 +2401,7 @@
  */
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
+
 	// Auto-save preferences to spf file based connection
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled])
 		if(_isConnected && ![self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES contextInfo:nil]) {
@@ -2408,7 +2410,7 @@
 		}
 
 	[tablesListInstance selectionShouldChangeInTableView:nil];
-	
+
 	// Note that this call does not need to be removed in release builds as leaks analysis output is only
 	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
 	[[SPLogger logger] dumpLeaks];
@@ -4738,6 +4740,26 @@
 	NSLog(@"received: %@", commandDict);
 }
 
+- (void)registerBASHCommand:(NSDictionary*)commandDict
+{
+	[runningBASHprocesses addObject:commandDict];
+}
+
+- (void)unRegisterBASHCommand:(NSInteger)pid
+{
+	for(id cmd in runningBASHprocesses) {
+		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
+			[runningBASHprocesses removeObject:cmd];
+			break;
+		}
+	}
+}
+
+- (NSArray*)runningBASHProcesses
+{
+	return (NSArray*)runningBASHprocesses;
+}
+
 - (NSDictionary*)shellVariables
 {
 	NSMutableDictionary *env = [NSMutableDictionary dictionary];
@@ -4989,6 +5011,7 @@
  */
 - (void)dealloc
 {
+
 	// Unregister observers
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
 	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
@@ -5037,6 +5060,7 @@
 	if (taskProgressWindow) [taskProgressWindow release];
 	if (serverSupport) [serverSupport release];
 	if (processID) [processID release];
+	if (runningBASHprocesses) [runningBASHprocesses release];
 	
 	[super dealloc];
 }

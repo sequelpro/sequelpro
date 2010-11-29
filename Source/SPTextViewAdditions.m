@@ -603,7 +603,7 @@
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil error:&err];
+			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil callerDocument:[[NSApp delegate] frontDocument] withName:([cmdData objectForKey:SPBundleFileNameKey])?[cmdData objectForKey:SPBundleFileNameKey]:@"" error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
