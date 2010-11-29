@@ -81,6 +81,9 @@
 	NSMenu *outputInputFieldScopePopUpMenu;
 	NSMenu *outputDataTableScopePopUpMenu;
 	NSMenu *inputFallbackInputFieldScopePopUpMenu;
+	NSMenu *triggerInputFieldPopUpMenu;
+	NSMenu *triggerDataTablePopUpMenu;
+	NSMenu *triggerGeneralPopUpMenu;
 
 	NSArray *inputGeneralScopeArray;
 	NSArray *inputInputFieldScopeArray;
@@ -89,6 +92,9 @@
 	NSArray *outputInputFieldScopeArray;
 	NSArray *outputDataTableScopeArray;
 	NSArray *inputFallbackInputFieldScopeArray;
+	NSArray *triggerInputFieldArray;
+	NSArray *triggerDataTableArray;
+	NSArray *triggerGeneralArray;
 
 	BOOL doGroupDueToChars;
 	BOOL allowUndo;
@@ -114,6 +120,7 @@
 - (IBAction)metaButtonChanged:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
+- (BOOL)cancelRowEditing;
 
 - (void)setWasCutPaste;
 - (void)setDoGroupDueToChars;

@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="686"/>
+			<integer value="683"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -409,7 +409,7 @@
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSPopUpButton" id="284549777">
 											<reference key="NSNextResponder" ref="338542681"/>
-											<int key="NSvFlags">268</int>
+											<int key="NSvFlags">288</int>
 											<string key="NSFrame">{{17, 16}, {167, 22}}</string>
 											<reference key="NSSuperview" ref="338542681"/>
 											<bool key="NSEnabled">YES</bool>
@@ -424,59 +424,16 @@
 												<string key="NSKeyEquivalent"/>
 												<int key="NSPeriodicDelay">400</int>
 												<int key="NSPeriodicInterval">75</int>
-												<object class="NSMenuItem" key="NSMenuItem" id="629679521">
-													<reference key="NSMenu" ref="132896527"/>
-													<string key="NSTitle">None</string>
-													<string key="NSKeyEquiv"/>
-													<int key="NSMnemonicLoc">2147483647</int>
-													<int key="NSState">1</int>
-													<reference key="NSOnImage" ref="545549031"/>
-													<reference key="NSMixedImage" ref="20147930"/>
-													<string key="NSAction">_popUpItemAction:</string>
-													<reference key="NSTarget" ref="1019011390"/>
-												</object>
+												<nil key="NSMenuItem"/>
 												<bool key="NSMenuItemRespectAlignment">YES</bool>
 												<object class="NSMenu" key="NSMenu" id="132896527">
 													<string key="NSTitle">OtherViews</string>
 													<object class="NSMutableArray" key="NSMenuItems">
 														<bool key="EncodedWithXMLCoder">YES</bool>
-														<reference ref="629679521"/>
-														<object class="NSMenuItem" id="316871289">
-															<reference key="NSMenu" ref="132896527"/>
-															<string key="NSTitle">Database Changed</string>
-															<string key="NSKeyEquiv"/>
-															<int key="NSKeyEquivModMask">1048576</int>
-															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="545549031"/>
-															<reference key="NSMixedImage" ref="20147930"/>
-															<string key="NSAction">_popUpItemAction:</string>
-															<reference key="NSTarget" ref="1019011390"/>
-														</object>
-														<object class="NSMenuItem" id="993040095">
-															<reference key="NSMenu" ref="132896527"/>
-															<string key="NSTitle">Table Changed</string>
-															<string key="NSKeyEquiv"/>
-															<int key="NSKeyEquivModMask">1048576</int>
-															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="545549031"/>
-															<reference key="NSMixedImage" ref="20147930"/>
-															<string key="NSAction">_popUpItemAction:</string>
-															<reference key="NSTarget" ref="1019011390"/>
-														</object>
-														<object class="NSMenuItem" id="51851443">
-															<reference key="NSMenu" ref="132896527"/>
-															<string key="NSTitle">Table Row Changed</string>
-															<string key="NSKeyEquiv"/>
-															<int key="NSKeyEquivModMask">1048576</int>
-															<int key="NSMnemonicLoc">2147483647</int>
-															<reference key="NSOnImage" ref="545549031"/>
-															<reference key="NSMixedImage" ref="20147930"/>
-															<string key="NSAction">_popUpItemAction:</string>
-															<reference key="NSTarget" ref="1019011390"/>
-														</object>
 													</object>
 													<reference key="NSMenuFont" ref="604392898"/>
 												</object>
+												<int key="NSSelectedIndex">-1</int>
 												<int key="NSPreferredEdge">1</int>
 												<bool key="NSUsesItemFromMenu">YES</bool>
 												<bool key="NSAltersState">YES</bool>
@@ -3039,27 +2996,8 @@
 						<reference key="object" ref="132896527"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="316871289"/>
-							<reference ref="993040095"/>
-							<reference ref="51851443"/>
-							<reference ref="629679521"/>
 						</object>
 						<reference key="parent" ref="1019011390"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1080</int>
-						<reference key="object" ref="316871289"/>
-						<reference key="parent" ref="132896527"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1081</int>
-						<reference key="object" ref="993040095"/>
-						<reference key="parent" ref="132896527"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1082</int>
-						<reference key="object" ref="51851443"/>
-						<reference key="parent" ref="132896527"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">1083</int>
@@ -3074,11 +3012,6 @@
 						<int key="objectID">1084</int>
 						<reference key="object" ref="75217064"/>
 						<reference key="parent" ref="413102423"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">1085</int>
-						<reference key="object" ref="629679521"/>
-						<reference key="parent" ref="132896527"/>
 					</object>
 				</object>
 			</object>
@@ -3111,13 +3044,9 @@
 					<string>1078.IBPluginDependency</string>
 					<string>1079.IBEditorWindowLastContentRect</string>
 					<string>1079.IBPluginDependency</string>
-					<string>1080.IBPluginDependency</string>
-					<string>1081.IBPluginDependency</string>
-					<string>1082.IBPluginDependency</string>
 					<string>1083.IBAttributePlaceholdersKey</string>
 					<string>1083.IBPluginDependency</string>
 					<string>1084.IBPluginDependency</string>
-					<string>1085.IBPluginDependency</string>
 					<string>521.IBEditorWindowLastContentRect</string>
 					<string>521.IBPluginDependency</string>
 					<string>521.IBWindowTemplateEditedContentRect</string>
@@ -3266,10 +3195,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{360, 55}, {167, 71}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{321, 332}, {167, 4}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
@@ -3279,7 +3205,6 @@
 							<string key="toolTip">Alphanumeric character string which inserts the favorite query string after expansion by pressing the ⇥ key.</string>
 						</object>
 					</object>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{172, 298}, {691, 444}}</string>

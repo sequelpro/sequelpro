@@ -54,8 +54,8 @@
 
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth options:NSKeyValueObservingOptionNew context:NULL];
 
-	if([[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]) {
-		NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:@"BundleEditorFont"]];
+	if([prefs dataForKey:@"BundleEditorFont"]) {
+		NSFont *nf = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"BundleEditorFont"]];
 		[self setFont:nf];
 	}
 
@@ -344,6 +344,15 @@
 	NSTextTab *aTab;
 	NSMutableArray *myArrayOfTabs;
 	NSMutableParagraphStyle *paragraphStyle;
+
+	if(tvFont == nil && [prefs dataForKey:@"BundleEditorFont"]) {
+		tvFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"BundleEditorFont"]];
+	}
+	if(tvFont == nil) {
+		tvFont = [NSFont fontWithName:SPDefaultMonospacedFontName size:12];
+		[self setFont:tvFont];
+		[prefs setObject:[NSArchiver archivedDataWithRootObject:tvFont] forKey:@"BundleEditorFont"];
+	}
 
 	BOOL oldEditableStatus = [self isEditable];
 	[self setEditable:YES];
@@ -719,9 +728,11 @@
 // Action receiver for a font change in the font panel
 - (void)changeFont:(id)sender
 {
-	NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[self font]];
-	[self setFont:nf];
-	[self saveChangedFontInUserDefaults];
+	if (prefs && [self font] != nil) {
+		NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[self font]];
+		[self setFont:nf];
+		[self saveChangedFontInUserDefaults];
+	}
 }
 
 @end

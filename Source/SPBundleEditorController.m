@@ -62,7 +62,6 @@
 		draggedFilePath = nil;
 		oldBundleName = nil;
 		isTableCellEditing = NO;
-		bundlePath = [[[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil] retain];
 	}
 	
 	return self;
@@ -79,6 +78,9 @@
 	[outputInputFieldScopePopUpMenu release];
 	[outputDataTableScopePopUpMenu release];
 	[inputFallbackInputFieldScopePopUpMenu release];
+	[triggerInputFieldPopUpMenu release];
+	[triggerDataTablePopUpMenu release];
+	[triggerGeneralPopUpMenu release];
 	[inputNonePopUpMenu release];
 
 	[inputGeneralScopeArray release];
@@ -88,6 +90,9 @@
 	[outputInputFieldScopeArray release];
 	[outputDataTableScopeArray release];
 	[inputFallbackInputFieldScopeArray release];
+	[triggerInputFieldArray release];
+	[triggerDataTableArray release];
+	[triggerGeneralArray release];
 
 	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
@@ -103,6 +108,9 @@
 
 	// Init all needed variables; popup menus (with the chance for localization); and set
 	// defaults
+
+	bundlePath = [[[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil] retain];
+
 
 	touchedBundleArray = [[NSMutableArray alloc] initWithCapacity:1];
 	commandBundleTree = [[NSMutableDictionary alloc] initWithCapacity:1];
@@ -123,6 +131,9 @@
 	outputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputFallbackInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	triggerInputFieldPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	triggerDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	triggerGeneralPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 
 	inputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, nil] retain];
 	inputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
@@ -131,6 +142,9 @@
 	outputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
 	outputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
 	inputFallbackInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent, nil] retain];
+	triggerInputFieldArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, nil] retain];
+	triggerDataTableArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged, nil] retain];
+	triggerGeneralArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, nil] retain];
 
 	NSMutableArray *allPopupScopeItems = [NSMutableArray array];
 	[allPopupScopeItems addObjectsFromArray:inputGeneralScopeArray];
@@ -140,6 +154,9 @@
 	[allPopupScopeItems addObjectsFromArray:outputGeneralScopeArray];
 	[allPopupScopeItems addObjectsFromArray:outputDataTableScopeArray];
 	[allPopupScopeItems addObjectsFromArray:inputFallbackInputFieldScopeArray];
+	[allPopupScopeItems addObjectsFromArray:triggerInputFieldArray];
+	[allPopupScopeItems addObjectsFromArray:triggerDataTableArray];
+	[allPopupScopeItems addObjectsFromArray:triggerGeneralArray];
 
 	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:
 						[NSArray arrayWithObjects:
@@ -181,6 +198,18 @@
 							NSLocalizedString(@"Current Line", @"current line item label"),
 							NSLocalizedString(@"Current Query", @"current query item label"),
 							NSLocalizedString(@"Entire Content", @"entire content item label"),
+
+							NSLocalizedString(@"None", @"none menu item label"),
+
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Database changed", @"database changed item label"),
+							NSLocalizedString(@"Table changed", @"table changed item label"),
+							NSLocalizedString(@"Table Row changed", @"table row changed item label"),
+
+							NSLocalizedString(@"None", @"none menu item label"),
+							NSLocalizedString(@"Database changed", @"database changed item label"),
+							NSLocalizedString(@"Table changed", @"table changed item label"),
+
 						nil]
 					forKeys:allPopupScopeItems];
 
@@ -218,6 +247,21 @@
 	for(NSString* title in inputFallbackInputFieldScopeArray) {
 		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputFallbackPopupButtonChanged:) keyEquivalent:@""];
 		[inputFallbackInputFieldScopePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in triggerInputFieldArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
+		[triggerInputFieldPopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in triggerDataTableArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
+		[triggerDataTablePopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in triggerGeneralArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
+		[triggerGeneralPopUpMenu addItem:anItem];
 		[anItem release];
 	}
 	anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:SPBundleInputSourceNone] action:nil keyEquivalent:@""];
@@ -858,6 +902,13 @@
 
 }
 
+- (BOOL)cancelRowEditing
+{
+	[commandsOutlineView abortEditing];
+	isTableCellEditing = NO;
+	return YES;
+}
+
 #pragma mark -
 #pragma mark NSWindow delegate
 
@@ -1367,7 +1418,6 @@
 
 - (void)_initTree
 {
-	NSString *a=[[NSString stringWithString:@"bibiko@eva.mpg.de"] rot13];
 
 	[showHideMetaButton setState:NSOffState];
 	[self _enableMetaDataInput:NO];
@@ -1670,6 +1720,7 @@
 	[scopePopupButton setEnabled:enabled];
 	[commandTextView setEditable:enabled];
 	[outputPopupButton setEnabled:enabled];
+	[triggerPopupButton setEnabled:enabled];
 	[disabledCheckbox setEnabled:enabled];
 	[keyEquivalentField setEnabled:enabled];
 	[categoryTextField setEnabled:enabled];
