@@ -36,8 +36,8 @@
 	IBOutlet id tableDataInstance;
 	IBOutlet id customQueryInstance;
 
-	IBOutlet id importCSVView;
-	IBOutlet id importCSVBox;
+	IBOutlet id importView;
+	IBOutlet id importTabView;
 	IBOutlet id importFieldNamesSwitch;
 	IBOutlet id importFieldsTerminatedField;
 	IBOutlet id importFieldsEnclosedField;
@@ -47,6 +47,8 @@
 
 	IBOutlet NSPopUpButton *importFormatPopup;
 	IBOutlet NSPopUpButton *importEncodingPopup;
+
+	IBOutlet NSPopUpButton *importSQLErrorHandlingPopup;
 	
 	IBOutlet id importFromClipboardSheet;
 	IBOutlet id importFromClipboardAccessoryView;

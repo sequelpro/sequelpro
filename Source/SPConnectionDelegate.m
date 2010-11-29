@@ -130,6 +130,9 @@
 	// Only display the reconnect dialog if the window is visible
 	if ([self parentWindow] && [[self parentWindow] isVisible]) {
 
+		// Ensure the window isn't miniaturized
+		if ([[self parentWindow] isMiniaturized]) [[self parentWindow] deminiaturize:self];
+
 		// Ensure the window and tab are frontmost
 		[self makeKeyDocument];
 		

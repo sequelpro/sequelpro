@@ -107,6 +107,9 @@
 	[nibObjectsToRelease addObjectsFromArray:importAccessoryTopLevelObjects];
 	[nibLoader release];
 
+	// Set the accessory view's tabview to tabless (left in for easier editing in IB)
+	[importTabView setTabViewType:NSNoTabsNoBorder];
+
 	// Set up the encodings menu
 	NSMutableArray *encodings = [NSMutableArray arrayWithArray:[SPEncodingPopupAccessory enabledEncodings]];
 	[importEncodingPopup removeAllItems];
@@ -126,7 +129,7 @@
  */
 - (IBAction)changeFormat:(id)sender
 {
-	[importCSVBox setHidden:![[[importFormatPopup selectedItem] title] isEqualToString:@"CSV"]];
+	[importTabView selectTabViewItemAtIndex:[importFormatPopup indexOfSelectedItem]];
 }
 
 /**
@@ -199,9 +202,9 @@
 	[importEncodingPopup setEnabled:NO];
 
 	// Add the view, and resize it to fit the accessory view size
-	[importFromClipboardAccessoryView addSubview:importCSVView];
+	[importFromClipboardAccessoryView addSubview:importView];
 	NSRect accessoryViewRect = [importFromClipboardAccessoryView frame];
-	[importCSVView setFrame:NSMakeRect(0, 0, accessoryViewRect.size.width, accessoryViewRect.size.height)];
+	[importView setFrame:NSMakeRect(0, 0, accessoryViewRect.size.width, accessoryViewRect.size.height)];
 
 	[NSApp beginSheet:importFromClipboardSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
@@ -268,7 +271,7 @@
 	[importFieldsEnclosedField setStringValue:[prefs objectForKey:SPCSVImportFieldEnclosedBy]];
 	[importFieldNamesSwitch setState:[[prefs objectForKey:SPCSVImportFirstLineIsHeader] boolValue]];
 
-	[openPanel setAccessoryView:importCSVView];
+	[openPanel setAccessoryView:importView];
 	[openPanel setDelegate:self];
 	if ([prefs valueForKey:@"importFormatPopupValue"]) {
 		[importFormatPopup selectItemWithTitle:[prefs valueForKey:@"importFormatPopupValue"]];
@@ -362,6 +365,7 @@
 	BOOL fileIsCompressed;
 	BOOL importSQLAsUTF8 = YES;
 	BOOL allDataRead = NO;
+	BOOL ignoreSQLErrors = ([importSQLErrorHandlingPopup selectedTag] == SPSQLImportIgnoreErrors);
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;
 	NSString *connectionEncodingToRestore = nil;
 	NSCharacterSet *whitespaceAndNewlineCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
@@ -559,6 +563,38 @@
 			// Check for any errors
 			if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
 				[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]];
+
+				// If not set to ignore errors, ask what to do.  Use NSAlert rather than
+				// SPBeginWaitingAlertSheet as there is already a modal sheet in progress.
+				if (!ignoreSQLErrors) {
+					NSInteger sqlImportErrorSheetReturnCode;
+
+					NSAlert *sqlErrorAlert = [NSAlert
+							alertWithMessageText:NSLocalizedString(@"An error occurred while importing SQL", @"sql import error message")
+								   defaultButton:NSLocalizedString(@"Continue", @"continue button")
+								 alternateButton:NSLocalizedString(@"Ignore All Errors", @"ignore errors button")
+									 otherButton:NSLocalizedString(@"Stop", @"stop button")
+					   informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]
+					];
+					[sqlErrorAlert setAlertStyle:NSWarningAlertStyle];
+					sqlImportErrorSheetReturnCode = [sqlErrorAlert runModal];
+
+					switch (sqlImportErrorSheetReturnCode) {
+					
+						// On "continue", no additional action is required
+						case NSAlertDefaultReturn:
+							break;
+						
+						// Ignore all future errors if asked to
+						case NSAlertAlternateReturn:
+							ignoreSQLErrors = YES;
+							break;
+
+						// Otherwise, stop
+						default:
+							progressCancelled = YES;
+					}
+				}
 			}
 
 			// Increment the processed queries count

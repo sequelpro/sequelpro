@@ -188,6 +188,13 @@ typedef enum
 	SPBzip2Compression = 2
 } SPFileCompressionFormat;
 
+// Import SQL error handling tags/choices
+typedef enum
+{
+	SPSQLImportAskOnError	= 0,
+	SPSQLImportIgnoreErrors	= 1
+} SPSQLImportErrorHandling;
+
 // Export file handle creation 
 typedef enum
 {
