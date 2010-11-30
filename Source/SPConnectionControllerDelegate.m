@@ -212,4 +212,13 @@
 	return (![item nodeIsGroup]);
 }
 
+
+/**
+ * Double-Click opens the connection.
+ */
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	[self initiateConnection:self];
+	return NO;
+}
 @end

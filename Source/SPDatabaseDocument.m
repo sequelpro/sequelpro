@@ -3981,7 +3981,7 @@
 		[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
 		if ([connectionController sslKeyFileLocation]) [connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
 		[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
-		[connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
+		if ([connectionController sslCertificateFileLocation]) [connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
 		[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
 		if ([connectionController sslCACertFileLocation]) [connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
 
@@ -5276,7 +5276,7 @@
 		// If the item has changed, clear the item selection for cleaner loading
 		if (![targetItemName isEqualToString:[self table]]) {
 			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];		
+			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
 		

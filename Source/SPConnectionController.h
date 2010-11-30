@@ -26,6 +26,7 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPConnectionControllerDelegateProtocol.h"
+#import "SPFavoritesOutlineView.h"
 
 @class SPDatabaseDocument, SPKeychain, SPSSHTunnel, BWAnchoredButtonBar, SPFavoriteNode;
 
@@ -92,7 +93,7 @@
 	IBOutlet NSSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
-	IBOutlet NSTableView *favoritesTable;
+	IBOutlet SPFavoritesOutlineView *favoritesTable;
 
 	IBOutlet NSWindow *errorDetailWindow;
 	IBOutlet NSTextView *errorDetailText;
