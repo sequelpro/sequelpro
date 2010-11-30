@@ -48,7 +48,7 @@
 	BOOL autoCompletionMode;
 	BOOL oneColumnMode;
 	BOOL isQueryingDatabaseStructure;
-	BOOL commonPrefixWasInsertedByAutoComplete;
+	BOOL autocompletePlaceholderWasInserted;
 	NSMutableString *originalFilterString;
 	NSInteger backtickMode;
 	NSFont *tableFont;
@@ -81,7 +81,8 @@
 	isQueryingDBStructure:(BOOL)isQueryingDBStructure;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
-- (void)insertCommonPrefix;
+- (void)insertAutocompletePlaceholder;
+- (void)removeAutocompletionPlaceholder;
 - (void)adjustWorkingRangeByDelta:(NSInteger)delta;
 
 - (void)updateSyncArrowStatus;

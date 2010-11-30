@@ -3126,6 +3126,22 @@
 	return webViewMenuItems;
 }
 
+/**
+ * Detect when the help window is closed (manually) and disable autohelp to ensure it
+ * isn't reopened on keypresses.
+ */
+- (BOOL)windowShouldClose:(id)sender
+{
+	if (sender == helpWebViewWindow) {
+		[prefs setBool:NO forKey:SPCustomQueryUpdateAutoHelp];
+		[prefs synchronize];
+		[autohelpMenuItem setState:NSOffState];
+		[textView setAutohelp:NO];
+	}
+
+	return YES;
+}
+
 #pragma mark -
 #pragma mark Query favorites manager delegate methods
 

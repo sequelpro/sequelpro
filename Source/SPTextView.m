@@ -852,7 +852,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	
 	[completionPopup setCaretPos:pos];
 	[completionPopup orderFront:self];
-	[completionPopup insertCommonPrefix];
+	[completionPopup insertAutocompletePlaceholder];
 
 }
 

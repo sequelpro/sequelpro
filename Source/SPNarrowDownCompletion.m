@@ -35,6 +35,12 @@
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 
+#pragma mark -
+#pragma mark attribute definition 
+
+#define kSPAutoCompletePlaceholderName	@"Placeholder"
+#define kSPAutoCompletePlaceholderVal	@"placholder"
+
 @interface NSTableView (MovingSelectedRow)
 
 - (BOOL)SP_NarrowDownCompletion_canHandleEvent:(NSEvent*)anEvent;
@@ -47,7 +53,7 @@
 - (NSString*)filterString;
 - (void)setupInterface;
 - (void)filter;
-- (void)insertCommonPrefix;
+- (void)insertAutocompletePlaceholder;
 - (void)completeAndInsertSnippet;
 
 @end
@@ -86,6 +92,7 @@
 				[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 			}
 			[self scrollRowToVisible:row];
+			[[self delegate] insertAutocompletePlaceholder];
 			return YES;
 		}
 	}
@@ -115,7 +122,7 @@
 		currentSyncImage = 0;
 		staticPrefix = nil;
 		suggestions = nil;
-		commonPrefixWasInsertedByAutoComplete = NO;
+		autocompletePlaceholderWasInserted = NO;
 		prefs = [NSUserDefaults standardUserDefaults];
 		originalFilterString = [[NSMutableString alloc] init];
 		[originalFilterString setString:@""];
@@ -794,14 +801,11 @@
 			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0)
 			{
 				if(autoCompletionMode) {
-					if(commonPrefixWasInsertedByAutoComplete) {
-						[theView setSelectedRange:theCharRange];
-						[theView insertText:originalFilterString];
-						[theView setCompletionIsOpen:NO];
-						[self close];
-						[NSApp sendEvent:event];
-						break;
-					}
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+					[theView setCompletionIsOpen:NO];
+					[self close];
+					[NSApp sendEvent:event];
+					break;
 				}
 				[NSApp sendEvent: event];
 
@@ -826,10 +830,7 @@
 					[self filter];
 				} else {
 					if(autoCompletionMode) {
-						if(commonPrefixWasInsertedByAutoComplete) {
-							[theView setSelectedRange:theCharRange];
-							[theView insertText:originalFilterString];
-						}
+						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
 						[theView setCompletionIsOpen:NO];
 						[self close];
 						break;
@@ -845,10 +846,7 @@
 			else if(key == NSBackspaceCharacter || key == NSDeleteCharacter)
 			{
 				if(autoCompletionMode) {
-					if(commonPrefixWasInsertedByAutoComplete) {
-						[theView setSelectedRange:theCharRange];
-						[theView insertText:originalFilterString];
-					}
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
 					[NSApp sendEvent:event];
 					break;
 				}
@@ -868,10 +866,7 @@
 				if(autoCompletionMode) {
 					[theView setCompletionIsOpen:NO];
 					[self close];
-					if(commonPrefixWasInsertedByAutoComplete) {
-						[theView setSelectedRange:theCharRange];
-						[theView insertText:originalFilterString];
-					}
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
 					[NSApp sendEvent:event];
 					return;
 				}
@@ -887,7 +882,7 @@
 				theCharRange.length++;
 				theParseRange.length++;
 				[self filter];
-				[self insertCommonPrefix];
+				[self insertAutocompletePlaceholder];
 				
 			}
 			else
@@ -904,10 +899,7 @@
 			} else {
 				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
 					if(autoCompletionMode) {
-						if(commonPrefixWasInsertedByAutoComplete) {
-							[theView setSelectedRange:theCharRange];
-							[theView insertText:originalFilterString];
-						}
+						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
 					}
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					[NSApp sendEvent:event];
@@ -921,6 +913,34 @@
 			[NSApp sendEvent:event];
 		}
 	}
+
+	// If the autocomplete menu is open, but the placeholder is still present, it needs removing.
+	if (autoCompletionMode && autocompletePlaceholderWasInserted) {
+		[[theView textStorage] beginEditing];
+		NSRange attributeResultRange;
+		while (1) {
+			attributeResultRange = NSMakeRange(NSNotFound, 0);
+			if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:0 longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(0, [[theView textStorage] length])]) {
+
+				// A match was found - attributeResultRange contains the range of the attributed string
+				[[theView textStorage] deleteCharactersInRange:attributeResultRange];
+			} else {
+
+				// No match was found. attributeResultRange contains the range of the no match - this can be
+				// checked to see whether a match is inside the full range.
+				if (attributeResultRange.length == [[theView textStorage] length]) break;
+
+				// A match was found - retrieve the location
+				NSUInteger matchStart = attributeResultRange.location+attributeResultRange.length;
+				if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, [[theView textStorage] length] - matchStart)]) {
+					[[theView textStorage] deleteCharactersInRange:attributeResultRange];
+				}
+			}
+		}
+		[[theView textStorage] endEditing];
+		autocompletePlaceholderWasInserted = NO;
+	}
+
 	[theView setCompletionIsOpen:NO];
 	[self close];
 	usleep(70); // tiny delay to suppress while continously pressing of ESC overlapping
@@ -929,47 +949,48 @@
 // ==================
 // = Action methods =
 // ==================
-- (void)insertCommonPrefix
+- (void)insertAutocompletePlaceholder
 {
-
 	if([theTableView selectedRow] == -1 || fuzzyMode)
 		return;
 
-	id cur = [filtered objectAtIndex:0];
+	// Clear any current placeholder
+	if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
 
-	if([cur objectForKey:@"noCompletion"]) return;
+	// Select the highlighted item in the list of suggestions
+	id cur = [filtered objectAtIndex:[theTableView selectedRow]];
 
+	// Ensure it's a valid suggestion and extract the string
+	if ([cur objectForKey:@"noCompletion"]) return;
 	NSString* curMatch = [cur objectForKey:@"match"] ?: [cur objectForKey:@"display"];
+	if (![curMatch length]) return;
 
-	if(![curMatch length]) return;
-
-	NSMutableString *commonPrefix = [NSMutableString string];
-	[commonPrefix setString:curMatch];
-	for(id candidate in filtered) {
-		NSString* candidateMatch;
-		candidateMatch = [candidate objectForKey:@"match"] ?: [candidate objectForKey:@"display"];
-		NSString *tempPrefix = [candidateMatch commonPrefixWithString:commonPrefix options:NSCaseInsensitiveSearch];
-		// if(![tempPrefix length]) break;
-		if([commonPrefix length] > [tempPrefix length])
-			[commonPrefix setString:tempPrefix];
-	}
-
-	// Insert common prefix automatically
-	if([[self filterString] length] < [commonPrefix length]) {
+	// Insert a placeholder for the string in the textview
+	if ([originalFilterString length] < [curMatch length]) {
 		NSUInteger currentSelectionPosition = [theView selectedRange].location;
-		NSString* toInsert = [commonPrefix substringFromIndex:[[self filterString] length]];
+		NSString* toInsert = [curMatch substringFromIndex:[originalFilterString length]];
 		[mutablePrefix appendString:toInsert];
 		theCharRange.length += [toInsert length];
 		theParseRange.length += [toInsert length];
 		[theView insertText:[toInsert lowercaseString]];
-		commonPrefixWasInsertedByAutoComplete = YES;
+		autocompletePlaceholderWasInserted = YES;
 
 		// Restore the text selection location, and clearly mark the autosuggested text
 		[theView setSelectedRange:NSMakeRange(currentSelectionPosition, 0)];
 		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3], NSMakeRange(currentSelectionPosition, [toInsert length]));
+		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], kSPAutoCompletePlaceholderName, kSPAutoCompletePlaceholderVal, NSMakeRange(currentSelectionPosition, [toInsert length]));
 
 		[self checkSpaceForAllowedCharacter];
 	}
+}
+
+- (void)removeAutocompletionPlaceholder
+{
+	if (!autocompletePlaceholderWasInserted) return;
+
+	[theView setSelectedRange:theCharRange];
+	[theView insertText:originalFilterString];
+	autocompletePlaceholderWasInserted = NO;
 }
 
 - (void)insert_text:(NSString* )aString
