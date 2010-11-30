@@ -667,7 +667,7 @@
 					}
 
 				}
-			} else {
+			} else if([err code] != 9) { // Suppress an error message if command was killed
 				NSString *errorMessage  = [err localizedDescription];
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);

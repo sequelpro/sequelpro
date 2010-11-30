@@ -39,7 +39,8 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		info = [[NSMutableArray alloc] init];
+		info       = [[NSMutableArray alloc] init];
+		activities = [[NSMutableArray alloc] init];
 	}
 
 	return self;
@@ -52,6 +53,14 @@
 		name:SPTableChangedNotification
 		object:tableDocumentInstance];
 
+	[tableInfoScrollView setAlphaValue:1.0f];
+	[activitiesScrollView setAlphaValue:0.0f];
+
+	// [self performSelector:@selector(updateActivities) withObject:nil afterDelay:1.0f];
+
+	[activities addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
+	[activitiesTable reloadData];
+
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 	[infoTable reloadData];
 }
@@ -61,8 +70,21 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	[info release];
+	[activities release];
 
 	[super dealloc];
+}
+
+- (void)updateActivities
+{
+	NSMutableArray *acts = [NSMutableArray array];
+	[acts removeAllObjects];
+	[acts addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
+	[acts addObjectsFromArray:[tableDocumentInstance runningBASHProcesses]];
+	[acts addObjectsFromArray:[[NSApp delegate] runningBASHProcesses]];
+	[activities setArray:acts];
+	[activitiesTable reloadData];
+	// [self performSelector:@selector(updateActivities) withObject:nil afterDelay:1.0f];
 }
 
 /**
@@ -251,12 +273,23 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return [info count];
+	if(aTableView == infoTable) {
+		return [info count];
+	} else {
+		return [activities count];
+	}
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	return [info objectAtIndex:rowIndex];
+	if(aTableView == infoTable) {
+		return [info objectAtIndex:rowIndex];
+	} else {
+		if(rowIndex > -1 && rowIndex < [activities count])
+			return [NSArrayObjectAtIndex(activities,rowIndex) objectForKey:@"name"];
+		else
+			return @"...";
+	}
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
@@ -264,11 +297,26 @@
 	return (row == 0 ? 25 : [tableView rowHeight]);
 }
 
-
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	// row 1 and 6 should be editable - ie be able to rename the table and change the auto_increment value.
-	return NO;//(rowIndex == 1 || rowIndex == 6 );
+	if(rowIndex == 0) return YES;
+	return NO;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	if(rowIndex > 0) return NO;
+	if([tableInfoScrollView alphaValue] == 1.0f) {
+		[tableInfoScrollView setAlphaValue:0.0f];
+		[activitiesScrollView setAlphaValue:1.0f];
+	} else {
+		[tableInfoScrollView setAlphaValue:1.0f];
+		[activitiesScrollView setAlphaValue:0.0f];
+	}
+	[infoTable deselectAll:nil];
+	[activitiesTable deselectAll:nil];
+	[self updateActivities];
+	return NO;
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)row
@@ -279,13 +327,15 @@
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
-		[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
-		[(ImageAndTextCell*)aCell setIndentationLevel:1];
-		[(ImageAndTextCell*)aCell setDrawsBackground:NO];
-	} else {
-		[(ImageAndTextCell*)aCell setImage:nil];
-		[(ImageAndTextCell*)aCell setIndentationLevel:0];
+	if(aTableView == infoTable) {
+		if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
+			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
+			[(ImageAndTextCell*)aCell setIndentationLevel:1];
+			[(ImageAndTextCell*)aCell setDrawsBackground:NO];
+		} else {
+			[(ImageAndTextCell*)aCell setImage:nil];
+			[(ImageAndTextCell*)aCell setIndentationLevel:0];
+		}
 	}
 }
 

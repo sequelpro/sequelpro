@@ -29,10 +29,18 @@
 	IBOutlet id tableListInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableDocumentInstance;
-	
+
+	IBOutlet NSTableView *activitiesTable;
+
+	IBOutlet NSScrollView *tableInfoScrollView;
+	IBOutlet NSScrollView *activitiesScrollView;
+	IBOutlet NSView *containerView;
+
 	NSMutableArray *info;
+	NSMutableArray *activities;
 }
 
 - (void)tableChanged:(NSNotification *)notification;
+- (void)updateActivities;
 
 @end

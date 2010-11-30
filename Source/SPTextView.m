@@ -1718,7 +1718,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					NSString *cmdResult = [[theHintString substringWithRange:cmdRange] runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
 					if(err == nil) {
 						[theHintString replaceCharactersInRange:tagRange withString:cmdResult];
-					} else {
+					} else if([err code] != 9) { // Suppress an error message if command was killed
 						NSString *errorMessage  = [err localizedDescription];
 						SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 										  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [theHintString substringWithRange:cmdRange], errorMessage]);

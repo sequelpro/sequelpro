@@ -3655,6 +3655,7 @@
  */
 - (BOOL)parentTabShouldClose
 {
+
 	// If no connection is available, always return YES.  Covers initial setup and disconnections.
 	if(!_isConnected) return YES;
 
@@ -3673,7 +3674,22 @@
 		return isSaved;
 	}
 
+	// Terminate all running BASH commands
+	for(NSDictionary* cmd in [self runningBASHProcesses]) {
+		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+		NSTask *killTask = [[NSTask alloc] init];
+		[killTask setLaunchPath:@"/bin/sh"];
+		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+		[killTask launch];
+		[killTask waitUntilExit];
+		[killTask release];
+	}
+
 	[[SPNavigatorController sharedNavigatorController] performSelectorOnMainThread:@selector(removeConnection:) withObject:[self connectionID] waitUntilDone:YES];
+
+	// Note that this call does not need to be removed in release builds as leaks analysis output is only
+	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
+	[[SPLogger logger] dumpLeaks];
 
 	// Return YES by default
 	return YES;
@@ -3703,6 +3719,7 @@
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[self setParentWindow:nil];
+
 }
 
 /**
