@@ -684,6 +684,19 @@
 		return;
 	}
 
+	// If command failed notify the file handle hand shake mechanism
+	NSString *out = @"1";
+	[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID]
+		atomically:YES
+		encoding:NSUTF8StringEncoding
+		   error:nil];
+	out = @"Scheme Error";
+	[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID]
+		atomically:YES
+		encoding:NSUTF8StringEncoding
+		   error:nil];
+
+
 	if(processDocument)
 		NSLog(@"process doc ID: %@\n%@", [processDocument processID], [processDocument tabTitleForTooltip]);
 	else

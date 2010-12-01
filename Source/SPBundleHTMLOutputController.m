@@ -41,7 +41,7 @@
 
 	if (self = [super initWithWindowNibName:@"BundleHTMLOutput"]) {
 
-		;
+		[[self window] setReleasedWhenClosed:YES];
 
 	}
 	
