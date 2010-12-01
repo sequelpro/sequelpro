@@ -1138,6 +1138,23 @@
 #pragma mark -
 #pragma mark TableView delegate
 
+/**
+ * Traps enter and esc and edit/cancel without entering next row
+ */
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+{
+	if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
+		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
+
+		//abort editing
+		[control abortEditing];
+		[[NSApp mainWindow] makeFirstResponder:commandsOutlineView];
+		return TRUE;
+	} else{
+		return FALSE;
+	}
+}
+
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
 {
 

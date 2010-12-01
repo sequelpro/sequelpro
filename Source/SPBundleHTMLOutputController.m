@@ -167,6 +167,7 @@
 - (void)windowShouldClose:(NSNotification *)notification
 {
 	[webView close];
+	windowUUID = @"";
 }
 
 #pragma mark -
