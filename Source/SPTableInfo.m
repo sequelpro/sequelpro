@@ -27,6 +27,8 @@
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
+#import "SPActivityTextFieldCell.h"
+#import "SPTableTextFieldCell.h"
 
 @interface SPTableInfo (PrivateAPI)
 
@@ -41,6 +43,7 @@
 	if ((self = [super init])) {
 		info       = [[NSMutableArray alloc] init];
 		activities = [[NSMutableArray alloc] init];
+		_activitiesWillBeUpdated = NO;
 	}
 
 	return self;
@@ -48,19 +51,26 @@
 
 - (void)awakeFromNib
 {
+
 	[[NSNotificationCenter defaultCenter] addObserver:self
 		selector:@selector(tableChanged:)
 		name:SPTableChangedNotification
 		object:tableDocumentInstance];
 
-	[tableInfoScrollView setAlphaValue:1.0f];
-	[activitiesScrollView setAlphaValue:0.0f];
+	// Register activities update notifications for add/remove BASH commands etc.
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+		selector:@selector(updateActivities) 
+		name:SPActivitiesUpdateNotification 
+		object:nil];
 
-	// [self performSelector:@selector(updateActivities) withObject:nil afterDelay:1.0f];
+	[tableInfoScrollView setHidden:NO];
+	[activitiesScrollView setHidden:YES];
 
+	// Add activities header
 	[activities addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
 	[activitiesTable reloadData];
 
+	// Add Information header
 	[info addObject:NSLocalizedString(@"TABLE INFORMATION", @"header for table info pane")];
 	[infoTable reloadData];
 }
@@ -80,11 +90,14 @@
 	NSMutableArray *acts = [NSMutableArray array];
 	[acts removeAllObjects];
 	[acts addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
-	[acts addObjectsFromArray:[tableDocumentInstance runningBASHProcesses]];
-	[acts addObjectsFromArray:[[NSApp delegate] runningBASHProcesses]];
+	[acts addObjectsFromArray:[tableDocumentInstance runningActivities]];
+	[acts addObjectsFromArray:[[NSApp delegate] runningActivities]];
+	_activitiesWillBeUpdated = YES;
 	[activities setArray:acts];
+	_activitiesWillBeUpdated = NO;
 	[activitiesTable reloadData];
-	// [self performSelector:@selector(updateActivities) withObject:nil afterDelay:1.0f];
+	[infoTable deselectAll:nil];
+	[activitiesTable deselectAll:nil];
 }
 
 /**
@@ -285,10 +298,33 @@
 	if(aTableView == infoTable) {
 		return [info objectAtIndex:rowIndex];
 	} else {
-		if(rowIndex > -1 && rowIndex < [activities count])
-			return [NSArrayObjectAtIndex(activities,rowIndex) objectForKey:@"name"];
-		else
+		if(rowIndex == 0)
+		{
+			SPTableTextFieldCell *c = [[[SPTableTextFieldCell alloc] initTextCell:NSLocalizedString(@"ACTIVITIES", @"header for activities pane")] autorelease];
+			[aTableColumn setDataCell:c];
+			return NSLocalizedString(@"ACTIVITIES", @"header for activities pane");
+		}
+		else if(!_activitiesWillBeUpdated && rowIndex > 0 && rowIndex < [activities count]) {
+			NSDictionary *dict = NSArrayObjectAtIndex(activities,rowIndex);
+			SPActivityTextFieldCell *c = [[[SPActivityTextFieldCell alloc] init] autorelease];
+			[c setActivityName:[[dict objectForKey:@"contextInfo"] objectForKey:@"name"]];
+			if([dict objectForKey:@"type"] && [[dict objectForKey:@"type"] isEqualToString:@"bashcommand"]) {
+				[c setContextInfo:[NSDictionary dictionaryWithObjectsAndKeys:[dict objectForKey:@"type"], @"type", [dict objectForKey:@"pid"], @"pid", nil]];
+				[c setActivityInfo:[NSString stringWithFormat:@"[%@] %@: %@", [[dict objectForKey:@"contextInfo"] objectForKey:@"scope"], NSLocalizedString(@"started", @"started"), [dict objectForKey:@"starttime"]]];
+			} 
+			else {
+				[c setActivityInfo:@"..."];
+			}
+			[aTableColumn setDataCell:c];
+			return [dict objectForKey:@"name"];
+		} else {
+			SPActivityTextFieldCell *c = [[[SPActivityTextFieldCell alloc] init] autorelease];
+			[c setActivityName:@"..."];
+			[c setActivityInfo:@""];
+			[aTableColumn setDataCell:c];
 			return @"...";
+		}
+		return @"";
 	}
 }
 
@@ -300,28 +336,51 @@
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
 	if(rowIndex == 0) return YES;
+	if(aTableView == infoTable) {
+		return NO;
+	} else {
+		return YES;
+	}
 	return NO;
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	if(rowIndex > 0) return NO;
-	if([tableInfoScrollView alphaValue] == 1.0f) {
-		[tableInfoScrollView setAlphaValue:0.0f];
-		[activitiesScrollView setAlphaValue:1.0f];
+
+	if(![tableInfoScrollView isHidden]) {
+		[tableInfoScrollView setHidden:YES];
+		[activitiesScrollView setHidden:NO];
+		[[NSApp mainWindow] makeFirstResponder:activitiesTable];
 	} else {
-		[tableInfoScrollView setAlphaValue:1.0f];
-		[activitiesScrollView setAlphaValue:0.0f];
+		[activitiesScrollView setHidden:YES];
+		[tableInfoScrollView setHidden:NO];
+		[[NSApp mainWindow] makeFirstResponder:infoTable];
 	}
+
 	[infoTable deselectAll:nil];
 	[activitiesTable deselectAll:nil];
 	[self updateActivities];
 	return NO;
 }
 
+- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(NSCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
+{
+	if(aTableView == activitiesTable) {
+		if(rowIndex == 0) return @"";
+		if(mouseLocation.x > rect->origin.x + rect->size.width - 30)
+			return NSLocalizedString(@"Cancel", @"cancel");
+		NSDictionary *dict = NSArrayObjectAtIndex(activities,rowIndex);
+		if([[dict objectForKey:@"contextInfo"] objectForKey:@"name"])
+			return [[dict objectForKey:@"contextInfo"] objectForKey:@"name"];
+		return @"";
+	}
+	return nil;
+}
+
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)row
 {
-	// This makes the top row (TABLE INFORMATION) have the diff styling
+	// This makes the top row (TABLE INFORMATION/ACTIVITIES) have the diff styling
 	return (row == 0);
 }
 

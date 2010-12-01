@@ -451,7 +451,7 @@
  * @param theError If not nil and the bash command failed it contains the returned error message as NSLocalizedDescriptionKey
  * 
  */
-- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerDocument:(id)caller withName:(NSString*)name error:(NSError**)theError
+- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerInstance:(id)caller contextInfo:(NSDictionary*)contextInfo error:(NSError**)theError
 {
 
 	BOOL userTerminated = NO;
@@ -549,14 +549,16 @@
 	NSFileHandle *stderr_file = [stderr_pipe fileHandleForReading];
 	[bashTask launch];
 	NSInteger pid = -1;
-	if(caller != nil && [caller respondsToSelector:@selector(registerBASHCommand:)]) {
+	if(caller != nil && [caller respondsToSelector:@selector(registerActivity:)]) {
 		// register command
 		pid = [bashTask processIdentifier];
 		NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:pid], @"pid",
-																		name, @"name",
+																		(contextInfo)?:[NSDictionary dictionary], @"contextInfo",
+																		@"bashcommand", @"type",
 																		[[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], @"starttime",
 																		nil];
-		[caller registerBASHCommand:dict];
+		[caller registerActivity:dict];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 	}
 
 	// Listen to ⌘. to terminate
@@ -584,15 +586,12 @@
 	[bashTask waitUntilExit];
 
 	// unregister BASH command if it was registered
-	if(pid >= 0) [caller unRegisterBASHCommand:pid];
-
-	if(userTerminated) {
-		if(bashTask) [bashTask release];
-		NSBeep();
-		NSLog(@"“%@” was terminated by user.", ([self length] > 50) ? [self substringToIndex:50] : self);
-		return @"";
+	if(pid >= 0) {
+		[caller removeRegisteredActivity:pid];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 	}
 
+	// Remove script file if used
 	if(redirectForScript)
 		[[NSFileManager defaultManager] removeItemAtPath:scriptFilePath error:nil];
 

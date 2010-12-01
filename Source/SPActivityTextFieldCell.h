@@ -1,10 +1,10 @@
 //
-//  $Id$
+//  $Id: SPActivityTextFieldCell.h 2781 2010-10-19 23:37:15Z stuart02 $
 //
-//  SPTableInfo.h
+//  SPActivityTextFieldCell.h
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Hans-Jörg Bibiko on Dec 01, 2010
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,26 +22,28 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPTableInfo : NSObject 
+#import "ImageAndTextCell.h"
+
+@interface SPActivityTextFieldCell : ImageAndTextCell
+
 {
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
+	NSString *activityName;
+	NSString *activityInfo;
+	NSDictionary *contextInfo;
 
-	IBOutlet NSTableView *activitiesTable;
+	NSButtonCell *cancelButton;
 
-	IBOutlet NSScrollView *tableInfoScrollView;
-	IBOutlet NSScrollView *activitiesScrollView;
-	IBOutlet NSView *containerView;
+	NSInteger drawState;
 
-	NSMutableArray *info;
-	NSMutableArray *activities;
-	BOOL _activitiesWillBeUpdated;
+	NSColor  *mainStringColor;
+	NSColor  *subStringColor;
 }
 
-- (void)tableChanged:(NSNotification *)notification;
-- (void)updateActivities;
+@property(readwrite,retain) NSString *activityName;
+@property(readwrite,retain) NSString *activityInfo;
+@property(readwrite,retain) NSDictionary *contextInfo;
+
+- (void)invertFontColors;
+- (void)restoreFontColors;
 
 @end

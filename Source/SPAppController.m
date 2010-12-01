@@ -57,7 +57,7 @@
 		bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
-		runningBASHprocesses = [[NSMutableArray alloc] init];
+		runningActivitiesArray = [[NSMutableArray alloc] init];
 
 		[NSApp setDelegate:self];
 	}
@@ -781,7 +781,14 @@
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil callerDocument:self withName:([cmdData objectForKey:SPBundleFileNameKey])?[cmdData objectForKey:SPBundleFileNameKey]:@"" error:&err];
+			NSString *output = [cmd runBashCommandWithEnvironment:env 
+											atCurrentDirectoryPath:nil 
+											callerInstance:self 
+											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+													NSLocalizedString(@"General", @"general menu item label"), @"scope",
+													nil]
+											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -832,24 +839,24 @@
 
 }
 
-- (void)registerBASHCommand:(NSDictionary*)commandDict
+- (void)registerActivity:(NSDictionary*)commandDict
 {
-	[runningBASHprocesses addObject:commandDict];
+	[runningActivitiesArray addObject:commandDict];
 }
 
-- (void)unRegisterBASHCommand:(NSInteger)pid
+- (void)removeRegisteredActivity:(NSInteger)pid
 {
-	for(id cmd in runningBASHprocesses) {
+	for(id cmd in runningActivitiesArray) {
 		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
-			[runningBASHprocesses removeObject:cmd];
+			[runningActivitiesArray removeObject:cmd];
 			break;
 		}
 	}
 }
 
-- (NSArray*)runningBASHProcesses
+- (NSArray*)runningActivities
 {
-	return (NSArray*)runningBASHprocesses;
+	return (NSArray*)runningActivitiesArray;
 }
 
 #pragma mark -
@@ -1538,7 +1545,7 @@
 	for (NSWindow *aWindow in [NSApp orderedWindows]) {
 		if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
 			for(SPDatabaseDocument *doc in [[aWindow windowController] documents]) {
-				for(NSDictionary* cmd in [doc runningBASHProcesses]) {
+				for(NSDictionary* cmd in [doc runningActivities]) {
 					NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
 					NSTask *killTask = [[NSTask alloc] init];
 					[killTask setLaunchPath:@"/bin/sh"];
@@ -1550,7 +1557,7 @@
 			}
 		}
 	}
-	for(NSDictionary* cmd in [self runningBASHProcesses]) {
+	for(NSDictionary* cmd in [self runningActivities]) {
 		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
 		NSTask *killTask = [[NSTask alloc] init];
 		[killTask setLaunchPath:@"/bin/sh"];
@@ -1577,7 +1584,7 @@
 	if(bundleCategories) [bundleCategories release];
 	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
 	if(installedBundleUUIDs) [installedBundleUUIDs release];
-	if (runningBASHprocesses) [runningBASHprocesses release];
+	if (runningActivitiesArray) [runningActivitiesArray release];
 
 	[prefsController release], prefsController = nil;
 

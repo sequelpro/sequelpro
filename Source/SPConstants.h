@@ -358,6 +358,7 @@ extern NSString *SPNoBOMforSQLdumpFile;
 extern NSString *SPContentFilters;
 extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDocumentTaskStartNotification;
+extern NSString *SPActivitiesUpdateNotification;
 extern NSString *SPFieldEditorSheetFont;
 extern NSString *SPLastSQLFileEncoding;
 extern NSString *SPPrintBackground;

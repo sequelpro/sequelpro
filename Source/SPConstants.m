@@ -170,6 +170,7 @@ NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
 NSString *SPContentFilters                       = @"ContentFilters";
 NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
+NSString *SPActivitiesUpdateNotification         = @"ActivitiesUpdateNotification";
 NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
 NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
 NSString *SPPrintBackground                      = @"PrintBackground";

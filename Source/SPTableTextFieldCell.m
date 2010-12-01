@@ -56,6 +56,11 @@
 
 }
 
+- (NSRect)expansionFrameWithFrame:(NSRect)cellFrame inView:(NSView *)view
+{
+	return NSMakeRect(cellFrame.origin.x, cellFrame.origin.y, [self cellSize].width, [self cellSize].height);
+}
+
 - (NSSize)cellSize
 {
 	NSSize cellSize = [super cellSize];

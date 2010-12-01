@@ -116,7 +116,7 @@
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
-		runningBASHprocesses = [[NSMutableArray alloc] init];
+		runningActivitiesArray = [[NSMutableArray alloc] init];
 
 		titleAccessoryView = nil;
 		taskProgressWindow = nil;
@@ -3675,7 +3675,7 @@
 	}
 
 	// Terminate all running BASH commands
-	for(NSDictionary* cmd in [self runningBASHProcesses]) {
+	for(NSDictionary* cmd in [self runningActivities]) {
 		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
 		NSTask *killTask = [[NSTask alloc] init];
 		[killTask setLaunchPath:@"/bin/sh"];
@@ -4757,24 +4757,24 @@
 	NSLog(@"received: %@", commandDict);
 }
 
-- (void)registerBASHCommand:(NSDictionary*)commandDict
+- (void)registerActivity:(NSDictionary*)commandDict
 {
-	[runningBASHprocesses addObject:commandDict];
+	[runningActivitiesArray addObject:commandDict];
 }
 
-- (void)unRegisterBASHCommand:(NSInteger)pid
+- (void)removeRegisteredActivity:(NSInteger)pid
 {
-	for(id cmd in runningBASHprocesses) {
+	for(id cmd in runningActivitiesArray) {
 		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
-			[runningBASHprocesses removeObject:cmd];
+			[runningActivitiesArray removeObject:cmd];
 			break;
 		}
 	}
 }
 
-- (NSArray*)runningBASHProcesses
+- (NSArray*)runningActivities
 {
-	return (NSArray*)runningBASHprocesses;
+	return (NSArray*)runningActivitiesArray;
 }
 
 - (NSDictionary*)shellVariables
@@ -5077,7 +5077,7 @@
 	if (taskProgressWindow) [taskProgressWindow release];
 	if (serverSupport) [serverSupport release];
 	if (processID) [processID release];
-	if (runningBASHprocesses) [runningBASHprocesses release];
+	if (runningActivitiesArray) [runningActivitiesArray release];
 	
 	[super dealloc];
 }

@@ -50,7 +50,7 @@
 	NSMutableDictionary *bundleKeyEquivalents;
 	NSMutableDictionary *installedBundleUUIDs;
 
-	NSMutableArray *runningBASHprocesses;
+	NSMutableArray *runningActivitiesArray;
 
 }
 
@@ -97,9 +97,9 @@
 - (NSArray *)bundleCategoriesForScope:(NSString*)scope;
 - (NSArray *)bundleItemsForScope:(NSString*)scope;
 - (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope;
-- (void)registerBASHCommand:(NSDictionary*)commandDict;
-- (void)unRegisterBASHCommand:(NSInteger)pid;
-- (NSArray*)runningBASHProcesses;
+- (void)registerActivity:(NSDictionary*)commandDict;
+- (void)removeRegisteredActivity:(NSInteger)pid;
+- (NSArray*)runningActivities;
 
 - (void)handleEventWithURL:(NSURL*)url;
 

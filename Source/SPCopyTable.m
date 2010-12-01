@@ -923,7 +923,14 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env atCurrentDirectoryPath:nil callerDocument:[[NSApp delegate] frontDocument] withName:([cmdData objectForKey:SPBundleFileNameKey])?[cmdData objectForKey:SPBundleFileNameKey]:@"" error:&err];
+			NSString *output = [cmd runBashCommandWithEnvironment:env 
+											atCurrentDirectoryPath:nil 
+											callerInstance:[[NSApp delegate] frontDocument] 
+											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
+													nil]
+											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 

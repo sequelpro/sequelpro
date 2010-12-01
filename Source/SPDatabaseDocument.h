@@ -189,7 +189,7 @@
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
 
-	NSMutableArray *runningBASHprocesses;
+	NSMutableArray *runningActivitiesArray;
 
 	NSString *keyChainID;
 	
@@ -357,9 +357,9 @@
 
 // Scripting
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
-- (void)registerBASHCommand:(NSDictionary*)commandDict;
-- (void)unRegisterBASHCommand:(NSInteger)pid;
-- (NSArray*)runningBASHProcesses;
+- (void)registerActivity:(NSDictionary*)commandDict;
+- (void)removeRegisteredActivity:(NSInteger)pid;
+- (NSArray*)runningActivities;
 - (NSDictionary*)shellVariables;
 
 // State saving and setting
