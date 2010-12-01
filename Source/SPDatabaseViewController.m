@@ -481,6 +481,27 @@
 
 	// Empty the loading pool and exit the thread
 	[self endTask];
+
+	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
+	for(NSString* cmdPath in triggeredCommands) {
+		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
+		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+		[aMenuItem setTag:0];
+		[aMenuItem setToolTip:[data objectAtIndex:0]];
+		if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
+			[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+		}
+		else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
+			if([[[[NSApp mainWindow] firstResponder] description] isEqualToString:@"SPCopyTable"])
+				[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
+		}
+		else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
+			if([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]])
+				[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
+		}
+	}
+
+
 	[loadPool drain];
 }
 

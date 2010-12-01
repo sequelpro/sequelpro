@@ -70,7 +70,7 @@
 - (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
 {
 
-	[[self window] makeKeyAndOrderFront:nil];
+	[[self window] orderFront:nil];
 
 	NSString *fullContent = @"%@";
 	fullContent = [NSString stringWithFormat:fullContent, content];
