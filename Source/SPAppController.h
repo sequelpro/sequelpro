@@ -46,6 +46,7 @@
 
 	NSMutableDictionary *bundleItems;
 	NSMutableDictionary *bundleCategories;
+	NSMutableDictionary *bundleTriggers;
 	NSMutableArray *bundleUsedScopes;
 	NSMutableDictionary *bundleKeyEquivalents;
 	NSMutableDictionary *installedBundleUUIDs;
@@ -96,6 +97,7 @@
 - (NSString *)contentOfFile:(NSString *)aPath;
 - (NSArray *)bundleCategoriesForScope:(NSString*)scope;
 - (NSArray *)bundleItemsForScope:(NSString*)scope;
+- (NSArray *)bundleCommandsForTrigger:(NSString*)trigger;
 - (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope;
 - (void)registerActivity:(NSDictionary*)commandDict;
 - (void)removeRegisteredActivity:(NSInteger)pid;

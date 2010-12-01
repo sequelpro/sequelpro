@@ -429,9 +429,30 @@
 
 }
 
+/**
+ * Store trigger in bundle dict since it is not bound
+ * via key binding and update various GUI elements
+ */
 - (IBAction)triggerButtonChanged:(id)sender
 {
-	
+
+	id currentDict = [self _currentSelectedObject];
+
+	NSMenu* senderMenu = [sender menu];
+
+	NSInteger selectedIndex = [senderMenu indexOfItem:sender];
+	NSString *input = SPBundleTriggerActionNone;
+	if(senderMenu == triggerGeneralPopUpMenu)
+		input = [triggerGeneralArray objectAtIndex:selectedIndex];
+	else if(senderMenu == triggerInputFieldPopUpMenu)
+		input = [triggerInputFieldArray objectAtIndex:selectedIndex];
+	else if(senderMenu == triggerDataTablePopUpMenu)
+		input = [triggerDataTableArray objectAtIndex:selectedIndex];
+
+	[currentDict setObject:input forKey:SPBundleFileTriggerKey];
+
+	[self _updateBundleDataView];
+
 }
 
 /**
@@ -1594,6 +1615,9 @@
 	NSString *scope = [currentDict objectForKey:SPBundleFileScopeKey];
 	if(!scope) scope = SPBundleScopeGeneral;
 
+	NSString *trigger = [currentDict objectForKey:SPBundleFileTriggerKey];
+	if(!trigger) trigger = SPBundleTriggerActionNone;
+
 	// Update the scope popup button
 	if([scope isEqualToString:SPBundleScopeGeneral])
 		[scopePopupButton selectItemWithTag:kGeneralScopeArrayIndex];
@@ -1609,40 +1633,64 @@
 		case kGeneralScopeArrayIndex: // General
 		[inputPopupButton setMenu:inputNonePopUpMenu];
 		[inputPopupButton selectItemAtIndex:0];
+
 		[outputPopupButton setMenu:outputGeneralScopePopUpMenu];
 		anIndex = [outputGeneralScopeArray indexOfObject:output];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[outputPopupButton selectItemAtIndex:anIndex];
+
+		[triggerPopupButton setMenu:triggerGeneralPopUpMenu];
+		anIndex = [triggerGeneralArray indexOfObject:trigger];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[triggerPopupButton selectItemAtIndex:anIndex];
+
 		input = SPBundleInputSourceNone;
 		[inputFallbackPopupButton setHidden:YES];
 		[fallbackLabelField setHidden:YES];
+
 		break;
 		case kInputFieldScopeArrayIndex: // Input Field
 		[inputPopupButton setMenu:inputInputFieldScopePopUpMenu];
 		anIndex = [inputInputFieldScopeArray indexOfObject:input];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[inputPopupButton selectItemAtIndex:anIndex];
+
 		[inputFallbackPopupButton setMenu:inputFallbackInputFieldScopePopUpMenu];
 		anIndex = [inputFallbackInputFieldScopeArray indexOfObject:inputfallback];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[inputFallbackPopupButton selectItemAtIndex:anIndex];
+
 		[outputPopupButton setMenu:outputInputFieldScopePopUpMenu];
 		anIndex = [outputInputFieldScopeArray indexOfObject:output];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[outputPopupButton selectItemAtIndex:anIndex];
+
+		[triggerPopupButton setMenu:triggerInputFieldPopUpMenu];
+		anIndex = [triggerInputFieldArray indexOfObject:trigger];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[triggerPopupButton selectItemAtIndex:anIndex];
+
 		break;
 		case kDataTableScopeArrayIndex: // Data Table
 		[inputPopupButton setMenu:inputDataTableScopePopUpMenu];
 		anIndex = [inputDataTableScopeArray indexOfObject:input];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[inputPopupButton selectItemAtIndex:anIndex];
+
 		[outputPopupButton setMenu:outputDataTableScopePopUpMenu];
 		anIndex = [outputDataTableScopeArray indexOfObject:output];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[outputPopupButton selectItemAtIndex:anIndex];
+
 		input = SPBundleInputSourceNone;
 		[inputFallbackPopupButton setHidden:YES];
 		[fallbackLabelField setHidden:YES];
+
+		[triggerPopupButton setMenu:triggerDataTablePopUpMenu];
+		anIndex = [triggerDataTableArray indexOfObject:trigger];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[triggerPopupButton selectItemAtIndex:anIndex];
+
 		break;
 		case kDisabledScopeTag: // Disable command
 		break;

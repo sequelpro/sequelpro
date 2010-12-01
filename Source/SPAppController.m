@@ -54,6 +54,7 @@
 
 		bundleItems = [[NSMutableDictionary alloc] initWithCapacity:1];
 		bundleCategories = [[NSMutableDictionary alloc] initWithCapacity:1];
+		bundleTriggers = [[NSMutableDictionary alloc] initWithCapacity:1];
 		bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
@@ -1179,6 +1180,7 @@
 	[bundleItems removeAllObjects];
 	[bundleUsedScopes removeAllObjects];
 	[bundleCategories removeAllObjects];
+	[bundleTriggers removeAllObjects];
 	[bundleKeyEquivalents removeAllObjects];
 	[installedBundleUUIDs removeAllObjects];
 
@@ -1233,6 +1235,13 @@
 						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
 						[aDict setObject:[cmdData objectForKey:SPBundleFileNameKey] forKey:SPBundleInternLabelKey];
 						[aDict setObject:infoPath forKey:SPBundleInternPathToFileKey];
+
+						// Register trigger
+						if([cmdData objectForKey:SPBundleFileTriggerKey]) {
+							if(![bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]])
+								[bundleTriggers setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileTriggerKey]];
+							[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:[NSString stringWithFormat:@"%@|%@", infoPath, [cmdData objectForKey:SPBundleFileScopeKey]]];
+						}
 
 						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
 							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
@@ -1518,6 +1527,11 @@
 	return [bundleCategories objectForKey:scope];
 }
 
+- (NSArray *)bundleCommandsForTrigger:(NSString*)trigger
+{
+	return [bundleTriggers objectForKey:trigger];
+}
+
 - (NSArray *)bundleItemsForScope:(NSString*)scope
 {
 	return [bundleItems objectForKey:scope];
@@ -1595,6 +1609,7 @@
 	if(bundleItems) [bundleItems release];
 	if(bundleUsedScopes) [bundleUsedScopes release];
 	if(bundleCategories) [bundleCategories release];
+	if(bundleTriggers) [bundleTriggers release];
 	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
 	if(installedBundleUUIDs) [installedBundleUUIDs release];
 	if (runningActivitiesArray) [runningActivitiesArray release];

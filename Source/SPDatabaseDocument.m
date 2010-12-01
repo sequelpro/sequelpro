@@ -5301,6 +5301,23 @@
 			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 	}
 
+	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	for(NSString* cmdPath in triggeredCommands) {
+		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
+		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+		[aMenuItem setTag:0];
+		[aMenuItem setToolTip:[data objectAtIndex:0]];
+		if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
+			;
+		}
+		else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
+			;
+		}
+		else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
+			;
+		}
+	}
+
 	// If a the table has changed, update the selection
 	if (![targetItemName isEqualToString:[self table]]) {
 		if (targetItemName) {
