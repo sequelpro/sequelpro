@@ -488,16 +488,34 @@
 		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 		[aMenuItem setTag:0];
 		[aMenuItem setToolTip:[data objectAtIndex:0]];
-		if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-			[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+
+		// For HTML output check if corresponding window already exists
+		BOOL stopTrigger = NO;
+		if([[data objectAtIndex:2] length]) {
+			BOOL correspondingWindowFound = NO;
+			NSString *uuid = [data objectAtIndex:2];
+			for(id win in [NSApp windows]) {
+				if([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
+					if([[[win delegate] windowUUID] isEqualToString:uuid]) {
+						correspondingWindowFound = YES;
+						break;
+					}
+				}
+			}
+			if(!correspondingWindowFound) stopTrigger = YES;
 		}
-		else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
-			if([[[[NSApp mainWindow] firstResponder] description] isEqualToString:@"SPCopyTable"])
-				[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
-		}
-		else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
-			if([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]])
-				[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
+		if(!stopTrigger) {
+			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
+				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+			}
+			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
+				if([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"])
+					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
+			}
+			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
+				if([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]])
+					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
+			}
 		}
 	}
 

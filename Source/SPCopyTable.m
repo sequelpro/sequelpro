@@ -964,6 +964,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[c displayHTMLContent:output withOptions:nil];
+							[[NSApp delegate] addHTMLOutputController:c];
 						}
 					}
 				}

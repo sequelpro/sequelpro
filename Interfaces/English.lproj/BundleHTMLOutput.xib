@@ -60,12 +60,12 @@
 				<string key="NSWindowContentMinSize">{50, 50}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
-					<int key="NSvFlags">256</int>
+					<int key="NSvFlags">4352</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="WebView" id="472558256">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">274</int>
+							<int key="NSvFlags">4370</int>
 							<object class="NSMutableSet" key="NSDragTypes">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSArray" key="set.sortedObjects">
@@ -98,12 +98,16 @@
 									<bool key="EncodedWithXMLCoder">YES</bool>
 									<object class="NSArray" key="dict.sortedKeys">
 										<bool key="EncodedWithXMLCoder">YES</bool>
+										<string>Sequel Pro BundleHTMLOutputWebKitDefaultFixedFontSize</string>
+										<string>Sequel Pro BundleHTMLOutputWebKitDefaultFontSize</string>
 										<string>Sequel Pro BundleHTMLOutputWebKitFixedFont</string>
 										<string>Sequel Pro BundleHTMLOutputWebKitMinimumFontSize</string>
 										<string>Sequel Pro BundleHTMLOutputWebKitStandardFont</string>
 									</object>
 									<object class="NSMutableArray" key="dict.values">
 										<bool key="EncodedWithXMLCoder">YES</bool>
+										<integer value="12"/>
+										<integer value="12"/>
 										<string>Monaco</string>
 										<integer value="5"/>
 										<string>Lucida Grande</string>

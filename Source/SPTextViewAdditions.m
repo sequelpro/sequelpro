@@ -642,6 +642,7 @@
 							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[c displayHTMLContent:output withOptions:nil];
+							[[NSApp delegate] addHTMLOutputController:c];
 						}
 					}
 

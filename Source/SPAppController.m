@@ -56,6 +56,7 @@
 		bundleCategories = [[NSMutableDictionary alloc] initWithCapacity:1];
 		bundleTriggers = [[NSMutableDictionary alloc] initWithCapacity:1];
 		bundleUsedScopes = [[NSMutableArray alloc] initWithCapacity:1];
+		bundleHTMLOutputController = [[NSMutableArray alloc] initWithCapacity:1];
 		bundleKeyEquivalents = [[NSMutableDictionary alloc] initWithCapacity:1];
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
 		runningActivitiesArray = [[NSMutableArray alloc] init];
@@ -836,6 +837,7 @@
 							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[c displayHTMLContent:output withOptions:nil];
+							[[NSApp delegate] addHTMLOutputController:c];
 						}
 					}
 				}
@@ -1172,13 +1174,25 @@
 	[bundleEditorController showWindow:self];
 }
 
+- (void)addHTMLOutputController:(id)controller
+{
+	[bundleHTMLOutputController addObject:controller];
+}
+
 - (IBAction)reloadBundles:(id)sender
 {
+
+	for(id c in bundleHTMLOutputController) {
+		if(![[c window] isVisible]) {
+			[c release];
+		}
+	}
 
 	BOOL foundInstalledBundles = NO;
 
 	[bundleItems removeAllObjects];
 	[bundleUsedScopes removeAllObjects];
+	[bundleHTMLOutputController removeAllObjects];
 	[bundleCategories removeAllObjects];
 	[bundleTriggers removeAllObjects];
 	[bundleKeyEquivalents removeAllObjects];
@@ -1240,7 +1254,7 @@
 						if([cmdData objectForKey:SPBundleFileTriggerKey]) {
 							if(![bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]])
 								[bundleTriggers setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileTriggerKey]];
-							[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:[NSString stringWithFormat:@"%@|%@", infoPath, [cmdData objectForKey:SPBundleFileScopeKey]]];
+							[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:[NSString stringWithFormat:@"%@|%@|%@", infoPath, [cmdData objectForKey:SPBundleFileScopeKey], ([[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsHTML])?[cmdData objectForKey:SPBundleFileUUIDKey]:@""]];
 						}
 
 						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
@@ -1563,7 +1577,7 @@
 }
 
 /**
- * If Sequel Pro is terminating kill all running BASH scripts
+ * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller
  */
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
@@ -1593,6 +1607,11 @@
 		[killTask waitUntilExit];
 		[killTask release];
 	}
+
+	for(id c in bundleHTMLOutputController) {
+		[c release];
+	}
+
 	return YES;
 
 }
@@ -1608,6 +1627,7 @@
 
 	if(bundleItems) [bundleItems release];
 	if(bundleUsedScopes) [bundleUsedScopes release];
+	if(bundleHTMLOutputController) [bundleHTMLOutputController release];
 	if(bundleCategories) [bundleCategories release];
 	if(bundleTriggers) [bundleTriggers release];
 	if(bundleKeyEquivalents) [bundleKeyEquivalents release];

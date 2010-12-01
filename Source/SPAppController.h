@@ -48,6 +48,7 @@
 	NSMutableDictionary *bundleCategories;
 	NSMutableDictionary *bundleTriggers;
 	NSMutableArray *bundleUsedScopes;
+	NSMutableArray *bundleHTMLOutputController;
 	NSMutableDictionary *bundleKeyEquivalents;
 	NSMutableDictionary *installedBundleUUIDs;
 
@@ -106,5 +107,7 @@
 - (void)handleEventWithURL:(NSURL*)url;
 
 - (IBAction)executeBundleItemForApp:(id)sender;
+
+- (void)addHTMLOutputController:(id)controller;
 
 @end

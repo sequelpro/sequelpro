@@ -63,7 +63,7 @@
 	[webView setDrawsBackground:YES];
 	[webView setEditable:NO];
 	[webView setShouldCloseWithWindow:YES];
-	[webView setShouldUpdateWhileOffscreen:YES];
+	[webView setShouldUpdateWhileOffscreen:NO];
 
 }
 
@@ -74,8 +74,8 @@
 
 	NSString *fullContent = @"%@";
 	fullContent = [NSString stringWithFormat:fullContent, content];
-
 	[self setInitHTMLSourceString:fullContent];
+	[[webView mainFrame] loadHTMLString:@"<html></html>" baseURL:nil];
 	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
 
 }
@@ -115,10 +115,10 @@
 {
 	if(webView) [webView release];
 	if(webPreferences) [webPreferences release];
-	[super dealloc];
+	// [super dealloc];
 }
 
-- (void) keyDown:(NSEvent *)theEvent
+- (void)keyDown:(NSEvent *)theEvent
 {
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 
@@ -164,10 +164,13 @@
 
 #pragma mark -
 
-- (void)windowShouldClose:(NSNotification *)notification
+- (void)windowWillClose:(NSNotification *)notification
 {
+	[[webView mainFrame] loadHTMLString:@"<html></html>" baseURL:nil];
 	[webView close];
+	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
+	// [[notification object] release];
 }
 
 #pragma mark -
@@ -177,6 +180,7 @@
 	if(request != nil) {
 		SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 		[c displayURLString:[[request URL] absoluteString] withOptions:nil];
+		[[NSApp delegate] addHTMLOutputController:c];
 		return [c webView];
 	}
 	return nil;
