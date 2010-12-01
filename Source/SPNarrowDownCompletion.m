@@ -801,7 +801,7 @@
 			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0)
 			{
 				if(autoCompletionMode) {
-					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 					[theView setCompletionIsOpen:NO];
 					[self close];
 					[NSApp sendEvent:event];
@@ -830,7 +830,7 @@
 					[self filter];
 				} else {
 					if(autoCompletionMode) {
-						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 						[theView setCompletionIsOpen:NO];
 						[self close];
 						break;
@@ -846,7 +846,7 @@
 			else if(key == NSBackspaceCharacter || key == NSDeleteCharacter)
 			{
 				if(autoCompletionMode) {
-					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:NO];
 					[NSApp sendEvent:event];
 					break;
 				}
@@ -866,7 +866,7 @@
 				if(autoCompletionMode) {
 					[theView setCompletionIsOpen:NO];
 					[self close];
-					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 					[NSApp sendEvent:event];
 					return;
 				}
@@ -899,7 +899,7 @@
 			} else {
 				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
 					if(autoCompletionMode) {
-						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 					}
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					[NSApp sendEvent:event];
@@ -915,31 +915,7 @@
 	}
 
 	// If the autocomplete menu is open, but the placeholder is still present, it needs removing.
-	if (autoCompletionMode && autocompletePlaceholderWasInserted) {
-		[[theView textStorage] beginEditing];
-		NSRange attributeResultRange;
-		while (1) {
-			attributeResultRange = NSMakeRange(NSNotFound, 0);
-			if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:0 longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(0, [[theView textStorage] length])]) {
-
-				// A match was found - attributeResultRange contains the range of the attributed string
-				[[theView textStorage] deleteCharactersInRange:attributeResultRange];
-			} else {
-
-				// No match was found. attributeResultRange contains the range of the no match - this can be
-				// checked to see whether a match is inside the full range.
-				if (attributeResultRange.length == [[theView textStorage] length]) break;
-
-				// A match was found - retrieve the location
-				NSUInteger matchStart = attributeResultRange.location+attributeResultRange.length;
-				if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, [[theView textStorage] length] - matchStart)]) {
-					[[theView textStorage] deleteCharactersInRange:attributeResultRange];
-				}
-			}
-		}
-		[[theView textStorage] endEditing];
-		autocompletePlaceholderWasInserted = NO;
-	}
+	if (autoCompletionMode && autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:NO];
 
 	[theView setCompletionIsOpen:NO];
 	[self close];
@@ -954,8 +930,11 @@
 	if([theTableView selectedRow] == -1 || fuzzyMode)
 		return;
 
+	// Retrieve the current autocompletion length, if any
+	NSUInteger currentAutocompleteLength = theCharRange.length - [originalFilterString length];
+
 	// Clear any current placeholder
-	if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholder];
+	if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 
 	// Select the highlighted item in the list of suggestions
 	id cur = [filtered objectAtIndex:[theTableView selectedRow]];
@@ -970,7 +949,7 @@
 		NSUInteger currentSelectionPosition = [theView selectedRange].location;
 		NSString* toInsert = [curMatch substringFromIndex:[originalFilterString length]];
 		[mutablePrefix appendString:toInsert];
-		theCharRange.length += [toInsert length];
+		theCharRange.length += [toInsert length] - currentAutocompleteLength;
 		theParseRange.length += [toInsert length];
 		[theView insertText:[toInsert lowercaseString]];
 		autocompletePlaceholderWasInserted = YES;
@@ -984,12 +963,45 @@
 	}
 }
 
-- (void)removeAutocompletionPlaceholder
+- (void)removeAutocompletionPlaceholderUsingFastMethod:(BOOL)useFastMethod
 {
 	if (!autocompletePlaceholderWasInserted) return;
 
-	[theView setSelectedRange:theCharRange];
-	[theView insertText:originalFilterString];
+	if (useFastMethod) {
+		[theView setSelectedRange:theCharRange];
+		[theView insertText:originalFilterString];
+	} else {
+		NSRange attributeResultRange = NSMakeRange(0, 0);
+		NSUInteger scanPosition = 0;
+		NSUInteger currentLength;
+
+		[[theView textStorage] beginEditing];
+		while (1) {
+			currentLength = [[theView textStorage] length];
+			if (scanPosition == currentLength) break;
+
+			// Perform a search for the attribute, capturing the range of the [non]match
+			if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:scanPosition longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(scanPosition, currentLength-scanPosition)]) {
+
+				// A match was found - attributeResultRange contains the range of the attributed string
+				[[theView textStorage] deleteCharactersInRange:attributeResultRange];
+			} else {
+
+				// No match was found. attributeResultRange contains the range of the no match - this can be
+				// checked to see whether a match is inside the full range.
+				if (scanPosition + attributeResultRange.length == currentLength) break;
+
+				// A match was found - retrieve the location
+				NSUInteger matchStart = attributeResultRange.location+attributeResultRange.length;
+				if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, currentLength - matchStart)]) {
+					[[theView textStorage] deleteCharactersInRange:attributeResultRange];
+				}				
+			}
+			scanPosition = attributeResultRange.location;
+		}
+		[[theView textStorage] endEditing];
+	}
+
 	autocompletePlaceholderWasInserted = NO;
 }
 

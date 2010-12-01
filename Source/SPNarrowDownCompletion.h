@@ -82,7 +82,7 @@
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertAutocompletePlaceholder;
-- (void)removeAutocompletionPlaceholder;
+- (void)removeAutocompletionPlaceholderUsingFastMethod:(BOOL)useFastMethod;
 - (void)adjustWorkingRangeByDelta:(NSInteger)delta;
 
 - (void)updateSyncArrowStatus;
