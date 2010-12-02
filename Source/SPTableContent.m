@@ -321,6 +321,10 @@
 		// Restore the table content view to the top left
 		[tableContentView scrollRowToVisible:0];
 		[tableContentView scrollColumnToVisible:0];
+
+		// Set the maximum table rows to an estimated count pre-load
+		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+		maxNumRowsIsEstimate = YES;
 	}
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
