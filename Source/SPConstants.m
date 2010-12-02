@@ -260,6 +260,10 @@ NSString *SPBundleInputSourceTableRowsAsTab                 = @"tablerowsastab";
 NSString *SPBundleInputSourceTableRowsAsCsv                 = @"tablerowsascsv";
 NSString *SPBundleInputSourceTableRowsAsSqlInsert           = @"tablerowsassqlinsert";
 NSString *SPBundleInputSourceNone                           = @"none";
+NSString *SPBundleInputSourceBlobHandlingInclude            = @"include";
+NSString *SPBundleInputSourceBlobHandlingExclude            = @"exclude";
+NSString *SPBundleInputSourceBlobHandlingImageFileReference = @"imagefilereference";
+NSString *SPBundleInputSourceBlobHandlingFileReference      = @"filereference";
 NSString *SPBundleOutputActionNone                          = @"none";
 NSString *SPBundleOutputActionInsertAsText                  = @"insertastext";
 NSString *SPBundleOutputActionInsertAsSnippet               = @"insertassnippet";
@@ -288,6 +292,7 @@ NSString *SPBundleFileContactKey                            = @"contact";
 NSString *SPBundleFileUUIDKey                               = @"uuid";
 NSString *SPBundleFileDescriptionKey                        = @"description";
 NSString *SPBundleFileTriggerKey                            = @"trigger";
+NSString *SPBundleFileWithBlobKey                           = @"withblob";
 NSString *SPBundleInternLabelKey                            = @"label";
 NSString *SPBundleInternPathToFileKey                       = @"path";
 NSString *SPBundleInternKeyEquivalentKey                    = @"keyEquivalent";
@@ -295,6 +300,7 @@ NSString *SPBundleInternKeyEquivalentKey                    = @"keyEquivalent";
 NSString *SPBundleFileName                                  = @"command.plist";
 NSString *SPBundleTaskInputFilePath                         = @"/tmp/SP_BUNDLE_TASK_INPUT";
 NSString *SPBundleTaskScriptCommandFilePath                 = @"/tmp/SP_SCRIPT_COMMAND";
+NSString *SPBundleTaskCopyBlobFileDirectory                 = @"/tmp/SP_COPY_BLOB_FILES";
 
 // sequel URL scheme
 NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";

@@ -93,6 +93,7 @@
 	[triggerInputFieldArray release];
 	[triggerDataTableArray release];
 	[triggerGeneralArray release];
+	[withBlobDataTableArray release];
 
 	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
@@ -134,6 +135,7 @@
 	triggerInputFieldPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	triggerDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	triggerGeneralPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	withBlobDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 
 	inputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, nil] retain];
 	inputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
@@ -145,6 +147,7 @@
 	triggerInputFieldArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, nil] retain];
 	triggerDataTableArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged, nil] retain];
 	triggerGeneralArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, nil] retain];
+	withBlobDataTableArray = [[NSArray arrayWithObjects:SPBundleInputSourceBlobHandlingExclude, SPBundleInputSourceBlobHandlingInclude, SPBundleInputSourceBlobHandlingImageFileReference, SPBundleInputSourceBlobHandlingFileReference, nil] retain];
 
 	NSMutableArray *allPopupScopeItems = [NSMutableArray array];
 	[allPopupScopeItems addObjectsFromArray:inputGeneralScopeArray];
@@ -157,6 +160,7 @@
 	[allPopupScopeItems addObjectsFromArray:triggerInputFieldArray];
 	[allPopupScopeItems addObjectsFromArray:triggerDataTableArray];
 	[allPopupScopeItems addObjectsFromArray:triggerGeneralArray];
+	[allPopupScopeItems addObjectsFromArray:withBlobDataTableArray];
 
 	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:
 						[NSArray arrayWithObjects:
@@ -210,6 +214,11 @@
 							NSLocalizedString(@"Database changed", @"database changed item label"),
 							NSLocalizedString(@"Table changed", @"table changed item label"),
 
+							NSLocalizedString(@"exclude BLOB", @"exclude BLOB item label"),
+							NSLocalizedString(@"include BLOB", @"include BLOB item label"),
+							NSLocalizedString(@"save BLOB as image file", @"save BLOB as image file item label"),
+							NSLocalizedString(@"save BLOB as dat file", @"save BLOB as dat file item label"),
+
 						nil]
 					forKeys:allPopupScopeItems];
 
@@ -262,6 +271,11 @@
 	for(NSString* title in triggerGeneralArray) {
 		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
 		[triggerGeneralPopUpMenu addItem:anItem];
+		[anItem release];
+	}
+	for(NSString* title in withBlobDataTableArray) {
+		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(withBlobButtonChanged:) keyEquivalent:@""];
+		[withBlobDataTablePopUpMenu addItem:anItem];
 		[anItem release];
 	}
 	anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:SPBundleInputSourceNone] action:nil keyEquivalent:@""];
@@ -450,6 +464,28 @@
 		input = [triggerDataTableArray objectAtIndex:selectedIndex];
 
 	[currentDict setObject:input forKey:SPBundleFileTriggerKey];
+
+	[self _updateBundleDataView];
+
+}
+
+/**
+ * Store trigger in bundle dict since it is not bound
+ * via key binding and update various GUI elements
+ */
+- (IBAction)withBlobButtonChanged:(id)sender
+{
+
+	id currentDict = [self _currentSelectedObject];
+
+	NSMenu* senderMenu = [sender menu];
+
+	NSInteger selectedIndex = [senderMenu indexOfItem:sender];
+	NSString *input = SPBundleInputSourceBlobHandlingExclude;
+
+	input = [withBlobDataTableArray objectAtIndex:selectedIndex];
+
+	[currentDict setObject:input forKey:SPBundleFileWithBlobKey];
 
 	[self _updateBundleDataView];
 
@@ -1618,6 +1654,9 @@
 	NSString *trigger = [currentDict objectForKey:SPBundleFileTriggerKey];
 	if(!trigger) trigger = SPBundleTriggerActionNone;
 
+	NSString *withBlob = [currentDict objectForKey:SPBundleFileWithBlobKey];
+	if(!withBlob) withBlob = SPBundleInputSourceBlobHandlingExclude;
+
 	// Update the scope popup button
 	if([scope isEqualToString:SPBundleScopeGeneral])
 		[scopePopupButton selectItemWithTag:kGeneralScopeArrayIndex];
@@ -1647,6 +1686,8 @@
 		input = SPBundleInputSourceNone;
 		[inputFallbackPopupButton setHidden:YES];
 		[fallbackLabelField setHidden:YES];
+		[withBlobPopupButton setHidden:YES];
+		[withBlobLabelField setHidden:YES];
 
 		break;
 		case kInputFieldScopeArrayIndex: // Input Field
@@ -1670,6 +1711,9 @@
 		if(anIndex == NSNotFound) anIndex = 0;
 		[triggerPopupButton selectItemAtIndex:anIndex];
 
+		[withBlobPopupButton setHidden:YES];
+		[withBlobLabelField setHidden:YES];
+
 		break;
 		case kDataTableScopeArrayIndex: // Data Table
 		[inputPopupButton setMenu:inputDataTableScopePopUpMenu];
@@ -1682,7 +1726,6 @@
 		if(anIndex == NSNotFound) anIndex = 0;
 		[outputPopupButton selectItemAtIndex:anIndex];
 
-		input = SPBundleInputSourceNone;
 		[inputFallbackPopupButton setHidden:YES];
 		[fallbackLabelField setHidden:YES];
 
@@ -1690,6 +1733,23 @@
 		anIndex = [triggerDataTableArray indexOfObject:trigger];
 		if(anIndex == NSNotFound) anIndex = 0;
 		[triggerPopupButton selectItemAtIndex:anIndex];
+
+		[withBlobPopupButton setMenu:withBlobDataTablePopUpMenu];
+		anIndex = [withBlobDataTableArray indexOfObject:withBlob];
+		if(anIndex == NSNotFound) anIndex = 0;
+		[withBlobPopupButton selectItemAtIndex:anIndex];
+
+		[inputFallbackPopupButton setHidden:YES];
+		[fallbackLabelField setHidden:YES];
+
+		if([currentDict objectForKey:SPBundleFileInputSourceKey] && ([[currentDict objectForKey:SPBundleFileInputSourceKey] isEqualToString:SPBundleInputSourceNone] || [[currentDict objectForKey:SPBundleFileInputSourceKey] isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert] || [[currentDict objectForKey:SPBundleFileInputSourceKey] isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert])) {
+			[withBlobPopupButton setHidden:YES];
+			[withBlobLabelField setHidden:YES];
+		} else {
+			[withBlobPopupButton setHidden:NO];
+			[withBlobLabelField setHidden:NO];
+		}
+		input = SPBundleInputSourceNone;
 
 		break;
 		case kDisabledScopeTag: // Disable command

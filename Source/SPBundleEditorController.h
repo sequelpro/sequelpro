@@ -40,6 +40,7 @@
 	IBOutlet NSTextField *tooltipTextField;
 	IBOutlet NSTextField *categoryTextField;
 	IBOutlet NSTextField *fallbackLabelField;
+	IBOutlet NSTextField *withBlobLabelField;
 	IBOutlet NSTextField *commandLabelField;
 	IBOutlet NSTextField *authorLabelField;
 	IBOutlet NSTextField *contactLabelField;
@@ -49,6 +50,7 @@
 	IBOutlet NSPopUpButton *outputPopupButton;
 	IBOutlet NSPopUpButton *scopePopupButton;
 	IBOutlet NSPopUpButton *triggerPopupButton;
+	IBOutlet NSPopUpButton *withBlobPopupButton;
 	IBOutlet NSButton *removeButton;
 	IBOutlet NSButton *addButton;
 	IBOutlet NSButton *saveButton;
@@ -84,6 +86,7 @@
 	NSMenu *triggerInputFieldPopUpMenu;
 	NSMenu *triggerDataTablePopUpMenu;
 	NSMenu *triggerGeneralPopUpMenu;
+	NSMenu *withBlobDataTablePopUpMenu;
 
 	NSArray *inputGeneralScopeArray;
 	NSArray *inputInputFieldScopeArray;
@@ -95,6 +98,7 @@
 	NSArray *triggerInputFieldArray;
 	NSArray *triggerDataTableArray;
 	NSArray *triggerGeneralArray;
+	NSArray *withBlobDataTableArray;
 
 	BOOL doGroupDueToChars;
 	BOOL allowUndo;
@@ -109,6 +113,7 @@
 - (IBAction)outputPopupButtonChanged:(id)sender;
 - (IBAction)scopeButtonChanged:(id)sender;
 - (IBAction)triggerButtonChanged:(id)sender;
+- (IBAction)withBlobButtonChanged:(id)sender;
 - (IBAction)duplicateCommandBundle:(id)sender;
 - (IBAction)addCommandBundle:(id)sender;
 - (IBAction)removeCommandBundle:(id)sender;

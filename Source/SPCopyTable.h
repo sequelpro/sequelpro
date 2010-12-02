@@ -48,8 +48,11 @@
 	NSUserDefaults *prefs;
 
 	NSRange fieldEditorSelectedRange;
+	NSString *copyBlobFileDirectory;
 
 }
+
+@property(readwrite,assign) NSString *copyBlobFileDirectory;
 
 @property(readwrite,assign) NSRange fieldEditorSelectedRange;
 
@@ -90,7 +93,7 @@
 	   returns something meaningful. 
 	@result	 The above described string, or nil if nothing selected
 */
-- (NSString *)rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected;
+- (NSString *)rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling;
 
 /*!
 	@method	 rowsAsCsvStringWithHeaders:onlySelectedRows:
@@ -101,7 +104,7 @@
 	   returns something meaningful. 
 	@result	 The above described string, or nil if nothing selected
 */
-- (NSString *)rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected;
+- (NSString *)rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling;
 
 /*
  * Generate a string in form of INSERT INTO <table> VALUES () of 

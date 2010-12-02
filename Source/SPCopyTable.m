@@ -34,10 +34,16 @@
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
 #import "SPBundleHTMLOutputController.h"
+#import "SPGeometryDataView.h"
 
 NSInteger MENU_EDIT_COPY             = 2001;
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
 NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
+
+NSInteger kBlobExclude     = 1;
+NSInteger kBlobInclude     = 2;
+NSInteger kBlobAsFile      = 3;
+NSInteger kBlobAsImageFile = 4;
 
 @implementation SPCopyTable
 
@@ -47,6 +53,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
  * selection in the field editor's editTextView
  */
 @synthesize fieldEditorSelectedRange;
+@synthesize copyBlobFileDirectory;
 
 /**
  * Cell editing in SPCustomQuery or for views in SPTableContent
@@ -93,7 +100,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			[pb setString:tmp forType:NSStringPboardType];
 		}
 	} else {
-		tmp = [self rowsAsTabStringWithHeaders:([sender tag] == MENU_EDIT_COPY_WITH_COLUMN) onlySelectedRows:YES];
+		tmp = [self rowsAsTabStringWithHeaders:([sender tag] == MENU_EDIT_COPY_WITH_COLUMN) onlySelectedRows:YES blobHandling:kBlobInclude];
 		if ( nil != tmp )
 		{
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
@@ -114,7 +121,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
  * Get selected rows a string of newline separated lines of tab separated fields
  * the value in each field is from the objects description method
  */
-- (NSString *) rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected
+- (NSString *) rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
 
@@ -152,6 +159,13 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSString *nullString = [prefs objectForKey:SPNullValue];
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	Class mcpGeometryData = [MCPGeometryData class];
+	NSUInteger rowCounter = 0;
+
+	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+		NSFileManager *fm = [NSFileManager defaultManager];
+		[fm removeItemAtPath:copyBlobFileDirectory error:nil];
+		[fm createDirectoryAtPath:copyBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+	}
 
 	while ( rowIndex != NSNotFound )
 	{
@@ -159,22 +173,59 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
-			// and the string representation of any blobs or binary texts.
+			// definable representation of any blobs or binary texts.
 			if (cellData) {
 				if ([cellData isNSNull])
 					[result appendFormat:@"%@\t", nullString];
 				else if ([cellData isSPNotLoaded])
 					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
-					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
-					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
-					if (displayString) {
-						[result appendFormat:@"%@\t", displayString];
-						[displayString release];
+					if(withBlobHandling == kBlobInclude) {
+						NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
+						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+						if (displayString) {
+							[result appendFormat:@"%@\t", displayString];
+							[displayString release];
+						}
+					}
+					else if(withBlobHandling == kBlobAsFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", copyBlobFileDirectory, rowCounter, c];
+						[cellData writeToFile:fp atomically:NO];
+						[result appendFormat:@"%@\t", fp];
+					}
+					else if(withBlobHandling == kBlobAsImageFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", copyBlobFileDirectory, rowCounter, c];
+						NSImage *image = [[NSImage alloc] initWithData:cellData];
+						if (image) {
+							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
+							[d writeToFile:fp atomically:NO];
+							if(d) [d release], d = nil;
+							[image release];
+						} else {
+							NSString *noData = @"";
+							[noData writeToFile:fp atomically:NO];
+						}
+						[result appendFormat:@"%@\t", fp];
+					}
+					else {
+						[result appendString:@"BLOB\t"];
 					}
 				}
 				else if ([cellData isKindOfClass:mcpGeometryData]) {
-					[result appendFormat:@"%@\t", [cellData wktString]];
+					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", copyBlobFileDirectory, rowCounter, c];
+						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
+						NSData *thePDF = [v pdfData];
+						if(thePDF) {
+							[thePDF writeToFile:fp atomically:NO];
+							[result appendFormat:@"%@\t", fp];
+						} else {
+							[result appendFormat:@"%@\t", [cellData wktString]];
+						}
+						if(v) [v release], v = nil;
+					} else {
+						[result appendFormat:@"%@\t", [cellData wktString]];
+					}
 				}
 				else
 					[result appendFormat:@"%@\t", [cellData description]];
@@ -182,6 +233,8 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 				[result appendString:@"\t"];
 			}
 		}
+
+		rowCounter++;
 
 		// Remove the trailing tab and add the linebreak
 		if ([result length]){
@@ -207,7 +260,7 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
  * Get selected rows a string of newline separated lines of , separated fields wrapped into quotes
  * the value in each field is from the objects description method
  */
-- (NSString *) rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected
+- (NSString *) rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
 
@@ -246,35 +299,82 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	Class mcpGeometryData = [MCPGeometryData class];
 
+	NSUInteger rowCounter = 0;
+
+	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+		NSFileManager *fm = [NSFileManager defaultManager];
+		[fm removeItemAtPath:copyBlobFileDirectory error:nil];
+		[fm createDirectoryAtPath:copyBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+	}
+
 	while ( rowIndex != NSNotFound )
 	{
 		for ( c = 0; c < numColumns; c++ ) {
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
-			// and the string representation of any blobs or binary texts.
+			// definable representation of any blobs or binary texts.
 			if (cellData) {
 				if ([cellData isNSNull])
 					[result appendFormat:@"\"%@\",", nullString];
 				else if ([cellData isSPNotLoaded])
 					[result appendFormat:@"\"%@\",", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
-					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
-					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
-					if (displayString) {
-						[result appendFormat:@"\"%@\",", [displayString stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
-						[displayString release];
+					if(withBlobHandling == kBlobInclude) {
+						NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
+						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+						if (displayString) {
+							[result appendFormat:@"\"%@\",", displayString];
+							[displayString release];
+						}
+					}
+					else if(withBlobHandling == kBlobAsFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", copyBlobFileDirectory, rowCounter, c];
+						[cellData writeToFile:fp atomically:NO];
+						[result appendFormat:@"\"%@\",", fp];
+					}
+					else if(withBlobHandling == kBlobAsImageFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", copyBlobFileDirectory, rowCounter, c];
+						NSImage *image = [[NSImage alloc] initWithData:cellData];
+						if (image) {
+							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
+							[d writeToFile:fp atomically:NO];
+							if(d) [d release], d = nil;
+							[image release];
+						} else {
+							NSString *noData = @"";
+							[noData writeToFile:fp atomically:NO];
+						}
+						[result appendFormat:@"\"%@\",", fp];
+					}
+					else {
+						[result appendString:@"\"BLOB\","];
 					}
 				}
 				else if ([cellData isKindOfClass:mcpGeometryData]) {
-					[result appendFormat:@"\"%@\",", [cellData wktString]];
+					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", copyBlobFileDirectory, rowCounter, c];
+						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
+						NSData *thePDF = [v pdfData];
+						if(thePDF) {
+							[thePDF writeToFile:fp atomically:NO];
+							[result appendFormat:@"\"%@\",", fp];
+						} else {
+							[result appendFormat:@"\"%@\",", [cellData wktString]];
+						}
+						if(v) [v release], v = nil;
+					} else {
+						[result appendFormat:@"\"%@\",", [cellData wktString]];
+					}
 				}
 				else
-					[result appendFormat:@"\"%@\",", [[cellData description] stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
+					[result appendFormat:@"\"%@\",", [cellData description]];
 			} else {
 				[result appendString:@","];
 			}
 		}
+
+		rowCounter++;
 
 		// Remove the trailing tab and add the linebreak
 		if ([result length]){
@@ -860,8 +960,10 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
+			NSString *withBlobHandling = @"";
 			NSError *err = nil;
-			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
+			NSString *uuid = [NSString stringWithNewUUID];
+			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -890,20 +992,40 @@ NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
 
 			NSError *inputFileError = nil;
 			NSString *input = @"";
+			NSInteger blobHandling = kBlobExclude;
+			if([cmdData objectForKey:SPBundleFileWithBlobKey]) {
+				if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingExclude])
+					blobHandling = kBlobExclude;
+				else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingInclude])
+					blobHandling = kBlobInclude;
+				else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingImageFileReference])
+					blobHandling = kBlobAsImageFile;
+				else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingFileReference])
+					blobHandling = kBlobAsFile;
+			}
+
+			if(blobHandling != kBlobExclude) {
+				NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskCopyBlobFileDirectory, uuid];
+				[env setObject:bundleBlobFilePath forKey:@"SP_BUNDLE_BLOB_FILES_DIRECTORY"];
+				[self setCopyBlobFileDirectory:bundleBlobFilePath];
+			} else {
+				[self setCopyBlobFileDirectory:@""];
+			}
+
 			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
-				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES];
+				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES blobHandling:blobHandling];
 			}
 			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
-				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
+				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES blobHandling:blobHandling];
 			}
 			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
 				input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
 			}
 			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
-				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];
+				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO blobHandling:blobHandling];
 			}
 			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
-				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO];
+				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO blobHandling:blobHandling];
 			}
 			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
 				input = [self rowsAsSqlInsertsOnlySelectedRows:NO];

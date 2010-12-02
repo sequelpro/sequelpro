@@ -448,6 +448,10 @@ extern NSString *SPBundleInputSourceTableRowsAsTab;
 extern NSString *SPBundleInputSourceTableRowsAsCsv;
 extern NSString *SPBundleInputSourceTableRowsAsSqlInsert;
 extern NSString *SPBundleInputSourceNone;
+extern NSString *SPBundleInputSourceBlobHandlingInclude;
+extern NSString *SPBundleInputSourceBlobHandlingExclude;
+extern NSString *SPBundleInputSourceBlobHandlingImageFileReference;
+extern NSString *SPBundleInputSourceBlobHandlingFileReference;
 extern NSString *SPBundleOutputActionNone;
 extern NSString *SPBundleOutputActionInsertAsText;
 extern NSString *SPBundleOutputActionInsertAsSnippet;
@@ -476,12 +480,14 @@ extern NSString *SPBundleFileContactKey;
 extern NSString *SPBundleFileUUIDKey;
 extern NSString *SPBundleFileDescriptionKey;
 extern NSString *SPBundleFileTriggerKey;
+extern NSString *SPBundleFileWithBlobKey;
 extern NSString *SPBundleInternLabelKey;
 extern NSString *SPBundleInternPathToFileKey;
 extern NSString *SPBundleInternKeyEquivalentKey;
 extern NSString *SPBundleFileName;
 extern NSString *SPBundleTaskInputFilePath;
 extern NSString *SPBundleTaskScriptCommandFilePath;
+extern NSString *SPBundleTaskCopyBlobFileDirectory;
 
 // sequel URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;
