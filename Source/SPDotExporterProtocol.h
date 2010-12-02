@@ -37,35 +37,36 @@
 /**
  * Called when the dot export process is about to begin. 
  *
- * @param SPDotExpoter The expoter calling the method.
+ * @param SPDotExporter The exporter calling the method.
  */
 - (void)dotExportProcessWillBegin:(SPDotExporter *)exporter;
 
 /**
  * Called when the dot export process is complete.
  *
- * @param SPDotExpoter The expoter calling the method.
+ * @param SPDotExporter The exporter calling the method.
  */
 - (void)dotExportProcessComplete:(SPDotExporter *)exporter;
 
 /**
  * Called when the progress of the dot export process is updated.
  *
- * @param SPDotExpoter The expoter calling the method.
+ * @param SPDotExporter The exporter calling the method.
  */
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter;
 
 /**
  * Called when the dot export process is about to begin fetching data from the database.
  *
- * @param SPDotExpoter The expoter calling the method.
+ * @param SPDotExporter The exporter calling the method.
+ * @param NSUInteger The index of the table being processed.
  */
-- (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter;
+- (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter forTableWithIndex:(NSUInteger)tableIndex;
 
 /**
  * Called when the dot export process is about to begin writing data to disk. 
  *
- * @param SPDotExpoter The expoter calling the method.
+ * @param SPDotExporter The exporter calling the method.
  */
 - (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter;
 

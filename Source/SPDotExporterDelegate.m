@@ -39,6 +39,8 @@
 	
 	[[exportProgressTitle onMainThread] displayIfNeeded];
 	[[exportProgressText onMainThread] displayIfNeeded];
+	[[exportProgressIndicator onMainThread] stopAnimation:self];
+	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
 }
 
 /**
@@ -63,25 +65,20 @@
  */
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter
 {
-
+	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
 /**
  *
  */
-- (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter
+- (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter forTableWithIndex:(NSUInteger)tableIndex
 {
 	// Update the current table export index
-	currentTableExportIndex = (exportTableCount - [exporters count]);
+	currentTableExportIndex = tableIndex;
 	
-	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
+	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
 	
-	[[exportProgressText onMainThread] displayIfNeeded];
-	
-	[[exportProgressIndicator onMainThread] stopAnimation:self];
-	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
-	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
-	[[exportProgressIndicator onMainThread] setDoubleValue:0];
+	[exportProgressText displayIfNeeded];
 }
 
 /**
@@ -92,6 +89,9 @@
 	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching relations data...", @"export label showing app is fetching relations data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
 	
 	[[exportProgressText onMainThread] displayIfNeeded];
+	[[exportProgressIndicator onMainThread] setIndeterminate:YES];
+	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:YES];
+	[[exportProgressIndicator onMainThread] startAnimation:self];
 }
 
 @end

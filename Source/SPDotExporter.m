@@ -72,7 +72,7 @@
 		[pool release];
 		return;
 	}
-	
+
 	// Inform the delegate that the export process is about to begin
 	[delegate performSelectorOnMainThread:@selector(dotExportProcessWillBegin:) withObject:self waitUntilDone:NO];
 	
@@ -106,6 +106,7 @@
 	// Process the tables
 	for (NSInteger i = 0; i < [[self dotExportTables] count]; i++) 
 	{
+
 		// Check for cancellation flag
 		if ([self isCancelled]) {
 			[fkInfo release];
@@ -120,7 +121,7 @@
 		[self setDotExportCurrentTable:tableName];
 		
 		// Inform the delegate that we are about to start fetcihing data for the current table
-		[delegate performSelectorOnMainThread:@selector(dotExportProcessWillBeginFetchingData:) withObject:self waitUntilDone:NO];
+		[[delegate onMainThread] dotExportProcessWillBeginFetchingData:self forTableWithIndex:i];
 		
 		NSString *hdrColor = @"#DDDDDD";
 					
@@ -134,12 +135,12 @@
 		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
 		[metaString appendFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"%@\">%@</TD></TR>\n", hdrColor, tableName];
 		
-		// Get the column info
-		NSArray *columnInfo = [tableInfo objectForKey:@"columns"];
+		// Retrieve the column definitions for the current table
+		NSArray *tableColumns = [tableInfo objectForKey:@"columns"];
 		
-		for (NSDictionary* item in columnInfo) 
+		for (NSDictionary *aColumn in tableColumns) 
 		{
-			[metaString appendFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [item objectForKey:@"name"], [item objectForKey:@"name"], [item objectForKey:@"type"]];
+			[metaString appendFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" PORT=\"%@\">%@:<FONT FACE=\"Helvetica-Oblique\" POINT-SIZE=\"10\">%@</FONT></TD></TR>\n", [aColumn objectForKey:@"name"], [aColumn objectForKey:@"name"], [aColumn objectForKey:@"type"]];
 		}
 		
 		[metaString appendString:@"\t\t\t</TABLE>>\n"];
@@ -148,34 +149,38 @@
 		
 		[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
 		
-		// see about relations
-		columnInfo = [tableInfo objectForKey:@"constraints"];
-		
-		NSString *ccol = NSArrayObjectAtIndex(columnInfo, 0);
-		for (NSDictionary* item in columnInfo) 
-		{
-			// Check for cancellation flag
-			if ([self isCancelled]) {
-				[fkInfo release];
-				[pool release];
-				return;
+		// Check if any relations are available for the table
+		NSArray *tableConstraints = [tableInfo objectForKey:@"constraints"];
+		if ([tableConstraints count]) {
+			for (NSDictionary* aConstraint in tableConstraints) {
+
+				// Check for cancellation flag
+				if ([self isCancelled]) {
+					[fkInfo release];
+					[pool release];
+					return;
+				}
+				
+				// Get the column references. Currently the columns themselves are an array,
+				// while reference columns and tables are comma separated if there are more than
+				// one.  Only use the first of each for the time being.
+				NSArray *originColumns = [aConstraint objectForKey:@"columns"];
+				NSArray *referenceColumns = [[aConstraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","];
+				
+				NSString *extra = @"";
+				
+				if ([originColumns count] > 1) {
+					extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
+				}
+				
+				[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@", tableName, [originColumns objectAtIndex:0], [aConstraint objectForKey:@"ref_table"], [referenceColumns objectAtIndex:0], extra]];
 			}
-			
-			// Get the column references. Currently the columns themselves are an array,
-			// while reference columns and tables are comma separated if there are more than
-			// one.  Only use the first of each for the time being.
-			NSArray *ccols = [item objectForKey:@"columns"];
-			NSString *rcol = [item objectForKey:@"ref_columns"];
-			
-			NSString *extra = @"";
-			
-			if ([ccols count] > 1) {
-				extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
-				rcol = NSArrayObjectAtIndex([rcol componentsSeparatedByString:@","], 0);
-			}
-			
-			[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@", tableName, ccol, [item objectForKey:@"ref_table"], rcol, extra]];
 		}
+
+		// Update progress
+		NSInteger progress = (i * ([self exportMaxProgress] / [[self dotExportTables] count]));
+		[self setExportProgressValue:progress];
+		[delegate performSelectorOnMainThread:@selector(dotExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 	}
 	
 	// Inform the delegate that we are about to start fetching relations data for the current table
