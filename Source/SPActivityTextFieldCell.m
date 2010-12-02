@@ -71,8 +71,8 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 		[cancelButton setTitle:@""];
 		[cancelButton setBordered:NO];
 		[cancelButton setShowsBorderOnlyWhileMouseInside:YES];
-		[cancelButton setImage:[NSImage imageNamed:@"link-arrow"]];
-		[cancelButton setAlternateImage:[NSImage imageNamed:@"link-arrow-clicked"]];
+		[cancelButton setImage:[NSImage imageNamed:@"cancel"]];
+		[cancelButton setAlternateImage:[NSImage imageNamed:@"cancel-clicked"]];
 	}
 	
 	return self;
@@ -175,16 +175,16 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 		drawState = newDrawState;
 		switch (drawState) {
 			case SPLinkDrawStateNormal:
-				[cancelButton setImage:[NSImage imageNamed:@"link-arrow"]];
-				[cancelButton setAlternateImage:[NSImage imageNamed:@"link-arrow-clicked"]];
+				[cancelButton setImage:[NSImage imageNamed:@"cancel"]];
+				[cancelButton setAlternateImage:[NSImage imageNamed:@"cancel-clicked"]];
 				break;
 			case SPLinkDrawStateHighlight:
-				[cancelButton setImage:[NSImage imageNamed:@"link-arrow-highlighted"]];
-				[cancelButton setAlternateImage:[NSImage imageNamed:@"link-arrow-highlighted-clicked"]];
+				[cancelButton setImage:[NSImage imageNamed:@"cancel-highlighted"]];
+				[cancelButton setAlternateImage:[NSImage imageNamed:@"cancel-clicked-highlighted"]];
 				break;
 			case SPLinkDrawStateBackgroundHighlight:
-				[cancelButton setImage:[NSImage imageNamed:@"link-arrow-clicked"]];
-				[cancelButton setAlternateImage:[NSImage imageNamed:@"link-arrow"]];
+				[cancelButton setImage:[NSImage imageNamed:@"cancel-clicked"]];
+				[cancelButton setAlternateImage:[NSImage imageNamed:@"cancel"]];
 				break;
 		}
 	}
