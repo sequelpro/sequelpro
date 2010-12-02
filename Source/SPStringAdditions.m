@@ -667,7 +667,7 @@
  */
 - (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError
 {
-	return [self runBashCommandWithEnvironment:shellEnvironment atCurrentDirectoryPath:path callerDocument:nil withName:@"" error:theError];
+	return [self runBashCommandWithEnvironment:shellEnvironment atCurrentDirectoryPath:path callerInstance:nil contextInfo:nil error:theError];
 }
 
 /**
