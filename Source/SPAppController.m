@@ -61,6 +61,8 @@
 		installedBundleUUIDs = [[NSMutableDictionary alloc] initWithCapacity:1];
 		runningActivitiesArray = [[NSMutableArray alloc] init];
 
+		stopKeyDownListener = YES;
+
 		[NSApp setDelegate:self];
 	}
 
@@ -117,6 +119,7 @@
 	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 
 	[self reloadBundles:self];
+
 }
 
 /**
@@ -1188,6 +1191,8 @@
 		}
 	}
 
+	stopKeyDownListener = YES;
+
 	BOOL foundInstalledBundles = NO;
 
 	[bundleItems removeAllObjects];
@@ -1318,11 +1323,12 @@
 	// Add installed Bundles
 	// For each scope add a submenu but not for the last one (should be General always)
 	[menu addItem:[NSMenuItem separatorItem]];
-
+	[menu setAutoenablesItems:YES];
 	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral, nil];
 	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Fields", @"input fields menu item label"), 
 													 NSLocalizedString(@"Data Table", @"data table menu item label"),
 													 NSLocalizedString(@"General", @"general menu item label"),nil];
+
 	NSArray *scopeSelector = [NSArray arrayWithObjects:@"executeBundleItemForInputField:", 
 													   @"executeBundleItemForDataTable:", 
 													   @"executeBundleItemForApp:", nil];
@@ -1345,7 +1351,7 @@
 		// Add last scope (General) not as submenu
 		if(k < [scopes count]-1) {
 			bundleMenu = [[[NSMenu alloc] init] autorelease];
-
+			[bundleMenu setAutoenablesItems:YES];
 			bundleSubMenuItem = [[NSMenuItem alloc] initWithTitle:[scopeTitles objectAtIndex:k] action:nil keyEquivalent:@""];
 			[bundleSubMenuItem setTag:10000000];
 
@@ -1379,7 +1385,7 @@
 			else
 				keyEq = @"";
 
-			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:NSSelectorFromString([scopeSelector objectAtIndex:k]) keyEquivalent:keyEq] autorelease];
+			NSMenuItem *mItem = [[[NSMenuItem alloc] initWithTitle:[item objectForKey:SPBundleInternLabelKey] action:@selector(bundleCommandDispatcher:) keyEquivalent:keyEq] autorelease];
 			bundleOtherThanGeneralFound = YES;
 			if([keyEq length])
 				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
@@ -1388,6 +1394,7 @@
 				[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];
 
 			[mItem setTag:1000000 + i++];
+			[mItem setRepresentedObject:scope];
 
 			if([item objectForKey:SPBundleFileCategoryKey]) {
 				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
@@ -1396,10 +1403,104 @@
 			}
 		}
 
-		if(bundleSubMenuItem)[bundleSubMenuItem release];
+		if(bundleSubMenuItem) [bundleSubMenuItem release];
 		k++;
 	}
 
+	// Start General keyDown Listener if there're assigned Bundle commands
+	// due to possible same key equivalent settings for differnet scopes
+	if([bundleKeyEquivalents objectForKey:SPBundleScopeGeneral] || [bundleKeyEquivalents objectForKey:SPBundleScopeDataTable]) {
+		stopKeyDownListener = NO;
+		[self performSelector:@selector(keyDownListener) withObject:nil afterDelay:0.1];
+	}
+
+
+}
+
+/**
+ * Action for any Bundle menu menuItem
+ */
+- (IBAction)bundleCommandDispatcher:(id)sender
+{
+	NSString *scope = [sender representedObject];
+	id firstResponder = [[NSApp mainWindow] firstResponder];
+	if([scope isEqualToString:SPBundleScopeInputField] && [firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
+		[firstResponder executeBundleItemForInputField:sender];
+	}
+	else if([scope isEqualToString:SPBundleScopeDataTable] && [firstResponder respondsToSelector:@selector(executeBundleItemForDataTable:)]) {
+		[firstResponder executeBundleItemForDataTable:sender];
+	}
+	else if([scope isEqualToString:SPBundleScopeGeneral]) {
+		[self executeBundleItemForApp:sender];
+	} else {
+		NSBeep();
+	}
+}
+
+/**
+ * Listener for Bundle key equivalent due to same assigned equivalents
+ */
+- (void)keyDownListener
+{
+	NSDictionary *keyEqsGeneral = [bundleKeyEquivalents objectForKey:SPBundleScopeGeneral];
+	NSDictionary *keyEqsDataTable = [bundleKeyEquivalents objectForKey:SPBundleScopeDataTable];
+
+	while(!stopKeyDownListener) {
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                   untilDate:[NSDate distantFuture]
+                                      inMode:NSDefaultRunLoopMode
+                                     dequeue:YES];
+		if(!event) continue;
+		if ([event type] == NSKeyDown 
+				&& ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]
+				&& ![[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForDataTable:)]
+				&& ![[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForInputField:)]
+			) {
+			// Check Bundle key equivalents due to same equivalents for Data Table scope
+			NSString *charactersIgnMod = [event charactersIgnoringModifiers];
+			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
+			BOOL found = NO;
+			for(NSString *eqs in [keyEqsGeneral allKeys]) {
+				NSArray *eq = [keyEqsGeneral objectForKey:eqs];
+				if([NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
+					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+					[aMenuItem setTag:0];
+					[aMenuItem setToolTip:[eq objectAtIndex:2]];
+					[self executeBundleItemForApp:aMenuItem];
+					found = YES;
+					break;
+				}
+			} 
+			if(!found)
+				[NSApp sendEvent:event];
+		}
+		else if ([event type] == NSKeyDown 
+				&& ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]
+				&& [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForDataTable:)]
+			) {
+			// Check Bundle key equivalents due to same equivalents for Data Table scope
+			NSString *charactersIgnMod = [event charactersIgnoringModifiers];
+			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
+			BOOL found = NO;
+			for(NSString *eqs in [keyEqsDataTable allKeys]) {
+				NSArray *eq = [keyEqsDataTable objectForKey:eqs];
+				if([NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
+					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+					[aMenuItem setTag:0];
+					[aMenuItem setToolTip:[eq objectAtIndex:2]];
+					[[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
+					found = YES;
+					break;
+				}
+			} 
+			if(!found)
+				[NSApp sendEvent:event];
+		}
+		else {
+			[NSApp sendEvent:event];
+		}
+		usleep(1000);
+	}
 }
 
 #pragma mark -

@@ -34,6 +34,7 @@
 	IBOutlet NSWindow* bundleEditorWindow;
 
 	BOOL isNewFavorite;
+	BOOL stopKeyDownListener;
 	
 	SPAboutController *aboutController;
 	SPPreferenceController *prefsController;
@@ -55,6 +56,8 @@
 	NSMutableArray *runningActivitiesArray;
 
 }
+
+- (IBAction)bundleCommandDispatcher:(id)sender;
 
 // Window management
 - (IBAction)newWindow:(id)sender;
@@ -109,5 +112,7 @@
 - (IBAction)executeBundleItemForApp:(id)sender;
 
 - (void)addHTMLOutputController:(id)controller;
+
+- (void)keyDownListener;
 
 @end

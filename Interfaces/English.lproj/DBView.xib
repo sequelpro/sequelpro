@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="6034"/>
+			<integer value="7691"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -493,7 +493,7 @@
 																	<object class="NSTableView" id="794785393">
 																		<reference key="NSNextResponder" ref="242523705"/>
 																		<int key="NSvFlags">4352</int>
-																		<string key="NSFrameSize">{214, 145}</string>
+																		<string key="NSFrameSize">{216, 145}</string>
 																		<reference key="NSSuperview" ref="242523705"/>
 																		<bool key="NSEnabled">YES</bool>
 																		<object class="_NSCornerView" key="NSCornerView">
@@ -559,7 +559,7 @@
 																		<int key="NSTableViewDraggingDestinationStyle">1</int>
 																	</object>
 																</object>
-																<string key="NSFrameSize">{214, 145}</string>
+																<string key="NSFrameSize">{216, 145}</string>
 																<reference key="NSSuperview" ref="561874764"/>
 																<reference key="NSNextKeyView" ref="794785393"/>
 																<reference key="NSDocView" ref="794785393"/>
@@ -586,7 +586,7 @@
 																<double key="NSPercent">0.76156586408615112</double>
 															</object>
 														</object>
-														<string key="NSFrameSize">{214, 145}</string>
+														<string key="NSFrame">{{-1, 0}, {216, 145}}</string>
 														<reference key="NSSuperview" ref="192579410"/>
 														<reference key="NSNextKeyView" ref="242523705"/>
 														<int key="NSsFlags">528</int>
