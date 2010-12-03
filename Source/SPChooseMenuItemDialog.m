@@ -27,4 +27,68 @@
 
 @implementation SPChooseMenuItemDialog
 
+@synthesize contextMenu;
+
+- (id)init;
+{
+	if(self = [self initWithContentRect:NSMakeRect(10,10,10,10) 
+					styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+	{
+		;
+	}
+	return self;
+}
+
+- (void)dealloc
+{
+	[tv release];
+	[super dealloc];
+}
+
+- (void)initMeWithOptions:(NSDictionary *)displayOptions
+{
+	[self setReleasedWhenClosed:YES];
+	[self setLevel:NSNormalWindowLevel];
+	[self setHidesOnDeactivate:YES];
+	[self setHasShadow:YES];
+	[self setAlphaValue:0.9];
+	tv = [[NSTextView alloc] initWithFrame:NSMakeRect(10,10,10,10)];
+	[self setContentView:tv];
+	[tv setDelegate:self];
+	[tv setEditable:YES];
+}
+
++ (void)displayMenu:(NSMenu*)theMenu atPosition:(NSPoint)location
+{
+
+	SPChooseMenuItemDialog *dialog = [SPChooseMenuItemDialog new];
+	[dialog initMeWithOptions:nil];
+
+	NSMenuItem *returnItem = nil;
+
+	[dialog setContextMenu:theMenu];
+	[dialog setFrameTopLeftPoint:location];
+
+	[dialog orderFront:nil];
+	NSEvent *theEvent = [NSEvent
+	        mouseEventWithType:NSRightMouseDown
+	        location:NSMakePoint(1,1)
+	        modifierFlags:0
+	        timestamp:1
+	        windowNumber:[dialog windowNumber]
+	        context:[NSGraphicsContext currentContext]
+	        eventNumber:1
+	        clickCount:1
+	        pressure:0.0];
+
+	[[NSApplication sharedApplication] postEvent:theEvent atStart:NO];
+
+}
+
+- (NSMenu *)menuForEvent:(NSEvent *)event 
+{
+	NSLog(@"asdasdasd");
+	return contextMenu;
+}
+
 @end

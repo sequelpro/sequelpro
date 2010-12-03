@@ -1413,7 +1413,7 @@
 
 	// Start General keyDown Listener if there're assigned Bundle commands
 	// due to possible same key equivalent settings for differnet scopes
-	if([bundleKeyEquivalents objectForKey:SPBundleScopeGeneral] || [bundleKeyEquivalents objectForKey:SPBundleScopeDataTable]) {
+	if([bundleKeyEquivalents objectForKey:SPBundleScopeGeneral] || [bundleKeyEquivalents objectForKey:SPBundleScopeDataTable] || [bundleKeyEquivalents objectForKey:SPBundleScopeInputField]) {
 		stopKeyDownListener = NO;
 		[self performSelector:@selector(keyDownListener) withObject:nil afterDelay:0.1];
 	}
@@ -1446,6 +1446,7 @@
  */
 - (void)keyDownListener
 {
+	return;
 	NSDictionary *keyEqsGeneral = [bundleKeyEquivalents objectForKey:SPBundleScopeGeneral];
 	NSDictionary *keyEqsDataTable = [bundleKeyEquivalents objectForKey:SPBundleScopeDataTable];
 	NSDictionary *keyEqsInputFields = [bundleKeyEquivalents objectForKey:SPBundleScopeInputField];
@@ -1456,86 +1457,96 @@
                                       inMode:NSDefaultRunLoopMode
                                      dequeue:YES];
 		if(!event) continue;
-		if ([event type] == NSKeyDown 
-				&& ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]
-				&& ![[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForDataTable:)]
-				&& ![[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForInputField:)]
-			) {
-			// Check Bundle key equivalents due to same equivalents for Data Table scope
+		
+		if ([event type] == NSKeyDown && ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]) {
 			NSString *charactersIgnMod = [event charactersIgnoringModifiers];
 			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
-			BOOL found = NO;
-			for(NSString *eqs in [keyEqsGeneral allKeys]) {
-				NSInteger idx = 0;
-				if([[keyEqsInputFields objectForKey:eqs] count] > 1) {
-					// TODO
-				}
-				NSArray *eq = [[keyEqsDataTable objectForKey:eqs] objectAtIndex:idx];
-				if(eq && [eq count] && [NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
-					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
-					[aMenuItem setTag:0];
-					[aMenuItem setToolTip:[eq objectAtIndex:2]];
-					[self executeBundleItemForApp:aMenuItem];
-					found = YES;
-					break;
-				}
-			} 
-			if(!found)
+
+			NSMutableString *keyEqKey = [NSMutableString string];
+			[keyEqKey setString:@""];
+			if(curFlags & NSControlKeyMask)
+				[keyEqKey appendString:@"^"];
+			if(curFlags & NSAlternateKeyMask)
+				[keyEqKey appendString:@"~"];
+			if(curFlags & NSShiftKeyMask)
+				[keyEqKey appendString:@"$"];
+			if(curFlags & NSCommandKeyMask)
+				[keyEqKey appendString:@"@"];
+			[keyEqKey appendString:[charactersIgnMod lowercaseString]];
+
+			if (![[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForDataTable:)]
+					&& ![[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForInputField:)]) {
+				BOOL found = NO;
+				if([keyEqsGeneral objectForKey:keyEqKey]) {
+					NSInteger idx = 0;
+					if([[keyEqsInputFields objectForKey:keyEqKey] count] > 1) {
+						// TODO
+					} else {
+						NSArray *eq = [[keyEqsInputFields objectForKey:keyEqKey] objectAtIndex:idx];
+						if(eq && [eq count]) {
+							NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+							[aMenuItem setTag:0];
+							[aMenuItem setToolTip:[eq objectAtIndex:2]];
+							[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
+							found = YES;
+						}
+					}
+				} 
+				if(!found)
+					[NSApp sendEvent:event];
+			}
+			else if ([[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForDataTable:)]) {
+				BOOL found = NO;
+				if([keyEqsDataTable objectForKey:keyEqKey]) {
+					NSInteger idx = 0;
+					if([[keyEqsInputFields objectForKey:keyEqKey] count] > 1) {
+						// TODO
+					} else {
+						NSArray *eq = [[keyEqsInputFields objectForKey:keyEqKey] objectAtIndex:idx];
+						if(eq && [eq count]) {
+							NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+							[aMenuItem setTag:0];
+							[aMenuItem setToolTip:[eq objectAtIndex:2]];
+							[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
+							found = YES;
+						}
+					}
+				} 
+				if(!found)
+					[NSApp sendEvent:event];
+			}
+			else if ([[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForInputField:)]) {
+				BOOL found = NO;
+				NSLog(@"%@", keyEqKey);
+				if([keyEqsInputFields objectForKey:keyEqKey]) {
+					NSInteger idx = 0;
+					if([[keyEqsInputFields objectForKey:keyEqKey] count] > 1) {
+						NSMenu *m = [[[NSMenu alloc] init] autorelease];
+						NSInteger cnt = 0;
+						for(id i in [keyEqsInputFields objectForKey:keyEqKey]) {
+							NSMenuItem *aMenuItem = [[[NSMenuItem alloc] initWithTitle:[i objectAtIndex:2] action:nil keyEquivalent:@""] autorelease];
+							[m addItem:aMenuItem];
+						}
+						[SPChooseMenuItemDialog displayMenu:m atPosition:[NSEvent mouseLocation]];
+						found = YES;
+					} else {
+						NSArray *eq = [[keyEqsInputFields objectForKey:keyEqKey] objectAtIndex:idx];
+						if(eq && [eq count]) {
+							NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+							[aMenuItem setTag:0];
+							[aMenuItem setToolTip:[eq objectAtIndex:2]];
+							[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
+							found = YES;
+						}
+					}
+				} 
+				if(!found)
+					[NSApp sendEvent:event];
+			}
+			else {
 				[NSApp sendEvent:event];
-		}
-		else if ([event type] == NSKeyDown 
-				&& ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]
-				&& [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForDataTable:)]
-			) {
-			// Check Bundle key equivalents due to same equivalents for Data Table scope
-			NSString *charactersIgnMod = [event charactersIgnoringModifiers];
-			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
-			BOOL found = NO;
-			for(NSString *eqs in [keyEqsDataTable allKeys]) {
-				NSInteger idx = 0;
-				if([[keyEqsInputFields objectForKey:eqs] count] > 1) {
-					// TODO
-				}
-				NSArray *eq = [[keyEqsDataTable objectForKey:eqs] objectAtIndex:idx];
-				if(eq && [eq count] && [NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
-					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
-					[aMenuItem setTag:0];
-					[aMenuItem setToolTip:[eq objectAtIndex:2]];
-					[[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
-					found = YES;
-					break;
-				}
-			} 
-			if(!found)
-				[NSApp sendEvent:event];
-		}
-		else if ([event type] == NSKeyDown 
-				&& ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]
-				&& [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForInputField:)]
-			) {
-			// Check Bundle key equivalents due to same equivalents for Data Table scope
-			NSString *charactersIgnMod = [event charactersIgnoringModifiers];
-			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
-			BOOL found = NO;
-			for(NSString *eqs in [keyEqsInputFields allKeys]) {
-				NSInteger idx = 0;
-				if([[keyEqsInputFields objectForKey:eqs] count] > 1) {
-					// TODO
-				}
-				NSArray *eq = [[keyEqsInputFields objectForKey:eqs] objectAtIndex:idx];
-				if(eq && [eq count] && [NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
-					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
-					[aMenuItem setTag:0];
-					[aMenuItem setToolTip:[eq objectAtIndex:2]];
-					[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
-					found = YES;
-					break;
-				}
-			} 
-			if(!found)
-				[NSApp sendEvent:event];
-		}
-		else {
+			}
+		} else {
 			[NSApp sendEvent:event];
 		}
 		usleep(1000);

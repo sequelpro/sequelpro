@@ -28,7 +28,13 @@
 @interface SPChooseMenuItemDialog : NSWindow
 
 {
-
+	NSMenu *contextMenu;
+	NSTextView *tv;
 }
+
+@property(readwrite,retain) NSMenu* contextMenu;
+
+- (void)initMeWithOptions:(NSDictionary *)displayOptions;
++ (void)displayMenu:(NSMenu*)theMenu atPosition:(NSPoint)location;
 
 @end
