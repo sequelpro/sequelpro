@@ -36,6 +36,7 @@
 #import "SPTooltip.h"
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
+#import "SPChooseMenuItemDialog.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -1275,9 +1276,12 @@
 								mask = mask | NSAlternateKeyMask;
 							if([theMods rangeOfString:@"$"].length)
 								mask = mask | NSShiftKeyMask;
-							for(NSString* scope in scopes)
-								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSArray arrayWithObjects:[theChar lowercaseString], 
-									[NSNumber numberWithInteger:mask], infoPath, nil] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
+							for(NSString* scope in scopes) {
+								if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
+									[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
+								[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
+												[NSArray arrayWithObjects:[theChar lowercaseString], [NSNumber numberWithInteger:mask], infoPath, [cmdData objectForKey:SPBundleFileNameKey], nil]];
+							}
 							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
 						}
 
@@ -1444,6 +1448,7 @@
 {
 	NSDictionary *keyEqsGeneral = [bundleKeyEquivalents objectForKey:SPBundleScopeGeneral];
 	NSDictionary *keyEqsDataTable = [bundleKeyEquivalents objectForKey:SPBundleScopeDataTable];
+	NSDictionary *keyEqsInputFields = [bundleKeyEquivalents objectForKey:SPBundleScopeInputField];
 
 	while(!stopKeyDownListener) {
 		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
@@ -1461,8 +1466,12 @@
 			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
 			BOOL found = NO;
 			for(NSString *eqs in [keyEqsGeneral allKeys]) {
-				NSArray *eq = [keyEqsGeneral objectForKey:eqs];
-				if([NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
+				NSInteger idx = 0;
+				if([[keyEqsInputFields objectForKey:eqs] count] > 1) {
+					// TODO
+				}
+				NSArray *eq = [[keyEqsDataTable objectForKey:eqs] objectAtIndex:idx];
+				if(eq && [eq count] && [NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectAtIndex:2]];
@@ -1483,12 +1492,42 @@
 			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
 			BOOL found = NO;
 			for(NSString *eqs in [keyEqsDataTable allKeys]) {
-				NSArray *eq = [keyEqsDataTable objectForKey:eqs];
-				if([NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
+				NSInteger idx = 0;
+				if([[keyEqsInputFields objectForKey:eqs] count] > 1) {
+					// TODO
+				}
+				NSArray *eq = [[keyEqsDataTable objectForKey:eqs] objectAtIndex:idx];
+				if(eq && [eq count] && [NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectAtIndex:2]];
 					[[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
+					found = YES;
+					break;
+				}
+			} 
+			if(!found)
+				[NSApp sendEvent:event];
+		}
+		else if ([event type] == NSKeyDown 
+				&& ![[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SRRecorderControl"]
+				&& [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(executeBundleItemForInputField:)]
+			) {
+			// Check Bundle key equivalents due to same equivalents for Data Table scope
+			NSString *charactersIgnMod = [event charactersIgnoringModifiers];
+			long curFlags = ([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask));
+			BOOL found = NO;
+			for(NSString *eqs in [keyEqsInputFields allKeys]) {
+				NSInteger idx = 0;
+				if([[keyEqsInputFields objectForKey:eqs] count] > 1) {
+					// TODO
+				}
+				NSArray *eq = [[keyEqsInputFields objectForKey:eqs] objectAtIndex:idx];
+				if(eq && [eq count] && [NSArrayObjectAtIndex(eq,0) isEqualToString:charactersIgnMod] && [NSArrayObjectAtIndex(eq,1) intValue] == curFlags) {
+					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+					[aMenuItem setTag:0];
+					[aMenuItem setToolTip:[eq objectAtIndex:2]];
+					[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
 					found = YES;
 					break;
 				}

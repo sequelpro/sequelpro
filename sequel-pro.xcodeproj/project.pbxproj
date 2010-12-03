@@ -388,6 +388,7 @@
 		BC0E1493120AABE900E52E25 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
 		BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		BC0E14A4120AAC5000E52E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 583CE52C11725642008F148E /* libz.dylib */; };
+		BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1944D01297291800A236CD /* SPBundleCommandTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
@@ -1111,6 +1112,8 @@
 		BC09D7DB12A786FB0030DB64 /* cancel-hovered-highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cancel-hovered-highlighted.png"; sourceTree = "<group>"; };
 		BC09D7DC12A786FB0030DB64 /* cancel-hovered.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cancel-hovered.png"; sourceTree = "<group>"; };
 		BC09D7DD12A786FB0030DB64 /* cancel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cancel.png; sourceTree = "<group>"; };
+		BC0ED3D812A9196C00088461 /* SPChooseMenuItemDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPChooseMenuItemDialog.h; sourceTree = "<group>"; };
+		BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChooseMenuItemDialog.m; sourceTree = "<group>"; };
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
 		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
 		BC1944CE1297291800A236CD /* SPBundleCommandTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleCommandTextView.h; sourceTree = "<group>"; };
@@ -1971,6 +1974,8 @@
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
+				BC0ED3D812A9196C00088461 /* SPChooseMenuItemDialog.h */,
+				BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */,
 				173E70A1107FF495008733C9 /* Core Data */,
 			);
 			name = Model;
@@ -3153,6 +3158,7 @@
 				BC77C5E4129AA69E009AD832 /* SPBundleHTMLOutputController.m in Sources */,
 				58DC10D312A1B8DF00B76DA5 /* SPMenuAdditions.m in Sources */,
 				BC5750D512A6233900911BA2 /* SPActivityTextFieldCell.m in Sources */,
+				BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
