@@ -592,6 +592,7 @@
 
 						// Otherwise, stop
 						default:
+							[errors appendString:NSLocalizedString(@"Import cancelled!\n", @"import cancelled message")];
 							progressCancelled = YES;
 					}
 				}

@@ -78,6 +78,7 @@
 	IBOutlet SPCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
+	IBOutlet NSScrollView *errorTextScrollView;
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
 	IBOutlet id valueTextField;
@@ -155,6 +156,7 @@
 
 	NSUInteger numberOfQueries;
 	NSUInteger queryTextViewStartPosition;
+	NSUInteger queryInfoPanePaddingHeight;
 
 	NSInteger currentHistoryOffsetIndex;
 	BOOL historyItemWasJustInserted;

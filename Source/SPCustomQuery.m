@@ -118,6 +118,7 @@
 		[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location,0)];
 		[textView insertText:@""];
 		[textView setSelectedRange:oldRange];
+		[textView scrollRangeToVisible:oldRange];
 	}
 }
 
@@ -506,7 +507,7 @@
 		taskString = NSLocalizedString(@"Running query...", @"Running single query string");
 	}
 	[tableDocumentInstance startTaskWithDescription:taskString];
-	[errorText setStringValue:taskString];
+	[errorText setString:taskString];
 	[affectedRowsText setStringValue:@""];
 
 	NSValue *encodedCallbackMethod = nil;
@@ -580,7 +581,7 @@
 		if (i > 0) {
 			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
 			[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
-			[[errorText onMainThread] setStringValue:taskString];
+			[[errorText onMainThread] setString:taskString];
 		}
 
 		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
@@ -661,7 +662,7 @@
 					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
 										(long)(i+1),
 										errorString];
-					[[errorText onMainThread] setStringValue:errors];
+					[[errorText onMainThread] setString:errors];
 
 					// ask the user to continue after detecting an error
 					if (![mySQLConnection queryCancelled]) {
@@ -748,45 +749,51 @@
 	[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
 
 	// Set up the status string
+	NSString *statusString = nil;
+	NSString *statusErrorString = [errors length]?NSLocalizedString(@"Errors", @"Errors title"):NSLocalizedString(@"No errors", @"No errors title");
 	if ( [mySQLConnection queryCancelled] ) {
 		if (totalQueriesRun > 1) {
-			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
-                                              (long)totalQueriesRun,
-                                              [NSString stringForTimeInterval:executionTime]
-                                              ]];
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
+								statusErrorString,
+								(long)totalQueriesRun,
+								[NSString stringForTimeInterval:executionTime]
+							];
 		} else {
-			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Cancelled after %@", @"text showing a query was cancelled"),
-                                              [NSString stringForTimeInterval:executionTime]
-                                              ]];
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled after %@", @"text showing a query was cancelled"),
+								statusErrorString,
+								[NSString stringForTimeInterval:executionTime]
+							];
 		}
 	} else if ( totalQueriesRun > 1 ) {
 		if (totalAffectedRows==1) {
-			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
-                                              (long)totalQueriesRun,
-                                              [NSString stringForTimeInterval:executionTime]
-                                              ]];
-
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
+								statusErrorString,
+								(long)totalQueriesRun,
+								[NSString stringForTimeInterval:executionTime]
+							];
 		} else {
-			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
-                                              (long)totalAffectedRows,
-                                              (long)totalQueriesRun,
-                                              [NSString stringForTimeInterval:executionTime]
-                                              ]];
-
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+								statusErrorString,
+								(long)totalAffectedRows,
+								(long)totalQueriesRun,
+								[NSString stringForTimeInterval:executionTime]
+							];
 		}
 	} else {
 		if (totalAffectedRows==1) {
-			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"1 row affected, taking %@", @"text showing one row has been affected by a single query"),
-                                              [NSString stringForTimeInterval:executionTime]
-                                              ]];
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected, taking %@", @"text showing one row has been affected by a single query"),
+								statusErrorString,
+								[NSString stringForTimeInterval:executionTime]
+							];
 		} else {
-			[[affectedRowsText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"%ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
-                                              (long)totalAffectedRows,
-                                              [NSString stringForTimeInterval:executionTime]
-                                              ]];
-
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+								statusErrorString,
+								(long)totalAffectedRows,
+								[NSString stringForTimeInterval:executionTime]
+							];
 		}
 	}
+	[[affectedRowsText onMainThread] setStringValue:statusString];
 
 	// Restore automatic query retries
 	[mySQLConnection setAllowQueryRetries:YES];
@@ -802,7 +809,7 @@
 
 		// Perform the Growl notification for query completion
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]]
+                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
 														  document:tableDocumentInstance
                                                   notificationName:@"Query Finished"];
 
@@ -833,7 +840,7 @@
 
 	// Query finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText stringValue]]
+                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
 													  document:tableDocumentInstance
                                               notificationName:@"Query Finished"];
 
@@ -1214,8 +1221,10 @@
 
 	// If errors occur, display them
 	if ( [mySQLConnection queryCancelled] || ([errorsString length] && !queryIsTableSorter)) {
+
 		// set the error text
-		[errorText setStringValue:errorsString];
+		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		[[errorTextScrollView verticalScroller] setFloatValue:1.0];
 
 		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
 		// by capturing the last number of the error string
@@ -1274,10 +1283,19 @@
 		}
 
 	} else if ( [errorsString length] && queryIsTableSorter ) {
-		[errorText setStringValue:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
+		[errorText setString:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
 		NSBeep();
 	} else {
-		[errorText setStringValue:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
+		[errorText setString:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
+	}
+
+	// Show or hide the error area if necessary
+	if ([errorsString length] && [queryInfoPaneSplitView collapsibleSubviewCollapsed]) {
+		[queryInfoButton setState:NSOnState];
+		[self toggleQueryInfoPaneCollapse:queryInfoButton];
+	} else if (![errorsString length] && ![queryInfoPaneSplitView collapsibleSubviewCollapsed]) {
+		[queryInfoButton setState:NSOffState];
+		[self toggleQueryInfoPaneCollapse:queryInfoButton];
 	}
 }
 
@@ -1884,7 +1902,7 @@
 		NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
 		if(!tableForColumn || ![tableForColumn length]) {
-			[errorText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
+			[errorText setString:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
 			NSBeep();
 			return;
 		}
@@ -3757,7 +3775,9 @@
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Collapse the query information pane
-	/*if ([queryInfoPaneSplitView collapsibleSubview]) {
+	if ([queryInfoPaneSplitView collapsibleSubview]) {
+		queryInfoPanePaddingHeight = [[queryInfoPaneSplitView collapsibleSubview] frame].size.height - [errorTextScrollView frame].size.height;
+
 		[queryInfoButton setNextState];
 		[queryInfoButton setToolTip:NSLocalizedString(@"Show Query Information", @"Show Query Information")];
 
@@ -3766,7 +3786,7 @@
 		[[queryInfoPaneSplitView collapsibleSubview] setFrameSize:NSMakeSize([queryInfoPaneSplitView collapsibleSubview].frame.size.width, 0)];
 		[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES];
 		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:YES];
-	}*/
+	}
 }
 
 /**
