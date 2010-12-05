@@ -667,6 +667,7 @@
 					// ask the user to continue after detecting an error
 					if (![mySQLConnection queryCancelled]) {
 
+						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
 						SPBeginWaitingAlertSheet(@"title",
 							NSLocalizedString(@"Run All", @"run all button"), NSLocalizedString(@"Continue", @"continue button"), NSLocalizedString(@"Stop", @"stop button"),
 							NSWarningAlertStyle, [tableDocumentInstance parentWindow], self,
@@ -676,6 +677,7 @@
 							[mySQLConnection getLastErrorMessage],
 							runAllContinueStopSheetReturnCode
 						);
+						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
 
 						switch (runAllContinueStopSheetReturnCode) {
 							case NSAlertDefaultReturn:

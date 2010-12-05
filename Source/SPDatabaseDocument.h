@@ -254,6 +254,7 @@
 - (BOOL)isWorking;
 - (void)setDatabaseListIsSelectable:(BOOL)isSelectable;
 - (void)centerTaskWindow;
+- (void)setTaskIndicatorShouldAnimate:(BOOL)shouldAnimate;
 
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
