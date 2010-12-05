@@ -101,9 +101,7 @@
 		// Get the node that was renamed
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
-		if (![node isGroup]) {
-			//[[[node representedObject] nodeFavorite] setObject:newName forKey:SPFavoriteNameKey];
-			
+		if (![node isGroup]) {			
 			// Updating the name triggers a KVO update 
 			[self setName:newName];
 			
@@ -124,9 +122,7 @@
 #pragma mark Outline view delegate methods
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
-{
-	NSLog(@"%@", [(SPTreeNode *)item representedObject]);
-	
+{	
 	return ([[(SPTreeNode *)item parentNode] parentNode] == nil);
 }
 
@@ -192,7 +188,7 @@
 #pragma mark -
 #pragma mark Outline view drag & drop
 
-- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
+/*- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {	
 	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
 	[pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
@@ -220,7 +216,7 @@
 	if ((!item) || ([info draggingSource] != outlineView)) return acceptedDrop;
 	
 	SPTreeNode *node = (item) ? item : [[[[favoritesRoot childNodes] objectAtIndex:0] childNodes] objectAtIndex:0];
- 	
+ 		
 	// TODO: Fix me, disable automatic sorting
 	
 	// Disable all automatic sorting
@@ -234,10 +230,10 @@
 	//[favorites sortUsingDescriptors:[NSArray array]];
 	
 	// Uncheck sort by menu items
-	/*for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
+	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
 	{
 		[menuItem setState:NSOffState];
-	}*/
+	}
 	
 	NSArray *nodes = [self selectedFavoriteNodes];
 		
@@ -292,7 +288,7 @@
 	acceptedDrop = YES;
 	
 	return acceptedDrop;
-}
+}*/
 
 #pragma mark -
 #pragma mark Textfield delegate methods

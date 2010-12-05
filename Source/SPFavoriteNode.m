@@ -67,6 +67,15 @@
 	return node;
 }
 
+
+#pragma mark -
+#pragma mark Other
+
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"<%@: %p ('%@')>", [self className], self, [[self nodeFavorite] objectForKey:SPFavoriteNameKey]];
+}
+
 #pragma mark -
 
 - (void)dealloc
