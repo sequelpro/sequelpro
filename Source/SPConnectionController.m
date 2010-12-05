@@ -195,7 +195,7 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 					
 		SPTreeNode *favorite = [self _favoriteNodeForFavoriteID:[prefs integerForKey:([prefs boolForKey:SPSelectLastFavoriteUsed]) ? SPLastFavoriteID : SPDefaultFavorite]];
 						
-		if (favorite && [favorite representedObject]) {
+		if (favorite) {
 													
 			NSNumber *typeNumber = [[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey];
 			

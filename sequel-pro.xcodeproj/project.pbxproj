@@ -1388,6 +1388,17 @@
 			name = Data;
 			sourceTree = "<group>";
 		};
+		173567CD12AC140A000DCCEF /* Bundle Support */ = {
+			isa = PBXGroup;
+			children = (
+				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
+				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
+				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
+				BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */,
+			);
+			name = "Bundle Support";
+			sourceTree = "<group>";
+		};
 		173C836C11AAD24300B8B084 /* Exporters */ = {
 			isa = PBXGroup;
 			children = (
@@ -1967,18 +1978,13 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				17AF739B12AAABDD00C54D6A /* SPChooseMenuItemDialog.h */,
-				17AF739C12AAABDD00C54D6A /* SPChooseMenuItemDialog.m */,
-				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
-				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
-				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
-				BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */,
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
 				58A8A78F11A036C000B95749 /* SPWindowController.h */,
 				58A8A79011A036C000B95749 /* SPWindowController.m */,
 				1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */,
 				1798AB901267924D000D946A /* SPAppleScriptSupport.m */,
+				173567CD12AC140A000DCCEF /* Bundle Support */,
 				173E70A6107FF61D008733C9 /* Main View Controllers */,
 				173E70D2107FF687008733C9 /* Subview Controllers */,
 				173E70D4107FF6E7008733C9 /* Data Controllers */,
@@ -2001,6 +2007,8 @@
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
+				17AF739B12AAABDD00C54D6A /* SPChooseMenuItemDialog.h */,
+				17AF739C12AAABDD00C54D6A /* SPChooseMenuItemDialog.m */,
 				17AF713012A8428000C54D6A /* Tree Nodes */,
 				173E70A1107FF495008733C9 /* Core Data */,
 			);
