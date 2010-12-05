@@ -121,7 +121,7 @@ void SPApplyRevisionChanges(void)
 									   @"showError", SPShowNoAffectedRowsError,
 									   @"connectionTimeout", SPConnectionTimeoutValue,
 									   @"keepAliveInterval", SPKeepAliveInterval,
-									   @"lastFavoriteIndex", SPLastFavoriteIndex,
+									   @"lastFavoriteIndex", SPLastFavoriteID,
 									   nil];
 		
 		keyEnumerator = [keysToUpgrade keyEnumerator];
@@ -298,7 +298,7 @@ void SPApplyRevisionChanges(void)
 }
 
 /**
- * Attempts to migrate the user's connection favorites from their preference file to the new Favaorites
+ * Attempts to migrate the user's connection favorites from their preference file to the new favorites
  * plist in the application's support 'Data' directory.
  */
 void SPMigrateConnectionFavoritesData(void)
@@ -306,6 +306,26 @@ void SPMigrateConnectionFavoritesData(void)
 	NSError *error = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+	
+	NSMutableArray *favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]];
+	
+	// Change the last used favorite and default favorite's indexes to be ID based
+	if (![prefs objectForKey:SPLastFavoriteID]) {
+		
+		NSInteger lastFavoriteIndex    = [prefs integerForKey:@"LastFavoriteIndex"];
+		NSInteger defaultFavoriteIndex = [prefs integerForKey:SPDefaultFavorite];
+		
+		if ((lastFavoriteIndex >= 0) && (lastFavoriteIndex <= [favorites count])) {
+			[prefs setInteger:[[[favorites objectAtIndex:lastFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
+		}
+		
+		if ((defaultFavoriteIndex >= 0) && (defaultFavoriteIndex <= [favorites count])) {
+			[prefs setInteger:[[[favorites objectAtIndex:defaultFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPDefaultFavorite];
+		}
+		
+		// TOOD: Only uncomment when migration is complete
+		//[prefs removeObjectForKey:@"LastFavoriteIndex"];
+	}
 	
 	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
 	
@@ -319,7 +339,7 @@ void SPMigrateConnectionFavoritesData(void)
 	// Only proceed if the new favorites plist doesn't already exist
 	if (![fileManager fileExistsAtPath:favoritesFile]) {	
 		
-		NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [prefs objectForKey:SPFavorites], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
+		NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
 		
 		error = nil;
 		NSString *errorString = nil;
@@ -334,7 +354,7 @@ void SPMigrateConnectionFavoritesData(void)
 				NSLog(@"Error migrating favorites data: %@", [error localizedDescription]);
 			}
 			else {
-				// Only uncomment when migration is complete
+				// TODO: Only uncomment when migration is complete
 				//[prefs removeObjectForKey:SPFavorites];
 			}
 		}
@@ -345,6 +365,8 @@ void SPMigrateConnectionFavoritesData(void)
 			return;
 		}
 	}
+		
+	[favorites release];
 }
 
 @end

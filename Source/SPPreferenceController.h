@@ -27,7 +27,6 @@
 
 @class SPGeneralPreferencePane,
 	   SPTablesPreferencePane,
-	   SPFavoritesPreferencePane,
 	   SPNotificationsPreferencePane,
 	   SPEditorPreferencePane,
 	   SPAutoUpdatePreferencePane,
@@ -45,7 +44,6 @@
 	// Preference pane controllers
 	IBOutlet SPGeneralPreferencePane       *generalPreferencePane;
 	IBOutlet SPTablesPreferencePane        *tablesPreferencePane;
-	IBOutlet SPFavoritesPreferencePane     *favoritesPreferencePane;
 	IBOutlet SPNotificationsPreferencePane *notificationsPreferencePane;
 	IBOutlet SPEditorPreferencePane        *editorPreferencePane;
 	IBOutlet SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;
@@ -69,7 +67,6 @@
 
 @property (readonly) SPGeneralPreferencePane       *generalPreferencePane;
 @property (readonly) SPTablesPreferencePane        *tablesPreferencePane;
-@property (readonly) SPFavoritesPreferencePane     *favoritesPreferencePane;
 @property (readonly) SPNotificationsPreferencePane *notificationsPreferencePane;
 @property (readonly) SPEditorPreferencePane        *editorPreferencePane;
 @property (readonly) SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;

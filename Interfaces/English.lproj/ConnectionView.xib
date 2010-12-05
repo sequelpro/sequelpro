@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10H574</string>
-		<string key="IBDocument.InterfaceBuilderVersion">788</string>
+		<string key="IBDocument.InterfaceBuilderVersion">823</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
@@ -15,13 +15,14 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>788</string>
+				<string>823</string>
 				<string>1.2.5</string>
 			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4913"/>
+			<integer value="5266"/>
+			<integer value="5468"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -109,7 +110,7 @@
 																	</object>
 																</object>
 																<object class="NSTextFieldCell" key="NSDataCell" id="93569184">
-																	<int key="NSCellFlags">69336641</int>
+																	<int key="NSCellFlags">337772097</int>
 																	<int key="NSCellFlags2">137216</int>
 																	<string key="NSContents">Text Cell</string>
 																	<reference key="NSSupport" ref="26"/>
@@ -155,7 +156,7 @@
 															</object>
 														</object>
 														<double key="NSRowHeight">17</double>
-														<int key="NSTvFlags">373293056</int>
+														<int key="NSTvFlags">507510784</int>
 														<reference key="NSDelegate"/>
 														<reference key="NSDataSource"/>
 														<int key="NSColumnAutoresizingStyle">5</int>
@@ -210,30 +211,6 @@
 										<int key="NSvFlags">290</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
-											<object class="BWAnchoredButton" id="642219827">
-												<reference key="NSNextResponder" ref="805249222"/>
-												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{30, -1}, {32, 24}}</string>
-												<reference key="NSSuperview" ref="805249222"/>
-												<bool key="NSEnabled">YES</bool>
-												<object class="BWAnchoredButtonCell" key="NSCell" id="179580583">
-													<int key="NSCellFlags">67239424</int>
-													<int key="NSCellFlags2">134348800</int>
-													<string key="NSContents"/>
-													<reference key="NSSupport" ref="26"/>
-													<reference key="NSControlView" ref="642219827"/>
-													<int key="NSButtonFlags">147079423</int>
-													<int key="NSButtonFlags2">402653219</int>
-													<object class="NSCustomResource" key="NSNormalImage">
-														<string key="NSClassName">NSImage</string>
-														<string key="NSResourceName">button_edit</string>
-													</object>
-													<string key="NSAlternateContents"/>
-													<string key="NSKeyEquivalent">e</string>
-													<int key="NSPeriodicDelay">200</int>
-													<int key="NSPeriodicInterval">25</int>
-												</object>
-											</object>
 											<object class="BWAnchoredPopUpButton" id="221133754">
 												<reference key="NSNextResponder" ref="805249222"/>
 												<int key="NSvFlags">268</int>
@@ -284,6 +261,102 @@
 														<object class="NSMutableArray" key="NSMenuItems">
 															<bool key="EncodedWithXMLCoder">YES</bool>
 															<reference ref="751753648"/>
+															<object class="NSMenuItem" id="47300604">
+																<reference key="NSMenu" ref="949612237"/>
+																<string key="NSTitle">Rename</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="14440548">
+																<reference key="NSMenu" ref="949612237"/>
+																<string key="NSTitle">Make Default</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="1021417946">
+																<reference key="NSMenu" ref="949612237"/>
+																<bool key="NSIsDisabled">YES</bool>
+																<bool key="NSIsSeparator">YES</bool>
+																<string key="NSTitle"/>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="988671905">
+																<reference key="NSMenu" ref="949612237"/>
+																<string key="NSTitle">Remove</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="943591987">
+																<reference key="NSMenu" ref="949612237"/>
+																<string key="NSTitle">Duplicate</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="176010547">
+																<reference key="NSMenu" ref="949612237"/>
+																<bool key="NSIsDisabled">YES</bool>
+																<bool key="NSIsSeparator">YES</bool>
+																<string key="NSTitle"/>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="296811585">
+																<reference key="NSMenu" ref="949612237"/>
+																<string key="NSTitle">Import...</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="541704663">
+																<reference key="NSMenu" ref="949612237"/>
+																<string key="NSTitle">Export...</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
+															<object class="NSMenuItem" id="130047523">
+																<reference key="NSMenu" ref="949612237"/>
+																<bool key="NSIsDisabled">YES</bool>
+																<bool key="NSIsSeparator">YES</bool>
+																<string key="NSTitle"/>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="270183415"/>
+															</object>
 															<object class="NSMenuItem" id="623685715">
 																<reference key="NSMenu" ref="949612237"/>
 																<string key="NSTitle">Sort By</string>
@@ -352,6 +425,75 @@
 																		</object>
 																	</object>
 																</object>
+															</object>
+														</object>
+													</object>
+													<bool key="NSPullDown">YES</bool>
+													<int key="NSPreferredEdge">1</int>
+													<bool key="NSUsesItemFromMenu">YES</bool>
+													<bool key="NSAltersState">YES</bool>
+													<int key="NSArrowPosition">2</int>
+												</object>
+											</object>
+											<object class="BWAnchoredPopUpButton" id="817268454">
+												<reference key="NSNextResponder" ref="805249222"/>
+												<int key="NSvFlags">268</int>
+												<string key="NSFrame">{{30, -1}, {32, 24}}</string>
+												<reference key="NSSuperview" ref="805249222"/>
+												<bool key="NSEnabled">YES</bool>
+												<object class="BWAnchoredPopUpButtonCell" key="NSCell" id="140036820">
+													<int key="NSCellFlags">-2076049856</int>
+													<int key="NSCellFlags2">134350848</int>
+													<reference key="NSSupport" ref="951888633"/>
+													<reference key="NSControlView" ref="817268454"/>
+													<int key="NSButtonFlags">-2036186881</int>
+													<int key="NSButtonFlags2">163</int>
+													<string key="NSAlternateContents"/>
+													<string key="NSKeyEquivalent"/>
+													<int key="NSPeriodicDelay">400</int>
+													<int key="NSPeriodicInterval">75</int>
+													<object class="NSMenuItem" key="NSMenuItem" id="948840643">
+														<reference key="NSMenu" ref="344531331"/>
+														<bool key="NSIsHidden">YES</bool>
+														<string key="NSTitle"/>
+														<string key="NSKeyEquiv"/>
+														<int key="NSKeyEquivModMask">1048576</int>
+														<int key="NSMnemonicLoc">2147483647</int>
+														<int key="NSState">1</int>
+														<object class="NSCustomResource" key="NSImage">
+															<string key="NSClassName">NSImage</string>
+															<string key="NSResourceName">plus</string>
+														</object>
+														<reference key="NSOnImage" ref="1022504326"/>
+														<reference key="NSMixedImage" ref="329345764"/>
+														<string key="NSAction">_popUpItemAction:</string>
+														<reference key="NSTarget" ref="140036820"/>
+													</object>
+													<bool key="NSMenuItemRespectAlignment">YES</bool>
+													<object class="NSMenu" key="NSMenu" id="344531331">
+														<string key="NSTitle">OtherViews</string>
+														<object class="NSMutableArray" key="NSMenuItems">
+															<bool key="EncodedWithXMLCoder">YES</bool>
+															<reference ref="948840643"/>
+															<object class="NSMenuItem" id="351084462">
+																<reference key="NSMenu" ref="344531331"/>
+																<string key="NSTitle">Add Group</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="140036820"/>
+															</object>
+															<object class="NSMenuItem" id="54131866">
+																<reference key="NSMenu" ref="344531331"/>
+																<string key="NSTitle">Add Favorite</string>
+																<string key="NSKeyEquiv"/>
+																<int key="NSMnemonicLoc">2147483647</int>
+																<reference key="NSOnImage" ref="1022504326"/>
+																<reference key="NSMixedImage" ref="329345764"/>
+																<string key="NSAction">_popUpItemAction:</string>
+																<reference key="NSTarget" ref="140036820"/>
 															</object>
 														</object>
 													</object>
@@ -1822,6 +1964,7 @@
 												<int key="NSsFlags">1</int>
 												<reference key="NSTarget" ref="1058735001"/>
 												<string key="NSAction">_doScroller:</string>
+												<double key="NSCurValue">0.4285714328289032</double>
 												<double key="NSPercent">0.97838616371154785</double>
 											</object>
 										</object>
@@ -2208,20 +2351,6 @@
 			<object class="NSUserDefaultsController" id="642702582">
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
-			<object class="NSMenu" id="9858888">
-				<string key="NSTitle"/>
-				<object class="NSMutableArray" key="NSMenuItems">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<object class="NSMenuItem" id="471954922">
-						<reference key="NSMenu" ref="9858888"/>
-						<string key="NSTitle">Edit Favorite...</string>
-						<string key="NSKeyEquiv"/>
-						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="1022504326"/>
-						<reference key="NSMixedImage" ref="329345764"/>
-					</object>
-				</object>
-			</object>
 			<object class="NSCustomView" id="567906875">
 				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
@@ -2321,6 +2450,72 @@
 				</object>
 				<string key="NSFrameSize">{579, 51}</string>
 				<string key="NSClassName">NSView</string>
+			</object>
+			<object class="NSMenu" id="9858888">
+				<string key="NSTitle"/>
+				<object class="NSMutableArray" key="NSMenuItems">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSMenuItem" id="203173317">
+						<reference key="NSMenu" ref="9858888"/>
+						<string key="NSTitle">Rename</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+					<object class="NSMenuItem" id="498336476">
+						<reference key="NSMenu" ref="9858888"/>
+						<string key="NSTitle">Make Default</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+					<object class="NSMenuItem" id="308601296">
+						<reference key="NSMenu" ref="9858888"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+					<object class="NSMenuItem" id="471954922">
+						<reference key="NSMenu" ref="9858888"/>
+						<string key="NSTitle">Remove</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+					<object class="NSMenuItem" id="654155668">
+						<reference key="NSMenu" ref="9858888"/>
+						<string key="NSTitle">Duplicate</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+					<object class="NSMenuItem" id="1018515429">
+						<reference key="NSMenu" ref="9858888"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+					<object class="NSMenuItem" id="345191685">
+						<reference key="NSMenu" ref="9858888"/>
+						<string key="NSTitle">Export...</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="1022504326"/>
+						<reference key="NSMixedImage" ref="329345764"/>
+					</object>
+				</object>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -2630,14 +2825,6 @@
 						<reference key="destination" ref="545410097"/>
 					</object>
 					<int key="connectionID">5349</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">editFavorites:</string>
-						<reference key="source" ref="545410097"/>
-						<reference key="destination" ref="642219827"/>
-					</object>
-					<int key="connectionID">5350</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -3157,14 +3344,6 @@
 					<int key="connectionID">5439</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">addFavorite:</string>
-						<reference key="source" ref="545410097"/>
-						<reference key="destination" ref="476973680"/>
-					</object>
-					<int key="connectionID">5443</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">connectButton</string>
 						<reference key="source" ref="545410097"/>
@@ -3254,27 +3433,11 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">nextKeyView</string>
-						<reference key="source" ref="642219827"/>
-						<reference key="destination" ref="1012579052"/>
-					</object>
-					<int key="connectionID">5467</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="9858888"/>
 						<reference key="destination" ref="545410097"/>
 					</object>
 					<int key="connectionID">5472</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">editFavorites:</string>
-						<reference key="source" ref="545410097"/>
-						<reference key="destination" ref="471954922"/>
-					</object>
-					<int key="connectionID">5473</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -4297,11 +4460,179 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">favoritesTable</string>
+						<string key="label">favoritesOutlineView</string>
 						<reference key="source" ref="545410097"/>
 						<reference key="destination" ref="1012579052"/>
 					</object>
 					<int key="connectionID">5738</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">menu</string>
+						<reference key="source" ref="524598165"/>
+						<reference key="destination" ref="9858888"/>
+					</object>
+					<int key="connectionID">5744</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">duplicateFavorite:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="943591987"/>
+					</object>
+					<int key="connectionID">5750</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">makeSelectedFavoriteDefault:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="14440548"/>
+					</object>
+					<int key="connectionID">5751</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">duplicateFavorite:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="654155668"/>
+					</object>
+					<int key="connectionID">5753</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">makeSelectedFavoriteDefault:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="498336476"/>
+					</object>
+					<int key="connectionID">5754</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">renameFavorite:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="47300604"/>
+					</object>
+					<int key="connectionID">5757</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">renameFavorite:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="203173317"/>
+					</object>
+					<int key="connectionID">5758</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">exportFavorites:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="345191685"/>
+					</object>
+					<int key="connectionID">5817</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">importFavorites:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="296811585"/>
+					</object>
+					<int key="connectionID">5818</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">exportFavorites:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="541704663"/>
+					</object>
+					<int key="connectionID">5819</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">addGroup:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="351084462"/>
+					</object>
+					<int key="connectionID">5820</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">addFavorite:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="54131866"/>
+					</object>
+					<int key="connectionID">5821</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">removeNode:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="988671905"/>
+					</object>
+					<int key="connectionID">5822</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">removeNode:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="471954922"/>
+					</object>
+					<int key="connectionID">5823</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">addFavoriteUsingCurrentDetails:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="476973680"/>
+					</object>
+					<int key="connectionID">5824</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">standardNameField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="810791200"/>
+					</object>
+					<int key="connectionID">5825</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">socketNameField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="474825058"/>
+					</object>
+					<int key="connectionID">5826</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">sshNameField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="1022082829"/>
+					</object>
+					<int key="connectionID">5827</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">standardUserField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="978463433"/>
+					</object>
+					<int key="connectionID">5830</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">socketUserField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="68541783"/>
+					</object>
+					<int key="connectionID">5831</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">sshUserField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="358903996"/>
+					</object>
+					<int key="connectionID">5832</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4414,21 +4745,6 @@
 						<reference key="parent" ref="0"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">5468</int>
-						<reference key="object" ref="9858888"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="471954922"/>
-						</object>
-						<reference key="parent" ref="0"/>
-						<string key="objectName">Context Menu</string>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">5469</int>
-						<reference key="object" ref="471954922"/>
-						<reference key="parent" ref="9858888"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">5576</int>
 						<reference key="object" ref="567906875"/>
 						<object class="NSMutableArray" key="children">
@@ -4468,7 +4784,7 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="221133754"/>
-							<reference ref="642219827"/>
+							<reference ref="817268454"/>
 						</object>
 						<reference key="parent" ref="720852944"/>
 					</object>
@@ -4497,6 +4813,15 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="623685715"/>
 							<reference ref="751753648"/>
+							<reference ref="988671905"/>
+							<reference ref="943591987"/>
+							<reference ref="130047523"/>
+							<reference ref="176010547"/>
+							<reference ref="296811585"/>
+							<reference ref="541704663"/>
+							<reference ref="47300604"/>
+							<reference ref="14440548"/>
+							<reference ref="1021417946"/>
 						</object>
 						<reference key="parent" ref="270183415"/>
 					</object>
@@ -4551,20 +4876,6 @@
 						<int key="objectID">5478</int>
 						<reference key="object" ref="751753648"/>
 						<reference key="parent" ref="949612237"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">5346</int>
-						<reference key="object" ref="642219827"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="179580583"/>
-						</object>
-						<reference key="parent" ref="805249222"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">5347</int>
-						<reference key="object" ref="179580583"/>
-						<reference key="parent" ref="642219827"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">4910</int>
@@ -5883,6 +6194,146 @@
 						<reference key="object" ref="972347112"/>
 						<reference key="parent" ref="16421625"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5739</int>
+						<reference key="object" ref="988671905"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5740</int>
+						<reference key="object" ref="943591987"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5741</int>
+						<reference key="object" ref="130047523"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5468</int>
+						<reference key="object" ref="9858888"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="471954922"/>
+							<reference ref="654155668"/>
+							<reference ref="1018515429"/>
+							<reference ref="345191685"/>
+							<reference ref="203173317"/>
+							<reference ref="498336476"/>
+							<reference ref="308601296"/>
+						</object>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">Context Menu</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5469</int>
+						<reference key="object" ref="471954922"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5742</int>
+						<reference key="object" ref="654155668"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5745</int>
+						<reference key="object" ref="14440548"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5746</int>
+						<reference key="object" ref="1021417946"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5747</int>
+						<reference key="object" ref="308601296"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5748</int>
+						<reference key="object" ref="498336476"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5755</int>
+						<reference key="object" ref="203173317"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5756</int>
+						<reference key="object" ref="47300604"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5785</int>
+						<reference key="object" ref="817268454"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="140036820"/>
+						</object>
+						<reference key="parent" ref="805249222"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5786</int>
+						<reference key="object" ref="140036820"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="344531331"/>
+						</object>
+						<reference key="parent" ref="817268454"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5787</int>
+						<reference key="object" ref="344531331"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="54131866"/>
+							<reference ref="948840643"/>
+							<reference ref="351084462"/>
+						</object>
+						<reference key="parent" ref="140036820"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5788</int>
+						<reference key="object" ref="54131866"/>
+						<reference key="parent" ref="344531331"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5790</int>
+						<reference key="object" ref="351084462"/>
+						<reference key="parent" ref="344531331"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5794</int>
+						<reference key="object" ref="948840643"/>
+						<reference key="parent" ref="344531331"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5810</int>
+						<reference key="object" ref="176010547"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5811</int>
+						<reference key="object" ref="296811585"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5812</int>
+						<reference key="object" ref="541704663"/>
+						<reference key="parent" ref="949612237"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5814</int>
+						<reference key="object" ref="1018515429"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5815</int>
+						<reference key="object" ref="345191685"/>
+						<reference key="parent" ref="9858888"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -6021,9 +6472,6 @@
 					<string>5343.IBPluginDependency</string>
 					<string>5344.IBPluginDependency</string>
 					<string>5345.IBPluginDependency</string>
-					<string>5346.IBAttributePlaceholdersKey</string>
-					<string>5346.IBPluginDependency</string>
-					<string>5347.IBPluginDependency</string>
 					<string>5376.IBAttributePlaceholdersKey</string>
 					<string>5376.IBPluginDependency</string>
 					<string>5377.IBPluginDependency</string>
@@ -6063,6 +6511,7 @@
 					<string>5468.IBPluginDependency</string>
 					<string>5469.IBPluginDependency</string>
 					<string>5475.IBPluginDependency</string>
+					<string>5475.IBViewBoundsToFrameTransform</string>
 					<string>5476.IBPluginDependency</string>
 					<string>5477.IBEditorWindowLastContentRect</string>
 					<string>5477.IBPluginDependency</string>
@@ -6149,12 +6598,35 @@
 					<string>5706.IBPluginDependency</string>
 					<string>5720.IBPluginDependency</string>
 					<string>5721.IBPluginDependency</string>
+					<string>5739.IBPluginDependency</string>
+					<string>5740.IBPluginDependency</string>
+					<string>5741.IBPluginDependency</string>
+					<string>5742.IBPluginDependency</string>
+					<string>5745.IBPluginDependency</string>
+					<string>5746.IBPluginDependency</string>
+					<string>5747.IBPluginDependency</string>
+					<string>5748.IBPluginDependency</string>
+					<string>5755.IBPluginDependency</string>
+					<string>5756.IBPluginDependency</string>
+					<string>5785.IBPluginDependency</string>
+					<string>5785.IBViewBoundsToFrameTransform</string>
+					<string>5786.IBPluginDependency</string>
+					<string>5787.IBEditorWindowLastContentRect</string>
+					<string>5787.IBPluginDependency</string>
+					<string>5788.IBPluginDependency</string>
+					<string>5790.IBPluginDependency</string>
+					<string>5794.IBPluginDependency</string>
+					<string>5810.IBPluginDependency</string>
+					<string>5811.IBPluginDependency</string>
+					<string>5812.IBPluginDependency</string>
+					<string>5814.IBPluginDependency</string>
+					<string>5815.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{136, 99}, {882, 475}}</string>
+					<string>{{47, 270}, {882, 475}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -6428,16 +6900,6 @@
 						<string key="NS.key.0">ToolTip</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
-							<reference key="object" ref="642219827"/>
-							<string key="toolTip">Edit Favorites in Preferences (⌥⌘E)</string>
-						</object>
-					</object>
-					<string>com.brandonwalkin.BWToolkit</string>
-					<string>com.brandonwalkin.BWToolkit</string>
-					<object class="NSMutableDictionary">
-						<string key="NS.key.0">ToolTip</string>
-						<object class="IBToolTipAttribute" key="NS.object.0">
-							<string key="name">ToolTip</string>
 							<reference key="object" ref="810791200"/>
 							<string key="toolTip">Enter a nickname to use if adding to favorites. Optional.</string>
 						</object>
@@ -6496,16 +6958,19 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{639, 342}, {150, 23}}</string>
+					<string>{{472, 412}, {142, 123}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAwagAAA</bytes>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{552, 171}, {97, 37}}</string>
+					<string>{{82, 125}, {131, 169}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{649, 98}, {180, 93}}</string>
+					<string>{{425, 97}, {180, 93}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6635,6 +7100,31 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAwagAAA</bytes>
+					</object>
+					<string>com.brandonwalkin.BWToolkit</string>
+					<string>{{113, 232}, {128, 62}}</string>
+					<string>com.brandonwalkin.BWToolkit</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.brandonwalkin.BWToolkit</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -6653,7 +7143,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5738</int>
+			<int key="maxID">5832</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6671,6 +7161,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Frameworks/PSMTabBar/PSMTabDragAssistant.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSMenu</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPMenuAdditions.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -6769,6 +7266,7 @@
 							<string>doSelectionTitleCase:</string>
 							<string>doSelectionUpperCase:</string>
 							<string>doTranspose:</string>
+							<string>executeBundleItemForInputField:</string>
 							<string>insertNULLvalue:</string>
 							<string>moveSelectionLineDown:</string>
 							<string>moveSelectionLineUp:</string>
@@ -6778,6 +7276,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6808,6 +7307,7 @@
 							<string>doSelectionTitleCase:</string>
 							<string>doSelectionUpperCase:</string>
 							<string>doTranspose:</string>
+							<string>executeBundleItemForInputField:</string>
 							<string>insertNULLvalue:</string>
 							<string>moveSelectionLineDown:</string>
 							<string>moveSelectionLineUp:</string>
@@ -6851,6 +7351,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">doTranspose:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">executeBundleItemForInputField:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -6899,10 +7403,18 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFavorite:</string>
+							<string>addFavoriteUsingCurrentDetails:</string>
+							<string>addGroup:</string>
 							<string>cancelMySQLConnection:</string>
 							<string>chooseKeyLocation:</string>
-							<string>editFavorites:</string>
+							<string>duplicateFavorite:</string>
+							<string>exportFavorites:</string>
+							<string>importFavorites:</string>
 							<string>initiateConnection:</string>
+							<string>makeSelectedFavoriteDefault:</string>
+							<string>nodeDoubleClicked:</string>
+							<string>removeNode:</string>
+							<string>renameFavorite:</string>
 							<string>reverseSortFavorites:</string>
 							<string>showHelp:</string>
 							<string>sortFavorites:</string>
@@ -6911,6 +7423,14 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6928,10 +7448,18 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFavorite:</string>
+							<string>addFavoriteUsingCurrentDetails:</string>
+							<string>addGroup:</string>
 							<string>cancelMySQLConnection:</string>
 							<string>chooseKeyLocation:</string>
-							<string>editFavorites:</string>
+							<string>duplicateFavorite:</string>
+							<string>exportFavorites:</string>
+							<string>importFavorites:</string>
 							<string>initiateConnection:</string>
+							<string>makeSelectedFavoriteDefault:</string>
+							<string>nodeDoubleClicked:</string>
+							<string>removeNode:</string>
+							<string>renameFavorite:</string>
 							<string>reverseSortFavorites:</string>
 							<string>showHelp:</string>
 							<string>sortFavorites:</string>
@@ -6945,6 +7473,14 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">addFavoriteUsingCurrentDetails:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">addGroup:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">cancelMySQLConnection:</string>
 								<string key="candidateClassName">id</string>
 							</object>
@@ -6953,11 +7489,35 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">editFavorites:</string>
+								<string key="name">duplicateFavorite:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">exportFavorites:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">importFavorites:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">initiateConnection:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">makeSelectedFavoriteDefault:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">nodeDoubleClicked:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">removeNode:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">renameFavorite:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -6996,33 +7556,39 @@
 							<string>delegate</string>
 							<string>errorDetailText</string>
 							<string>errorDetailWindow</string>
+							<string>favoritesOutlineView</string>
 							<string>favoritesSortByMenuItem</string>
-							<string>favoritesTable</string>
 							<string>helpButton</string>
 							<string>progressIndicator</string>
 							<string>progressIndicatorText</string>
 							<string>socketConnectionFormContainer</string>
 							<string>socketConnectionSSLDetailsContainer</string>
+							<string>socketNameField</string>
 							<string>socketPasswordField</string>
 							<string>socketSSLCACertButton</string>
 							<string>socketSSLCertificateButton</string>
 							<string>socketSSLKeyFileButton</string>
+							<string>socketUserField</string>
 							<string>sshConnectionFormContainer</string>
 							<string>sshKeyLocationHelp</string>
+							<string>sshNameField</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLHostField</string>
 							<string>sshSSHKeyButton</string>
 							<string>sshSSHPasswordField</string>
+							<string>sshUserField</string>
 							<string>sslCACertLocationHelp</string>
 							<string>sslCertificateLocationHelp</string>
 							<string>sslKeyFileLocationHelp</string>
 							<string>standardConnectionFormContainer</string>
 							<string>standardConnectionSSLDetailsContainer</string>
+							<string>standardNameField</string>
 							<string>standardPasswordField</string>
 							<string>standardSQLHostField</string>
 							<string>standardSSLCACertButton</string>
 							<string>standardSSLCertificateButton</string>
 							<string>standardSSLKeyFileButton</string>
+							<string>standardUserField</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7036,33 +7602,39 @@
 							<string>id</string>
 							<string>NSTextView</string>
 							<string>NSWindow</string>
+							<string>SPFavoritesOutlineView</string>
 							<string>NSMenuItem</string>
-							<string>NSTableView</string>
 							<string>NSButton</string>
 							<string>NSProgressIndicator</string>
 							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>NSView</string>
+							<string>NSTextField</string>
 							<string>NSSecureTextField</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
+							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>NSView</string>
+							<string>NSTextField</string>
 							<string>NSSecureTextField</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
 							<string>NSSecureTextField</string>
+							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>NSView</string>
 							<string>NSView</string>
 							<string>NSView</string>
 							<string>NSView</string>
+							<string>NSTextField</string>
 							<string>NSSecureTextField</string>
 							<string>NSTextField</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
+							<string>NSTextField</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
@@ -7079,33 +7651,39 @@
 							<string>delegate</string>
 							<string>errorDetailText</string>
 							<string>errorDetailWindow</string>
+							<string>favoritesOutlineView</string>
 							<string>favoritesSortByMenuItem</string>
-							<string>favoritesTable</string>
 							<string>helpButton</string>
 							<string>progressIndicator</string>
 							<string>progressIndicatorText</string>
 							<string>socketConnectionFormContainer</string>
 							<string>socketConnectionSSLDetailsContainer</string>
+							<string>socketNameField</string>
 							<string>socketPasswordField</string>
 							<string>socketSSLCACertButton</string>
 							<string>socketSSLCertificateButton</string>
 							<string>socketSSLKeyFileButton</string>
+							<string>socketUserField</string>
 							<string>sshConnectionFormContainer</string>
 							<string>sshKeyLocationHelp</string>
+							<string>sshNameField</string>
 							<string>sshPasswordField</string>
 							<string>sshSQLHostField</string>
 							<string>sshSSHKeyButton</string>
 							<string>sshSSHPasswordField</string>
+							<string>sshUserField</string>
 							<string>sslCACertLocationHelp</string>
 							<string>sslCertificateLocationHelp</string>
 							<string>sslKeyFileLocationHelp</string>
 							<string>standardConnectionFormContainer</string>
 							<string>standardConnectionSSLDetailsContainer</string>
+							<string>standardNameField</string>
 							<string>standardPasswordField</string>
 							<string>standardSQLHostField</string>
 							<string>standardSSLCACertButton</string>
 							<string>standardSSLCertificateButton</string>
 							<string>standardSSLKeyFileButton</string>
+							<string>standardUserField</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7150,12 +7728,12 @@
 								<string key="candidateClassName">NSWindow</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesSortByMenuItem</string>
-								<string key="candidateClassName">NSMenuItem</string>
+								<string key="name">favoritesOutlineView</string>
+								<string key="candidateClassName">SPFavoritesOutlineView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesTable</string>
-								<string key="candidateClassName">NSTableView</string>
+								<string key="name">favoritesSortByMenuItem</string>
+								<string key="candidateClassName">NSMenuItem</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">helpButton</string>
@@ -7178,6 +7756,10 @@
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
+								<string key="name">socketNameField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
 								<string key="name">socketPasswordField</string>
 								<string key="candidateClassName">NSSecureTextField</string>
 							</object>
@@ -7194,12 +7776,20 @@
 								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
+								<string key="name">socketUserField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
 								<string key="name">sshConnectionFormContainer</string>
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">sshKeyLocationHelp</string>
 								<string key="candidateClassName">NSView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sshNameField</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">sshPasswordField</string>
@@ -7216,6 +7806,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">sshSSHPasswordField</string>
 								<string key="candidateClassName">NSSecureTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sshUserField</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">sslCACertLocationHelp</string>
@@ -7238,6 +7832,10 @@
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
+								<string key="name">standardNameField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
 								<string key="name">standardPasswordField</string>
 								<string key="candidateClassName">NSSecureTextField</string>
 							</object>
@@ -7256,6 +7854,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">standardSSLKeyFileButton</string>
 								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">standardUserField</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 						</object>
 					</object>
@@ -7269,6 +7871,13 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">SPConnectionController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPConnectionHandler.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">SPFavoritesOutlineView</string>
 					<string key="superclassName">NSOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -7279,7 +7888,10 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">SPFlippedView</string>
 					<string key="superclassName">NSView</string>
-					<reference key="sourceIdentifier" ref="968459546"/>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPFlippedView.h</string>
+					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">SPTableTextFieldCell</string>
@@ -7290,423 +7902,14 @@
 					</object>
 				</object>
 			</object>
-			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.1+">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="263398757">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPConnectionController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPConnectionController</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFavorite:</string>
-							<string>cancelMySQLConnection:</string>
-							<string>chooseKeyLocation:</string>
-							<string>editFavorites:</string>
-							<string>initiateConnection:</string>
-							<string>reverseSortFavorites:</string>
-							<string>showHelp:</string>
-							<string>sortFavorites:</string>
-							<string>updateFavoriteSelection:</string>
-							<string>updateSSLInterface:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addFavorite:</string>
-							<string>cancelMySQLConnection:</string>
-							<string>chooseKeyLocation:</string>
-							<string>editFavorites:</string>
-							<string>initiateConnection:</string>
-							<string>reverseSortFavorites:</string>
-							<string>showHelp:</string>
-							<string>sortFavorites:</string>
-							<string>updateFavoriteSelection:</string>
-							<string>updateSSLInterface:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBActionInfo">
-								<string key="name">addFavorite:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">cancelMySQLConnection:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">chooseKeyLocation:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">editFavorites:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">initiateConnection:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">reverseSortFavorites:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">showHelp:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">sortFavorites:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">updateFavoriteSelection:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">updateSSLInterface:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addToFavoritesButton</string>
-							<string>connectButton</string>
-							<string>connectionDetailsScrollView</string>
-							<string>connectionResizeContainer</string>
-							<string>connectionSplitView</string>
-							<string>connectionSplitViewButtonBar</string>
-							<string>connectionView</string>
-							<string>delegate</string>
-							<string>errorDetailText</string>
-							<string>errorDetailWindow</string>
-							<string>favoritesSortByMenuItem</string>
-							<string>favoritesTable</string>
-							<string>helpButton</string>
-							<string>progressIndicator</string>
-							<string>progressIndicatorText</string>
-							<string>socketConnectionFormContainer</string>
-							<string>socketConnectionSSLDetailsContainer</string>
-							<string>socketPasswordField</string>
-							<string>socketSSLCACertButton</string>
-							<string>socketSSLCertificateButton</string>
-							<string>socketSSLKeyFileButton</string>
-							<string>sshConnectionFormContainer</string>
-							<string>sshKeyLocationHelp</string>
-							<string>sshPasswordField</string>
-							<string>sshSQLHostField</string>
-							<string>sshSSHKeyButton</string>
-							<string>sshSSHPasswordField</string>
-							<string>sslCACertLocationHelp</string>
-							<string>sslCertificateLocationHelp</string>
-							<string>sslKeyFileLocationHelp</string>
-							<string>standardConnectionFormContainer</string>
-							<string>standardConnectionSSLDetailsContainer</string>
-							<string>standardPasswordField</string>
-							<string>standardSQLHostField</string>
-							<string>standardSSLCACertButton</string>
-							<string>standardSSLCertificateButton</string>
-							<string>standardSSLKeyFileButton</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSScrollView</string>
-							<string>NSView</string>
-							<string>NSSplitView</string>
-							<string>BWAnchoredButtonBar</string>
-							<string>NSView</string>
-							<string>id</string>
-							<string>NSTextView</string>
-							<string>NSWindow</string>
-							<string>NSMenuItem</string>
-							<string>id</string>
-							<string>NSButton</string>
-							<string>NSProgressIndicator</string>
-							<string>NSTextField</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSSecureTextField</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSSecureTextField</string>
-							<string>NSTextField</string>
-							<string>NSButton</string>
-							<string>NSSecureTextField</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSView</string>
-							<string>NSSecureTextField</string>
-							<string>NSTextField</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-						</object>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>addToFavoritesButton</string>
-							<string>connectButton</string>
-							<string>connectionDetailsScrollView</string>
-							<string>connectionResizeContainer</string>
-							<string>connectionSplitView</string>
-							<string>connectionSplitViewButtonBar</string>
-							<string>connectionView</string>
-							<string>delegate</string>
-							<string>errorDetailText</string>
-							<string>errorDetailWindow</string>
-							<string>favoritesSortByMenuItem</string>
-							<string>favoritesTable</string>
-							<string>helpButton</string>
-							<string>progressIndicator</string>
-							<string>progressIndicatorText</string>
-							<string>socketConnectionFormContainer</string>
-							<string>socketConnectionSSLDetailsContainer</string>
-							<string>socketPasswordField</string>
-							<string>socketSSLCACertButton</string>
-							<string>socketSSLCertificateButton</string>
-							<string>socketSSLKeyFileButton</string>
-							<string>sshConnectionFormContainer</string>
-							<string>sshKeyLocationHelp</string>
-							<string>sshPasswordField</string>
-							<string>sshSQLHostField</string>
-							<string>sshSSHKeyButton</string>
-							<string>sshSSHPasswordField</string>
-							<string>sslCACertLocationHelp</string>
-							<string>sslCertificateLocationHelp</string>
-							<string>sslKeyFileLocationHelp</string>
-							<string>standardConnectionFormContainer</string>
-							<string>standardConnectionSSLDetailsContainer</string>
-							<string>standardPasswordField</string>
-							<string>standardSQLHostField</string>
-							<string>standardSSLCACertButton</string>
-							<string>standardSSLCertificateButton</string>
-							<string>standardSSLKeyFileButton</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">addToFavoritesButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">connectButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">connectionDetailsScrollView</string>
-								<string key="candidateClassName">NSScrollView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">connectionResizeContainer</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">connectionSplitView</string>
-								<string key="candidateClassName">NSSplitView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">connectionSplitViewButtonBar</string>
-								<string key="candidateClassName">BWAnchoredButtonBar</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">connectionView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">delegate</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">errorDetailText</string>
-								<string key="candidateClassName">NSTextView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">errorDetailWindow</string>
-								<string key="candidateClassName">NSWindow</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesSortByMenuItem</string>
-								<string key="candidateClassName">NSMenuItem</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">favoritesTable</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">helpButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">progressIndicator</string>
-								<string key="candidateClassName">NSProgressIndicator</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">progressIndicatorText</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketConnectionFormContainer</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketConnectionSSLDetailsContainer</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketSSLCACertButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketSSLCertificateButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">socketSSLKeyFileButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshConnectionFormContainer</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshKeyLocationHelp</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshSQLHostField</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshSSHKeyButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sshSSHPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sslCACertLocationHelp</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sslCertificateLocationHelp</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">sslKeyFileLocationHelp</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardConnectionFormContainer</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardConnectionSSLDetailsContainer</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardPasswordField</string>
-								<string key="candidateClassName">NSSecureTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardSQLHostField</string>
-								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardSSLCACertButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardSSLCertificateButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">standardSSLKeyFileButton</string>
-								<string key="candidateClassName">NSButton</string>
-							</object>
-						</object>
-					</object>
-					<reference key="sourceIdentifier" ref="263398757"/>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPFavoritesOutlineView</string>
-					<string key="superclassName">NSOutlineView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBDocumentRelativeSource</string>
-						<string key="minorKey">../../Source/SPFavoritesOutlineView.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SPFlippedView</string>
-					<string key="superclassName">NSView</string>
-					<reference key="sourceIdentifier" ref="263398757"/>
-				</object>
-			</object>
 			<object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">BWAnchoredButton</string>
-					<string key="superclassName">NSButton</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButton.h</string>
-					</object>
-				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">BWAnchoredButtonBar</string>
 					<string key="superclassName">NSView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButtonBar.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">BWAnchoredButtonCell</string>
-					<string key="superclassName">NSButtonCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButtonCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -8154,6 +8357,27 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">ShortcutRecorder.framework/Headers/SRRecorderCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">ShortcutRecorder.framework/Headers/SRRecorderControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">ShortcutRecorder.framework/Headers/SRValidator.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Sparkle.framework/Headers/SUAppcast.h</string>
 					</object>
 				</object>
@@ -8474,7 +8698,7 @@
 				<string>NSMenuCheckmark</string>
 				<string>NSMenuMixedState</string>
 				<string>NSSwitch</string>
-				<string>button_edit</string>
+				<string>plus</string>
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>

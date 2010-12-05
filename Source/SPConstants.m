@@ -31,10 +31,6 @@ const CGFloat SPLongRunningNotificationTime      = 3.0;
 // Narrow down completion max rows
 const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
 
-// Kill mode constants
-NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
-NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
-
 // Default monospaced font name
 NSString *SPDefaultMonospacedFontName            = @"Monaco";
 
@@ -65,7 +61,7 @@ NSString *SPDataSupportFolder                    = @"Data";
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
 NSString *SPSelectLastFavoriteUsed               = @"SelectLastFavoriteUsed";
-NSString *SPLastFavoriteIndex                    = @"LastFavoriteIndex";
+NSString *SPLastFavoriteID                       = @"LastFavoriteID";
 NSString *SPAutoConnectToDefault                 = @"AutoConnectToDefault";
 NSString *SPDefaultViewMode                      = @"DefaultViewMode";
 NSString *SPLastViewMode                         = @"LastViewMode";

@@ -65,9 +65,6 @@
 	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarTables]) {
 		return tablesItem;
 	}
-	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarFavorites]) {
-		return favoritesItem;
-	}
 	else if ([itemIdentifier isEqualToString:SPPreferenceToolbarNotifications]) {
 		return notificationsItem;
 	}
@@ -92,7 +89,6 @@
     return [NSArray arrayWithObjects:
 			SPPreferenceToolbarGeneral, 
 			SPPreferenceToolbarTables, 
-			SPPreferenceToolbarFavorites, 
 			SPPreferenceToolbarNotifications, 
 			SPPreferenceToolbarEditor, 
 			SPPreferenceToolbarShortcuts, 
@@ -106,7 +102,6 @@
 	return [NSArray arrayWithObjects:
 			SPPreferenceToolbarGeneral, 
 			SPPreferenceToolbarTables, 
-			SPPreferenceToolbarFavorites, 
 			SPPreferenceToolbarNotifications, 
 			SPPreferenceToolbarEditor, 
 			SPPreferenceToolbarShortcuts, 
@@ -120,7 +115,6 @@
 	return [NSArray arrayWithObjects:
 			SPPreferenceToolbarGeneral, 
 			SPPreferenceToolbarTables, 
-			SPPreferenceToolbarFavorites, 
 			SPPreferenceToolbarNotifications, 
 			SPPreferenceToolbarEditor, 
 			SPPreferenceToolbarShortcuts, 

@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPFavoriteNode.m
+//  SPGroupNode.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 8, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 21, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,11 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPFavoriteNode.h"
+#import "SPGroupNode.h"
 
-@implementation SPFavoriteNode
+@implementation SPGroupNode
 
-@synthesize nodeFavorite;
+@synthesize nodeName;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -35,24 +35,24 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		[self setNodeFavorite:nil];
+		[self setNodeName:nil];
 	}
 	
 	return self;
 }
 
-- (id)initWithDictionary:(NSDictionary *)dictionary
+- (id)initWithName:(NSString *)name
 {
 	if ((self = [self init])) {
-		[self setNodeFavorite:dictionary];
+		[self setNodeName:name];
 	}
 	
 	return self;
 }
 
-+ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSDictionary *)dictionary
++ (SPGroupNode *)groupNodeWithName:(NSString *)name
 {
-	return [[[self alloc] initWithDictionary:dictionary] autorelease];
+	return [[[self alloc] initWithName:name] autorelease];
 }
 
 #pragma mark -
@@ -60,9 +60,9 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	SPFavoriteNode *node = [[[self class] allocWithZone:zone] init];
+	SPGroupNode *node = [[[self class] allocWithZone:zone] init];
 	
-	[node setNodeFavorite:[[self nodeFavorite] copyWithZone:zone]];
+	[node setNodeName:[self nodeName]];
 	
 	return node;
 }
@@ -71,9 +71,7 @@
 
 - (void)dealloc
 {
-	if (nodeFavorite) [nodeFavorite release], nodeFavorite = nil;
-	
-	[super dealloc];
+	if (nodeName) [nodeName release], nodeName = nil;
 }
 
 @end

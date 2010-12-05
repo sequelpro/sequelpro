@@ -39,7 +39,6 @@
 
 @synthesize generalPreferencePane;
 @synthesize tablesPreferencePane;
-@synthesize favoritesPreferencePane;
 @synthesize notificationsPreferencePane;
 @synthesize editorPreferencePane;
 @synthesize autoUpdatePreferencePane;
@@ -75,7 +74,6 @@
 					   generalPreferencePane,
 					   tablesPreferencePane,
 					   notificationsPreferencePane,
-					   favoritesPreferencePane,
 					   editorPreferencePane,
 					   autoUpdatePreferencePane,
 					   networkPreferencePane,
@@ -123,27 +121,6 @@
 	[tablesPreferencePane updateDisplayedTableFontName];
 	
 	[self _resizeWindowForContentView:[tablesPreferencePane preferencePaneView]];
-}
-
-/** 
- * Displays the favorite preferences pane.
- */
-- (IBAction)displayFavoritePreferences:(id)sender
-{
-	// To make the Favorites pane resizable give the window a minimum size and display the resize indicator. 
-	// Notice that we still make all other panes non-resizable by removing the dsiplay of the indicator and
-	// resetting the minimum size to zero.
-	[[self window] setMinSize:NSMakeSize(500, 381)];
-	[[self window] setShowsResizeIndicator:[favoritesPreferencePane preferencePaneAllowsResizing]];
-	
-	[toolbar setSelectedItemIdentifier:[favoritesPreferencePane preferencePaneIdentifier]];
-	
-	[self _resizeWindowForContentView:[favoritesPreferencePane preferencePaneView]];
-	
-	// Set the default favorite popup back to preference
-	if ([sender isKindOfClass:[NSMenuItem class]]) {
-		[generalPreferencePane resetDefaultFavoritePopupSelection];
-	}
 }
 
 /**
@@ -222,14 +199,6 @@
 	[tablesItem setImage:[tablesPreferencePane preferencePaneIcon]];
 	[tablesItem setTarget:self];
 	[tablesItem setAction:@selector(displayTablePreferences:)];
-
-	// Favorite preferences
-	favoritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:[favoritesPreferencePane preferencePaneIdentifier]];
-
-	[favoritesItem setLabel:[favoritesPreferencePane preferencePaneName]];
-	[favoritesItem setImage:[favoritesPreferencePane preferencePaneIcon]];
-	[favoritesItem setTarget:self];
-	[favoritesItem setAction:@selector(displayFavoritePreferences:)];
 
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:[notificationsPreferencePane preferencePaneIdentifier]];

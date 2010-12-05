@@ -25,6 +25,8 @@
 
 #import "SPSingleton.h"
 
+@class SPTreeNode;
+
 /**
  * @class SPFavoritesController SPFavoritesController.h
  *
@@ -35,17 +37,31 @@
  */
 @interface SPFavoritesController : SPSingleton 
 {
-	NSMutableDictionary *favorites;
+	SPTreeNode *favoritesTree;
+	NSMutableDictionary *favoritesData;
+	
+	pthread_mutex_t writeLock;
+	pthread_mutex_t favoritesLock;
 }
 
 /**
- * @property favorites Favorites data dictionary
+ * @property favoritesTree
  */
-@property (readonly) NSMutableDictionary *favorites;
+@property (readonly) SPTreeNode *favoritesTree;
+
+/**
+ * @property favoritesData Favorites data dictionary
+ */
+@property (readonly) NSMutableDictionary *favoritesData;
 
 + (SPFavoritesController *)sharedFavoritesController;
 
 - (void)saveFavorites;
 - (void)reloadFavoritesWithSave:(BOOL)save;
+
+- (SPTreeNode *)addGroupNodeWithName:(NSString *)name asChildOfNode:(SPTreeNode *)parent;
+- (SPTreeNode *)addFavoriteNodeWithData:(NSDictionary *)data asChildOfNode:(SPTreeNode *)parent;
+
+- (void)removeFavoriteNode:(SPTreeNode *)node;
 
 @end

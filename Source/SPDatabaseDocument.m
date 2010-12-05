@@ -3239,7 +3239,7 @@
 	if ([connectionController selectedFavorite]) return;
 
 	// Request the connection controller to add its details to favorites
-	[connectionController addFavorite:self];
+	[connectionController addFavoriteUsingCurrentDetails:self];
 }
 
 /**
@@ -3813,7 +3813,7 @@
 {
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
-		[aWindow makeFirstResponder:[connectionController valueForKey:@"favoritesTable"]];
+		[aWindow makeFirstResponder:[connectionController valueForKey:@"favoritesOutlineView"]];
 		[connectionController performSelector:@selector(updateFavoriteSelection:) withObject:self afterDelay:0.0];
 	}
 
@@ -4092,12 +4092,12 @@
 	[self updateWindowTitle:self];
 
 	// Deselect all favorites on the connection controller
-	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
+	[[connectionController valueForKeyPath:@"favoritesOutlineView"] deselectAll:connectionController];
 
 	// Suppress the possibility to choose an other connection from the favorites
 	// if a connection should initialized by SPF file. Otherwise it could happen
 	// that the SPF file runs out of sync.
-	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
+	[[connectionController valueForKeyPath:@"favoritesOutlineView"] setEnabled:NO];
 
 	// Ensure the connection controller is set to a blank slate
 	[connectionController setName:@""];

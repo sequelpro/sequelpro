@@ -27,6 +27,9 @@
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 
+// Constants
+static const NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
+static const NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
 static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 @interface SPProcessListController (PrivateAPI)

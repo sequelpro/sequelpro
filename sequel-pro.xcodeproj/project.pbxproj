@@ -43,6 +43,8 @@
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
 		1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		173565D112AB1E2C000DCCEF /* plus.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 173565D012AB1E2C000DCCEF /* plus.tiff */; };
+		1735667412ABDCA7000DCCEF /* plus.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 1735667312ABDCA7000DCCEF /* plus.tiff */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
 		173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C44D71044A6B0001F3A30 /* SPOutlineView.m */; };
@@ -69,7 +71,6 @@
 		1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785E9F6127D8C7500F468C8 /* SPPreferencePane.m */; };
 		1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */; };
 		1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */; };
-		1785EA26127DB4DC00F468C8 /* SPFavoritesPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA25127DB4DC00F468C8 /* SPFavoritesPreferencePane.m */; };
 		1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */; };
 		1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB62127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m */; };
 		1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB65127DD5EA00F468C8 /* SPNetworkPreferencePane.m */; };
@@ -84,6 +85,12 @@
 		17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A20AC5124F9B110095CEFB /* SPServerSupport.m */; };
 		17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A7773311C52D8E001E27B4 /* SPIndexesController.m */; };
 		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
+		17AF712F12A8424C00C54D6A /* SPConnectionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF712E12A8424C00C54D6A /* SPConnectionHandler.m */; };
+		17AF713512A842B000C54D6A /* SPGroupNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF713212A842B000C54D6A /* SPGroupNode.m */; };
+		17AF713612A842B000C54D6A /* SPTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF713412A842B000C54D6A /* SPTreeNode.m */; };
+		17AF713912A842DE00C54D6A /* SPFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF713812A842DE00C54D6A /* SPFlippedView.m */; };
+		17AF72DD12A88CBA00C54D6A /* MCPKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */; };
+		17AF739D12AAABDD00C54D6A /* SPChooseMenuItemDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF739C12AAABDD00C54D6A /* SPChooseMenuItemDialog.m */; };
 		17AF787B11FC41C00073D043 /* SPExportFilenameUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */; };
 		17B7B578101601C300F057DE /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B576101601C300F057DE /* libmysqlclient.a */; };
 		17B7B5901016028F00F057DE /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
@@ -187,7 +194,6 @@
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
 		29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */ = {isa = PBXBuildFile; fileRef = 29FA88221114619E00D1AF3D /* SPTableTriggers.m */; };
 		380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */; };
-		380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
@@ -388,7 +394,6 @@
 		BC0E1493120AABE900E52E25 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
 		BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		BC0E14A4120AAC5000E52E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 583CE52C11725642008F148E /* libz.dylib */; };
-		BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
 		BC1944D01297291800A236CD /* SPBundleCommandTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */; };
 		BC1E55C4100DC92200AAE9F0 /* table-view-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = BC1E55C3100DC92200AAE9F0 /* table-view-small-square.tiff */; };
@@ -573,6 +578,8 @@
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		173284E81088FEDE0062E892 /* SPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConstants.h; sourceTree = "<group>"; };
 		173284E91088FEDE0062E892 /* SPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConstants.m; sourceTree = "<group>"; };
+		173565D012AB1E2C000DCCEF /* plus.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = plus.tiff; sourceTree = "<group>"; };
+		1735667312ABDCA7000DCCEF /* plus.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = plus.tiff; sourceTree = "<group>"; };
 		173C4361104455CA001F3A30 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/QueryFavoriteManager.xib; sourceTree = "<group>"; };
 		173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryFavoriteManager.h; sourceTree = "<group>"; };
 		173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryFavoriteManager.m; sourceTree = "<group>"; };
@@ -627,8 +634,6 @@
 		1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceControllerDelegate.m; sourceTree = "<group>"; };
 		1785EA21127DAF3300F468C8 /* SPTablesPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTablesPreferencePane.h; sourceTree = "<group>"; };
 		1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTablesPreferencePane.m; sourceTree = "<group>"; };
-		1785EA24127DB4DC00F468C8 /* SPFavoritesPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesPreferencePane.h; sourceTree = "<group>"; };
-		1785EA25127DB4DC00F468C8 /* SPFavoritesPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesPreferencePane.m; sourceTree = "<group>"; };
 		1785EB5E127DD5A800F468C8 /* SPNotificationsPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNotificationsPreferencePane.h; sourceTree = "<group>"; };
 		1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNotificationsPreferencePane.m; sourceTree = "<group>"; };
 		1785EB61127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAutoUpdatePreferencePane.h; sourceTree = "<group>"; };
@@ -657,6 +662,16 @@
 		17A7773211C52D8E001E27B4 /* SPIndexesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIndexesController.h; sourceTree = "<group>"; };
 		17A7773311C52D8E001E27B4 /* SPIndexesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIndexesController.m; sourceTree = "<group>"; };
 		17A7773711C52E61001E27B4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/IndexesView.xib; sourceTree = "<group>"; };
+		17AF712D12A8424C00C54D6A /* SPConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionHandler.h; sourceTree = "<group>"; };
+		17AF712E12A8424C00C54D6A /* SPConnectionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionHandler.m; sourceTree = "<group>"; };
+		17AF713112A842B000C54D6A /* SPGroupNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGroupNode.h; sourceTree = "<group>"; };
+		17AF713212A842B000C54D6A /* SPGroupNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGroupNode.m; sourceTree = "<group>"; };
+		17AF713312A842B000C54D6A /* SPTreeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTreeNode.h; sourceTree = "<group>"; };
+		17AF713412A842B000C54D6A /* SPTreeNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTreeNode.m; sourceTree = "<group>"; };
+		17AF713712A842DE00C54D6A /* SPFlippedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFlippedView.h; sourceTree = "<group>"; };
+		17AF713812A842DE00C54D6A /* SPFlippedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFlippedView.m; sourceTree = "<group>"; };
+		17AF739B12AAABDD00C54D6A /* SPChooseMenuItemDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPChooseMenuItemDialog.h; sourceTree = "<group>"; };
+		17AF739C12AAABDD00C54D6A /* SPChooseMenuItemDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChooseMenuItemDialog.m; sourceTree = "<group>"; };
 		17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFilenameUtilities.h; sourceTree = "<group>"; };
 		17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFilenameUtilities.m; sourceTree = "<group>"; };
 		17B7B5621016012700F057DE /* MCPKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MCPKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1112,8 +1127,6 @@
 		BC09D7DB12A786FB0030DB64 /* cancel-hovered-highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cancel-hovered-highlighted.png"; sourceTree = "<group>"; };
 		BC09D7DC12A786FB0030DB64 /* cancel-hovered.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cancel-hovered.png"; sourceTree = "<group>"; };
 		BC09D7DD12A786FB0030DB64 /* cancel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cancel.png; sourceTree = "<group>"; };
-		BC0ED3D812A9196C00088461 /* SPChooseMenuItemDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPChooseMenuItemDialog.h; sourceTree = "<group>"; };
-		BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPChooseMenuItemDialog.m; sourceTree = "<group>"; };
 		BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditSheetTextView.h; sourceTree = "<group>"; };
 		BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEditSheetTextView.m; sourceTree = "<group>"; };
 		BC1944CE1297291800A236CD /* SPBundleCommandTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleCommandTextView.h; sourceTree = "<group>"; };
@@ -1286,12 +1299,13 @@
 				584756B4120A06740057631F /* CoreServices.framework */,
 				584756B6120A067B0057631F /* ApplicationServices.framework */,
 				584756B8120A06830057631F /* QuickLook.framework */,
+				11D44DEF118F5887002AA43C /* OCMock.framework */,
+				58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */,
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
 				179ECEC611F265EE009C6A40 /* libbz2.dylib */,
 				17B7B591101602AE00F057DE /* libssl.dylib */,
 				17B7B58F1016028F00F057DE /* libcrypto.dylib */,
 				583CE52C11725642008F148E /* libz.dylib */,
-				58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -1299,7 +1313,6 @@
 		1058C7A8FEA54F5311CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				11D44DEF118F5887002AA43C /* OCMock.framework */,
 				2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */,
 				2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */,
 				B5EAC0FC0EC87FF900CC579C /* Security.framework */,
@@ -1583,6 +1596,19 @@
 			name = "Controller Categories";
 			sourceTree = "<group>";
 		};
+		17AF713012A8428000C54D6A /* Tree Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				17AF713312A842B000C54D6A /* SPTreeNode.h */,
+				17AF713412A842B000C54D6A /* SPTreeNode.m */,
+				17AF713112A842B000C54D6A /* SPGroupNode.h */,
+				17AF713212A842B000C54D6A /* SPGroupNode.m */,
+				17D3C22012859E070047709F /* SPFavoriteNode.h */,
+				17D3C22112859E070047709F /* SPFavoriteNode.m */,
+			);
+			name = "Tree Nodes";
+			sourceTree = "<group>";
+		};
 		17B7B5551016002900F057DE /* MCPKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -1685,6 +1711,7 @@
 		17BFC80D10D3FF5200A3B112 /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				173565D012AB1E2C000DCCEF /* plus.tiff */,
 				17E6418C0EF02036001BC333 /* appicon.icns */,
 				58C4593610D0674D00E6E13E /* spficon.icns */,
 				58C4593710D0674D00E6E13E /* sqlicon.icns */,
@@ -1720,6 +1747,8 @@
 		17D38FC2127B0C9500672B13 /* Connection View */ = {
 			isa = PBXGroup;
 			children = (
+				17AF712D12A8424C00C54D6A /* SPConnectionHandler.h */,
+				17AF712E12A8424C00C54D6A /* SPConnectionHandler.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */,
@@ -1753,8 +1782,6 @@
 				17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */,
 				1785EA21127DAF3300F468C8 /* SPTablesPreferencePane.h */,
 				1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */,
-				1785EA24127DB4DC00F468C8 /* SPFavoritesPreferencePane.h */,
-				1785EA25127DB4DC00F468C8 /* SPFavoritesPreferencePane.m */,
 				1785EB5E127DD5A800F468C8 /* SPNotificationsPreferencePane.h */,
 				1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */,
 				1785EB68127DD79300F468C8 /* SPEditorPreferencePane.h */,
@@ -1940,6 +1967,8 @@
 		17E641470EF01EB8001BC333 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				17AF739B12AAABDD00C54D6A /* SPChooseMenuItemDialog.h */,
+				17AF739C12AAABDD00C54D6A /* SPChooseMenuItemDialog.m */,
 				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
 				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
@@ -1968,14 +1997,11 @@
 				BCA6271B1031B9D40047E5D5 /* SPTooltip.m */,
 				17D3C66F128AD8160047709F /* SPSingleton.h */,
 				17D3C670128AD8160047709F /* SPSingleton.m */,
-				17D3C22012859E070047709F /* SPFavoriteNode.h */,
-				17D3C22112859E070047709F /* SPFavoriteNode.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
-				BC0ED3D812A9196C00088461 /* SPChooseMenuItemDialog.h */,
-				BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */,
+				17AF713012A8428000C54D6A /* Tree Nodes */,
 				173E70A1107FF495008733C9 /* Core Data */,
 			);
 			name = Model;
@@ -1988,6 +2014,8 @@
 				17E6417F0EF01FA8001BC333 /* SPImageView.m */,
 				584094CC1107BD0500260CFD /* SPAlertSheets.h */,
 				584095181107CB6600260CFD /* SPAlertSheets.m */,
+				17AF713712A842DE00C54D6A /* SPFlippedView.h */,
+				17AF713812A842DE00C54D6A /* SPFlippedView.m */,
 				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
@@ -2042,6 +2070,7 @@
 			isa = PBXGroup;
 			children = (
 				17BFC80D10D3FF5200A3B112 /* Icons */,
+				1735667312ABDCA7000DCCEF /* plus.tiff */,
 				BCCDED62115940CB00285E65 /* sync_arrows_01.tiff */,
 				BCCDED63115940CB00285E65 /* sync_arrows_02.tiff */,
 				BCCDED64115940CB00285E65 /* sync_arrows_03.tiff */,
@@ -2685,6 +2714,7 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -2880,6 +2910,8 @@
 				BC09D7E112A786FB0030DB64 /* cancel-hovered-highlighted.png in Resources */,
 				BC09D7E212A786FB0030DB64 /* cancel-hovered.png in Resources */,
 				BC09D7E312A786FB0030DB64 /* cancel.png in Resources */,
+				173565D112AB1E2C000DCCEF /* plus.tiff in Resources */,
+				1735667412ABDCA7000DCCEF /* plus.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2957,8 +2989,8 @@
 				1127305B11807894000737FD /* SPDatabaseInfoTest.m in Sources */,
 				1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */,
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */,
-				380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */,
 				1198F5C41174EF3F00670590 /* SPDatabaseCopyTest.m in Sources */,
+				17AF72DD12A88CBA00C54D6A /* MCPKitTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3141,7 +3173,6 @@
 				1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */,
 				1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */,
 				1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */,
-				1785EA26127DB4DC00F468C8 /* SPFavoritesPreferencePane.m in Sources */,
 				1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */,
 				1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */,
 				1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */,
@@ -3158,7 +3189,11 @@
 				BC77C5E4129AA69E009AD832 /* SPBundleHTMLOutputController.m in Sources */,
 				58DC10D312A1B8DF00B76DA5 /* SPMenuAdditions.m in Sources */,
 				BC5750D512A6233900911BA2 /* SPActivityTextFieldCell.m in Sources */,
-				BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */,
+				17AF712F12A8424C00C54D6A /* SPConnectionHandler.m in Sources */,
+				17AF713512A842B000C54D6A /* SPGroupNode.m in Sources */,
+				17AF713612A842B000C54D6A /* SPTreeNode.m in Sources */,
+				17AF713912A842DE00C54D6A /* SPFlippedView.m in Sources */,
+				17AF739D12AAABDD00C54D6A /* SPChooseMenuItemDialog.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3725,7 +3760,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -3737,6 +3771,8 @@
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
+					"-framework",
+					OCMock,
 					"-framework",
 					Cocoa,
 					"-framework",

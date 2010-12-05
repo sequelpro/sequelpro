@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPFavoriteNode.h
+//  SPGroupNode.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 8, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 21, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -24,29 +24,24 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 /**
- * @class SPFavoriteNode SPFavoriteNode.h
+ * @class SPGroupNode SPGroupNode.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * This class is designed to be a simple wrapper around a connection favorite to allow us to easily represent
- * them in a tree structure for use in an outline view. If the node is a group item (i.e. a folder) then it
- * should have a name as well as zero or more child nodes. Similarly, actual connection favorite nodes, don't
- * have a name and should have no children.
+ * 
  */
-@interface SPFavoriteNode : NSObject <NSCopying>
-{	
-	NSDictionary *nodeFavorite;
+@interface SPGroupNode : NSObject <NSCopying>
+{
+	NSString *nodeName;
 }
 
 /**
- * @property nodeFavorite The actual favorite dictionary
+ * @property nodeName The group node's name
  */
-@property (readwrite, retain) NSDictionary *nodeFavorite;
+@property (readwrite, retain) NSString *nodeName;
 
-- (id)initWithDictionary:(NSDictionary *)dictionary;
+- (id)initWithName:(NSString *)name;
 
-+ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSDictionary *)dictionary;
-
-- (NSDictionary *)dictionaryRepresentation;
++ (SPGroupNode *)groupNodeWithName:(NSString *)name;
 
 @end

@@ -36,9 +36,8 @@
 - (IBAction)updateDefaultFavorite:(id)sender
 {
 	[prefs setBool:([defaultFavoritePopup indexOfSelectedItem] == 0) forKey:SPSelectLastFavoriteUsed];
-	
-	// Minus 2 from index to account for the "Last Used" and separator items
-	[prefs setInteger:([defaultFavoritePopup indexOfSelectedItem] - 2) forKey:SPDefaultFavorite];
+			
+	[prefs setInteger:[[sender selectedItem] tag] forKey:SPDefaultFavorite];
 }
 
 #pragma mark -
@@ -56,36 +55,24 @@
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
 	// Add all favorites to the menu
-	for (NSString *favorite in [[favoritesController arrangedObjects] valueForKeyPath:@"name"])
+	for (NSDictionary *favorite in [favoritesController arrangedObjects])
 	{
-		NSMenuItem *favoriteMenuItem = [[NSMenuItem alloc] initWithTitle:favorite action:NULL keyEquivalent:@""];
+		NSMenuItem *favoriteMenuItem = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:SPFavoriteNameKey] action:NULL keyEquivalent:@""];
+				
+		[favoriteMenuItem setTag:[[favorite objectForKey:SPFavoriteIDKey] integerValue]];
 		
 		[[defaultFavoritePopup menu] addItem:favoriteMenuItem];
 		
 		[favoriteMenuItem release];
 	}
 	
-	// Add item to switch to edit favorites pane
-	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	
-	NSMenuItem *editMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item") action:@selector(displayFavoritePreferences:) keyEquivalent:@""];
-	
-	[editMenuItem setTarget:[[[self view] window] delegate]];
-	
-	[[defaultFavoritePopup menu] addItem:editMenuItem];
-	
-	[editMenuItem release];
-	
 	// Select the default favorite from prefs
-	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed]) ? ([prefs integerForKey:SPDefaultFavorite] + 2) : 0];
-}
-
-/**
- * Resets the default favorite popup button selection based on the user's preferences.
- */
-- (void)resetDefaultFavoritePopupSelection
-{
-	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed]) ? ([prefs integerForKey:SPDefaultFavorite] + 2) : 0];
+	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
+		[defaultFavoritePopup selectItemWithTag:[prefs integerForKey:SPDefaultFavorite]];
+	}
+	else {
+		[defaultFavoritePopup selectItemAtIndex:0];
+	}
 }
 
 #pragma mark -

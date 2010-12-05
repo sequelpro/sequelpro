@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPGeneralPreferencePane.h
+//  SPFlippedView.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Rowan Beentje on 28/06/2009.
+//  Copyright 2009 Arboreal. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,24 +23,16 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPPreferencePane.h"
+#import "SPFlippedView.h"
+
+@implementation SPFlippedView
 
 /**
- * @class SPGeneralPreferencePane SPGeneralPreferencePane.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * General preference pane controller.
+ * Is flipped to simplify drawing.
  */
-@interface SPGeneralPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
-{	
-	IBOutlet NSPopUpButton *defaultFavoritePopup;
-	
-	IBOutlet NSArrayController *favoritesController;
+- (BOOL)isFlipped
+{
+    return YES;
 }
-
-- (IBAction)updateDefaultFavorite:(id)sender;
-
-- (void)updateDefaultFavoritePopup;
 
 @end

@@ -26,9 +26,15 @@
 #import <MCPKit/MCPKit.h>
 
 #import "SPConnectionControllerDelegateProtocol.h"
-#import "SPFavoritesOutlineView.h"
 
-@class SPDatabaseDocument, SPKeychain, SPSSHTunnel, BWAnchoredButtonBar, SPFavoriteNode;
+@class SPDatabaseDocument, 
+	   SPFavoritesController, 
+	   SPKeychain, 
+	   SPSSHTunnel,
+	   SPTreeNode,
+	   SPFavoriteNode,
+	   SPFavoritesOutlineView,
+	   BWAnchoredButtonBar;
 
 @interface NSObject (BWAnchoredButtonBar)
 
@@ -36,28 +42,20 @@
 
 @end
 
-@interface SPFlippedView : NSView
-
-- (BOOL)isFlipped;
-
-@end
-
 @interface SPConnectionController : NSObject 
 {
 	id <SPConnectionControllerDelegateProtocol> delegate;
 	
-	SPDatabaseDocument *tableDocument;
+	SPDatabaseDocument *dbDocument;
+	SPSSHTunnel *sshTunnel;
+	SPKeychain *keychain;
+	
+	MCPConnection *mySQLConnection;
+	
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
-	SPKeychain *keychain;
-	NSUserDefaults *prefs;
-	NSMutableArray *favorites;
-	SPSSHTunnel *sshTunnel;
-	MCPConnection *mySQLConnection;
-	BOOL automaticFavoriteSelection;
-	BOOL cancellingConnection;
-	BOOL isConnecting;
 
+	// Standard details
 	NSInteger previousType;
 	NSInteger type;
 	NSString *name;
@@ -67,20 +65,23 @@
 	NSString *database;
 	NSString *socket;
 	NSString *port;
-	int useSSL;
-	int sslKeyFileLocationEnabled;
+	
+	// SSL details
+	NSInteger useSSL;
+	NSInteger sslKeyFileLocationEnabled;
 	NSString *sslKeyFileLocation;
-	int sslCertificateFileLocationEnabled;
+	NSInteger sslCertificateFileLocationEnabled;
 	NSString *sslCertificateFileLocation;
-	int sslCACertFileLocationEnabled;
+	NSInteger sslCACertFileLocationEnabled;
 	NSString *sslCACertFileLocation;
+	
+	// SSH details
 	NSString *sshHost;
 	NSString *sshUser;
 	NSString *sshPassword;
-	int sshKeyLocationEnabled;
+	NSInteger sshKeyLocationEnabled;
 	NSString *sshKeyLocation;
 	NSString *sshPort;
-	@private NSString *favoritesPBoardType;
 
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
@@ -93,7 +94,7 @@
 	IBOutlet NSSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
-	IBOutlet SPFavoritesOutlineView *favoritesTable;
+	IBOutlet SPFavoritesOutlineView *favoritesOutlineView;
 
 	IBOutlet NSWindow *errorDetailWindow;
 	IBOutlet NSTextView *errorDetailText;
@@ -109,8 +110,14 @@
 	IBOutlet NSView *sslCertificateLocationHelp;
 	IBOutlet NSView *sslCACertLocationHelp;
 
+	IBOutlet NSTextField *standardNameField;
+	IBOutlet NSTextField *sshNameField;
+	IBOutlet NSTextField *socketNameField;
 	IBOutlet NSTextField *standardSQLHostField;
 	IBOutlet NSTextField *sshSQLHostField;
+	IBOutlet NSTextField *standardUserField;
+	IBOutlet NSTextField *socketUserField;
+	IBOutlet NSTextField *sshUserField;
 	IBOutlet NSSecureTextField *standardPasswordField;
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
@@ -130,12 +137,20 @@
 	IBOutlet NSTextField *progressIndicatorText;
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
 	
+	BOOL isConnecting;
+	BOOL cancellingConnection;
     BOOL reverseFavoritesSort;
 	BOOL mySQLConnectionCancelled;
+	BOOL automaticFavoriteSelection;
+	BOOL favoriteNameFieldWasTouched;
 	
-    SPFavoritesSortItem previousSortItem, currentSortItem;
+	NSImage *folderImage;
+	NSUserDefaults *prefs;
 	
-	SPFavoriteNode *favoritesRoot;
+	SPTreeNode *favoritesRoot;
+	SPFavoriteNode *currentFavorite;
+	SPFavoritesController *favoritesController;
+	SPFavoritesSortItem previousSortItem, currentSortItem;
 }
 
 @property (readwrite, assign) id <SPConnectionControllerDelegateProtocol> delegate;
@@ -147,17 +162,17 @@
 @property (readwrite, retain) NSString *database;
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
-@property (readwrite, assign) int useSSL;
-@property (readwrite, assign) int sslKeyFileLocationEnabled;
+@property (readwrite, assign) NSInteger useSSL;
+@property (readwrite, assign) NSInteger sslKeyFileLocationEnabled;
 @property (readwrite, retain) NSString *sslKeyFileLocation;
-@property (readwrite, assign) int sslCertificateFileLocationEnabled;
+@property (readwrite, assign) NSInteger sslCertificateFileLocationEnabled;
 @property (readwrite, retain) NSString *sslCertificateFileLocation;
-@property (readwrite, assign) int sslCACertFileLocationEnabled;
+@property (readwrite, assign) NSInteger sslCACertFileLocationEnabled;
 @property (readwrite, retain) NSString *sslCACertFileLocation;
 @property (readwrite, retain) NSString *sshHost;
 @property (readwrite, retain) NSString *sshUser;
 @property (readwrite, retain) NSString *sshPassword;
-@property (readwrite, assign) int sshKeyLocationEnabled;
+@property (readwrite, assign) NSInteger sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
 
@@ -169,36 +184,38 @@
 @property (readonly, assign) BOOL isConnecting;
 @property (readonly, assign) NSString *favoritesPBoardType;
 
-- (id)initWithDocument:(SPDatabaseDocument *)theTableDocument;
+- (id)initWithDocument:(SPDatabaseDocument *)document;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
 - (IBAction)cancelMySQLConnection:(id)sender;
-- (void)initiateSSHTunnelConnection;
-- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
-- (void)initiateMySQLConnection;
-- (void)cancelConnection;
-- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
-- (void)addConnectionToDocument;
 
 // Interface interaction
+- (IBAction)nodeDoubleClicked:(id)sender;
 - (IBAction)chooseKeyLocation:(id)sender;
-- (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
-- (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(id)sender;
 
-// Connection details interaction
-- (BOOL)checkHost;
+- (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 
 // Favorites interaction
-- (void)updateFavorites;
 - (void)updateFavoriteSelection:(id)sender;
-- (id)selectedFavorite;
-- (IBAction)addFavorite:(id)sender;
+- (NSMutableDictionary *)selectedFavorite;
+- (SPTreeNode *)selectedFavoriteNode;
+- (NSArray *)selectedFavoriteNodes;
 
-- (void)scrollViewFrameChanged:(NSNotification *)aNotification;
+- (IBAction)addFavorite:(id)sender;
+- (IBAction)addFavoriteUsingCurrentDetails:(id)sender;
+- (IBAction)addGroup:(id)sender;
+- (IBAction)removeNode:(id)sender;
+- (IBAction)duplicateFavorite:(id)sender;
+- (IBAction)renameFavorite:(id)sender;
+- (IBAction)makeSelectedFavoriteDefault:(id)sender;
+
+// Import/export favorites
+- (IBAction)importFavorites:(id)sender;
+- (IBAction)exportFavorites:(id)sender;
 
 @end

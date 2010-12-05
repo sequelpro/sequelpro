@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPGeneralPreferencePane.h
+//  SPConnectionHandler.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 15, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,24 +23,22 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPPreferencePane.h"
+#import "SPConnectionController.h"
 
 /**
- * @class SPGeneralPreferencePane SPGeneralPreferencePane.h
+ * @category SPConnectionHandler SPConnectionHandler.h
  *
- * @author Stuart Connolly http://stuconnolly.com/
+ * @author Stuart Connolly http://stuconnolly.com/ 
  *
- * General preference pane controller.
+ * Connection handler category. Handles all connection related non-interface processes.
  */
-@interface SPGeneralPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
-{	
-	IBOutlet NSPopUpButton *defaultFavoritePopup;
-	
-	IBOutlet NSArrayController *favoritesController;
-}
+@interface SPConnectionController (SPConnectionHandler)
 
-- (IBAction)updateDefaultFavorite:(id)sender;
-
-- (void)updateDefaultFavoritePopup;
+- (void)initiateSSHTunnelConnection;
+- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
+- (void)initiateMySQLConnection;
+- (void)cancelConnection;
+- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
+- (void)addConnectionToDocument;
 
 @end
