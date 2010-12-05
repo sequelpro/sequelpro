@@ -483,8 +483,15 @@
 	}
 	
 	// Duplicate and make the selected favorite the default
-	if ((action == @selector(duplicateFavorite:)) || (action == @selector(makeSelectedFavoriteDefault:))) {
+	if (action == @selector(duplicateFavorite:)) {
 		return (([favoritesOutlineView numberOfSelectedRows] == 1) && (![node isGroup]));
+	}
+	
+	// Make selected favorite the default
+	if (action == @selector(makeSelectedFavoriteDefault:)) {
+		NSInteger favoriteID = [[[self selectedFavorite] objectForKey:SPFavoriteIDKey] integerValue];
+				
+		return (([favoritesOutlineView numberOfSelectedRows] == 1) && (![node isGroup]) && (favoriteID != [prefs integerForKey:SPDefaultFavorite]));
 	}
 	
 	// Rename selected favorite/group
