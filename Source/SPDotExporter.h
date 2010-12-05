@@ -42,9 +42,11 @@
 	NSArray *dotExportTables;
 	
 	NSString *dotExportCurrentTable;
-	
+
+	BOOL dotForceLowerTableNames;
+
 	SPTableData *dotTableData;
-	
+
 	NSString *dotDatabaseHost;
 	NSString *dotDatabaseName;
 	NSString *dotDatabaseVersion;
@@ -64,6 +66,11 @@
  * @property dotExportCurrentTable Current table
  */
 @property(readwrite, retain) NSString *dotExportCurrentTable;
+
+/**
+ * @property dotForceLowerTableNames dotForceLowerTableNames Force lowercase table names
+ */
+@property(readwrite, assign) BOOL dotForceLowerTableNames;
 
 /**
  * @property dotTableData Table data

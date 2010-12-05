@@ -33,6 +33,7 @@
 @synthesize delegate;
 @synthesize dotExportTables;
 @synthesize dotExportCurrentTable;
+@synthesize dotForceLowerTableNames;
 @synthesize dotTableData;
 @synthesize dotDatabaseHost;
 @synthesize dotDatabaseName;
@@ -115,6 +116,7 @@
 		}
 					
 		NSString *tableName = NSArrayObjectAtIndex([self dotExportTables], i);
+		NSString *tableLinkName = [self dotForceLowerTableNames]?[tableName lowercaseString]:tableName;
 		NSDictionary *tableInfo = [[self dotTableData] informationForTable:tableName];
 					
 		// Set the current table
@@ -131,7 +133,7 @@
 		
 		[metaString setString:[NSString stringWithFormat:@"\tsubgraph \"table_%@\" {\n", tableName]];
 		[metaString appendString:@"\t\tnode [ shape = \"plaintext\" ];\n"];
-		[metaString appendFormat:@"\t\t\"%@\" [ label=<\n", tableName];
+		[metaString appendFormat:@"\t\t\"%@\" [ label=<\n", tableLinkName];
 		[metaString appendString:@"\t\t\t<TABLE BORDER=\"0\" CELLSPACING=\"0\" CELLBORDER=\"1\">\n"];
 		[metaString appendFormat:@"\t\t\t<TR><TD COLSPAN=\"3\" BGCOLOR=\"%@\">%@</TD></TR>\n", hdrColor, tableName];
 		
@@ -173,7 +175,7 @@
 					extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
 				}
 				
-				[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@", tableName, [originColumns objectAtIndex:0], [aConstraint objectForKey:@"ref_table"], [referenceColumns objectAtIndex:0], extra]];
+				[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@", tableLinkName, [originColumns objectAtIndex:0], [aConstraint objectForKey:@"ref_table"], [[referenceColumns objectAtIndex:0] lowercaseString], extra]];
 			}
 		}
 

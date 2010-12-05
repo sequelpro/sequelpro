@@ -353,6 +353,7 @@
 		SPDotExporter *dotExporter = [[SPDotExporter alloc] initWithDelegate:self];
 		
 		[dotExporter setDotTableData:tableDataInstance];
+		[dotExporter setDotForceLowerTableNames:[exportDotForceLowerTableNamesCheck state]];
 		[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
 		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
 		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];

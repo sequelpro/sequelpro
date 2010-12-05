@@ -93,7 +93,8 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 		
 		showAdvancedView = NO;
 		showCustomFilenameView = NO;
-		
+		serverLowerCaseTableNameValue = NSNotFound;
+
 		heightOffset1 = 0;
 		heightOffset2 = 0;
 		windowMinWidth = [[self window] minSize].width;
@@ -706,10 +707,23 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 	// Set the tooltip
 	[[exportTableList tableColumnWithIdentifier:SPTableViewContentColumnID] setHeaderToolTip:(enable) ? @"" : NSLocalizedString(@"Include content", @"include content table column tooltip")];
 	
+	// When switching to Dot export, ensure the server's lower_case_table_names value is checked the first time
+	// to set the export's link case sensitivity setting
+	if (isDot && serverLowerCaseTableNameValue == NSNotFound) {
+		MCPResult *caseResult = [connection queryString:@"SHOW VARIABLES LIKE 'lower_case_table_names'"];
+		[caseResult setReturnDataAsStrings:YES];
+		if ([caseResult numOfRows] == 1) {
+			serverLowerCaseTableNameValue = [[[caseResult fetchRowAsDictionary] objectForKey:@"Value"] integerValue];
+		} else {
+			serverLowerCaseTableNameValue = 0;
+		}
+		[exportDotForceLowerTableNamesCheck setState:(serverLowerCaseTableNameValue == 0)?NSOffState:NSOnState];
+	}
+
 	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
 	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
-	[self _displayExportTypeOptions:(isSQL || isCSV || isXML)];
+	[self _displayExportTypeOptions:(isSQL || isCSV || isXML || isDot)];
 	[self updateAvailableExportFilenameTokens];
 	
 	if (!showCustomFilenameView) [self updateDisplayedExportFilename];

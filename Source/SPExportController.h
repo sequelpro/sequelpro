@@ -108,6 +108,9 @@
 	IBOutlet NSButton *exportXMLIncludeStructure;
 	IBOutlet NSButton *exportXMLIncludeContent;
 	IBOutlet NSTextField *exportXMLNULLValuesAsTextField;
+
+	// Dot
+	IBOutlet NSButton *exportDotForceLowerTableNamesCheck;
 	
 	/**
 	 * Cancellation flag
@@ -203,6 +206,11 @@
 	 * Previous connection encoding was via Latin1
 	 */
 	BOOL sqlPreviousConnectionEncodingViaLatin1;
+
+	/**
+	 * The server's lower_case_table_names setting
+	 */
+	NSInteger serverLowerCaseTableNameValue;
 
 	NSInteger heightOffset1;
 	NSInteger heightOffset2;
