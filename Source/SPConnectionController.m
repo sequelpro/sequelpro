@@ -892,14 +892,6 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 		
 		NSInteger duplicatedFavoriteType = [[favorite objectForKey:SPFavoriteTypeKey] integerValue];
 		
-		// Select the keychain passwords for duplication
-		NSString *keychainName        = [keychain nameForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
-		NSString *keychainAccount     = [keychain accountForUser:[favorite objectForKey:SPFavoriteUserKey] host:((duplicatedFavoriteType == SPSocketConnection) ? @"localhost" : [favorite objectForKey:SPFavoriteHostKey]) database:[favorite objectForKey:SPFavoriteDatabaseKey]];
-		NSString *favoritePassword    = [keychain getPasswordForName:keychainName account:keychainAccount];
-		NSString *keychainSSHName     = [keychain nameForSSHForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
-		NSString *keychainSSHAccount  = [keychain accountForSSHUser:[favorite objectForKey:SPFavoriteSSHUserKey] sshHost:[favorite objectForKey:SPFavoriteSSHHostKey]];
-		NSString *favoriteSSHPassword = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
-		
 		// Update the unique ID
 		[favorite setObject:favoriteID forKey:SPFavoriteIDKey];
 		
@@ -908,16 +900,28 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 		
 		// Create new keychain items if appropriate
 		if (password && [password length]) {
+			NSString *keychainName        = [keychain nameForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
+			NSString *keychainAccount     = [keychain accountForUser:[favorite objectForKey:SPFavoriteUserKey] host:((duplicatedFavoriteType == SPSocketConnection) ? @"localhost" : [favorite objectForKey:SPFavoriteHostKey]) database:[favorite objectForKey:SPFavoriteDatabaseKey]];
+			NSString *favoritePassword    = [keychain getPasswordForName:keychainName account:keychainAccount];
+			
 			keychainName = [keychain nameForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
+			
 			[keychain addPassword:favoritePassword forName:keychainName account:keychainAccount];
+			
+			favoritePassword = nil;
 		}
 		
 		if (sshPassword && [sshPassword length]) {
+			NSString *keychainSSHName     = [keychain nameForSSHForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
+			NSString *keychainSSHAccount  = [keychain accountForSSHUser:[favorite objectForKey:SPFavoriteSSHUserKey] sshHost:[favorite objectForKey:SPFavoriteSSHHostKey]];
+			NSString *favoriteSSHPassword = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
+			
 			keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
+			
 			[keychain addPassword:favoriteSSHPassword forName:keychainSSHName account:keychainSSHAccount];
-		}
 		
-		favoritePassword = nil, favoriteSSHPassword = nil;
+			favoriteSSHPassword = nil;
+		}
 		
 		SPTreeNode *selectedNode = [self selectedFavoriteNode];
 		
