@@ -174,7 +174,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	[favoritesTree removeObjectFromChildren:node];
 	
 	// Save data to disk
-	[self saveFavorites];
+	[self reloadFavoritesWithSave:YES];
 }
 
 #pragma mark -

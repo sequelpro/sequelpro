@@ -1025,36 +1025,40 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 	if ([contextInfo isEqualToString:SPRemoveNode]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			
-			NSDictionary *favorite = [self selectedFavorite];
+			SPTreeNode *node = [self selectedFavoriteNode];
 			
-			// Get selected favorite's details
-			NSString *favoriteName     = [favorite objectForKey:SPFavoriteNameKey];
-			NSString *favoriteUser     = [favorite objectForKey:SPFavoriteUserKey];
-			NSString *favoriteHost     = [favorite objectForKey:SPFavoriteHostKey];
-			NSString *favoriteDatabase = [favorite objectForKey:SPFavoriteDatabaseKey];
-			NSString *favoriteSSHUser  = [favorite objectForKey:SPFavoriteSSHUserKey];
-			NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
-			NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
-			
-			NSInteger favoriteType     = [[favorite objectForKey:SPFavoriteTypeKey] integerValue];
-			
-			// Remove passwords from the Keychain
-			[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
-									account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
-			[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:favoriteName id:favoriteID]
-									account:[keychain accountForSSHUser:favoriteSSHUser sshHost:favoriteSSHHost]];
-			
-			// Reset last used favorite
-			if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPLastFavoriteID]) {
-				[prefs setInteger:0	forKey:SPLastFavoriteID];
+			if (![node isGroup]) {
+				NSDictionary *favorite = [[node representedObject] nodeFavorite];
+				
+				// Get selected favorite's details
+				NSString *favoriteName     = [favorite objectForKey:SPFavoriteNameKey];
+				NSString *favoriteUser     = [favorite objectForKey:SPFavoriteUserKey];
+				NSString *favoriteHost     = [favorite objectForKey:SPFavoriteHostKey];
+				NSString *favoriteDatabase = [favorite objectForKey:SPFavoriteDatabaseKey];
+				NSString *favoriteSSHUser  = [favorite objectForKey:SPFavoriteSSHUserKey];
+				NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
+				NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
+				
+				NSInteger favoriteType     = [[favorite objectForKey:SPFavoriteTypeKey] integerValue];
+				
+				// Remove passwords from the Keychain
+				[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
+										account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
+				[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:favoriteName id:favoriteID]
+										account:[keychain accountForSSHUser:favoriteSSHUser sshHost:favoriteSSHHost]];
+				
+				// Reset last used favorite
+				if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPLastFavoriteID]) {
+					[prefs setInteger:0	forKey:SPLastFavoriteID];
+				}
+				
+				// Reset default favorite
+				if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
+					[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
+				}
 			}
 			
-			// Reset default favorite
-			if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
-				[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
-			}
-			
-			[favoritesController removeFavoriteNode:[self selectedFavoriteNode]];
+			[favoritesController removeFavoriteNode:node];
 			
 			[self _reloadFavoritesViewData];
 			
