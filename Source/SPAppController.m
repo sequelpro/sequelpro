@@ -1282,12 +1282,10 @@
 									[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
 
 								[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
-												[NSArray arrayWithObjects:
-														[theChar lowercaseString], 
-														[NSNumber numberWithInteger:mask], 
-														infoPath, 
-														[cmdData objectForKey:SPBundleFileNameKey], 
-														([cmdData objectForKey:SPBundleFileTooltipKey]) ?: @"", 
+												[NSDictionary dictionaryWithObjectsAndKeys:
+														infoPath, @"path",
+														[cmdData objectForKey:SPBundleFileNameKey], @"title",
+														([cmdData objectForKey:SPBundleFileTooltipKey]) ?: @"", @"tooltip",
 												nil]];
 
 							}
@@ -1436,31 +1434,34 @@
 	BOOL checkForKeyEquivalents = ([[NSApp currentEvent] type] == NSKeyDown) ? YES : NO;
 
 	NSString *scope = [[sender representedObject] objectForKey:@"scope"];
-	NSString *keyEqKey = [[sender representedObject] objectForKey:@"key"];
-	NSDictionary *assignedKeyEquivalents = [bundleKeyEquivalents objectForKey:scope];
+	NSString *keyEqKey = nil;
+	NSMutableArray *assignedKeyEquivalents = nil;
+
+	if(checkForKeyEquivalents) {
+		keyEqKey = [[sender representedObject] objectForKey:@"key"];
+		assignedKeyEquivalents = [NSMutableArray array];
+		[assignedKeyEquivalents setArray:[[bundleKeyEquivalents objectForKey:scope] objectForKey:keyEqKey]];
+		if([assignedKeyEquivalents count] > 1) {
+			NSSortDescriptor *aSortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES selector:@selector(caseInsensitiveCompare:)] autorelease];
+			NSArray *sorted = [assignedKeyEquivalents sortedArrayUsingDescriptors:[NSArray arrayWithObject:aSortDescriptor]];
+			[assignedKeyEquivalents setArray:sorted];
+		}
+	}
 
 	id firstResponder = [[NSApp mainWindow] firstResponder];
 
 	if([scope isEqualToString:SPBundleScopeInputField] && [firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
-		if(checkForKeyEquivalents && [assignedKeyEquivalents objectForKey:keyEqKey]) {
+		if(checkForKeyEquivalents && [assignedKeyEquivalents count]) {
 			NSInteger idx = 0;
-			if([[assignedKeyEquivalents objectForKey:keyEqKey] count] > 1) {
-				NSMutableArray *m = [NSMutableArray array];
-				NSInteger cnt = 0;
-				for(id i in [assignedKeyEquivalents objectForKey:keyEqKey]) {
-					[m addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						[i objectAtIndex:3], @"title",
-						[i objectAtIndex:4], @"tooltip",
-						nil]];
-				}
-				idx = [SPChooseMenuItemDialog withItems:m atPosition:[NSEvent mouseLocation]];
-			}
+			if([assignedKeyEquivalents count] > 1)
+				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
+
 			if(idx > -1) {
-				NSArray *eq = [[assignedKeyEquivalents objectForKey:keyEqKey] objectAtIndex:idx];
+				NSArray *eq = [assignedKeyEquivalents objectAtIndex:idx];
 				if(eq && [eq count]) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
-					[aMenuItem setToolTip:[eq objectAtIndex:2]];
+					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
 					[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
 				}
 			}
@@ -1469,25 +1470,17 @@
 		}
 	}
 	else if([scope isEqualToString:SPBundleScopeDataTable] && [firstResponder respondsToSelector:@selector(executeBundleItemForDataTable:)]) {
-		if(checkForKeyEquivalents && [assignedKeyEquivalents objectForKey:keyEqKey]) {
+		if(checkForKeyEquivalents && [assignedKeyEquivalents count]) {
 			NSInteger idx = 0;
-			if([[assignedKeyEquivalents objectForKey:keyEqKey] count] > 1) {
-				NSMutableArray *m = [NSMutableArray array];
-				NSInteger cnt = 0;
-				for(id i in [assignedKeyEquivalents objectForKey:keyEqKey]) {
-					[m addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						[i objectAtIndex:3], @"title",
-						[i objectAtIndex:4], @"tooltip",
-						nil]];
-				}
-				idx = [SPChooseMenuItemDialog withItems:m atPosition:[NSEvent mouseLocation]];
-			}
+			if([assignedKeyEquivalents count] > 1)
+				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
+
 			if(idx > -1) {
-				NSArray *eq = [[assignedKeyEquivalents objectForKey:keyEqKey] objectAtIndex:idx];
+				NSArray *eq = [assignedKeyEquivalents objectAtIndex:idx];
 				if(eq && [eq count]) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
-					[aMenuItem setToolTip:[eq objectAtIndex:2]];
+					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
 					[[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
 				}
 			}
@@ -1498,23 +1491,15 @@
 	else if([scope isEqualToString:SPBundleScopeGeneral]) {
 		if(checkForKeyEquivalents && [assignedKeyEquivalents objectForKey:keyEqKey]) {
 			NSInteger idx = 0;
-			if([[assignedKeyEquivalents objectForKey:keyEqKey] count] > 1) {
-				NSMutableArray *m = [NSMutableArray array];
-				NSInteger cnt = 0;
-				for(id i in [assignedKeyEquivalents objectForKey:keyEqKey]) {
-					[m addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-						[i objectAtIndex:3], @"title",
-						[i objectAtIndex:4], @"tooltip",
-						nil]];
-				}
-				idx = [SPChooseMenuItemDialog withItems:m atPosition:[NSEvent mouseLocation]];
-			}
+			if([assignedKeyEquivalents count] > 1)
+				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
+
 			if(idx > -1) {
-				NSArray *eq = [[assignedKeyEquivalents objectForKey:keyEqKey] objectAtIndex:idx];
+				NSArray *eq = [assignedKeyEquivalents objectAtIndex:idx];
 				if(eq && [eq count]) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
-					[aMenuItem setToolTip:[eq objectAtIndex:2]];
+					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
 					[[[NSApp mainWindow] firstResponder] executeBundleItemForApp:aMenuItem];
 				}
 			}
