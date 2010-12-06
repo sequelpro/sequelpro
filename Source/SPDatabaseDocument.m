@@ -1223,6 +1223,19 @@
 	[taskProgressWindow setFrameOrigin:newBottomLeftPoint];
 }
 
+/**
+ * Support pausing and restarting the task progress indicator.
+ * Only works while the indicator is in indeterminate mode.
+ */
+- (void) setTaskIndicatorShouldAnimate:(BOOL)shouldAnimate
+{
+	if (shouldAnimate) {
+		[[taskProgressIndicator onMainThread] startAnimation:self];
+	} else {
+		[[taskProgressIndicator onMainThread] stopAnimation:self];
+	}
+}
+
 #pragma mark -
 #pragma mark Encoding Methods
 
@@ -4760,6 +4773,7 @@
 - (void)registerActivity:(NSDictionary*)commandDict
 {
 	[runningActivitiesArray addObject:commandDict];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 }
 
 - (void)removeRegisteredActivity:(NSInteger)pid
@@ -4770,6 +4784,7 @@
 			break;
 		}
 	}
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 }
 
 - (NSArray*)runningActivities

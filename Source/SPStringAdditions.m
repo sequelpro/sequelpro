@@ -454,6 +454,8 @@
 - (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerInstance:(id)caller contextInfo:(NSDictionary*)contextInfo error:(NSError**)theError
 {
 
+	NSFileManager *fm = [NSFileManager defaultManager];
+
 	BOOL userTerminated = NO;
 	BOOL redirectForScript = NO;
 	BOOL isDir = NO;
@@ -463,8 +465,13 @@
 	NSString *stdoutFilePath = [NSString stringWithFormat:@"/tmp/SP_BUNDLE_OUTPUT_FILE_%@", [NSString stringWithNewUUID]];
 	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskScriptCommandFilePath, [NSString stringWithNewUUID]];
 
-	[[NSFileManager defaultManager] removeItemAtPath:SPBundleTaskScriptCommandFilePath error:nil];
-	[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
+	[fm removeItemAtPath:scriptFilePath error:nil];
+	[fm removeItemAtPath:stdoutFilePath error:nil];
+	if([[NSApp delegate] lastBundleBlobFilesDirectory] != nil)
+		[fm removeItemAtPath:[[NSApp delegate] lastBundleBlobFilesDirectory] error:nil];
+
+	if([shellEnvironment objectForKey:@"SP_BUNDLE_BLOB_FILES_DIRECTORY"])
+		[[NSApp delegate] setLastBundleBlobFilesDirectory:[shellEnvironment objectForKey:@"SP_BUNDLE_BLOB_FILES_DIRECTORY"]];
 
 	// Parse first line for magic header #! ; if found save the script content and run the command after #! with that file.
 	// This allows to write perl, ruby, osascript scripts natively.
@@ -480,7 +487,7 @@
 		if([scriptHeaderArguments count])
 			scriptPath = [scriptHeaderArguments objectAtIndex:0];
 
-		if([scriptPath hasPrefix:@"/"] && [[NSFileManager defaultManager] fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
+		if([scriptPath hasPrefix:@"/"] && [fm fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
 			NSString *script = [self substringWithRange:NSMakeRange(NSMaxRange(firstLineRange), [self length] - NSMaxRange(firstLineRange))];
 			NSError *writeError = nil;
 			[script writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
@@ -538,11 +545,14 @@
 
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
-	else if([shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] && [[NSFileManager defaultManager] fileExistsAtPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] isDirectory:&isDir] && isDir)
+	else if([shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] && [fm fileExistsAtPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] isDirectory:&isDir] && isDir)
 		[bashTask setCurrentDirectoryPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]];
 
 	// STDOUT will be redirected to /tmp/SP_BUNDLE_OUTPUT_FILE in order to avoid nasty pipe programming due to block size reading
-	[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath], nil]];
+	if([shellEnvironment objectForKey:@"SP_BUNDLE_INPUT_FILE"])
+		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@ < %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath, [shellEnvironment objectForKey:@"SP_BUNDLE_INPUT_FILE"]], nil]];
+	else
+		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath], nil]];
 
 	NSPipe *stderr_pipe = [NSPipe pipe];
 	[bashTask setStandardError:stderr_pipe];
@@ -558,7 +568,6 @@
 																		[[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], @"starttime",
 																		nil];
 		[caller registerActivity:dict];
-		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 	}
 
 	// Listen to ⌘. to terminate
@@ -586,14 +595,20 @@
 	[bashTask waitUntilExit];
 
 	// unregister BASH command if it was registered
-	if(pid >= 0) {
+	if(pid > 0) {
 		[caller removeRegisteredActivity:pid];
-		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 	}
 
-	// Remove script file if used
-	if(redirectForScript)
-		[[NSFileManager defaultManager] removeItemAtPath:scriptFilePath error:nil];
+	// Remove files
+	[fm removeItemAtPath:scriptFilePath error:nil];
+	if([theEnv objectForKey:@"SP_QUERY_FILE"])
+		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_FILE"] error:nil];
+	if([theEnv objectForKey:@"SP_QUERY_RESULT_FILE"])
+		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_FILE"] error:nil];
+	if([theEnv objectForKey:@"SP_QUERY_RESULT_STATUS_FILE"])
+		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_STATUS_FILE"] error:nil];
+	if([theEnv objectForKey:@"SP_QUERY_RESULT_META_FILE"])
+		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_META_FILE"] error:nil];
 
 	// If return from bash re-activate Sequel Pro
 	[NSApp activateIgnoringOtherApps:YES];
@@ -603,10 +618,12 @@
 
 	// Check STDERR
 	if([errdata length]) {
-		[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
+		[fm removeItemAtPath:stdoutFilePath error:nil];
+
+		if(status == 9 || userTerminated) return @"";
 		if(theError != NULL) {
 			NSMutableString *errMessage = [[[NSMutableString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
-			[errMessage replaceOccurrencesOfString:SPBundleTaskScriptCommandFilePath withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
+			[errMessage replaceOccurrencesOfString:[NSString stringWithFormat:@"%@: ", scriptFilePath] withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
 			*theError = [[[NSError alloc] initWithDomain:NSPOSIXErrorDomain 
 													code:status 
 												userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -620,15 +637,16 @@
 	}
 
 	// Read STDOUT saved to file 
-	if([[NSFileManager defaultManager] fileExistsAtPath:stdoutFilePath isDirectory:nil]) {
+	if([fm fileExistsAtPath:stdoutFilePath isDirectory:nil]) {
 		NSString *stdout = [NSString stringWithContentsOfFile:stdoutFilePath encoding:NSUTF8StringEncoding error:nil];
 		if(bashTask) [bashTask release];
-		[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
+		[fm removeItemAtPath:stdoutFilePath error:nil];
 		if(stdout != nil) {
 			if (status == 0) {
 				return stdout;
 			} else {
 				if(theError != NULL) {
+					if(status == 9 || userTerminated) return @"";
 					NSMutableString *errMessage = [[[NSMutableString alloc] initWithData:errdata encoding:NSUTF8StringEncoding] autorelease];
 					[errMessage replaceOccurrencesOfString:SPBundleTaskScriptCommandFilePath withString:@"" options:NSLiteralSearch range:NSMakeRange(0, [errMessage length])];
 					*theError = [[[NSError alloc] initWithDomain:NSPOSIXErrorDomain 
@@ -648,7 +666,7 @@
 		}
 	} else {
 		if(bashTask) [bashTask release];
-		[[NSFileManager defaultManager] removeItemAtPath:stdoutFilePath error:nil];
+		[fm removeItemAtPath:stdoutFilePath error:nil];
 		return @"";
 	}
 

@@ -34,8 +34,7 @@
 	IBOutlet NSWindow* bundleEditorWindow;
 
 	BOOL isNewFavorite;
-	BOOL stopKeyDownListener;
-	
+
 	SPAboutController *aboutController;
 	SPPreferenceController *prefsController;
 	SPBundleEditorController *bundleEditorController;
@@ -55,7 +54,11 @@
 
 	NSMutableArray *runningActivitiesArray;
 
+	NSString *lastBundleBlobFilesDirectory;
+
 }
+
+@property (readwrite, retain) NSString *lastBundleBlobFilesDirectory;
 
 - (IBAction)bundleCommandDispatcher:(id)sender;
 
@@ -112,7 +115,5 @@
 - (IBAction)executeBundleItemForApp:(id)sender;
 
 - (void)addHTMLOutputController:(id)controller;
-
-- (void)keyDownListener;
 
 @end

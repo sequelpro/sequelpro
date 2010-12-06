@@ -24,17 +24,22 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class SPChooseMenuItemDialogTextView;
 
 @interface SPChooseMenuItemDialog : NSWindow
 
 {
 	NSMenu *contextMenu;
-	NSTextView *tv;
+	NSInteger selectedItemIndex;
+	BOOL waitForChoice;
+	SPChooseMenuItemDialogTextView *dummyTextView;
 }
 
-@property(readwrite,retain) NSMenu* contextMenu;
+@property(readwrite, retain) NSMenu* contextMenu;
+@property(readwrite, assign) NSInteger selectedItemIndex;
+@property(readwrite, assign) BOOL waitForChoice;
 
-- (void)initMeWithOptions:(NSDictionary *)displayOptions;
-+ (void)displayMenu:(NSMenu*)theMenu atPosition:(NSPoint)location;
+- (void)initDialog;
++ (NSInteger)withItems:(NSArray*)theList atPosition:(NSPoint)location;
 
 @end

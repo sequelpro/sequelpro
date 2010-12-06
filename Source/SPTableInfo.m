@@ -85,6 +85,21 @@
 	[super dealloc];
 }
 
+/**
+ * Remove an activity directly from the list since an update will be performer in the background
+ * to signilize the user that an activity was cancelled at once
+ */
+- (void)removeActivity:(NSInteger)pid
+{
+	for(id cmd in activities) {
+		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
+			[activities removeObject:cmd];
+			break;
+		}
+	}
+	[activitiesTable reloadData];
+}
+
 - (void)updateActivities
 {
 	NSMutableArray *acts = [NSMutableArray array];
