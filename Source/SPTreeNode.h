@@ -28,7 +28,7 @@
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * 
+ * NSTreeNode subclass which adds some convenience methods.
  */
 @interface SPTreeNode : NSTreeNode
 {

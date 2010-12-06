@@ -28,7 +28,7 @@
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * 
+ * Tree node that represents a group.
  */
 @interface SPGroupNode : NSObject <NSCopying>
 {

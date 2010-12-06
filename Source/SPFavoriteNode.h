@@ -28,10 +28,7 @@
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * This class is designed to be a simple wrapper around a connection favorite to allow us to easily represent
- * them in a tree structure for use in an outline view. If the node is a group item (i.e. a folder) then it
- * should have a name as well as zero or more child nodes. Similarly, actual connection favorite nodes, don't
- * have a name and should have no children.
+ * Tree node the represents a connection favorite.
  */
 @interface SPFavoriteNode : NSObject <NSCopying>
 {	
