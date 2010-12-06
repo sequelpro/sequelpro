@@ -127,9 +127,9 @@
 }
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
-{		
+{			
 	if ([favoritesOutlineView numberOfSelectedRows] == 1) {
-		
+
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
 		if (![node isGroup]) {
@@ -138,10 +138,18 @@
 			[addToFavoritesButton setEnabled:NO];
 			
 			favoriteNameFieldWasTouched = YES;
+			
+			[connectionResizeContainer setHidden:NO];
+			[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
 		}
-	} 
+		else {
+			[connectionResizeContainer setHidden:YES];
+			[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Please choose a favorite", @"please choose a favorite connection view label")];
+		}
+	}
 	else {
-		[addToFavoritesButton setEnabled:YES];
+		[connectionResizeContainer setHidden:YES];
+		[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Please choose a favorite", @"please choose a favorite connection view label")];		
 	}
 }
 

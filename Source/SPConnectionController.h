@@ -93,6 +93,7 @@
 	IBOutlet NSView *connectionView;
 	IBOutlet NSSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
+	IBOutlet NSTextField *connectionInstructionsTextField;
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
 	IBOutlet SPFavoritesOutlineView *favoritesOutlineView;
 

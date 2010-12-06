@@ -21,8 +21,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5266"/>
 			<integer value="5468"/>
+			<integer value="5344"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4634,6 +4634,14 @@
 					</object>
 					<int key="connectionID">5832</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">connectionInstructionsTextField</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="570492783"/>
+					</object>
+					<int key="connectionID">5833</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -7143,7 +7151,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5832</int>
+			<int key="maxID">5833</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -7549,6 +7557,7 @@
 							<string>addToFavoritesButton</string>
 							<string>connectButton</string>
 							<string>connectionDetailsScrollView</string>
+							<string>connectionInstructionsTextField</string>
 							<string>connectionResizeContainer</string>
 							<string>connectionSplitView</string>
 							<string>connectionSplitViewButtonBar</string>
@@ -7595,6 +7604,7 @@
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSScrollView</string>
+							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>NSSplitView</string>
 							<string>BWAnchoredButtonBar</string>
@@ -7644,6 +7654,7 @@
 							<string>addToFavoritesButton</string>
 							<string>connectButton</string>
 							<string>connectionDetailsScrollView</string>
+							<string>connectionInstructionsTextField</string>
 							<string>connectionResizeContainer</string>
 							<string>connectionSplitView</string>
 							<string>connectionSplitViewButtonBar</string>
@@ -7698,6 +7709,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">connectionDetailsScrollView</string>
 								<string key="candidateClassName">NSScrollView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">connectionInstructionsTextField</string>
+								<string key="candidateClassName">NSTextField</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">connectionResizeContainer</string>
