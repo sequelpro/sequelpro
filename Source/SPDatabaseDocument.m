@@ -4773,6 +4773,7 @@
 - (void)registerActivity:(NSDictionary*)commandDict
 {
 	[runningActivitiesArray addObject:commandDict];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 }
 
 - (void)removeRegisteredActivity:(NSInteger)pid
@@ -4783,6 +4784,7 @@
 			break;
 		}
 	}
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 }
 
 - (NSArray*)runningActivities

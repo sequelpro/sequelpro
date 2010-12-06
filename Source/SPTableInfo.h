@@ -43,5 +43,6 @@
 
 - (void)tableChanged:(NSNotification *)notification;
 - (void)updateActivities;
+- (void)removeActivity:(NSInteger)pid;
 
 @end

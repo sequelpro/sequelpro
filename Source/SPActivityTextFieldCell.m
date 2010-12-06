@@ -239,18 +239,26 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 				// Remove highlight, and follow the link
 				[cancelButton highlight:NO withFrame:linkRect inView:controlView];
 
+				NSInteger status = 0;
+
 				// Cancel activity
 				if([contextInfo objectForKey:@"type"] && [[contextInfo objectForKey:@"type"] isEqualToString:@"bashcommand"]) {
 					NSInteger pid = [[contextInfo objectForKey:@"pid"] intValue];
 					if(pid > 0) {
 						NSTask *killTask = [[NSTask alloc] init];
 						[killTask setLaunchPath:@"/bin/sh"];
-						[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+						// [killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+						[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"[[ `ps -ax | egrep '%ld.*%@' | wc -l` -eq \"4\" ]] && kill -9 -%ld 2&> /tmp/sp_kill_error.txt", pid, SPBundleTaskScriptCommandFilePath, pid], nil]];
 						[killTask launch];
 						[killTask waitUntilExit];
+						status = [killTask terminationStatus];
 						[killTask release];
 					}
 				}
+				// Remove it from the list directly since the list will be updated in the background
+				// to avoid to cancel a command which is already cancelled
+				if(status == 0)
+					[[[controlView delegate] onMainThread] removeActivity:[[contextInfo objectForKey:@"pid"] intValue]];
 				return YES;
 			}
 
