@@ -1491,7 +1491,7 @@
 		}
 	}
 	else if([scope isEqualToString:SPBundleScopeGeneral]) {
-		if(checkForKeyEquivalents && [assignedKeyEquivalents objectForKey:keyEqKey]) {
+		if(checkForKeyEquivalents && [assignedKeyEquivalents count]) {
 			NSInteger idx = 0;
 			if([assignedKeyEquivalents count] > 1)
 				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
@@ -1502,7 +1502,7 @@
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
-					[[[NSApp mainWindow] firstResponder] executeBundleItemForApp:aMenuItem];
+					[self executeBundleItemForApp:aMenuItem];
 				}
 			}
 		} else {
