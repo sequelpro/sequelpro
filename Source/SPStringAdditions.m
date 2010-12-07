@@ -519,6 +519,7 @@
 	[theEnv setDictionary:shellEnvironment];
 
 	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appicon" ofType:@"icns"] forKey:@"SP_ICON_FILE"];
+	[theEnv setObject:[NSString stringWithFormat:@"%@/Contents/Resources", [[NSBundle mainBundle] bundlePath]] forKey:@"SP_APP_RESOURCES_DIRECTORY"];
 
 	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
 	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
