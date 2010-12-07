@@ -216,6 +216,7 @@
 - (void) updateTableView;
 - (NSIndexSet *) resultSelectedRowIndexes;
 - (NSRect) resultViewport;
+- (NSArray *)dataColumnDefinitions;
 - (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
 - (void) setResultViewportToRestore:(NSRect)theViewport;
 - (void) storeCurrentResultViewForRestoration;

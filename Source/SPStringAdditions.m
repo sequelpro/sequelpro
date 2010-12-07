@@ -609,6 +609,8 @@
 		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_STATUS_FILE"] error:nil];
 	if([theEnv objectForKey:@"SP_QUERY_RESULT_META_FILE"])
 		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_META_FILE"] error:nil];
+	if([theEnv objectForKey:@"SP_BUNDLE_INPUT_TABLE_METADATA"])
+		[fm removeItemAtPath:[theEnv objectForKey:@"SP_BUNDLE_INPUT_TABLE_METADATA"] error:nil];
 
 	// If return from bash re-activate Sequel Pro
 	[NSApp activateIgnoringOtherApps:YES];

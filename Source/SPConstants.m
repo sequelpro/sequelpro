@@ -301,6 +301,7 @@ NSString *SPBundleFileName                                  = @"command.plist";
 NSString *SPBundleTaskInputFilePath                         = @"/tmp/SP_BUNDLE_TASK_INPUT";
 NSString *SPBundleTaskScriptCommandFilePath                 = @"/tmp/SP_SCRIPT_COMMAND";
 NSString *SPBundleTaskCopyBlobFileDirectory                 = @"/tmp/SP_COPY_BLOB_FILES";
+NSString *SPBundleTaskTableMetaDataFilePath                 = @"/tmp/SP_TABLE_META_DATA";
 
 // sequel URL scheme
 NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";

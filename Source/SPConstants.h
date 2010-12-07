@@ -488,6 +488,7 @@ extern NSString *SPBundleFileName;
 extern NSString *SPBundleTaskInputFilePath;
 extern NSString *SPBundleTaskScriptCommandFilePath;
 extern NSString *SPBundleTaskCopyBlobFileDirectory;
+extern NSString *SPBundleTaskTableMetaDataFilePath;
 
 // sequel URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;
