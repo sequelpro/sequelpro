@@ -141,6 +141,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		serverVersionString = nil;
 		mTimeZone = nil;
 		isDisconnecting = NO;
+		isReconnecting = NO;
 		userTriggeredDisconnect = NO;
 		automaticReconnectAttempts = 0;
 		lastPingSuccess = NO;
@@ -554,6 +555,22 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	NSString *currentEncoding = [NSString stringWithString:encoding];
 	BOOL currentEncodingUsesLatin1Transport = encodingUsesLatin1Transport;
 	NSString *currentDatabase = nil;
+
+	// Check whether a reconnection attempt is already being made - if so, wait and return the status of that reconnection attempt.
+	if (isReconnecting) {
+		NSDate *reconnectLoopStartdate = [NSDate date], *eventLoopStartDate;
+		while (isReconnecting) {
+			eventLoopStartDate = [NSDate date];
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+			if ([[NSDate date] timeIntervalSinceDate:eventLoopStartDate] < 0.1) {
+				usleep(100000 - (1000000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate]));
+			}
+		}
+		[reconnectionPool drain];
+		return mConnected;
+	}
+
+	isReconnecting = YES;
 	
 	// Store the currently selected database so it can be re-set if reconnection was successful
 	if (delegate && [delegate respondsToSelector:@selector(onReconnectShouldSelectDatabase:)] && [delegate onReconnectShouldSelectDatabase:self]) {
@@ -689,14 +706,17 @@ static BOOL sTruncateLongFieldInLogs = YES;
 				[self setLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
 				userTriggeredDisconnect = YES;
 				[reconnectionPool release];
+				isReconnecting = NO;
 				return NO;				
 			default:
 				[reconnectionPool release];
+				isReconnecting = NO;
 				return [self reconnect];
 		}
 	}
 
 	[reconnectionPool release];
+	isReconnecting = NO;
 	return mConnected;
 }
 
