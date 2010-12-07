@@ -748,6 +748,12 @@
 
 }
 
+- (IBAction)performClose:(id)sender
+{
+	[self _initTree];
+	[self close];
+}
+
 /**
  * Save all touched bundles to disk and close the Bundle Editor window
  */
