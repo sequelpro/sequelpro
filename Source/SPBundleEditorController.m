@@ -662,6 +662,9 @@
  */
 - (IBAction)removeCommandBundle:(id)sender
 {
+
+	[commandsOutlineView abortEditing];
+
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected Bundle?", @"remove selected bundle message") 
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
