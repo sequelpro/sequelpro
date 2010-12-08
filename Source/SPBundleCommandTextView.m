@@ -427,6 +427,16 @@
 			break;
 		case '{':
 			matchingCharacter = '}';
+			break;
+		case '[':
+			matchingCharacter = ']';
+			break;
+		case '“':
+			matchingCharacter = '”';
+			break;
+		case '‘':
+			matchingCharacter = '’';
+			break;
 		default:
 		return NO;
 	}
