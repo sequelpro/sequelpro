@@ -128,7 +128,9 @@
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
 {			
-	if ([favoritesOutlineView numberOfSelectedRows] == 1) {
+	NSInteger selected = [favoritesOutlineView numberOfSelectedRows];
+	
+	if (selected == 1) {
 
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
@@ -147,7 +149,7 @@
 			[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Please choose a favorite", @"please choose a favorite connection view label")];
 		}
 	}
-	else {
+	else if (selected > 1) {
 		[connectionResizeContainer setHidden:YES];
 		[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Please choose a favorite", @"please choose a favorite connection view label")];		
 	}
