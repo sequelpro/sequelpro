@@ -38,10 +38,11 @@
 - (NSUInteger)characterIndexOfPoint:(NSPoint)aPoint;
 - (void)insertFileContentOfFile:(NSString *)aPath;
 - (void)saveChangedFontInUserDefaults;
-- (void) setTabStops;
+- (void)setTabStops;
 
 - (BOOL)shiftSelectionRight;
 - (BOOL)shiftSelectionLeft;
 - (void)commentOut;
+- (BOOL)wrapSelectionWithPrefix:(unichar)prefix;
 
 @end

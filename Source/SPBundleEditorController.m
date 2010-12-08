@@ -95,6 +95,8 @@
 	[triggerGeneralArray release];
 	[withBlobDataTableArray release];
 
+	[shellVariableSuggestions release];
+
 	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
 	if(sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
@@ -305,6 +307,48 @@
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
 
 	[commandBundleTreeController setSortDescriptors:[NSArray arrayWithObjects:sortDescriptor, nil]];
+
+	shellVariableSuggestions = [[NSArray arrayWithObjects:
+		@"SP_ALL_DATABASES",
+		@"SP_ALL_FUNCTIONS",
+		@"SP_ALL_PROCEDURES",
+		@"SP_ALL_TABLES",
+		@"SP_ALL_VIEWS",
+		@"SP_APP_RESOURCES_DIRECTORY",
+		@"SP_BUNDLE_EXIT_INSERT_AS_SNIPPET",
+		@"SP_BUNDLE_EXIT_INSERT_AS_TEXT",
+		@"SP_BUNDLE_EXIT_NONE",
+		@"SP_BUNDLE_EXIT_REPLACE_CONTENT",
+		@"SP_BUNDLE_EXIT_REPLACE_SELECTION",
+		@"SP_BUNDLE_EXIT_SHOW_AS_HTML",
+		@"SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP",
+		@"SP_BUNDLE_EXIT_SHOW_AS_TEXT_TOOLTIP",
+		@"SP_BUNDLE_INPUT",
+		@"SP_BUNDLE_INPUT_TABLE_METADATA",
+		@"SP_BUNDLE_PATH",
+		@"SP_BUNDLE_SCOPE",
+		@"SP_CURRENT_HOST",
+		@"SP_CURRENT_LINE",
+		@"SP_CURRENT_PORT",
+		@"SP_CURRENT_QUERY",
+		@"SP_CURRENT_USER",
+		@"SP_CURRENT_WORD",
+		@"SP_DATABASE_ENCODING",
+		@"SP_ICON_FILE",
+		@"SP_PROCESS_ID",
+		@"SP_QUERY_FILE",
+		@"SP_QUERY_RESULT_FILE",
+		@"SP_QUERY_RESULT_META_FILE",
+		@"SP_QUERY_RESULT_STATUS_FILE",
+		@"SP_RDBMS_TYPE",
+		@"SP_RDBMS_VERSION",
+		@"SP_SELECTED_DATABASE",
+		@"SP_SELECTED_ROW_INDICES",
+		@"SP_SELECTED_TABLE",
+		@"SP_SELECTED_TABLES",
+		@"SP_USED_QUERY_FOR_TABLE",
+		nil
+	] retain];
 
 	[self _initTree];
 
@@ -1464,6 +1508,19 @@
 	}
 }
 
+/**
+ * Add shell variable names to the completion list
+ */
+- (NSArray *)textView:(NSTextView *)textView completions:(NSArray *)words forPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index
+{
+
+	NSMutableArray *suggestions = [NSMutableArray array];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH %@ ", [[textView string] substringWithRange:charRange]];
+	[suggestions addObjectsFromArray:[shellVariableSuggestions filteredArrayUsingPredicate:predicate]];
+	[suggestions addObjectsFromArray:words];
+	return suggestions;
+
+}
 
 #pragma mark -
 #pragma mark UndoManager methods

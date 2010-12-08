@@ -337,7 +337,7 @@
 	[super cut:sender];
 }
 
-- (void) setTabStops
+- (void)setTabStops
 {
 	NSFont *tvFont = [self font];
 	NSInteger i;
@@ -395,6 +395,54 @@
 	[paragraphStyle release];
 }
 
+/**
+ * If the textview has a selection, wrap it with the supplied prefix and suffix strings;
+ * return whether or not any wrap was performed.
+ */
+- (BOOL)wrapSelectionWithPrefix:(unichar)prefix
+{
+
+	NSRange currentRange = [self selectedRange];
+
+	// Only proceed if a selection is active
+	if (currentRange.length == 0 || ![self isEditable])
+		return NO;
+
+	unichar matchingCharacter;
+
+	// Set matchingCharacter due to prefix.
+	switch (prefix)
+	{
+		case '(':
+			matchingCharacter = ')';
+			break;
+		case '"':
+			matchingCharacter = '"';
+			break;
+		case '`':
+			matchingCharacter = '`';
+			break;
+		case '\'':
+			matchingCharacter = '\'';
+			break;
+		case '{':
+			matchingCharacter = '}';
+		default:
+		return NO;
+	}
+
+	NSString *selString = [[self string] substringWithRange:currentRange];
+
+	// Replace the current selection with the selected string wrapped in prefix and suffix
+	[self insertText:[NSString stringWithFormat:@"%c%@%c", prefix, selString, matchingCharacter]];
+	
+	// Re-select original selection
+	NSRange innerSelectionRange = NSMakeRange(currentRange.location+1, [selString length]);
+	[self setSelectedRange:innerSelectionRange];
+
+	return YES;
+}
+
 - (void)keyDown:(NSEvent *)theEvent
 {
 
@@ -410,7 +458,9 @@
 		return;
 	}
 
+	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
+	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if(curFlags & NSCommandKeyMask) {
@@ -451,6 +501,11 @@
 		) {
 		[[self delegate] setDoGroupDueToChars];
 	}
+
+	// Check to see whether several characters are selected, and if so, wrap them with
+	// the auto-paired characters.  This returns false if the selection has zero length.
+	if ([self wrapSelectionWithPrefix:insertedCharacter])
+		return;
 
 	[super keyDown: theEvent];
 

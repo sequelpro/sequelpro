@@ -106,6 +106,8 @@
 	BOOL selectionChanged;
 	NSUndoManager *esUndoManager;
 
+	NSArray *shellVariableSuggestions;
+
 }
 
 - (IBAction)inputPopupButtonChanged:(id)sender;
