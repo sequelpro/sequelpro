@@ -1015,8 +1015,9 @@
 			else if ([[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
 				[queryString appendFormat:@"\n DEFAULT %@", [theRow objectForKey:@"default"]];
 			}
-			// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages
-			else if (![[theRow objectForKey:@"default"] length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType])) {
+			// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages;
+			// also don't specify a default for TEXT/BLOB or geometry fields to avoid strict mode errors
+			else if (![[theRow objectForKey:@"default"] length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType] || [theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType])) {
 				;
 			}
 			// Otherwise, use the provided default
