@@ -533,23 +533,32 @@
 	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
 	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
 	// Furthermore this id is used to communicate with the called command as file name.
-	[theEnv setObject:uuid forKey:@"SP_PROCESS_ID"];
 	id doc = nil;
 	if([[[NSApp mainWindow] delegate] respondsToSelector:@selector(selectedTableDocument)])
 		doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
+		// Check if connected
+		if([[doc connectionID] isEqualToString:@"_"])
+			doc = nil;
 	else {
 		for (NSWindow *aWindow in [NSApp orderedWindows]) {
 			if([[[[aWindow windowController] class] description] isEqualToString:@"SPWindowController"]) {
 				if([[[aWindow windowController] documents] count] && [[[[[[aWindow windowController] documents] objectAtIndex:0] class] description] isEqualToString:@"SPDatabaseDocument"]) {
-					doc = [[[aWindow windowController] documents] objectAtIndex:0];
+					// Check if connected
+					if(![[[[[aWindow windowController] documents] objectAtIndex:0] connectionID] isEqualToString:@"_"])
+						doc = [[[aWindow windowController] documents] objectAtIndex:0];
+					else
+						doc = nil;
 				}
 			}
 			if(doc) break;
 		}
 	}
+
 	if(doc != nil) {
+
 		[doc setProcessID:uuid];
 
+		[theEnv setObject:uuid forKey:@"SP_PROCESS_ID"];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
@@ -558,9 +567,10 @@
 		if([doc shellVariables])
 			[theEnv addEntriesFromDictionary:[doc shellVariables]];
 
-		if(theEnv != nil && [theEnv count])
-			[bashTask setEnvironment:theEnv];
 	}
+
+	if(theEnv != nil && [theEnv count])
+		[bashTask setEnvironment:theEnv];
 
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
