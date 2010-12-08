@@ -409,7 +409,7 @@
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	NSInteger selectedTabView = [tabView indexOfTabViewItem:tabViewItem];
-	
+		
 	// Deselect any selected favorite for manual changes
 	if (!automaticFavoriteSelection) [favoritesOutlineView deselectAll:self];
 	automaticFavoriteSelection = NO;
@@ -424,6 +424,9 @@
 	}
 	
 	previousType = selectedTabView;
+	
+	// Enable the add to favorites button
+	[addToFavoritesButton setEnabled:YES];
 	
 	[self _favoriteTypeDidChange];
 }
