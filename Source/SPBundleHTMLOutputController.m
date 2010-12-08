@@ -24,6 +24,7 @@
 
 
 #import "SPBundleHTMLOutputController.h"
+#import "SPAlertSheets.h"
 
 
 
@@ -121,7 +122,6 @@
 - (void)keyDown:(NSEvent *)theEvent
 {
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
-
 	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
@@ -157,10 +157,62 @@
 
 }
 
+/**
+ * Sheet did end method
+ */
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
+	if([contextInfo isEqualToString:@"saveDocument"]) {
+		if (returnCode == NSOKButton) {
+			NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
+			NSError *err = nil;
+			[sourceCode writeToFile:[sheet filename]
+						atomically:YES
+						encoding:NSUTF8StringEncoding
+						error:&err];
+			if(err != nil) {
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@", [err localizedDescription]]);
+			}
+			
+		}
+	}
+}
+
 - (IBAction)printDocument:(id)sender
 {
 	[[[[webView mainFrame] frameView] documentView] print:sender];
 }
+
+- (void)showSourceCode
+{
+	NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
+	SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+	[c displayHTMLContent:[NSString stringWithFormat:@"<pre>%@</pre>", [sourceCode HTMLEscapeString]] withOptions:nil];
+	[[NSApp delegate] addHTMLOutputController:c];
+}
+
+- (void)saveDocument
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:@"html"];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:YES];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setCanCreateDirectories:YES];
+
+	[panel beginSheetForDirectory:nil file:@"output" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveDocument"];
+}
+
 
 #pragma mark -
 
@@ -170,10 +222,35 @@
 	[webView close];
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
-	// [[notification object] release];
 }
 
 #pragma mark -
+
+- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
+{
+	NSMutableArray *webViewMenuItems = [[defaultMenuItems mutableCopy] autorelease];
+
+	[webViewMenuItems addObject:[NSMenuItem separatorItem]];
+
+	NSMenuItem *anItem;
+	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"View Source", @"view html source code menu item title") action:@selector(showSourceCode) keyEquivalent:@""];
+	[anItem setEnabled:YES];
+	[anItem setTarget:self];
+	[webViewMenuItems addObject:anItem];
+	[anItem release];
+	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Save Page As…", @"save page as menu item title") action:@selector(saveDocument) keyEquivalent:@""];
+	[anItem setEnabled:YES];
+	[anItem setTarget:self];
+	[webViewMenuItems addObject:anItem];
+	[anItem release];
+	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Print Page…", @"print page menu item title") action:@selector(printDocument:) keyEquivalent:@""];
+	[anItem setEnabled:YES];
+	[anItem setTarget:self];
+	[webViewMenuItems addObject:anItem];
+	[anItem release];
+
+	return webViewMenuItems;
+}
 
 - (WebView *)webView:(WebView *)sender createWebViewWithRequest:(NSURLRequest *)request
 {
