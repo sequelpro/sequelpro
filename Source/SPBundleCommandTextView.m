@@ -408,44 +408,54 @@
 	if (currentRange.length == 0 || ![self isEditable])
 		return NO;
 
-	unichar matchingCharacter;
+	NSString *matchingCharacter;
+	NSString *prefixStr = nil;
 
 	// Set matchingCharacter due to prefix.
 	switch (prefix)
 	{
 		case '(':
-			matchingCharacter = ')';
+			matchingCharacter = @")";
 			break;
 		case '"':
-			matchingCharacter = '"';
+			matchingCharacter = @"\"";
 			break;
 		case '`':
-			matchingCharacter = '`';
+			matchingCharacter = @"`";
 			break;
 		case '\'':
-			matchingCharacter = '\'';
+			matchingCharacter = @"'";
 			break;
 		case '{':
-			matchingCharacter = '}';
+			matchingCharacter = @"}";
 			break;
 		case '[':
-			matchingCharacter = ']';
+			matchingCharacter = @"]";
 			break;
-		case '“':
-			matchingCharacter = '”';
+		case 0x201c:
+			prefixStr = @"“";
+			matchingCharacter = @"”";
 			break;
-		case '‘':
-			matchingCharacter = '’';
+		case 0x2018:
+			prefixStr = @"‘";
+			matchingCharacter = @"’";
 			break;
 		default:
 		return NO;
 	}
 
 	NSString *selString = [[self string] substringWithRange:currentRange];
+	NSString *replaceString;
+	if(prefixStr != nil)
+		replaceString = [NSString stringWithFormat:@"%@%@%@", prefixStr, selString, matchingCharacter];
+	else
+		replaceString = [NSString stringWithFormat:@"%c%@%@", prefix, selString, matchingCharacter];
+
+	[self breakUndoCoalescing];
 
 	// Replace the current selection with the selected string wrapped in prefix and suffix
-	[self insertText:[NSString stringWithFormat:@"%c%@%c", prefix, selString, matchingCharacter]];
-	
+	[self insertText:replaceString];
+
 	// Re-select original selection
 	NSRange innerSelectionRange = NSMakeRange(currentRange.location+1, [selString length]);
 	[self setSelectedRange:innerSelectionRange];
@@ -458,18 +468,12 @@
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
-	// Check if user pressed ⌥ to allow composing of accented characters.
-	// e.g. for US keyboard "⌥u a" to insert ä
-	// or for non-US keyboards to allow to enter dead keys
-	// e.g. for German keyboard ` is a dead key, press space to enter `
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)
-	{
+	NSString *characters = [theEvent characters];
+	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
+	if(![characters length]) {
 		[super keyDown: theEvent];
 		return;
 	}
-
-	NSString *characters = [theEvent characters];
-	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 

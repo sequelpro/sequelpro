@@ -1504,7 +1504,7 @@
 			cycleCounter = 0;
 		}
 
-		[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.09];
+		[self performSelector:@selector(setAllowedUndo) withObject:nil afterDelay:0.0005];
 	}
 }
 
