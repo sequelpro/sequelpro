@@ -537,14 +537,14 @@
 	if([[[NSApp mainWindow] delegate] respondsToSelector:@selector(selectedTableDocument)])
 		doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
 		// Check if connected
-		if([[doc connectionID] isEqualToString:@"_"])
+		if([doc getConnection] == nil)
 			doc = nil;
 	else {
 		for (NSWindow *aWindow in [NSApp orderedWindows]) {
 			if([[[[aWindow windowController] class] description] isEqualToString:@"SPWindowController"]) {
 				if([[[aWindow windowController] documents] count] && [[[[[[aWindow windowController] documents] objectAtIndex:0] class] description] isEqualToString:@"SPDatabaseDocument"]) {
 					// Check if connected
-					if(![[[[[aWindow windowController] documents] objectAtIndex:0] connectionID] isEqualToString:@"_"])
+					if([[[[aWindow windowController] documents] objectAtIndex:0] getConnection])
 						doc = [[[aWindow windowController] documents] objectAtIndex:0];
 					else
 						doc = nil;
