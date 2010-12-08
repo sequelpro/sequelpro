@@ -57,6 +57,7 @@ typedef struct {
 
 	BOOL useKeepAlive;
 	BOOL isDisconnecting;
+	BOOL isReconnecting;
 	BOOL userTriggeredDisconnect;
 	NSInteger connectionTimeout;
 	CGFloat keepAliveInterval;

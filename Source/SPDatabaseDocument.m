@@ -4691,6 +4691,28 @@
 
 					NSArray *columnDefinition = [theResult fetchResultFieldsStructure];
 
+					// Write table meta data
+					NSMutableString *tableMetaData = [NSMutableString string];
+					for(NSDictionary* col in columnDefinition) {
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
+						[tableMetaData appendString:@"\n"];
+					}
+					NSError *err = nil;
+					[tableMetaData writeToFile:metaFileName
+							  atomically:YES
+								encoding:NSUTF8StringEncoding
+								   error:&err];
+					if(err != nil) {
+						NSLog(@"Error while writing “%@”", tableMetaData);
+						NSBeep();
+						return;
+					}
+
 					// write data
 					NSInteger i, j;
 					NSArray *theRow;

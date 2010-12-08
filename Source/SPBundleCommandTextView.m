@@ -337,7 +337,7 @@
 	[super cut:sender];
 }
 
-- (void) setTabStops
+- (void)setTabStops
 {
 	NSFont *tvFont = [self font];
 	NSInteger i;
@@ -395,22 +395,86 @@
 	[paragraphStyle release];
 }
 
+/**
+ * If the textview has a selection, wrap it with the supplied prefix and suffix strings;
+ * return whether or not any wrap was performed.
+ */
+- (BOOL)wrapSelectionWithPrefix:(unichar)prefix
+{
+
+	NSRange currentRange = [self selectedRange];
+
+	// Only proceed if a selection is active
+	if (currentRange.length == 0 || ![self isEditable])
+		return NO;
+
+	NSString *matchingCharacter;
+	NSString *prefixStr = nil;
+
+	// Set matchingCharacter due to prefix.
+	switch (prefix)
+	{
+		case '(':
+			matchingCharacter = @")";
+			break;
+		case '"':
+			matchingCharacter = @"\"";
+			break;
+		case '`':
+			matchingCharacter = @"`";
+			break;
+		case '\'':
+			matchingCharacter = @"'";
+			break;
+		case '{':
+			matchingCharacter = @"}";
+			break;
+		case '[':
+			matchingCharacter = @"]";
+			break;
+		case 0x201c:
+			prefixStr = @"“";
+			matchingCharacter = @"”";
+			break;
+		case 0x2018:
+			prefixStr = @"‘";
+			matchingCharacter = @"’";
+			break;
+		default:
+		return NO;
+	}
+
+	NSString *selString = [[self string] substringWithRange:currentRange];
+	NSString *replaceString;
+	if(prefixStr != nil)
+		replaceString = [NSString stringWithFormat:@"%@%@%@", prefixStr, selString, matchingCharacter];
+	else
+		replaceString = [NSString stringWithFormat:@"%c%@%@", prefix, selString, matchingCharacter];
+
+	[self breakUndoCoalescing];
+
+	// Replace the current selection with the selected string wrapped in prefix and suffix
+	[self insertText:replaceString];
+
+	// Re-select original selection
+	NSRange innerSelectionRange = NSMakeRange(currentRange.location+1, [selString length]);
+	[self setSelectedRange:innerSelectionRange];
+
+	return YES;
+}
+
 - (void)keyDown:(NSEvent *)theEvent
 {
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
-	// Check if user pressed ⌥ to allow composing of accented characters.
-	// e.g. for US keyboard "⌥u a" to insert ä
-	// or for non-US keyboards to allow to enter dead keys
-	// e.g. for German keyboard ` is a dead key, press space to enter `
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)
-	{
+	NSString *characters = [theEvent characters];
+	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
+	if(![characters length]) {
 		[super keyDown: theEvent];
 		return;
 	}
-
-	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
+	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if(curFlags & NSCommandKeyMask) {
@@ -451,6 +515,11 @@
 		) {
 		[[self delegate] setDoGroupDueToChars];
 	}
+
+	// Check to see whether several characters are selected, and if so, wrap them with
+	// the auto-paired characters.  This returns false if the selection has zero length.
+	if ([self wrapSelectionWithPrefix:insertedCharacter])
+		return;
 
 	[super keyDown: theEvent];
 

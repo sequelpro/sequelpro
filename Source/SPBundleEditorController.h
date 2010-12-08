@@ -106,6 +106,8 @@
 	BOOL selectionChanged;
 	NSUndoManager *esUndoManager;
 
+	NSArray *shellVariableSuggestions;
+
 }
 
 - (IBAction)inputPopupButtonChanged:(id)sender;
@@ -123,6 +125,7 @@
 - (IBAction)saveAndCloseWindow:(id)sender;
 - (IBAction)reloadBundles:(id)sender;
 - (IBAction)metaButtonChanged:(id)sender;
+- (IBAction)performClose:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
 - (BOOL)cancelRowEditing;

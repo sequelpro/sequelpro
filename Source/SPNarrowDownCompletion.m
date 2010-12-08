@@ -115,6 +115,7 @@
 	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:YES])
 	{
 		mutablePrefix = [NSMutableString new];
+		originalFilterString = [NSMutableString new];
 		textualInputCharacters = [[NSMutableCharacterSet alphanumericCharacterSet] retain];
 		caseSensitive = YES;
 		filtered = nil;
@@ -124,8 +125,6 @@
 		suggestions = nil;
 		autocompletePlaceholderWasInserted = NO;
 		prefs = [NSUserDefaults standardUserDefaults];
-		originalFilterString = [[NSMutableString alloc] init];
-		[originalFilterString setString:@""];
 
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 		[self setupInterface];
@@ -222,13 +221,13 @@
 	{
 
 		// Set filter string 
-		if(aUserString)
+		if (aUserString) {
 			[mutablePrefix appendString:aUserString];
+			[originalFilterString appendString:aUserString];
+		}
 
 		autoCompletionMode = autoComplete;
 
-		if(autoCompletionMode)
-			[originalFilterString appendString:aUserString];
 
 		oneColumnMode = oneColumn;
 		isQueryingDatabaseStructure = isQueryingDBStructure;
@@ -800,13 +799,15 @@
 			// e.g. for US keyboard "⌥u a" to insert ä
 			if (([event modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) == NSAlternateKeyMask || [[event characters] length] == 0)
 			{
-				if(autoCompletionMode) {
-					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
+				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
+
+				if (autoCompletionMode) {
 					[theView setCompletionIsOpen:NO];
 					[self close];
 					[NSApp sendEvent:event];
 					break;
 				}
+
 				[NSApp sendEvent: event];
 
 				if(commaInsertionMode)
@@ -845,28 +846,31 @@
 			}
 			else if(key == NSBackspaceCharacter || key == NSDeleteCharacter)
 			{
-				if(autoCompletionMode) {
-					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:NO];
+				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:NO];
+
+				if (autoCompletionMode) {
 					[NSApp sendEvent:event];
 					break;
 				}
+
 				[NSApp sendEvent:event];
 				if([mutablePrefix length] == 0 || commaInsertionMode)
 					break;
 
 				spaceCounter = 0;
 				[mutablePrefix deleteCharactersInRange:NSMakeRange([mutablePrefix length]-1, 1)];
+				[originalFilterString deleteCharactersInRange:NSMakeRange([originalFilterString length]-1, 1)];
 				theCharRange.length--;
 				theParseRange.length--;
 				[self filter];
 			}
 			else if([textualInputCharacters characterIsMember:key])
 			{
+				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 
-				if(autoCompletionMode) {
+				if (autoCompletionMode) {
 					[theView setCompletionIsOpen:NO];
 					[self close];
-					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 					[NSApp sendEvent:event];
 					return;
 				}
@@ -879,6 +883,7 @@
 					spaceCounter++;
 
 				[mutablePrefix appendString:[event characters]];
+				[originalFilterString appendString:[event characters]];
 				theCharRange.length++;
 				theParseRange.length++;
 				[self filter];
@@ -898,9 +903,7 @@
 				[self completeAndInsertSnippet];
 			} else {
 				if(!NSPointInRect([NSEvent mouseLocation], [self frame])) {
-					if(autoCompletionMode) {
-						if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
-					}
+					if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
 					if(cursorMovedLeft) [theView performSelector:@selector(moveRight:)];
 					[NSApp sendEvent:event];
 					break;
@@ -915,7 +918,7 @@
 	}
 
 	// If the autocomplete menu is open, but the placeholder is still present, it needs removing.
-	if (autoCompletionMode && autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:NO];
+	if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:NO];
 
 	[theView setCompletionIsOpen:NO];
 	[self close];
@@ -948,7 +951,6 @@
 	if ([originalFilterString length] < [curMatch length]) {
 		NSUInteger currentSelectionPosition = [theView selectedRange].location;
 		NSString* toInsert = [curMatch substringFromIndex:[originalFilterString length]];
-		[mutablePrefix appendString:toInsert];
 		theCharRange.length += [toInsert length] - currentAutocompleteLength;
 		theParseRange.length += [toInsert length];
 		[theView insertText:[toInsert lowercaseString]];

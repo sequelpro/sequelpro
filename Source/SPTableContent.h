@@ -218,6 +218,7 @@
 - (NSRect) viewport;
 - (CGFloat) tablesListWidth;
 - (NSDictionary *) filterSettings;
+- (NSArray *)dataColumnDefinitions;
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
 - (void) setPageToRestore:(NSUInteger)thePage;
 - (void) setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
