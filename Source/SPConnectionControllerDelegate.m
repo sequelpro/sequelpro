@@ -311,63 +311,64 @@
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	id field = [notification object];
-			
-	NSMutableDictionary *favorite = [self selectedFavorite];
-	
-	BOOL nameFieldIsEmpty = [[favorite objectForKey:SPFavoriteNameKey] isEqualToString:@""];
-	
-	switch (previousType) 
-	{
-		case SPTCPIPConnection:
-			
-			nameFieldIsEmpty = (nameFieldIsEmpty || [[standardNameField stringValue] isEqualToString:@""]);
-			
-			if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == standardUserField || field == standardSQLHostField))) {
-				[standardNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [standardUserField stringValue], [standardSQLHostField stringValue]]];
 				
-				// Trigger KVO update
-				[self setName:[standardNameField stringValue]];
-									
-				// If name field is empty enable user@host update
-				if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
-			}
-			
-			break;
-		case SPSocketConnection:
-			
-			nameFieldIsEmpty = (nameFieldIsEmpty || [[socketNameField stringValue] isEqualToString:@""]);
-			
-			if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == socketUserField)) {
-				[socketNameField setStringValue:[NSString stringWithFormat:@"%@@localhost", [socketUserField stringValue]]];
+	if ([self selectedFavoriteNode]) {
+		
+		BOOL nameFieldIsEmpty = [[field stringValue] isEqualToString:@""];
+		
+		switch (previousType) 
+		{
+			case SPTCPIPConnection:
 				
-				// Trigger KVO update
-				[self setName:[socketNameField stringValue]];
+				nameFieldIsEmpty = (nameFieldIsEmpty || [[standardNameField stringValue] isEqualToString:@""]);
 				
-				// If name field is empty enable user@host update
-				if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
-			}
-			
-			break;
-		case SPSSHTunnelConnection:
-			
-			nameFieldIsEmpty = (nameFieldIsEmpty || [[sshNameField stringValue] isEqualToString:@""]);
-			
-			if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == sshUserField || field == sshSQLHostField))) {
-				[sshNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [sshUserField stringValue], [sshSQLHostField stringValue]]];
+				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == standardUserField || field == standardSQLHostField))) {
+					[standardNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [standardUserField stringValue], [standardSQLHostField stringValue]]];
+					
+					// Trigger KVO update
+					[self setName:[standardNameField stringValue]];
+					
+					// If name field is empty enable user@host update
+					if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
+				}
 				
-				// Trigger KVO update
-				[self setName:[sshNameField stringValue]];
+				break;
+			case SPSocketConnection:
 				
-				// If name field is empty enable user@host update
-				if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
-			}
-			
-			break;
-		default:
-			break;
+				nameFieldIsEmpty = (nameFieldIsEmpty || [[socketNameField stringValue] isEqualToString:@""]);
+				
+				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == socketUserField)) {
+					[socketNameField setStringValue:[NSString stringWithFormat:@"%@@localhost", [socketUserField stringValue]]];
+					
+					// Trigger KVO update
+					[self setName:[socketNameField stringValue]];
+					
+					// If name field is empty enable user@host update
+					if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
+				}
+				
+				break;
+			case SPSSHTunnelConnection:
+				
+				nameFieldIsEmpty = (nameFieldIsEmpty || [[sshNameField stringValue] isEqualToString:@""]);
+				
+				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == sshUserField || field == sshSQLHostField))) {
+					[sshNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [sshUserField stringValue], [sshSQLHostField stringValue]]];
+					
+					// Trigger KVO update
+					[self setName:[sshNameField stringValue]];
+					
+					// If name field is empty enable user@host update
+					if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
+				}
+				
+				break;
+			default:
+				break;
+		}
+		
+		if ((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) favoriteNameFieldWasTouched = YES;
 	}
-	
-	if ((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) favoriteNameFieldWasTouched = YES;
 }
 
 /**
@@ -387,8 +388,9 @@
  */
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
 {
-	if (control != favoritesOutlineView) {
-		// Request a password refresh to keep keychain references in synch with favorites
+	// Request a password refresh to keep keychain references in synch with favorites, but only if a favorite
+	// is selected, meaning we're editing an existing one, not a new one.
+	if ((control != favoritesOutlineView) && ([self selectedFavoriteNode])) {
 		[self _updateFavoritePasswordsFromField:control];
 	}
 	

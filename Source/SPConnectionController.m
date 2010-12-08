@@ -1199,13 +1199,11 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
  * Updates the favorite's host when the type changes.
  */
 - (void)_favoriteTypeDidChange
-{
-	// TODO: Handle changing favorite connection types
-	
-	/*NSDictionary *favorite = [[[self selectedFavoriteNode] representedObject] nodeFavorite];
+{	
+	NSDictionary *favorite = [[[self selectedFavoriteNode] representedObject] nodeFavorite];
 	
 	// If either socket or host is localhost, clear.
-	if ((selectedTabView != SPSocketConnection) && [[favorite objectForKey:SPFavoriteHostKey] isEqualToString:@"localhost"]) {
+	if ((previousType != SPSocketConnection) && [[favorite objectForKey:SPFavoriteHostKey] isEqualToString:@"localhost"]) {
 		[self setHost:@""];
 	}
 	
@@ -1217,9 +1215,6 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 						(([favorite objectForKey:SPFavoriteHostKey]) ? [favorite valueForKeyPath:SPFavoriteHostKey] : @""))
 					   ]];
 	}
-	
-	// Request a password refresh to keep keychain references in synch with the favorites
-	[self _updateFavoritePasswordsFromField:nil];*/
 }
 
 /**
