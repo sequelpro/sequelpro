@@ -21,8 +21,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="5477"/>
 			<integer value="5468"/>
-			<integer value="5344"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -327,6 +327,7 @@
 															</object>
 															<object class="NSMenuItem" id="296811585">
 																<reference key="NSMenu" ref="949612237"/>
+																<bool key="NSIsHidden">YES</bool>
 																<string key="NSTitle">Import...</string>
 																<string key="NSKeyEquiv"/>
 																<int key="NSMnemonicLoc">2147483647</int>
@@ -337,6 +338,7 @@
 															</object>
 															<object class="NSMenuItem" id="541704663">
 																<reference key="NSMenu" ref="949612237"/>
+																<bool key="NSIsHidden">YES</bool>
 																<string key="NSTitle">Export...</string>
 																<string key="NSKeyEquiv"/>
 																<int key="NSMnemonicLoc">2147483647</int>
@@ -349,6 +351,7 @@
 																<reference key="NSMenu" ref="949612237"/>
 																<bool key="NSIsDisabled">YES</bool>
 																<bool key="NSIsSeparator">YES</bool>
+																<bool key="NSIsHidden">YES</bool>
 																<string key="NSTitle"/>
 																<string key="NSKeyEquiv"/>
 																<int key="NSMnemonicLoc">2147483647</int>
@@ -428,6 +431,7 @@
 															</object>
 														</object>
 													</object>
+													<int key="NSSelectedIndex">9</int>
 													<bool key="NSPullDown">YES</bool>
 													<int key="NSPreferredEdge">1</int>
 													<bool key="NSUsesItemFromMenu">YES</bool>
@@ -2501,6 +2505,7 @@
 						<reference key="NSMenu" ref="9858888"/>
 						<bool key="NSIsDisabled">YES</bool>
 						<bool key="NSIsSeparator">YES</bool>
+						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -2509,6 +2514,7 @@
 					</object>
 					<object class="NSMenuItem" id="345191685">
 						<reference key="NSMenu" ref="9858888"/>
+						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle">Export...</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -6974,7 +6980,7 @@
 						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAwagAAA</bytes>
 					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{82, 125}, {131, 169}}</string>
+					<string>{{35, 125}, {131, 169}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
