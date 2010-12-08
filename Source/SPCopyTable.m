@@ -1146,13 +1146,14 @@ NSInteger kBlobAsImageFile = 4;
 				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
 
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
-			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
+			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 
 			if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
 				[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
 
-			[env setObject:bundleInputTableMetaDataFilePath forKey:@"SP_BUNDLE_INPUT_TABLE_METADATA"];
+			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
+			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableScope];
 
 			if([self numberOfSelectedRows]) {
 				NSMutableArray *sel = [NSMutableArray array];
@@ -1181,7 +1182,7 @@ NSInteger kBlobAsImageFile = 4;
 
 			if(blobHandling != kBlobExclude) {
 				NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskCopyBlobFileDirectory, uuid];
-				[env setObject:bundleBlobFilePath forKey:@"SP_BUNDLE_BLOB_FILES_DIRECTORY"];
+				[env setObject:bundleBlobFilePath forKey:SPBundleShellVariableBlobFileDirectory];
 				[self setCopyBlobFileDirectory:bundleBlobFilePath];
 			} else {
 				[self setCopyBlobFileDirectory:@""];
@@ -1267,15 +1268,53 @@ NSInteger kBlobAsImageFile = 4;
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
+													uuid, SPBundleFileInternalexecutionUUID,
 													nil]
 											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
+			NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+
+			// Redirect due exit code
+			if(err != nil) {
+				if([err code] == SPBundleRedirectActionNone) {
+					action = SPBundleOutputActionNone;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionReplaceSection) {
+					action = SPBundleOutputActionReplaceSelection;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionReplaceContent) {
+					action = SPBundleOutputActionReplaceContent;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionInsertAsText) {
+					action = SPBundleOutputActionInsertAsText;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
+					action = SPBundleOutputActionInsertAsSnippet;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsHTML) {
+					action = SPBundleOutputActionShowAsHTML;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
+					action = SPBundleOutputActionShowAsTextTooltip;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
+					action = SPBundleOutputActionShowAsHTMLTooltip;
+					err = nil;
+				}
+			}
+
 			if(err == nil && output) {
 				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
-					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 					NSPoint pos = [NSEvent mouseLocation];
 					pos.y -= 16;
 

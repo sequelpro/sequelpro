@@ -527,7 +527,8 @@
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
-			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
+			NSString *uuid = [NSString stringWithNewUUID];
+			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
 
 			NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
 
@@ -573,8 +574,9 @@
 			}
 
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
-			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
+			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
+			[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableScope];
 
 			if(selfIsQueryEditor && [[self delegate] currentQueryRange].length)
 				[env setObject:[[self string] substringWithRange:[[self delegate] currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
@@ -609,15 +611,53 @@
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
+													uuid, SPBundleFileInternalexecutionUUID,
 													nil]
 											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
+			NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+
+			// Redirect due exit code
+			if(err != nil) {
+				if([err code] == SPBundleRedirectActionNone) {
+					action = SPBundleOutputActionNone;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionReplaceSection) {
+					action = SPBundleOutputActionReplaceSelection;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionReplaceContent) {
+					action = SPBundleOutputActionReplaceContent;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionInsertAsText) {
+					action = SPBundleOutputActionInsertAsText;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
+					action = SPBundleOutputActionInsertAsSnippet;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsHTML) {
+					action = SPBundleOutputActionShowAsHTML;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
+					action = SPBundleOutputActionShowAsTextTooltip;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
+					action = SPBundleOutputActionShowAsHTMLTooltip;
+					err = nil;
+				}
+			}
+
 			if(err == nil && output) {
 				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
-					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
 					if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
 						[SPTooltip showWithObject:output];

@@ -3441,7 +3441,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="117047836"/>
-							<string key="toolTip">Choose the input source for the command. The desired data will be available as UTF-8 encoded file whose name will be passed as shell variable SP_BUNDLE_INPUT_FILE</string>
+							<string key="toolTip">Choose the input source for the command. The desired data will be available as UTF-8 encoded file whose name will be passed as shell variable SP_BUNDLE_INPUT which will be piped to the script (STDIN)</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

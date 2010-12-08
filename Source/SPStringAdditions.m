@@ -462,20 +462,21 @@
 
 	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
 	NSString *scriptPath = @"";
-	NSString *stdoutFilePath = [NSString stringWithFormat:@"/tmp/SP_BUNDLE_OUTPUT_FILE_%@", [NSString stringWithNewUUID]];
-	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskScriptCommandFilePath, [NSString stringWithNewUUID]];
+	NSString *uuid = (contextInfo && [contextInfo objectForKey:SPBundleFileInternalexecutionUUID]) ? [contextInfo objectForKey:@"exeUUID"] : [NSString stringWithNewUUID];
+	NSString *stdoutFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskOutputFilePath, uuid];
+	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskScriptCommandFilePath, uuid];
 
 	[fm removeItemAtPath:scriptFilePath error:nil];
 	[fm removeItemAtPath:stdoutFilePath error:nil];
 	if([[NSApp delegate] lastBundleBlobFilesDirectory] != nil)
 		[fm removeItemAtPath:[[NSApp delegate] lastBundleBlobFilesDirectory] error:nil];
 
-	if([shellEnvironment objectForKey:@"SP_BUNDLE_BLOB_FILES_DIRECTORY"])
-		[[NSApp delegate] setLastBundleBlobFilesDirectory:[shellEnvironment objectForKey:@"SP_BUNDLE_BLOB_FILES_DIRECTORY"]];
+	if([shellEnvironment objectForKey:SPBundleShellVariableBlobFileDirectory])
+		[[NSApp delegate] setLastBundleBlobFilesDirectory:[shellEnvironment objectForKey:SPBundleShellVariableBlobFileDirectory]];
 
 	// Parse first line for magic header #! ; if found save the script content and run the command after #! with that file.
 	// This allows to write perl, ruby, osascript scripts natively.
-	if([self length] > 3 && [self hasPrefix:@"#!"] && [shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]) {
+	if([self length] > 3 && [self hasPrefix:@"#!"] && [shellEnvironment objectForKey:SPBundleShellVariableBundlePath]) {
 
 		NSRange firstLineRange = NSMakeRange(2, [self rangeOfString:@"\n"].location - 2);
 
@@ -520,22 +521,39 @@
 
 	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appicon" ofType:@"icns"] forKey:@"SP_ICON_FILE"];
 	[theEnv setObject:[NSString stringWithFormat:@"%@/Contents/Resources", [[NSBundle mainBundle] bundlePath]] forKey:@"SP_APP_RESOURCES_DIRECTORY"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionNone] forKey:@"SP_BUNDLE_EXIT_NONE"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceSection] forKey:@"SP_BUNDLE_EXIT_REPLACE_SELECTION"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceContent] forKey:@"SP_BUNDLE_EXIT_REPLACE_CONTENT"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsText] forKey:@"SP_BUNDLE_EXIT_INSERT_AS_TEXT"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsSnippet] forKey:@"SP_BUNDLE_EXIT_INSERT_AS_SNIPPET"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTML] forKey:@"SP_BUNDLE_EXIT_SHOW_AS_HTML"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsTextTooltip] forKey:@"SP_BUNDLE_EXIT_SHOW_AS_TEXT_TOOLTIP"];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTMLTooltip] forKey:@"SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP"];
 
 	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
 	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
 	// Furthermore this id is used to communicate with the called command as file name.
-	NSString *processID = [NSString stringWithNewUUID];
-	[theEnv setObject:processID forKey:@"SP_PROCESS_ID"];
+	[theEnv setObject:uuid forKey:@"SP_PROCESS_ID"];
 	id doc = nil;
 	if([[[NSApp mainWindow] delegate] respondsToSelector:@selector(selectedTableDocument)])
 		doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
+	else {
+		for (NSWindow *aWindow in [NSApp orderedWindows]) {
+			if([[[[aWindow windowController] class] description] isEqualToString:@"SPWindowController"]) {
+				if([[[aWindow windowController] documents] count] && [[[[[[aWindow windowController] documents] objectAtIndex:0] class] description] isEqualToString:@"SPDatabaseDocument"]) {
+					doc = [[[aWindow windowController] documents] objectAtIndex:0];
+				}
+			}
+			if(doc) break;
+		}
+	}
 	if(doc != nil) {
-		[doc setProcessID:processID];
+		[doc setProcessID:uuid];
 
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, processID] forKey:@"SP_QUERY_FILE"];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, processID] forKey:@"SP_QUERY_RESULT_FILE"];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, processID] forKey:@"SP_QUERY_RESULT_STATUS_FILE"];
-		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, processID] forKey:@"SP_QUERY_RESULT_META_FILE"];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
 
 		if([doc shellVariables])
 			[theEnv addEntriesFromDictionary:[doc shellVariables]];
@@ -546,12 +564,12 @@
 
 	if(path != nil)
 		[bashTask setCurrentDirectoryPath:path];
-	else if([shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] && [fm fileExistsAtPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"] isDirectory:&isDir] && isDir)
-		[bashTask setCurrentDirectoryPath:[shellEnvironment objectForKey:@"SP_BUNDLE_PATH"]];
+	else if([shellEnvironment objectForKey:SPBundleShellVariableBundlePath] && [fm fileExistsAtPath:[shellEnvironment objectForKey:SPBundleShellVariableBundlePath] isDirectory:&isDir] && isDir)
+		[bashTask setCurrentDirectoryPath:[shellEnvironment objectForKey:SPBundleShellVariableBundlePath]];
 
-	// STDOUT will be redirected to /tmp/SP_BUNDLE_OUTPUT_FILE in order to avoid nasty pipe programming due to block size reading
-	if([shellEnvironment objectForKey:@"SP_BUNDLE_INPUT_FILE"])
-		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@ < %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath, [shellEnvironment objectForKey:@"SP_BUNDLE_INPUT_FILE"]], nil]];
+	// STDOUT will be redirected to SPBundleTaskOutputFilePath in order to avoid nasty pipe programming due to block size reading
+	if([shellEnvironment objectForKey:SPBundleShellVariableInputFilePath])
+		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@ < %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath, [shellEnvironment objectForKey:SPBundleShellVariableInputFilePath]], nil]];
 	else
 		[bashTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"%@ > %@", [scriptHeaderArguments componentsJoinedByString:@" "], stdoutFilePath], nil]];
 
@@ -602,16 +620,16 @@
 
 	// Remove files
 	[fm removeItemAtPath:scriptFilePath error:nil];
-	if([theEnv objectForKey:@"SP_QUERY_FILE"])
-		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_FILE"] error:nil];
-	if([theEnv objectForKey:@"SP_QUERY_RESULT_FILE"])
-		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_FILE"] error:nil];
-	if([theEnv objectForKey:@"SP_QUERY_RESULT_STATUS_FILE"])
-		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_STATUS_FILE"] error:nil];
-	if([theEnv objectForKey:@"SP_QUERY_RESULT_META_FILE"])
-		[fm removeItemAtPath:[theEnv objectForKey:@"SP_QUERY_RESULT_META_FILE"] error:nil];
-	if([theEnv objectForKey:@"SP_BUNDLE_INPUT_TABLE_METADATA"])
-		[fm removeItemAtPath:[theEnv objectForKey:@"SP_BUNDLE_INPUT_TABLE_METADATA"] error:nil];
+	if([theEnv objectForKey:SPBundleShellVariableQueryFile])
+		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableQueryFile] error:nil];
+	if([theEnv objectForKey:SPBundleShellVariableQueryResultFile])
+		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableQueryResultFile] error:nil];
+	if([theEnv objectForKey:SPBundleShellVariableQueryResultStatusFile])
+		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableQueryResultStatusFile] error:nil];
+	if([theEnv objectForKey:SPBundleShellVariableQueryResultMetaFile])
+		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableQueryResultMetaFile] error:nil];
+	if([theEnv objectForKey:SPBundleShellVariableInputTableMetaData])
+		[fm removeItemAtPath:[theEnv objectForKey:SPBundleShellVariableInputTableMetaData] error:nil];
 
 	// If return from bash re-activate Sequel Pro
 	[NSApp activateIgnoringOtherApps:YES];
@@ -620,7 +638,7 @@
 	NSData *errdata  = [stderr_file readDataToEndOfFile];
 
 	// Check STDERR
-	if([errdata length]) {
+	if([errdata length] && (status < SPBundleRedirectActionNone || status > SPBundleRedirectActionLastCode)) {
 		[fm removeItemAtPath:stdoutFilePath error:nil];
 
 		if(status == 9 || userTerminated) return @"";
@@ -661,7 +679,10 @@
 				} else {
 					NSBeep();
 				}
-				return @"";
+				if(status > SPBundleRedirectActionNone && status <= SPBundleRedirectActionLastCode)
+					return stdout;
+				else
+					return @"";
 			}
 		} else {
 			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", self);

@@ -640,7 +640,7 @@
 
 	// Try to find the SPDatabaseDocument which sent the the url scheme command
 	// For speed check the front most first otherwise iterate through all
-	if(passedProcessID) {
+	if(passedProcessID && [passedProcessID length]) {
 		if([activeProcessID isEqualToString:passedProcessID]) {
 			processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
 		} else {
@@ -691,18 +691,26 @@
 		return;
 	}
 
-	// If command failed notify the file handle hand shake mechanism
-	NSString *out = @"1";
-	[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID]
-		atomically:YES
-		encoding:NSUTF8StringEncoding
-		   error:nil];
-	out = @"Scheme Error";
-	[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID]
-		atomically:YES
-		encoding:NSUTF8StringEncoding
-		   error:nil];
+	if(processDocument != nil) {
+		// If command failed notify the file handle hand shake mechanism
+		NSString *out = @"1";
+		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID]
+			atomically:YES
+			encoding:NSUTF8StringEncoding
+			   error:nil];
+		out = @"Scheme Error";
+		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID]
+			atomically:YES
+			encoding:NSUTF8StringEncoding
+			   error:nil];
+	}
 
+	if(passedProcessID == nil || ![passedProcessID length]) {
+		SPBeginAlertSheet(NSLocalizedString(@"sequelpro URL Scheme Error", @"sequelpro url Scheme Error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+						  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [command description], NSLocalizedString(@"An error occur while executing a scheme command. If the scheme command was invoked by a Bundle command, it could be that the command still runs. You can try to terminate it by pressing ⌘+. or via the Activities pane.", @"an error occur while executing a scheme command. if the scheme command was invoked by a bundle command, it could be that the command still runs. you can try to terminate it by pressing ⌘+. or via the activities pane.")]);
+	} else {
+		NSBeep();
+	}
 
 	if(processDocument)
 		NSLog(@"process doc ID: %@\n%@", [processDocument processID], [processDocument tabTitleForTooltip]);
@@ -753,40 +761,18 @@
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
-			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, [NSString stringWithNewUUID]];
+			NSString *uuid = [NSString stringWithNewUUID];
+			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			if([cmdData objectForKey:SPBundleFileInputSourceKey])
-				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
-			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
-				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
-
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
-			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:@"SP_BUNDLE_PATH"];
-			[env setObject:bundleInputFilePath forKey:@"SP_BUNDLE_INPUT_FILE"];
+			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
+			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
+			[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableScope];
 
-			NSError *inputFileError = nil;
 			NSString *input = @"";
-			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
-				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
-				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
-				input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
-				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
-				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
-				input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
-			}
-			
+			NSError *inputFileError = nil;
 			if(input == nil) input = @"";
 			[input writeToFile:bundleInputFilePath
 					  atomically:YES
@@ -795,7 +781,7 @@
 			
 			if(inputFileError != nil) {
 				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 				if (cmdData) [cmdData release];
 				return;
@@ -807,15 +793,53 @@
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"General", @"general menu item label"), @"scope",
+													uuid, SPBundleFileInternalexecutionUUID,
 													nil]
 											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
+			NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+
+			// Redirect due exit code
+			if(err != nil) {
+				if([err code] == SPBundleRedirectActionNone) {
+					action = SPBundleOutputActionNone;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionReplaceSection) {
+					action = SPBundleOutputActionReplaceSelection;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionReplaceContent) {
+					action = SPBundleOutputActionReplaceContent;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionInsertAsText) {
+					action = SPBundleOutputActionInsertAsText;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
+					action = SPBundleOutputActionInsertAsSnippet;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsHTML) {
+					action = SPBundleOutputActionShowAsHTML;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
+					action = SPBundleOutputActionShowAsTextTooltip;
+					err = nil;
+				}
+				else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
+					action = SPBundleOutputActionShowAsHTMLTooltip;
+					err = nil;
+				}
+			}
+
 			if(err == nil && output) {
 				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
 						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
-					NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 					NSPoint pos = [NSEvent mouseLocation];
 					pos.y -= 16;
 
@@ -1411,7 +1435,7 @@
 			[mItem setTag:1000000 + i++];
 			[mItem setRepresentedObject:[NSDictionary dictionaryWithObjectsAndKeys:
 				scope, @"scope",
-				[item objectForKey:@"key"], @"key", nil]];
+				([item objectForKey:@"key"])?:@"", @"key", nil]];
 
 			if([item objectForKey:SPBundleFileCategoryKey]) {
 				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
@@ -1433,24 +1457,48 @@
 - (IBAction)bundleCommandDispatcher:(id)sender
 {
 
-	BOOL checkForKeyEquivalents = ([[NSApp currentEvent] type] == NSKeyDown) ? YES : NO;
+	NSEvent *event = [NSApp currentEvent];
+	BOOL checkForKeyEquivalents = ([event type] == NSKeyDown) ? YES : NO;
+
+	id firstResponder = [[NSApp mainWindow] firstResponder];
 
 	NSString *scope = [[sender representedObject] objectForKey:@"scope"];
 	NSString *keyEqKey = nil;
 	NSMutableArray *assignedKeyEquivalents = nil;
 
 	if(checkForKeyEquivalents) {
+
+		// Get the current scope in order to find out which command with a specific key
+		// should run
+		if([firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)])
+			scope = SPBundleScopeInputField;
+		else if([firstResponder respondsToSelector:@selector(executeBundleItemForDataTable:)])
+			scope = SPBundleScopeDataTable;
+		else
+			scope = SPBundleScopeGeneral;
+
 		keyEqKey = [[sender representedObject] objectForKey:@"key"];
+
 		assignedKeyEquivalents = [NSMutableArray array];
 		[assignedKeyEquivalents setArray:[[bundleKeyEquivalents objectForKey:scope] objectForKey:keyEqKey]];
+		// Fall back to general scope and check for key
+		if(![assignedKeyEquivalents count]) {
+			scope = SPBundleScopeGeneral;
+			[assignedKeyEquivalents setArray:[[bundleKeyEquivalents objectForKey:scope] objectForKey:keyEqKey]];
+		}
+		// Nothing found thus bail
+		if(![assignedKeyEquivalents count]) {
+			NSBeep();
+			return;
+		}
+
+		// Sort if more than one found
 		if([assignedKeyEquivalents count] > 1) {
 			NSSortDescriptor *aSortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES selector:@selector(caseInsensitiveCompare:)] autorelease];
 			NSArray *sorted = [assignedKeyEquivalents sortedArrayUsingDescriptors:[NSArray arrayWithObject:aSortDescriptor]];
 			[assignedKeyEquivalents setArray:sorted];
 		}
 	}
-
-	id firstResponder = [[NSApp mainWindow] firstResponder];
 
 	if([scope isEqualToString:SPBundleScopeInputField] && [firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
 		if(checkForKeyEquivalents && [assignedKeyEquivalents count]) {

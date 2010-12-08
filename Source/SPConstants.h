@@ -473,6 +473,7 @@ extern NSString *SPBundleFileInputSourceFallBackKey;
 extern NSString *SPBundleFileOutputActionKey;
 extern NSString *SPBundleFileKeyEquivalentKey;
 extern NSString *SPBundleFileInternalKeyEquivalentKey;
+extern NSString *SPBundleFileInternalexecutionUUID;
 extern NSString *SPBundleFileTooltipKey;
 extern NSString *SPBundleFileDisabledKey;
 extern NSString *SPBundleFileAuthorKey;
@@ -486,9 +487,31 @@ extern NSString *SPBundleInternPathToFileKey;
 extern NSString *SPBundleInternKeyEquivalentKey;
 extern NSString *SPBundleFileName;
 extern NSString *SPBundleTaskInputFilePath;
+extern NSString *SPBundleTaskOutputFilePath;
 extern NSString *SPBundleTaskScriptCommandFilePath;
 extern NSString *SPBundleTaskCopyBlobFileDirectory;
 extern NSString *SPBundleTaskTableMetaDataFilePath;
+
+extern NSString *SPBundleShellVariableInputFilePath;
+extern NSString *SPBundleShellVariableOutputFilePath;
+extern NSString *SPBundleShellVariableBundlePath;
+extern NSString *SPBundleShellVariableBlobFileDirectory;
+extern NSString *SPBundleShellVariableQueryFile;
+extern NSString *SPBundleShellVariableQueryResultFile;
+extern NSString *SPBundleShellVariableQueryResultStatusFile;
+extern NSString *SPBundleShellVariableQueryResultMetaFile;
+extern NSString *SPBundleShellVariableInputTableMetaData;
+extern NSString *SPBundleShellVariableScope;
+
+extern const NSInteger SPBundleRedirectActionNone;
+extern const NSInteger SPBundleRedirectActionReplaceSection;
+extern const NSInteger SPBundleRedirectActionReplaceContent;
+extern const NSInteger SPBundleRedirectActionInsertAsText;
+extern const NSInteger SPBundleRedirectActionInsertAsSnippet;
+extern const NSInteger SPBundleRedirectActionShowAsHTML;
+extern const NSInteger SPBundleRedirectActionShowAsTextTooltip;
+extern const NSInteger SPBundleRedirectActionShowAsHTMLTooltip;
+extern const NSInteger SPBundleRedirectActionLastCode;
 
 // sequel URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;

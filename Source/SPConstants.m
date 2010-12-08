@@ -285,6 +285,7 @@ NSString *SPBundleFileInputSourceFallBackKey                = @"input_fallback";
 NSString *SPBundleFileOutputActionKey                       = @"output";
 NSString *SPBundleFileKeyEquivalentKey                      = @"keyEquivalent";
 NSString *SPBundleFileInternalKeyEquivalentKey              = @"internalKeyEquivalent";
+NSString *SPBundleFileInternalexecutionUUID                 = @"exeUUID";
 NSString *SPBundleFileTooltipKey                            = @"tooltip";
 NSString *SPBundleFileDisabledKey                           = @"disabled";
 NSString *SPBundleFileAuthorKey                             = @"author";
@@ -298,10 +299,32 @@ NSString *SPBundleInternPathToFileKey                       = @"path";
 NSString *SPBundleInternKeyEquivalentKey                    = @"keyEquivalent";
 
 NSString *SPBundleFileName                                  = @"command.plist";
-NSString *SPBundleTaskInputFilePath                         = @"/tmp/SP_BUNDLE_TASK_INPUT";
-NSString *SPBundleTaskScriptCommandFilePath                 = @"/tmp/SP_SCRIPT_COMMAND";
-NSString *SPBundleTaskCopyBlobFileDirectory                 = @"/tmp/SP_COPY_BLOB_FILES";
-NSString *SPBundleTaskTableMetaDataFilePath                 = @"/tmp/SP_TABLE_META_DATA";
+NSString *SPBundleTaskInputFilePath                         = @"/tmp/SP_BUNDLE_INPUT";
+NSString *SPBundleTaskOutputFilePath                        = @"/tmp/SP_BUNDLE_OUTPUT";
+NSString *SPBundleTaskScriptCommandFilePath                 = @"/tmp/SP_BUNDLE_SCRIPT_COMMAND";
+NSString *SPBundleTaskCopyBlobFileDirectory                 = @"/tmp/SP_BUNDLE_COPY_BLOB_FILES";
+NSString *SPBundleTaskTableMetaDataFilePath                 = @"/tmp/SP_BUNDLE_TABLE_META_DATA";
+
+NSString *SPBundleShellVariableInputFilePath                = @"SP_BUNDLE_INPUT";
+NSString *SPBundleShellVariableOutputFilePath               = @"SP_BUNDLE_OUTPUT";
+NSString *SPBundleShellVariableBundlePath                   = @"SP_BUNDLE_PATH";
+NSString *SPBundleShellVariableBlobFileDirectory            = @"SP_BUNDLE_BLOB_FILES_DIRECTORY";
+NSString *SPBundleShellVariableQueryFile                    = @"SP_QUERY_FILE";
+NSString *SPBundleShellVariableQueryResultFile              = @"SP_QUERY_RESULT_FILE";
+NSString *SPBundleShellVariableQueryResultStatusFile        = @"SP_QUERY_RESULT_STATUS_FILE";
+NSString *SPBundleShellVariableQueryResultMetaFile          = @"SP_QUERY_RESULT_META_FILE";
+NSString *SPBundleShellVariableInputTableMetaData           = @"SP_BUNDLE_INPUT_TABLE_METADATA";
+NSString *SPBundleShellVariableScope                        = @"SP_BUNDLE_SCOPE";
+
+const NSInteger SPBundleRedirectActionNone                 = 200;
+const NSInteger SPBundleRedirectActionReplaceSection       = 201;
+const NSInteger SPBundleRedirectActionReplaceContent       = 202;
+const NSInteger SPBundleRedirectActionInsertAsText         = 203;
+const NSInteger SPBundleRedirectActionInsertAsSnippet      = 204;
+const NSInteger SPBundleRedirectActionShowAsHTML           = 205;
+const NSInteger SPBundleRedirectActionShowAsTextTooltip    = 207;
+const NSInteger SPBundleRedirectActionShowAsHTMLTooltip    = 208;
+const NSInteger SPBundleRedirectActionLastCode             = 208;
 
 // sequel URL scheme
 NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
