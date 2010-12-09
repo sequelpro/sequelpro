@@ -163,7 +163,11 @@
 	BOOL _isGeometry;
 	NSUndoManager *esUndoManager;
 
+	NSDictionary *editedFieldInfo;
+
 }
+
+@property(readwrite, retain) NSDictionary *editedFieldInfo;
 
 - (IBAction)closeEditSheet:(id)sender;
 - (IBAction)openEditSheet:(id)sender;

@@ -578,9 +578,16 @@
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 			[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableScope];
 
-
 			id tableSource = [self delegate];
-			if([[[tableSource class] description] isEqualToString:@"SPCopyTable"]) {
+			if([[[tableSource class] description] isEqualToString:@"SPFieldEditorController"]) {
+				NSDictionary *editedFieldInfo = [tableSource editedFieldInfo];
+				[env setObject:[editedFieldInfo objectForKey:@"colName"] forKey:SPBundleShellVariableCurrentEditedColumnName];
+				if([editedFieldInfo objectForKey:@"tableName"])
+					[env setObject:[editedFieldInfo objectForKey:@"tableName"] forKey:SPBundleShellVariableCurrentEditedTable];
+				[env setObject:[editedFieldInfo objectForKey:@"usedQuery"] forKey:SPBundleShellVariableUsedQueryForTable];
+				[env setObject:[editedFieldInfo objectForKey:@"tableSource"] forKey:SPBundleShellVariableDataTableSource];
+			}
+			else if([[[tableSource class] description] isEqualToString:@"SPCopyTable"]) {
 				NSInteger editedCol = [tableSource editedColumn];
 				if(editedCol > -1) {
 					NSString *colName = [[[[tableSource tableColumns] objectAtIndex:editedCol] headerCell] stringValue];

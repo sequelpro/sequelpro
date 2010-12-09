@@ -2342,6 +2342,13 @@
 			if([columnDefinition objectForKey:@"null"])
 				allowNULL = (![[columnDefinition objectForKey:@"null"] integerValue]);
 
+			[fieldEditor setEditedFieldInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+				[columnDefinition objectForKey:@"org_name"], @"colName",
+				[columnDefinition objectForKey:@"org_table"], @"tableName",
+				[self usedQuery], @"usedQuery",
+				@"query", @"tableSource",
+				nil]];
+
 			[fieldEditor setTextMaxLength:fieldLength];
 			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
 			[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];

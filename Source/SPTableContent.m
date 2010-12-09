@@ -4036,7 +4036,11 @@
 
 			if(fieldEditor) [fieldEditor release], fieldEditor = nil;
 			fieldEditor = [[SPFieldEditorController alloc] init];
-
+			[fieldEditor setEditedFieldInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+				[[aTableColumn headerCell] stringValue], @"colName",
+				[self usedQuery], @"usedQuery",
+				@"content", @"tableSource",
+				nil]];
 			[fieldEditor setTextMaxLength:fieldLength];
 			[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
 			[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
