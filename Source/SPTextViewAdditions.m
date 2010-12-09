@@ -578,6 +578,31 @@
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 			[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableScope];
 
+
+			id tableSource = [self delegate];
+			if([[[tableSource class] description] isEqualToString:@"SPCopyTable"]) {
+				NSInteger editedCol = [tableSource editedColumn];
+				if(editedCol > -1) {
+					NSString *colName = [[[[tableSource tableColumns] objectAtIndex:editedCol] headerCell] stringValue];
+					if([[[[tableSource dataSource] class] description] hasSuffix:@"Content"]) {
+						[env setObject:[colName description] forKey:SPBundleShellVariableCurrentEditedColumnName];
+						[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
+					} else {
+						NSArray *defs = [[tableSource delegate] dataColumnDefinitions];
+						for(NSDictionary* col in defs) {
+							if([[col objectForKey:@"name"] isEqualToString:colName]) {
+								[env setObject:[col objectForKey:@"org_name"] forKey:SPBundleShellVariableCurrentEditedColumnName];
+								[env setObject:[col objectForKey:@"org_table"] forKey:SPBundleShellVariableCurrentEditedTable];
+								break;
+							}
+						}
+						[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
+					}
+					if([[tableSource delegate] respondsToSelector:@selector(usedQuery)] && [[tableSource delegate] usedQuery])
+						[env setObject:[[tableSource delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+				}
+			}
+
 			if(selfIsQueryEditor && [[self delegate] currentQueryRange].length)
 				[env setObject:[[self string] substringWithRange:[[self delegate] currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
 

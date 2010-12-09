@@ -567,6 +567,9 @@
 		if([doc shellVariables])
 			[theEnv addEntriesFromDictionary:[doc shellVariables]];
 
+		if([theEnv objectForKey:SPBundleShellVariableCurrentEditedColumnName] && [[theEnv objectForKey:SPBundleShellVariableDataTableSource] isEqualToString:@"content"])
+			[theEnv setObject:[theEnv objectForKey:SPBundleShellVariableSelectedTable] forKey:SPBundleShellVariableCurrentEditedTable];
+
 	}
 
 	if(theEnv != nil && [theEnv count])

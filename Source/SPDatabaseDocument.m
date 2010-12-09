@@ -4823,7 +4823,7 @@
 			[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
 
 		if ([tablesListInstance tableName])
-			[env setObject:[tablesListInstance tableName] forKey:@"SP_SELECTED_TABLE"];
+			[env setObject:[tablesListInstance tableName] forKey:SPBundleShellVariableSelectedTable];
 
 		if ([tablesListInstance selectedTableItems])
 			[env setObject:[[tablesListInstance selectedTableItems] componentsJoinedByString:@"\t"] forKey:@"SP_SELECTED_TABLES"];

@@ -502,6 +502,11 @@ extern NSString *SPBundleShellVariableQueryResultStatusFile;
 extern NSString *SPBundleShellVariableQueryResultMetaFile;
 extern NSString *SPBundleShellVariableInputTableMetaData;
 extern NSString *SPBundleShellVariableScope;
+extern NSString *SPBundleShellVariableUsedQueryForTable;
+extern NSString *SPBundleShellVariableCurrentEditedColumnName;
+extern NSString *SPBundleShellVariableSelectedTable;
+extern NSString *SPBundleShellVariableCurrentEditedTable;
+extern NSString *SPBundleShellVariableDataTableSource;
 
 extern const NSInteger SPBundleRedirectActionNone;
 extern const NSInteger SPBundleRedirectActionReplaceSection;

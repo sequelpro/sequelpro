@@ -1150,7 +1150,7 @@ NSInteger kBlobAsImageFile = 4;
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 
 			if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
-				[env setObject:[[self delegate] usedQuery] forKey:@"SP_USED_QUERY_FOR_TABLE"];
+				[env setObject:[[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
 
 			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
 			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableScope];
@@ -1223,6 +1223,7 @@ NSInteger kBlobAsImageFile = 4;
 
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
+				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
 				for(NSDictionary* col in defs) {
 					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
@@ -1235,6 +1236,7 @@ NSInteger kBlobAsImageFile = 4;
 				}
 			}
 			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
+				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
 				for(NSDictionary* col in defs) {
 					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];

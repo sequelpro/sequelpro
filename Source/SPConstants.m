@@ -315,6 +315,11 @@ NSString *SPBundleShellVariableQueryResultStatusFile        = @"SP_QUERY_RESULT_
 NSString *SPBundleShellVariableQueryResultMetaFile          = @"SP_QUERY_RESULT_META_FILE";
 NSString *SPBundleShellVariableInputTableMetaData           = @"SP_BUNDLE_INPUT_TABLE_METADATA";
 NSString *SPBundleShellVariableScope                        = @"SP_BUNDLE_SCOPE";
+NSString *SPBundleShellVariableUsedQueryForTable            = @"SP_USED_QUERY_FOR_TABLE";
+NSString *SPBundleShellVariableCurrentEditedColumnName      = @"SP_CURRENT_EDITED_COLUMN_NAME";
+NSString *SPBundleShellVariableSelectedTable                = @"SP_SELECTED_TABLE";
+NSString *SPBundleShellVariableCurrentEditedTable           = @"SP_CURRENT_EDITED_TABLE";
+NSString *SPBundleShellVariableDataTableSource              = @"SP_DATA_TABLE_SOURCE";
 
 const NSInteger SPBundleRedirectActionNone                 = 200;
 const NSInteger SPBundleRedirectActionReplaceSection       = 201;
