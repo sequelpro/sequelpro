@@ -26,8 +26,6 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
 
-
-
 @implementation SPBundleHTMLOutputController
 
 @synthesize docTitle;
@@ -44,6 +42,13 @@
 
 		[[self window] setReleasedWhenClosed:YES];
 
+		[webView setContinuousSpellCheckingEnabled:NO];
+		[webView setGroupName:@"SequelProBundleHTMLOutput"];
+		[webView setDrawsBackground:YES];
+		[webView setEditable:NO];
+		[webView setShouldCloseWithWindow:YES];
+		[webView setShouldUpdateWhileOffscreen:NO];
+
 	}
 	
 	return self;
@@ -58,13 +63,6 @@
 - (void)windowControllerDidLoadNib:(NSWindowController *) aController
 {
 	[super windowControllerDidLoadNib:aController];
-
-	[webView setContinuousSpellCheckingEnabled:NO];
-	[webView setGroupName:@"SequelProBundleHTMLOutput"];
-	[webView setDrawsBackground:YES];
-	[webView setEditable:NO];
-	[webView setShouldCloseWithWindow:YES];
-	[webView setShouldUpdateWhileOffscreen:NO];
 
 }
 
@@ -114,9 +112,7 @@
 
 - (void)dealloc
 {
-	if(webView) [webView release];
 	if(webPreferences) [webPreferences release];
-	// [super dealloc];
 }
 
 - (void)keyDown:(NSEvent *)theEvent
@@ -222,6 +218,7 @@
 	[webView close];
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
+	[self release];
 }
 
 #pragma mark -
@@ -310,6 +307,60 @@
 	if (frame == [sender mainFrame]) {
 		[self updateWindow];
 	}
+}
+
+#pragma mark -
+#pragma mark JS support
+
+- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
+{
+	NSLog(@"alert %@", message);
+}
+
+- (BOOL)webView:(WebView *)sender runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
+{
+	NSLog(@"confirm");
+	return NO;
+}
+
+- (NSString *)webView:(WebView *)sender runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WebFrame *)frame
+{
+	return @"be patient";
+}
+
+- (void)webView:(WebView *)sender windowScriptObjectAvailable: (WebScriptObject *)windowScriptObject
+{
+	[windowScriptObject setValue:self forKey:@"system"];
+}
+
++ (NSString *)webScriptNameForSelector:(SEL)aSelector
+{
+	if (aSelector == @selector(run:))
+		return @"run";
+	return @"";
+}
+
++ (BOOL)isSelectorExcludedFromWebScript:(SEL)selector {
+	if (selector == @selector(run:)) {
+		return NO;
+	}
+	return YES;
+}
+
++ (BOOL)isKeyExcludedFromWebScript:(const char *)property {
+	if (strcmp(property, "run") == 0) {
+		return NO;
+	}
+	return YES;
+}
+
+- (void) windowScriptObjectAvailable:(WebScriptObject*)webScriptObject {
+	[webScriptObject setValue:self forKey:@"system"];
+}
+
+- (NSString *)run:(NSString*)command
+{
+	return [NSString stringWithFormat:@"Hallo-%@", [command description]];
 }
 
 #pragma mark -
