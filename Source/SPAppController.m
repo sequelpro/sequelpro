@@ -1364,7 +1364,7 @@
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu setAutoenablesItems:YES];
 	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral, nil];
-	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Fields", @"input fields menu item label"), 
+	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Field", @"input field menu item label"), 
 													 NSLocalizedString(@"Data Table", @"data table menu item label"),
 													 NSLocalizedString(@"General", @"general menu item label"),nil];
 

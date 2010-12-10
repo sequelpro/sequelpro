@@ -297,11 +297,6 @@
 	[anItem setTag:kDataTableScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
-	// [inputGeneralScopePopUpMenu addItem:[NSMenuItem separatorItem]];
-	// anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Disable Command", @"disable command menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	// [anItem setTag:kDisabledScopeTag];
-	// [inputGeneralScopePopUpMenu addItem:anItem];
-	// [anItem release];
 	[scopePopupButton setMenu:inputGeneralScopePopUpMenu];
 
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
@@ -1041,13 +1036,6 @@
 
 - (void)windowWillClose:(NSNotification *)notification
 {
-	// Clear some stuff if window will close to save memory
-	// [touchedBundleArray removeAllObjects];
-	// [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:0] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	// [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:1] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	// [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:2] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	// [commandsOutlineView reloadData];
-
 	// Remove temporary drag file if any
 	if(draggedFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
