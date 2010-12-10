@@ -1086,7 +1086,8 @@
 		}
 		if(newKeyCombo.flags & NSCommandKeyMask)
 			[keyEq appendString:@"@"];
-		[keyEq appendString:theChar];
+		if(theChar)
+			[keyEq appendString:theChar];
 	}
 	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 

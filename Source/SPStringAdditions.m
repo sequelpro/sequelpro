@@ -462,7 +462,7 @@
 
 	NSMutableArray *scriptHeaderArguments = [NSMutableArray array];
 	NSString *scriptPath = @"";
-	NSString *uuid = (contextInfo && [contextInfo objectForKey:SPBundleFileInternalexecutionUUID]) ? [contextInfo objectForKey:@"exeUUID"] : [NSString stringWithNewUUID];
+	NSString *uuid = (contextInfo && [contextInfo objectForKey:SPBundleFileInternalexecutionUUID]) ? [contextInfo objectForKey:SPBundleFileInternalexecutionUUID] : [NSString stringWithNewUUID];
 	NSString *stdoutFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskOutputFilePath, uuid];
 	NSString *scriptFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskScriptCommandFilePath, uuid];
 

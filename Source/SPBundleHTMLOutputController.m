@@ -22,7 +22,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
 
@@ -359,9 +358,68 @@
 	[webScriptObject setValue:self forKey:@"system"];
 }
 
-- (NSString *)run:(NSString*)command
+- (NSString *)run:(id)call
 {
-	return [NSString stringWithFormat:@"Hallo-%@", [command description]];
+
+	NSError *err = nil;
+	NSString *command = nil;
+	NSString *uuid = nil;
+
+	if([call isKindOfClass:[NSString class]])
+		command = [NSString stringWithString:call];
+	else if([[[call class] description] isEqualToString:@"WebScriptObject"]){
+		command = [call webScriptValueAtIndex:0];
+		uuid = [call webScriptValueAtIndex:1];
+	}
+	else {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while executing JavaScript BASH command", @"error while executing javascript bash command")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed.", @"Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed.")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return @"";
+	}
+
+	if(!command) return @"No JavaScript command found.";
+
+	NSString *output = nil;
+	if(uuid == nil)
+		output = [command runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
+	else
+		output = [command runBashCommandWithEnvironment:nil 
+								atCurrentDirectoryPath:nil 
+								callerInstance:[NSApp delegate] 
+								contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+										@"JavaScript", @"name",
+										NSLocalizedString(@"General", @"general menu item label"), @"scope",
+										uuid, SPBundleFileInternalexecutionUUID,
+										nil]
+								error:&err];
+
+
+	if(err != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while executing JavaScript BASH command", @"error while executing javascript bash command")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:[err localizedDescription]];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return @"";
+	}
+
+	if(output)
+		return output;
+	else {
+		NSLog(@"No valid output for JavaScript command found.");
+		NSBeep();
+		return @"";
+	}
+
 }
 
 #pragma mark -
