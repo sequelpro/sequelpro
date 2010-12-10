@@ -314,7 +314,8 @@
 
 - (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
 {
-	NSLog(@"alert %@", message);
+	SPBeginAlertSheet(NSLocalizedString(@"JavaScript Alert", @"javascript alert"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+					  [message description]);
 }
 
 - (BOOL)webView:(WebView *)sender runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
