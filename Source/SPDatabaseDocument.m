@@ -4852,8 +4852,7 @@
 		if ([self port])
 			[env setObject:[self port] forKey:@"SP_CURRENT_PORT"];
 
-		if ([self databaseEncoding])
-			[env setObject:[self databaseEncoding] forKey:@"SP_DATABASE_ENCODING"];
+		[env setObject:([self databaseEncoding])?:@"" forKey:@"SP_DATABASE_ENCODING"];
 
 	}
 
