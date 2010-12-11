@@ -227,7 +227,7 @@
 	
 	SPTreeNode *node = (item) ? item : [[[[favoritesRoot childNodes] objectAtIndex:0] childNodes] objectAtIndex:0];
  		
-	// TODO: Fix me, disable automatic sorting
+	// TODO: Fix me
 	
 	// Disable all automatic sorting
 	//currentSortItem = -1;
@@ -479,7 +479,7 @@
 	
     if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
 		
-		// TODO: Fix me, disabled because of new outline view
+		// TODO: Fix me
 		return NO;
 		
 		// Loop all the items in the sort by menu only checking the currently selected one

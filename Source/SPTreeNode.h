@@ -42,14 +42,14 @@
 
 - (void)removeObjectFromChildren:(id)object;
 
-- (NSArray *)descendants;
-- (NSArray *)allChildLeafs;
-- (NSArray *)groupChildren;
+- (NSMutableArray *)descendants;
+- (NSMutableArray *)childLeafs;
+- (NSMutableArray *)allChildLeafs;
+- (NSMutableArray *)groupChildren;
 
 - (SPTreeNode *)parentFromArray:(NSArray *)array;
 
 - (BOOL)isDescendantOfOrOneOfNodes:(NSArray *)nodes;
-- (BOOL)isDescendantOfNodes:(NSArray *)nodes;
 
 - (NSDictionary *)dictionaryRepresentation;
 

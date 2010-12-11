@@ -188,10 +188,6 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 		[self addObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
 		[self addObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
 		[self addObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		
-		// Sort the favourites to match prefs and select the appropriate row - if a valid sort option is selected
-		// TODO: Fix me, sorting currently does not work in the new outline view
-		//if (currentSortItem > -1) [self _sortFavorites];
 					
 		SPTreeNode *favorite = [self _favoriteNodeForFavoriteID:[prefs integerForKey:([prefs boolForKey:SPSelectLastFavoriteUsed]) ? SPLastFavoriteID : SPDefaultFavorite]];
 						
@@ -1180,18 +1176,18 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 			sortKey = SPFavoriteTypeKey;
 			break;
 	}
-	
-	NSSortDescriptor *sortDescriptor = nil;
-	
-	if (currentSortItem == SPFavoritesSortTypeItem) {
-		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort)] autorelease];
+	 
+	// First sort the contents of all groups
+	for (SPTreeNode *node in [[[favoritesRoot childNodes] objectAtIndex:0] groupChildren])
+	{
+		[[node mutableChildNodes] sortUsingSelector:@selector(compare:)];
 	}
-	else {
-		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
-	}
-	    
-	// TODO: Perform actual sorting here
 	
+	// Secondly sort the root's leaf nodes
+	[[[[favoritesRoot childNodes] objectAtIndex:0] childLeafs] sortUsingSelector:@selector(compare:)];
+	
+	[favoritesController saveFavorites];
+	 
 	[self _reloadFavoritesViewData];
 }
 
@@ -1218,8 +1214,7 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 }
 
 /**
- * Convenience method for rebuilding the connection favorites tree, reloading the outline view, expanding the
- * items and scrolling to the selected item.
+ * Convenience method for reloading the outline view, expanding the root item and scrolling to the selected item.
  */
 - (void)_reloadFavoritesViewData
 {	

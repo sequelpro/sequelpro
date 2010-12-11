@@ -77,7 +77,7 @@
  *
  * @return The array of decendant nodes.
  */
-- (NSArray *)descendants
+- (NSMutableArray *)descendants
 {
 	NSMutableArray *descendants = [NSMutableArray array];
 	
@@ -94,11 +94,31 @@
 }
 
 /**
- * Generates an array of all leafs in children and children of all sub-nodes.
+ * Generates an array of this node's child leafs nodes.
  *
  * @return The array of child nodes.
  */
-- (NSArray *)allChildLeafs
+- (NSMutableArray *)childLeafs
+{
+	NSMutableArray *childLeafs = [NSMutableArray array];
+	
+	for (SPTreeNode *node in [self childNodes])
+	{
+		if ([node isLeaf]) {
+			[childLeafs addObject:node];
+		}
+	}
+	
+	return childLeafs;
+}
+
+/**
+ * Generates an array of all leafs in children and children of all sub-nodes (effectively all leaf nodes below
+ * this node.
+ *
+ * @return The array of child nodes.
+ */
+- (NSMutableArray *)allChildLeafs
 {
 	NSMutableArray *childLeafs = [NSMutableArray array];
 	
@@ -120,7 +140,7 @@
  *
  * @return The array of child group nodes.
  */
-- (NSArray *)groupChildren
+- (NSMutableArray *)groupChildren
 {
 	NSMutableArray *groupChildren = [NSMutableArray array];
 	
@@ -171,9 +191,9 @@
  * Returns YES if self is contained anywhere inside the children or children of
  * sub-nodes of the nodes contained inside the supplied array.
  *
- * @param nodes
+ * @param nodes The array of nodes to search
  * 
- * @return 
+ * @return A BOOL indicating whether or not it's a descendent
  */
 - (BOOL)isDescendantOfOrOneOfNodes:(NSArray *)nodes
 {	
@@ -190,28 +210,6 @@
     }
 	
     return NO;
-}
-
-/**
- * Returns YES if any node in the array passed in is an ancestor of ours.
- *
- * @param nodes
- * 
- * @return
- */
-- (BOOL)isDescendantOfNodes:(NSArray *)nodes
-{
-	for (SPTreeNode *node in nodes)
-	{
-		// Check all the sub-nodes
-		if (![node isLeaf]) {
-			if ([self isDescendantOfOrOneOfNodes:[node childNodes]]) {
-				return YES;
-			}
-		}
-    }
-	
-	return NO;
 }
 
 /**
@@ -248,5 +246,25 @@
 	
 	return dictionary;
 }
+
+#pragma mark -
+#pragma mark Other
+
+/*- (NSComparisonResult)compare:(SPTreeNode *)node
+{
+	id selfObject = [self representedObject];
+	id nodeObject = [node representedObject];
+	
+	if ([selfObject isKindOfClass:[SPFavoriteNode class]] && [nodeObject isKindOfClass:[SPFavoriteNode class]]) {
+				
+		return [[[selfObject nodeFavorite] objectForKey:SPFavoriteNameKey] localizedCaseInsensitiveCompare:[[nodeObject nodeFavorite] objectForKey:SPFavoriteNameKey]];
+	}
+	else if ([selfObject isKindOfClass:[SPGroupNode class]] && [nodeObject isKindOfClass:[SPGroupNode class]]) {
+		
+		return [[selfObject nodeName] localizedCaseInsensitiveCompare:[nodeObject nodeName]];
+	}
+	
+	return NSOrderedSame;
+}*/
 
 @end
