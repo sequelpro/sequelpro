@@ -106,7 +106,14 @@
 		} else {
 			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 				resultRow = [theResult fetchRowAsArray];
-				NSString *tableName = [NSString stringWithUTF8String:[[resultRow objectAtIndex:0] cStringUsingEncoding:[mySQLConnection stringEncoding]]];
+				// Due to encoding problems it can be the case that [resultRow objectAtIndex:0]
+				// return NSNull, thus catch that case for safety reasons
+				NSString *row = [resultRow objectAtIndex:0];
+				NSString *tableName;
+				if([row isKindOfClass:[NSString class]])
+					tableName = [NSString stringWithUTF8String:[row cStringUsingEncoding:[mySQLConnection stringEncoding]]];
+				else
+					tableName = @"...";
 				[tables addObject:tableName];
 				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
 					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeView]];

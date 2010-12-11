@@ -45,4 +45,7 @@
 - (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions;
 - (void)displayURLString:(NSString *)url withOptions:(NSDictionary *)displayOptions;
 
+- (void)showSourceCode;
+- (void)saveDocument;
+
 @end

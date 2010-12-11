@@ -22,10 +22,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-
 #import "SPBundleHTMLOutputController.h"
-
-
+#import "SPAlertSheets.h"
 
 @implementation SPBundleHTMLOutputController
 
@@ -43,6 +41,13 @@
 
 		[[self window] setReleasedWhenClosed:YES];
 
+		[webView setContinuousSpellCheckingEnabled:NO];
+		[webView setGroupName:@"SequelProBundleHTMLOutput"];
+		[webView setDrawsBackground:YES];
+		[webView setEditable:NO];
+		[webView setShouldCloseWithWindow:YES];
+		[webView setShouldUpdateWhileOffscreen:NO];
+
 	}
 	
 	return self;
@@ -54,29 +59,13 @@
 	return @"BundleHTMLOutput";
 }
 
-- (void)windowControllerDidLoadNib:(NSWindowController *) aController
-{
-	[super windowControllerDidLoadNib:aController];
-
-	[webView setContinuousSpellCheckingEnabled:NO];
-	[webView setGroupName:@"SequelProBundleHTMLOutput"];
-	[webView setDrawsBackground:YES];
-	[webView setEditable:NO];
-	[webView setShouldCloseWithWindow:YES];
-	[webView setShouldUpdateWhileOffscreen:NO];
-
-}
-
 - (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
 {
 
 	[[self window] orderFront:nil];
 
-	NSString *fullContent = @"%@";
-	fullContent = [NSString stringWithFormat:fullContent, content];
-	[self setInitHTMLSourceString:fullContent];
-	[[webView mainFrame] loadHTMLString:@"<html></html>" baseURL:nil];
-	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
+	[self setInitHTMLSourceString:content];
+	[[webView mainFrame] loadHTMLString:content baseURL:nil];
 
 }
 
@@ -113,15 +102,12 @@
 
 - (void)dealloc
 {
-	if(webView) [webView release];
 	if(webPreferences) [webPreferences release];
-	// [super dealloc];
 }
 
 - (void)keyDown:(NSEvent *)theEvent
 {
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
-
 	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	unichar insertedCharacter = [characters characterAtIndex:0];
@@ -157,10 +143,62 @@
 
 }
 
+/**
+ * Sheet did end method
+ */
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+{
+
+	// Order out current sheet to suppress overlapping of sheets
+	if ([sheet respondsToSelector:@selector(orderOut:)])
+		[sheet orderOut:nil];
+	else if ([sheet respondsToSelector:@selector(window)])
+		[[sheet window] orderOut:nil];
+
+	if([contextInfo isEqualToString:@"saveDocument"]) {
+		if (returnCode == NSOKButton) {
+			NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
+			NSError *err = nil;
+			[sourceCode writeToFile:[sheet filename]
+						atomically:YES
+						encoding:NSUTF8StringEncoding
+						error:&err];
+			if(err != nil) {
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  [NSString stringWithFormat:@"%@", [err localizedDescription]]);
+			}
+			
+		}
+	}
+}
+
 - (IBAction)printDocument:(id)sender
 {
 	[[[[webView mainFrame] frameView] documentView] print:sender];
 }
+
+- (void)showSourceCode
+{
+	NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
+	SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+	[c displayHTMLContent:[NSString stringWithFormat:@"<pre>%@</pre>", [sourceCode HTMLEscapeString]] withOptions:nil];
+	[[NSApp delegate] addHTMLOutputController:c];
+}
+
+- (void)saveDocument
+{
+	NSSavePanel *panel = [NSSavePanel savePanel];
+	
+	[panel setRequiredFileType:@"html"];
+	
+	[panel setExtensionHidden:NO];
+	[panel setAllowsOtherFileTypes:YES];
+	[panel setCanSelectHiddenExtension:YES];
+	[panel setCanCreateDirectories:YES];
+
+	[panel beginSheetForDirectory:nil file:@"output" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveDocument"];
+}
+
 
 #pragma mark -
 
@@ -170,10 +208,36 @@
 	[webView close];
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
-	// [[notification object] release];
+	[self release];
 }
 
 #pragma mark -
+
+- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
+{
+	NSMutableArray *webViewMenuItems = [[defaultMenuItems mutableCopy] autorelease];
+
+	[webViewMenuItems addObject:[NSMenuItem separatorItem]];
+
+	NSMenuItem *anItem;
+	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"View Source", @"view html source code menu item title") action:@selector(showSourceCode) keyEquivalent:@""];
+	[anItem setEnabled:YES];
+	[anItem setTarget:self];
+	[webViewMenuItems addObject:anItem];
+	[anItem release];
+	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Save Page As…", @"save page as menu item title") action:@selector(saveDocument) keyEquivalent:@""];
+	[anItem setEnabled:YES];
+	[anItem setTarget:self];
+	[webViewMenuItems addObject:anItem];
+	[anItem release];
+	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Print Page…", @"print page menu item title") action:@selector(printDocument:) keyEquivalent:@""];
+	[anItem setEnabled:YES];
+	[anItem setTarget:self];
+	[webViewMenuItems addObject:anItem];
+	[anItem release];
+
+	return webViewMenuItems;
+}
 
 - (WebView *)webView:(WebView *)sender createWebViewWithRequest:(NSURLRequest *)request
 {
@@ -233,6 +297,126 @@
 	if (frame == [sender mainFrame]) {
 		[self updateWindow];
 	}
+}
+
+#pragma mark -
+#pragma mark JS support
+
+- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
+{
+	SPBeginAlertSheet(NSLocalizedString(@"JavaScript Alert", @"javascript alert"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+					  [message description]);
+}
+
+- (BOOL)webView:(WebView *)sender runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
+{
+	NSLog(@"confirm");
+	return NO;
+}
+
+- (NSString *)webView:(WebView *)sender runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WebFrame *)frame
+{
+	return @"be patient";
+}
+
+- (void)webView:(WebView *)sender windowScriptObjectAvailable: (WebScriptObject *)windowScriptObject
+{
+	[windowScriptObject setValue:self forKey:@"system"];
+}
+
++ (NSString *)webScriptNameForSelector:(SEL)aSelector
+{
+	if (aSelector == @selector(run:))
+		return @"run";
+	return @"";
+}
+
++ (BOOL)isSelectorExcludedFromWebScript:(SEL)selector {
+	if (selector == @selector(run:)) {
+		return NO;
+	}
+	return YES;
+}
+
++ (BOOL)isKeyExcludedFromWebScript:(const char *)property {
+	if (strcmp(property, "run") == 0) {
+		return NO;
+	}
+	return YES;
+}
+
+- (void) windowScriptObjectAvailable:(WebScriptObject*)webScriptObject {
+	[webScriptObject setValue:self forKey:@"system"];
+}
+
+- (NSString *)run:(id)call
+{
+
+	NSError *err = nil;
+	NSString *command = nil;
+	NSString *uuid = nil;
+
+	if([call isKindOfClass:[NSString class]])
+		command = [NSString stringWithString:call];
+	else if([[[call class] description] isEqualToString:@"WebScriptObject"]){
+		command = [call webScriptValueAtIndex:0];
+		uuid = [call webScriptValueAtIndex:1];
+	}
+	else {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while executing JavaScript BASH command", @"error while executing javascript bash command")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:NSLocalizedString(@"Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed.", @"Passed parameter couldn't be interpreted. Only string or array (with 2 elements) are allowed.")];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return @"";
+	}
+
+	if(!command) return @"No JavaScript command found.";
+
+	// Check for internal commands passed via JavaScript
+	if([command isEqualToString:@"_SP_self_makeKeyWindow"]) {
+		[[self window] makeKeyAndOrderFront:nil];
+		return @"";
+	}
+
+	NSString *output = nil;
+	if(uuid == nil)
+		output = [command runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
+	else
+		output = [command runBashCommandWithEnvironment:nil 
+								atCurrentDirectoryPath:nil 
+								callerInstance:[NSApp delegate] 
+								contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+										@"JavaScript", @"name",
+										NSLocalizedString(@"General", @"general menu item label"), @"scope",
+										uuid, SPBundleFileInternalexecutionUUID,
+										nil]
+								error:&err];
+
+
+	if(err != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while executing JavaScript BASH command", @"error while executing javascript bash command")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:[err localizedDescription]];
+
+		[alert setAlertStyle:NSCriticalAlertStyle];
+		[alert runModal];
+		return @"";
+	}
+
+	if(output)
+		return output;
+	else {
+		NSLog(@"No valid output for JavaScript command found.");
+		NSBeep();
+		return @"";
+	}
+
 }
 
 #pragma mark -

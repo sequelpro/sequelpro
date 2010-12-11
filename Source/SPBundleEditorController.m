@@ -297,11 +297,6 @@
 	[anItem setTag:kDataTableScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
-	// [inputGeneralScopePopUpMenu addItem:[NSMenuItem separatorItem]];
-	// anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Disable Command", @"disable command menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
-	// [anItem setTag:kDisabledScopeTag];
-	// [inputGeneralScopePopUpMenu addItem:anItem];
-	// [anItem release];
 	[scopePopupButton setMenu:inputGeneralScopePopUpMenu];
 
 	[keyEquivalentField setCanCaptureGlobalHotKeys:YES];
@@ -327,12 +322,15 @@
 		@"SP_BUNDLE_INPUT_TABLE_METADATA",
 		@"SP_BUNDLE_PATH",
 		@"SP_BUNDLE_SCOPE",
+		@"SP_CURRENT_EDITED_COLUMN_NAME",
+		@"SP_CURRENT_EDITED_TABLE",
 		@"SP_CURRENT_HOST",
 		@"SP_CURRENT_LINE",
 		@"SP_CURRENT_PORT",
 		@"SP_CURRENT_QUERY",
 		@"SP_CURRENT_USER",
 		@"SP_CURRENT_WORD",
+		@"SP_DATA_TABLE_SOURCE",
 		@"SP_DATABASE_ENCODING",
 		@"SP_ICON_FILE",
 		@"SP_PROCESS_ID",
@@ -1038,13 +1036,6 @@
 
 - (void)windowWillClose:(NSNotification *)notification
 {
-	// Clear some stuff if window will close to save memory
-	// [touchedBundleArray removeAllObjects];
-	// [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:0] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	// [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:1] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	// [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:2] setObject:[NSMutableArray array] forKey:kChildrenKey];
-	// [commandsOutlineView reloadData];
-
 	// Remove temporary drag file if any
 	if(draggedFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
@@ -1095,7 +1086,8 @@
 		}
 		if(newKeyCombo.flags & NSCommandKeyMask)
 			[keyEq appendString:@"@"];
-		[keyEq appendString:theChar];
+		if(theChar)
+			[keyEq appendString:theChar];
 	}
 	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
