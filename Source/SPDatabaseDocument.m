@@ -5293,14 +5293,18 @@
 		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
 			|| ![mySQLConnection selectDB:targetDatabaseName])
 		{
+
+			// End the task first to ensure the database dropdown can be reselected
+			[self endTask];
+
 			if ( [mySQLConnection isConnected] ) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
+
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 			}
 
-			[self endTask];
 			[taskPool drain];
 			return;
 		}
