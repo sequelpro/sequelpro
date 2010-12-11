@@ -953,6 +953,7 @@
 		NSString* toInsert = [curMatch substringFromIndex:[originalFilterString length]];
 		theCharRange.length += [toInsert length] - currentAutocompleteLength;
 		theParseRange.length += [toInsert length];
+		[theView breakUndoCoalescing];
 		[theView insertText:[toInsert lowercaseString]];
 		autocompletePlaceholderWasInserted = YES;
 
