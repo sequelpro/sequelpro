@@ -59,22 +59,13 @@
 	return @"BundleHTMLOutput";
 }
 
-- (void)windowControllerDidLoadNib:(NSWindowController *) aController
-{
-	[super windowControllerDidLoadNib:aController];
-
-}
-
 - (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
 {
 
 	[[self window] orderFront:nil];
 
-	NSString *fullContent = @"%@";
-	fullContent = [NSString stringWithFormat:fullContent, content];
-	[self setInitHTMLSourceString:fullContent];
-	[[webView mainFrame] loadHTMLString:@"<html></html>" baseURL:nil];
-	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
+	[self setInitHTMLSourceString:content];
+	[[webView mainFrame] loadHTMLString:content baseURL:nil];
 
 }
 
@@ -384,6 +375,12 @@
 	}
 
 	if(!command) return @"No JavaScript command found.";
+
+	// Check for internal commands passed via JavaScript
+	if([command isEqualToString:@"_SP_self_makeKeyWindow"]) {
+		[[self window] makeKeyAndOrderFront:nil];
+		return @"";
+	}
 
 	NSString *output = nil;
 	if(uuid == nil)
