@@ -1153,7 +1153,7 @@ NSInteger kBlobAsImageFile = 4;
 				[env setObject:[[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
 
 			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
-			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableScope];
+			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];
 
 			if([self numberOfSelectedRows]) {
 				NSMutableArray *sel = [NSMutableArray array];

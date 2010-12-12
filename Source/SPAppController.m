@@ -770,7 +770,7 @@
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
-			[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableScope];
+			[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableBundleScope];
 
 			NSString *input = @"";
 			NSError *inputFileError = nil;
@@ -910,7 +910,7 @@
 		if(!currentQueryRange.length)
 			currentQueryRange = currentSelectionRange;
 
-		[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableScope];
+		[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableBundleScope];
 
 		if(selfIsQueryEditor && [[firstResponder delegate] currentQueryRange].length)
 			[env setObject:[[firstResponder string] substringWithRange:[[firstResponder delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
@@ -940,10 +940,10 @@
 			[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
 		}
 
-		[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableScope];
+		[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];
 
 	} else {
-		[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableScope];
+		[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableBundleScope];
 	}
 	return env;
 }

@@ -304,19 +304,28 @@
 
 - (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
 {
-	SPBeginAlertSheet(NSLocalizedString(@"JavaScript Alert", @"javascript alert"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-					  [message description]);
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+	[alert setInformativeText:(message)?:@""];
+	[alert setMessageText:@"JavaScript"];
+	[alert runModal];
+	[alert release];
 }
 
 - (BOOL)webView:(WebView *)sender runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
 {
-	NSLog(@"confirm");
-	return NO;
-}
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+	[alert setInformativeText:(message)?:@""];
+	[alert setMessageText:@"JavaScript"];
 
-- (NSString *)webView:(WebView *)sender runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WebFrame *)frame
-{
-	return @"be patient";
+	NSUInteger returnCode = [alert runModal];
+
+	[alert release];
+
+	if(returnCode == NSAlertFirstButtonReturn) return YES;
+	return NO;
 }
 
 - (void)webView:(WebView *)sender windowScriptObjectAvailable: (WebScriptObject *)windowScriptObject

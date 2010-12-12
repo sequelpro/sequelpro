@@ -576,7 +576,7 @@
 			NSMutableDictionary *env = [NSMutableDictionary dictionary];
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
-			[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableScope];
+			[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableBundleScope];
 
 			id tableSource = [self delegate];
 			if([[[tableSource class] description] isEqualToString:@"SPFieldEditorController"]) {
