@@ -328,11 +328,21 @@
 {
 	if (aSelector == @selector(run:))
 		return @"run";
+	if (aSelector == @selector(getShellEnvironmentForName:))
+		return @"getShellEnvironmentForName";
+	if (aSelector == @selector(makeHTMLOutputWindowKeyWindow))
+		return @"makeHTMLOutputWindowKeyWindow";
 	return @"";
 }
 
 + (BOOL)isSelectorExcludedFromWebScript:(SEL)selector {
 	if (selector == @selector(run:)) {
+		return NO;
+	}
+	if (selector == @selector(getShellEnvironmentForName:)) {
+		return NO;
+	}
+	if (selector == @selector(makeHTMLOutputWindowKeyWindow)) {
 		return NO;
 	}
 	return YES;
@@ -342,13 +352,41 @@
 	if (strcmp(property, "run") == 0) {
 		return NO;
 	}
+	if (strcmp(property, "getShellEnvironmentForName") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "makeHTMLOutputWindowKeyWindow") == 0) {
+		return NO;
+	}
 	return YES;
 }
 
-- (void) windowScriptObjectAvailable:(WebScriptObject*)webScriptObject {
+- (void)windowScriptObjectAvailable:(WebScriptObject*)webScriptObject {
 	[webScriptObject setValue:self forKey:@"system"];
 }
 
+/**
+ * JavaScript window.system.getShellEnvironmentForName('a_key') function to
+ * return the value for key keyName
+ */
+- (NSString *)getShellEnvironmentForName:(NSString*)keyName
+{
+	return [[[NSApp delegate] shellEnvironment] objectForKey:keyName];
+}
+
+/**
+ * JavaScript window.system.makeHTMLOutputWindowKeyWindow() function
+ * to make the HTML output window the first responder
+ */
+- (void)makeHTMLOutputWindowKeyWindow
+{
+	[[self window] makeKeyAndOrderFront:nil];
+}
+
+/**
+ * JavaScript window.system.run('a_command'|new Array('a_command', 'uuid')) function
+ * to return the result of the BASH command a_command
+ */
 - (NSString *)run:(id)call
 {
 
@@ -375,12 +413,6 @@
 	}
 
 	if(!command) return @"No JavaScript command found.";
-
-	// Check for internal commands passed via JavaScript
-	if([command isEqualToString:@"_SP_self_makeKeyWindow"]) {
-		[[self window] makeKeyAndOrderFront:nil];
-		return @"";
-	}
 
 	NSString *output = nil;
 	if(uuid == nil)

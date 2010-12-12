@@ -507,6 +507,11 @@ extern NSString *SPBundleShellVariableCurrentEditedColumnName;
 extern NSString *SPBundleShellVariableSelectedTable;
 extern NSString *SPBundleShellVariableCurrentEditedTable;
 extern NSString *SPBundleShellVariableDataTableSource;
+extern NSString *SPBundleShellVariableCurrentQuery;
+extern NSString *SPBundleShellVariableSelectedText;
+extern NSString *SPBundleShellVariableCurrentWord;
+extern NSString *SPBundleShellVariableCurrentLine;
+extern NSString *SPBundleShellVariableSelectedRowIndices;
 
 extern const NSInteger SPBundleRedirectActionNone;
 extern const NSInteger SPBundleRedirectActionReplaceSection;

@@ -611,16 +611,16 @@
 			}
 
 			if(selfIsQueryEditor && [[self delegate] currentQueryRange].length)
-				[env setObject:[[self string] substringWithRange:[[self delegate] currentQueryRange]] forKey:@"SP_CURRENT_QUERY"];
+				[env setObject:[[self string] substringWithRange:[[self delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
 
 			if(currentSelectionRange.length)
-				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:@"SP_SELECTED_TEXT"];
+				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];
 
 			if(currentWordRange.length)
-				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:@"SP_CURRENT_WORD"];
+				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:SPBundleShellVariableCurrentWord];
 
 			if(currentLineRange.length)
-				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:@"SP_CURRENT_LINE"];
+				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:SPBundleShellVariableCurrentLine];
 
 			NSError *inputFileError = nil;
 			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];

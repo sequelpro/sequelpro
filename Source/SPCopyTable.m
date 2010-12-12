@@ -1163,7 +1163,7 @@ NSInteger kBlobAsImageFile = 4;
 					[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
 					rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 				}
-				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:@"SP_SELECTED_ROW_INDICES"];
+				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
 			}
 
 			NSError *inputFileError = nil;

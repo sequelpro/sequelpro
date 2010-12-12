@@ -37,6 +37,7 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
 #import "SPChooseMenuItemDialog.h"
+#import "SPCustomQuery.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -882,6 +883,69 @@
 
 	}
 
+}
+
+/**
+ * Return of certain shell variables mainly for usage in JavaScript support inside the 
+ * HTML output window to allow to ask on run-time 
+ */
+- (NSDictionary*)shellEnvironment
+{
+	NSMutableDictionary *env = [NSMutableDictionary dictionary];
+	SPDatabaseDocument *doc = [self frontDocument];
+	if(doc) [env addEntriesFromDictionary:[doc shellVariables]];
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
+		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"]) ;
+		NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
+		currentSelectionRange = [firstResponder selectedRange];
+		currentWordRange = [firstResponder getRangeForCurrentWord];
+		currentLineRange = [[firstResponder string] lineRangeForRange:NSMakeRange([firstResponder selectedRange].location, 0)];
+
+		if(selfIsQueryEditor) {
+			currentQueryRange = [[firstResponder delegate] currentQueryRange];
+		} else {
+			currentQueryRange = currentLineRange;
+		}
+		if(!currentQueryRange.length)
+			currentQueryRange = currentSelectionRange;
+
+		[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableScope];
+
+		if(selfIsQueryEditor && [[firstResponder delegate] currentQueryRange].length)
+			[env setObject:[[firstResponder string] substringWithRange:[[firstResponder delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
+
+		if(currentSelectionRange.length)
+			[env setObject:[[firstResponder string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];
+
+		if(currentWordRange.length)
+			[env setObject:[[firstResponder string] substringWithRange:currentWordRange] forKey:SPBundleShellVariableCurrentWord];
+
+		if(currentLineRange.length)
+			[env setObject:[[firstResponder string] substringWithRange:currentLineRange] forKey:SPBundleShellVariableCurrentLine];
+	}
+	else if([firstResponder respondsToSelector:@selector(executeBundleItemForDataTable:)]) {
+
+		if([[firstResponder delegate] respondsToSelector:@selector(usedQuery)] && [[firstResponder delegate] usedQuery])
+			[env setObject:[[firstResponder delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+
+		if([firstResponder numberOfSelectedRows]) {
+			NSMutableArray *sel = [NSMutableArray array];
+			NSIndexSet *selectedRows = [firstResponder selectedRowIndexes];
+			NSUInteger rowIndex = [selectedRows firstIndex];
+			while ( rowIndex != NSNotFound ) {
+				[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
+				rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
+			}
+			[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
+		}
+
+		[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableScope];
+
+	} else {
+		[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableScope];
+	}
+	return env;
 }
 
 - (void)registerActivity:(NSDictionary*)commandDict

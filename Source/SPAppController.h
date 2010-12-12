@@ -113,6 +113,7 @@
 - (void)handleEventWithURL:(NSURL*)url;
 
 - (IBAction)executeBundleItemForApp:(id)sender;
+- (NSDictionary*)shellEnvironment;
 
 - (void)addHTMLOutputController:(id)controller;
 

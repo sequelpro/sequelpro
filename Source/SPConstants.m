@@ -320,6 +320,11 @@ NSString *SPBundleShellVariableCurrentEditedColumnName      = @"SP_CURRENT_EDITE
 NSString *SPBundleShellVariableSelectedTable                = @"SP_SELECTED_TABLE";
 NSString *SPBundleShellVariableCurrentEditedTable           = @"SP_CURRENT_EDITED_TABLE";
 NSString *SPBundleShellVariableDataTableSource              = @"SP_DATA_TABLE_SOURCE";
+NSString *SPBundleShellVariableCurrentQuery                 = @"SP_CURRENT_QUERY";
+NSString *SPBundleShellVariableSelectedText                 = @"SP_SELECTED_TEXT";
+NSString *SPBundleShellVariableCurrentWord                  = @"SP_CURRENT_WORD";
+NSString *SPBundleShellVariableCurrentLine                  = @"SP_CURRENT_LINE";
+NSString *SPBundleShellVariableSelectedRowIndices           = @"SP_SELECTED_ROW_INDICES";
 
 const NSInteger SPBundleRedirectActionNone                 = 200;
 const NSInteger SPBundleRedirectActionReplaceSection       = 201;
