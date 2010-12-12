@@ -4820,47 +4820,47 @@
 
 	if (tablesListInstance) {
 		if([tablesListInstance selectedDatabase])
-			[env setObject:[tablesListInstance selectedDatabase] forKey:@"SP_SELECTED_DATABASE"];
+			[env setObject:[tablesListInstance selectedDatabase] forKey:SPBundleShellVariableSelectedDatabase];
 
 		if ([tablesListInstance tableName])
 			[env setObject:[tablesListInstance tableName] forKey:SPBundleShellVariableSelectedTable];
 
 		if ([tablesListInstance selectedTableItems])
-			[env setObject:[[tablesListInstance selectedTableItems] componentsJoinedByString:@"\t"] forKey:@"SP_SELECTED_TABLES"];
+			[env setObject:[[tablesListInstance selectedTableItems] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedTables];
 
 		if ([tablesListInstance allDatabaseNames])
-			[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedByString:@"\t"] forKey:@"SP_ALL_DATABASES"];
+			[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllDatabases];
 
 		if ([tablesListInstance allTableNames])
-			[env setObject:[[tablesListInstance allTableNames] componentsJoinedByString:@"\t"] forKey:@"SP_ALL_TABLES"];
+			[env setObject:[[tablesListInstance allTableNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllTables];
 
 		if ([tablesListInstance allViewNames])
-			[env setObject:[[tablesListInstance allViewNames] componentsJoinedByString:@"\t"] forKey:@"SP_ALL_VIEWS"];
+			[env setObject:[[tablesListInstance allViewNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllViews];
 
 		if ([tablesListInstance allFunctionNames])
-			[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedByString:@"\t"] forKey:@"SP_ALL_FUNCTIONS"];
+			[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllFunctions];
 
 		if ([tablesListInstance allProcedureNames])
-			[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedByString:@"\t"] forKey:@"SP_ALL_PROCEDURES"];
+			[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllProcedures];
 
 		if ([self user])
-			[env setObject:[self user] forKey:@"SP_CURRENT_USER"];
+			[env setObject:[self user] forKey:SPBundleShellVariableCurrentUser];
 
 		if ([self host])
-			[env setObject:[self host] forKey:@"SP_CURRENT_HOST"];
+			[env setObject:[self host] forKey:SPBundleShellVariableCurrentHost];
 
 		if ([self port])
-			[env setObject:[self port] forKey:@"SP_CURRENT_PORT"];
+			[env setObject:[self port] forKey:SPBundleShellVariableCurrentPort];
 
-		[env setObject:([self databaseEncoding])?:@"" forKey:@"SP_DATABASE_ENCODING"];
+		[env setObject:([self databaseEncoding])?:@"" forKey:SPBundleShellVariableDatabaseEncoding];
 
 	}
 
 	if(1)
-		[env setObject:@"mysql" forKey:@"SP_RDBMS_TYPE"];
+		[env setObject:@"mysql" forKey:SPBundleShellVariableRDBMSType];
 
 	if([self mySQLVersion])
-		[env setObject:[self mySQLVersion] forKey:@"SP_RDBMS_VERSION"];
+		[env setObject:[self mySQLVersion] forKey:SPBundleShellVariableRDBMSVersion];
 
 	return (NSDictionary*)env;
 }
@@ -5293,14 +5293,18 @@
 		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
 			|| ![mySQLConnection selectDB:targetDatabaseName])
 		{
+
+			// End the task first to ensure the database dropdown can be reselected
+			[self endTask];
+
 			if ( [mySQLConnection isConnected] ) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
+
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 			}
 
-			[self endTask];
 			[taskPool drain];
 			return;
 		}

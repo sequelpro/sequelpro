@@ -369,7 +369,7 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 	if (![node isGroup]) {
 		[self initiateConnection:self];
 	}
-	// Otherwise start editing the group item's name
+	// Otherwise start editing the group node's name
 	else {
 		[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
 	}

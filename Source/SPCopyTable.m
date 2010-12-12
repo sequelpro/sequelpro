@@ -1153,7 +1153,7 @@ NSInteger kBlobAsImageFile = 4;
 				[env setObject:[[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
 
 			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
-			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableScope];
+			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];
 
 			if([self numberOfSelectedRows]) {
 				NSMutableArray *sel = [NSMutableArray array];
@@ -1163,7 +1163,7 @@ NSInteger kBlobAsImageFile = 4;
 					[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
 					rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 				}
-				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:@"SP_SELECTED_ROW_INDICES"];
+				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
 			}
 
 			NSError *inputFileError = nil;

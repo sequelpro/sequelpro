@@ -519,16 +519,16 @@
 	NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 	[theEnv setDictionary:shellEnvironment];
 
-	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appicon" ofType:@"icns"] forKey:@"SP_ICON_FILE"];
-	[theEnv setObject:[NSString stringWithFormat:@"%@/Contents/Resources", [[NSBundle mainBundle] bundlePath]] forKey:@"SP_APP_RESOURCES_DIRECTORY"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionNone] forKey:@"SP_BUNDLE_EXIT_NONE"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceSection] forKey:@"SP_BUNDLE_EXIT_REPLACE_SELECTION"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceContent] forKey:@"SP_BUNDLE_EXIT_REPLACE_CONTENT"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsText] forKey:@"SP_BUNDLE_EXIT_INSERT_AS_TEXT"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsSnippet] forKey:@"SP_BUNDLE_EXIT_INSERT_AS_SNIPPET"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTML] forKey:@"SP_BUNDLE_EXIT_SHOW_AS_HTML"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsTextTooltip] forKey:@"SP_BUNDLE_EXIT_SHOW_AS_TEXT_TOOLTIP"];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTMLTooltip] forKey:@"SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP"];
+	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appicon" ofType:@"icns"] forKey:SPBundleShellVariableIconFile];
+	[theEnv setObject:[NSString stringWithFormat:@"%@/Contents/Resources", [[NSBundle mainBundle] bundlePath]] forKey:SPBundleShellVariableAppResourcesDirectory];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionNone] forKey:SPBundleShellVariableExitNone];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceSection] forKey:SPBundleShellVariableExitReplaceSelection];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceContent] forKey:SPBundleShellVariableExitReplaceContent];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsText] forKey:SPBundleShellVariableExitInsertAsText];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsSnippet] forKey:SPBundleShellVariableExitInsertAsSnippet];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTML] forKey:SPBundleShellVariableExitInsertAsHTML];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsTextTooltip] forKey:SPBundleShellVariableExitInsertAsTextTooltip];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTMLTooltip] forKey:SPBundleShellVariableExitInsertAsHTMLTooltip];
 
 	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
 	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
@@ -558,7 +558,7 @@
 
 		[doc setProcessID:uuid];
 
-		[theEnv setObject:uuid forKey:@"SP_PROCESS_ID"];
+		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
