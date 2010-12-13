@@ -173,5 +173,7 @@
 	<true/>
 	<key>FilterTableDefaultOperator</key>
 	<string>LIKE '%@%'</string>
+	<key>WebKitDeveloperExtras</key>
+	<true/>
 </dict>
 </plist>
