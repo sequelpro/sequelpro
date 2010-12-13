@@ -2370,116 +2370,125 @@
 
 
 /**
- * Tries to write a new row to the database.
- * Returns YES if row is written to database, otherwise NO; also returns YES if no row
- * is being edited and nothing has to be written to the database.
+ * Tries to write a new row to the table.
+ * Returns YES if row is written to table, otherwise NO; also returns YES if no row
+ * is being edited or nothing has to be written to the table.
  */
-- (BOOL)addRowToDB
+- (BOOL)saveRowToTable
 {
 
-	if([tablesListInstance tableType] == SPTableTypeView) return;
+	// Only handle tables - views should be handled per-cell.
+	if ([tablesListInstance tableType] == SPTableTypeView) return NO;
 
-	NSMutableString *queryString;
-	id rowObject;
-	NSMutableString *rowValue = [NSMutableString string];
-	NSString *currentTime = [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil];
-	BOOL prefsLoadBlobsAsNeeded = [prefs boolForKey:SPLoadBlobsAsNeeded];
-	NSInteger i;
+	// If no row is being edited, return success.
+	if (!isEditingRow) return YES;
 
-	if ( !isEditingRow || currentlyEditingRow == -1) {
-		return YES;
-	}
-
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-
-	// If editing, compare the new row to the old row and if they are identical finish editing without saving.
+	// If editing, quickly compare the new row to the old row and if they are identical finish editing without saving.
 	if (!isEditingNewRow && [oldRow isEqualToArray:[tableValues rowContentsAtIndex:currentlyEditingRow]]) {
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
-		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 		return YES;
 	}
 
-	NSMutableArray *fieldValues = [[NSMutableArray alloc] init];
-
-	// Get the field values
-	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
+	// Iterate through the row contents, constructing the (ordered) arrays of keys and values to be saved
+	NSMutableArray *rowFieldsToSave = [[NSMutableArray alloc] initWithCapacity:[dataColumns count]];
+	NSMutableArray *rowValuesToSave = [[NSMutableArray alloc] initWithCapacity:[dataColumns count]];
+	NSInteger i;
+	id rowObject;
+	for (i = 0; i < [dataColumns count]; i++) {
 		rowObject = [tableValues cellDataAtRow:currentlyEditingRow column:i];
 
-		// Add not loaded placeholders directly for easy comparison when added
-		if (prefsLoadBlobsAsNeeded && !isEditingNewRow && [rowObject isSPNotLoaded])
-		{
-			[fieldValues addObject:[SPNotLoaded notLoaded]];
-			continue;
+		// Skip "not loaded" cells entirely - these only occur when editing tables when the
+		// preference setting is enabled, and don't need to be saved back to the table.
+		if ([rowObject isSPNotLoaded]) continue;
+
+		// Prepare to derive the value to save, also tracking whether the field has changed.
+		BOOL fieldValueHasChanged = (isEditingNewRow || ![rowObject isEqual:NSArrayObjectAtIndex(oldRow, i)]);
+		NSString *fieldValue;
+		NSString *fieldTypeGroup = [NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"];
 
 		// Catch CURRENT_TIMESTAMP automatic updates - if the row is new and the cell value matches
 		// the default value, or if the cell hasn't changed, update the current timestamp.
-		} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] integerValue]
-					&& (   (isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
-						|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
+		if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] integerValue]
+			&& (	(isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
+					|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
 		{
-			[rowValue setString:@"CURRENT_TIMESTAMP"];
+			fieldValue = @"CURRENT_TIMESTAMP";
+			fieldValueHasChanged = YES;
 
-		} else if ( [rowObject isNSNull]
-				|| ([rowObject isMemberOfClass:[NSString class]] && [[rowObject description] isEqualToString:@""]) ) {
+		// Use NULL when the user has entered the nullValue string defined in the preferences,
+		// or when a numeric field is empty.
+		} else if ([rowObject isNSNull]
+					|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"])
+						&& [[rowObject description] isEqualToString:@""]))
+		{
+			fieldValue = @"NULL";
 
-			//NULL when user entered the nullValue string defined in the prefs or when a number field isn't set
-			//	problem: when a number isn't set, sequel-pro enters 0
-			//	-> second if argument isn't necessary!
-			[rowValue setString:@"NULL"];
-		} else if ( [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"geometry"] ) {
-			[rowValue setString:([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString]];
+		// Convert geometry values to their string values
+		} else if ([fieldTypeGroup isEqualToString:@"geometry"]) {
+			fieldValue = ([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString];
+	
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else {
 
-			// I don't believe any of these class matches are ever met at present.
-			if ( [rowObject isKindOfClass:[NSCalendarDate class]] ) {
-				[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
-			} else if ( [rowObject isKindOfClass:[NSNumber class]] ) {
-				[rowValue setString:[rowObject stringValue]];
-			} else if ( [rowObject isKindOfClass:[NSData class]] ) {
-				[rowValue setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:rowObject]]];
+			// I believe these class matches are not ever met at present.
+			if ([rowObject isKindOfClass:[NSCalendarDate class]]) {
+				fieldValue = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]];
+			} else if ([rowObject isKindOfClass:[NSNumber class]]) {
+				fieldValue = [rowObject stringValue];
+
+			// Convert data to its hex representation
+			} else if ([rowObject isKindOfClass:[NSData class]]) {
+				fieldValue = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:rowObject]];
+
 			} else {
 				if ([[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-					[rowValue setString:@"CURRENT_TIMESTAMP"];
-				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
-					[rowValue setString:[NSString stringWithFormat:@"b'%@'", ((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"]) ? @"0" : [rowObject description])]];
-				} else if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"] isEqualToString:@"date"]
-							&& [[rowObject description] isEqualToString:@"NOW()"]) {
-					[rowValue setString:@"NOW()"];
+					fieldValue = @"CURRENT_TIMESTAMP";
+				} else if ([fieldTypeGroup isEqualToString:@"bit"]) {
+					fieldValue = [NSString stringWithFormat:@"b'%@'", ((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"]) ? @"0" : [rowObject description])];
+				} else if ([fieldTypeGroup isEqualToString:@"date"] && [[rowObject description] isEqualToString:@"NOW()"]) {
+					fieldValue = @"NOW()";
 				} else {
-					[rowValue setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]]];
+					fieldValue = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]];
 				}
 			}
 		}
-		[fieldValues addObject:[NSString stringWithString:rowValue]];
+
+		// If the field value hasn't changed (only occurs while editing!), continue without saving
+		if (!fieldValueHasChanged) continue;
+
+		// Store the key and value in the ordered arrays for saving.
+		[rowFieldsToSave addObject:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]];
+		[rowValuesToSave addObject:fieldValue];
 	}
 
-	// Use INSERT syntax when creating new rows - no need to do not loaded checking, as all values have been entered
-	if ( isEditingNewRow ) {
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+	NSMutableString *queryString;
+
+	// Use INSERT syntax when creating new rows
+	if (isEditingNewRow) {
 		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
-					   [selectedTable backtickQuotedString], [[tableDataInstance columnNames] componentsJoinedAndBacktickQuoted], [fieldValues componentsJoinedByString:@","]];
-	// Use UPDATE syntax otherwise
+					   [selectedTable backtickQuotedString], [rowFieldsToSave componentsJoinedAndBacktickQuoted], [rowValuesToSave componentsJoinedByString:@", "]];
+
+	// Otherwise use an UPDATE syntax to save only the changed cells - if this point is reached,
+	// the equality test has failed and so there is always at least one changed cell
 	} else {
-		BOOL firstCellOutput = NO;
 		queryString = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [selectedTable backtickQuotedString]];
-		for ( i = 0 ; i < [dataColumns count] ; i++ ) {
-
-			// If data column loading is deferred and the value is the not loaded string, skip this cell
-			if (prefsLoadBlobsAsNeeded && [[fieldValues objectAtIndex:i] isSPNotLoaded]) continue;
-
-			if (firstCellOutput) [queryString appendString:@", "];
-			else firstCellOutput = YES;
-
+		for (i = 0; i < [rowFieldsToSave count]; i++) {
+			if (i) [queryString appendString:@", "];
 			[queryString appendFormat:@"%@ = %@",
-									   [[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"] backtickQuotedString], [fieldValues objectAtIndex:i]];
+									   [NSArrayObjectAtIndex(rowFieldsToSave, i) backtickQuotedString],
+									   NSArrayObjectAtIndex(rowValuesToSave, i)];
 		}
 		[queryString appendFormat:@" WHERE %@", [self argumentForRow:-2]];
 	}
 
+	[rowFieldsToSave release];
+	[rowValuesToSave release];
+
+	// Run the query
 	[mySQLConnection queryString:queryString];
 
-	[fieldValues release];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 	// If no rows have been changed, show error if appropriate.
@@ -2494,7 +2503,7 @@
 		isEditingRow = NO;
 		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
-		[[SPQueryController sharedQueryController] showErrorInConsole:[NSString stringWithFormat:NSLocalizedString(@"/* WARNING %@ No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db"), currentTime] connection:[tableDocumentInstance name]];
+		[[SPQueryController sharedQueryController] showErrorInConsole:NSLocalizedString(@"/* WARNING: No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db") connection:[tableDocumentInstance name]];
 		return YES;
 
 	// On success...
@@ -2582,7 +2591,7 @@
 	isSavingRow = YES;
 
 	// Attempt to save the row, and return YES if the save succeeded.
-	if ([self addRowToDB]) {
+	if ([self saveRowToTable]) {
 		isSavingRow = NO;
 		return YES;
 	}
