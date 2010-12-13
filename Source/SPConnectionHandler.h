@@ -34,11 +34,16 @@
  */
 @interface SPConnectionController (SPConnectionHandler)
 
-- (void)initiateSSHTunnelConnection;
-- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
 - (void)initiateMySQLConnection;
+- (void)initiateMySQLConnectionInBackground;
+- (void)initiateSSHTunnelConnection;
+
+- (void)mySQLConnectionEstablished;
+- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
+
 - (void)cancelConnection;
-- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
 - (void)addConnectionToDocument;
+
+- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
 
 @end
