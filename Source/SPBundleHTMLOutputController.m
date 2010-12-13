@@ -25,11 +25,14 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
 
+@class WebScriptCallFrame;
+
 @implementation SPBundleHTMLOutputController
 
 @synthesize docTitle;
 @synthesize initHTMLSourceString;
 @synthesize windowUUID;
+@synthesize docUUID;
 
 /**
  * Initialisation
@@ -63,7 +66,6 @@
 {
 
 	[[self window] orderFront:nil];
-
 	[self setInitHTMLSourceString:content];
 	[[webView mainFrame] loadHTMLString:content baseURL:nil];
 
@@ -208,6 +210,7 @@
 	[webView close];
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
+	docUUID = @"";
 	[self release];
 }
 
@@ -299,6 +302,20 @@
 	}
 }
 
+- (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
+{
+	if(error) {
+		NSLog(@"%@", [error localizedDescription]);
+	}
+}
+
+- (void)webView:(WebView *)webView didFailLoadWithError:(NSError*)error forFrame:(WebFrame *)frame
+{
+	if(error) {
+		NSLog(@"%@", [error localizedDescription]);
+	}
+}
+
 #pragma mark -
 #pragma mark JS support
 
@@ -328,9 +345,11 @@
 	return NO;
 }
 
-- (void)webView:(WebView *)sender windowScriptObjectAvailable: (WebScriptObject *)windowScriptObject
+- (void)webView:(WebView *)sender windowScriptObjectAvailable:(WebScriptObject *)windowScriptObject
 {
+
 	[windowScriptObject setValue:self forKey:@"system"];
+	[webView setScriptDebugDelegate:self];
 }
 
 + (NSString *)webScriptNameForSelector:(SEL)aSelector
@@ -370,17 +389,40 @@
 	return YES;
 }
 
-- (void)windowScriptObjectAvailable:(WebScriptObject*)webScriptObject {
-	[webScriptObject setValue:self forKey:@"system"];
+- (void)webView:(WebView *)webView failedToParseSource:(NSString *)source baseLineNumber:(NSUInteger)lineNumber fromURL:(NSURL *)url withError:(NSError *)error forWebFrame:(WebFrame *)webFrame
+{
+	NSString *mes = [NSString stringWithFormat:@"Failed to parse JavaScript source:\nline = %ld\nerror = %@ with\n%@\nfor source = \n%@", lineNumber, [error localizedDescription], [error userInfo], source];
+
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"JavaScript Parsing Error", @"javascript parsing error")
+									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+								   alternateButton:nil 
+									  otherButton:nil 
+						informativeTextWithFormat:mes];
+
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	[alert runModal];
 }
 
+- (void)webView:(WebView *)webView exceptionWasRaised:(WebScriptCallFrame *)frame sourceId:(NSInteger)sid line:(NSInteger)lineno forWebFrame:(WebFrame *)webFrame
+{
+	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
+
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"JavaScript Exception", @"javascript exception")
+									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+								   alternateButton:nil 
+									  otherButton:nil 
+						informativeTextWithFormat:mes];
+
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	[alert runModal];
+}
 /**
  * JavaScript window.system.getShellEnvironmentForName('a_key') function to
  * return the value for key keyName
  */
 - (NSString *)getShellEnvironmentForName:(NSString*)keyName
 {
-	return [[[NSApp delegate] shellEnvironment] objectForKey:keyName];
+	return [[[NSApp delegate] shellEnvironmentForDocument:nil] objectForKey:keyName];
 }
 
 /**
@@ -402,6 +444,9 @@
 	NSError *err = nil;
 	NSString *command = nil;
 	NSString *uuid = nil;
+
+	if([self docUUID] && [[self docUUID] length])
+		uuid = [self docUUID];
 
 	if([call isKindOfClass:[NSString class]])
 		command = [NSString stringWithString:call];
@@ -426,8 +471,15 @@
 	NSString *output = nil;
 	if(uuid == nil)
 		output = [command runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
-	else
-		output = [command runBashCommandWithEnvironment:nil 
+	else {
+		NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
+		[theEnv addEntriesFromDictionary:[[NSApp delegate] shellEnvironmentForDocument:nil]];
+		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
+		output = [command runBashCommandWithEnvironment:theEnv 
 								atCurrentDirectoryPath:nil 
 								callerInstance:[NSApp delegate] 
 								contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -436,7 +488,7 @@
 										uuid, SPBundleFileInternalexecutionUUID,
 										nil]
 								error:&err];
-
+	}
 
 	if(err != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while executing JavaScript BASH command", @"error while executing javascript bash command")

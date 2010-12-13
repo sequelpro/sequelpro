@@ -973,8 +973,8 @@ NSInteger kBlobAsImageFile = 4;
 
 		// Save the current line if it's the last field in the table
 		if ( [self numberOfColumns] - 1 == column ) {
-			if([[self delegate] respondsToSelector:@selector(addRowToDB)])
-				[[self delegate] addRowToDB];
+			if([[self delegate] respondsToSelector:@selector(saveRowToTable)])
+				[[self delegate] saveRowToTable];
 			[[self window] makeFirstResponder:self];
 		} else {
 			// Select the next field for editing
@@ -991,8 +991,8 @@ NSInteger kBlobAsImageFile = 4;
 
 		// Save the current line if it's the last field in the table
 		if ( column < 1 ) {
-			if([[self delegate] respondsToSelector:@selector(addRowToDB)])
-				[[self delegate] addRowToDB];
+			if([[self delegate] respondsToSelector:@selector(saveRowToTable)])
+				[[self delegate] saveRowToTable];
 			[[self window] makeFirstResponder:self];
 		} else {
 			// Select the previous field for editing
@@ -1010,8 +1010,8 @@ NSInteger kBlobAsImageFile = 4;
 			return YES;
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(addRowToDB)])
-			[[self delegate] addRowToDB];
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
+			[[self delegate] saveRowToTable];
 		return YES;
 
 	}
@@ -1028,10 +1028,10 @@ NSInteger kBlobAsImageFile = 4;
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(addRowToDB)])
-			[[self delegate] addRowToDB];
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
+			[[self delegate] saveRowToTable];
 
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. addRowToDB could reload the table and change the number of rows
+		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
 		if (tableStorage && column>=[tableStorage columnCount]) return YES;     //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
@@ -1051,10 +1051,10 @@ NSInteger kBlobAsImageFile = 4;
 		NSUInteger newRow = row-1;
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(addRowToDB)])
-			[[self delegate] addRowToDB];
+		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
+			[[self delegate] saveRowToTable];
 
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // addRowToDB could reload the table and change the number of rows
+		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
 		if (tableStorage && column>=[tableStorage columnCount]) return YES;     //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
