@@ -2402,25 +2402,19 @@
 		// preference setting is enabled, and don't need to be saved back to the table.
 		if ([rowObject isSPNotLoaded]) continue;
 
-		// Prepare to derive the value to save, also tracking whether the field has changed.
-		BOOL fieldValueHasChanged = (isEditingNewRow || ![rowObject isEqual:NSArrayObjectAtIndex(oldRow, i)]);
+		// If an edit has taken place, and the field value hasn't changed, the value
+		// can also be skipped
+		if (!isEditingNewRow && [rowObject isEqual:NSArrayObjectAtIndex(oldRow, i)]) continue;
+
+		// Prepare to derive the value to save
 		NSString *fieldValue;
 		NSString *fieldTypeGroup = [NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"];
 
-		// Catch CURRENT_TIMESTAMP automatic updates - if the row is new and the cell value matches
-		// the default value, or if the cell hasn't changed, update the current timestamp.
-		if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"onupdatetimestamp"] integerValue]
-			&& (	(isEditingNewRow && [rowObject isEqualTo:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"default"]])
-					|| (!isEditingNewRow && [rowObject isEqualTo:NSArrayObjectAtIndex(oldRow, i)])))
-		{
-			fieldValue = @"CURRENT_TIMESTAMP";
-			fieldValueHasChanged = YES;
-
 		// Use NULL when the user has entered the nullValue string defined in the preferences,
 		// or when a numeric field is empty.
-		} else if ([rowObject isNSNull]
-					|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"])
-						&& [[rowObject description] isEqualToString:@""]))
+		if ([rowObject isNSNull]
+			|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"])
+				&& [[rowObject description] isEqualToString:@""]))
 		{
 			fieldValue = @"NULL";
 
@@ -2453,9 +2447,6 @@
 				}
 			}
 		}
-
-		// If the field value hasn't changed (only occurs while editing!), continue without saving
-		if (!fieldValueHasChanged) continue;
 
 		// Store the key and value in the ordered arrays for saving.
 		[rowFieldsToSave addObject:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]];
