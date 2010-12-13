@@ -30,6 +30,7 @@
 @synthesize docTitle;
 @synthesize initHTMLSourceString;
 @synthesize windowUUID;
+@synthesize docUUID;
 
 /**
  * Initialisation
@@ -63,7 +64,6 @@
 {
 
 	[[self window] orderFront:nil];
-
 	[self setInitHTMLSourceString:content];
 	[[webView mainFrame] loadHTMLString:content baseURL:nil];
 
@@ -208,6 +208,7 @@
 	[webView close];
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
+	docUUID = @"";
 	[self release];
 }
 
@@ -330,6 +331,7 @@
 
 - (void)webView:(WebView *)sender windowScriptObjectAvailable: (WebScriptObject *)windowScriptObject
 {
+
 	[windowScriptObject setValue:self forKey:@"system"];
 }
 
@@ -380,7 +382,7 @@
  */
 - (NSString *)getShellEnvironmentForName:(NSString*)keyName
 {
-	return [[[NSApp delegate] shellEnvironment] objectForKey:keyName];
+	return [[[NSApp delegate] shellEnvironmentForDocument:nil] objectForKey:keyName];
 }
 
 /**
@@ -402,6 +404,9 @@
 	NSError *err = nil;
 	NSString *command = nil;
 	NSString *uuid = nil;
+
+	if([self docUUID] && [[self docUUID] length])
+		uuid = [self docUUID];
 
 	if([call isKindOfClass:[NSString class]])
 		command = [NSString stringWithString:call];
@@ -426,8 +431,15 @@
 	NSString *output = nil;
 	if(uuid == nil)
 		output = [command runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
-	else
-		output = [command runBashCommandWithEnvironment:nil 
+	else {
+		NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
+		[theEnv addEntriesFromDictionary:[[NSApp delegate] shellEnvironmentForDocument:nil]];
+		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
+		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
+		output = [command runBashCommandWithEnvironment:theEnv 
 								atCurrentDirectoryPath:nil 
 								callerInstance:[NSApp delegate] 
 								contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -436,7 +448,7 @@
 										uuid, SPBundleFileInternalexecutionUUID,
 										nil]
 								error:&err];
-
+	}
 
 	if(err != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while executing JavaScript BASH command", @"error while executing javascript bash command")

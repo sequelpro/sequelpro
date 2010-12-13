@@ -32,6 +32,7 @@
 	NSString       *docTitle;
 	NSString       *initHTMLSourceString;
 	NSString       *windowUUID;
+	NSString       *docUUID;
 	WebPreferences *webPreferences;
 
 }
@@ -39,6 +40,7 @@
 @property(readwrite,retain) NSString *docTitle;
 @property(readwrite,retain) NSString *initHTMLSourceString;
 @property(readwrite,retain) NSString *windowUUID;
+@property(readwrite,retain) NSString *docUUID;
 
 - (IBAction)printDocument:(id)sender;
 

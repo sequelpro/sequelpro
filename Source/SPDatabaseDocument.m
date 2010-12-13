@@ -4816,6 +4816,9 @@
 
 - (NSDictionary*)shellVariables
 {
+
+	if(!_isConnected) return [NSDictionary dictionary];
+
 	NSMutableDictionary *env = [NSMutableDictionary dictionary];
 
 	if (tablesListInstance) {

@@ -663,10 +663,10 @@
 
 	while(1) {
 		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                   untilDate:[NSDate distantPast]
-                                      inMode:NSDefaultRunLoopMode
-                                     dequeue:YES];
-
+	                                   untilDate:[NSDate distantPast]
+	                                      inMode:NSDefaultRunLoopMode
+	                                     dequeue:YES];
+	
 		if ([event type] == NSKeyDown) {
 			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
 			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
@@ -684,33 +684,50 @@
 		return;
 	}
 
-	if(processDocument && command && [command isEqualToString:@"passToDoc"]) {
-		NSMutableDictionary *cmdDict = [NSMutableDictionary dictionary];
-		[cmdDict setObject:parameter forKey:@"parameter"];
-		[cmdDict setObject:passedProcessID forKey:@"id"];
-		[processDocument handleSchemeCommand:cmdDict];
-		return;
+	if(processDocument && command) {
+		if([command isEqualToString:@"passToDoc"]) {
+			NSMutableDictionary *cmdDict = [NSMutableDictionary dictionary];
+			[cmdDict setObject:parameter forKey:@"parameter"];
+			[cmdDict setObject:passedProcessID forKey:@"id"];
+			[processDocument handleSchemeCommand:cmdDict];
+			return;
+		}
+		else {
+			SPBeginAlertSheet(NSLocalizedString(@"sequelpro URL Scheme Error", @"sequelpro url Scheme Error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+							  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [command description], NSLocalizedString(@"sequelpro URL scheme command not supported.", @"sequelpro URL scheme command not supported.")]);
+			
+			return;
+		}
 	}
 
-	if(processDocument != nil) {
+	if(passedProcessID && [passedProcessID length]) {
 		// If command failed notify the file handle hand shake mechanism
 		NSString *out = @"1";
 		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID]
 			atomically:YES
 			encoding:NSUTF8StringEncoding
 			   error:nil];
-		out = @"Scheme Error";
+		out = NSLocalizedString(@"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.", @"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.");
 		[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID]
 			atomically:YES
 			encoding:NSUTF8StringEncoding
 			   error:nil];
-	}
+		
+		SPBeginAlertSheet(NSLocalizedString(@"sequelpro URL Scheme Error", @"sequelpro url Scheme Error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+						  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [command description], NSLocalizedString(@"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.", @"An error for sequelpro URL scheme command occurred. Probably no corresponding connection window found.")]);
 
-	if(passedProcessID == nil || ![passedProcessID length]) {
+
+		usleep(5000);
+		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID] error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID] error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, passedProcessID] error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, passedProcessID] error:nil];
+
+
+
+	} else {
 		SPBeginAlertSheet(NSLocalizedString(@"sequelpro URL Scheme Error", @"sequelpro url Scheme Error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [command description], NSLocalizedString(@"An error occur while executing a scheme command. If the scheme command was invoked by a Bundle command, it could be that the command still runs. You can try to terminate it by pressing ⌘+. or via the Activities pane.", @"an error occur while executing a scheme command. if the scheme command was invoked by a bundle command, it could be that the command still runs. you can try to terminate it by pressing ⌘+. or via the activities pane.")]);
-	} else {
-		NSBeep();
 	}
 
 	if(processDocument)
@@ -720,6 +737,7 @@
 	NSLog(@"param: %@", parameter);
 	NSLog(@"command: %@", command);
 	NSLog(@"command id: %@", passedProcessID);
+
 }
 
 - (IBAction)executeBundleItemForApp:(id)sender
@@ -858,6 +876,7 @@
 							if([[win delegate] isKindOfClass:[SPBundleHTMLOutputController class]]) {
 								if([[[win delegate] windowUUID] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
 									correspondingWindowFound = YES;
+									[[win delegate] setDocUUID:uuid];
 									[[win delegate] displayHTMLContent:output withOptions:nil];
 									break;
 								}
@@ -866,6 +885,7 @@
 						if(!correspondingWindowFound) {
 							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
+							[c setDocUUID:uuid];
 							[c displayHTMLContent:output withOptions:nil];
 							[[NSApp delegate] addHTMLOutputController:c];
 						}
@@ -889,11 +909,30 @@
  * Return of certain shell variables mainly for usage in JavaScript support inside the 
  * HTML output window to allow to ask on run-time 
  */
-- (NSDictionary*)shellEnvironment
+- (NSDictionary*)shellEnvironmentForDocument:(NSString*)docUUID
 {
 	NSMutableDictionary *env = [NSMutableDictionary dictionary];
-	SPDatabaseDocument *doc = [self frontDocument];
-	if(doc) [env addEntriesFromDictionary:[doc shellVariables]];
+	SPDatabaseDocument *doc;
+	if(docUUID == nil)
+		doc = [self frontDocument];
+	else {
+		BOOL found = NO;
+		for (NSWindow *aWindow in [NSApp orderedWindows]) {
+			if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+				for(SPDatabaseDocument *d in [[aWindow windowController] documents]) {
+					if([d processID] && [[d processID] isEqualToString:docUUID]) {
+						[env addEntriesFromDictionary:[d shellVariables]];
+						found = YES;
+						break;
+					}
+				}
+			}
+			if(found) break;
+		}
+	}
+
+	// if(doc && [doc shellVariables]) [env addEntriesFromDictionary:[doc shellVariables]];
+	// if(doc) [doc release];
 	id firstResponder = [[NSApp keyWindow] firstResponder];
 	if([firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
 		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"]) ;
