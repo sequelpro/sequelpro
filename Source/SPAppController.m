@@ -544,16 +544,16 @@
 													 defaultButton:NSLocalizedString(@"Update", @"Update button") 
 												   alternateButton:NSLocalizedString(@"Cancel", @"Cancel button")
 													  otherButton:nil 
-										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A bundle ‘%@’ is already installed. Do you want to update it?", @"a bundle ‘%@’ is already installed. do you want to update it?"), [installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]]];
+										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A bundle ‘%@’ is already installed. Do you want to update it?", @"a bundle ‘%@’ is already installed. do you want to update it?"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"name"]]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					NSInteger answer = [alert runModal];
 					if(answer == NSAlertDefaultReturn) {
 						NSError *error = nil;
-						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", newPath];
+						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", infoPath];
 						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 						if(error != nil) {
-							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), newPath]
+							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
 															 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 														   alternateButton:nil 
 															  otherButton:nil 
@@ -1421,7 +1421,9 @@
 						}
 
 						if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length])
-							[installedBundleUUIDs setObject:[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
+							[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
+									infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
 
 						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
 							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];

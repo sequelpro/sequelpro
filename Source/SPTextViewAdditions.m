@@ -553,7 +553,7 @@
 			if(!currentQueryRange.length)
 				currentQueryRange = currentSelectionRange;
 
-			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
+			NSRange replaceRange = currentSelectionRange;
 			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
 				if(!currentSelectionRange.length) {
 					if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])
