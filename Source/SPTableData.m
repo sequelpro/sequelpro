@@ -944,6 +944,7 @@
 
 	// Run the status query and retrieve as a dictionary.
 	NSMutableString *escapedTableName = [NSMutableString stringWithString:[tableListInstance tableName]];
+	[escapedTableName replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:NSMakeRange(0, [escapedTableName length])];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
 
 	MCPResult *tableStatusResult = nil;
@@ -964,6 +965,7 @@
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM information_schema.VIEWS AS r WHERE r.TABLE_NAME = '%@' AND r.TABLE_SCHEMA = '%@'", escapedTableName, escapedDatabaseName]];
 	}
 	else if ([tableListInstance tableType] == SPTableTypeTable) {
+		[escapedTableName replaceOccurrencesOfRegex:@"\\\\(?=\\Z|[^\'])" withString:@"\\\\\\\\"];
 		tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE '%@'", escapedTableName ]];
 		[tableStatusResult setReturnDataAsStrings:YES];
 	}

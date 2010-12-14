@@ -544,16 +544,16 @@
 													 defaultButton:NSLocalizedString(@"Update", @"Update button") 
 												   alternateButton:NSLocalizedString(@"Cancel", @"Cancel button")
 													  otherButton:nil 
-										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A bundle ‘%@’ is already installed. Do you want to update it?", @"a bundle ‘%@’ is already installed. do you want to update it?"), [installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]]];
+										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A bundle ‘%@’ is already installed. Do you want to update it?", @"a bundle ‘%@’ is already installed. do you want to update it?"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"name"]]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					NSInteger answer = [alert runModal];
 					if(answer == NSAlertDefaultReturn) {
 						NSError *error = nil;
-						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", newPath];
+						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", infoPath];
 						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 						if(error != nil) {
-							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), newPath]
+							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
 															 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 														   alternateButton:nil 
 															  otherButton:nil 
@@ -661,28 +661,28 @@
 
 	BOOL userTerminated = NO;
 
-	while(1) {
-		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-	                                   untilDate:[NSDate distantPast]
-	                                      inMode:NSDefaultRunLoopMode
-	                                     dequeue:YES];
-	
-		if ([event type] == NSKeyDown) {
-			unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-			if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
-				userTerminated = YES;
-				break;
-			}
-		}
-		[NSApp sendEvent:event];
-		if(![processDocument isWorking]) break;
-		usleep(1000);
-	}
-
-	if(userTerminated) {
-		NSBeep();
-		return;
-	}
+	// while(1) {
+	// 	NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+	//                                    untilDate:[NSDate distantPast]
+	//                                       inMode:NSDefaultRunLoopMode
+	//                                      dequeue:YES];
+	// 
+	// 	if ([event type] == NSKeyDown) {
+	// 		unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+	// 		if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+	// 			userTerminated = YES;
+	// 			break;
+	// 		}
+	// 	}
+	// 	[NSApp sendEvent:event];
+	// 	if(![processDocument isWorking]) break;
+	// 	usleep(1000);
+	// }
+	// 
+	// if(userTerminated) {
+	// 	NSBeep();
+	// 	return;
+	// }
 
 	if(processDocument && command) {
 		if([command isEqualToString:@"passToDoc"]) {
@@ -1421,7 +1421,9 @@
 						}
 
 						if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length])
-							[installedBundleUUIDs setObject:[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
+							[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
+									infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
 
 						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
 							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];

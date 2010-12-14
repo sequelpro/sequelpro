@@ -534,7 +534,7 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"]) ;
+			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"] && [self respondsToSelector:@selector(currentQueryRange)]) ;
 
 			if([cmdData objectForKey:SPBundleFileInputSourceKey])
 				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
@@ -553,7 +553,7 @@
 			if(!currentQueryRange.length)
 				currentQueryRange = currentSelectionRange;
 
-			NSRange replaceRange = NSMakeRange(currentSelectionRange.location, 0);
+			NSRange replaceRange = currentSelectionRange;
 			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
 				if(!currentSelectionRange.length) {
 					if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])

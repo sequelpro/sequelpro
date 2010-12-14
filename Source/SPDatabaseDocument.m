@@ -55,6 +55,7 @@
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
 #import "SPServerSupport.h"
+#import "SPTooltip.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -4553,7 +4554,10 @@
 	if(!docProcessID) docProcessID = @"";
 
 	// Authenticate command
-	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) return;
+	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
+		[SPTooltip showWithObject:NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated") atLocation:[NSApp mouseLocation]];
+		return;
+	}
 
 	if([command isEqualToString:@"SelectDocumentView"]) {
 		if([params count] == 2) {
@@ -4645,7 +4649,8 @@
 	if([command isEqualToString:@"ExecuteQuery"]) {
 
 		// Bail if document is busy
-		if (_isWorkingLevel) return;
+		if (_isWorkingLevel)
+			[SPTooltip showWithObject:NSLocalizedString(@"Connection window is busy. URL scheme command bailed", @"Connection window is busy. URL scheme command bailed") atLocation:[NSApp mouseLocation]];
 
 		NSString *outputFormat = @"tab";
 		if([params count] == 2)
@@ -4660,6 +4665,7 @@
 		NSFileManager *fm = [NSFileManager defaultManager];
 		NSString *status = @"0";
 		BOOL isDir;
+		BOOL userTerminated = NO;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
 
 			NSError *inError = nil;
@@ -4717,12 +4723,21 @@
 					NSInteger i, j;
 					NSArray *theRow;
 					NSMutableString *result = [NSMutableString string];
-
 					if(writeAsCsv) {
 						for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 							[result setString:@""];
 							theRow = [theResult fetchNextRowAsArray];
 							for( j = 0 ; j < [theRow count] ; j++ ) {
+
+								NSEvent* event = [NSApp currentEvent];
+								if ([event type] == NSKeyDown) {
+									unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+									if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+										userTerminated = YES;
+										break;
+									}
+								}
+
 								if([result length]) [result appendString:@","];
 								id cell = NSArrayObjectAtIndex(theRow, j);
 								if([cell isKindOfClass:[NSNull class]])
@@ -4742,6 +4757,7 @@
 								else
 									[result appendFormat:@"\"%@\"", [[cell description] stringByReplacingOccurrencesOfString:@"\"" withString:@"\"\""]];
 							}
+							if(userTerminated) break;
 							[result appendString:@"\n"];
 							[fh writeData:[result dataUsingEncoding:NSUTF8StringEncoding]];
 						}
@@ -4751,6 +4767,16 @@
 							[result setString:@""];
 							theRow = [theResult fetchNextRowAsArray];
 							for( j = 0 ; j < [theRow count] ; j++ ) {
+
+								NSEvent* event = [NSApp currentEvent];
+								if ([event type] == NSKeyDown) {
+									unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+									if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+										userTerminated = YES;
+										break;
+									}
+								}
+
 								if([result length]) [result appendString:@"\t"];
 								id cell = NSArrayObjectAtIndex(theRow, j);
 								if([cell isKindOfClass:[NSNull class]])
@@ -4770,6 +4796,7 @@
 								else
 									[result appendString:[[[cell description] stringByReplacingOccurrencesOfString:@"\n" withString:@"↵"] stringByReplacingOccurrencesOfString:@"\t" withString:@"⇥"]];
 							}
+							if(userTerminated) break;
 							[result appendString:@"\n"];
 							[fh writeData:[result dataUsingEncoding:NSUTF8StringEncoding]];
 						}
@@ -4777,6 +4804,11 @@
 				}
 				[fh closeFile];
 			}
+		}
+
+		if(userTerminated) {
+			[SPTooltip showWithObject:NSLocalizedString(@"URL scheme command was terminated by user", @"URL scheme command was terminated by user") atLocation:[NSApp mouseLocation]];
+			status = @"1";
 		}
 
 		// write status file as notification that query was finished

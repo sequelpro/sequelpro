@@ -113,7 +113,9 @@
 		if (([self xmlFormat] == SPXMLExportMySQLFormat) && [self xmlOutputIncludeStructure]) {
 		
 			structureResult = [connection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [[self xmlTableName] backtickQuotedString]]];
-			statusResult    = [connection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE %@", [[self xmlTableName] tickQuotedString]]];
+			NSMutableString *escapedTableName = [NSMutableString stringWithString:[[self xmlTableName] tickQuotedString]];
+			[escapedTableName replaceOccurrencesOfString:@"\\" withString:@"\\\\\\\\" options:0 range:NSMakeRange(0, [escapedTableName length])];
+			statusResult    = [connection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE %@", escapedTableName]];
 			
 			if ([structureResult numOfRows] && [statusResult numOfRows]) {
 				
