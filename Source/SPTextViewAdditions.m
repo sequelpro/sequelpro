@@ -534,7 +534,7 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"]) ;
+			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"] && [self respondsToSelector:@selector(currentQueryRange)]) ;
 
 			if([cmdData objectForKey:SPBundleFileInputSourceKey])
 				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];

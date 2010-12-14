@@ -353,7 +353,7 @@
 
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect
 {
-    id			view;
+	id			view;
 	NSRect		bounds;
 
 	bounds = [self bounds];
@@ -362,87 +362,88 @@
 	{
 		[backgroundColor set];
 		NSRectFill(bounds);
-		
+
 		[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
-		[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0/5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
+		[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 	}
-	
-    view = [self clientView];
-	
-    if ([view isKindOfClass:[NSTextView class]])
-    {
-        NSLayoutManager			*layoutManager;
-        NSTextContainer			*container;
-        NSRect					visibleRect;
-        NSRange					range, glyphRange, nullRange;
-        NSString				*text, *labelText;
-        NSUInteger				rectCount, index, line, count;
-        NSRectArray				rects;
-        CGFloat					ypos, yinset;
-        NSDictionary			*textAttributes, *currentTextAttributes;
-        NSSize					stringSize;
+
+	view = [self clientView];
+
+	if ([view isKindOfClass:[NSTextView class]])
+	{
+		NSLayoutManager			*layoutManager;
+		NSTextContainer			*container;
+		NSRect					visibleRect;
+		NSRange					range, glyphRange, nullRange;
+		NSString				*text, *labelText;
+		NSUInteger				rectCount, index, line, count;
+		NSRectArray				rects;
+		CGFloat					ypos, yinset;
+		NSDictionary			*textAttributes;
+		NSSize					stringSize;
 		NSMutableArray			*lines;
 
-        layoutManager = [view layoutManager];
-        container = [view textContainer];
-        text = [view string];
-        nullRange = NSMakeRange(NSNotFound, 0);
-		
-		yinset = [view textContainerInset].height;        
-        visibleRect = [[[self scrollView] contentView] bounds];
+		layoutManager = [view layoutManager];
+		container = [view textContainer];
+		text = [view string];
+		nullRange = NSMakeRange(NSNotFound, 0);
 
-        textAttributes = [self textAttributes];
-		
+		yinset = [view textContainerInset].height;        
+		visibleRect = [[[self scrollView] contentView] bounds];
+
+		textAttributes = [self textAttributes];
+
 		lines = [self lineIndices];
 
-        // Find the characters that are currently visible
-        glyphRange = [layoutManager glyphRangeForBoundingRect:visibleRect inTextContainer:container];
-        range = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:NULL];
-        
-        // Fudge the range a tad in case there is an extra new line at end.
-        // It doesn't show up in the glyphs so would not be accounted for.
-        range.length++;
-        
-        count = [lines count];
-        
-        for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
-        {
-            index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
-            
-            if (NSLocationInRange(index, range))
-            {
-                rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
-                                     withinSelectedCharacterRange:nullRange
-                                                  inTextContainer:container
-                                                        rectCount:&rectCount];
-				
-                if (rectCount > 0)
-                {
-                    // Note that the ruler view is only as tall as the visible
-                    // portion. Need to compensate for the clipview's coordinates.
-                    ypos = yinset + NSMinY(rects[0]) - NSMinY(visibleRect);
+		// Find the characters that are currently visible
+		glyphRange = [layoutManager glyphRangeForBoundingRect:visibleRect inTextContainer:container];
+		range = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:NULL];
 
-                    // Line numbers are internally stored starting at 0
-                    labelText = [NSString stringWithFormat:@"%lu", (unsigned long)(line + 1)];
-                    
-                    stringSize = [labelText sizeWithAttributes:textAttributes];
+		// Fudge the range a tad in case there is an extra new line at end.
+		// It doesn't show up in the glyphs so would not be accounted for.
+		range.length++;
 
-					currentTextAttributes = textAttributes;
-					
-                    // Draw string flush right, centered vertically within the line
-                    [labelText drawInRect:
-                       NSMakeRect(NSWidth(bounds) - stringSize.width - RULER_MARGIN,
-                                  ypos + (NSHeight(rects[0]) - stringSize.height) / 2.0,
-                                  NSWidth(bounds) - RULER_MARGIN * 2.0, NSHeight(rects[0]))
-                           withAttributes:currentTextAttributes];
-                }
-            }
+		count = [lines count];
+ 
+		CGFloat boundsRULERMargin2 = NSWidth(bounds) - RULER_MARGIN * 2.0;
+		CGFloat boundsWidthRULER   = NSWidth(bounds) - RULER_MARGIN;
+		CGFloat yinsetMinY    = yinset - NSMinY(visibleRect);
+
+		for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
+		{
+			index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
+
+			if (NSLocationInRange(index, range))
+			{
+				rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
+					withinSelectedCharacterRange:nullRange
+					inTextContainer:container
+					rectCount:&rectCount];
+
+				if (rectCount > 0)
+				{
+					// Note that the ruler view is only as tall as the visible
+					// portion. Need to compensate for the clipview's coordinates.
+
+					// Line numbers are internally stored starting at 0
+					labelText = [NSString stringWithFormat:@"%lu", (NSUInteger)(line + 1)];
+
+					stringSize = [labelText sizeWithAttributes:textAttributes];
+
+					// Draw string flush right, centered vertically within the line
+					[labelText drawInRect:
+					NSMakeRect(boundsWidthRULER - stringSize.width,
+						yinsetMinY + NSMinY(rects[0]) + ((NSHeight(rects[0]) - stringSize.height) / 2.0),
+						boundsRULERMargin2, NSHeight(rects[0]))
+						withAttributes:textAttributes];
+				}
+			}
 			if (index > NSMaxRange(range))
 			{
 				break;
 			}
-        }
-    }
+		}
+	}
 }
 
 - (void)mouseDown:(NSEvent *)theEvent

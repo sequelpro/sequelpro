@@ -29,25 +29,15 @@
 
 @implementation SPBundleCommandTextView
 
-- (id)init
-{
-	if(self = [super init])
-	{
-		;
-	}
-	return self;
-}
-
 - (void)dealloc
 {
-
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[prefs release];
 	[lineNumberView release];
 }
 
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
@@ -67,6 +57,12 @@
 
 	// Re-define tab stops for a better editing
 	[self setTabStops];
+
+	// add NSViewBoundsDidChangeNotification to scrollView
+	[[commandScrollView contentView] setPostsBoundsChangedNotifications:YES];
+
+	// disabled to get the current text range in textView safer
+	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
 }
 

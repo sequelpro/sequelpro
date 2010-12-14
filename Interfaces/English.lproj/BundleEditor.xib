@@ -23,7 +23,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="683"/>
+			<integer value="686"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -383,7 +383,6 @@
 																</object>
 															</object>
 														</object>
-														<int key="NSSelectedIndex">3</int>
 														<bool key="NSPullDown">YES</bool>
 														<int key="NSPreferredEdge">1</int>
 														<bool key="NSUsesItemFromMenu">YES</bool>
@@ -875,7 +874,7 @@
 											<string key="NSFrame">{{20, 140}, {506, 189}}</string>
 											<reference key="NSSuperview" ref="338542681"/>
 											<reference key="NSNextKeyView" ref="971406968"/>
-											<int key="NSsFlags">562</int>
+											<int key="NSsFlags">530</int>
 											<reference key="NSVScroller" ref="414961522"/>
 											<reference key="NSHScroller" ref="724741922"/>
 											<reference key="NSContentView" ref="971406968"/>
