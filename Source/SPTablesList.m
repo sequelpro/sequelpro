@@ -1358,11 +1358,12 @@
 		[[control window] makeFirstResponder:control];
 		return TRUE;
 
-	} else if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
+	} else if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] ||
 		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 
 		//abort editing
 		[control abortEditing];
+		[[NSApp mainWindow] makeFirstResponder:tablesListView];
 
 		return TRUE;
 	} else{
