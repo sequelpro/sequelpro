@@ -56,6 +56,19 @@
 #import "SPDatabaseRename.h"
 #import "SPServerSupport.h"
 #import "SPTooltip.h"
+#import "SPEditorTokens.h"
+
+#pragma mark lex init
+
+/*
+* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
+*/
+extern NSUInteger yylex();
+extern NSUInteger yyuoffset, yyuleng;
+typedef struct yy_buffer_state *YY_BUFFER_STATE;
+void yy_switch_to_buffer(YY_BUFFER_STATE);
+YY_BUFFER_STATE yy_scan_string (const char *);
+
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -4543,6 +4556,83 @@
 #pragma mark -
 #pragma mark Scheme scripting methods
 
+- (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike
+{
+
+		NSMutableString *sqlHTML = [[[NSMutableString alloc] initWithCapacity:[sqlText length]] autorelease];
+
+		NSRange textRange = NSMakeRange(0, [sqlText length]);
+		NSString *tokenColor;
+		NSString *cssId;
+		size_t token;
+		NSRange tokenRange;
+
+		// initialise flex
+		yyuoffset = 0; yyuleng = 0;
+		yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
+		BOOL skipFontTag;
+
+		while (token=yylex()){
+			skipFontTag = NO;
+			switch (token) {
+				case SPT_SINGLE_QUOTED_TEXT:
+				case SPT_DOUBLE_QUOTED_TEXT:
+				    tokenColor = @"#A7221C";
+					cssId = @"sp_sql_quoted";
+				    break;
+				case SPT_BACKTICK_QUOTED_TEXT:
+				    tokenColor = @"#001892";
+					cssId = @"sp_sql_backtick";
+				    break;
+				case SPT_RESERVED_WORD:
+				    tokenColor = @"#0041F6";
+					cssId = @"sp_sql_keyword";
+				    break;
+				case SPT_NUMERIC:
+					tokenColor = @"#67350F";
+					cssId = @"sp_sql_numeric";
+					break;
+				case SPT_COMMENT:
+				    tokenColor = @"#265C10";
+					cssId = @"sp_sql_comment";
+				    break;
+				case SPT_VARIABLE:
+				    tokenColor = @"#6C6C6C";
+					cssId = @"sp_sql_variable";
+				    break;
+				case SPT_WHITESPACE:
+				    skipFontTag = YES;
+					cssId = @"";
+				    break;
+				default:
+			        skipFontTag = YES;
+					cssId = @"";
+			}
+
+			tokenRange = NSMakeRange(yyuoffset, yyuleng);
+
+			if(skipFontTag)
+				[sqlHTML appendString:[[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
+			else {
+				if(cssLike)
+					[sqlHTML appendFormat:@"<span class=\"%@\">%@</span>", cssId, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
+				else
+					[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
+			}
+
+		}
+
+		// Wrap lines, and replace tabs with spaces
+		[sqlHTML replaceOccurrencesOfString:@"\n" withString:@"<br>" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+		[sqlHTML replaceOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+
+		if(sqlHTML)
+			return sqlHTML;
+		else
+			return @"";
+
+}
+
 - (void)handleSchemeCommand:(NSDictionary*)commandDict
 {
 
@@ -4552,6 +4642,12 @@
 	NSString *command = [params objectAtIndex:0];
 	NSString *docProcessID = [self processID];
 	if(!docProcessID) docProcessID = @"";
+
+	// Bail if document is busy
+	if (_isWorkingLevel) {
+		[SPTooltip showWithObject:NSLocalizedString(@"Connection window is busy. URL scheme command bailed", @"Connection window is busy. URL scheme command bailed") atLocation:[NSApp mouseLocation]];
+		return;
+	}
 
 	// Authenticate command
 	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
@@ -4617,7 +4713,6 @@
 	}
 
 	if([command isEqualToString:@"SelectDatabase"]) {
-		if (_isWorkingLevel) return;
 		if([params count] > 1) {
 			NSString *dbName = [params objectAtIndex:1];
 			NSString *tableName = nil;
@@ -4646,11 +4741,192 @@
 		return;
 	}
 
-	if([command isEqualToString:@"ExecuteQuery"]) {
+	if([command isEqualToString:@"SyntaxHighlighting"]) {
 
-		// Bail if document is busy
-		if (_isWorkingLevel)
-			[SPTooltip showWithObject:NSLocalizedString(@"Connection window is busy. URL scheme command bailed", @"Connection window is busy. URL scheme command bailed") atLocation:[NSApp mouseLocation]];
+		NSFileManager *fm = [NSFileManager defaultManager];
+		BOOL isDir;
+
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
+		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
+
+		NSError *inError = nil;
+		NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+		NSString *result = @"";
+		NSString *status = @"0";
+
+		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
+
+			if(inError == nil && query && [query length]) {
+				if([params count] > 1) {
+					if([[params lastObject] isEqualToString:@"html"])
+						result = [NSString stringWithString:[self doSQLSyntaxHighlightForString:query cssLike:NO]];
+					else if([[params lastObject] isEqualToString:@"htmlcss"])
+						result = [NSString stringWithString:[self doSQLSyntaxHighlightForString:query cssLike:YES]];
+				}
+			}
+		}
+
+		[fm removeItemAtPath:queryFileName error:nil];
+		[fm removeItemAtPath:resultFileName error:nil];
+		[fm removeItemAtPath:metaFileName error:nil];
+		[fm removeItemAtPath:statusFileName error:nil];
+
+		if(![result writeToFile:resultFileName atomically:YES encoding:NSUTF8StringEncoding error:nil])
+			status = @"1";
+
+		// write status file as notification that query was finished
+		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
+		if(!succeed) {
+			NSBeep();
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"CreateSyntaxForTables"]) {
+
+		if([params count] > 1) {
+
+			NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+			NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
+			NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
+			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
+			NSFileManager *fm = [NSFileManager defaultManager];
+			NSString *status = @"0";
+			BOOL isDir;
+			BOOL userTerminated = NO;
+			BOOL doSyntaxHighlighting = NO;
+			BOOL doSyntaxHighlightingViaCSS = NO;
+
+			if([[params lastObject] hasPrefix:@"html"]) {
+				doSyntaxHighlighting = YES;
+				if([[params lastObject] hasSuffix:@"css"]) {
+					doSyntaxHighlightingViaCSS = YES;
+				}
+			}
+
+			if(doSyntaxHighlighting && [params count] < 3) return;
+
+			BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
+
+			NSArray *items = [params subarrayWithRange:NSMakeRange(1, [params count]-( (doSyntaxHighlighting) ? 2 : 1) )];
+			NSArray *availableItems = [tablesListInstance tables];
+			NSArray *availableItemTypes = [tablesListInstance tableTypes];
+			NSMutableString *result = [NSMutableString string];
+
+			for(NSString* item in items) {
+
+				NSEvent* event = [NSApp currentEvent];
+				if ([event type] == NSKeyDown) {
+					unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
+					if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
+						userTerminated = YES;
+						break;
+					}
+				}
+
+				NSInteger itemType = SPTableTypeNone;
+				NSString *itemTypeStr = @"TABLE";
+				NSInteger i;
+				NSInteger queryCol = 1;
+
+				// Loop through the unfiltered tables/views to find the desired item
+				for (i = 0; i < [availableItems count]; i++) {
+					itemType = [[availableItemTypes objectAtIndex:i] integerValue];
+					if (itemType == SPTableTypeNone) continue;
+					if ([[availableItems objectAtIndex:i] isEqualToString:item]) {
+						break;
+					}
+				}
+				// If no match found, continue
+				if (itemType == SPTableTypeNone) continue;
+
+				switch(itemType) {
+					case SPTableTypeTable:
+					case SPTableTypeView:
+					itemTypeStr = @"TABLE";
+					break;
+					case SPTableTypeProc:
+					itemTypeStr = @"PROCEDURE";
+					queryCol = 2;
+					break;
+					case SPTableTypeFunc:
+					itemTypeStr = @"FUNCTION";
+					queryCol = 2;
+					break;
+				}
+
+				// Ensure that queries are made in UTF8
+				if (changeEncoding) {
+					[mySQLConnection storeEncodingForRestoration];
+					[mySQLConnection setEncoding:@"utf8"];
+				}
+
+				// Get create syntax
+				MCPResult *queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
+															itemTypeStr,
+															[item backtickQuotedString]
+															]];
+				[queryResult setReturnDataAsStrings:YES];
+
+				if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
+				if ( ![queryResult numOfRows] ) {
+					//error while getting table structure
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
+
+					status = @"1";
+
+				} else {
+					NSString *syntaxString = [[queryResult fetchRowAsArray] objectAtIndex:queryCol];
+
+					// A NULL value indicates that the user does not have permission to view the syntax
+					if ([syntaxString isNSNull]) {
+						[[NSAlert alertWithMessageText:NSLocalizedString(@"Permission Denied", @"Permission Denied")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button")
+									   alternateButton:nil otherButton:nil
+							 informativeTextWithFormat:NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")]
+							  beginSheetModalForWindow:[NSApp mainWindow]
+										 modalDelegate:self didEndSelector:NULL contextInfo:NULL];
+
+						return;
+					}
+					if(doSyntaxHighlighting) {
+						[result appendFormat:@"%@<br>", [self doSQLSyntaxHighlightForString:[syntaxString createViewSyntaxPrettifier] cssLike:doSyntaxHighlightingViaCSS]];
+					} else {
+						[result appendFormat:@"%@\n", [syntaxString createViewSyntaxPrettifier]];
+					}
+				}
+			}
+			
+			[fm removeItemAtPath:queryFileName error:nil];
+			[fm removeItemAtPath:resultFileName error:nil];
+			[fm removeItemAtPath:metaFileName error:nil];
+			[fm removeItemAtPath:statusFileName error:nil];
+
+			if(userTerminated)
+				status = @"1";
+
+			if(![result writeToFile:resultFileName atomically:YES encoding:NSUTF8StringEncoding error:nil])
+				status = @"1";
+
+			// write status file as notification that query was finished
+			BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
+			if(!succeed) {
+				NSBeep();
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+								  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+			}
+			
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"ExecuteQuery"]) {
 
 		NSString *outputFormat = @"tab";
 		if([params count] == 2)
