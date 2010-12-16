@@ -267,7 +267,13 @@
 	if([[[request URL] scheme] isEqualToString:@"sequelpro"] && navigationType == WebNavigationTypeLinkClicked) {
 		[[NSApp delegate] handleEventWithURL:[request URL]];
 		[listener ignore];
-	} else {
+	}
+	// file://a_file_path opens the reveal the file in Finder
+	else if([[[request URL] scheme] isEqualToString:@"file"] && navigationType == WebNavigationTypeLinkClicked) {
+		[[NSWorkspace sharedWorkspace] selectFile:[[[request mainDocumentURL] absoluteString] substringFromIndex:6] inFileViewerRootedAtPath:nil];
+		[listener ignore];
+	}
+	else {
 
 		switch(navigationType) {
 			case WebNavigationTypeLinkClicked:

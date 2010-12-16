@@ -228,7 +228,7 @@ NSInteger kBlobAsImageFile = 4;
 					}
 				}
 				else
-					[result appendFormat:@"%@\t", [cellData description]];
+					[result appendFormat:@"%@\t", [[[cellData description] stringByReplacingOccurrencesOfString:@"\n" withString:@"↵"] stringByReplacingOccurrencesOfString:@"\t" withString:@"⇥"]];
 			} else {
 				[result appendString:@"\t"];
 			}
