@@ -28,6 +28,8 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 
+#define CELL(cell) (SPTableTextFieldCell *)cell
+
 @implementation SPConnectionController (SPConnectionControllerDelegate)
 
 #pragma mark -
@@ -159,15 +161,15 @@
 {
 	SPTreeNode *node = (SPTreeNode *)item;
 	
-	[(SPTableTextFieldCell *)cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[CELL(cell) setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	
-	[(SPTableTextFieldCell *)cell setTextColor:([favoritesOutlineView isEnabled]) ? [NSColor blackColor] : [NSColor grayColor]];
+	[CELL(cell) setTextColor:([favoritesOutlineView isEnabled]) ? [NSColor blackColor] : [NSColor grayColor]];
 	
 	if (![[node parentNode] parentNode]) {
-		[(SPTableTextFieldCell *)cell setImage:nil];
+		[CELL(cell) setImage:nil];
 	}
 	else {
-		[(SPTableTextFieldCell *)cell setImage:(![node isGroup]) ? [NSImage imageNamed:@"database-small"] : folderImage];
+		[CELL(cell) setImage:(![node isGroup]) ? [NSImage imageNamed:@"database-small"] : folderImage];
 	}	
 }
 

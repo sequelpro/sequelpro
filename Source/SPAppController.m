@@ -659,36 +659,16 @@
 		}
 	}
 
-	BOOL userTerminated = NO;
-
-	// while(1) {
-	// 	NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
-	//                                    untilDate:[NSDate distantPast]
-	//                                       inMode:NSDefaultRunLoopMode
-	//                                      dequeue:YES];
-	// 
-	// 	if ([event type] == NSKeyDown) {
-	// 		unichar key = [[event characters] length] == 1 ? [[event characters] characterAtIndex:0] : 0;
-	// 		if (([event modifierFlags] & NSCommandKeyMask) && key == '.') {
-	// 			userTerminated = YES;
-	// 			break;
-	// 		}
-	// 	}
-	// 	[NSApp sendEvent:event];
-	// 	if(![processDocument isWorking]) break;
-	// 	usleep(1000);
-	// }
-	// 
-	// if(userTerminated) {
-	// 	NSBeep();
-	// 	return;
-	// }
+	// if no processDoc found and no passedProcessID was passed execute
+	// command at front most doc
+	if(!processDocument && !passedProcessID)
+		processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
 
 	if(processDocument && command) {
 		if([command isEqualToString:@"passToDoc"]) {
 			NSMutableDictionary *cmdDict = [NSMutableDictionary dictionary];
 			[cmdDict setObject:parameter forKey:@"parameter"];
-			[cmdDict setObject:passedProcessID forKey:@"id"];
+			[cmdDict setObject:(passedProcessID)?:@"" forKey:@"id"];
 			[processDocument handleSchemeCommand:cmdDict];
 			return;
 		}

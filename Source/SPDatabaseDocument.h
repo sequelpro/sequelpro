@@ -163,6 +163,8 @@
 	NSInteger _queryMode;
 	BOOL _isSavedInBundle;
 
+	BOOL _workingTimeout;
+
 	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
 	CGFloat taskProgressValue;
@@ -357,6 +359,7 @@
 - (NSWindow *)parentWindow;
 
 // Scripting
+- (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike;
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
 - (void)registerActivity:(NSDictionary*)commandDict;
 - (void)removeRegisteredActivity:(NSInteger)pid;

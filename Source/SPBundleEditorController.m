@@ -1257,7 +1257,7 @@
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-	if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(_cancelKey:)] ||
+	if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] ||
 		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 
 		//abort editing
