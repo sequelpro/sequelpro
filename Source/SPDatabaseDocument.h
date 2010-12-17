@@ -163,6 +163,8 @@
 	NSInteger _queryMode;
 	BOOL _isSavedInBundle;
 
+	BOOL _workingTimeout;
+
 	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
 	CGFloat taskProgressValue;

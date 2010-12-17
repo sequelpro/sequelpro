@@ -4633,6 +4633,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 }
 
+- (void)setTimeout
+{
+	_workingTimeout = YES;
+}
+
 - (void)handleSchemeCommand:(NSDictionary*)commandDict
 {
 
@@ -4643,11 +4648,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSString *docProcessID = [self processID];
 	if(!docProcessID) docProcessID = @"";
 
-	// Bail if document is busy
-	if (_isWorkingLevel) {
-		[SPTooltip showWithObject:NSLocalizedString(@"Connection window is busy. URL scheme command bailed", @"Connection window is busy. URL scheme command bailed") atLocation:[NSApp mouseLocation]];
-		NSBeep();
-		return;
+	// Wait for self
+	_workingTimeout = NO;
+	// the following while loop waits maximal 5secs
+	[self performSelector:@selector(setTimeout) withObject:nil afterDelay:5.0];
+	while (_isWorkingLevel || !_isConnected) {
+		if(_workingTimeout) break;
+		// Do not block self
+		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+	                                   untilDate:[NSDate distantPast]
+	                                      inMode:NSDefaultRunLoopMode
+	                                     dequeue:YES];
+		if(event) [NSApp sendEvent:event];
+
 	}
 
 	if([command isEqualToString:@"SelectDocumentView"]) {
