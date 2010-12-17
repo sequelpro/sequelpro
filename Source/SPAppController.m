@@ -659,6 +659,10 @@
 		}
 	}
 
+	if(!processDocument)
+		processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
+
+
 	BOOL userTerminated = NO;
 
 	// while(1) {
@@ -688,7 +692,7 @@
 		if([command isEqualToString:@"passToDoc"]) {
 			NSMutableDictionary *cmdDict = [NSMutableDictionary dictionary];
 			[cmdDict setObject:parameter forKey:@"parameter"];
-			[cmdDict setObject:passedProcessID forKey:@"id"];
+			[cmdDict setObject:(passedProcessID)?:@"" forKey:@"id"];
 			[processDocument handleSchemeCommand:cmdDict];
 			return;
 		}

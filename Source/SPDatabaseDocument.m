@@ -4646,12 +4646,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	// Bail if document is busy
 	if (_isWorkingLevel) {
 		[SPTooltip showWithObject:NSLocalizedString(@"Connection window is busy. URL scheme command bailed", @"Connection window is busy. URL scheme command bailed") atLocation:[NSApp mouseLocation]];
-		return;
-	}
-
-	// Authenticate command
-	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
-		[SPTooltip showWithObject:NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated") atLocation:[NSApp mouseLocation]];
+		NSBeep();
 		return;
 	}
 
@@ -4695,23 +4690,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		return;
 	}
 
-	if([command isEqualToString:@"SelectTableRows"]) {
-		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
-			[[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
-		}
-		return;
-	}
-
-	if([command isEqualToString:@"ReloadContentTable"]) {
-		[tableContentInstance reloadTable:self];
-		return;
-	}
-
-	if([command isEqualToString:@"ReloadTablesList"]) {
-		[tablesListInstance updateTables:self];
-		return;
-	}
-
 	if([command isEqualToString:@"SelectDatabase"]) {
 		if([params count] > 1) {
 			NSString *dbName = [params objectAtIndex:1];
@@ -4721,21 +4699,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					tableName = [params objectAtIndex:2];
 				}
 				[self selectDatabase:dbName item:tableName];
-			}
-		}
-		return;
-	}
-
-	if([command isEqualToString:@"ReloadContentTableWithWHEREClause"]) {
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
-		NSFileManager *fm = [NSFileManager defaultManager];
-		BOOL isDir;
-		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
-			NSError *inError = nil;
-			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
-			[fm removeItemAtPath:queryFileName error:nil];
-			if(inError == nil && query && [query length]) {
-				[tableContentInstance filterTable:query];
 			}
 		}
 		return;
@@ -4780,11 +4743,53 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 		if(!succeed) {
 			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
 		}
 		return;
 	}
+
+	// ==== the following commands need an authentication for safety reasons
+
+	// Authenticate command
+	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
+		SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+						  NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated"));
+		return;
+	}
+
+	if([command isEqualToString:@"SelectTableRows"]) {
+		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
+			[[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"ReloadContentTable"]) {
+		[tableContentInstance reloadTable:self];
+		return;
+	}
+
+	if([command isEqualToString:@"ReloadTablesList"]) {
+		[tablesListInstance updateTables:self];
+		return;
+	}
+
+	if([command isEqualToString:@"ReloadContentTableWithWHEREClause"]) {
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSFileManager *fm = [NSFileManager defaultManager];
+		BOOL isDir;
+		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
+			NSError *inError = nil;
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+			[fm removeItemAtPath:queryFileName error:nil];
+			if(inError == nil && query && [query length]) {
+				[tableContentInstance filterTable:query];
+			}
+		}
+		return;
+	}
+
 
 	if([command isEqualToString:@"CreateSyntaxForTables"]) {
 
@@ -4918,7 +4923,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 			if(!succeed) {
 				NSBeep();
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
 								  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
 			}
 			
@@ -5091,13 +5096,16 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 		if(!succeed) {
 			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
 							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
 		}
 		return;
 	}
 
-	NSLog(@"received: %@", commandDict);
+	SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+					  [NSString stringWithFormat:NSLocalizedString(@"URL scheme command “%@” unsupported", @"URL scheme command “%@” unsupported"), command]);
+	
+
 }
 
 - (void)registerActivity:(NSDictionary*)commandDict
