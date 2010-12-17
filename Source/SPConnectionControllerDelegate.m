@@ -183,7 +183,7 @@
 	SPTreeNode *node = (SPTreeNode *)item;
 	
 	if (![node isGroup]) {
-		return [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey];
+		return [NSString stringWithFormat:@"%@ (%@)", [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey], [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteHostKey]];
 	}
 	else {
 		NSUInteger favCount = [[node childNodes] count];
