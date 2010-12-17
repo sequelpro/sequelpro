@@ -4556,6 +4556,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #pragma mark -
 #pragma mark Scheme scripting methods
 
+/** 
+ * Return an HTML formatted string representing the passed SQL string syntax highlighted
+ */
 - (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike
 {
 
@@ -4633,16 +4636,28 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 }
 
+/** 
+ * Called by handleSchemeCommand: to break a while loop
+ */
 - (void)setTimeout
 {
 	_workingTimeout = YES;
 }
 
+/** 
+ * Process passed URL scheme command and wait (timeouted) for the document if it's busy or not yet connected
+ */
 - (void)handleSchemeCommand:(NSDictionary*)commandDict
 {
 
+	if(!commandDict) return;
+
 	NSArray *params = [commandDict objectForKey:@"parameter"];
-	if(![params count]) return;
+	if(![params count]) {
+		NSLog(@"No URL scheme command passed");
+		NSBeep();
+		return;
+	}
 	
 	NSString *command = [params objectAtIndex:0];
 	NSString *docProcessID = [self processID];
