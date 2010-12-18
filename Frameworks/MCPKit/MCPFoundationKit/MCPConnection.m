@@ -2395,7 +2395,8 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 			// The cache is available. If the `mysql` or `information_schema` databases are being queried,
 			// never requery as their structure will never change.
-			if ([currentDatabase isEqualToString:@"mysql"] || [currentDatabase isEqualToString:@"information_schema"]) {
+			// 5.5.3+ also has performance_schema meta database
+			if ([currentDatabase isEqualToString:@"mysql"] || [currentDatabase isEqualToString:@"information_schema"] || [currentDatabase isEqualToString:@"performance_schema"]) {
 				shouldQueryStructure = NO;
 
 			// Otherwise, if the forceUpdate flag wasn't supplied or evaluates to false, also don't update.

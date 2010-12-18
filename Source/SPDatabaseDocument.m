@@ -493,7 +493,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
 		
 		// If the database is either information_schema or mysql then it is classed as a system table
-		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"]) {
+		// 5.5.3+ performance_schema
+		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"] || [database isEqualToString:@"performance_schema"]) {
 			[allSystemDatabases addObject:database];
 		}
 		else {

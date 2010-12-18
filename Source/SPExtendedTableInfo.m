@@ -513,23 +513,24 @@
 
 	// If we are viewing tables in the information_schema database, then disable all controls that cause table
 	// changes as these tables are not modifiable by anyone.
-	BOOL isInformationSchemaDb = [[tableDocumentInstance database] isEqualToString:@"information_schema"];
+	//also affects mysql and performance_schema
+	BOOL isSystemSchemaDb = ([[tableDocumentInstance database] isEqualToString:@"information_schema"] || [[tableDocumentInstance database] isEqualToString:@"performance_schema"] || [[tableDocumentInstance database] isEqualToString:@"mysql"]);
 
 	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"]) {
-		[tableTypePopUpButton setEnabled:(!isInformationSchemaDb)];
+		[tableTypePopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
 	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding]) {
-		[tableEncodingPopUpButton setEnabled:(!isInformationSchemaDb)];
+		[tableEncodingPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
 	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count]
 		&& [statusFields objectForKey:@"Collation"])
 	{
-		[tableCollationPopUpButton setEnabled:(!isInformationSchemaDb)];
+		[tableCollationPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
-	[tableCommentsTextView setEditable:(!isInformationSchemaDb)];
+	[tableCommentsTextView setEditable:(!isSystemSchemaDb)];
 }
 
 #pragma mark -
