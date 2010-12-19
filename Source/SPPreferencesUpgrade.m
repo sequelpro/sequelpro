@@ -26,6 +26,9 @@
 #import "SPPreferencesUpgrade.h"
 #import "SPKeychain.h"
 
+static const NSString *SPOldFavoritesKey       = @"favorites";
+static const NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
+
 @implementation SPPreferencesUpgrade
 
 /**
@@ -142,8 +145,8 @@ void SPApplyRevisionChanges(void)
 	}
 	
 	// For versions prior to r567 (0.9.5), add a timestamp-based identifier to favorites and keychain entries
-	if (recordedVersionNumber < 567 && [prefs objectForKey:SPFavorites]) {
-		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPFavorites]];
+	if (recordedVersionNumber < 567 && [prefs objectForKey:SPOldFavoritesKey]) {
+		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPOldFavoritesKey]];
 		NSMutableDictionary *favorite;
 		NSString *password, *keychainName, *keychainAccount;
 		SPKeychain *upgradeKeychain = [[SPKeychain alloc] init];
@@ -170,14 +173,14 @@ void SPApplyRevisionChanges(void)
 			[favoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithDictionary:favorite]];
 		}
 		
-		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:SPFavorites];
+		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:SPOldFavoritesKey];
 		[upgradeKeychain release];
 		password = nil;
 	}
 	
 	// For versions prior to r981 (~0.9.6), upgrade the favourites to include a connection type for each
-	if (recordedVersionNumber < 981 && [prefs objectForKey:SPFavorites]) {
-		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPFavorites]];
+	if (recordedVersionNumber < 981 && [prefs objectForKey:SPOldFavoritesKey]) {
+		NSMutableArray *favoritesArray = [NSMutableArray arrayWithArray:[prefs objectForKey:SPOldFavoritesKey]];
 		NSMutableDictionary *favorite;
 		
 		// Cycle through the favorites
@@ -210,7 +213,7 @@ void SPApplyRevisionChanges(void)
 			[favoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithDictionary:favorite]];
 		}
 		
-		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:SPFavorites];
+		[prefs setObject:[NSArray arrayWithArray:favoritesArray] forKey:SPOldFavoritesKey];
 	}
 	
 	// For versions prior to r1128 (~0.9.6), reset the main window toolbar items to add new items
@@ -263,7 +266,7 @@ void SPApplyRevisionChanges(void)
 	}
 	
 	// For versions prior to 2325 (<0.9.9), convert the old encoding pref string into the new localizable constant
-	if  (recordedVersionNumber < 2325 && [prefs objectForKey:@"DefaultEncoding"] && [[prefs objectForKey:@"DefaultEncoding"] isKindOfClass:[NSString class]]) {
+	if  (recordedVersionNumber < 2325 && [prefs objectForKey:SPOldDefaultEncodingKey] && [[prefs objectForKey:SPOldDefaultEncodingKey] isKindOfClass:[NSString class]]) {
 		NSDictionary *encodingMap = [NSDictionary dictionaryWithObjectsAndKeys:
 									 [NSNumber numberWithInt:SPEncodingAutodetect], @"Autodetect",
 									 [NSNumber numberWithInt:SPEncodingUCS2], @"UCS-2 Unicode (ucs2)",
@@ -286,7 +289,7 @@ void SPApplyRevisionChanges(void)
 									 [NSNumber numberWithInt:SPEncodingEUCKRKorean], @"EUC-KR Korean (euckr)",
 									 nil];
 		
-		NSNumber *newMappedValue = [encodingMap valueForKey:[prefs objectForKey:@"DefaultEncoding"]];
+		NSNumber *newMappedValue = [encodingMap valueForKey:[prefs objectForKey:SPOldDefaultEncodingKey]];
 		
 		if (newMappedValue == nil) newMappedValue = [NSNumber numberWithInt:0];
 		
@@ -307,7 +310,7 @@ void SPMigrateConnectionFavoritesData(void)
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	
-	NSMutableArray *favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPFavorites]];
+	NSMutableArray *favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPOldFavoritesKey]];
 	
 	// Change the last used favorite and default favorite's indexes to be ID based
 	if (![prefs objectForKey:SPLastFavoriteID]) {
@@ -355,7 +358,7 @@ void SPMigrateConnectionFavoritesData(void)
 			}
 			else {
 				// TODO: Only uncomment when migration is complete
-				//[prefs removeObjectForKey:SPFavorites];
+				//[prefs removeObjectForKey:SPOldFavoritesKey];
 			}
 		}
 		else if (errorString) {

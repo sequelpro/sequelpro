@@ -273,9 +273,6 @@ extern NSString *SPGlobalResultTableFont;
 extern NSString *SPFilterTableDefaultOperator;
 extern NSString *SPFilterTableDefaultOperatorLastItems;
 
-// Favorites Prefpane
-extern NSString *SPFavorites;
-
 // Notifications Prefpane
 extern NSString *SPGrowlEnabled;
 extern NSString *SPShowNoAffectedRowsError;

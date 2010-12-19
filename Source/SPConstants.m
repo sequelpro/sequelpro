@@ -85,9 +85,6 @@ NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
 
-// Favorites Prefpane
-NSString *SPFavorites                            = @"favorites";
-
 // Notifications Prefpane
 NSString *SPGrowlEnabled                         = @"GrowlEnabled";
 NSString *SPShowNoAffectedRowsError              = @"ShowNoAffectedRowsError";
