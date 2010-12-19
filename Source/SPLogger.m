@@ -107,7 +107,10 @@ static SPLogger *logger = nil;
 	NSString *logString = [[NSString alloc] initWithFormat:theString arguments:arguments];
 	va_end(arguments);
 
-	// Write the log line, forcing an immediate write to disk to ensure logging
+	// Write the log line, forcing an immediate write to disk to ensure logging, and
+	// synchronised to allow use across multiple executables or their frameworks.
+	[logFileHandle synchronizeFile];
+	[logFileHandle seekToEndOfFile];
 	[logFileHandle writeData:[[NSString stringWithFormat:@"%@ %@\n", [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], logString] dataUsingEncoding:NSUTF8StringEncoding]];
 	[logFileHandle synchronizeFile];
 
