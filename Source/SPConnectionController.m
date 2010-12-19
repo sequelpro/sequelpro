@@ -248,6 +248,9 @@
 	isConnecting = YES;
 	cancellingConnection = NO;
 
+	// Disable the favorites outline view to prevent further connections attempts
+	[favoritesTable setEnabled:NO];
+
 	[addToFavoritesButton setHidden:YES];
 	[addToFavoritesButton display];
 	[helpButton setHidden:YES];
@@ -387,6 +390,7 @@
 	if (newState == PROXY_STATE_IDLE) {
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
+		[self _restoreConnectionInterface];
 	} else if (newState == PROXY_STATE_CONNECTED) {
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
 		[self initiateMySQLConnection];
@@ -400,9 +404,6 @@
  */
 - (void)initiateMySQLConnection
 {
-	// Disable the favorites table view to prevent further connections attempts
-	[favoritesTable setEnabled:NO];
-
 	if (sshTunnel)
 		[progressIndicatorText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
 	else

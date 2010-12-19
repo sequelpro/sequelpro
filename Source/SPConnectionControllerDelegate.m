@@ -218,7 +218,7 @@
  */
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-	[self initiateConnection:self];
+	if (!isConnecting) [self initiateConnection:self];
 	return NO;
 }
 @end
