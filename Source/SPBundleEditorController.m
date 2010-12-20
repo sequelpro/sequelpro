@@ -871,6 +871,7 @@
 
 	NSFileManager *fm = [NSFileManager defaultManager];
 	BOOL isDir = NO;
+	BOOL isNewBundle = NO;
 
 	// If passed aPath is nil construct the path from bundle's bundleName.
 	// aPath is mainly used for dragging a bundle from table view.
@@ -888,6 +889,7 @@
 		if(![fm createDirectoryAtPath:aPath withIntermediateDirectories:YES attributes:nil error:nil])
 			return NO;
 		isDir = YES;
+		isNewBundle = YES;
 	}
 	
 	// If aPath exists but it's not a folder bail out
@@ -907,6 +909,28 @@
 	[saveDict removeObjectsForKeys:[NSArray arrayWithObjects:
 		kBundleNameKey,
 		nil]];
+
+
+	if(!isNewBundle) {
+		NSError *readError = nil;
+		NSString *convError = nil;
+		NSPropertyListFormat format;
+		NSDictionary *cmdData = nil;
+		NSData *pData = [NSData dataWithContentsOfFile:cmdFilePath options:NSUncachedRead error:&readError];
+		cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+		if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+			NSLog(@"“%@” file couldn't be read.", cmdFilePath);
+			NSBeep();
+			return NO;
+		} else {
+			// Check for changes and return if no changes are found
+			if([[saveDict description] isEqualToString:[cmdData description]])
+				return YES;
+			if([cmdData objectForKey:SPBundleFileIsDefaultBundleKey]) 
+				[saveDict setObject:[NSNumber numberWithBool:YES] forKey:SPBundleFileDefaultBundleWasModifiedKey];
+		}
+	}
 
 	// Remove a given old command.plist file
 	[fm removeItemAtPath:cmdFilePath error:nil];
@@ -959,6 +983,14 @@
 						[alert runModal];
 						deletionSuccessfully = NO;
 						break;
+					}
+					if([obj objectForKey:SPBundleFileIsDefaultBundleKey]) {
+						NSMutableArray *deletedBundles = [NSMutableArray array];
+						[deletedBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"deletedDefaultBundles"]];
+						if(![deletedBundles containsObject:[obj objectForKey:SPBundleFileUUIDKey]]) {
+							[deletedBundles addObject:[obj objectForKey:SPBundleFileUUIDKey]];
+							[[NSUserDefaults standardUserDefaults] setObject:deletedBundles forKey:@"deletedDefaultBundles"];
+						}
 					}
 					[commandsOutlineView reloadData];
 				}

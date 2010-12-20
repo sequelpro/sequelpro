@@ -482,6 +482,8 @@ extern NSString *SPBundleFileUUIDKey;
 extern NSString *SPBundleFileDescriptionKey;
 extern NSString *SPBundleFileTriggerKey;
 extern NSString *SPBundleFileWithBlobKey;
+extern NSString *SPBundleFileIsDefaultBundleKey;
+extern NSString *SPBundleFileDefaultBundleWasModifiedKey;
 extern NSString *SPBundleInternLabelKey;
 extern NSString *SPBundleInternPathToFileKey;
 extern NSString *SPBundleInternKeyEquivalentKey;
