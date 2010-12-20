@@ -110,33 +110,18 @@
 #pragma mark -
 #pragma mark SplitView delegate methods
 
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
+{
+	return [connectionSplitViewButtonBar splitView:splitView additionalEffectiveRectOfDividerAtIndex:dividerIndex];
+}
+
 /**
  * When the split view is resized, trigger a resize in the hidden table
  * width as well, to keep the connection view and connected view in synch.
- * Use this rather than splitViewDidResizeSubviews: as the latter is not
- * forwarded by the BWAnchoredButtonBar.
  */
-- (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex
+- (void)splitViewDidResizeSubviews:(NSNotification *)aNotification
 {
 	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
-	
-	return proposedPosition;
-}
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 445);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 80);
 }
 
 #pragma mark -
