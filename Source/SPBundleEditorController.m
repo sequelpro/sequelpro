@@ -922,6 +922,7 @@
 		if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 			NSLog(@"“%@” file couldn't be read.", cmdFilePath);
 			NSBeep();
+			if (cmdData) [cmdData release];
 			return NO;
 		} else {
 			// Check for changes and return if no changes are found
@@ -930,6 +931,7 @@
 			if([cmdData objectForKey:SPBundleFileIsDefaultBundleKey]) 
 				[saveDict setObject:[NSNumber numberWithBool:YES] forKey:SPBundleFileDefaultBundleWasModifiedKey];
 		}
+		if (cmdData) [cmdData release];
 	}
 
 	// Remove a given old command.plist file
