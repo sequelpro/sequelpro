@@ -615,6 +615,8 @@
 		}
 		[bundle setObject:newFileName forKey:kBundleNameKey];
 
+		[self saveBundle:bundle atPath:nil];
+
 		// Insert duplicate below selected one
 		NSUInteger *currentPath[[currentIndexPath length]];
 		[currentIndexPath getIndexes:&currentPath];
