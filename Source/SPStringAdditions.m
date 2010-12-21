@@ -526,9 +526,9 @@
 	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceContent] forKey:SPBundleShellVariableExitReplaceContent];
 	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsText] forKey:SPBundleShellVariableExitInsertAsText];
 	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionInsertAsSnippet] forKey:SPBundleShellVariableExitInsertAsSnippet];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTML] forKey:SPBundleShellVariableExitInsertAsHTML];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsTextTooltip] forKey:SPBundleShellVariableExitInsertAsTextTooltip];
-	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTMLTooltip] forKey:SPBundleShellVariableExitInsertAsHTMLTooltip];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTML] forKey:SPBundleShellVariableExitShowAsHTML];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsTextTooltip] forKey:SPBundleShellVariableExitShowAsTextTooltip];
+	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionShowAsHTMLTooltip] forKey:SPBundleShellVariableExitShowAsHTMLTooltip];
 
 	// Create and set an unique process ID for each SPDatabaseDocument which has to passed
 	// for each sequelpro:// scheme command as user to be able to identify the url scheme command.
