@@ -635,6 +635,31 @@
 	else
 		parameter = [NSArray array];
 
+
+	// Handle commands which don't need a connection window
+	if([command isEqualToString:@"chooseItemFromList"]) {
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		[[NSFileManager defaultManager] removeItemAtPath:statusFileName error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:resultFileName error:nil];
+		NSString *result = @"";
+		NSString *status = @"0";
+		if([parameter count]) {
+			NSInteger idx = [SPChooseMenuItemDialog withItems:parameter atPosition:[NSEvent mouseLocation]];
+			if(idx > -1) {
+				result = [parameter objectAtIndex:idx];
+			}
+		}
+		if(![status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
+			NSBeep();
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+		}
+		[result writeToFile:resultFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
+		return;
+	}
+
+
 	NSString *activeProcessID = [[[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
 
 	SPDatabaseDocument *processDocument = nil;
@@ -769,6 +794,8 @@
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 			[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableBundleScope];
+			[env setObject:SPURLSchemeQueryResultPathHeader forKey:SPBundleShellVariableQueryResultFile];
+			[env setObject:SPURLSchemeQueryResultStatusPathHeader forKey:SPBundleShellVariableQueryResultStatusFile];
 
 			NSString *input = @"";
 			NSError *inputFileError = nil;
