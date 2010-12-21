@@ -363,7 +363,7 @@
 												</object>
 											</object>
 										</object>
-										<string key="NSFrameSize">{202, 23}</string>
+										<string key="NSFrame">{{0, 1}, {202, 23}}</string>
 										<reference key="NSSuperview" ref="551584428"/>
 										<bool key="BWABBIsResizable">YES</bool>
 										<bool key="BWABBIsAtBottom">YES</bool>
