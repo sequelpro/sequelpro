@@ -62,6 +62,7 @@
 		draggedFilePath = nil;
 		oldBundleName = nil;
 		isTableCellEditing = NO;
+		deletedDefaultBundles = [[NSMutableArray alloc] initWithCapacity:1];
 	}
 	
 	return self;
@@ -96,6 +97,7 @@
 	[withBlobDataTableArray release];
 
 	[shellVariableSuggestions release];
+	[deletedDefaultBundles release];
 
 	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
@@ -349,6 +351,10 @@
 		SPBundleShellVariableUsedQueryForTable,
 		nil
 	] retain];
+
+	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]) {
+		[deletedDefaultBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]];
+	}
 
 	[self _initTree];
 
@@ -800,6 +806,27 @@
 	[self close];
 }
 
+- (IBAction)undeleteDefaultBundles:(id)sender
+{
+	[NSApp beginSheet:undeleteSheet
+	   modalForWindow:[self window] 
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:@"undeleteSelectedDefaultBundles"];
+}
+
+- (IBAction)closeUndeleteDefaultBundlesSheet:(id)sender
+{
+
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+
+	if ([sender respondsToSelector:@selector(orderOut:)])
+		[sender orderOut:nil];
+	else if ([sender respondsToSelector:@selector(window)])
+		[[sender window] orderOut:nil];
+
+}
+
 /**
  * Save all touched bundles to disk and close the Bundle Editor window
  */
@@ -989,12 +1016,8 @@
 						break;
 					}
 					if([obj objectForKey:SPBundleFileIsDefaultBundleKey]) {
-						NSMutableArray *deletedBundles = [NSMutableArray array];
-						[deletedBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"deletedDefaultBundles"]];
-						if(![deletedBundles containsObject:[obj objectForKey:SPBundleFileUUIDKey]]) {
-							[deletedBundles addObject:[obj objectForKey:SPBundleFileUUIDKey]];
-							[[NSUserDefaults standardUserDefaults] setObject:deletedBundles forKey:@"deletedDefaultBundles"];
-						}
+						[deletedDefaultBundles addObject:[NSArray arrayWithObjects:[obj objectForKey:SPBundleFileUUIDKey], [obj objectForKey:SPBundleFileNameKey], nil]];
+						[[NSUserDefaults standardUserDefaults] setObject:deletedDefaultBundles forKey:SPBundleDeletedDefaultBundlesKey];
 					}
 					[commandsOutlineView reloadData];
 				}
@@ -1014,7 +1037,8 @@
 			[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
 		}
-	} else if([contextInfo isEqualToString:@"saveBundle"]) {
+	}
+	else if([contextInfo isEqualToString:@"saveBundle"]) {
 		if (returnCode == NSOKButton) {
 
 			id aBundle = [self _currentSelectedObject];
@@ -1043,6 +1067,28 @@
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
 			}
+		}
+	}
+	else if([contextInfo isEqualToString:@"undeleteSelectedDefaultBundles"]) {
+		if(returnCode == 1) {
+
+			NSIndexSet *selectedRows = [undeleteTableView selectedRowIndexes];
+
+			if(![selectedRows count]) return;
+
+			NSInteger rowIndex;
+			NSMutableArray *stillUndeletedBundles = [NSMutableArray array];
+			for(rowIndex = 0; rowIndex < [deletedDefaultBundles count]; rowIndex++) {
+				if(![selectedRows containsIndex:rowIndex])
+					[stillUndeletedBundles addObject:[deletedDefaultBundles objectAtIndex:rowIndex]];
+			}
+			[deletedDefaultBundles setArray:stillUndeletedBundles];
+			[undeleteTableView reloadData];
+			[[NSUserDefaults standardUserDefaults] setObject:stillUndeletedBundles forKey:SPBundleDeletedDefaultBundlesKey];
+			[[NSUserDefaults standardUserDefaults] synchronize];
+			[[NSApp delegate] reloadBundles:nil];
+			[self reloadBundles:self];
+
 		}
 	}
 
@@ -1129,6 +1175,24 @@
 	}
 	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
+}
+
+#pragma mark -
+#pragma mark TableView delegates
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+{
+	return [deletedDefaultBundles count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	return [[deletedDefaultBundles objectAtIndex:rowIndex] objectAtIndex:1];
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	return NO;
 }
 
 #pragma mark -
@@ -1286,7 +1350,7 @@
 }
 
 #pragma mark -
-#pragma mark TableView delegate
+#pragma mark TableView (outline) delegate
 
 /**
  * Traps enter and esc and edit/cancel without entering next row
@@ -1420,6 +1484,10 @@
 		// Allow to record short-cuts used by the Bundle Editor
 		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
 		return ([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey]);
+	}
+
+	if ( action == @selector(undeleteDefaultBundles:) ) {
+		return ([deletedDefaultBundles count]) ? YES : NO;
 	}
 
 	return YES;
