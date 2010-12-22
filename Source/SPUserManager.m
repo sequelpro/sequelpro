@@ -39,6 +39,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (void)_selectParentFromSelection;
 - (NSArray *)_fetchUserWithUserName:(NSString *)username;
 - (NSManagedObject *)_createNewSPUser;
+- (void)_grantPrivileges:(NSArray *)thePrivileges onDatabase:(NSString *)aDatabase forUser:(NSString *)aUser host:(NSString *)aHost;
+- (void)_revokePrivileges:(NSArray *)thePrivileges onDatabase:(NSString *)aDatabase forUser:(NSString *)aUser host:(NSString *)aHost;
 - (BOOL)_checkAndDisplayMySqlError;
 - (void)_clearData;
 - (void)_initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
@@ -169,6 +171,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		while (privRow = [result fetchRowAsArray]) 
 		{
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
+
+			// Skip the special "Usage" key
+			if ([privKey isEqualToString:@"usage"]) continue;
 			
 			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
 			[privKey appendString:@"_priv"];
@@ -1167,30 +1172,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	}
 	
 	// Grant privileges
-	if ([grantPrivileges count] > 0)
-	{
-		NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
-									[[grantPrivileges componentsJoinedByCommas] uppercaseString],
-									[dbName backtickQuotedString],
-									[[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
-									[[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
-
-		[self.mySqlConnection queryString:grantStatement];
-		[self _checkAndDisplayMySqlError];
-	}
+	[self _grantPrivileges:grantPrivileges onDatabase:dbName forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] host:[schemaPriv valueForKeyPath:@"user.host"]];
 	
 	// Revoke privileges
-	if ([revokePrivileges count] > 0)
-	{
-		NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
-									 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
-									 [dbName backtickQuotedString],
-									 [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
-									 [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString]];
-
-		[self.mySqlConnection queryString:revokeStatement];
-		[self _checkAndDisplayMySqlError];
-	}
+	[self _revokePrivileges:revokePrivileges onDatabase:dbName forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] host:[schemaPriv valueForKeyPath:@"user.host"]];
 	
 	return YES;
 }
@@ -1245,28 +1230,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		}
 		
 		// Grant privileges
-		if ([grantPrivileges count] > 0) {
-			
-			NSString *grantStatement = [NSString stringWithFormat:@"GRANT %@ ON *.* TO %@@%@",
-										[[grantPrivileges componentsJoinedByCommas] uppercaseString],
-										[[[user parent] valueForKey:@"user"] tickQuotedString],
-										[[user valueForKey:@"host"] tickQuotedString]];
+		[self _grantPrivileges:grantPrivileges onDatabase:nil forUser:[[user parent] valueForKey:@"user"] host:[user valueForKey:@"host"]];
 
-			[self.mySqlConnection queryString:grantStatement];
-			[self _checkAndDisplayMySqlError];
-		}
-		
 		// Revoke privileges
-		if ([revokePrivileges count] > 0)
-		{
-			NSString *revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON *.* FROM %@@%@",
-										 [[revokePrivileges componentsJoinedByCommas] uppercaseString],
-										 [[[user parent] valueForKey:@"user"] tickQuotedString],
-										 [[user valueForKey:@"host"] tickQuotedString]];
-
-			[self.mySqlConnection queryString:revokeStatement];
-			[self _checkAndDisplayMySqlError];
-		}		
+		[self _revokePrivileges:revokePrivileges onDatabase:nil forUser:[[user parent] valueForKey:@"user"] host:[user valueForKey:@"host"]];
 	}
 	
 	for (NSManagedObject *priv in [user valueForKey:@"schema_privileges"]) {
@@ -1328,6 +1295,69 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (NSManagedObject *)_createNewSPUser
 {
 	return [NSEntityDescription insertNewObjectForEntityForName:@"SPUser" inManagedObjectContext:[self managedObjectContext]];	
+}
+
+/**
+ * Grant the supplied privileges to the specified user and host
+ */
+- (void)_grantPrivileges:(NSArray *)thePrivileges onDatabase:(NSString *)aDatabase forUser:(NSString *)aUser host:(NSString *)aHost
+{
+	if (![thePrivileges count]) return;
+
+	NSString *grantStatement;
+
+	// Special case when all items are checked, to allow GRANT OPTION to work
+	if ([self.privsSupportedByServer count] == [thePrivileges count]) {
+		grantStatement = [NSString stringWithFormat:@"GRANT ALL ON %@.* TO %@@%@ WITH GRANT OPTION",
+							aDatabase?[aDatabase backtickQuotedString]:@"*",
+							[aUser tickQuotedString],
+							[aHost tickQuotedString]];
+	} else {
+		grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
+							[[thePrivileges componentsJoinedByCommas] uppercaseString],
+							aDatabase?[aDatabase backtickQuotedString]:@"*",
+							[aUser tickQuotedString],
+							[aHost tickQuotedString]];
+	}
+
+	[self.mySqlConnection queryString:grantStatement];
+	[self _checkAndDisplayMySqlError];
+}
+
+
+/**
+ * Revoke the supplied privileges from the specified user and host
+ */
+- (void)_revokePrivileges:(NSArray *)thePrivileges onDatabase:(NSString *)aDatabase forUser:(NSString *)aUser host:(NSString *)aHost
+{
+	if (![thePrivileges count]) return;
+
+	NSString *revokeStatement;
+
+	// Special case when all items are checked, to allow GRANT OPTION to work
+	if ([self.privsSupportedByServer count] == [thePrivileges count]) {
+		revokeStatement = [NSString stringWithFormat:@"REVOKE ALL PRIVILEGES ON %@.* FROM %@@%@",
+							aDatabase?[aDatabase backtickQuotedString]:@"*",
+							[aUser tickQuotedString],
+							[aHost tickQuotedString]];
+
+		[self.mySqlConnection queryString:revokeStatement];
+		[self _checkAndDisplayMySqlError];
+
+		revokeStatement = [NSString stringWithFormat:@"REVOKE GRANT OPTION ON %@.* FROM %@@%@",
+							aDatabase?[aDatabase backtickQuotedString]:@"*",
+							[aUser tickQuotedString],
+							[aHost tickQuotedString]];
+	} else {
+		revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
+							[[thePrivileges componentsJoinedByCommas] uppercaseString],
+							aDatabase?[aDatabase backtickQuotedString]:@"*",
+							[aUser tickQuotedString],
+							[aHost tickQuotedString]];
+	}
+
+	[self.mySqlConnection queryString:revokeStatement];
+	[self _checkAndDisplayMySqlError];
 }
 
 /**
