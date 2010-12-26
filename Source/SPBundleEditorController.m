@@ -33,6 +33,11 @@
 #define kGeneralScopeArrayIndex 2
 #define kDisabledScopeTag 10
 
+#define SP_BUNDLEEDITOR_SCOPE_INPUTFIELD_STRING       NSLocalizedString(@"Input Field", @"Bundle Editor : Scope dropdown : 'input field' item")
+#define SP_BUNDLEEDITOR_SCOPE_DATATABLE_STRING        NSLocalizedString(@"Data Table", @"Bundle Editor : Scope dropdown : 'data table' item")
+#define SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING          NSLocalizedString(@"General", @"Bundle Editor : Scope dropdown : 'general' item")
+#define SP_BUNDLEEDITOR_OUTLINE_BUNDLE_TOOLTIP_STRING NSLocalizedString(@"“%@” Bundle",@"Bundle Editor : Outline View : Bundle item : tooltip")
+
 @interface SPBundleEditorController (PrivateAPI)
 
 - (void)_updateBundleDataView;
@@ -122,10 +127,10 @@
 	sortDescriptor = [[NSSortDescriptor alloc] initWithKey:kBundleNameKey ascending:YES selector:@selector(localizedCompare:)];
 
 	[commandBundleTree setObject:[NSMutableArray array] forKey:kChildrenKey];
-	[commandBundleTree setObject:@"BUNDLES" forKey:kBundleNameKey];
-	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, NSLocalizedString(@"Input Field", @"input field scope menu label"), kBundleNameKey, nil]];
-	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, NSLocalizedString(@"Data Table", @"data table scope menu label"), kBundleNameKey, nil]];
-	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, NSLocalizedString(@"General", @"general scope menu label"), kBundleNameKey, nil]];
+	[commandBundleTree setObject:NSLocalizedString(@"BUNDLES",@"Bundle Editor : Outline View : 'BUNDLES' item") forKey:kBundleNameKey];
+	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_INPUTFIELD_STRING, kBundleNameKey, nil]];
+	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_DATATABLE_STRING, kBundleNameKey, nil]];
+	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING, kBundleNameKey, nil]];
 
 	// Init all needed menus
 	inputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -168,60 +173,60 @@
 
 	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:
 						[NSArray arrayWithObjects:
-							NSLocalizedString(@"None", @"none menu item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Selected Text", @"selected text menu item label"),
-							NSLocalizedString(@"Entire Content", @"entire content menu item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Selected Rows (TSV)", @"selected rows (TSV) menu item label"),
-							NSLocalizedString(@"Selected Rows (CSV)", @"selected rows (CSV) menu item label"),
-							NSLocalizedString(@"Selected Rows (SQL)", @"selected rows (SQL) menu item label"),
-							NSLocalizedString(@"Table Content (TSV)", @"table content (TSV) menu item label"),
-							NSLocalizedString(@"Table Content (CSV)", @"table content (CSV) menu item label"),
-							NSLocalizedString(@"Table Content (SQL)", @"table content (SQL) menu item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Insert as Text", @"insert as text item label"),
-							NSLocalizedString(@"Insert as Snippet", @"insert as snippet item label"),
-							NSLocalizedString(@"Replace Selection", @"replace selection item label"),
-							NSLocalizedString(@"Replace Entire Content", @"replace entire content item label"),
-							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
-							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
-							NSLocalizedString(@"Show as HTML", @"show as html item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
-							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
-							NSLocalizedString(@"Show as HTML", @"show as html item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Show as Text Tooltip", @"show as text tooltip item label"),
-							NSLocalizedString(@"Show as HTML Tooltip", @"show as html tooltip item label"),
-							NSLocalizedString(@"Show as HTML", @"show as html item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Current Word", @"current word item label"),
-							NSLocalizedString(@"Current Line", @"current line item label"),
-							NSLocalizedString(@"Current Query", @"current query item label"),
-							NSLocalizedString(@"Entire Content", @"entire content item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Database changed", @"database changed item label"),
-							NSLocalizedString(@"Table changed", @"table changed item label"),
-							NSLocalizedString(@"Table Row changed", @"table row changed item label"),
-
-							NSLocalizedString(@"None", @"none menu item label"),
-							NSLocalizedString(@"Database changed", @"database changed item label"),
-							NSLocalizedString(@"Table changed", @"table changed item label"),
-
-							NSLocalizedString(@"exclude BLOB", @"exclude BLOB item label"),
-							NSLocalizedString(@"include BLOB", @"include BLOB item label"),
-							NSLocalizedString(@"save BLOB as image file", @"save BLOB as image file item label"),
-							NSLocalizedString(@"save BLOB as dat file", @"save BLOB as dat file item label"),
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Input source dropdown: 'None' item"),
+						 NSLocalizedString(@"Selected Text",           @"Bundle Editor : Scope=Field : Input source dropdown: 'selected text' item"),
+						 NSLocalizedString(@"Entire Content",          @"Bundle Editor : Scope=Field : Input source dropdown: 'entire content' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'none' item"),
+						 NSLocalizedString(@"Selected Rows (TSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as tab-separated' item"),
+						 NSLocalizedString(@"Selected Rows (CSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as comma-separated' item"),
+						 NSLocalizedString(@"Selected Rows (SQL)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as SQL' item"),
+						 NSLocalizedString(@"Table Content (TSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as tab-separated' item"),
+						 NSLocalizedString(@"Table Content (CSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as comma-separated' item"),
+						 NSLocalizedString(@"Table Content (SQL)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as SQL' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Output dropdown : 'none' item"),
+						 NSLocalizedString(@"Insert as Text",          @"Bundle Editor : Scope=Field : Output dropdown : 'insert as text' item"),
+						 NSLocalizedString(@"Insert as Snippet",       @"Bundle Editor : Scope=Field : Output dropdown : 'insert as snippet' item"),
+						 NSLocalizedString(@"Replace Selection",       @"Bundle Editor : Scope=Field : Output dropdown : 'replace selection' item"),
+						 NSLocalizedString(@"Replace Entire Content",  @"Bundle Editor : Scope=Field : Output dropdown : 'replace entire content' item"),
+						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=Field : Output dropdown : 'show as text tooltip' item"),
+						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=Field : Output dropdown : 'show as html tooltip' item"),
+						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=Field : Output dropdown : 'show as html' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Output dropdown : 'none' item"),
+						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=General : Output dropdown : 'show as text tooltip' item"),
+						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=General : Output dropdown : 'show as html tooltip' item"),
+						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=General : Output dropdown : 'show as html' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'none' item"),
+						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as text tooltip' item"),
+						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html tooltip' item"),
+						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Fallback Input source dropdown : 'none' item"),
+						 NSLocalizedString(@"Current Word",            @"Bundle Editor : Fallback Input source dropdown : 'current word' item"),
+						 NSLocalizedString(@"Current Line",            @"Bundle Editor : Fallback Input source dropdown : 'current line' item"),
+						 NSLocalizedString(@"Current Query",           @"Bundle Editor : Fallback Input source dropdown : 'current query' item"),
+						 NSLocalizedString(@"Entire Content",          @"Bundle Editor : Fallback Input source dropdown : 'entire content' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Trigger dropdown : 'none' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'none' item"),
+						 NSLocalizedString(@"Database changed",        @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'database changed' item"),
+						 NSLocalizedString(@"Table changed",           @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table changed' item"),
+						 NSLocalizedString(@"Table Row changed",       @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table row changed' item"),
+						 
+						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Trigger dropdown : 'none' item"),
+						 NSLocalizedString(@"Database changed",        @"Bundle Editor : Scope=General : Trigger dropdown : 'database changed' item"),
+						 NSLocalizedString(@"Table changed",           @"Bundle Editor : Scope=General : Trigger dropdown : 'table changed' item"),
+						 
+						 NSLocalizedString(@"exclude BLOB",            @"Bundle Editor : BLOB dropdown : 'exclude BLOB' item"),
+						 NSLocalizedString(@"include BLOB",            @"Bundle Editor : BLOB dropdown : 'include BLOB' item"),
+						 NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
+						 NSLocalizedString(@"save BLOB as dat file",   @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
 
 						nil]
 					forKeys:allPopupScopeItems];
@@ -287,15 +292,15 @@
 	[anItem release];
 
 	[inputGeneralScopePopUpMenu compatibleRemoveAllItems];
-	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"General", @"general scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
+	anItem = [[NSMenuItem alloc] initWithTitle:SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kGeneralScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
-	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Input Field", @"input field scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
+	anItem = [[NSMenuItem alloc] initWithTitle:SP_BUNDLEEDITOR_SCOPE_INPUTFIELD_STRING action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kInputFieldScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
-	anItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Data Table", @"data table scope menu label") action:@selector(scopeButtonChanged:) keyEquivalent:@""];
+	anItem = [[NSMenuItem alloc] initWithTitle:SP_BUNDLEEDITOR_SCOPE_DATATABLE_STRING action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kDataTableScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];
 	[anItem release];
@@ -607,11 +612,11 @@
 
 			[commandsOutlineView reloadData];
 
-			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error", @"error")
-											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error", @"Bundle Editor : Copy-Command-Error : error dialog title")
+											 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Copy-Command-Error : OK button") 
 										   alternateButton:nil 
 											  otherButton:nil 
-								informativeTextWithFormat:NSLocalizedString(@"Error while duplicating Bundle content.", @"error while duplicating Bundle content")];
+								informativeTextWithFormat:NSLocalizedString(@"Error while duplicating Bundle content.", @"Bundle Editor : Copy-Command-Error : Copying failed error message")];
 		
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
@@ -717,11 +722,11 @@
 
 	[commandsOutlineView abortEditing];
 
-	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected Bundle?", @"remove selected bundle message") 
-									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
-								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected Bundle?", @"Bundle Editor : Remove-Bundle: remove dialog title") 
+									 defaultButton:NSLocalizedString(@"Remove", @"Bundle Editor : Remove-Bundle: remove button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"Bundle Editor : Remove-Bundle: cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to move the selected Bundle to the Trash and remove them respectively?", @"move to trash and remove resp the selected bundle informative message")];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to move the selected Bundle to the Trash and remove them respectively?", @"Bundle Editor : Remove-Bundle: remove dialog message")];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -771,7 +776,7 @@
  */
 - (IBAction)showHelp:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_BUNDLEEDITORHELP]];
 }
 
 /**
@@ -872,8 +877,8 @@
 		for(id item in allBundles) {
 			if(![self saveBundle:item atPath:nil]) {
 				closeMe = NO;
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while saving “%@”.", @"error while saving “%@”"), [item objectForKey:kBundleNameKey]]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while saving “%@”.", @"Bundle Editor : Save-and-Close-Error : error dialog title"), [item objectForKey:kBundleNameKey]]
+												 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Save-and-Close-Error : OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
 									informativeTextWithFormat:@""];
@@ -1004,8 +1009,8 @@
 					NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", thePath];
 					[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 					if(error != nil) {
-						NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), thePath]
-														 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+						NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Bundle Editor : Trash-Bundle(s)-Error : error dialog title"), thePath]
+														 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Trash-Bundle(s)-Error : OK button") 
 													   alternateButton:nil 
 														  otherButton:nil 
 											informativeTextWithFormat:[error localizedDescription]];
@@ -1058,8 +1063,8 @@
 			}
 
 			if(!copyingWasSuccessful || ![self saveBundle:aBundle atPath:savePath]) {
-				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"error while saving a Bundle")
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"Bundle Editor : Save-Bundle-Error : error dialog title")
+												 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Save-Bundle-Error : OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
 									informativeTextWithFormat:@""];
@@ -1301,7 +1306,7 @@
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tc item:(id)item mouseLocation:(NSPoint)mouseLocation{
-	if([outlineView levelForItem:item] == 0) return NSLocalizedString(@"Installed Bundles", @"Installed Bundles");
+	if([outlineView levelForItem:item] == 0) return NSLocalizedString(@"Installed Bundles", @"Bundle Editor : Outline View : 'BUNDLES' item : tooltip");
 	if([outlineView levelForItem:item] == 1) {
 		NSString *bName = [[item representedObject] objectForKey:kBundleNameKey];
 		NSUInteger k = 0;
@@ -1318,13 +1323,13 @@
 		}
 		switch([self _scopeIndexForArrangedScopeIndex:k]) {
 			case kInputFieldScopeArrayIndex:
-			return NSLocalizedString(@"Input Field Scope\ncommands will run on each text input field", @"Input Field Scope\ncommands will run on each text input field tooltip");
+			return NSLocalizedString(@"Input Field Scope\ncommands will run on each text input field", @"Bundle Editor : Outline View : 'Input Field' item : tooltip");
 			break;
 			case kDataTableScopeArrayIndex:
-			return NSLocalizedString(@"Data Table Scope\ncommands will run on the Content and Query data tables", @"Data Table Scope\ncommands will run on the Content and Query data tables tooltip");
+			return NSLocalizedString(@"Data Table Scope\ncommands will run on the Content and Query data tables", @"Bundle Editor : Outline View : 'Data Table' item : tooltip");
 			break;
 			case kGeneralScopeArrayIndex:
-			return NSLocalizedString(@"General Scope\ncommands will run application-wide", @"General Scope\ncommands will run application-wide tooltip");
+			return NSLocalizedString(@"General Scope\ncommands will run application-wide", @"Bundle Editor : Outline View : 'General' item : tooltip");
 			break;
 			default:
 			return @"";
@@ -1332,19 +1337,19 @@
 	}
 	if([outlineView levelForItem:item] == 2) {
 		if([[item representedObject] objectForKey:kChildrenKey]) {
-			return [NSString stringWithFormat:@"“%@” %@", [[item representedObject] objectForKey:kBundleNameKey], NSLocalizedString(@"submenu label", @"submenu label")];
+			return [NSString stringWithFormat:NSLocalizedString(@"Bundles in category “%@”",@"Bundle Editor : Outline View : Menu Category item : tooltip"), [[item representedObject] objectForKey:kBundleNameKey]];
 		} else {
 			if([[item representedObject] objectForKey:SPBundleFileTooltipKey] && [[[item representedObject] objectForKey:SPBundleFileTooltipKey] length])
 				return [[item representedObject] objectForKey:SPBundleFileTooltipKey];
 			else
-				return [NSString stringWithFormat:@"“%@” Bundle", [[item representedObject] objectForKey:kBundleNameKey]];
+				return [NSString stringWithFormat:SP_BUNDLEEDITOR_OUTLINE_BUNDLE_TOOLTIP_STRING, [[item representedObject] objectForKey:kBundleNameKey]];
 		}
 	}
 	if([outlineView levelForItem:item] == 3) {
 		if([[item representedObject] objectForKey:SPBundleFileTooltipKey] && [[[item representedObject] objectForKey:SPBundleFileTooltipKey] length])
 			return [[item representedObject] objectForKey:SPBundleFileTooltipKey];
 		else
-			return [NSString stringWithFormat:@"“%@” Bundle", [[item representedObject] objectForKey:kBundleNameKey]];
+			return [NSString stringWithFormat:SP_BUNDLEEDITOR_OUTLINE_BUNDLE_TOOLTIP_STRING, [[item representedObject] objectForKey:kBundleNameKey]];
 	}
 	return @"";
 }
