@@ -407,7 +407,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (NSInteger)numberOfItemsInComboBoxCell:(NSComboBoxCell *)comboBoxCell
 {
-	return [fields count];
+	return ([fields count] - [indexedFields count]);
 }
 
 /**
@@ -415,7 +415,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (id)comboBoxCell:(NSComboBoxCell *)comboBoxCell objectValueForItemAtIndex:(NSInteger)index
 {	
-	return [[fields objectAtIndex:index] objectForKey:@"name"];
+	NSMutableArray *availableFields = [fields mutableCopy];
+	
+	[availableFields removeObjectsInArray:indexedFields];
+	
+	return [[availableFields objectAtIndex:index] objectForKey:@"name"];
 }
 
 #pragma mark -
