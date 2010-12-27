@@ -149,6 +149,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			{
 				if ([[index objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
 					hasCompositePrimaryKey = YES;
+					break;
 				}  
 			}
 		}
@@ -168,10 +169,31 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			break;
 		}
 	}
+	
+	NSMutableArray *indexedFieldNames = [[NSMutableArray alloc] init];
+	
+	// Build an array of all indexed column names
+	for (NSDictionary *index in indexes)
+	{
+		[indexedFieldNames addObject:[index objectForKey:@"Column_name"]];
+	}
+	
+	NSDictionary *initialField = nil;
+	
+	// Select the first column as the initial field that doesn't already have an index
+	for (NSDictionary *field in fields)
+	{
+		if (![indexedFieldNames containsObject:[field objectForKey:@"name"]]) {
+			initialField = [[field mutableCopy] autorelease];
+			break;
+		}
+	}
+	
+	[indexedFieldNames release];
 
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
-	[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
+	[indexedFields addObject:initialField];
 
 	[indexedColumnsTableView reloadData];
 
