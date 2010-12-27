@@ -42,6 +42,12 @@ then
 	"${SRCROOT}/Scripts/trim-application.sh" -p "$BUILD_PRODUCT" -a
 fi
 
+# Copy all Default Bundles to build product
+rm -rf "${BUILD_PRODUCT}/Contents/SharedSupport/Default Bundles"
+mkdir "${BUILD_PRODUCT}/Contents/SharedSupport"
+mkdir "${BUILD_PRODUCT}/Contents/SharedSupport/Default Bundles"
+cp -R "${SRCROOT}/SharedSupport/Default Bundles" "${BUILD_PRODUCT}/Contents/SharedSupport"
+
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
 then

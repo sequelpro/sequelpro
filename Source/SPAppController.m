@@ -1348,7 +1348,7 @@
 
 	NSArray *bundlePaths = [NSArray arrayWithObjects:
 		([[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil])?:@"",
-		[NSString stringWithFormat:@"%@/Contents/Resources/Default Bundles", [[NSBundle mainBundle] bundlePath]],
+		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
 		nil];
 
 	BOOL processDefaultBundles = NO;
