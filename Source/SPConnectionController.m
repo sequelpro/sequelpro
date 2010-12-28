@@ -133,8 +133,8 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 		[databaseConnectionView setHidden:YES];
 		[connectionView setFrame:[databaseConnectionView frame]];
 		[databaseConnectionSuperview addSubview:connectionView];		
-		[connectionSplitView setPosition:[[dbDocument valueForKey:@"dbTablesTableView"] frame].size.width-6 ofDividerAtIndex:0];
-		[connectionSplitViewButtonBar setSplitViewDelegate:self];
+		[connectionSplitView setPosition:[[dbDocument valueForKey:@"dbTablesTableView"] frame].size.width ofDividerAtIndex:0];
+		[connectionSplitView setDelegate:self];
 		
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollViewFrameChanged:) name:NSViewFrameDidChangeNotification object:nil];
 		
@@ -277,6 +277,9 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 	// Basic details have validated - start the connection process animating
 	isConnecting = YES;
 	cancellingConnection = NO;
+	
+	// Disable the favorites outline view to prevent further connections attempts
+	[favoritesOutlineView setEnabled:NO];
 	
 	[addToFavoritesButton setHidden:YES];
 	[addToFavoritesButton display];

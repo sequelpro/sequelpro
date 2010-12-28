@@ -1276,7 +1276,9 @@ NSInteger kBlobAsImageFile = 4;
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+			NSString *action = SPBundleOutputActionNone;
+			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
 			// Redirect due exit code
 			if(err != nil) {
@@ -1315,8 +1317,7 @@ NSInteger kBlobAsImageFile = 4;
 			}
 
 			if(err == nil && output) {
-				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
-						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
+				if(![action isEqualToString:SPBundleOutputActionNone]) {
 					NSPoint pos = [NSEvent mouseLocation];
 					pos.y -= 16;
 

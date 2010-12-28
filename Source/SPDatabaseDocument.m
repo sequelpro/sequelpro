@@ -493,7 +493,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
 		
 		// If the database is either information_schema or mysql then it is classed as a system table
-		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"]) {
+		// 5.5.3+ performance_schema
+		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"] || [database isEqualToString:@"performance_schema"]) {
 			[allSystemDatabases addObject:database];
 		}
 		else {
@@ -5266,16 +5267,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #pragma mark -
 #pragma mark SplitView delegate methods
 
-- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)dividerIndex
-{
-
-	// Limit the right view of DBViewSplitter in order to avoid GUI element overlapping
-	if(splitView == contentViewSplitter) return proposedMax - 495;
-
-	return proposedMax;
-
-}
-
 /**
  * tells the splitView that it can collapse views
  */
@@ -5295,9 +5286,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {
-	if (sidebarGrabber != nil) {
-		NSRect grabberBounds = [sidebarGrabber bounds];
-		return [sidebarGrabber convertRect:NSMakeRect(grabberBounds.origin.x + (grabberBounds.size.width - 16), grabberBounds.origin.y, 16, grabberBounds.size.height) toView:splitView];
+	if (splitView == contentViewSplitter && sidebarGrabber != nil) {
+		return [sidebarGrabber splitView:splitView additionalEffectiveRectOfDividerAtIndex:dividerIndex];
 	} else {
 		return NSZeroRect;
 	}

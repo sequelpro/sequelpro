@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Open</string>
+	<key>command</key>
+	<string>
+# Remove hand-shake files
+rm -f "$SP_QUERY_RESULT_FILE"
+rm -f "$SP_QUERY_FILE"
+rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+
+
+# Check if one table is selected
+if [ -z "$SP_SELECTED_TABLE" ]; then
+	echo "&lt;font color=red&gt;Please select a table.&lt;/font&gt;"
+	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
+fi
+
+
+# Ask for desired application - modify the list if needed
+open "sequelpro://$SP_PROCESS_ID@chooseItemFromList/Numbers/Microsoft Excel"
+
+# wait for Sequel Pro; status file will be written to disk if query was finished
+while [ 1 ]
+do
+	[[ -e "$SP_QUERY_RESULT_STATUS_FILE" ]] &amp;&amp; break
+	sleep 0.01
+done
+
+# Read the chosen list item
+APP=$(cat "$SP_QUERY_RESULT_FILE")
+
+# Check if user dismissed, if so bail (if $APP is empty := user pressed ESC)
+if [ -z "$APP" ]; then
+	rm -f "$SP_QUERY_RESULT_FILE"
+	rm -f "$SP_QUERY_FILE"
+	rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+	exit 0
+fi
+
+# Remove hand-shake files
+rm -f "$SP_QUERY_RESULT_FILE"
+rm -f "$SP_QUERY_FILE"
+rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+
+
+# Query for desired data
+echo "SELECT * FROM \`${SP_SELECTED_TABLE//\`/\`\`}\`" &gt; "$SP_QUERY_FILE"
+open "sequelpro://$SP_PROCESS_ID@passToDoc/ExecuteQuery/csv"
+
+# wait for Sequel Pro; status file will be written to disk if query
+# was finished
+while [ 1 ]
+do
+	[[ -e "$SP_QUERY_RESULT_STATUS_FILE" ]] &amp;&amp; break
+	sleep 0.1
+done
+
+# Check returned status 0 := no error; 1 := error
+RES=$(cat "$SP_QUERY_RESULT_STATUS_FILE")
+[[ ! -e "$SP_QUERY_RESULT_FILE" ]] &amp;&amp; RES=1
+
+
+# No sql error
+if [ "$RES" == "0" ]; then
+	DATAFILENAME=$(date "+sp_data%H%M%S.csv")
+	mv "$SP_QUERY_RESULT_FILE" ~/Desktop/$DATAFILENAME
+	open -a "$APP" ~/Desktop/$DATAFILENAME
+	echo "$APP is opening data file ~/Desktop/$DATAFILENAME."
+else
+	# if error message will be saved in result file
+	echo "&lt;font color=red&gt;"
+	cat "$SP_QUERY_RESULT_FILE"
+	echo "&lt;/font&gt;"
+	rm -f "$SP_QUERY_RESULT_FILE"
+	rm -f "$SP_QUERY_FILE"
+	rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
+fi
+
+rm -f "$SP_QUERY_RESULT_FILE"
+rm -f "$SP_QUERY_FILE"
+rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>If one table is selected in the Table List it will write the table data CSV formatted at "~/Desktop/sp_dataxxxxx.csv" to disk (xxxxx := timestamp) and asks for the application with which the data should be opened.
+
+Version 1.0</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>O</string>
+		<key>keyCode</key>
+		<integer>31</integer>
+		<key>modifierFlags</key>
+		<integer>1835008</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>^~@o</string>
+	<key>name</key>
+	<string>Open selected table with…</string>
+	<key>output</key>
+	<string>showastexttooltip</string>
+	<key>scope</key>
+	<string>general</string>
+	<key>tooltip</key>
+	<string>Open selected table </string>
+	<key>uuid</key>
+	<string>8F406B0A-23A4-4436-A348-E248A61BA59C</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

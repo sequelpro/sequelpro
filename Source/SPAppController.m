@@ -528,11 +528,11 @@
 			} else {
 				// Check for installed UUIDs
 				if(![cmdData objectForKey:SPBundleFileUUIDKey]) {
-					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing bundle file", @"error while installing bundle file")]
-													 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing Bundle", @"Open Files : Bundle : UUID : Error dialog title")]
+													 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : UUID : OK button") 
 												   alternateButton:nil 
 													  otherButton:nil 
-										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The bundle ‘%@’ has no UUID which is necessary to identify installed bundles.", @"the bundle ‘%@’ has no UUID which is necessary to identify installed bundles."), [filename lastPathComponent]]];
+										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles.", @"Open Files : Bundle: UUID : UUID-Attribute is missing in bundle's command.plist file"), [filename lastPathComponent]]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					[alert runModal];
@@ -540,21 +540,21 @@
 					return;
 				}
 				if([[installedBundleUUIDs allKeys] containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
-					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Installing bundle file", @"installing bundle file")]
-													 defaultButton:NSLocalizedString(@"Update", @"Update button") 
-												   alternateButton:NSLocalizedString(@"Cancel", @"Cancel button")
+					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Installing Bundle", @"Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog title")]
+													 defaultButton:NSLocalizedString(@"Update", @"Open Files : Bundle : Already-Installed : Update button") 
+												   alternateButton:NSLocalizedString(@"Cancel", @"Open Files : Bundle : Already-Installed : Cancel button")
 													  otherButton:nil 
-										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A bundle ‘%@’ is already installed. Do you want to update it?", @"a bundle ‘%@’ is already installed. do you want to update it?"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"name"]]];
+										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A Bundle ‘%@’ is already installed. Do you want to update it?", @"Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog message"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"name"]]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					NSInteger answer = [alert runModal];
 					if(answer == NSAlertDefaultReturn) {
 						NSError *error = nil;
-						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", infoPath];
+						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", newPath];
 						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 						if(error != nil) {
-							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
-															 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
+															 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : OK button") 
 														   alternateButton:nil 
 															  otherButton:nil 
 												informativeTextWithFormat:[error localizedDescription]];
@@ -590,11 +590,11 @@
 				[self reloadBundles:self];
 
 			} else {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing bundle file", @"error while installing bundle file")]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing Bundle", @"Open Files : Bundle : Install-Error : error dialog title")]
+												 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Install-Error : OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The bundle ‘%@’ already exists.", @"the bundle ‘%@’ already exists."), [filename lastPathComponent]]];
+									informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The Bundle ‘%@’ already exists.", @"Open Files : Bundle : Install-Error : Destination path already exists error dialog message"), [filename lastPathComponent]]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
@@ -634,6 +634,31 @@
 		parameter = [pathComponents subarrayWithRange:NSMakeRange(1,[[url pathComponents] count]-1)];
 	else
 		parameter = [NSArray array];
+
+
+	// Handle commands which don't need a connection window
+	if([command isEqualToString:@"chooseItemFromList"]) {
+		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
+		[[NSFileManager defaultManager] removeItemAtPath:statusFileName error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:resultFileName error:nil];
+		NSString *result = @"";
+		NSString *status = @"0";
+		if([parameter count]) {
+			NSInteger idx = [SPChooseMenuItemDialog withItems:parameter atPosition:[NSEvent mouseLocation]];
+			if(idx > -1) {
+				result = [parameter objectAtIndex:idx];
+			}
+		}
+		if(![status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
+			NSBeep();
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+		}
+		[result writeToFile:resultFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
+		return;
+	}
+
 
 	NSString *activeProcessID = [[[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
 
@@ -769,6 +794,8 @@
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 			[env setObject:SPBundleScopeGeneral forKey:SPBundleShellVariableBundleScope];
+			[env setObject:SPURLSchemeQueryResultPathHeader forKey:SPBundleShellVariableQueryResultFile];
+			[env setObject:SPURLSchemeQueryResultStatusPathHeader forKey:SPBundleShellVariableQueryResultStatusFile];
 
 			NSString *input = @"";
 			NSError *inputFileError = nil;
@@ -798,7 +825,9 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			NSString *action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+			NSString *action = SPBundleOutputActionNone;
+			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
 			// Redirect due exit code
 			if(err != nil) {
@@ -837,8 +866,7 @@
 			}
 
 			if(err == nil && output) {
-				if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length] 
-						&& ![[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionNone]) {
+				if(![action isEqualToString:SPBundleOutputActionNone]) {
 					NSPoint pos = [NSEvent mouseLocation];
 					pos.y -= 16;
 
@@ -1318,118 +1346,302 @@
 	// Clean menu
 	[menu compatibleRemoveAllItems];
 
-	NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
+	NSArray *bundlePaths = [NSArray arrayWithObjects:
+		([[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil])?:@"",
+		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
+		nil];
 
-	if(bundlePath) {
-		NSError *error = nil;
-		NSArray *foundBundles = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bundlePath error:&error];
-		if (foundBundles && [foundBundles count] && error == nil) {
-			for(NSString* bundle in foundBundles) {
-				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
-
-				foundInstalledBundles = YES;
-
-				NSError *readError = nil;
-				NSString *convError = nil;
-				NSPropertyListFormat format;
-				NSDictionary *cmdData = nil;
-				NSString *infoPath = [NSString stringWithFormat:@"%@/%@/%@", bundlePath, bundle, SPBundleFileName];
-				NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
-
-				cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-				if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-					NSLog(@"“%@/%@” file couldn't be read.", bundle, SPBundleFileName);
-					NSBeep();
-					if (cmdData) [cmdData release];
-				} else {
-					if((![cmdData objectForKey:SPBundleFileDisabledKey] || ![[cmdData objectForKey:SPBundleFileDisabledKey] intValue]) && [cmdData objectForKey:SPBundleFileNameKey] && [[cmdData objectForKey:SPBundleFileNameKey] length] && [cmdData objectForKey:SPBundleFileScopeKey])
-					{
-
-						NSArray *scopes = [[cmdData objectForKey:SPBundleFileScopeKey] componentsSeparatedByString:@" "];
-						for(NSString *scope in scopes) {
-							if(![bundleUsedScopes containsObject:scope]) {
-								[bundleUsedScopes addObject:scope];
-								[bundleItems setObject:[NSMutableArray array] forKey:scope];
-								[bundleCategories setObject:[NSMutableArray array] forKey:scope];
-								[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
-							}
-
-							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
-								[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
-						}
-
-						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
-						[aDict setObject:[cmdData objectForKey:SPBundleFileNameKey] forKey:SPBundleInternLabelKey];
-						[aDict setObject:infoPath forKey:SPBundleInternPathToFileKey];
-
-						// Register trigger
-						if([cmdData objectForKey:SPBundleFileTriggerKey]) {
-							if(![bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]])
-								[bundleTriggers setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileTriggerKey]];
-							[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:[NSString stringWithFormat:@"%@|%@|%@", infoPath, [cmdData objectForKey:SPBundleFileScopeKey], ([[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsHTML])?[cmdData objectForKey:SPBundleFileUUIDKey]:@""]];
-						}
-
-						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
-							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
-							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
-							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
-							NSUInteger mask = 0;
-							if([theMods rangeOfString:@"^"].length)
-								mask = mask | NSControlKeyMask;
-							if([theMods rangeOfString:@"@"].length)
-								mask = mask | NSCommandKeyMask;
-							if([theMods rangeOfString:@"~"].length)
-								mask = mask | NSAlternateKeyMask;
-							if([theMods rangeOfString:@"$"].length)
-								mask = mask | NSShiftKeyMask;
-							for(NSString* scope in scopes) {
-								if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
-									[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
-
-								[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
-												[NSDictionary dictionaryWithObjectsAndKeys:
-														infoPath, @"path",
-														[cmdData objectForKey:SPBundleFileNameKey], @"title",
-														([cmdData objectForKey:SPBundleFileTooltipKey]) ?: @"", @"tooltip",
-												nil]];
-
-							}
-
-							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
-						}
-
-						if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length])
-							[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
-									infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
-
-						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
-							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
-
-						if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length])
-							[aDict setObject:[cmdData objectForKey:SPBundleFileCategoryKey] forKey:SPBundleFileCategoryKey];
-
-						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length])
-							[aDict setObject:[cmdData objectForKey:SPBundleFileKeyEquivalentKey] forKey:@"key"];
-
-						for(NSString* scope in scopes)
-							[[bundleItems objectForKey:scope] addObject:aDict];
-					}
-					if (cmdData) [cmdData release];
-				}
-			}
-
-			NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:SPBundleInternLabelKey ascending:YES] autorelease];
-			for(NSString* scope in [bundleItems allKeys]) {
-				[[bundleItems objectForKey:scope] sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-				[[bundleCategories objectForKey:scope] sortUsingSelector:@selector(compare:)];
-			}
-		}
+	BOOL processDefaultBundles = NO;
+	NSFileManager *fm = [NSFileManager defaultManager];
+	
+	NSArray *deletedDefaultBundles;
+	NSMutableArray *updatedDefaultBundles = [NSMutableArray array];
+	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]) {
+		deletedDefaultBundles = [[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey] retain];
+	} else {
+		deletedDefaultBundles = [[NSArray array] retain];
+	}
+	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleUpdatedDefaultBundlesKey]) {
+		[updatedDefaultBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleUpdatedDefaultBundlesKey]];
 	}
 
-	// Rebuild Bundles main menu item
+	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
+
+	for(NSString* bundlePath in bundlePaths) {
+		if([bundlePath length]) {
+
+			NSError *error = nil;
+			NSArray *foundBundles = [fm contentsOfDirectoryAtPath:bundlePath error:&error];
+			if (foundBundles && [foundBundles count] && error == nil) {
+
+				for(NSString* bundle in foundBundles) {
+					if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
+
+					foundInstalledBundles = YES;
+
+					NSError *readError = nil;
+					NSString *convError = nil;
+					NSPropertyListFormat format;
+					NSDictionary *cmdData = nil;
+					NSString *infoPath = [NSString stringWithFormat:@"%@/%@/%@", bundlePath, bundle, SPBundleFileName];
+					NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+
+					cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+							mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+
+					if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+
+						NSLog(@"“%@” file couldn't be read.", infoPath);
+						NSBeep();
+
+					} else {
+						if((![cmdData objectForKey:SPBundleFileDisabledKey] || ![[cmdData objectForKey:SPBundleFileDisabledKey] intValue]) 
+							&& [cmdData objectForKey:SPBundleFileNameKey] 
+							&& [[cmdData objectForKey:SPBundleFileNameKey] length] 
+							&& [cmdData objectForKey:SPBundleFileScopeKey])
+						{
+
+							if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length]) {
+
+								if(processDefaultBundles) {
+
+									// Skip deleted default Bundles
+									BOOL bundleWasDeleted = NO;
+									if([deletedDefaultBundles count]) {
+										for(NSArray* item in deletedDefaultBundles) {
+											if([[item objectAtIndex:0] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+												bundleWasDeleted = YES;
+												break;
+											}
+										}
+									}
+									if(bundleWasDeleted) continue;
+
+									// If default Bundle is already install check for possible update,
+									// if so duplicate the modified one by appending (user) and updated it
+									if([installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+										if([updatedDefaultBundles containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+
+											NSString *oldPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
+											NSError *readError = nil;
+											NSString *convError = nil;
+											NSPropertyListFormat format;
+											NSDictionary *cmdData = nil;
+
+											NSData *pData = [NSData dataWithContentsOfFile:oldPath options:NSUncachedRead error:&readError];
+											cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+													mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+											if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+												NSLog(@"“%@” file couldn't be read.", oldPath);
+												NSBeep();
+												if (cmdData) [cmdData release];
+												continue;
+											} else {
+												NSString *oldBundle = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
+												// Check for modifications
+												if([cmdData objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
+
+													// Duplicate Bundle, change the UUID and rename the menu label
+													NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (NSUInteger)(random() % 35000), SPUserBundleFileExtension];
+													if(![[NSFileManager defaultManager] copyItemAtPath:oldBundle toPath:duplicatedBundle error:nil]) {
+														NSLog(@"Couldn't copy “%@” to update it", bundle);
+														NSBeep();
+														if (cmdData) [cmdData release];
+														continue;
+													}
+													NSError *readError1 = nil;
+													NSString *convError1 = nil;
+													NSMutableDictionary *dupData = [NSMutableDictionary dictionary];
+													NSString *duplicatedBundleCommand = [NSString stringWithFormat:@"%@/%@", duplicatedBundle, SPBundleFileName];
+													NSData *dData = [NSData dataWithContentsOfFile:duplicatedBundleCommand options:NSUncachedRead error:&readError1];
+													[dupData setDictionary:[NSPropertyListSerialization propertyListFromData:dData 
+															mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError1]];
+													if(!dupData && ![dupData count] || readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+														NSLog(@"“%@” file couldn't be read.", duplicatedBundleCommand);
+														NSBeep();
+														continue;
+													}
+													[dupData setObject:[NSString stringWithNewUUID] forKey:SPBundleFileUUIDKey];
+													NSString *orgName = [dupData objectForKey:SPBundleFileNameKey];
+													[dupData setObject:[NSString stringWithFormat:@"%@ (user)", orgName] forKey:SPBundleFileNameKey];
+													[dupData removeObjectForKey:SPBundleFileIsDefaultBundleKey];
+													[dupData writeToFile:duplicatedBundleCommand atomically:YES];
+
+													NSError *error = nil;
+													NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
+													[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+
+													if(error != nil) {
+														NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
+																						 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+																					   alternateButton:nil 
+																						  otherButton:nil 
+																			informativeTextWithFormat:[error localizedDescription]];
+
+														[alert setAlertStyle:NSCriticalAlertStyle];
+														[alert runModal];
+														if (cmdData) [cmdData release];
+														continue;
+													}
+													[infoAboutUpdatedDefaultBundles appendFormat:@"• %@\n", orgName];
+												} else {
+
+													// If no modifications are done simply remove the old one
+													if(![fm removeItemAtPath:oldBundle error:nil]) {
+														NSLog(@"Couldn't remove “%@” to update it", bundle);
+														NSBeep();
+														if (cmdData) [cmdData release];
+														continue;
+													}
+
+												}
+
+												// Remove item from update list which will be updated in the Prefs
+												[updatedDefaultBundles removeObject:[cmdData objectForKey:SPBundleFileUUIDKey]];
+
+											}
+
+											if (cmdData) [cmdData release];
+
+										} else {
+											continue;
+										}
+									}
+
+									BOOL isDir;
+									NSString *newInfoPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
+									NSString *orgPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:1], bundle];
+									NSString *newPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
+									if([fm fileExistsAtPath:newPath isDirectory:&isDir] && isDir)
+										newPath = [NSString stringWithFormat:@"%@_%ld", newPath, (NSUInteger)(random() % 35000)];
+									NSError *error = nil;
+									[fm copyItemAtPath:orgPath toPath:newPath error:&error];
+									if(error != nil) {
+										NSBeep();
+										NSLog(@"Default Bundle “%@” couldn't be copied to '%@'", bundle, newInfoPath);
+										continue;
+									}
+									infoPath = [NSString stringWithString:newInfoPath];
+
+								}
+
+								[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
+										[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
+										infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
+
+							} else {
+								NSLog(@"No UUID for %@", bundle);
+								NSBeep();
+								continue;
+							}
+
+							NSArray *scopes = [[cmdData objectForKey:SPBundleFileScopeKey] componentsSeparatedByString:@" "];
+							for(NSString *scope in scopes) {
+
+								if(![bundleUsedScopes containsObject:scope]) {
+									[bundleUsedScopes addObject:scope];
+									[bundleItems setObject:[NSMutableArray array] forKey:scope];
+									[bundleCategories setObject:[NSMutableArray array] forKey:scope];
+									[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
+								}
+
+								if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
+									[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
+							}
+
+							NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
+							[aDict setObject:[cmdData objectForKey:SPBundleFileNameKey] forKey:SPBundleInternLabelKey];
+							[aDict setObject:infoPath forKey:SPBundleInternPathToFileKey];
+
+							// Register trigger
+							if([cmdData objectForKey:SPBundleFileTriggerKey]) {
+								if(![bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]])
+									[bundleTriggers setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileTriggerKey]];
+								[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:
+									[NSString stringWithFormat:@"%@|%@|%@", 
+										infoPath, 
+										[cmdData objectForKey:SPBundleFileScopeKey], 
+										([[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsHTML])?[cmdData objectForKey:SPBundleFileUUIDKey]:@""]];
+							}
+
+							if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
+
+								NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
+								NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
+								NSString *theMods = [theKey substringToIndex:[theKey length]-1];
+								NSUInteger mask = 0;
+								if([theMods rangeOfString:@"^"].length)
+									mask = mask | NSControlKeyMask;
+								if([theMods rangeOfString:@"@"].length)
+									mask = mask | NSCommandKeyMask;
+								if([theMods rangeOfString:@"~"].length)
+									mask = mask | NSAlternateKeyMask;
+								if([theMods rangeOfString:@"$"].length)
+									mask = mask | NSShiftKeyMask;
+								for(NSString* scope in scopes) {
+									if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
+										[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
+
+									[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
+													[NSDictionary dictionaryWithObjectsAndKeys:
+															infoPath, @"path",
+															[cmdData objectForKey:SPBundleFileNameKey], @"title",
+															([cmdData objectForKey:SPBundleFileTooltipKey]) ?: @"", @"tooltip",
+													nil]];
+
+								}
+
+								[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
+							}
+
+							if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
+								[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
+
+							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length])
+								[aDict setObject:[cmdData objectForKey:SPBundleFileCategoryKey] forKey:SPBundleFileCategoryKey];
+
+							if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length])
+								[aDict setObject:[cmdData objectForKey:SPBundleFileKeyEquivalentKey] forKey:@"key"];
+
+							for(NSString* scope in scopes)
+								[[bundleItems objectForKey:scope] addObject:aDict];
+
+						}
+
+						if (cmdData) [cmdData release];
+
+					}
+				}
+
+				NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:SPBundleInternLabelKey ascending:YES] autorelease];
+				for(NSString* scope in [bundleItems allKeys]) {
+					[[bundleItems objectForKey:scope] sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+					[[bundleCategories objectForKey:scope] sortUsingSelector:@selector(compare:)];
+				}
+			}
+		}
+		processDefaultBundles = YES;
+	}
+
+	[deletedDefaultBundles release];
+
+	// Synchronize updated Bundles
+	[[NSUserDefaults standardUserDefaults] setObject:updatedDefaultBundles forKey:SPBundleUpdatedDefaultBundlesKey];
+
+	// Inform user about default Bundle updates which were modified by the user and re-run Reload Bundles
+	if([infoAboutUpdatedDefaultBundles length]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Default Bundles Update", @"default bundles update")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+									   alternateButton:nil 
+										  otherButton:nil 
+							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The following default Bundles were updated:\n%@\nYour modifications were stored as “(user)”.", @"the following default bundles were updated:\n%@\nyour modifications were stored as “(user)”."), infoAboutUpdatedDefaultBundles]];
+
+		[alert runModal];
+		[self reloadBundles:nil];
+		return;
+	}
+
+	// === Rebuild Bundles main menu item ===
 
 	// Add default menu items
 	NSMenuItem *anItem;

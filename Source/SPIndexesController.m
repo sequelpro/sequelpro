@@ -129,17 +129,32 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexNameTextField setEnabled:NO];
 	[indexNameTextField setStringValue:@"PRIMARY"];
 	
-	// If the table is of type MyISAM and Spation extension support is available, add the SPATIAL type
+	// If the table is of type MyISAM and Spatial extension support is available, add the SPATIAL type
 	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
 	
 	if ([engine isEqualToString:@"MyISAM"] && [[dbDocument serverSupport] supportsSpatialExtensions]) {
 		[indexTypePopUpButton addItemWithTitle:@"SPATIAL"];
 	}
-
+	
 	// Check to see whether a primary key already exists for the table, and if so select INDEX instead
 	for (NSDictionary *field in fields)
 	{
-		if ([field objectForKey:@"isprimarykey"]) {
+		BOOL hasCompositePrimaryKey = NO;
+		BOOL isPrimaryKey = [field objectForKey:@"isprimarykey"];
+		
+		// The 'isprimarykey' key of a field is only present for single column primary keys, not composite keys, 
+		// so we need to check the indexes manually.
+		if (!isPrimaryKey) {
+			for (NSDictionary *index in indexes)
+			{
+				if ([[index objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
+					hasCompositePrimaryKey = YES;
+					break;
+				}  
+			}
+		}
+		
+		if (isPrimaryKey || hasCompositePrimaryKey) {
 
 			// Remove primary key option
 			[indexTypePopUpButton removeItemAtIndex:0];
@@ -154,10 +169,31 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			break;
 		}
 	}
+	
+	NSMutableArray *indexedFieldNames = [[NSMutableArray alloc] init];
+	
+	// Build an array of all indexed column names
+	for (NSDictionary *index in indexes)
+	{
+		[indexedFieldNames addObject:[index objectForKey:@"Column_name"]];
+	}
+	
+	NSDictionary *initialField = nil;
+	
+	// Select the first column as the initial field that doesn't already have an index
+	for (NSDictionary *field in fields)
+	{
+		if (![indexedFieldNames containsObject:[field objectForKey:@"name"]]) {
+			initialField = [[field mutableCopy] autorelease];
+			break;
+		}
+	}
+	
+	if (initialField) [indexedFieldNames release], initialField = nil;
 
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
-	[indexedFields addObject:[[[fields objectAtIndex:0] mutableCopy] autorelease]];
+	[indexedFields addObject:initialField];
 
 	[indexedColumnsTableView reloadData];
 
@@ -393,15 +429,19 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (NSInteger)numberOfItemsInComboBoxCell:(NSComboBoxCell *)comboBoxCell
 {
-	return [fields count];
+	return ([fields count] - [indexedFields count]);
 }
 
 /**
  * Returns the item to be displayed in the combo box cell as the supplied index.
  */
 - (id)comboBoxCell:(NSComboBoxCell *)comboBoxCell objectValueForItemAtIndex:(NSInteger)index
-{
-	return [[fields objectAtIndex:index] objectForKey:@"name"];
+{	
+	NSMutableArray *availableFields = [fields mutableCopy];
+	
+	[availableFields removeObjectsInArray:indexedFields];
+	
+	return [[availableFields objectAtIndex:index] objectForKey:@"name"];
 }
 
 #pragma mark -

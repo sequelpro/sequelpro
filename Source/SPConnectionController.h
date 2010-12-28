@@ -38,7 +38,7 @@
 
 @interface NSObject (BWAnchoredButtonBar)
 
-- (void)setSplitViewDelegate:(id)splitViewDelegate;
+- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex;
 
 @end
 

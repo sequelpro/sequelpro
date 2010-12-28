@@ -32,17 +32,8 @@
  * Set up the MySQL connection, either through a successful tunnel or directly in the background.
  */
 - (void)initiateMySQLConnection
-{
-	// Disable the favorites table view to prevent further connections attempts
-	[favoritesOutlineView setEnabled:NO];
-	
-	if (sshTunnel) {
-		[progressIndicatorText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
-	}
-	else {
-		[progressIndicatorText setStringValue:NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
-	}
-	
+{	
+	[progressIndicatorText setStringValue:(sshTunnel) ? NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message") : NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
 	[progressIndicatorText display];
 	
 	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
@@ -295,7 +286,9 @@ certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self 
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 		
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
-	} 
+	
+		[self _restoreConnectionInterface];
+	}
 	else if (newState == PROXY_STATE_CONNECTED) {
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
 		

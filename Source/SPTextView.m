@@ -351,8 +351,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 
 			// Put information_schema and/or mysql db at the end if not selected
+			// 5.5.3+ also has performance_schema
 			NSString* mysql_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"mysql"];
-			NSString* inf_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"information_schema"];
+			NSString* inf_id   = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"information_schema"];
+			NSString* perf_id  = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"performance_schema"];
 			if(currentDb && ![currentDb isEqualToString:mysql_id] && [sortedDbs containsObject:mysql_id]) {
 				[sortedDbs removeObject:mysql_id];
 				[sortedDbs addObject:mysql_id];
@@ -360,6 +362,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			if(currentDb && ![currentDb isEqualToString:inf_id] && [sortedDbs containsObject:inf_id]) {
 				[sortedDbs removeObject:inf_id];
 				[sortedDbs addObject:inf_id];
+			}
+			if(currentDb && ![currentDb isEqualToString:perf_id] && [sortedDbs containsObject:perf_id]) {
+				[sortedDbs removeObject:perf_id];
+				[sortedDbs addObject:perf_id];
 			}
 
 			BOOL aTableNameExists = NO;

@@ -65,6 +65,9 @@
 	IBOutlet NSScrollView *commandScrollView;
 	IBOutlet NSScrollView *descriptionScrollView;
 
+	IBOutlet id undeleteSheet;
+	IBOutlet NSTableView *undeleteTableView;
+
 	IBOutlet NSTreeController *commandBundleTreeController;
 	NSMutableArray *touchedBundleArray;
 	NSMutableDictionary *commandBundleTree;
@@ -108,6 +111,8 @@
 
 	NSArray *shellVariableSuggestions;
 
+	NSMutableArray *deletedDefaultBundles;
+
 }
 
 - (IBAction)inputPopupButtonChanged:(id)sender;
@@ -126,6 +131,8 @@
 - (IBAction)reloadBundles:(id)sender;
 - (IBAction)metaButtonChanged:(id)sender;
 - (IBAction)performClose:(id)sender;
+- (IBAction)undeleteDefaultBundles:(id)sender;
+- (IBAction)closeUndeleteDefaultBundlesSheet:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
 - (BOOL)cancelRowEditing;

@@ -211,6 +211,7 @@ typedef enum
 #define SPLOCALIZEDURL_KEYBOARDSHORTCUTS   NSLocalizedString(@"http://www.sequelpro.com/docs/Keyboard_Shortcuts", @"Localized keyboard shortcuts page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"http://www.sequelpro.com/docs/Getting_Connected", @"Localized connection help page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"http://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
 
 // Long running notification time for Growl messages
 extern const CGFloat SPLongRunningNotificationTime;
@@ -367,6 +368,8 @@ extern NSString *SPUniqueSchemaDelimiter;
 extern NSString *SPLastImportIntoNewTableEncoding;
 extern NSString *SPLastImportIntoNewTableType;
 extern NSString *SPGlobalValueHistory;
+extern NSString *SPBundleDeletedDefaultBundlesKey;
+extern NSString *SPBundleUpdatedDefaultBundlesKey;
 
 // URLs
 extern NSString *SPDonationsURL;
@@ -475,6 +478,8 @@ extern NSString *SPBundleFileUUIDKey;
 extern NSString *SPBundleFileDescriptionKey;
 extern NSString *SPBundleFileTriggerKey;
 extern NSString *SPBundleFileWithBlobKey;
+extern NSString *SPBundleFileIsDefaultBundleKey;
+extern NSString *SPBundleFileDefaultBundleWasModifiedKey;
 extern NSString *SPBundleInternLabelKey;
 extern NSString *SPBundleInternPathToFileKey;
 extern NSString *SPBundleInternKeyEquivalentKey;
@@ -518,9 +523,9 @@ extern NSString *SPBundleShellVariableExitReplaceSelection;
 extern NSString *SPBundleShellVariableExitReplaceContent;
 extern NSString *SPBundleShellVariableExitInsertAsText;
 extern NSString *SPBundleShellVariableExitInsertAsSnippet;
-extern NSString *SPBundleShellVariableExitInsertAsHTML;
-extern NSString *SPBundleShellVariableExitInsertAsTextTooltip;
-extern NSString *SPBundleShellVariableExitInsertAsHTMLTooltip;
+extern NSString *SPBundleShellVariableExitShowAsHTML;
+extern NSString *SPBundleShellVariableExitShowAsTextTooltip;
+extern NSString *SPBundleShellVariableExitShowAsHTMLTooltip;
 extern NSString *SPBundleShellVariableCurrentHost;
 extern NSString *SPBundleShellVariableCurrentUser;
 extern NSString *SPBundleShellVariableCurrentPort;
