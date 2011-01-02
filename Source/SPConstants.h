@@ -231,6 +231,7 @@ extern NSString *SPContentFilterPasteboardDragType;
 extern NSString *SPFileExtensionDefault;
 extern NSString *SPFileExtensionSQL;
 extern NSString *SPBundleFileExtension;
+extern NSString *SPFavoritesDataExtension;
 extern NSString *SPColorThemeFileExtension;
 extern NSString *SPUserBundleFileExtension;
 

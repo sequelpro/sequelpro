@@ -43,6 +43,7 @@ NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPFileExtensionDefault                 = @"spf";
 NSString *SPBundleFileExtension                  = @"spfs";
 NSString *SPFileExtensionSQL                     = @"sql";
+NSString *SPFavoritesDataExtension               = @"spFavs";
 NSString *SPColorThemeFileExtension              = @"spTheme";
 NSString *SPUserBundleFileExtension              = @"spBundle";
 
