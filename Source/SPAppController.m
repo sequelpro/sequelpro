@@ -1417,90 +1417,88 @@
 
 									// If default Bundle is already install check for possible update,
 									// if so duplicate the modified one by appending (user) and updated it
-									if([installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
-										if(doBundleUpdate) {
-NSLog(@"do update");
-											NSString *oldPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
-											NSError *readError = nil;
-											NSString *convError = nil;
-											NSPropertyListFormat format;
-											NSDictionary *cmdData = nil;
+									if(doBundleUpdate && [installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
 
-											NSData *pData = [NSData dataWithContentsOfFile:oldPath options:NSUncachedRead error:&readError];
-											cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-													mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-											if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-												NSLog(@"“%@” file couldn't be read.", oldPath);
-												NSBeep();
-												if (cmdData) [cmdData release];
-												continue;
+										NSString *oldPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
+										NSError *readError = nil;
+										NSString *convError = nil;
+										NSPropertyListFormat format;
+										NSDictionary *cmdData = nil;
+
+										NSData *pData = [NSData dataWithContentsOfFile:oldPath options:NSUncachedRead error:&readError];
+										cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
+												mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+										if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+											NSLog(@"“%@” file couldn't be read.", oldPath);
+											NSBeep();
+											if (cmdData) [cmdData release];
+											continue;
+										} else {
+											NSString *oldBundle = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
+											// Check for modifications
+											if([cmdData objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
+
+												// Duplicate Bundle, change the UUID and rename the menu label
+												NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (NSUInteger)(random() % 35000), SPUserBundleFileExtension];
+												if(![[NSFileManager defaultManager] copyItemAtPath:oldBundle toPath:duplicatedBundle error:nil]) {
+													NSLog(@"Couldn't copy “%@” to update it", bundle);
+													NSBeep();
+													if (cmdData) [cmdData release];
+													continue;
+												}
+												NSError *readError1 = nil;
+												NSString *convError1 = nil;
+												NSMutableDictionary *dupData = [NSMutableDictionary dictionary];
+												NSString *duplicatedBundleCommand = [NSString stringWithFormat:@"%@/%@", duplicatedBundle, SPBundleFileName];
+												NSData *dData = [NSData dataWithContentsOfFile:duplicatedBundleCommand options:NSUncachedRead error:&readError1];
+												[dupData setDictionary:[NSPropertyListSerialization propertyListFromData:dData 
+														mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError1]];
+												if(!dupData && ![dupData count] || readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+													NSLog(@"“%@” file couldn't be read.", duplicatedBundleCommand);
+													NSBeep();
+													continue;
+												}
+												[dupData setObject:[NSString stringWithNewUUID] forKey:SPBundleFileUUIDKey];
+												NSString *orgName = [dupData objectForKey:SPBundleFileNameKey];
+												[dupData setObject:[NSString stringWithFormat:@"%@ (user)", orgName] forKey:SPBundleFileNameKey];
+												[dupData removeObjectForKey:SPBundleFileIsDefaultBundleKey];
+												[dupData writeToFile:duplicatedBundleCommand atomically:YES];
+
+												NSError *error = nil;
+												NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
+												[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+
+												if(error != nil) {
+													NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
+																					 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+																				   alternateButton:nil 
+																					  otherButton:nil 
+																		informativeTextWithFormat:[error localizedDescription]];
+
+													[alert setAlertStyle:NSCriticalAlertStyle];
+													[alert runModal];
+													if (cmdData) [cmdData release];
+													continue;
+												}
+												[infoAboutUpdatedDefaultBundles appendFormat:@"• %@\n", orgName];
 											} else {
-												NSString *oldBundle = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
-												// Check for modifications
-												if([cmdData objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
 
-													// Duplicate Bundle, change the UUID and rename the menu label
-													NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (NSUInteger)(random() % 35000), SPUserBundleFileExtension];
-													if(![[NSFileManager defaultManager] copyItemAtPath:oldBundle toPath:duplicatedBundle error:nil]) {
-														NSLog(@"Couldn't copy “%@” to update it", bundle);
-														NSBeep();
-														if (cmdData) [cmdData release];
-														continue;
-													}
-													NSError *readError1 = nil;
-													NSString *convError1 = nil;
-													NSMutableDictionary *dupData = [NSMutableDictionary dictionary];
-													NSString *duplicatedBundleCommand = [NSString stringWithFormat:@"%@/%@", duplicatedBundle, SPBundleFileName];
-													NSData *dData = [NSData dataWithContentsOfFile:duplicatedBundleCommand options:NSUncachedRead error:&readError1];
-													[dupData setDictionary:[NSPropertyListSerialization propertyListFromData:dData 
-															mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError1]];
-													if(!dupData && ![dupData count] || readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-														NSLog(@"“%@” file couldn't be read.", duplicatedBundleCommand);
-														NSBeep();
-														continue;
-													}
-													[dupData setObject:[NSString stringWithNewUUID] forKey:SPBundleFileUUIDKey];
-													NSString *orgName = [dupData objectForKey:SPBundleFileNameKey];
-													[dupData setObject:[NSString stringWithFormat:@"%@ (user)", orgName] forKey:SPBundleFileNameKey];
-													[dupData removeObjectForKey:SPBundleFileIsDefaultBundleKey];
-													[dupData writeToFile:duplicatedBundleCommand atomically:YES];
-
-													NSError *error = nil;
-													NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
-													[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
-
-													if(error != nil) {
-														NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
-																						 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-																					   alternateButton:nil 
-																						  otherButton:nil 
-																			informativeTextWithFormat:[error localizedDescription]];
-
-														[alert setAlertStyle:NSCriticalAlertStyle];
-														[alert runModal];
-														if (cmdData) [cmdData release];
-														continue;
-													}
-													[infoAboutUpdatedDefaultBundles appendFormat:@"• %@\n", orgName];
-												} else {
-
-													// If no modifications are done simply remove the old one
-													if(![fm removeItemAtPath:oldBundle error:nil]) {
-														NSLog(@"Couldn't remove “%@” to update it", bundle);
-														NSBeep();
-														if (cmdData) [cmdData release];
-														continue;
-													}
-
+												// If no modifications are done simply remove the old one
+												if(![fm removeItemAtPath:oldBundle error:nil]) {
+													NSLog(@"Couldn't remove “%@” to update it", bundle);
+													NSBeep();
+													if (cmdData) [cmdData release];
+													continue;
 												}
 
 											}
 
-											if (cmdData) [cmdData release];
-
-										} else {
-											continue;
 										}
+
+										if (cmdData) [cmdData release];
+
+									} else {
+										continue;
 									}
 
 									BOOL isDir;
