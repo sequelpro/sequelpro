@@ -1384,8 +1384,8 @@
 					NSString *infoPath = [NSString stringWithFormat:@"%@/%@/%@", bundlePath, bundle, SPBundleFileName];
 					NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
 
-					cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-							mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+					cmdData = [NSPropertyListSerialization propertyListFromData:pData 
+							mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
 
 					if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 
@@ -1423,27 +1423,25 @@
 										NSError *readError = nil;
 										NSString *convError = nil;
 										NSPropertyListFormat format;
-										NSDictionary *cmdData = nil;
+										NSDictionary *cmdDataOld = nil;
 
-										NSData *pData = [NSData dataWithContentsOfFile:oldPath options:NSUncachedRead error:&readError];
-										cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-												mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-										if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+										NSData *pDataOld = [NSData dataWithContentsOfFile:oldPath options:NSUncachedRead error:&readError];
+										cmdDataOld = [NSPropertyListSerialization propertyListFromData:pDataOld 
+												mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
+										if(!cmdDataOld || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 											NSLog(@"“%@” file couldn't be read.", oldPath);
 											NSBeep();
-											if (cmdData) [cmdData release];
 											continue;
 										} else {
 											NSString *oldBundle = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
 											// Check for modifications
-											if([cmdData objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
+											if([cmdDataOld objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
 
 												// Duplicate Bundle, change the UUID and rename the menu label
 												NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (NSUInteger)(random() % 35000), SPUserBundleFileExtension];
 												if(![[NSFileManager defaultManager] copyItemAtPath:oldBundle toPath:duplicatedBundle error:nil]) {
 													NSLog(@"Couldn't copy “%@” to update it", bundle);
 													NSBeep();
-													if (cmdData) [cmdData release];
 													continue;
 												}
 												NSError *readError1 = nil;
@@ -1469,7 +1467,7 @@
 												[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 
 												if(error != nil) {
-													NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
+													NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdDataOld objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
 																					 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 																				   alternateButton:nil 
 																					  otherButton:nil 
@@ -1477,7 +1475,6 @@
 
 													[alert setAlertStyle:NSCriticalAlertStyle];
 													[alert runModal];
-													if (cmdData) [cmdData release];
 													continue;
 												}
 												[infoAboutUpdatedDefaultBundles appendFormat:@"• %@\n", orgName];
@@ -1487,15 +1484,12 @@
 												if(![fm removeItemAtPath:oldBundle error:nil]) {
 													NSLog(@"Couldn't remove “%@” to update it", bundle);
 													NSBeep();
-													if (cmdData) [cmdData release];
 													continue;
 												}
 
 											}
 
 										}
-
-										if (cmdData) [cmdData release];
 
 									} else {
 										continue;
@@ -1600,8 +1594,6 @@
 								[[bundleItems objectForKey:scope] addObject:aDict];
 
 						}
-
-						if (cmdData) [cmdData release];
 
 					}
 				}
