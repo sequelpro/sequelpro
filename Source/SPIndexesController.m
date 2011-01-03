@@ -189,7 +189,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 	}
 	
-	if (initialField) [indexedFieldNames release], initialField = nil;
+	if (initialField) [indexedFieldNames release], indexedFieldNames = nil;
 
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
