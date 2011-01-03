@@ -1353,19 +1353,17 @@
 
 	BOOL processDefaultBundles = NO;
 	NSFileManager *fm = [NSFileManager defaultManager];
-	
+
 	NSArray *deletedDefaultBundles;
-	NSMutableArray *updatedDefaultBundles = [NSMutableArray array];
+
 	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]) {
 		deletedDefaultBundles = [[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey] retain];
 	} else {
 		deletedDefaultBundles = [[NSArray array] retain];
 	}
-	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleUpdatedDefaultBundlesKey]) {
-		[updatedDefaultBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleUpdatedDefaultBundlesKey]];
-	}
 
 	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
+	BOOL doBundleUpdate = ([[NSUserDefaults standardUserDefaults] objectForKey:@"doBundleUpdate"]) ? YES : NO;
 
 	for(NSString* bundlePath in bundlePaths) {
 		if([bundlePath length]) {
@@ -1420,8 +1418,8 @@
 									// If default Bundle is already install check for possible update,
 									// if so duplicate the modified one by appending (user) and updated it
 									if([installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
-										if([updatedDefaultBundles containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
-
+										if(doBundleUpdate) {
+NSLog(@"do update");
 											NSString *oldPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
 											NSError *readError = nil;
 											NSString *convError = nil;
@@ -1495,9 +1493,6 @@
 													}
 
 												}
-
-												// Remove item from update list which will be updated in the Prefs
-												[updatedDefaultBundles removeObject:[cmdData objectForKey:SPBundleFileUUIDKey]];
 
 											}
 
@@ -1624,9 +1619,10 @@
 	}
 
 	[deletedDefaultBundles release];
-
-	// Synchronize updated Bundles
-	[[NSUserDefaults standardUserDefaults] setObject:updatedDefaultBundles forKey:SPBundleUpdatedDefaultBundlesKey];
+	if(doBundleUpdate) {
+		[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"doBundleUpdate"];
+		[[NSUserDefaults standardUserDefaults] synchronize];
+	}
 
 	// Inform user about default Bundle updates which were modified by the user and re-run Reload Bundles
 	if([infoAboutUpdatedDefaultBundles length]) {

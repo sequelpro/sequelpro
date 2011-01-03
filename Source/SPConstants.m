@@ -187,7 +187,6 @@ NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncod
 NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType";
 NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
-NSString *SPBundleUpdatedDefaultBundlesKey       = @"updatedDefaultBundles";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";

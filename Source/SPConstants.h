@@ -376,7 +376,6 @@ extern NSString *SPLastImportIntoNewTableEncoding;
 extern NSString *SPLastImportIntoNewTableType;
 extern NSString *SPGlobalValueHistory;
 extern NSString *SPBundleDeletedDefaultBundlesKey;
-extern NSString *SPBundleUpdatedDefaultBundlesKey;
 
 // URLs
 extern NSString *SPDonationsURL;
