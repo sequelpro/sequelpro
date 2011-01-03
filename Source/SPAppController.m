@@ -1346,10 +1346,11 @@
 	// Clean menu
 	[menu compatibleRemoveAllItems];
 
-	NSArray *bundlePaths = [NSArray arrayWithObjects:
-		([[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil])?:@"",
-		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
-		nil];
+	// Set up the bundle search paths - always the default bundles directory, and the application support directory if it exists
+	NSMutableArray *bundlePaths = [NSMutableArray arrayWithCapacity:2];
+	NSString *appSupportPath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:NO error:nil];
+	if (appSupportPath) [bundlePaths addObject:appSupportPath];
+	[bundlePaths addObject:[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]]];
 
 	BOOL processDefaultBundles = NO;
 	NSFileManager *fm = [NSFileManager defaultManager];
