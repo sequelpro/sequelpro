@@ -520,9 +520,6 @@
 	if ([self valueForKeyPath:@"selectedFavorite.id"]) {
 		[tableDocument setKeychainID:[[self valueForKeyPath:@"selectedFavorite.id"] stringValue]];
 	}
-	else {
-		[tableDocument setKeychainID:@""];
-	}
 
 	// Pass the connection to the table document, allowing it to set
 	// up the other classes and the rest of the interface.
