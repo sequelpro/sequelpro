@@ -180,6 +180,16 @@ typedef enum
 	SPEncodingEUCKRKorean		= 180
 } SPEncodingTypes;
 
+// Table index type menu tags
+typedef enum
+{
+	SPPrimaryKeyMenuTag	= 0,
+	SPIndexMenuTag		= 1,
+	SPUniqueMenuTag		= 2,
+	SPFullTextMenuTag	= 3,
+	SPSpatialMenuTag	= 4
+} SPTableIndexTypeTags;
+
 // File compression formats
 typedef enum
 {

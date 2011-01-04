@@ -122,18 +122,26 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
 
-	[indexTypePopUpButton insertItemWithTitle:@"PRIMARY KEY" atIndex:0];
+	// Reset visibility of the primary key item
+	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];
 
 	// Set sheet defaults - key type PRIMARY, key name PRIMARY and disabled
-	[indexTypePopUpButton selectItemAtIndex:0];
+	[indexTypePopUpButton selectItemWithTag:SPPrimaryKeyMenuTag];
 	[indexNameTextField setEnabled:NO];
 	[indexNameTextField setStringValue:@"PRIMARY"];
-	
-	// If the table is of type MyISAM and Spatial extension support is available, add the SPATIAL type
+
+	// Remove any existing SPATIAL menu item
+	if ([indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag] != -1)
+		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag]];
+
+	// If the table is of type MyISAM and Spatial extension support is available, (re-)add the SPATIAL type
 	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
 	
 	if ([engine isEqualToString:@"MyISAM"] && [[dbDocument serverSupport] supportsSpatialExtensions]) {
-		[indexTypePopUpButton addItemWithTitle:@"SPATIAL"];
+		NSMenuItem *spatialMenuItem = [[[NSMenuItem alloc] init] autorelease];
+		[spatialMenuItem setTitle:NSLocalizedString(@"SPATIAL", @"Spatial index menu item title")];
+		[spatialMenuItem setTag:SPSpatialMenuTag];
+		[[indexTypePopUpButton menu] addItem:spatialMenuItem];
 	}
 	
 	// Check to see whether a primary key already exists for the table, and if so select INDEX instead
@@ -156,11 +164,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		
 		if (isPrimaryKey || hasCompositePrimaryKey) {
 
-			// Remove primary key option
-			[indexTypePopUpButton removeItemAtIndex:0];
+			// Hide primary key option
+			[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:YES];
 
 			// Select INDEX type
-			[indexTypePopUpButton selectItemAtIndex:0];
+			[indexTypePopUpButton selectItemWithTag:SPIndexMenuTag];
 			[indexNameTextField setEnabled:YES];
 			[indexNameTextField setStringValue:@""];
 
@@ -188,8 +196,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			break;
 		}
 	}
+
+	// If no initial field has been selected yet - all fields are indexed - add the first field.
+	if (!initialField) initialField = [fields objectAtIndex:0];
 	
-	if (initialField) [indexedFieldNames release], indexedFieldNames = nil;
+	if (indexedFieldNames) [indexedFieldNames release], indexedFieldNames = nil;
 
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
@@ -275,11 +286,12 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)chooseIndexType:(id)sender
 {
-	NSString *indexType = [indexTypePopUpButton titleOfSelectedItem];
+	NSInteger *indexType = [[indexTypePopUpButton selectedItem] tag];
 	
-	if ([indexType isEqualToString:@"PRIMARY KEY"] ) {
+	if (indexType == SPPrimaryKeyMenuTag) {
 		[indexNameTextField setEnabled:NO];
 		[indexNameTextField setStringValue:@"PRIMARY"];
+		[indexStorageTypePopUpButton setEnabled:NO];
 	}
 	else {
 		[indexNameTextField setEnabled:YES];
@@ -289,7 +301,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 		
 		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
-		[indexStorageTypePopUpButton setEnabled:(![indexType isEqualToString:@"SPATIAL"])];
+		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag)];
 	}
 }
 
@@ -301,6 +313,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Close the advanced options view if it's open
 	[indexAdvancedOptionsView setHidden:YES];
 	[indexAdvancedOptionsViewButton setState:NSOffState];
+	showAdvancedView = NO;
 
 	// Hide the size column
 	[indexSizeTableColumn setHidden:YES];
@@ -532,14 +545,30 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		[indexDetails setObject:indexedFields forKey:SPNewIndexIndexedColumns];
 		[indexDetails setObject:[indexNameTextField stringValue] forKey:SPNewIndexIndexName];
-		[indexDetails setObject:[indexTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexIndexType];
+		switch ([[indexTypePopUpButton selectedItem] tag]) {
+			case SPPrimaryKeyMenuTag:
+				[indexDetails setObject:@"PRIMARY KEY" forKey:SPNewIndexIndexType];
+				break;
+			case SPIndexMenuTag:
+				[indexDetails setObject:@"INDEX" forKey:SPNewIndexIndexType];
+				break;
+			case SPUniqueMenuTag:
+				[indexDetails setObject:@"UNIQUE" forKey:SPNewIndexIndexType];
+				break;
+			case SPFullTextMenuTag:
+				[indexDetails setObject:@"FULLTEXT" forKey:SPNewIndexIndexType];
+				break;
+			case SPSpatialMenuTag:
+				[indexDetails setObject:@"SPATIAL" forKey:SPNewIndexIndexType];
+				break;
+		}
 		
 		// If there is a key block size set it means the database version supports it
 		if ([[indexKeyBlockSizeTextField stringValue] length]) {
 			[indexDetails setObject:[NSNumber numberWithInteger:[indexKeyBlockSizeTextField integerValue]] forKey:SPNewIndexKeyBlockSize];
 		}
 
-		if (([indexStorageTypePopUpButton indexOfSelectedItem] > 0) && (![[indexTypePopUpButton titleOfSelectedItem] isEqualToString:@"SPATIAL"])) {
+		if (([[indexTypePopUpButton selectedItem] tag] != SPPrimaryKeyMenuTag) && ([[indexTypePopUpButton selectedItem] tag] != SPSpatialMenuTag)) {
 			[indexDetails setObject:[indexStorageTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexStorageType];
 		}
 
