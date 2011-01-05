@@ -1,0 +1,41 @@
+<html>
+	<head>
+		<title>Database Report</title>
+		<style type="text/css">
+			hr {
+				background: #606060;
+				color:  #606060;
+				border-style: solid;
+				border-color: #606060;
+				border-width: 2px 0 0 0;
+				margin-top: 0;
+			}
+			a:hover {
+				text-decoration: none;
+			}
+			a {
+				text-decoration: none;
+			}
+			a:hover:after {
+				content: " ➪";
+			}
+			.nonVisible {
+				display:none;
+			}
+		</style>
+		<script type="text/javascript" charset="utf-8">
+		function toggle_display(elt)
+		{
+			var e; var p;
+			e = elt.getAttribute("id") + ":data";
+			if (window.document.getElementById(e).className != "") {
+				window.document.getElementById(e).className = "";
+				elt.innerHTML = "▼";
+			} else {
+				window.document.getElementById(e).className = "nonVisible";
+				elt.innerHTML = "▶";
+			}
+		}
+		</script>
+	</head>
+<body>
