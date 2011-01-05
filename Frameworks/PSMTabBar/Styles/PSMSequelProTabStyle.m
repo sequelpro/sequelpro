@@ -409,7 +409,7 @@
 
 	// When the window is in the background, tone down the colours
 	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
-		backgroundCalibratedWhite = 0.685;
+		backgroundCalibratedWhite = 0.73;
 		lineCalibratedWhite = 0.49;
 		shadowAlpha = 0.3;
 	}
@@ -514,7 +514,7 @@
 			fillColor = [NSColor colorWithCalibratedWhite:0.81 alpha:1.0];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.4];
 		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:0.685 alpha:1.0];
+			fillColor = [NSColor colorWithCalibratedWhite:0.73 alpha:1.0];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.7];
 		}
 	}
@@ -533,7 +533,7 @@
 	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
 	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
 	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius );
+	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
 
 	// Construct the outline path
 	if (drawLeftEdge) {
