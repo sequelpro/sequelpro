@@ -574,7 +574,7 @@
 			[self setSslCertificateFileLocation:nil];
 			return;
 		}
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
 		[openPanel setAccessoryView:sslCertificateLocationHelp];
 
 	// SSL CA certificate file location:
@@ -583,7 +583,7 @@
 			[self setSslCACertFileLocation:nil];
 			return;
 		}
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
 		[openPanel setAccessoryView:sslCACertLocationHelp];
 	}
 
