@@ -144,7 +144,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 	[self setCompletionWasReinvokedAutomatically:NO];
-	
 
 	// Re-define tab stops for a better editing
 	[self setTabStops];
@@ -154,8 +153,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// add NSViewBoundsDidChangeNotification to scrollView
 	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
-	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
-	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];

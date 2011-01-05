@@ -58,12 +58,12 @@
 	// Re-define tab stops for a better editing
 	[self setTabStops];
 
-	// add NSViewBoundsDidChangeNotification to scrollView
-	[[commandScrollView contentView] setPostsBoundsChangedNotifications:YES];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[commandScrollView contentView]];
-
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
+
+	// add NSViewBoundsDidChangeNotification to scrollView
+	[[commandScrollView contentView] setPostsBoundsChangedNotifications:YES];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[commandScrollView contentView]];
 
 }
 
