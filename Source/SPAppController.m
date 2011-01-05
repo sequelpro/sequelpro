@@ -1492,8 +1492,6 @@
 
 										}
 
-									} else {
-										continue;
 									}
 
 									BOOL isDir;
