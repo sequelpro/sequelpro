@@ -1405,7 +1405,7 @@
 
 							if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length]) {
 
-								if(processDefaultBundles) {
+								if(doBundleUpdate && processDefaultBundles) {
 
 									// Skip deleted default Bundles
 									BOOL bundleWasDeleted = NO;
@@ -1421,7 +1421,7 @@
 
 									// If default Bundle is already install check for possible update,
 									// if so duplicate the modified one by appending (user) and updated it
-									if(doBundleUpdate && [installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+									if([installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
 
 										NSString *oldPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
 										NSError *readError = nil;
