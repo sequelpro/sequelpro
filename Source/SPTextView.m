@@ -3029,6 +3029,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(![[self textStorage] changeInLength])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
 	}
+	else
+		[[scrollView contentView] display];
 
 }
 

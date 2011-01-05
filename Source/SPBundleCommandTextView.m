@@ -60,6 +60,7 @@
 
 	// add NSViewBoundsDidChangeNotification to scrollView
 	[[commandScrollView contentView] setPostsBoundsChangedNotifications:YES];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[commandScrollView contentView]];
 
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
@@ -779,6 +780,15 @@
 - (void)textDidChange:(NSNotification *)aNotification
 {
 	textWasChanged = YES;
+}
+
+/**
+ * Scrollview delegate after the command textView's view port was changed.
+ * Manily used to render line numbering.
+ */
+- (void)boundsDidChangeNotification:(NSNotification *)notification
+{
+	[commandScrollView display];
 }
 
 #pragma mark -

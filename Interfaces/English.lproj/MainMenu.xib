@@ -1760,7 +1760,6 @@
 					</object>
 					<object class="NSMenuItem" id="558064231">
 						<reference key="NSMenu" ref="171386461"/>
-						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle">Bundles</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -3102,6 +3101,14 @@
 						<reference key="destination" ref="929597005"/>
 					</object>
 					<int key="connectionID">1190</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="171386461"/>
+						<reference key="destination" ref="432083121"/>
+					</object>
+					<int key="connectionID">1193</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -5399,7 +5406,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1190</int>
+			<int key="maxID">1193</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
