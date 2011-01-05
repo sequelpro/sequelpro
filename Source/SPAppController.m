@@ -1366,6 +1366,9 @@
 	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
 	BOOL doBundleUpdate = ([[NSUserDefaults standardUserDefaults] objectForKey:@"doBundleUpdate"]) ? YES : NO;
 
+	if(doBundleUpdate && !appSupportPath)
+		[bundlePaths insertObject:[[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder createIfNotExists:YES error:nil] atIndex:0];
+
 	for(NSString* bundlePath in bundlePaths) {
 		if([bundlePath length]) {
 
