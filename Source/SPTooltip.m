@@ -257,24 +257,20 @@ static CGFloat slow_in_out (CGFloat t)
 	id fr = [[NSApp keyWindow] firstResponder];
 
 	//If first responder is a textview return the caret position
-	if([fr respondsToSelector:@selector(getRangeForCurrentWord)] ) {
+	if([fr respondsToSelector:@selector(getRangeForCurrentWord)] && [fr alignment] == NSLeftTextAlignment) {
 		NSRange range = NSMakeRange([fr selectedRange].location,0);
 		NSRange glyphRange = [[fr layoutManager] glyphRangeForCharacterRange:range actualCharacterRange:NULL];
 		NSRect boundingRect = [[fr layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[fr textContainer]];
-		boundingRect = [fr convertRect: boundingRect toView: NULL];
+		boundingRect = [fr convertRect: boundingRect toView:NULL];
 		pos = [[fr window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 		NSFont* font = [fr font];
-		pos.y -= [font pointSize]*1.3;
+		if(font) pos.y -= [font pointSize]*1.3;
 		return pos;
-	// Otherwise return the upper left corner of the current keyWindow
+	// Otherwise return mouse location
 	} else {
 		pos = [NSEvent mouseLocation];
 		pos.y -= 16;
 		return pos;
-		// pos = [[NSApp keyWindow] frame].origin;
-		// pos.x += 5;
-		// pos.y += [[NSApp keyWindow] frame].size.height - 23;
-		// return pos;
 	}
 }
 
