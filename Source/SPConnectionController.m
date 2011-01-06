@@ -252,15 +252,10 @@
 	[favoritesTable setEnabled:NO];
 
 	[addToFavoritesButton setHidden:YES];
-	[addToFavoritesButton display];
 	[helpButton setHidden:YES];
-	[helpButton display];
 	[connectButton setEnabled:NO];
-	[connectButton display];
 	[progressIndicator startAnimation:self];
-	[progressIndicator display];
 	[progressIndicatorText setHidden:NO];
-	[progressIndicatorText display];
 
 	// Start the current tab's progress indicator
 	[tableDocument setIsProcessing:YES];
