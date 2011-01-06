@@ -31,8 +31,8 @@
 
 - (void)dealloc
 {
-	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs release];
 	[lineNumberView release];
 }
@@ -62,7 +62,7 @@
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
 	// add NSViewBoundsDidChangeNotification to scrollView
-	[[commandScrollView contentView] setPostsBoundsChangedNotifications:YES];
+	[commandScrollView setPostsBoundsChangedNotifications:YES];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[commandScrollView contentView]];
 
 }

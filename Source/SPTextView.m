@@ -152,7 +152,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
 	// add NSViewBoundsDidChangeNotification to scrollView
-	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
+	[scrollView setPostsBoundsChangedNotifications:YES];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
@@ -3013,9 +3013,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 /**
  * Scrollview delegate after the textView's view port was changed.
- * Manily used to update the syntax highlighting for a large text size.
+ * Manily used to update the syntax highlighting for a large text size and line numbering rendering.
  */
-- (void) boundsDidChangeNotification:(NSNotification *)notification
+- (void)boundsDidChangeNotification:(NSNotification *)notification
 {
 	// Invoke syntax highlighting if text view port was changed for large text
 	if(startListeningToBoundChanges && [[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
@@ -3028,7 +3028,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
 	}
 	else
-		[[scrollView contentView] display];
+		[scrollView displayRect:[scrollView visibleRect]];
 
 }
 
