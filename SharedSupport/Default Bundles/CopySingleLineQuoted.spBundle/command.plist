@@ -43,5 +43,7 @@ Version 1.0
 	<string>Takes the current query or the selection and copies it as a single line quoted multi-line string by appending a ; into the pasteboard</string>
 	<key>uuid</key>
 	<string>CDAC825A-AE80-4544-9DBB-8E68A5C540D0</string>
+	<key>isDefaultBundle</key>
+	<true/>
 </dict>
 </plist>

@@ -1346,7 +1346,8 @@
 	// Clean menu
 	[menu compatibleRemoveAllItems];
 
-	// Set up the bundle search paths - always the default bundles directory, and the application support directory if it exists
+	// Set up the bundle search paths
+	// First process all in Application Support folder installed ones then Default ones
 	NSFileManager *fm = [NSFileManager defaultManager];
 	NSError *appPathError = nil;
 	NSArray *bundlePaths = [NSArray arrayWithObjects:
@@ -1354,6 +1355,7 @@
 		[NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Bundles", [[NSBundle mainBundle] bundlePath]],
 		nil];
 
+	// If ~/Library/Application Path/Sequel Pro/Bundles couldn't be created bail
 	if(appPathError != nil) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Bundles Installation Error", @"bundles installation error")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -1427,7 +1429,7 @@
 								}
 								if(bundleWasDeleted) continue;
 
-								// If default Bundle is already install check for possible update,
+								// If default Bundle is already installed check for possible update,
 								// if so duplicate the modified one by appending (user) and updated it
 								if(doBundleUpdate || [installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] == nil) {
 
@@ -1522,24 +1524,11 @@
 									infoPath = [NSString stringWithString:newInfoPath];
 								}
 
-								[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
-										infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
-
-								// Remove updated Bundle from already set bundleItems
-								NSString *anUuid = [cmdData objectForKey:SPBundleFileUUIDKey];
-								for(NSDictionary* item in [bundleItems objectForKey:[cmdData objectForKey:SPBundleFileScopeKey]]) {
-									if([[item objectForKey:SPBundleFileUUIDKey] isEqualToString:anUuid]) {
-										[[bundleItems objectForKey:[cmdData objectForKey:SPBundleFileScopeKey]] removeObject:item];
-										break;
-									}
-								}
-
-							} else {
-								[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
-										infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							}
+
+							[installedBundleUUIDs setObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									[NSString stringWithFormat:@"%@ (%@)", bundle, [cmdData objectForKey:SPBundleFileNameKey]], @"name",
+									infoPath, @"path", nil] forKey:[cmdData objectForKey:SPBundleFileUUIDKey]];
 
 						} else {
 							NSLog(@"No UUID for %@", bundle);
@@ -1547,72 +1536,75 @@
 							continue;
 						}
 
-						NSString *scope = [cmdData objectForKey:SPBundleFileScopeKey];
+						// Register Bundle - do it for default Bundles only while processDefaultBundles
+						if(![cmdData objectForKey:SPBundleFileIsDefaultBundleKey] || processDefaultBundles) {
+							NSString *scope = [cmdData objectForKey:SPBundleFileScopeKey];
 
-						if(![bundleUsedScopes containsObject:scope]) {
-							[bundleUsedScopes addObject:scope];
-							[bundleItems setObject:[NSMutableArray array] forKey:scope];
-							[bundleCategories setObject:[NSMutableArray array] forKey:scope];
-							[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
+							// Register scope/category menu structure
+							if(![bundleUsedScopes containsObject:scope]) {
+								[bundleUsedScopes addObject:scope];
+								[bundleItems setObject:[NSMutableArray array] forKey:scope];
+								[bundleCategories setObject:[NSMutableArray array] forKey:scope];
+								[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
+							}
+							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
+								[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
+
+							NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
+							[aDict setObject:[cmdData objectForKey:SPBundleFileNameKey] forKey:SPBundleInternLabelKey];
+							[aDict setObject:infoPath forKey:SPBundleInternPathToFileKey];
+
+							// Register trigger
+							if([cmdData objectForKey:SPBundleFileTriggerKey]) {
+								if(![bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]])
+									[bundleTriggers setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileTriggerKey]];
+								[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:
+									[NSString stringWithFormat:@"%@|%@|%@", 
+										infoPath, 
+										[cmdData objectForKey:SPBundleFileScopeKey], 
+										([[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsHTML])?[cmdData objectForKey:SPBundleFileUUIDKey]:@""]];
+							}
+
+							// Register key equivalent
+							if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
+
+								NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
+								NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
+								NSString *theMods = [theKey substringToIndex:[theKey length]-1];
+								NSUInteger mask = 0;
+								if([theMods rangeOfString:@"^"].length) mask = mask | NSControlKeyMask;
+								if([theMods rangeOfString:@"@"].length) mask = mask | NSCommandKeyMask;
+								if([theMods rangeOfString:@"~"].length) mask = mask | NSAlternateKeyMask;
+								if([theMods rangeOfString:@"$"].length) mask = mask | NSShiftKeyMask;
+
+								if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
+									[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
+
+								[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
+												[NSDictionary dictionaryWithObjectsAndKeys:
+														infoPath, @"path",
+														[cmdData objectForKey:SPBundleFileNameKey], @"title",
+														([cmdData objectForKey:SPBundleFileTooltipKey]) ?: @"", @"tooltip",
+												nil]];
+
+								[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
+							}
+
+							if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
+								[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
+
+							if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length])
+								[aDict setObject:[cmdData objectForKey:SPBundleFileCategoryKey] forKey:SPBundleFileCategoryKey];
+
+							if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length])
+								[aDict setObject:[cmdData objectForKey:SPBundleFileKeyEquivalentKey] forKey:@"key"];
+
+							[[bundleItems objectForKey:scope] addObject:aDict];
 						}
-
-						if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
-							[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
-
-						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
-						[aDict setObject:[cmdData objectForKey:SPBundleFileNameKey] forKey:SPBundleInternLabelKey];
-						[aDict setObject:infoPath forKey:SPBundleInternPathToFileKey];
-						[aDict setObject:[cmdData objectForKey:SPBundleFileUUIDKey] forKey:SPBundleFileUUIDKey];
-
-						// Register trigger
-						if([cmdData objectForKey:SPBundleFileTriggerKey]) {
-							if(![bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]])
-								[bundleTriggers setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileTriggerKey]];
-							[[bundleTriggers objectForKey:[cmdData objectForKey:SPBundleFileTriggerKey]] addObject:
-								[NSString stringWithFormat:@"%@|%@|%@", 
-									infoPath, 
-									[cmdData objectForKey:SPBundleFileScopeKey], 
-									([[cmdData objectForKey:SPBundleFileOutputActionKey] isEqualToString:SPBundleOutputActionShowAsHTML])?[cmdData objectForKey:SPBundleFileUUIDKey]:@""]];
-						}
-
-						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
-
-							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
-							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
-							NSString *theMods = [theKey substringToIndex:[theKey length]-1];
-							NSUInteger mask = 0;
-							if([theMods rangeOfString:@"^"].length) mask = mask | NSControlKeyMask;
-							if([theMods rangeOfString:@"@"].length) mask = mask | NSCommandKeyMask;
-							if([theMods rangeOfString:@"~"].length) mask = mask | NSAlternateKeyMask;
-							if([theMods rangeOfString:@"$"].length) mask = mask | NSShiftKeyMask;
-
-							if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
-								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
-
-							[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
-											[NSDictionary dictionaryWithObjectsAndKeys:
-													infoPath, @"path",
-													[cmdData objectForKey:SPBundleFileNameKey], @"title",
-													([cmdData objectForKey:SPBundleFileTooltipKey]) ?: @"", @"tooltip",
-											nil]];
-
-							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
-						}
-
-						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
-							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
-
-						if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length])
-							[aDict setObject:[cmdData objectForKey:SPBundleFileCategoryKey] forKey:SPBundleFileCategoryKey];
-
-						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length])
-							[aDict setObject:[cmdData objectForKey:SPBundleFileKeyEquivalentKey] forKey:@"key"];
-
-						[[bundleItems objectForKey:scope] addObject:aDict];
-
 					}
 				}
 
+				// Sort items for menus
 				NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:SPBundleInternLabelKey ascending:YES] autorelease];
 				for(NSString* scope in [bundleItems allKeys]) {
 					[[bundleItems objectForKey:scope] sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];

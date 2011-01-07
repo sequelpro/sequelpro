@@ -168,5 +168,7 @@ Version 1.0</string>
 	<string>Display report about all databases of the current connection</string>
 	<key>uuid</key>
 	<string>AC45C093-9157-4E18-9683-C94415995935</string>
+	<key>isDefaultBundle</key>
+	<true/>
 </dict>
 </plist>

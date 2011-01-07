@@ -41,5 +41,7 @@ Version 1.0</string>
 	<string>Wrap the current query or selection in DELIMITER ;;</string>
 	<key>uuid</key>
 	<string>A67BDE10-0A76-45C2-98DB-B35AC731E8DA</string>
+	<key>isDefaultBundle</key>
+	<true/>
 </dict>
 </plist>
