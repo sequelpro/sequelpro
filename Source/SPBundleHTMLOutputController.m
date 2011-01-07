@@ -211,6 +211,7 @@
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
 	docUUID = @"";
+	NSLog(@"close");
 	[self release];
 }
 
@@ -366,6 +367,8 @@
 		return @"getShellEnvironmentForName";
 	if (aSelector == @selector(makeHTMLOutputWindowKeyWindow))
 		return @"makeHTMLOutputWindowKeyWindow";
+	if (aSelector == @selector(closeHTMLOutputWindow))
+		return @"closeHTMLOutputWindow";
 	return @"";
 }
 
@@ -377,6 +380,9 @@
 		return NO;
 	}
 	if (selector == @selector(makeHTMLOutputWindowKeyWindow)) {
+		return NO;
+	}
+	if (selector == @selector(closeHTMLOutputWindow)) {
 		return NO;
 	}
 	return YES;
@@ -438,6 +444,15 @@
 - (void)makeHTMLOutputWindowKeyWindow
 {
 	[[self window] makeKeyAndOrderFront:nil];
+}
+
+/**
+ * JavaScript window.system.makeHTMLOutputWindowKeyWindow() function
+ * to make the HTML output window the first responder
+ */
+- (void)closeHTMLOutputWindow
+{
+	[[self window] close];
 }
 
 /**
