@@ -211,7 +211,6 @@
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
 	docUUID = @"";
-	NSLog(@"close");
 	[self release];
 }
 

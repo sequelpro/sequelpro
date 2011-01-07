@@ -496,7 +496,7 @@
 
 			NSFileManager *fm = [NSFileManager defaultManager];
 
-			NSString *bundlePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder error:nil];
+			NSString *bundlePath = [fm applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder error:nil];
 
 			if(!bundlePath) return;
 
@@ -621,7 +621,12 @@
 {
 
 	NSURL *url = [NSURL URLWithString:[[event paramDescriptorForKeyword:keyDirectObject] stringValue]];
-	[self handleEventWithURL:url];
+	if(url)
+		[self handleEventWithURL:url];
+	else {
+		NSBeep();
+		NSLog(@"Error in sequelpro URL scheme");
+	}
 }
 
 - (void)handleEventWithURL:(NSURL*)url
@@ -635,13 +640,14 @@
 	else
 		parameter = [NSArray array];
 
+	NSFileManager *fm = [NSFileManager defaultManager];
 
 	// Handle commands which don't need a connection window
 	if([command isEqualToString:@"chooseItemFromList"]) {
 		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
 		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, (passedProcessID && [passedProcessID length]) ? passedProcessID : @""];
-		[[NSFileManager defaultManager] removeItemAtPath:statusFileName error:nil];
-		[[NSFileManager defaultManager] removeItemAtPath:resultFileName error:nil];
+		[fm removeItemAtPath:statusFileName error:nil];
+		[fm removeItemAtPath:resultFileName error:nil];
 		NSString *result = @"";
 		NSString *status = @"0";
 		if([parameter count]) {
@@ -695,14 +701,12 @@
 			[cmdDict setObject:parameter forKey:@"parameter"];
 			[cmdDict setObject:(passedProcessID)?:@"" forKey:@"id"];
 			[processDocument handleSchemeCommand:cmdDict];
-			return;
-		}
-		else {
+		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"sequelpro URL Scheme Error", @"sequelpro url Scheme Error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [command description], NSLocalizedString(@"sequelpro URL scheme command not supported.", @"sequelpro URL scheme command not supported.")]);
 			
-			return;
 		}
+		return;
 	}
 
 	if(passedProcessID && [passedProcessID length]) {
@@ -723,10 +727,10 @@
 
 
 		usleep(5000);
-		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID] error:nil];
-		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID] error:nil];
-		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, passedProcessID] error:nil];
-		[[NSFileManager defaultManager] removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, passedProcessID] error:nil];
+		[fm removeItemAtPath:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, passedProcessID] error:nil];
 
 
 
@@ -760,6 +764,7 @@
 	}
 
 	if(!infoPath) {
+		NSLog(@"No path to Bundle command passed");
 		NSBeep();
 		return;
 	}
@@ -939,8 +944,6 @@
 		}
 	}
 
-	// if(doc && [doc shellVariables]) [env addEntriesFromDictionary:[doc shellVariables]];
-	// if(doc) [doc release];
 	id firstResponder = [[NSApp keyWindow] firstResponder];
 	if([firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
 		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"]) ;
@@ -1324,6 +1327,7 @@
 - (IBAction)reloadBundles:(id)sender
 {
 
+	// Force releasing of any HTML output windows
 	for(id c in bundleHTMLOutputController) {
 		if(![[c window] isVisible]) {
 			[c release];
