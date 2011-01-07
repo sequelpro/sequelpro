@@ -1291,7 +1291,7 @@
 		[touchedBundleArray addObject:oldBundleName];
 
 	[self _updateBundleDataView];
-
+	[commandTextView setSelectedRange:NSMakeRange(0,0)];
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
