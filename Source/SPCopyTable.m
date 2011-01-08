@@ -698,6 +698,10 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger columnWidth;
 	NSUInteger allColumnWidths = 0;
 
+	// Determine the available size
+	NSScrollView *parentScrollView = [[self superview] superview];
+ 	CGFloat visibleTableWidth = [parentScrollView bounds].size.width - [NSScroller scrollerWidth] - [columnDefinitions count] * 3.5;
+
 	for (NSDictionary *columnDefinition in columnDefinitions) {
 		if ([[NSThread currentThread] isCancelled]) return nil;
 
@@ -707,7 +711,7 @@ NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Compare the column widths to the table width.  If wider, narrow down wide columns as necessary
-	if (allColumnWidths > [self bounds].size.width) {
+	if (allColumnWidths > visibleTableWidth) {
 		NSUInteger availableWidthToReduce = 0;
 
 		// Look for columns that are wider than the multi-column max
@@ -717,7 +721,7 @@ NSInteger kBlobAsImageFile = 4;
 		}
 
 		// Determine how much width can be reduced
-		NSUInteger widthToReduce = allColumnWidths - [self bounds].size.width;
+		NSUInteger widthToReduce = allColumnWidths - visibleTableWidth;
 		if (availableWidthToReduce < widthToReduce) widthToReduce = availableWidthToReduce;
 
 		// Proportionally decrease the column sizes
