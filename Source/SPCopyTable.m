@@ -1225,11 +1225,21 @@ NSInteger kBlobAsImageFile = 4;
 				return;
 			}
 
+
+			// Create an array of table column mappings for fast iteration
+			NSArray *columns = [self tableColumns];
+			NSUInteger numColumns = [columns count];
+			NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+			NSInteger c;
+			for ( c = 0; c < numColumns; c++ )
+				columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
-				for(NSDictionary* col in defs) {
+				for( c = 0; c < numColumns; c++ ) {
+					NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
 					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
 					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
 					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
@@ -1242,7 +1252,8 @@ NSInteger kBlobAsImageFile = 4;
 			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
 				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
-				for(NSDictionary* col in defs) {
+				for( c = 0; c < numColumns; c++ ) {
+					NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
 					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
 					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
 					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
