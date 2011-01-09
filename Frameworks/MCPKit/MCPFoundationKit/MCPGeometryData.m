@@ -103,7 +103,8 @@
 - (NSString*)wktString
 {
 	char byteOrder;
-	uint32_t geoType, srid, numberOfItems, numberOfSubItems, numberOfSubSubItems, numberOfCollectionItems;
+	uint32_t geoType, numberOfItems, numberOfSubItems, numberOfSubSubItems, numberOfCollectionItems;
+	int32_t srid;
 	st_point_2d aPoint;
 
 	uint32_t i, j, k, n;          // Loop counter for numberOf...Items
@@ -130,7 +131,7 @@
 
 		case wkb_point:
 		memcpy(&aPoint, &geoBuffer[ptr], POINT_DATA_SIZE);
-		return [NSString stringWithFormat:@"POINT(%.16g %.16g)%@", aPoint.x, aPoint.y, (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		return [NSString stringWithFormat:@"POINT(%.16g %.16g)%@", aPoint.x, aPoint.y, (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		break;
 
 		case wkb_linestring:
@@ -142,7 +143,7 @@
 			[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i < numberOfItems-1) ? @"," : @""];
 			ptr += POINT_DATA_SIZE;
 		}
-		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		return wkt;
 		break;
 
@@ -161,7 +162,7 @@
 			}
 			[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
 		}
-		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		return wkt;
 		break;
 
@@ -174,7 +175,7 @@
 			[wkt appendFormat:@"%.16g %.16g%@", aPoint.x, aPoint.y, (i < numberOfItems-1) ? @"," : @""];
 			ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
 		}
-		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		return wkt;
 		break;
 
@@ -194,7 +195,7 @@
 			ptr += WKB_HEADER_SIZE;
 			[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
 		}
-		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		return wkt;
 		break;
 
@@ -220,7 +221,7 @@
 			ptr += WKB_HEADER_SIZE;
 			[wkt appendFormat:@")%@", (i < numberOfItems-1) ? @"," : @""];
 		}
-		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		return wkt;
 		break;
 
@@ -342,7 +343,7 @@
 			}
 			[wkt appendString:(n < numberOfCollectionItems-1) ? @"," : @""];
 		}
-		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%u",srid]: @""];
+		[wkt appendFormat:@")%@", (srid) ? [NSString stringWithFormat:@",%d",srid]: @""];
 		return wkt;
 		break;
 
@@ -362,11 +363,12 @@
 {
 
 	char byteOrder;
-	UInt32 geoType, srid, numberOfItems, numberOfSubItems, numberOfSubSubItems, numberOfCollectionItems;
+	uint32_t geoType, numberOfItems, numberOfSubItems, numberOfSubSubItems, numberOfCollectionItems;
+	int32_t srid;
 	st_point_2d aPoint;
 
-	NSUInteger i, j, k, n;          // Loop counter for numberOf...Items
-	NSUInteger ptr = BUFFER_START;  // pointer to geoBuffer while parsing
+	uint32_t i, j, k, n;          // Loop counter for numberOf...Items
+	uint32_t ptr = BUFFER_START;  // pointer to geoBuffer while parsing
 
 	double x_min = 1e998;
 	double x_max = -1e998;
@@ -413,7 +415,7 @@
 				[NSNumber numberWithDouble:y_max],
 				nil], @"bbox",
 			coordinates, @"coordinates",
-			[NSNumber numberWithUnsignedInt:srid], @"srid",
+			[NSNumber numberWithInt:srid], @"srid",
 			@"POINT", @"type",
 			nil];
 		break;
@@ -468,7 +470,7 @@
 				[NSNumber numberWithDouble:y_max],
 				nil], @"bbox",
 			coordinates, @"coordinates",
-			[NSNumber numberWithUnsignedInt:srid], @"srid",
+			[NSNumber numberWithInt:srid], @"srid",
 			@"POLYGON", @"type",
 			nil];
 		break;
@@ -493,7 +495,7 @@
 				[NSNumber numberWithDouble:y_max],
 				nil], @"bbox",
 			coordinates, @"coordinates",
-			[NSNumber numberWithUnsignedInt:srid], @"srid",
+			[NSNumber numberWithInt:srid], @"srid",
 			@"MULTIPOINT", @"type",
 			nil];
 		break;
@@ -525,7 +527,7 @@
 				[NSNumber numberWithDouble:y_max],
 				nil], @"bbox",
 			coordinates, @"coordinates",
-			[NSNumber numberWithUnsignedInt:srid], @"srid",
+			[NSNumber numberWithInt:srid], @"srid",
 			@"MULTILINESTRING", @"type",
 			nil];
 		break;
@@ -561,7 +563,7 @@
 				[NSNumber numberWithDouble:y_max],
 				nil], @"bbox",
 			coordinates, @"coordinates",
-			[NSNumber numberWithUnsignedInt:srid], @"srid",
+			[NSNumber numberWithInt:srid], @"srid",
 			@"MULTIPOLYGON", @"type",
 			nil];
 		break;
