@@ -1263,6 +1263,7 @@ NSInteger kBlobAsImageFile = 4;
 					[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
 				}
 			}
+			free(columnMappings);
 
 			inputFileError = nil;
 			[tableMetaData writeToFile:bundleInputTableMetaDataFilePath
