@@ -89,6 +89,7 @@
 		tableDocument = theTableDocument;
 		databaseConnectionSuperview = [tableDocument databaseView];
 		databaseConnectionView = [tableDocument valueForKey:@"contentViewSplitter"];
+		connectionKeychainID = nil;
 		connectionKeychainItemName = nil;
 		connectionKeychainItemAccount = nil;
 		connectionSSHKeychainItemName = nil;
@@ -173,6 +174,7 @@
 	if (favorites) [favorites release];
 	if (mySQLConnection) [mySQLConnection release];
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
+	if (connectionKeychainID) [connectionKeychainID release];
 	if (connectionKeychainItemName) [connectionKeychainItemName release];
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
@@ -512,9 +514,7 @@
 	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 
 	// Set keychain id for saving SPF files
-	if ([self valueForKeyPath:@"selectedFavorite.id"]) {
-		[tableDocument setKeychainID:[[self valueForKeyPath:@"selectedFavorite.id"] stringValue]];
-	}
+	if (connectionKeychainID) [tableDocument setKeychainID:connectionKeychainID];
 
 	// Pass the connection to the table document, allowing it to set
 	// up the other classes and the rest of the interface.
@@ -884,6 +884,7 @@
 	automaticFavoriteSelection = YES;
 
 	// Clear the keychain referral items as appropriate
+	if (connectionKeychainID) [connectionKeychainID release], connectionKeychainID = nil;
 	if (connectionKeychainItemName) [connectionKeychainItemName release], connectionKeychainItemName = nil;
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
@@ -932,6 +933,8 @@
 		[connectionKeychainItemName release], connectionKeychainItemName = nil;
 		[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
 	}
+
+	if ([self valueForKeyPath:@"selectedFavorite.id"]) connectionKeychainID = [[[self valueForKeyPath:@"selectedFavorite.id"] stringValue] retain];
 
 	// And the same for the SSH password
 	connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[self valueForKeyPath:@"selectedFavorite.name"] id:[self valueForKeyPath:@"selectedFavorite.id"]] retain];

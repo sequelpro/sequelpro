@@ -82,6 +82,7 @@
 	NSString *sshPort;
 	@private NSString *favoritesPBoardType;
 
+	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
