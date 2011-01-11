@@ -1238,30 +1238,32 @@ NSInteger kBlobAsImageFile = 4;
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
-				for( c = 0; c < numColumns; c++ ) {
-					NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
-					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
-					[tableMetaData appendString:@"\n"];
-				}
+				if(defs && [defs count] == numColumns)
+					for( c = 0; c < numColumns; c++ ) {
+						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
+						[tableMetaData appendString:@"\n"];
+					}
 			}
 			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
 				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
-				for( c = 0; c < numColumns; c++ ) {
-					NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
-					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"unsigned"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"autoincrement"]];
-					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"isprimarykey"]) ? : @"0"];
-					[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
-				}
+				if(defs && [defs count] == numColumns)
+					for( c = 0; c < numColumns; c++ ) {
+						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"unsigned"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"autoincrement"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"isprimarykey"]) ? : @"0"];
+						[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
+					}
 			}
 			free(columnMappings);
 
