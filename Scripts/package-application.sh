@@ -1,17 +1,34 @@
 #!/bin/sh
 
-# $Id$
 #
-# package-application.sh
-# sequel-pro
+#  $Id$  
 #
-# A very basic script to build and sign a disk image for Sequel Pro; based on better work by Stuart Connolly.
+#  package-application.sh
+#  sequel-pro
 #
-# Created by Rowan Beentje on 25/03/2009.
-# Copyright 2009 Sequel Pro Team. All rights reserved.
+#  Created by Rowan Beentje on March 25, 2009.
+#  Copyright (c) 2009 Sequel Pro Team. All rights reserved.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#  More info at <http://code.google.com/p/sequel-pro/>
 
-# Ensure the path to the application has been supplied - should have occurred when the
-# script was run by selecting "Distribution" target and building.
+#  A very basic script to build and sign a disk image for Sequel Pro; based on better work by Stuart Connolly.
+#
+#  Ensure the path to the application has been supplied - should have occurred when the
+#  script was run by selecting 'Distribution' target and building.
 
 if [ $# -eq 0 ]
 then

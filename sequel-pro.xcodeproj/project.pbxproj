@@ -620,6 +620,7 @@
 		173C838F11AAD32A00B8B084 /* SPXMLExporterDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporterDelegate.m; sourceTree = "<group>"; };
 		1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseData.h; sourceTree = "<group>"; };
 		1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseData.m; sourceTree = "<group>"; };
+		174A345112DA4ED000DB0ADE /* create-test-stubs.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "create-test-stubs.pl"; sourceTree = "<group>"; };
 		174CE11D10AB80B5008F892B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseProcessList.xib; sourceTree = "<group>"; };
 		174CE14010AB9281008F892B /* SPProcessListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListController.h; sourceTree = "<group>"; };
 		174CE14110AB9281008F892B /* SPProcessListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessListController.m; sourceTree = "<group>"; };
@@ -1591,6 +1592,7 @@
 				17E20E1E12D6645F007F75A6 /* run-tests.sh */,
 				1761FD9D0EF0488900331368 /* build-version.pl */,
 				178934980F30CDA10097539A /* trim-application.sh */,
+				174A345112DA4ED000DB0ADE /* create-test-stubs.pl */,
 				17B7B698101611C800F057DE /* build-mysql-client.sh */,
 				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
