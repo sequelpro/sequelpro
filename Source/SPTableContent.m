@@ -1604,6 +1604,12 @@
 		column = NSArrayObjectAtIndex(dataColumns, i);
 		if ([column objectForKey:@"default"] == nil || [column objectForKey:@"default"] == [NSNull null]) {
 			[newRow addObject:[NSNull null]];
+		} else if ([[column objectForKey:@"default"] isEqualToString:@""]
+					&& ![[column objectForKey:@"null"] boolValue]
+					&& ([[column objectForKey:@"typegrouping"] isEqualToString:@"float"]
+						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"integer"]))
+		{
+			[newRow addObject:@"0"];
 		} else {
 			[newRow addObject:[column objectForKey:@"default"]];
 		}
@@ -2394,9 +2400,11 @@
 	NSMutableArray *rowFieldsToSave = [[NSMutableArray alloc] initWithCapacity:[dataColumns count]];
 	NSMutableArray *rowValuesToSave = [[NSMutableArray alloc] initWithCapacity:[dataColumns count]];
 	NSInteger i;
+	NSDictionary *fieldDefinition;
 	id rowObject;
 	for (i = 0; i < [dataColumns count]; i++) {
 		rowObject = [tableValues cellDataAtRow:currentlyEditingRow column:i];
+		fieldDefinition = NSArrayObjectAtIndex(dataColumns, i);
 
 		// Skip "not loaded" cells entirely - these only occur when editing tables when the
 		// preference setting is enabled, and don't need to be saved back to the table.
@@ -2408,13 +2416,13 @@
 
 		// Prepare to derive the value to save
 		NSString *fieldValue;
-		NSString *fieldTypeGroup = [NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"];
+		NSString *fieldTypeGroup = [fieldDefinition objectForKey:@"typegrouping"];
 
 		// Use NULL when the user has entered the nullValue string defined in the preferences,
 		// or when a numeric field is empty.
 		if ([rowObject isNSNull]
 			|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"])
-				&& [[rowObject description] isEqualToString:@""]))
+				&& [[rowObject description] isEqualToString:@""] && [[fieldDefinition objectForKey:@"null"] boolValue]))
 		{
 			fieldValue = @"NULL";
 
@@ -2449,7 +2457,7 @@
 		}
 
 		// Store the key and value in the ordered arrays for saving.
-		[rowFieldsToSave addObject:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]];
+		[rowFieldsToSave addObject:[fieldDefinition objectForKey:@"name"]];
 		[rowValuesToSave addObject:fieldValue];
 	}
 
