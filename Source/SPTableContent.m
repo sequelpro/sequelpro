@@ -2792,7 +2792,7 @@
  * -2 for other errors
  * and the used WHERE clause to identify
  */
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex
 {
 	NSDictionary *columnDefinition = nil;
 
@@ -2927,10 +2927,12 @@
 
 	NSInteger row = -1;
 	NSInteger column = -1;
+	NSInteger editedColumn = -1;
 
 	if(contextInfo) {
 		row = [[contextInfo objectForKey:@"row"] integerValue];
 		column = [[contextInfo objectForKey:@"column"] integerValue];
+		editedColumn = [[contextInfo objectForKey:@"editedColumn"] integerValue];
 	}
 
 	if (data && contextInfo) {
@@ -2966,8 +2968,8 @@
 
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
 
-	if(row > -1 && column > -1)
-		[tableContentView editColumn:column row:row withEvent:nil select:YES];
+	if(row > -1 && editedColumn > -1)
+		[tableContentView editColumn:editedColumn row:row withEvent:nil select:YES];
 }
 
 #pragma mark -
@@ -4058,6 +4060,12 @@
 			if ([cellValue isNSNull])
 				cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 
+			NSInteger editedColumn = 0;
+			for(NSTableColumn* col in [tableContentView tableColumns]) {
+				if([[col identifier] isEqualToNumber:[aTableColumn identifier]]) break;
+				editedColumn++;
+			}
+
 			[fieldEditor editWithObject:cellValue
 							 fieldName:[[aTableColumn headerCell] stringValue]
 						 usingEncoding:[mySQLConnection stringEncoding]
@@ -4068,6 +4076,7 @@
 						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 											[NSNumber numberWithInteger:rowIndex], @"row",
 											[aTableColumn identifier], @"column",
+											[NSNumber numberWithInteger:editedColumn], @"editedColumn",
 											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
 											nil]];
 

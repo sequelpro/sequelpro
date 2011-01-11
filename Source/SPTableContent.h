@@ -231,7 +231,7 @@
 - (void)openContentFilterManager;
 - (void)makeContentFilterHaveFocus;
 
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex;
 
 - (void)updateFilterTableClause:(id)currentValue;
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
