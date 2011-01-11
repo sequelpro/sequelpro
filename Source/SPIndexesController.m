@@ -39,7 +39,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 - (void)_reloadIndexedColumnsTableData;
 
 - (void)_addIndexUsingDetails:(NSDictionary *)indexDetails;
-- (void)_removeIndexUsingDeatails:(NSDictionary *)indexDetails;
+- (void)_removeIndexUsingDetails:(NSDictionary *)indexDetails;
 
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
 
@@ -568,7 +568,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			[indexDetails setObject:[NSNumber numberWithInteger:[indexKeyBlockSizeTextField integerValue]] forKey:SPNewIndexKeyBlockSize];
 		}
 
-		if (([[indexTypePopUpButton selectedItem] tag] != SPPrimaryKeyMenuTag) && ([[indexTypePopUpButton selectedItem] tag] != SPSpatialMenuTag)) {
+		if (([indexStorageTypePopUpButton indexOfSelectedItem] > 0) && ([[indexTypePopUpButton selectedItem] tag] != SPSpatialMenuTag)) {
 			[indexDetails setObject:[indexStorageTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexStorageType];
 		}
 
@@ -601,12 +601,12 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[indexDetails setObject:[NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_removeIndexUsingDeatails:) toTarget:self withObject:indexDetails];
+			[NSThread detachNewThreadSelector:@selector(_removeIndexUsingDetails:) toTarget:self withObject:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
 		else {
-			[self _removeIndexUsingDeatails:indexDetails];
+			[self _removeIndexUsingDetails:indexDetails];
 		}
 	}
 }
@@ -758,14 +758,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			[query appendString:indexName];
 		}
 
-		// Add the columns
-		[query appendFormat:@" (%@)", [tempIndexedColumns componentsJoinedByCommas]];
-
 		// If supplied specify the index's storage type
 		if (indexStorageType) {
 			[query appendString:@" USING "];
 			[query appendString:indexStorageType];
 		}
+
+		// Add the columns
+		[query appendFormat:@" (%@)", [tempIndexedColumns componentsJoinedByCommas]];
 		
 		// If supplied specify the index's key block size
 		if (indexKeyBlockSize) {
@@ -805,7 +805,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  *
  * @param indexDetails A dictionary containing the details of the index to be removed
  */
-- (void)_removeIndexUsingDeatails:(NSDictionary *)indexDetails
+- (void)_removeIndexUsingDetails:(NSDictionary *)indexDetails
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
