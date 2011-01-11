@@ -758,13 +758,7 @@
  */
 - (void)setAutoIncrementTo:(NSString*)valueAsString
 {
-	NSString *selTable = nil;
-
-	// if selectedTable is nil try to get the name from SPTablesList
-	if (selectedTable == nil || ![selectedTable length])
-		selTable = [tablesListInstance tableName];
-	else
-		selTable = [NSString stringWithString:selectedTable];
+	NSString *selTable = [tablesListInstance tableName];
 
 	if (selTable == nil || ![selTable length]) return;
 
