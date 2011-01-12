@@ -552,6 +552,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					if (cmdData) [cmdData release];
 					return;
 				}
+
+				// Reload Bundles if Sequel Pro didn't run
+				if(![installedBundleUUIDs count])
+					[self reloadBundles:self];
+
 				if([[installedBundleUUIDs allKeys] containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
 					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Installing Bundle", @"Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog title")]
 													 defaultButton:NSLocalizedString(@"Update", @"Open Files : Bundle : Already-Installed : Update button") 
