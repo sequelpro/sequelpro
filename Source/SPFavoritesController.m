@@ -309,8 +309,6 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		{
 			SPTreeNode *innerNode = [self _constructBranchForNodeData:favorite];
 			
-			[innerNode setIsGroup:YES];
-			
 			[[treeNode mutableChildNodes] addObject:innerNode];
 			
 			[innerNode release];
