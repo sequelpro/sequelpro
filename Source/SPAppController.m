@@ -767,9 +767,30 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"sequelpro URL Scheme Error", @"sequelpro url Scheme Error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [command description], NSLocalizedString(@"sequelpro URL scheme command not supported.", @"sequelpro URL scheme command not supported.")]);
+
+			// If command failed notify the file handle hand shake mechanism
+			NSString *out = @"1";
+			NSString *anUUID = @"";
+			if(command && passedProcessID && [passedProcessID length])
+				anUUID = passedProcessID;
+			else
+				anUUID = command;
 			
+			[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, anUUID]
+				atomically:YES
+				encoding:NSUTF8StringEncoding
+				   error:nil];
+
+			out = @"Error";
+			[out writeToFile:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, anUUID]
+				atomically:YES
+				encoding:NSUTF8StringEncoding
+				   error:nil];
+
 		}
+
 		return;
+
 	}
 
 	if(passedProcessID && [passedProcessID length]) {
