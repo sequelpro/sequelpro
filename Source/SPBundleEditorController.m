@@ -1031,9 +1031,9 @@
 			if(deletionSuccessfully) {
 				[commandBundleTreeController removeObjectsAtArrangedObjectIndexPaths:selIndexPaths];
 				[commandBundleTreeController rearrangeObjects];
-			} else {
-				[self reloadBundles:self];
 			}
+
+			[self reloadBundles:self];
 
 			// Set focus to table view to avoid an unstable state
 			[[self window] makeFirstResponder:commandsOutlineView];
