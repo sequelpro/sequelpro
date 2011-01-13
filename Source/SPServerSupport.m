@@ -54,6 +54,7 @@
 @synthesize supportsFullDropUser;
 @synthesize supportsUserMaxVars;
 @synthesize supportsShowPrivileges;
+@synthesize engineTypeQueryName;
 @synthesize supportsInformationSchemaEngines;
 @synthesize supportsPre41StorageEngines;
 @synthesize supportsBlackholeStorageEngine;
@@ -150,7 +151,10 @@
 	
 	// The SHOW PRIVILEGES statement wasn't added until MySQL 4.1.0
 	supportsShowPrivileges = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
-	
+
+	// MySQL 4.0.18+ and 4.1.2+ changed the TYPE option to ENGINE, but 4.x supports both
+	engineTypeQueryName = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:0]?@"ENGINE":@"TYPE";
+
 	// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was available
 	supportsPre41StorageEngines = (![self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0]);
 	
@@ -245,6 +249,7 @@
 	supportsFullDropUser               = NO;
 	supportsUserMaxVars                = NO;
 	supportsShowPrivileges             = NO;
+	engineTypeQueryName                = @"ENGINE";
 	supportsInformationSchemaEngines   = NO;
 	supportsPre41StorageEngines        = NO;
 	supportsBlackholeStorageEngine     = NO;

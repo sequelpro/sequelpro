@@ -98,7 +98,7 @@
 	}
 
 	// Alter table's storage type
-	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ TYPE = %@", [selectedTable backtickQuotedString], newType]];
+	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ %@ = %@", [selectedTable backtickQuotedString], [[tableDocumentInstance serverSupport] engineTypeQueryName], newType]];
 
 	if ([connection getLastErrorID] == 0) {
 		// Reload the table's data
