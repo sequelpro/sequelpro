@@ -33,6 +33,7 @@
 @synthesize initHTMLSourceString;
 @synthesize windowUUID;
 @synthesize docUUID;
+@synthesize suppressExceptionAlert;
 
 /**
  * Initialisation
@@ -50,6 +51,7 @@
 		[webView setEditable:NO];
 		[webView setShouldCloseWithWindow:YES];
 		[webView setShouldUpdateWhileOffscreen:NO];
+		suppressExceptionAlert = NO;
 
 	}
 	
@@ -374,6 +376,8 @@
 		return @"makeHTMLOutputWindowKeyWindow";
 	if (aSelector == @selector(closeHTMLOutputWindow))
 		return @"closeHTMLOutputWindow";
+	if (aSelector == @selector(suppressExceptionAlert))
+		return @"suppressExceptionAlert";
 	return @"";
 }
 
@@ -397,6 +401,9 @@
 		return NO;
 	}
 	if (selector == @selector(closeHTMLOutputWindow)) {
+		return NO;
+	}
+	if (selector == @selector(suppressExceptionAlert)) {
 		return NO;
 	}
 	return YES;
@@ -440,7 +447,13 @@
 
 - (void)webView:(WebView *)webView exceptionWasRaised:(WebScriptCallFrame *)frame sourceId:(NSInteger)sid line:(NSInteger)lineno forWebFrame:(WebFrame *)webFrame
 {
+
 	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
+
+	if([self suppressExceptionAlert]) {
+		NSLog(@"%@", mes);
+		return;
+	}
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"JavaScript Exception", @"javascript exception")
 									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -522,6 +535,15 @@
 		return;
 	}
 	NSBeep();
+}
+
+/**
+ * JavaScript window.system.suppressExceptionAlert() function
+ * to suppress an exception alert, instead write the message to NSLog
+ */
+- (void)suppressExceptionAlert
+{
+	[self setSuppressExceptionAlert:YES];
 }
 
 /**
