@@ -1899,13 +1899,14 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 }
 
 /**
- * Returns the number of affected rows by the last query.
+ * Returns the number of affected rows by the last query.  Only actual queries
+ * supplied via queryString:, streamingQueryString:, streamingQueryString:useLowMemoryBlockingStreaming:
+ * or queryString:usingEncoding:streamingResult: will have their affected rows
+ * returned, not any "meta" type queries.
  */
 - (my_ulonglong)affectedRows
 {
-	if (mConnected) {
-		return mysql_affected_rows(mConnection);
-	}
+	if (mConnected) return lastQueryAffectedRows;
 	
 	return 0;
 }

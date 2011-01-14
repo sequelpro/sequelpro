@@ -2498,10 +2498,19 @@
 		} else {
 			NSBeep();
 		}
-		[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+
+		// If creating a new row, remove the row; otherwise revert the row contents
+		if (isEditingNewRow) {
+			tableRowsCount--;
+			[tableValues removeRowAtIndex:currentlyEditingRow];
+			[self updateCountText];
+			isEditingNewRow = NO;
+		} else {
+			[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+		}
 		isEditingRow = NO;
-		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
+		[tableContentView reloadData];
 		[[SPQueryController sharedQueryController] showErrorInConsole:NSLocalizedString(@"/* WARNING: No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db") connection:[tableDocumentInstance name]];
 		return YES;
 
