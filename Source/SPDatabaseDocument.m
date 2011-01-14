@@ -4650,6 +4650,46 @@
 		return;
 	}
 
+	if([command isEqualToString:@"SetSelectedTextRange"]) {
+		if([params count] > 1) {
+			id firstResponder = [parentWindow firstResponder];
+			if([firstResponder isKindOfClass:[NSTextView class]]) {
+				NSRange theRange = NSIntersectionRange(NSRangeFromString([params objectAtIndex:1]), NSMakeRange(0, [[firstResponder string] length]));
+				if(theRange.location != NSNotFound) {
+					[firstResponder setSelectedRange:theRange];
+				}
+				return;
+			}
+			NSBeep();
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"InsertText"]) {
+		if([params count] > 1) {
+			id firstResponder = [parentWindow firstResponder];
+			if([firstResponder isKindOfClass:[NSTextView class]]) {
+				[firstResponder insertText:[params objectAtIndex:1]];
+				return;
+			}
+			NSBeep();
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"SetText"]) {
+		if([params count] > 1) {
+			id firstResponder = [parentWindow firstResponder];
+			if([firstResponder isKindOfClass:[NSTextView class]]) {
+				[firstResponder setSelectedRange:NSMakeRange(0, [[firstResponder string] length])];
+				[firstResponder insertText:[params objectAtIndex:1]];
+				return;
+			}
+			NSBeep();
+		}
+		return;
+	}
+
 	if([command isEqualToString:@"SelectTableRows"]) {
 		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
 			[[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
