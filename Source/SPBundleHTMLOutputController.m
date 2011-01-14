@@ -364,6 +364,12 @@
 		return @"run";
 	if (aSelector == @selector(getShellEnvironmentForName:))
 		return @"getShellEnvironmentForName";
+	if (aSelector == @selector(insertText:))
+		return @"insertText";
+	if (aSelector == @selector(setText:))
+		return @"setText";
+	if (aSelector == @selector(setSelectedTextRange:))
+		return @"setSelectedTextRange";
 	if (aSelector == @selector(makeHTMLOutputWindowKeyWindow))
 		return @"makeHTMLOutputWindowKeyWindow";
 	if (aSelector == @selector(closeHTMLOutputWindow))
@@ -376,6 +382,15 @@
 		return NO;
 	}
 	if (selector == @selector(getShellEnvironmentForName:)) {
+		return NO;
+	}
+	if (selector == @selector(insertText:)) {
+		return NO;
+	}
+	if (selector == @selector(setText:)) {
+		return NO;
+	}
+	if (selector == @selector(setSelectedTextRange:)) {
 		return NO;
 	}
 	if (selector == @selector(makeHTMLOutputWindowKeyWindow)) {
@@ -392,6 +407,15 @@
 		return NO;
 	}
 	if (strcmp(property, "getShellEnvironmentForName") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "insertText") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "setText") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "setSelectedTextRange") == 0) {
 		return NO;
 	}
 	if (strcmp(property, "makeHTMLOutputWindowKeyWindow") == 0) {
@@ -447,11 +471,57 @@
 
 /**
  * JavaScript window.system.makeHTMLOutputWindowKeyWindow() function
- * to make the HTML output window the first responder
+ * to close the HTML window
  */
 - (void)closeHTMLOutputWindow
 {
 	[[self window] close];
+}
+
+/**
+ * JavaScript window.system.insertText(text) function
+ * to insert text into the first responder
+ */
+- (void)insertText:(NSString*)text
+{
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder isKindOfClass:[NSTextView class]]) {
+		[firstResponder insertText:text];
+		return;
+	}
+	NSBeep();
+}
+
+/**
+ * JavaScript window.system.setText(text) function
+ * to set the content of the first responder to text
+ */
+- (void)setText:(NSString*)text
+{
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder isKindOfClass:[NSTextView class]]) {
+		[firstResponder setSelectedRange:NSMakeRange(0, [[firstResponder string] length])];
+		[firstResponder insertText:text];
+		return;
+	}
+	NSBeep();
+}
+
+/**
+ * JavaScript window.system.setSelectedRange({location,length}) function
+ * to set the selection range of the first responder
+ */
+- (void)setSelectedTextRange:(NSString*)range
+{
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder isKindOfClass:[NSTextView class]]) {
+		NSRange theRange = NSIntersectionRange(NSRangeFromString(range), NSMakeRange(0, [[firstResponder string] length]));
+		if(theRange.location != NSNotFound) {
+			[firstResponder setSelectedRange:theRange];
+		}
+		return;
+	}
+	NSBeep();
 }
 
 /**

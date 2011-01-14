@@ -351,6 +351,7 @@ NSString *SPBundleShellVariableSelectedRowIndices           = @"SP_SELECTED_ROW_
 NSString *SPBundleShellVariableSelectedTable                = @"SP_SELECTED_TABLE";
 NSString *SPBundleShellVariableSelectedTables               = @"SP_SELECTED_TABLES";
 NSString *SPBundleShellVariableSelectedText                 = @"SP_SELECTED_TEXT";
+NSString *SPBundleShellVariableSelectedTextRange            = @"SP_SELECTED_TEXT_RANGE";
 NSString *SPBundleShellVariableUsedQueryForTable            = @"SP_USED_QUERY_FOR_TABLE";
 
 const NSInteger SPBundleRedirectActionNone                 = 200;

@@ -45,6 +45,8 @@
 
 @implementation SPCustomQuery
 
+@synthesize textViewWasChanged;
+
 #pragma mark IBAction methods
 
 /*
@@ -940,7 +942,8 @@
 
 	// Split the current text into ranges of queries
 	// only if the textView was really changed, otherwise use the cache
-	if([[textView textStorage] editedMask] != 0) {
+	if([[textView textStorage] editedMask] != 0 || [self textViewWasChanged]) {
+		[self setTextViewWasChanged:NO];
 		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 		[customQueryParser setDelimiterSupport:YES];
 		queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesByCharacter:';']];
@@ -2580,6 +2583,7 @@
 	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
 	NSUInteger caretPosition = currentSelection.location;
+
 	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
 
 	if(qRange.length)

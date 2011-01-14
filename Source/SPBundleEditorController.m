@@ -353,6 +353,7 @@
 		SPBundleShellVariableSelectedTable,
 		SPBundleShellVariableSelectedTables,
 		SPBundleShellVariableSelectedText,
+		SPBundleShellVariableSelectedTextRange,
 		SPBundleShellVariableUsedQueryForTable,
 		nil
 	] retain];

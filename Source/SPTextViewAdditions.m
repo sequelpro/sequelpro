@@ -622,6 +622,8 @@
 			if(currentLineRange.length)
 				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:SPBundleShellVariableCurrentLine];
 
+			[env setObject:NSStringFromRange(replaceRange) forKey:SPBundleShellVariableSelectedTextRange];
+
 			NSError *inputFileError = nil;
 			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
 			[input writeToFile:bundleInputFilePath

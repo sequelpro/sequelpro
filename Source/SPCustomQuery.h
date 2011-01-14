@@ -147,6 +147,7 @@
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	BOOL isFieldEditable;
+	BOOL textViewWasChanged;
 	NSNumber *sortField;
 
 	NSIndexSet *selectionIndexToRestore;
@@ -169,6 +170,8 @@
 	NSString *kCellEditorErrorNoMultiTabDb;
 	NSString *kCellEditorErrorTooManyMatches;
 }
+
+@property(assign) BOOL textViewWasChanged;
 
 // IBAction methods
 - (IBAction)runAllQueries:(id)sender;

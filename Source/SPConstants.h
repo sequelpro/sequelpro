@@ -526,6 +526,7 @@ extern NSString *SPBundleShellVariableSelectedText;
 extern NSString *SPBundleShellVariableCurrentWord;
 extern NSString *SPBundleShellVariableCurrentLine;
 extern NSString *SPBundleShellVariableSelectedRowIndices;
+extern NSString *SPBundleShellVariableSelectedTextRange;
 extern NSString *SPBundleShellVariableAllDatabases;
 extern NSString *SPBundleShellVariableSelectedTables;
 extern NSString *SPBundleShellVariableSelectedDatabase;

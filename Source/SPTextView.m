@@ -3069,6 +3069,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// Do syntax highlighting/re-calculate snippet ranges only if the user really changed the text
 	if(editedMask != 1) {
 
+		[customQueryInstance setTextViewWasChanged:YES];
+
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
@@ -3132,6 +3134,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self doSyntaxHighlighting];
 
 	} else {
+		[customQueryInstance setTextViewWasChanged:NO];
 		textBufferSizeIncreased = NO;
 	}
 
