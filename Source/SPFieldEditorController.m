@@ -917,7 +917,10 @@
  */
 - (id)previewPanel:(id)panel previewItemAtIndex:(NSInteger)index
 {
-	return [NSURL fileURLWithPath:tmpFileName];
+	if(tmpFileName)
+		return [NSURL fileURLWithPath:tmpFileName];
+
+	return nil;
 }
 
 /**
