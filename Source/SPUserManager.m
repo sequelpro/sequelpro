@@ -1470,7 +1470,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
-	return (proposedMax - 555);
+	return (proposedMax - 620);
 }
 
 /**
