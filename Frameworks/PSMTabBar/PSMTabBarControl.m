@@ -265,8 +265,8 @@
 	}
 	
     if (aWindow) {
-		[center addObserver:self selector:@selector(windowStatusDidChange:) name:NSWindowDidBecomeKeyNotification object:aWindow];
-		[center addObserver:self selector:@selector(windowStatusDidChange:) name:NSWindowDidResignKeyNotification object:aWindow];
+		[center addObserver:self selector:@selector(windowStatusDidChange:) name:NSWindowDidBecomeMainNotification object:aWindow];
+		[center addObserver:self selector:@selector(windowStatusDidChange:) name:NSWindowDidResignMainNotification object:aWindow];
 		[center addObserver:self selector:@selector(windowDidUpdate:) name:NSWindowDidUpdateNotification object:aWindow];
 		[center addObserver:self selector:@selector(windowDidMove:) name:NSWindowDidMoveNotification object:aWindow];
     }
