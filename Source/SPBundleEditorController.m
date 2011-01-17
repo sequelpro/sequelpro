@@ -131,6 +131,7 @@
 	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_INPUTFIELD_STRING, kBundleNameKey, nil]];
 	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_DATATABLE_STRING, kBundleNameKey, nil]];
 	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING, kBundleNameKey, nil]];
+	[commandBundleTreeController setContent:commandBundleTree];
 
 	// Init all needed menus
 	inputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -1036,6 +1037,9 @@
 
 			[self reloadBundles:self];
 
+			[commandBundleTreeController setSelectionIndexPath:[[selIndexPaths objectAtIndex:0] indexPathByRemovingLastIndex]];
+			[commandsOutlineView expandItem:[self _currentSelectedNode] expandChildren:NO];
+
 			// Set focus to table view to avoid an unstable state
 			[[self window] makeFirstResponder:commandsOutlineView];
 
@@ -1794,7 +1798,6 @@
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
-	[commandBundleTreeController setContent:commandBundleTree];
 	NSUInteger *selPath[2];
 	selPath[0] = 0;
 	selPath[1] = 0;
