@@ -112,7 +112,11 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	// Set the button delegate 
 	[splitViewButtonBar setSplitViewDelegate:self];
-	
+
+	// Set schema table double-click actions
+	[grantedTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];
+	[availableTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];
+
 	[self _initializeUsers];
 	[self _initializeSchemaPrivs];
 
@@ -776,6 +780,23 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	[grantedTableView reloadData];
 	
 	[self _setSchemaPrivValues:selectedObjects enabled:NO];
+}
+
+/**
+ * Move double-clicked rows across to the other table, using the
+ * appropriate methods.
+ */
+- (IBAction)doubleClickSchemaPriv:(id)sender
+{
+
+	// Ignore double-clicked header cells
+	if ([sender clickedRow] == -1) return;
+
+	if (sender == availableTableView) {
+		[self addSchemaPriv:sender];
+	} else {
+		[self removeSchemaPriv:sender];
+	}
 }
 
 /**
