@@ -2502,8 +2502,10 @@
 			[saveConnectionEncrypt setState:[[spfDocData objectForKey:@"encrypted"] boolValue]];
 		if([spfDocData objectForKey:@"include_session"])
 			[saveConnectionIncludeData setState:[[spfDocData objectForKey:@"include_session"] boolValue]];
-		if([spfDocData objectForKey:@"save_editor_content"])
+		if([[spfDocData objectForKey:@"save_editor_content"] boolValue])
 			[saveConnectionIncludeQuery setState:[[spfDocData objectForKey:@"save_editor_content"] boolValue]];
+		else
+			[saveConnectionIncludeQuery setState:NSOnState];
 
 		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
 
@@ -2556,8 +2558,10 @@
 			[saveConnectionEncrypt setState:[[spfSessionData objectForKey:@"encrypted"] boolValue]];
 		if([spfSessionData objectForKey:@"include_session"])
 			[saveConnectionIncludeData setState:[[spfSessionData objectForKey:@"include_session"] boolValue]];
-		if([spfSessionData objectForKey:@"save_editor_content"])
+		if([[spfSessionData objectForKey:@"save_editor_content"] boolValue])
 			[saveConnectionIncludeQuery setState:[[spfSessionData objectForKey:@"save_editor_content"] boolValue]];
+		else
+			[saveConnectionIncludeQuery setState:YES];
 
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];
