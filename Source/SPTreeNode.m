@@ -250,21 +250,25 @@
 #pragma mark -
 #pragma mark Other
 
-/*- (NSComparisonResult)compare:(SPTreeNode *)node
+- (NSString *)description
 {
-	id selfObject = [self representedObject];
-	id nodeObject = [node representedObject];
+	NSMutableString *description = [NSMutableString string];
 	
-	if ([selfObject isKindOfClass:[SPFavoriteNode class]] && [nodeObject isKindOfClass:[SPFavoriteNode class]]) {
-				
-		return [[[selfObject nodeFavorite] objectForKey:SPFavoriteNameKey] localizedCaseInsensitiveCompare:[[nodeObject nodeFavorite] objectForKey:SPFavoriteNameKey]];
-	}
-	else if ([selfObject isKindOfClass:[SPGroupNode class]] && [nodeObject isKindOfClass:[SPGroupNode class]]) {
+	[description appendString:[[self representedObject] description]];
+	[description appendString:@"\n"];
+	
+	NSArray *nodes = [self childNodes];
+	
+	for (NSUInteger i = 0; i < [nodes count]; i++)
+	{
+		SPTreeNode *node = [nodes objectAtIndex:i];
 		
-		return [[selfObject nodeName] localizedCaseInsensitiveCompare:[nodeObject nodeName]];
+		[description appendString:([node isGroup]) ? [node description] : [[node representedObject] description]];
+		
+		if (i < ([nodes count] - 1)) [description appendString:@"\n"];
 	}
 	
-	return NSOrderedSame;
-}*/
+	return description;
+}
 
 @end
