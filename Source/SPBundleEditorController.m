@@ -363,6 +363,9 @@
 		[deletedDefaultBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]];
 	}
 
+	// Set the button bar delegate 
+	[splitViewButtonBar setSplitViewDelegate:self];
+
 	[self _initTree];
 
 }
@@ -1185,6 +1188,25 @@
 	}
 	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
+}
+
+#pragma mark -
+#pragma mark SplitView delegate methods
+
+/**
+ * Return the maximum possible size of the splitview.
+ */
+- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
+{
+	return (proposedMax - 240);
+}
+
+/**
+ * Return the minimum possible size of the splitview.
+ */
+- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
+{
+	return (proposedMin + 120);
 }
 
 #pragma mark -

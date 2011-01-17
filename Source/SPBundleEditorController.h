@@ -27,7 +27,7 @@
 #import "SPBundleCommandTextView.h"
 #import "SPOutlineView.h"
 
-@class SRRecorderControl;
+@class SRRecorderControl, BWAnchoredButtonBar;
 
 @interface SPBundleEditorController : NSWindowController {
 
@@ -64,6 +64,7 @@
 	IBOutlet NSView *bundleDataView;
 	IBOutlet NSScrollView *commandScrollView;
 	IBOutlet NSScrollView *descriptionScrollView;
+	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	IBOutlet id undeleteSheet;
 	IBOutlet NSTableView *undeleteTableView;
