@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Format</string>
+	<key>command</key>
+	<string>cat | python -mjson.tool
+
+# if there's a need to preserve Unicode characters use this line of code:
+# cat | python -mjson.tool | perl -Xpe 'binmode STDIN,":utf8";binmode STDOUT,":utf8";s/\\u([0-9A-F]{4})/chr(hex($1))/ieg'</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>Take the selection or the entire content of the current text input field, interpret it as JSON, and replace the JSON data human-readable. Unicode characters will be converted to \u.... sequences. If you want to preserve these Unicode characters you can uncomment the last code line.
+
+Version 1.0</string>
+	<key>input</key>
+	<string>selectedtext</string>
+	<key>input_fallback</key>
+	<string>entirecontent</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>J</string>
+		<key>keyCode</key>
+		<integer>38</integer>
+		<key>modifierFlags</key>
+		<integer>1572864</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>~@j</string>
+	<key>name</key>
+	<string>Prettify JSON</string>
+	<key>output</key>
+	<string>replaceselection</string>
+	<key>scope</key>
+	<string>inputfield</string>
+	<key>tooltip</key>
+	<string>Pretty print JSON data</string>
+	<key>uuid</key>
+	<string>40BC811D-4BAB-41EA-A096-9A202B646619</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>
