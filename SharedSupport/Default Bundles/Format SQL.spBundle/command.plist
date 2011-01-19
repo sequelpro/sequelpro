@@ -23,6 +23,17 @@ if [ $connected -eq "0" ]; then
 	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
 fi
 
+# show info alert about sending the SQL statements to an online service
+if [ ! -e infoShowed ]; then
+	touch infoShowed
+	osascript -e 'tell app "Sequel Pro" to display dialog "This command will send the SQL statement(s) - unencrypted - to an online service (http://www.dpriver.com).  Please consider this before sending confidential data!\n\nThis message will only be displayed once." with icon caution' 2&gt; 1
+	if [ `cat 1 | wc -c` -ne 0 ]; then
+		rm -f 1
+		exit $SP_BUNDLE_EXIT_NONE
+	fi
+	rm -f 1
+fi
+
 # send SQL to www.dpriver.com and replace the formatted SQL string in first responder; if a parser error occurred
 # show error message and try to jump to the error
 cat &lt;&lt;HTML
