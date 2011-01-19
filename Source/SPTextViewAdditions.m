@@ -742,8 +742,9 @@
 						}
 
 						else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
-							[self shouldChangeTextInRange:replaceRange replacementString:output];
-							[self replaceCharactersInRange:replaceRange withString:output];
+							NSRange safeRange = NSIntersectionRange(replaceRange, NSMakeRange(0, [[self string] length]));
+							[self shouldChangeTextInRange:safeRange replacementString:output];
+							[self replaceCharactersInRange:safeRange withString:output];
 						}
 
 					} else {
