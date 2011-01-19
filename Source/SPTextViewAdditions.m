@@ -562,7 +562,7 @@
 						replaceRange = currentLineRange;
 					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
 						replaceRange = currentQueryRange;
-					else if([inputAction isEqualToString:SPBundleInputSourceEntireContent])
+					else if([inputFallBackAction isEqualToString:SPBundleInputSourceEntireContent])
 						replaceRange = NSMakeRange(0,[[self string] length]);
 				} else {
 					replaceRange = currentSelectionRange;
@@ -626,6 +626,7 @@
 
 			NSError *inputFileError = nil;
 			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
+
 			[input writeToFile:bundleInputFilePath
 					  atomically:YES
 						encoding:NSUTF8StringEncoding

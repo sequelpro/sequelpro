@@ -61,7 +61,6 @@
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 	IBOutlet NSButton *disabledCheckbox;
-	IBOutlet NSView *bundleDataView;
 	IBOutlet NSScrollView *commandScrollView;
 	IBOutlet NSScrollView *descriptionScrollView;
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
