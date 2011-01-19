@@ -257,8 +257,8 @@ static CGFloat slow_in_out (CGFloat t)
 	id fr = [[NSApp keyWindow] firstResponder];
 
 	//If first responder is a textview return the caret position
-	if([fr respondsToSelector:@selector(getRangeForCurrentWord)] && [fr alignment] == NSLeftTextAlignment) {
-		NSRange range = NSMakeRange([fr selectedRange].location,0);
+	if(([fr isMemberOfClass:[NSTextView class]] && [fr alignment] == NSLeftTextAlignment) || [[[fr class] description] isEqualToString:@"SPTextView"]) {
+		NSRange range = NSMakeRange([fr selectedRange].location,1);
 		NSRange glyphRange = [[fr layoutManager] glyphRangeForCharacterRange:range actualCharacterRange:NULL];
 		NSRect boundingRect = [[fr layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[fr textContainer]];
 		boundingRect = [fr convertRect: boundingRect toView:NULL];

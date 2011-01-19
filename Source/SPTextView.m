@@ -817,6 +817,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
+
 	completionIsOpen = YES;
 	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
 					alreadyTyped:filter 
@@ -842,19 +843,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	completionParseRangeLocation = parseRange.location;
 
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,0) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-	boundingRect = [self convertRect: boundingRect toView: NULL];
-	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-
-	// TODO: check if needed
-	// if(filter)
-	// 	pos.x -= [filter sizeWithAttributes:[NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName]].width;
-	
-	// Adjust list location to be under the current word or insertion point
+	boundingRect = [self convertRect:boundingRect toView:nil];
+	NSPoint pos = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 	pos.y -= [[self font] pointSize]*1.25;
-	
 	[completionPopup setCaretPos:pos];
+
 	[completionPopup orderFront:self];
 	[completionPopup insertAutocompletePlaceholder];
 
@@ -1408,7 +1403,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					isQueryingDBStructure:NO];
 
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,0) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
@@ -1564,7 +1559,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											isQueryingDBStructure:NO];
 
 							//Get the NSPoint of the first character of the current word
-							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
+							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
 							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 							boundingRect = [self convertRect: boundingRect toView: NULL];
 							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
