@@ -934,6 +934,10 @@ NSInteger kBlobAsImageFile = 4;
 {
 	NSInteger menuItemTag = [anItem tag];
 
+	if ([anItem action] == @selector(performFindPanelAction:)) {
+		return (menuItemTag == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]);
+	}
+
 	// Don't validate anything other than the copy commands
 	if (menuItemTag != MENU_EDIT_COPY && menuItemTag != MENU_EDIT_COPY_WITH_COLUMN && menuItemTag != MENU_EDIT_COPY_AS_SQL) {
 		return YES;
@@ -1093,6 +1097,13 @@ NSInteger kBlobAsImageFile = 4;
 	}
 
 	[super keyDown:theEvent];
+}
+
+- (void)performFindPanelAction:(id)sender
+{
+	if([sender tag] == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]) {
+		[[self delegate] showFilterTable:self];
+	}
 }
 
 #pragma mark -
