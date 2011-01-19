@@ -1754,7 +1754,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 							if(![[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]])
 								[[bundleKeyEquivalents objectForKey:scope] setObject:[NSMutableArray array] forKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]];
 
-							[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
+							if(!doBundleUpdate || (doBundleUpdate && (![[cmdData objectForKey:SPBundleFileIsDefaultBundleKey] boolValue] || processDefaultBundles)))
+								[[[bundleKeyEquivalents objectForKey:scope] objectForKey:[cmdData objectForKey:SPBundleFileKeyEquivalentKey]] addObject:
 											[NSDictionary dictionaryWithObjectsAndKeys:
 													infoPath, @"path",
 													[cmdData objectForKey:SPBundleFileNameKey], @"title",

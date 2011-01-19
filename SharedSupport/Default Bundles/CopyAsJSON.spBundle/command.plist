@@ -64,8 +64,11 @@ while($rowData) {
 			print "null";
 		}
 		elsif($meta[$i]-&gt;[1] eq "integer" || $meta[$i]-&gt;[1] eq "float") {
-			print "$cellData";
+			chomp($cellData);
+			$d = $cellData+0;
+			print "$d";
 		} else {
+			chomp($cellData);
 			print "\"$cellData\"";
 		}
 		
@@ -91,7 +94,7 @@ while($rowData) {
 	print "\n";
 }
 
-print "\t]\n}\n";
+print "\t]\n}";
 
 ' | __CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 pbcopy</string>
 	<key>contact</key>

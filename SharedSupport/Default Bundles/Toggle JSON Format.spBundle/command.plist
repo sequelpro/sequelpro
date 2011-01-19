@@ -9,10 +9,10 @@
 	<key>command</key>
 	<string>DATA=$(cat)
 
-FORMAT=$(echo "$DATA" | head -n 1 | perl -e '$l=&lt;&gt;;print "1" if($l=~m/^\s*\{\s*$/)')
+FORMAT=$(echo "$DATA" | head -n 1 | perl -e '$l=&lt;&gt;;if($l=~m/^\s*\{\s*$/) {print "1";} else {print "2";}')
 
 # if FORMAT == 1 then serialize JSON data otherwise pretty print them
-if [ "$FORMAT" == 1 ]; then
+if [ "$FORMAT" -eq "1" ]; then
 
 	DATA=$(echo "$DATA" | php -r '
 	$jsonData = "";
@@ -20,6 +20,10 @@ if [ "$FORMAT" == 1 ]; then
 	while($d = fgets($inputStream)) { $jsonData .= $d; }
 	print json_encode(json_decode($jsonData));
 	')
+  	if [ "$DATA" == "null" ]; then
+		echo "&lt;font&gt;An error occured while serializing JSON data!&lt;/font&gt;"
+		exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
+  	fi
 
 else
 
@@ -30,7 +34,7 @@ fi
 # if there's a need to preserve Unicode characters remove the first to characters of the following line 
 # DATA=$(echo "$DATA"  | perl -Xpe 'binmode STDIN,":utf8";binmode STDOUT,":utf8";s/\\u([0-9A-F]{4})/chr(hex($1))/ieg')
 
-echo "$DATA"</string>
+printf "%b" "$DATA"</string>
 	<key>contact</key>
 	<string>znvy@ovovxb.qr</string>
 	<key>description</key>
