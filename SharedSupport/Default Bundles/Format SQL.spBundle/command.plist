@@ -150,7 +150,7 @@ cat &lt;&lt;HTML
 						&lt;input type="radio" name="salign" value="sleft" checked&gt; Align left
 						&lt;input type="radio" name="salign" value="sright" &gt; Align right
 						&lt;input type="checkbox" name="andorunderwhere" value="yes" checked&gt; And/Or under Where
-						&lt;input type="checkbox" name="removelnbr" value="yes" checked&gt; Remove Linebreak before beautify
+						&lt;input type="checkbox" name="removelnbr" value="no" checked&gt; Remove Linebreak before beautify
 						&lt;input type="checkbox" name="trimquotechar" value="yes"&gt; Trim Quoted Char of Each Line quoted char of eachline: &lt;input type="text" name="quotechar" value= "&amp;#34" size = 5 &gt; 
 						&lt;input type="checkbox" name="compactmode" value="yes"&gt; Compact the output of sql output
 						&lt;input type="text" name="maxlenincm" value= "80" size = 5 &gt; 
