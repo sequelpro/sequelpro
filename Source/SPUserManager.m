@@ -91,6 +91,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		schemas = [[NSMutableArray alloc] init];
 		availablePrivs = [[NSMutableArray alloc] init];
 		grantedSchemaPrivs = [[NSMutableArray alloc] init];
+		isSaving = NO;
 	}
 	
 	return self;
@@ -367,6 +368,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Assumes that the child has already been initialized with values from the
 	// global user table.
+
+	// Set an originalhost key on the child to allow the tracking of edits
+	[child setPrimitiveValue:[child valueForKey:@"host"] forKey:@"originalhost"];
+	
 	// Select rows from the db table that contains schema privs for each user/host
 	NSString *queryString = [NSString stringWithFormat:@"SELECT * from mysql.db d WHERE d.user = %@ and d.host = %@", 
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
@@ -601,21 +606,29 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (IBAction)doApply:(id)sender
 {
 	NSError *error = nil;
+	errorsString = [[NSMutableString alloc] init];
     
     //Change the first responder to end editing in any field
     [[self window] makeFirstResponder:self];
     
+	isSaving = YES;
 	[[self managedObjectContext] save:&error];
-	
-	if (error != nil) {
-		[[NSApplication sharedApplication] presentError:error];
+	isSaving = NO;
+	if (error != nil) [errorsString appendString:[error localizedDescription]];
+
+	[self.mySqlConnection queryString:@"FLUSH PRIVILEGES"];
+
+	// Display any errors
+	if ([errorsString length]) {
+		[errorsTextView setString:errorsString];
+		[NSApp beginSheet:errorsSheet modalForWindow:[NSApp keyWindow] modalDelegate:nil didEndSelector:NULL contextInfo:nil];
+		[errorsString release];
+		return;
 	}
-	else {
-		// Close sheet
-		[self.mySqlConnection queryString:@"FLUSH PRIVILEGES"];
-		[NSApp endSheet:[self window] returnCode:0];
-		[[self window] orderOut:self];
-	}
+
+	// Otherwise, close the sheet
+	[NSApp endSheet:[self window] returnCode:0];
+	[[self window] orderOut:self];
 }
 
 /**
@@ -955,12 +968,25 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	}
 }
 
+/**
+ * Closes the supplied sheet, before closing the master window.
+ */
+- (IBAction)closeErrorsSheet:(id)sender
+{
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
+
+	// Close the window
+	[NSApp endSheet:[self window] returnCode:0];
+	[[self window] orderOut:self];
+}
+
 #pragma mark -
 #pragma mark Notifications
 
 /** 
  * This notification is called when the managedObjectContext save happens.
- * This takes the inserted, updated, and deleted arrays and applys them to 
+ * This takes the inserted, updated, and deleted arrays and applies them to 
  * the database.
  */
 - (void)contextDidSave:(NSNotification *)notification
@@ -1016,7 +1042,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 					NSString *renameUserStatement = [NSString stringWithFormat:
 														@"RENAME USER %@@%@ TO %@@%@",
 														 [[user valueForKey:@"originaluser"] tickQuotedString],
-														 [[child host] tickQuotedString],
+														 [([child valueForKey:@"originalhost"]?[child valueForKey:@"originalhost"]:[child host]) tickQuotedString],
 														 [[user valueForKey:@"user"] tickQuotedString],
 														 [[child host] tickQuotedString]];
 					
@@ -1041,6 +1067,19 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			}
 		} 
 		else {
+
+			// If the hostname has changed, remane the detail before editing details.
+			if (![[user valueForKey:@"host"] isEqualToString:[user valueForKey:@"originalhost"]]) {
+				NSString *renameUserStatement = [NSString stringWithFormat:
+													@"RENAME USER %@@%@ TO %@@%@",
+													 [[[user parent] valueForKey:@"originaluser"] tickQuotedString],
+													 [[user valueForKey:@"originalhost"] tickQuotedString],
+													 [[[user parent] valueForKey:@"user"] tickQuotedString],
+													 [[user valueForKey:@"host"] tickQuotedString]];
+				
+				[self.mySqlConnection queryString:renameUserStatement];	
+			}
+
 			if ([serverSupport supportsUserMaxVars]) [self updateResourcesForUser:user];
 			
 			[self grantPrivilegesToUser:user];
@@ -1387,11 +1426,14 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (BOOL)_checkAndDisplayMySqlError
 {
 	if ([self.mySqlConnection queryErrored]) {
-		
-		SPBeginAlertSheet(NSLocalizedString(@"An error occurred", @"mysql error occurred message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [self.mySqlConnection getLastErrorMessage]]);
-		
+		if (isSaving) {
+			[errorsString appendFormat:@"%@\n", [self.mySqlConnection getLastErrorMessage]];
+		} else {
+			SPBeginAlertSheet(NSLocalizedString(@"An error occurred", @"mysql error occurred message"), 
+							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, 
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [self.mySqlConnection getLastErrorMessage]]);
+		}
+
 		return NO;
 	}
 	
