@@ -87,6 +87,7 @@ keywords	(X(OR|509|A)|S(MALLINT|SL|H(OW({s}(E(NGINE(S)?|RRORS)|M(ASTER|UTEX)|BIN
                                                                                                             */
                                                                                                             
 #[^\n\r]*(\n|\r)?			        |											/* # Comments                     */
+--[\n\r]						{ return SPT_COMMENT; }							/* --                             */
 --[ \t][^\n\r]*(\n|\r)?			{ return SPT_COMMENT; }							/* -- Comments                    */
 
 {variable}/{ops}			{ BEGIN(varequation); return SPT_VARIABLE; }/* SQL variables before operator*/
