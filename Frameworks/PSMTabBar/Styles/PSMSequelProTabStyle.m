@@ -337,7 +337,7 @@
     // Paragraph Style for Truncating Long Text
     static NSMutableParagraphStyle *TruncatingTailParagraphStyle = nil;
     if (!TruncatingTailParagraphStyle) {
-        TruncatingTailParagraphStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] retain];
+        TruncatingTailParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [TruncatingTailParagraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
         [TruncatingTailParagraphStyle setAlignment:NSCenterTextAlignment];
     }
@@ -375,10 +375,11 @@
         NSMutableParagraphStyle *centeredParagraphStyle = nil;
         
 		if (!centeredParagraphStyle) {
-            centeredParagraphStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] retain];
+            centeredParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
             [centeredParagraphStyle setAlignment:NSCenterTextAlignment];
         }
         [attrStr addAttribute:NSParagraphStyleAttributeName value:centeredParagraphStyle range:range];
+        [centeredParagraphStyle release];
         [attrStr drawInRect:labelRect];
         return;
     }
@@ -594,6 +595,7 @@
 		[shadow setShadowOffset:NSMakeSize(0, 1)];
 		[shadow set];
 		[outlineBezier stroke];
+		[shadow release];
 
 	// Add the shadow over the tops of background tabs
 	} else if (drawLeftEdge || drawRightEdge) {
@@ -632,12 +634,14 @@
 
 		// Draw, and then restore the previous graphics state
 		[outlineBezier stroke];
+		[shadow release];
 		CGContextRestoreGState(context);
 	}
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
-    [self drawInteriorWithTabCell:cell inView:[cell controlView]];
+	[self drawInteriorWithTabCell:cell inView:[cell controlView]];
+
 }
 
 

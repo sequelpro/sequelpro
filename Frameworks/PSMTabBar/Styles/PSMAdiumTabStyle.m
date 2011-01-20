@@ -399,7 +399,7 @@
 	// Paragraph Style for Truncating Long Text
 	static NSMutableParagraphStyle *TruncatingTailParagraphStyle = nil;
 	if (!TruncatingTailParagraphStyle) {
-		TruncatingTailParagraphStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] retain];
+		TruncatingTailParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 		[TruncatingTailParagraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
 	}
 	[attrStr addAttribute:NSParagraphStyleAttributeName value:TruncatingTailParagraphStyle range:range];
@@ -995,11 +995,12 @@
 		NSMutableParagraphStyle *centeredParagraphStyle = nil;
 		
 		if (!centeredParagraphStyle) {
-			centeredParagraphStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] retain];
+			centeredParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 			[centeredParagraphStyle setAlignment:NSCenterTextAlignment];
 		}
 		
 		[attrStr addAttribute:NSParagraphStyleAttributeName value:centeredParagraphStyle range:range];
+		[centeredParagraphStyle release];
 		[attrStr drawInRect:labelRect];
 		return;
 	}
