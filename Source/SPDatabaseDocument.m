@@ -5048,17 +5048,50 @@
 {
 	[runningActivitiesArray addObject:commandDict];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+
+	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
+		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+	else {
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(setActivityPaneHidden:) 
+								object:[NSNumber numberWithInteger:0]];
+		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+	}
+
 }
 
 - (void)removeRegisteredActivity:(NSInteger)pid
 {
+
 	for(id cmd in runningActivitiesArray) {
 		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
 			[runningActivitiesArray removeObject:cmd];
 			break;
 		}
 	}
+
+	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
+		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+	else {
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(setActivityPaneHidden:) 
+								object:[NSNumber numberWithInteger:0]];
+		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+	}
+
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+
+}
+
+- (void)setActivityPaneHidden:(NSNumber*)hide
+{
+	if(![hide integerValue] == 1) {
+		[tableInfoScrollView setHidden:YES];
+		[activitiesScrollView setHidden:NO];
+	} else {
+		[activitiesScrollView setHidden:YES];
+		[tableInfoScrollView setHidden:NO];
+	}
 }
 
 - (NSArray*)runningActivities

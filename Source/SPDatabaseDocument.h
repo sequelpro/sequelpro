@@ -65,6 +65,9 @@
 	
 	IBOutlet NSSearchField *listFilterField;
 
+	IBOutlet NSScrollView *tableInfoScrollView;
+	IBOutlet NSScrollView *activitiesScrollView;
+
 	IBOutlet NSView *parentView;
 	
 	IBOutlet id titleAccessoryView;
@@ -363,6 +366,7 @@
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
 - (void)registerActivity:(NSDictionary*)commandDict;
 - (void)removeRegisteredActivity:(NSInteger)pid;
+- (void)setActivityPaneHidden:(NSNumber*)hide;
 - (NSArray*)runningActivities;
 - (NSDictionary*)shellVariables;
 

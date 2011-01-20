@@ -1166,6 +1166,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	[runningActivitiesArray addObject:commandDict];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+
+	SPDatabaseDocument* frontMostDoc = [self frontDocument];
+	if(frontMostDoc) {
+		if([runningActivitiesArray count] || [[frontMostDoc runningActivities] count])
+			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+		else {
+			[NSObject cancelPreviousPerformRequestsWithTarget:frontMostDoc 
+									selector:@selector(setActivityPaneHidden:) 
+									object:[NSNumber numberWithInteger:0]];
+			[frontMostDoc setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+		}
+	}
+
 }
 
 - (void)removeRegisteredActivity:(NSInteger)pid
@@ -1176,7 +1189,20 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			break;
 		}
 	}
+
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+
+	SPDatabaseDocument* frontMostDoc = [self frontDocument];
+	if(frontMostDoc) {
+		if([runningActivitiesArray count] || [[frontMostDoc runningActivities] count])
+			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+		else {
+			[NSObject cancelPreviousPerformRequestsWithTarget:frontMostDoc 
+									selector:@selector(setActivityPaneHidden:) 
+									object:[NSNumber numberWithInteger:0]];
+			[frontMostDoc setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+		}
+	}
 }
 
 - (NSArray*)runningActivities
