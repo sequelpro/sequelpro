@@ -60,6 +60,7 @@
 			<string>CASCADE</string>
 			<string>CASCADED</string>
 			<string>CASE</string>
+			<string>CATALOG_NAME</string>
 			<string>CHAIN</string>
 			<string>CHANGE</string>
 			<string>CHANGED</string>
@@ -72,6 +73,7 @@
 			<string>CHECKSUM</string>
 			<string>CHECKSUM TABLE</string>
 			<string>CIPHER</string>
+			<string>CLASS_ORIGIN</string>
 			<string>CLIENT</string>
 			<string>CLOSE</string>
 			<string>COALESCE</string>
@@ -79,6 +81,7 @@
 			<string>COLLATE</string>
 			<string>COLLATION</string>
 			<string>COLUMN</string>
+			<string>COLUMN_NAME</string>
 			<string>COLUMNS</string>
 			<string>COLUMN_FORMAT</string>
 			<string>COMMENT</string>
@@ -92,10 +95,14 @@
 			<string>CONNECTION</string>
 			<string>CONSISTENT</string>
 			<string>CONSTRAINT</string>
+			<string>CONSTRAINT_CATALOG</string>
+			<string>CONSTRAINT_NAME</string>
+			<string>CONSTRAINT_SCHEMA</string>
 			<string>CONTAINS</string>
 			<string>CONTINUE</string>
 			<string>CONTRIBUTORS</string>
 			<string>CONVERT</string>
+			<string>CURSOR_NAME</string>
 			<string>CREATE</string>
 			<string>CREATE DATABASE</string>
 			<string>CREATE EVENT</string>
@@ -104,6 +111,7 @@
 			<string>CREATE LOGFILE GROUP</string>
 			<string>CREATE PROCEDURE</string>
 			<string>CREATE SCHEMA</string>
+			<string>CREATE SERVER</string>
 			<string>CREATE TABLE</string>
 			<string>CREATE TABLESPACE</string>
 			<string>CREATE TRIGGER</string>
@@ -216,6 +224,7 @@
 			<string>FOR UPDATE</string>
 			<string>FORCE</string>
 			<string>FOREIGN</string>
+			<string>FOREIGN DATA WRAPPER</string>
 			<string>FOREIGN KEY</string>
 			<string>FOUND</string>
 			<string>FRAC_SECOND</string>
@@ -223,6 +232,7 @@
 			<string>FULL</string>
 			<string>FULLTEXT</string>
 			<string>FUNCTION</string>
+			<string>GENERAL</string>
 			<string>GEOMETRY</string>
 			<string>GEOMETRYCOLLECTION</string>
 			<string>GLOBAL</string>
@@ -235,6 +245,7 @@
 			<string>HAVING</string>
 			<string>HELP</string>
 			<string>HIGH_PRIORITY</string>
+			<string>HOST</string>
 			<string>HOSTS</string>
 			<string>HOUR</string>
 			<string>HOUR_MICROSECOND</string>
@@ -243,6 +254,7 @@
 			<string>IDENTIFIED</string>
 			<string>IF</string>
 			<string>IGNORE</string>
+			<string>IGNORE_SERVER_IDS</string>
 			<string>IMPORT</string>
 			<string>IN</string>
 			<string>INDEX</string>
@@ -315,6 +327,7 @@
 			<string>LOW_PRIORITY</string>
 			<string>MASTER</string>
 			<string>MASTER_CONNECT_RETRY</string>
+			<string>MASTER_HEARTBEAT_PERIOD</string>
 			<string>MASTER_HOST</string>
 			<string>MASTER_LOG_FILE</string>
 			<string>MASTER_LOG_POS</string>
@@ -342,6 +355,7 @@
 			<string>MEDIUMTEXT</string>
 			<string>MEMORY</string>
 			<string>MERGE</string>
+			<string>MESSAGE_TEXT</string>
 			<string>MICROSECOND</string>
 			<string>MIDDLEINT</string>
 			<string>MIGRATE</string>
@@ -358,6 +372,7 @@
 			<string>MULTIPOINT</string>
 			<string>MULTIPOLYGON</string>
 			<string>MUTEX</string>
+			<string>MYSQL_ERRNO</string>
 			<string>NAME</string>
 			<string>NAMES</string>
 			<string>NATIONAL</string>
@@ -394,6 +409,7 @@
 			<string>OUT</string>
 			<string>OUTER</string>
 			<string>OUTFILE</string>
+			<string>OWNER</string>
 			<string>PACK_KEYS</string>
 			<string>PARSER</string>
 			<string>PARTIAL</string>
@@ -406,6 +422,7 @@
 			<string>PLUGINS</string>
 			<string>POINT</string>
 			<string>POLYGON</string>
+			<string>PORT</string>
 			<string>PRECISION</string>
 			<string>PREPARE</string>
 			<string>PRESERVE</string>
@@ -453,6 +470,7 @@
 			<string>REQUIRE</string>
 			<string>RESET</string>
 			<string>RESET MASTER</string>
+			<string>RESIGNAL</string>
 			<string>RESTORE</string>
 			<string>RESTORE TABLE</string>
 			<string>RESTRICT</string>
@@ -475,6 +493,7 @@
 			<string>SCHEDULER</string>
 			<string>SCHEMA</string>
 			<string>SCHEMAS</string>
+			<string>SCHEMA_NAME</string>
 			<string>SECOND</string>
 			<string>SECOND_MICROSECOND</string>
 			<string>SECURITY</string>
@@ -484,6 +503,7 @@
 			<string>SEPARATOR</string>
 			<string>SERIAL</string>
 			<string>SERIALIZABLE</string>
+			<string>SERVER</string>
 			<string>SESSION</string>
 			<string>SET</string>
 			<string>SET GLOBAL</string>
@@ -541,11 +561,14 @@
 			<string>SHOW VARIABLES</string>
 			<string>SHOW WARNINGS</string>
 			<string>SHUTDOWN</string>
+			<string>SIGNAL</string>
 			<string>SIGNED</string>
 			<string>SIMPLE</string>
 			<string>SLAVE</string>
+			<string>SLOW</string>
 			<string>SMALLINT</string>
 			<string>SNAPSHOT</string>
+			<string>SOCKET</string>
 			<string>SOME</string>
 			<string>SONAME</string>
 			<string>SOUNDS</string>
@@ -591,6 +614,7 @@
 			<string>STRAIGHT_JOIN</string>
 			<string>STRING</string>
 			<string>SUBJECT</string>
+			<string>SUBCLASS_ORIGIN</string>
 			<string>SUBPARTITION</string>
 			<string>SUBPARTITIONS</string>
 			<string>SUPER</string>
@@ -598,6 +622,7 @@
 			<string>TABLE</string>
 			<string>TABLES</string>
 			<string>TABLESPACE</string>
+			<string>TABLE_NAME</string>
 			<string>TEMPORARY</string>
 			<string>TEMPTABLE</string>
 			<string>TERMINATED</string>
@@ -663,6 +688,7 @@
 			<string>WITH</string>
 			<string>WITH CONSISTENT SNAPSHOT</string>
 			<string>WORK</string>
+			<string>WRAPPER</string>
 			<string>WRITE</string>
 			<string>X509</string>
 			<string>XA</string>

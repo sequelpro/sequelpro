@@ -17,7 +17,7 @@ if [ -z "$SQL" ]; then
 fi
 
 # check if connected to the internet and if server is up
-connected=$(/sbin/ping -t 5 -c 1 -on www.dpriver.com 2&gt; /dev/null | grep 'icmp' | wc -l)
+connected=$(/sbin/ping -t 8 -c 1 -on www.dpriver.com 2&gt; /dev/null | grep '69\.5\.11\.169' | wc -l)
 if [ $connected -eq "0" ]; then
 	echo "&lt;font color=red&gt;You are probably not connected to the internet or http://www.dpriver.com/ server is down.&lt;/font&gt;"
 	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
