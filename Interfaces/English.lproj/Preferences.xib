@@ -68,13 +68,6 @@
 				<string key="NSClassName">SUUpdater</string>
 			</object>
 			<object class="NSUserDefaultsController" id="151174232">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>CustomQuerySoftIndent</string>
-					<string>CustomQuerySoftIndentWidth</string>
-					<string>CustomQueryAuto</string>
-					<string>CustomQueryAutoIndent</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSArrayController" id="937123943">
@@ -4138,7 +4131,7 @@ AQAAAAA</bytes>
 					<object class="NSStepper" id="720862952">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{437, 256}, {15, 22}}</string>
+						<string key="NSFrame">{{437, 251}, {15, 22}}</string>
 						<reference key="NSSuperview" ref="1033452264"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSStepperCell" key="NSCell" id="241334663">
@@ -4156,7 +4149,7 @@ AQAAAAA</bytes>
 					<object class="NSTextField" id="277335147">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{407, 258}, {23, 19}}</string>
+						<string key="NSFrame">{{407, 253}, {23, 19}}</string>
 						<reference key="NSSuperview" ref="1033452264"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="546511116">
@@ -4225,14 +4218,14 @@ AQAAAAA</bytes>
 					<object class="NSButton" id="378838807">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{295, 258}, {107, 18}}</string>
+						<string key="NSFrame">{{270, 254}, {131, 18}}</string>
 						<reference key="NSSuperview" ref="1033452264"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1729">
 							<int key="NSCellFlags">-2080244224</int>
-							<int key="NSCellFlags2">131072</int>
-							<string key="NSContents">Soft Indent</string>
-							<reference key="NSSupport" ref="26"/>
+							<int key="NSCellFlags2">0</int>
+							<string key="NSContents">Soft indent</string>
+							<reference key="NSSupport" ref="320262838"/>
 							<reference key="NSControlView" ref="378838807"/>
 							<int key="NSButtonFlags">1211912703</int>
 							<int key="NSButtonFlags2">2</int>
@@ -4703,7 +4696,7 @@ AQAAAAA</bytes>
 					<object class="NSButton" id="571822117">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{270, 232}, {292, 18}}</string>
+						<string key="NSFrame">{{270, 227}, {292, 18}}</string>
 						<reference key="NSSuperview" ref="1033452264"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="743257684">
@@ -4747,7 +4740,7 @@ AQAAAAA</bytes>
 					<object class="NSButton" id="397485802">
 						<reference key="NSNextResponder" ref="1033452264"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{270, 199}, {292, 18}}</string>
+						<string key="NSFrame">{{270, 198}, {292, 18}}</string>
 						<reference key="NSSuperview" ref="1033452264"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="491730308">
@@ -9258,22 +9251,6 @@ AQAAAAA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.CustomQueryAutoIndent</string>
-						<reference key="source" ref="378838807"/>
-						<reference key="destination" ref="151174232"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="378838807"/>
-							<reference key="NSDestination" ref="151174232"/>
-							<string key="NSLabel">enabled: values.CustomQueryAutoIndent</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.CustomQueryAutoIndent</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">2207</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: values.CustomQuerySoftIndentWidth</string>
 						<reference key="source" ref="277335147"/>
 						<reference key="destination" ref="151174232"/>
@@ -9287,38 +9264,6 @@ AQAAAAA</bytes>
 						</object>
 					</object>
 					<int key="connectionID">2209</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.CustomQueryAutoIndent</string>
-						<reference key="source" ref="277335147"/>
-						<reference key="destination" ref="151174232"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="277335147"/>
-							<reference key="NSDestination" ref="151174232"/>
-							<string key="NSLabel">enabled: values.CustomQueryAutoIndent</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.CustomQueryAutoIndent</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">2212</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.CustomQueryAutoIndent</string>
-						<reference key="source" ref="720862952"/>
-						<reference key="destination" ref="151174232"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="720862952"/>
-							<reference key="NSDestination" ref="151174232"/>
-							<string key="NSLabel">enabled: values.CustomQueryAutoIndent</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.CustomQueryAutoIndent</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">2213</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
