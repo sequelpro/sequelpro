@@ -55,6 +55,7 @@
 	NSRange theCharRange;
 	NSRange theParseRange;
 	NSString *theDbName;
+	NSString *theAliasName;
 
 	NSTimer *stateTimer;
 	NSArray *syncArrowImages;
@@ -78,7 +79,7 @@
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch 
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
-	isQueryingDBStructure:(BOOL)isQueryingDBStructure;
+	alias:(NSString*)anAlias isQueryingDBStructure:(BOOL)isQueryingDBStructure;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertAutocompletePlaceholder;

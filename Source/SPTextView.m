@@ -773,6 +773,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 								object:nil];
 
 	// Check for table name aliases
+	NSString *alias = nil;
 	if(dbBrowseMode && tableDocumentInstance && customQueryInstance) {
 		NSString *theDb = (dbName == nil) ? [NSString stringWithString:currentDb] : [NSString stringWithString:dbName];
 		NSString *connectionID = [tableDocumentInstance connectionID];
@@ -788,7 +789,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				for(NSString* m in matches) {
 					NSRange aliasRange = [m rangeOfRegex:re capture:1L];
 					if(aliasRange.length) {
-						NSString *alias = [[m substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+						alias = [[m substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
 						// If alias refers to db.table split and check it
 						if([alias rangeOfString:@"."].length) {
 							NSRange dbRange = [alias rangeOfRegex:@"^`?(.*?)`?\\." capture:1L];
@@ -838,6 +839,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caretMovedLeft:caretMovedLeft
 					autoComplete:autoCompleteMode
 					oneColumn:isDictMode
+					alias:alias
 					isQueryingDBStructure:[mySQLConnection isQueryingDatabaseStructure]];
 
 	completionParseRangeLocation = parseRange.location;
@@ -1460,6 +1462,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caretMovedLeft:NO
 					autoComplete:NO
 					oneColumn:NO
+					alias:nil
 					isQueryingDBStructure:NO];
 
 	//Get the NSPoint of the first character of the current word
@@ -1616,6 +1619,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											caretMovedLeft:NO
 											autoComplete:NO
 											oneColumn:YES
+											alias:nil
 											isQueryingDBStructure:NO];
 
 							//Get the NSPoint of the first character of the current word
