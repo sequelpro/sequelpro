@@ -606,7 +606,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* filter;
 	NSString* dbName        = nil;
 	NSString* tableName     = nil;
-	NSRange completionRange = [self getRangeForCurrentWordForCompletion];
+	NSRange completionRange = [self getRangeForCurrentWord];
 	NSRange parseRange      = completionRange;
 	NSString* currentWord   = [[self string] substringWithRange:completionRange];
 	NSString* prefix        = @"";
