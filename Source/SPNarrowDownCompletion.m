@@ -972,6 +972,8 @@
 {
 	if (!autocompletePlaceholderWasInserted) return;
 
+	[theView breakUndoCoalescing];
+
 	if (useFastMethod) {
 		if(backtickMode) {
 			NSRange r = NSMakeRange(theCharRange.location+1,theCharRange.length);
@@ -1021,16 +1023,25 @@
 	if(NSMaxRange(theCharRange) > [[theView string] length])
 		theCharRange = NSIntersectionRange(NSMakeRange(0,[[theView string] length]), theCharRange);
 
+	[theView breakUndoCoalescing];
+
 	NSRange r = [theView selectedRange];
 	if(r.length)
 		[theView setSelectedRange:r];
 	else {
-		if(backtickMode)
-			[theView setSelectedRange:NSMakeRange(theCharRange.location, theCharRange.length+2)];
-		else
+		if(backtickMode == 100) {
+			BOOL nextCharIsBacktick = ([[[theView string] substringWithRange:theCharRange] hasSuffix:@"`"]);
+			if(theCharRange.length == 1) nextCharIsBacktick = NO;
+			if(!nextCharIsBacktick)
+				[theView setSelectedRange:NSMakeRange(theCharRange.location, theCharRange.length+2)];
+			else
+				[theView setSelectedRange:theCharRange];
+			backtickMode = 0;
+		} else
 			[theView setSelectedRange:theCharRange];
 	}
 
+	[theView breakUndoCoalescing];
 	[theView insertText:aString];
 	
 	// If completion string contains backticks move caret out of the backticks
@@ -1077,7 +1088,7 @@
 		} else {
 			// Is completion string a schema name for current connection
 			if([selectedItem objectForKey:@"isRef"]) {
-				// backtickMode = 0; // suppress move the caret one step rightwards
+				backtickMode = 100; // suppress move the caret one step rightwards
 				[self insert_text:[candidateMatch backtickQuotedString]];
 			} else {
 				[self insert_text:candidateMatch];
