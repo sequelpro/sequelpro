@@ -953,8 +953,10 @@
 		NSString* toInsert = [curMatch substringFromIndex:[originalFilterString length]];
 		theCharRange.length += [toInsert length] - currentAutocompleteLength;
 		theParseRange.length += [toInsert length];
+
 		[theView breakUndoCoalescing];
 		[theView insertText:[toInsert lowercaseString]];
+
 		autocompletePlaceholderWasInserted = YES;
 
 		// Restore the text selection location, and clearly mark the autosuggested text
@@ -971,7 +973,11 @@
 	if (!autocompletePlaceholderWasInserted) return;
 
 	if (useFastMethod) {
-		[theView setSelectedRange:theCharRange];
+		if(backtickMode) {
+			NSRange r = NSMakeRange(theCharRange.location+1,theCharRange.length);
+			[theView setSelectedRange:r];
+		} else
+			[theView setSelectedRange:theCharRange];
 		[theView insertText:originalFilterString];
 	} else {
 		NSRange attributeResultRange = NSMakeRange(0, 0);
@@ -1018,8 +1024,12 @@
 	NSRange r = [theView selectedRange];
 	if(r.length)
 		[theView setSelectedRange:r];
-	else
-		[theView setSelectedRange:theCharRange];
+	else {
+		if(backtickMode)
+			[theView setSelectedRange:NSMakeRange(theCharRange.location, theCharRange.length+2)];
+		else
+			[theView setSelectedRange:theCharRange];
+	}
 
 	[theView insertText:aString];
 	
@@ -1055,7 +1065,6 @@
 				&& [[selectedItem objectForKey:@"path"] length]) {
 
 			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
-
 			// Check if path's db name is the current selected db name
 			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
 			theCharRange = theParseRange;
@@ -1068,7 +1077,7 @@
 		} else {
 			// Is completion string a schema name for current connection
 			if([selectedItem objectForKey:@"isRef"]) {
-				backtickMode = 0; // suppress move the caret one step rightwards
+				// backtickMode = 0; // suppress move the caret one step rightwards
 				[self insert_text:[candidateMatch backtickQuotedString]];
 			} else {
 				[self insert_text:candidateMatch];
