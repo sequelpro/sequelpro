@@ -329,6 +329,8 @@ extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
 extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
 extern NSString *SPCustomQueryEditorThemeName;
+extern NSString *SPCustomQuerySoftIndent;
+extern NSString *SPCustomQuerySoftIndentWidth;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;

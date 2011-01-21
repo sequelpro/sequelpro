@@ -917,6 +917,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /**
+ * Checks if all the characters left from the caret are white spaces or caret is at the line begin.
+ */
+- (BOOL) isCaretAtIndentPositionIgnoreLineStart:(BOOL)ignoreLineStart
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSUInteger caretPosition = [self selectedRange].location;
+	NSUInteger currentLineStartPosition = [textViewString lineRangeForRange:NSMakeRange(caretPosition, 0)].location;
+
+	// Check if caret is at the beginning of a line
+	// - used for deleteBackward: to allow to delete leading \n
+	if(!ignoreLineStart && caretPosition == currentLineStartPosition)
+		return NO;
+
+	NSString *lineHeadToCaret = [textViewString substringWithRange:NSMakeRange(currentLineStartPosition, caretPosition-currentLineStartPosition)];
+	return (![lineHeadToCaret length] || [lineHeadToCaret isMatchedByRegex:@"^\\s+$"]);
+}
+
+/**
  * Checks if the caret is wrapped by auto-paired characters.
  * e.g. [| := caret]: "|" 
  */
@@ -1105,27 +1123,39 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
+	NSRange selectedRange = [self selectedRange];
 
-	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
+	if (selectedRange.location == NSNotFound || ![self isEditable]) return NO;
+
+	NSString *indentString = @"\t";
+	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
+		NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
+		if(numberOfSpaces < 1) numberOfSpaces = 1;
+		if(numberOfSpaces > 32) numberOfSpaces = 32;
+		NSMutableString *spaces = [NSMutableString string];
+		for(NSInteger i = 0; i < numberOfSpaces; i++)
+			[spaces appendString:@" "];
+		indentString = [NSString stringWithString:spaces];
+	}
 
 	// Indent the currently selected line if the caret is within a single line
-	if ([self selectedRange].length == 0) {
+	if (selectedRange.length == 0) {
 
 		// Extract the current line range based on the text caret
-		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+		currentLineRange = [textViewString lineRangeForRange:selectedRange];
 
 		// Register the indent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:@"\t"];
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:indentString];
 
 		// Insert the new tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:@"\t"];
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:indentString];
 
 		return YES;
 	}
 
 	// Otherwise, something is selected
-	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location,0)];
-	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange([self selectedRange])-1,0)]);
+	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange(selectedRange.location,0)];
+	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange(selectedRange)-1,0)]);
 	
 	// Expand selection for first and last line to begin and end resp. but not the last line ending
 	NSRange blockRange = NSMakeRange(firstLineRange.location, lastLineMaxRange - firstLineRange.location);
@@ -1136,13 +1166,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *newString;
 	// check for line ending
 	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [indentString stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
-				stringByReplacingOccurrencesOfString:@"\r" withString:@"\r\t"]];
+				stringByReplacingOccurrencesOfString:@"\r" withString:[NSString stringWithFormat:@"\r%@", indentString]]];
 	else
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [indentString stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
-				stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"]];
+				stringByReplacingOccurrencesOfString:@"\n" withString:[NSString stringWithFormat:@"\n%@", indentString]]];
 
 	// Register the indent for undo
 	[self shouldChangeTextInRange:blockRange replacementString:newString];
@@ -1183,11 +1213,30 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			|| ([textViewString characterAtIndex:currentLineRange.location] != '\t' && [textViewString characterAtIndex:currentLineRange.location] != ' '))
 			return NO;
 
+		NSRange replaceRange;
+
+		// Check for soft indention
+		NSUInteger indentStringLength = 1;
+		if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
+			NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
+			if(numberOfSpaces < 1) numberOfSpaces = 1;
+			if(numberOfSpaces > 32) numberOfSpaces = 32;
+			indentStringLength = numberOfSpaces;
+			replaceRange = NSIntersectionRange(NSMakeRange(currentLineRange.location, indentStringLength), NSMakeRange(0,[[self string] length]));
+			// Correct length for only white spaces
+			NSString *possibleIndentString = [[[self textStorage] string] substringWithRange:replaceRange];
+			NSUInteger numberOfLeadingWhiteSpaces = [possibleIndentString rangeOfRegex:@"^(\\s*)" capture:1L].length;
+			if(numberOfLeadingWhiteSpaces == NSNotFound) numberOfLeadingWhiteSpaces = 0;
+			replaceRange = NSMakeRange(currentLineRange.location, numberOfLeadingWhiteSpaces);
+		} else {
+			replaceRange = NSMakeRange(currentLineRange.location, indentStringLength);
+		}
+
 		// Register the undent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 1) replacementString:@""];
+		[self shouldChangeTextInRange:replaceRange replacementString:@""];
 
 		// Remove the tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 1) withString:@""];
+		[self replaceCharactersInRange:replaceRange withString:@""];
 
 		return YES;
 	}
@@ -1201,25 +1250,36 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\n' || [textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\r')
 		blockRange.length--;
 
+	// Check for soft or hard indention
+	NSString *indentString = @"\t";
+	NSUInteger indentStringLength = 1;
+	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
+		indentStringLength = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
+		if(indentStringLength < 1) indentStringLength = 1;
+		if(indentStringLength > 32) indentStringLength = 32;
+		NSMutableString *spaces = [NSMutableString string];
+		for(NSInteger i = 0; i < indentStringLength; i++)
+			[spaces appendString:@" "];
+		indentString = [NSString stringWithString:spaces];
+	}
+
 	// Check if blockRange starts with SPACE or TAB
 	// (this also catches the first line of the entire text buffer or
 	// if only one line is selected)
 	NSInteger leading = 0;
 	if([textViewString characterAtIndex:blockRange.location] == ' ' 
 		|| [textViewString characterAtIndex:blockRange.location] == '\t')
-		leading++;
+		leading += indentStringLength;
 
 	// Replace \n[ \t] by \n of all lines in blockRange
 	NSString *newString;
 	// check for line ending
 	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
-		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
-			stringByReplacingOccurrencesOfString:@"\r\t" withString:@"\r"] 
-			stringByReplacingOccurrencesOfString:@"\r " withString:@"\r"];
+		newString = [[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+			stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"\r%@", indentString] withString:@"\r"];
 	else
-		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
-			stringByReplacingOccurrencesOfString:@"\n\t" withString:@"\n"] 
-			stringByReplacingOccurrencesOfString:@"\n " withString:@"\n"];
+		newString = [[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+		stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"\n%@", indentString] withString:@"\n"];
 
 	// Register the unindent for undo
 	[self shouldChangeTextInRange:blockRange replacementString:newString];
@@ -2026,6 +2086,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to SPCustomQuery
+	// and TAB as soft indention
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]){
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
@@ -2072,12 +2133,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Check if tab trigger is defined; if so insert it, otherwise pass through event
-		if(snippetControlCounter < 0 && [tableDocumentInstance fileURL]) {
+		if(snippetControlCounter < 0 && [tabTrigger length] && [tableDocumentInstance fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[tableDocumentInstance fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
 				[self insertAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
 				return;
 			}
+		}
+
+		// Check for TAB as indention for current line, i.e. left of the caret there are only white spaces
+		// but only if Soft Indent is set
+		if([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:YES]) {
+			if([self shiftSelectionRight]) return;
 		}
 	}
 
@@ -2358,6 +2425,28 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Return to avoid the original implementation, preventing double linebreaks
 		return;
 	}
+
+	// Remove soft indent if active and left from caret are only white spaces
+	if (aSelector == @selector(deleteBackward:)
+		&& ![self selectedRange].length
+		&& [prefs boolForKey:SPCustomQuerySoftIndent]
+		&& [self isCaretAtIndentPositionIgnoreLineStart:NO])
+	{
+		[self shiftSelectionLeft];
+		return;
+	}
+
+	// Remove soft indent if active and left from caret are only white spaces
+	if (aSelector == @selector(deleteForward:)
+		&& ![self selectedRange].length
+		&& [prefs boolForKey:SPCustomQuerySoftIndent]
+		&& [self isCaretAtIndentPositionIgnoreLineStart:YES]
+		&& ![self isCaretAdjacentToAlphanumCharWithInsertionOf:'-'])
+	{
+		[self shiftSelectionLeft];
+		return;
+	}
+
 	[super doCommandBySelector:aSelector];
 }
 

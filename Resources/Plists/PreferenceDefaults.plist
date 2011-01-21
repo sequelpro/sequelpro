@@ -177,5 +177,9 @@
 	<true/>
 	<key>deletedDefaultBundles</key>
 	<array/>
+	<key>CustomQuerySoftIndent</key>
+	<false/>
+	<key>CustomQuerySoftIndentWidth</key>
+	<integer>2</integer>
 </dict>
 </plist>

@@ -130,6 +130,8 @@ NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
 NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
 NSString *SPCustomQueryFunctionCompletionInsertsArguments = @"CustomQueryFunctionCompletionInsertsArguments";
 NSString *SPCustomQueryEditorThemeName           = @"CustomQueryEditorThemeName";
+NSString *SPCustomQuerySoftIndent                = @"CustomQuerySoftIndent";
+NSString *SPCustomQuerySoftIndentWidth           = @"CustomQuerySoftIndentWidth";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";
