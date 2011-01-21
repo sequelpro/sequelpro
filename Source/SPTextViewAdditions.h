@@ -25,6 +25,7 @@
 @interface NSTextView (SPTextViewAdditions)
 
 - (NSRange)getRangeForCurrentWord;
+- (NSRange)getRangeForCurrentWordForCompletion;
 
 - (IBAction)selectCurrentWord:(id)sender;
 - (IBAction)selectCurrentLine:(id)sender;

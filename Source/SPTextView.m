@@ -606,7 +606,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString* filter;
 	NSString* dbName        = nil;
 	NSString* tableName     = nil;
-	NSRange completionRange = [self getRangeForCurrentWord];
+	NSRange completionRange = [self getRangeForCurrentWordForCompletion];
 	NSRange parseRange      = completionRange;
 	NSString* currentWord   = [[self string] substringWithRange:completionRange];
 	NSString* prefix        = @"";
@@ -2445,7 +2445,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		&& ![self selectedRange].length
 		&& [prefs boolForKey:SPCustomQuerySoftIndent]
 		&& [self isCaretAtIndentPositionIgnoreLineStart:YES]
-		&& ![self isCaretAdjacentToAlphanumCharWithInsertionOf:'-'])
+		&& [self selectedRange].location < [[self string] length] && [[self string] characterAtIndex:[self selectedRange].location] == ' ')
 	{
 		[self shiftSelectionLeft];
 		return;

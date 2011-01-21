@@ -41,7 +41,68 @@
 	if (curRange.length)
         return curRange;
 	
+	NSInteger curLocation = curRange.location;
+	NSInteger start = curLocation;
+	NSInteger end = curLocation;
+	NSUInteger strLen = [[self string] length];
+
+	NSMutableCharacterSet *wordCharSet = [NSMutableCharacterSet alphanumericCharacterSet];
+	[wordCharSet addCharactersInString:@"_."];
+	[wordCharSet removeCharactersInString:@"`"];
+
+	if(start) {
+		start--;
+		while([wordCharSet characterIsMember:[[self string] characterAtIndex:start]]) {
+			start--;
+			if(start < 0) break;
+		}
+		start++;
+	}
+
+	while(end < strLen && [wordCharSet characterIsMember:[[self string] characterAtIndex:end]]) {
+		end++;
+	}
+
+	return(NSMakeRange(start, end-start));
+
+}
+/*
+ * Returns the range of the current word.
+ *   finds: [| := caret]  |word  wo|rd  word|
+ * If | is in between whitespaces nothing will be selected.
+ */
+- (NSRange)getRangeForCurrentWordForCompletion
+{
+	NSRange curRange = [self selectedRange];
+	
+	if (curRange.length)
+        return curRange;
+	
 	NSUInteger curLocation = curRange.location;
+
+	NSMutableCharacterSet *wordCharSet = [NSMutableCharacterSet alphanumericCharacterSet];
+	[wordCharSet addCharactersInString:@"_."];
+	[wordCharSet removeCharactersInString:@"`"];
+	
+	NSInteger start = curLocation;
+	NSInteger end = curLocation;
+
+	if(start) {
+		start--;
+		while([wordCharSet characterIsMember:[[self string] characterAtIndex:start]]) {
+			start--;
+			if(start < 0) break;
+		}
+		start++;
+	}
+
+	NSUInteger strLen = [[self string] length];
+	if(end <= strLen-1) {
+		while(end < strLen && [wordCharSet characterIsMember:[[self string] characterAtIndex:end]]) {
+			end++;
+		}
+	}
+	return(NSMakeRange(start, end-start));
 
 	[self moveWordLeft:self];
 	[self moveWordRightAndModifySelection:self];
