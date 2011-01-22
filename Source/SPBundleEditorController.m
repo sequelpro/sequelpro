@@ -38,6 +38,8 @@
 #define SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING          NSLocalizedString(@"General", @"Bundle Editor : Scope dropdown : 'general' item")
 #define SP_BUNDLEEDITOR_OUTLINE_BUNDLE_TOOLTIP_STRING NSLocalizedString(@"“%@” Bundle",@"Bundle Editor : Outline View : Bundle item : tooltip")
 
+#define SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING     @"SPBundleEditorSplitView"
+
 @interface SPBundleEditorController (PrivateAPI)
 
 - (void)_updateBundleDataView;
@@ -115,6 +117,15 @@
 
 - (void)awakeFromNib
 {
+
+	// Set up the splitview width manually; autosave appears to save but not restore this value
+	// here, so restore in code if present.
+	NSString *splitViewKeyName = [NSString stringWithFormat:@"NSSplitView Subview Frames %@", SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING];
+	if ([[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName]) {
+		NSString *detailString = [[[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName] objectAtIndex:0];
+		float dividerPosition = [[[detailString componentsSeparatedByString:@", "] objectAtIndex:2] floatValue];
+		[splitView setPosition:dividerPosition ofDividerAtIndex:0];
+	}
 
 	// Init all needed variables; popup menus (with the chance for localization); and set
 	// defaults
@@ -362,9 +373,6 @@
 	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]) {
 		[deletedDefaultBundles setArray:[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]];
 	}
-
-	// Set the button bar delegate 
-	[splitViewButtonBar setSplitViewDelegate:self];
 
 	[self _initTree];
 
@@ -1188,25 +1196,6 @@
 	}
 	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
-}
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 240);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 120);
 }
 
 #pragma mark -
