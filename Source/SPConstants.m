@@ -192,7 +192,7 @@ NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
-NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@&lr=lang_%@";
+NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search/query/search?q=%@&group=refman-%@";
 NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
 
 // Toolbar constants
