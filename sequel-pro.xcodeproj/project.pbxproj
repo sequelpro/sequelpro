@@ -217,6 +217,7 @@
 		582A01E9107C0C170027D42B /* SPNotLoaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 582A01E8107C0C170027D42B /* SPNotLoaded.m */; };
 		582A05A9108A5CCF0027D42B /* ProgressIndicatorLayer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 582A05A7108A5CCF0027D42B /* ProgressIndicatorLayer.xib */; };
 		583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 583B779810386B0200B21F7E /* MCPStreamingResult.m */; };
+		583CA21512EC8B2200C9E763 /* SPWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 583CA21412EC8B2200C9E763 /* SPWindow.m */; };
 		583CE52D11725642008F148E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 583CE52C11725642008F148E /* libz.dylib */; };
 		584095191107CB6600260CFD /* SPAlertSheets.m in Sources */ = {isa = PBXBuildFile; fileRef = 584095181107CB6600260CFD /* SPAlertSheets.m */; };
 		5841423F0F97E11000A34B47 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */; };
@@ -907,6 +908,8 @@
 		582A05A8108A5CCF0027D42B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/ProgressIndicatorLayer.xib; sourceTree = "<group>"; };
 		583B779710386B0200B21F7E /* MCPStreamingResult.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = MCPStreamingResult.h; sourceTree = "<group>"; };
 		583B779810386B0200B21F7E /* MCPStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPStreamingResult.m; sourceTree = "<group>"; };
+		583CA21312EC8B2200C9E763 /* SPWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindow.h; sourceTree = "<group>"; };
+		583CA21412EC8B2200C9E763 /* SPWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindow.m; sourceTree = "<group>"; };
 		583CE39C11722B84008F148E /* zlib.1.2.4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zlib.1.2.4.h; path = Frameworks/zlib/zlib.1.2.4.h; sourceTree = SOURCE_ROOT; };
 		583CE52C11725642008F148E /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		584094CC1107BD0500260CFD /* SPAlertSheets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAlertSheets.h; sourceTree = "<group>"; };
@@ -2008,6 +2011,8 @@
 		17E641670EF01F19001BC333 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				583CA21312EC8B2200C9E763 /* SPWindow.h */,
+				583CA21412EC8B2200C9E763 /* SPWindow.m */,
 				17E6417E0EF01FA8001BC333 /* SPImageView.h */,
 				17E6417F0EF01FA8001BC333 /* SPImageView.m */,
 				584094CC1107BD0500260CFD /* SPAlertSheets.h */,
@@ -2710,7 +2715,6 @@
 			isa = PBXProject;
 			buildConfigurationList = C05733CB08A9546B00998B17 /* Build configuration list for PBXProject "sequel-pro" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -3185,6 +3189,7 @@
 				58DC10D312A1B8DF00B76DA5 /* SPMenuAdditions.m in Sources */,
 				BC5750D512A6233900911BA2 /* SPActivityTextFieldCell.m in Sources */,
 				BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */,
+				583CA21512EC8B2200C9E763 /* SPWindow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

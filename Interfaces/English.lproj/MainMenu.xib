@@ -3,16 +3,16 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10J567</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
+		<string key="IBDocument.InterfaceBuilderVersion">788</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">823</string>
+			<string key="NS.object.0">788</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="106"/>
+			<integer value="498"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -256,7 +256,7 @@
 									<bool key="NSIsAlternate">YES</bool>
 									<string key="NSTitle">Duplicate Connection Tab</string>
 									<string key="NSKeyEquiv">t</string>
-									<int key="NSKeyEquivModMask">1310720</int>
+									<int key="NSKeyEquivModMask">524288</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -5102,7 +5102,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{473, 181}, {280, 303}}</string>
+					<string>{{402, 179}, {280, 303}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -5130,11 +5130,11 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{776, 341}, {269, 143}}</string>
+					<string>{{705, 339}, {269, 143}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{449, 1007}, {197, 53}}</string>
-					<string>{{325, 484}, {583, 20}}</string>
+					<string>{{254, 482}, {583, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{506, 836}, {511, 20}}</string>
@@ -5150,7 +5150,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{517, 151}, {251, 333}}</string>
+					<string>{{446, 149}, {251, 333}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{698, 703}, {184, 133}}</string>
@@ -5269,7 +5269,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{431, 41}, {295, 443}}</string>
+					<string>{{360, 39}, {295, 443}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{180, 535}, {182, 253}}</string>
@@ -5442,7 +5442,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1195</int>
+			<int key="maxID">1206</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6353,7 +6353,6 @@
 							<string>addButton</string>
 							<string>authorLabelField</string>
 							<string>authorTextField</string>
-							<string>bundleDataView</string>
 							<string>cancelButton</string>
 							<string>categoryTextField</string>
 							<string>commandBundleTreeController</string>
@@ -6380,6 +6379,7 @@
 							<string>saveButton</string>
 							<string>scopePopupButton</string>
 							<string>showHideMetaButton</string>
+							<string>splitView</string>
 							<string>tooltipTextField</string>
 							<string>triggerPopupButton</string>
 							<string>undeleteSheet</string>
@@ -6392,7 +6392,6 @@
 							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
-							<string>NSView</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSTreeController</string>
@@ -6419,6 +6418,7 @@
 							<string>NSButton</string>
 							<string>NSPopUpButton</string>
 							<string>NSButton</string>
+							<string>BWSplitView</string>
 							<string>NSTextField</string>
 							<string>NSPopUpButton</string>
 							<string>id</string>
@@ -6434,7 +6434,6 @@
 							<string>addButton</string>
 							<string>authorLabelField</string>
 							<string>authorTextField</string>
-							<string>bundleDataView</string>
 							<string>cancelButton</string>
 							<string>categoryTextField</string>
 							<string>commandBundleTreeController</string>
@@ -6461,6 +6460,7 @@
 							<string>saveButton</string>
 							<string>scopePopupButton</string>
 							<string>showHideMetaButton</string>
+							<string>splitView</string>
 							<string>tooltipTextField</string>
 							<string>triggerPopupButton</string>
 							<string>undeleteSheet</string>
@@ -6481,10 +6481,6 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">authorTextField</string>
 								<string key="candidateClassName">NSTextField</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">bundleDataView</string>
-								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">cancelButton</string>
@@ -6589,6 +6585,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">showHideMetaButton</string>
 								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">splitView</string>
+								<string key="candidateClassName">BWSplitView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tooltipTextField</string>
@@ -8032,6 +8032,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>activitiesScrollView</string>
 							<string>addDatabaseButton</string>
 							<string>chooseDatabaseButton</string>
 							<string>connectionErrorDialog</string>
@@ -8085,6 +8086,7 @@
 							<string>tableDataInstance</string>
 							<string>tableDumpInstance</string>
 							<string>tableInfoCollapseButton</string>
+							<string>tableInfoScrollView</string>
 							<string>tableInfoTable</string>
 							<string>tableListSplitter</string>
 							<string>tableRelationsInstance</string>
@@ -8103,6 +8105,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSScrollView</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSWindow</string>
@@ -8156,6 +8159,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSButton</string>
+							<string>NSScrollView</string>
 							<string>NSTableView</string>
 							<string>NSSplitView</string>
 							<string>id</string>
@@ -8177,6 +8181,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>activitiesScrollView</string>
 							<string>addDatabaseButton</string>
 							<string>chooseDatabaseButton</string>
 							<string>connectionErrorDialog</string>
@@ -8230,6 +8235,7 @@
 							<string>tableDataInstance</string>
 							<string>tableDumpInstance</string>
 							<string>tableInfoCollapseButton</string>
+							<string>tableInfoScrollView</string>
 							<string>tableInfoTable</string>
 							<string>tableListSplitter</string>
 							<string>tableRelationsInstance</string>
@@ -8248,6 +8254,10 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">activitiesScrollView</string>
+								<string key="candidateClassName">NSScrollView</string>
+							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">addDatabaseButton</string>
 								<string key="candidateClassName">id</string>
@@ -8459,6 +8469,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableInfoCollapseButton</string>
 								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">tableInfoScrollView</string>
+								<string key="candidateClassName">NSScrollView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableInfoTable</string>
@@ -10445,6 +10459,7 @@
 							<string>addSchemaPriv:</string>
 							<string>addUser:</string>
 							<string>checkAllPrivileges:</string>
+							<string>closeErrorsSheet:</string>
 							<string>doApply:</string>
 							<string>doCancel:</string>
 							<string>refresh:</string>
@@ -10466,6 +10481,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -10476,6 +10492,7 @@
 							<string>addSchemaPriv:</string>
 							<string>addUser:</string>
 							<string>checkAllPrivileges:</string>
+							<string>closeErrorsSheet:</string>
 							<string>doApply:</string>
 							<string>doCancel:</string>
 							<string>refresh:</string>
@@ -10500,6 +10517,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">checkAllPrivileges:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">closeErrorsSheet:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -10539,6 +10560,8 @@
 							<string>addSchemaPrivButton</string>
 							<string>availableController</string>
 							<string>availableTableView</string>
+							<string>errorsSheet</string>
+							<string>errorsTextView</string>
 							<string>grantedController</string>
 							<string>grantedTableView</string>
 							<string>maxConnectionsTextField</string>
@@ -10559,6 +10582,8 @@
 							<string>NSButton</string>
 							<string>NSArrayController</string>
 							<string>NSTableView</string>
+							<string>NSWindow</string>
+							<string>NSTextView</string>
 							<string>NSArrayController</string>
 							<string>NSTableView</string>
 							<string>NSTextField</string>
@@ -10582,6 +10607,8 @@
 							<string>addSchemaPrivButton</string>
 							<string>availableController</string>
 							<string>availableTableView</string>
+							<string>errorsSheet</string>
+							<string>errorsTextView</string>
 							<string>grantedController</string>
 							<string>grantedTableView</string>
 							<string>maxConnectionsTextField</string>
@@ -10610,6 +10637,14 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">availableTableView</string>
 								<string key="candidateClassName">NSTableView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">errorsSheet</string>
+								<string key="candidateClassName">NSWindow</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">errorsTextView</string>
+								<string key="candidateClassName">NSTextView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">grantedController</string>
