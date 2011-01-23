@@ -16,6 +16,7 @@
 	NSMutableDictionary *minValues, *maxValues, *minUnits, *maxUnits;
 	NSMutableDictionary *resizableSubviewPreferredProportion, *nonresizableSubviewPreferredSize;
 	NSArray *stateForLastPreferredCalculations;
+	NSMutableArray *uncollapsedSizes;
 	int collapsiblePopupSelection;
 	float uncollapsedSize;
 	
