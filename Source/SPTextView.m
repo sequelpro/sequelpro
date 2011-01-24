@@ -2341,7 +2341,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)moveWordRight:(id)sender
 {
 	[super moveWordRight:sender];
-	while([self selectedRange].location < [[[self textStorage] string] length] && [[[self textStorage] string] characterAtIndex:[self selectedRange].location] == '.')
+	NSCharacterSet *whiteSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	while([self selectedRange].location < [[[self textStorage] string] length] 
+		&& ([[[self textStorage] string] characterAtIndex:[self selectedRange].location] == '.' 
+		|| (
+				[[[self textStorage] string] characterAtIndex:[self selectedRange].location-1] == '.' 
+				&& ![whiteSet characterIsMember:[[[self textStorage] string] characterAtIndex:[self selectedRange].location]]
+			)
+		))
 		[super moveWordRight:sender];
 }
 
@@ -2362,22 +2369,41 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)moveWordRightAndModifySelection:(id)sender
 {
 	[super moveWordRightAndModifySelection:sender];
-	while(NSMaxRange([self selectedRange]) < [[[self textStorage] string] length] && [[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])] == '.')
+	NSCharacterSet *whiteSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	while(NSMaxRange([self selectedRange]) < [[[self textStorage] string] length] 
+		&& ([[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])] == '.' 
+		|| (
+				[[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])-1] == '.' 
+				&& ![whiteSet characterIsMember:[[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])]]
+			)
+		))
 		[super moveWordRightAndModifySelection:sender];
 }
 
 - (void) deleteBackward:(id)sender
 {
 
-	// If the caret is currently inside a marked auto-pair, delete the characters on both sides
-	// of the caret.
 	NSRange currentRange = [self selectedRange];
-	if (currentRange.length == 0 && currentRange.location > 0 && [self areAdjacentCharsLinked])
-		[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
 
-	// Avoid auto-uppercasing if resulting word would be a SQL keyword;
-	// e.g. type inta| and deleteBackward:
-	delBackwardsWasPressed = YES;	
+	if (currentRange.length == 0) {
+
+		// If the caret is currently inside a marked auto-pair, delete the characters on both sides
+		// of the caret.
+		if (currentRange.location > 0 && [self areAdjacentCharsLinked]) {
+			[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
+			// Avoid auto-uppercasing if resulting word would be a SQL keyword;
+			// e.g. type inta| and deleteBackward:
+			delBackwardsWasPressed = YES;
+		}
+
+		// Remove soft indent if active and left from caret are only white spaces
+		else if ([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:NO])
+		{
+			[self shiftSelectionLeft];
+			return;
+		}
+
+	}
 
 	[super deleteBackward:sender];
 
@@ -2427,16 +2453,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Return to avoid the original implementation, preventing double linebreaks
-		return;
-	}
-
-	// Remove soft indent if active and left from caret are only white spaces
-	if (aSelector == @selector(deleteBackward:)
-		&& ![self selectedRange].length
-		&& [prefs boolForKey:SPCustomQuerySoftIndent]
-		&& [self isCaretAtIndentPositionIgnoreLineStart:NO])
-	{
-		[self shiftSelectionLeft];
 		return;
 	}
 

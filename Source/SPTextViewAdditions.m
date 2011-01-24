@@ -63,7 +63,11 @@
 		end++;
 	}
 
-	return(NSMakeRange(start, end-start));
+	NSRange wordRange = NSMakeRange(start, end-start);
+	if(wordRange.length && [[self string] characterAtIndex:NSMaxRange(wordRange)-1] == '.')
+		wordRange.length--;
+
+	return(wordRange);
 
 }
 
