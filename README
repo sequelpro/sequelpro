@@ -1,22 +1,27 @@
 BUILDING SEQUEL PRO
 -------------------
 
-Before you can start making changes to any of the xib files in Interface 
-Builder you will need to install the BWToolkit plugin from 
-http://www.brandonwalkin.com/bwtoolkit/.
+Sequel Pro uses two external frameworks which come with .ibplugins (Interface Builder
+Plugins); to build Sequel Pro, Interface Builder must have detected these plugins.
 
-To install the plugin you will need to do a Release build of the project so 
-that the BWTookit plugin and frameworks are compiled.
+The two frameworks are:
+	BWToolkit
+	ShortcutRecorder
 
-Once you have done this double click on the BWToolkit.ibplugin located at:
+Each of these frameworks is included in the Sequel Pro source tree with its .ibplugin;
+the locations of these .ibplugins are:
+	./Frameworks/BWToolkitFramework.framework/Versions/A/Resources/BWToolkit.ibplugin
+	./Frameworks/ShortcutRecorder.framework/Versions/A/Resources/ShortcutRecorder.ibplugin
 
-	./trunk/Frameworks/BWToolkitFramework.framework/build/Release/
+By including these .ibplugins within the frameworks, Interface Builder should detect them automatically when you build.  If you get build errors about "Unable to resolve plug-in 
+dependency for É", automatic detection has failed.  The first thing to try is to quit Xcode 
+and Interface Builder, re-open Xcode, and try again; if this still fails, locate 
+the .ibplugins and double click on them to add them to Interface Builder.
 
 If Interface Builder complains that it's already installed then you might want 
-to replace the current one with the one you just built.
-
-To do this go to the Interface Builder preferences and click on 'Plugins' and
-remove the BWToolkit plugin using the [ - ] button below the list.
+to replace the current version with the version in the project; to do this go to the
+Interface Builder preferences, click on 'Plugins', and remove the BWToolkit plugin
+using the [ - ] button below the list.
 
 You will need to relaunch Interface Builder before you can re-add the plugin 
 from the location mentioned above.
