@@ -3297,6 +3297,25 @@
 	[self setFiltersToRestore:nil];
 }
 
+- (void) setFilterTableData:(NSData*)arcData
+{
+	if(!arcData) return;
+	NSDictionary *filterData = [NSUnarchiver unarchiveObjectWithData:arcData];
+	[filterTableData removeAllObjects];
+	[filterTableData addEntriesFromDictionary:filterData];
+	[filterTableWindow makeKeyAndOrderFront:nil];
+	// [filterTableView reloadData];
+}
+
+- (NSData*) filterTableData
+{
+	if(![filterTableWindow isVisible]) return nil;
+
+	[filterTableView deselectAll:nil];
+
+	return [NSArchiver archivedDataWithRootObject:filterTableData];
+}
+
 #pragma mark -
 #pragma mark Table drawing and editing
 
@@ -3513,8 +3532,9 @@
 				return c;
 			} else
 				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"], [[aTableColumn identifier] integerValue]-1);
-		else
+		else {
 			return NSArrayObjectAtIndex([[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"], rowIndex);
+		}
 	}
 	else if(aTableView == tableContentView) {
 
@@ -4470,6 +4490,8 @@
 	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
 	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	NSInteger editedRow = [filterTableView editedRow];
+	
 
 	if(currentValue == filterTableGearLookAllFields) {
 		numberOfRows = 1;
@@ -4503,7 +4525,7 @@
 				}
 			// Take value from currently edited table cell
 			} else if([currentValue isKindOfClass:[NSString class]]){
-				if(index == [filterTableView editedColumn] && i == [filterTableView editedRow])
+				if(i == editedRow && index == [[NSArrayObjectAtIndex([filterTableView tableColumns], [filterTableView editedColumn]) identifier] integerValue])
 					filterCell = (NSString*)currentValue;
 				else
 					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);

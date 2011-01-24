@@ -269,6 +269,7 @@
 	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
 	NSRect contentViewport = [tableContentInstance viewport];
 	NSDictionary *contentFilter = [tableContentInstance filterSettings];
+	NSData *filterTableData = [tableContentInstance filterTableData];
 	if (!theDatabase) return;
 
 	// If a table is selected, save state information
@@ -283,6 +284,7 @@
 		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
 		if (contentSelectedIndexSet) [contentState setObject:contentSelectedIndexSet forKey:@"selection"];
 		if (contentFilter) [contentState setObject:contentFilter forKey:@"filter"];
+		if (filterTableData) [contentState setObject:filterTableData forKey:@"filterTable"];
 
 		// Update the table content states with this information - used when switching tables to restore last used view.
 		[tableContentStates setObject:contentState forKey:[NSString stringWithFormat:@"%@.%@", [theDatabase backtickQuotedString], [theTable backtickQuotedString]]];

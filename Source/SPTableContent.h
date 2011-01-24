@@ -226,6 +226,8 @@
 - (void) setFiltersToRestore:(NSDictionary *)filterSettings;
 - (void) storeCurrentDetailsForRestoration;
 - (void) clearDetailsToRestore;
+- (void) setFilterTableData:(NSData*)arcData;
+- (NSData*) filterTableData;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
