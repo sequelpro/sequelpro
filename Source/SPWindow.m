@@ -37,7 +37,8 @@
  */
 - (void) sendEvent:(NSEvent *)theEvent
 {
-	if ([theEvent type] == NSKeyDown) {
+	if ([theEvent type] == NSKeyDown && [[theEvent characters] length]) {
+
 		unichar theCharacter = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
 
 		switch (theCharacter) {
