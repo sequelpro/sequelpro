@@ -103,6 +103,9 @@
 	BOOL tableListContainsViews;
 
 	BOOL alertSheetOpened;
+
+	NSFont *smallSystemFont;
+
 }
 
 // IBAction methods

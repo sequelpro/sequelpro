@@ -1477,34 +1477,51 @@
 /**
  * Table view delegate method
  */
-- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)aTableView  willDisplayCell:(ImageAndTextCell*)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if (rowIndex > 0 && rowIndex < [filteredTableTypes count]
-		&& [[aTableColumn identifier] isEqualToString:@"tables"]) {
-		if(![[filteredTables objectAtIndex:rowIndex] isKindOfClass:[NSString class]]) {
-			[(ImageAndTextCell*)aCell setImage:nil];
-			[(ImageAndTextCell*)aCell setIndentationLevel:0];
-		}
-		else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeView) {
-			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-view-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeTable) {
-			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeProc) {
-			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"proc-small"]];
-		} else if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeFunc) {
-			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"func-small"]];
+	if (rowIndex > 0 && rowIndex < [filteredTableTypes count] && [[aTableColumn identifier] isEqualToString:@"tables"]) {
+
+		id item = NSArrayObjectAtIndex(filteredTables, rowIndex);
+
+		if(![item isKindOfClass:[NSString class]]) {
+			[aCell setImage:nil];
+			[aCell setIndentationLevel:0];
+			return;
 		}
 
-		if ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeNone) {
-			[(ImageAndTextCell*)aCell setImage:nil];
-			[(ImageAndTextCell*)aCell setIndentationLevel:0];
-		} else {
-			[(ImageAndTextCell*)aCell setIndentationLevel:1];
-			[(ImageAndTextCell*)aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		switch([NSArrayObjectAtIndex(filteredTableTypes, rowIndex) integerValue]) {
+			case SPTableTypeView:
+			[aCell setImage:[NSImage imageNamed:@"table-view-small"]];
+			[aCell setIndentationLevel:1];
+			[aCell setFont:smallSystemFont];
+			break;
+			case SPTableTypeTable:
+			[aCell setImage:[NSImage imageNamed:@"table-small"]];
+			[aCell setIndentationLevel:1];
+			[aCell setFont:smallSystemFont];
+			break;
+			case SPTableTypeProc:
+			[aCell setImage:[NSImage imageNamed:@"proc-small"]];
+			[aCell setIndentationLevel:1];
+			[aCell setFont:smallSystemFont];
+			break;
+			case SPTableTypeFunc:
+			[aCell setImage:[NSImage imageNamed:@"func-small"]];
+			[aCell setIndentationLevel:1];
+			[aCell setFont:smallSystemFont];
+			break;
+			case SPTableTypeNone:
+			[aCell setImage:nil];
+			[aCell setIndentationLevel:0];
+			break;
+			default:
+			[aCell setIndentationLevel:1];
+			[aCell setFont:smallSystemFont];
 		}
+
 	} else {
-		[(ImageAndTextCell*)aCell setImage:nil];
-		[(ImageAndTextCell*)aCell setIndentationLevel:0];
+		[aCell setImage:nil];
+		[aCell setIndentationLevel:0];
 	}
 }
 
@@ -1775,6 +1792,7 @@
 		selectedTableType = SPTableTypeNone;
 		selectedTableName = nil;
 		[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
+		smallSystemFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 	}
 
 	return self;
