@@ -165,22 +165,33 @@
 {
 	// Set up the controls
 	[addRelationTableBox setTitle:[NSString stringWithFormat:NSLocalizedString(@"Table: %@", @"Add Relation sheet title, showing table name"), [tablesListInstance tableName]]];
-	
+
 	[columnPopUpButton removeAllItems];
 	[columnPopUpButton addItemsWithTitles:[tableDataInstance columnNames]];
-	
+
 	[refTablePopUpButton removeAllItems];
-	
+
+	BOOL changeEncoding = ![[connection encoding] isEqualToString:@"utf8"];
+
+	// Use UTF8 for identifier-based queries
+	if (changeEncoding) {
+		[connection storeEncodingForRestoration];
+		[connection setEncoding:@"utf8"];
+	}
+
 	// Get all InnoDB tables in the current database
 	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-	
+
 	[result dataSeek:0];
-	
+
 	for (NSInteger i = 0; i < [result numOfRows]; i++)
 	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
-	
+
+	// Restore encoding if appropriate
+	if (changeEncoding) [connection restoreStoredEncoding];
+
 	[self selectReferenceTable:nil];
 	
 	[NSApp beginSheet:addRelationPanel
