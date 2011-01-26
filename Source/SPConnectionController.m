@@ -46,6 +46,7 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
 - (BOOL)_checkHost;
 - (void)_sortFavorites;
+- (void)_sortTreeNode:(SPTreeNode *)node usingKey:(NSString *)key;
 - (void)_favoriteTypeDidChange;
 - (void)_reloadFavoritesViewData;
 - (void)_restoreConnectionInterface;
@@ -55,6 +56,8 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
 
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+
+static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 
 @end
 
@@ -1177,19 +1180,67 @@ static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 			sortKey = SPFavoriteTypeKey;
 			break;
 	}
-	 
-	// First sort the contents of all groups
-	for (SPTreeNode *node in [[[favoritesRoot childNodes] objectAtIndex:0] groupChildren])
-	{
-		[[node mutableChildNodes] sortUsingSelector:@selector(compare:)];
-	}
 	
-	// Secondly sort the root's leaf nodes
-	[[[[favoritesRoot childNodes] objectAtIndex:0] childLeafs] sortUsingSelector:@selector(compare:)];
-	
+	[self _sortTreeNode:[[favoritesRoot childNodes] objectAtIndex:0] usingKey:sortKey];
+			
 	[favoritesController saveFavorites];
 	 
 	[self _reloadFavoritesViewData];
+}
+
+/**
+ * Sorts the supplied tree node using the supplied sort key.
+ *
+ * @param node The tree node to sort
+ * @param key  The sort key to sort by
+ */
+- (void)_sortTreeNode:(SPTreeNode *)node usingKey:(NSString *)key
+{	
+	NSMutableArray *nodes = [[node mutableChildNodes] mutableCopy];
+	
+	for (SPTreeNode *node in nodes)
+	{
+		if ([node isGroup]) {
+			[self _sortTreeNode:node usingKey:key];
+		}
+	}
+	
+	NSMutableArray *groupNodes = [[NSMutableArray alloc] init];
+	
+	for (node in nodes)
+	{
+		if ([node isGroup]) {
+			[groupNodes addObject:node];
+			[nodes removeObject:node];
+		}
+	}
+	
+	[nodes sortUsingFunction:compareFavoritesUsingKey context:key];
+	
+	[nodes addObjectsFromArray:groupNodes];
+	
+	[[node mutableChildNodes] setArray:nodes];
+	
+	[groupNodes release];
+}
+
+/**
+ * Sort function used by NSMutableArray's sortUsingFunction:
+ *
+ * @param favorite1 The first of the favorites to compare (and determine sort order)
+ * @param favorite2 The second of the favorites to compare
+ * @param key       The sort key to perform the comparison by
+ * 
+ * @return An integer (NSComparisonResult) indicating the order of the comparison
+ */
+static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, void *key)
+{
+	NSString *dictKey = (NSString *)key;
+	
+	id value1 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite1 representedObject] nodeFavorite] objectForKey:dictKey];
+	id value2 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite2 representedObject] nodeFavorite] objectForKey:dictKey];
+	
+	return [value1 compare:value2];
 }
 
 /**

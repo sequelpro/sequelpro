@@ -109,7 +109,7 @@
 #pragma mark Outline view delegate methods
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
-{	
+{		
 	return ([[(SPTreeNode *)item parentNode] parentNode] == nil);
 }
 
@@ -160,7 +160,7 @@
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
-	return ((SPTreeNode *)[[item parentNode] parentNode] == nil) ? 22 : 17;
+	return (![[item parentNode] parentNode]) ? 22 : 17;
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn item:(id)item mouseLocation:(NSPoint)mouseLocation
@@ -185,7 +185,7 @@
 #pragma mark -
 #pragma mark Outline view drag & drop
 
-/*- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
+- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {	
 	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
 	[pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
@@ -196,6 +196,9 @@
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
 {
 	NSDragOperation result = NSDragOperationNone;
+	
+	// Prevent dropping favorites on other favorites (non-groups)
+	if ((index == NSOutlineViewDropOnItemIndex) && (![item isGroup])) return result;
 	
 	if ([info draggingSource] == outlineView) {
 		[outlineView setDropItem:item dropChildIndex:index];
@@ -211,38 +214,27 @@
 	BOOL acceptedDrop = NO;
 	
 	if ((!item) || ([info draggingSource] != outlineView)) return acceptedDrop;
-	
+		
 	SPTreeNode *node = (item) ? item : [[[[favoritesRoot childNodes] objectAtIndex:0] childNodes] objectAtIndex:0];
- 		
-	// TODO: Fix me
-	
+		
 	// Disable all automatic sorting
-	//currentSortItem = -1;
-	//reverseFavoritesSort = NO;
+	currentSortItem = -1;
+	reverseFavoritesSort = NO;
 	
-	//[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
-	//[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
-	
-	// Remove sort descriptors
-	//[favorites sortUsingDescriptors:[NSArray array]];
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
 	
 	// Uncheck sort by menu items
 	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
 	{
 		[menuItem setState:NSOffState];
 	}
-	
+		
 	NSArray *nodes = [self selectedFavoriteNodes];
 		
 	if ([node isGroup]) {		
 		if (index == NSOutlineViewDropOnItemIndex) {
 			index = 0;
-		}
-		else {
-			SPTreeNode *oldNode = node;
-			
-			node = [node parentNode];
-			index = ([[node childNodes] indexOfObject:oldNode] + 1);
 		}
 	}
 	else {
@@ -250,7 +242,11 @@
 			index = 0;
 		}
 	}
-		
+	
+	if (![[node representedObject] nodeName]) {
+		node = [[favoritesRoot childNodes] objectAtIndex:0];
+	}
+			
 	NSMutableArray *childNodeArray = [node mutableChildNodes];
 	
     for (SPTreeNode *treeNode in nodes) 
@@ -270,12 +266,12 @@
 		else {
             [[[treeNode parentNode] mutableChildNodes] removeObject:treeNode];
         }
-		        
+				        
 		[childNodeArray insertObject:treeNode atIndex:newIndex];
         
 		newIndex++;
     }
-	
+		
 	[favoritesController saveFavorites];
 	
 	[self _reloadFavoritesViewData];
@@ -285,7 +281,7 @@
 	acceptedDrop = YES;
 	
 	return acceptedDrop;
-}*/
+}
 
 #pragma mark -
 #pragma mark Textfield delegate methods
@@ -465,9 +461,6 @@
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
     if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
-		
-		// TODO: Fix me
-		return NO;
 		
 		// Loop all the items in the sort by menu only checking the currently selected one
 		for (NSMenuItem *item in [[menuItem menu] itemArray])

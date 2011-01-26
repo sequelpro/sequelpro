@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="5782"/>
+			<integer value="4915"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -109,8 +109,8 @@
 																	</object>
 																</object>
 																<object class="NSTextFieldCell" key="NSDataCell" id="93569184">
-																	<int key="NSCellFlags">69336641</int>
-																	<int key="NSCellFlags2">137216</int>
+																	<int key="NSCellFlags">337772097</int>
+																	<int key="NSCellFlags2">137472</int>
 																	<string key="NSContents">Text Cell</string>
 																	<reference key="NSSupport" ref="26"/>
 																	<reference key="NSControlView" ref="1012579052"/>
@@ -498,7 +498,6 @@
 															</object>
 														</object>
 													</object>
-													<int key="NSSelectedIndex">2</int>
 													<bool key="NSPullDown">YES</bool>
 													<int key="NSPreferredEdge">1</int>
 													<bool key="NSUsesItemFromMenu">YES</bool>
@@ -7171,7 +7170,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{160, 101}, {131, 54}}</string>
+					<string>{{160, 101}, {128, 54}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
