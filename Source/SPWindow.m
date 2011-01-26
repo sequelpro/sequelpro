@@ -37,9 +37,40 @@
  */
 - (void) sendEvent:(NSEvent *)theEvent
 {
+
 	if ([theEvent type] == NSKeyDown && [[theEvent characters] length]) {
 
 		unichar theCharacter = [[theEvent charactersIgnoringModifiers] characterAtIndex:0];
+
+		// ⌃⎋ sends a right-click to order front the context menu under the first responder's visible Rect
+		if ([theEvent keyCode] == 53 && (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSAlternateKeyMask))) {
+
+			id firstResponder = [[NSApp keyWindow] firstResponder];
+
+			if(firstResponder && [firstResponder respondsToSelector:@selector(menuForEvent:)]) {
+
+				NSRect theRect = [firstResponder visibleRect];
+				NSPoint loc = theRect.origin;
+				loc.y += theRect.size.height+5;
+				loc = [firstResponder convertPoint:loc toView:nil];
+				NSEvent *anEvent = [NSEvent
+				        mouseEventWithType:NSRightMouseDown
+				        location:loc
+				        modifierFlags:0
+				        timestamp:1
+				        windowNumber:[self windowNumber]
+				        context:[NSGraphicsContext currentContext]
+				        eventNumber:0
+				        clickCount:1
+				        pressure:0.0];
+
+			    [NSMenu popUpContextMenu:[firstResponder menuForEvent:theEvent] withEvent:anEvent forView:firstResponder];
+
+				return;
+
+			}
+
+		}
 
 		switch (theCharacter) {
 
