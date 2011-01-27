@@ -72,8 +72,8 @@ int main(int argc, const char *argv[])
 		// request the password
 		if ([[environment objectForKey:@"SP_PASSWORD_METHOD"] integerValue] == SPSSHPasswordUsesKeychain) {
 			SPKeychain *keychain;
-			NSString *keychainName = [environment objectForKey:@"SP_KEYCHAIN_ITEM_NAME"];
-			NSString *keychainAccount = [environment objectForKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
+			NSString *keychainName = [[environment objectForKey:@"SP_KEYCHAIN_ITEM_NAME"] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+			NSString *keychainAccount = [[environment objectForKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
 			if (!keychainName || !keychainAccount) {
 				NSLog(@"SSH Tunnel: keychain authentication specified but insufficient internal details supplied");
@@ -82,17 +82,16 @@ int main(int argc, const char *argv[])
 			}
 
 			keychain = [[SPKeychain alloc] init];
-			if (![keychain passwordExistsForName:keychainName account:keychainAccount]) {
-				NSLog(@"SSH Tunnel: specified keychain password not found");
+			if ([keychain passwordExistsForName:keychainName account:keychainAccount]) {
+				printf("%s\n", [[keychain getPasswordForName:keychainName account:keychainAccount] UTF8String]);
 				[keychain release];
 				[pool release];
-				return 1;
+				return 0;
 			}
 
-			printf("%s\n", [[keychain getPasswordForName:keychainName account:keychainAccount] UTF8String]);
-			[keychain release];
-			[pool release];
-			return 0;
+			// If retrieving the password failed, log an error and fall back to requesting from the GUI
+			NSLog(@"SSH Tunnel: specified keychain password not found");
+			argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded from the keychain; please enter the SSH password for %@:", @"Prompt for SSH password when keychain fetch failed"), connectionName];
 		}
 
 		// If the password method is set to request the password from the tunnel instance, do so.
@@ -113,15 +112,15 @@ int main(int argc, const char *argv[])
 			}
 			
 			password = [sequelProTunnel getPasswordWithVerificationHash:verificationHash];
-			if (!password) {
-				NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Pro for internal authentication");
+			if (password) {
+				printf("%s\n", [password UTF8String]);
 				[pool release];
-				return 1;
+				return 0;			
 			}
-
-			printf("%s\n", [password UTF8String]);
-			[pool release];
-			return 0;
+			
+			// If retrieving the password failed, log an error and fall back to requesting from the GUI
+			NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Pro for internal authentication");
+			argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded; please enter the SSH password for %@:", @"Prompt for SSH password when direct fetch failed"), connectionName];
 		}
 	}
 

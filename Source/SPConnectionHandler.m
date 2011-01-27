@@ -330,13 +330,7 @@ certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self 
 	
 	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 	
-	// Set keychain id for saving SPF files
-	if ([self valueForKeyPath:@"selectedFavorite.id"]) {
-		[dbDocument setKeychainID:[[self valueForKeyPath:@"selectedFavorite.id"] stringValue]];
-	}
-	else {
-		[dbDocument setKeychainID:@""];
-	}
+	if (connectionKeychainID) [dbDocument setKeychainID:connectionKeychainID];
 	
 	// Pass the connection to the table document, allowing it to set
 	// up the other classes and the rest of the interface.

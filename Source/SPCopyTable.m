@@ -698,6 +698,10 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger columnWidth;
 	NSUInteger allColumnWidths = 0;
 
+	// Determine the available size
+	NSScrollView *parentScrollView = [[self superview] superview];
+ 	CGFloat visibleTableWidth = [parentScrollView bounds].size.width - [NSScroller scrollerWidth] - [columnDefinitions count] * 3.5;
+
 	for (NSDictionary *columnDefinition in columnDefinitions) {
 		if ([[NSThread currentThread] isCancelled]) return nil;
 
@@ -707,7 +711,7 @@ NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Compare the column widths to the table width.  If wider, narrow down wide columns as necessary
-	if (allColumnWidths > [self bounds].size.width) {
+	if (allColumnWidths > visibleTableWidth) {
 		NSUInteger availableWidthToReduce = 0;
 
 		// Look for columns that are wider than the multi-column max
@@ -717,7 +721,7 @@ NSInteger kBlobAsImageFile = 4;
 		}
 
 		// Determine how much width can be reduced
-		NSUInteger widthToReduce = allColumnWidths - [self bounds].size.width;
+		NSUInteger widthToReduce = allColumnWidths - visibleTableWidth;
 		if (availableWidthToReduce < widthToReduce) widthToReduce = availableWidthToReduce;
 
 		// Proportionally decrease the column sizes
@@ -930,6 +934,10 @@ NSInteger kBlobAsImageFile = 4;
 {
 	NSInteger menuItemTag = [anItem tag];
 
+	if ([anItem action] == @selector(performFindPanelAction:)) {
+		return (menuItemTag == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]);
+	}
+
 	// Don't validate anything other than the copy commands
 	if (menuItemTag != MENU_EDIT_COPY && menuItemTag != MENU_EDIT_COPY_WITH_COLUMN && menuItemTag != MENU_EDIT_COPY_AS_SQL) {
 		return YES;
@@ -1091,6 +1099,13 @@ NSInteger kBlobAsImageFile = 4;
 	[super keyDown:theEvent];
 }
 
+- (void)performFindPanelAction:(id)sender
+{
+	if([sender tag] == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]) {
+		[[self delegate] showFilterTable:self];
+	}
+}
+
 #pragma mark -
 #pragma mark Bundle Command Support
 
@@ -1221,33 +1236,47 @@ NSInteger kBlobAsImageFile = 4;
 				return;
 			}
 
+
+			// Create an array of table column mappings for fast iteration
+			NSArray *columns = [self tableColumns];
+			NSUInteger numColumns = [columns count];
+			NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+			NSInteger c;
+			for ( c = 0; c < numColumns; c++ )
+				columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
-				for(NSDictionary* col in defs) {
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
-					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
-					[tableMetaData appendString:@"\n"];
-				}
+				if(defs && [defs count] == numColumns)
+					for( c = 0; c < numColumns; c++ ) {
+						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
+						[tableMetaData appendString:@"\n"];
+					}
 			}
 			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
 				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
 				NSArray *defs = [[self delegate] dataColumnDefinitions];
-				for(NSDictionary* col in defs) {
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
-					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"unsigned"]];
-					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"autoincrement"]];
-					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"isprimarykey"]) ? : @"0"];
-					[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
-				}
+				if(defs && [defs count] == numColumns)
+					for( c = 0; c < numColumns; c++ ) {
+						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"unsigned"]];
+						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"autoincrement"]];
+						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"isprimarykey"]) ? : @"0"];
+						[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
+					}
 			}
+			free(columnMappings);
 
 			inputFileError = nil;
 			[tableMetaData writeToFile:bundleInputTableMetaDataFilePath

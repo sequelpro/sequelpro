@@ -31,8 +31,8 @@
 
 - (void)dealloc
 {
-	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs release];
 	[lineNumberView release];
 }
@@ -58,11 +58,12 @@
 	// Re-define tab stops for a better editing
 	[self setTabStops];
 
-	// add NSViewBoundsDidChangeNotification to scrollView
-	[[commandScrollView contentView] setPostsBoundsChangedNotifications:YES];
-
 	// disabled to get the current text range in textView safer
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
+
+	// add NSViewBoundsDidChangeNotification to scrollView
+	[commandScrollView setPostsBoundsChangedNotifications:YES];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[commandScrollView contentView]];
 
 }
 
@@ -779,6 +780,15 @@
 - (void)textDidChange:(NSNotification *)aNotification
 {
 	textWasChanged = YES;
+}
+
+/**
+ * Scrollview delegate after the command textView's view port was changed.
+ * Manily used to render line numbering.
+ */
+- (void)boundsDidChangeNotification:(NSNotification *)notification
+{
+	[commandScrollView display];
 }
 
 #pragma mark -

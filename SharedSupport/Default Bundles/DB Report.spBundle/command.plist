@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Report</string>
+	<key>command</key>
+	<string>
+# Since this command will execute SQL statements at the front most
+# document window's connection check for a passed process ID to cancel
+# this command by displaying a tooltip. Otherwise the loop after
+# “open "sequelpro://$SP_PROCESS_ID@passToDoc/ExecuteQuery"”
+# won't break.
+if [ -z $SP_PROCESS_ID ]; then
+	echo "&lt;font color=red&gt;No front most connection window found!&lt;/font&gt;"
+	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
+fi
+
+# send query to Sequel Pro
+cat &lt;&lt;SQL &gt; "$SP_QUERY_FILE"
+SELECT TABLE_SCHEMA AS Name, FORMAT((SUM(DATA_LENGTH)+SUM(INDEX_LENGTH))/1000, 1) AS \`Size (kiB) incl. indices\`
+FROM information_schema.TABLES
+GROUP BY TABLE_SCHEMA
+SQL
+
+# execute the SQL statement; the result will be available in the file $SP_QUERY_RESULT_FILE
+open "sequelpro://$SP_PROCESS_ID@passToDoc/ExecuteQuery"
+
+# wait for Sequel Pro; status file will be written to disk if query was finished
+while [ 1 ]
+do
+	[[ -e "$SP_QUERY_RESULT_STATUS_FILE" ]] &amp;&amp; break
+	sleep 0.01
+done
+
+# Prepair HTML code
+cat "$SP_BUNDLE_PATH/Support/header.html"
+cat &lt;&lt;HTML1
+&lt;center&gt;
+&lt;h3&gt;&lt;font color=blue&gt;Connection: ‘$SP_CURRENT_HOST’ – $SP_RDBMS_TYPE ($SP_RDBMS_VERSION)&lt;/font&gt;&lt;/h3&gt;
+&lt;table width=80%&gt;
+	&lt;tr&gt;
+		&lt;td align=center&gt;&lt;img width='96px' src='file://$SP_ICON_FILE'&gt;&lt;/td&gt;
+		&lt;td&gt;
+			&lt;table style='border-collapse:collapse'&gt;
+				&lt;tr&gt;
+					&lt;th align=left&gt;
+HTML1
+
+# Check for possible MySQL error
+if [ `cat "$SP_QUERY_RESULT_STATUS_FILE"` == 1 ]; then
+
+	# If error
+	echo "&lt;i&gt;No global summary available&lt;/i&gt;"
+
+else
+
+	# $SP_QUERY_RESULT_FILE contains the file path to the query result
+	
+	# First line contains the column names - wrap them into &lt;th&gt; tags
+	cat "$SP_QUERY_RESULT_FILE" | head -n 1 |perl -pe 's!\t!&lt;/th&gt;&lt;th&gt;&lt;/th&gt;&lt;th align=right&gt;!g;s!$!&lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;!'
+	
+	# Output all row except the first one and wrap them into &lt;tr&gt;&lt;td&gt; tags
+	cat "$SP_QUERY_RESULT_FILE" | sed '1d' | perl -pe 's!\t!&lt;/td&gt;&lt;td&gt;&amp;nbsp;&amp;nbsp;&lt;/td&gt;&lt;td align='right'&gt;!g;s!$!&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;!'
+
+fi
+cat &lt;&lt;HTML2
+			&lt;/table&gt;
+		&lt;/td&gt;
+	&lt;/tr&gt;
+&lt;/table&gt;
+&lt;hr&gt;
+&lt;/center&gt;
+HTML2
+
+# Clear hand-shake files for further usage
+rm -f "$SP_QUERY_FILE"
+rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+rm -f "$SP_QUERY_RESULT_FILE"
+rm -f "$SP_QUERY_RESULT_META_FILE"
+
+# Read all databases into a BASH array; $SP_ALL_DATABASES provides them as a tab delimited string
+# Set the Internal Field Separator IFS to 'tab' and process the array by using the new IFS due to 
+# the fact that a database name could contain 'spaces'
+OLDIFS="$IFS"
+IFS="	"
+dbs=("$SP_ALL_DATABASES")
+
+# Loop through all databases
+cnt=1
+for db in $dbs
+do
+
+	cat &lt;&lt;HTML3
+	&lt;br&gt;
+	&lt;table width=100% style='background-color:#ECECEC;'&gt;
+	&lt;tr&gt;
+		&lt;td width=20px&gt;&lt;span id="$cnt" onclick=toggle_display(this) style="cursor:pointer;color:gray;font-size:smaller;" title="Toggle visibility"&gt;▼&lt;/span&gt;&lt;/td&gt;
+		&lt;td align=center width='40px'&gt;&lt;img src='file://$SP_APP_RESOURCES_DIRECTORY/database-small.png'&gt;&lt;/td&gt;
+		&lt;td&gt;&lt;big&gt;&lt;a href='sequelpro://$SP_PROCESS_ID@passToDoc/SelectDatabase/$db' title='Click to select database “$db”'&gt;$db&lt;/big&gt;&lt;/a&gt;&lt;/td&gt;
+	&lt;/tr&gt;
+	&lt;/table&gt;
+	&lt;table id="$cnt:data" border=1 style='border-collapse:collapse' width=100%&gt;
+	&lt;tr&gt;
+		&lt;th&gt;&lt;/th&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Engine&lt;/th&gt;&lt;th&gt;Rows&lt;/th&gt;&lt;th&gt;Size&lt;/th&gt;&lt;th&gt;Created&lt;/th&gt;&lt;th&gt;Updated&lt;/th&gt;
+	&lt;/tr&gt;
+HTML3
+
+	# Query for table status
+	echo "SHOW TABLE STATUS IN \`$db\`" &gt; "$SP_QUERY_FILE"
+	open "sequelpro://$SP_PROCESS_ID@passToDoc/ExecuteQuery"
+	
+	# wait for Sequel Pro; status file will be written to disk if query was finished
+	while [ 1 ]
+	do
+		[[ -e "$SP_QUERY_RESULT_STATUS_FILE" ]] &amp;&amp; break
+		sleep 0.01
+	done
+
+	cnt=$((cnt+1))
+
+	export DB="$db"
+	export PID="$SP_PROCESS_ID"
+	export RES="$SP_APP_RESOURCES_DIRECTORY";
+	cat "$SP_QUERY_RESULT_FILE" | sed '1d' | perl "$SP_BUNDLE_PATH/Support/processTableData.pl"
+
+	echo "&lt;/table&gt;"
+	
+	# Clear hand-shake files
+	rm -f "$SP_QUERY_FILE"
+	rm -f "$SP_QUERY_RESULT_STATUS_FILE"
+	rm -f "$SP_QUERY_RESULT_FILE"
+	rm -f "$SP_QUERY_RESULT_META_FILE"
+
+done
+
+# Reset IFS
+IFS="$OLDIFS"
+
+echo "&lt;/body&gt;&lt;/html&gt;"
+</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>Display a report about all databases of the current connection including the possibility to select a database or table via hyperlink.
+
+Version 1.0</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>A</string>
+		<key>keyCode</key>
+		<integer>0</integer>
+		<key>modifierFlags</key>
+		<integer>1835008</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>^~@a</string>
+	<key>name</key>
+	<string>Database Report</string>
+	<key>output</key>
+	<string>showashtml</string>
+	<key>scope</key>
+	<string>general</string>
+	<key>tooltip</key>
+	<string>Display report about all databases of the current connection</string>
+	<key>uuid</key>
+	<string>AC45C093-9157-4E18-9683-C94415995935</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

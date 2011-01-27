@@ -337,7 +337,7 @@
     // Paragraph Style for Truncating Long Text
     static NSMutableParagraphStyle *TruncatingTailParagraphStyle = nil;
     if (!TruncatingTailParagraphStyle) {
-        TruncatingTailParagraphStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] retain];
+        TruncatingTailParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [TruncatingTailParagraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
         [TruncatingTailParagraphStyle setAlignment:NSCenterTextAlignment];
     }
@@ -375,10 +375,11 @@
         NSMutableParagraphStyle *centeredParagraphStyle = nil;
         
 		if (!centeredParagraphStyle) {
-            centeredParagraphStyle = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] retain];
+            centeredParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
             [centeredParagraphStyle setAlignment:NSCenterTextAlignment];
         }
         [attrStr addAttribute:NSParagraphStyleAttributeName value:centeredParagraphStyle range:range];
+        [centeredParagraphStyle release];
         [attrStr drawInRect:labelRect];
         return;
     }
@@ -409,7 +410,7 @@
 
 	// When the window is in the background, tone down the colours
 	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
-		backgroundCalibratedWhite = 0.685;
+		backgroundCalibratedWhite = 0.73;
 		lineCalibratedWhite = 0.49;
 		shadowAlpha = 0.3;
 	}
@@ -514,7 +515,7 @@
 			fillColor = [NSColor colorWithCalibratedWhite:0.81 alpha:1.0];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.4];
 		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:0.685 alpha:1.0];
+			fillColor = [NSColor colorWithCalibratedWhite:0.73 alpha:1.0];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.7];
 		}
 	}
@@ -533,7 +534,7 @@
 	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
 	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
 	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius );
+	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
 
 	// Construct the outline path
 	if (drawLeftEdge) {
@@ -594,6 +595,7 @@
 		[shadow setShadowOffset:NSMakeSize(0, 1)];
 		[shadow set];
 		[outlineBezier stroke];
+		[shadow release];
 
 	// Add the shadow over the tops of background tabs
 	} else if (drawLeftEdge || drawRightEdge) {
@@ -632,12 +634,14 @@
 
 		// Draw, and then restore the previous graphics state
 		[outlineBezier stroke];
+		[shadow release];
 		CGContextRestoreGState(context);
 	}
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
-    [self drawInteriorWithTabCell:cell inView:[cell controlView]];
+	[self drawInteriorWithTabCell:cell inView:[cell controlView]];
+
 }
 
 

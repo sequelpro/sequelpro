@@ -1,23 +1,43 @@
-#! /bin/ksh
+#! /bin/ksh 
 
-## $Id$
-##
-## Author:      Stuart Connolly (stuconnolly.com)
-##              Copyright (c) 2009 Stuart Connolly. All rights reserved.
-##
-##              Largely based on 'trim-app' by Ankur Kothari ( http://lipidity.com/downloads/trim-app/ )
-##
-## Paramters:   -p -- The path to the application that is to be trimmed 
-##              -d -- Remove unnecessary files (i.e. .DS_Store files, etc) (optional).
-##              -n -- Trim nib files (i.e. remove .info.nib, classes.nib, data.dependency and designable.nib) (optional).
-##              -s -- Strip debug symbols from application binary (optional).
-##              -t -- Compress tiff images using LZW compression (optional).
-##              -f -- Remove framework headers (optional).
-##              -r -- Remove resource forks (optional).
-##              -a -- All of above optional options. Equivalent to '-d -n -s -t -f -r'.
-##
-## Description: Trims an application bundle of unnecessary files and resources that are generally not required and otherwise
-##              waste disk space.
+#
+#  $Id$  
+#
+#  trim-application.sh
+#  sequel-pro
+#
+#  Created by Stuart Connolly (stuconnolly.com)
+#  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#  More info at <http://code.google.com/p/sequel-pro/>
+
+#  Trims an application bundle of unnecessary files and resources that are generally not required and otherwise
+#  waste disk space.
+#
+#  Largely based on 'trim-app' by Ankur Kothari ( http://lipidity.com/downloads/trim-app/ )
+#
+#  Parameters: -p -- The path to the application that is to be trimmed 
+#              -d -- Remove unnecessary files (i.e. .DS_Store files, etc) (optional).
+#              -n -- Trim nib files (i.e. remove .info.nib, classes.nib, data.dependency and designable.nib) (optional).
+#              -s -- Strip debug symbols from application binary (optional).
+#              -t -- Compress tiff images using LZW compression (optional).
+#              -f -- Remove framework headers (optional).
+#              -r -- Remove resource forks (optional).
+#              -a -- All of above optional options. Equivalent to '-d -n -s -t -f -r'.  
 
 usage() 
 {

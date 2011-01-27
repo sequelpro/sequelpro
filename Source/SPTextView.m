@@ -144,7 +144,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 	[self setCompletionWasReinvokedAutomatically:NO];
-	
 
 	// Re-define tab stops for a better editing
 	[self setTabStops];
@@ -153,9 +152,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	[[self layoutManager] setBackgroundLayoutEnabled:NO];
 
 	// add NSViewBoundsDidChangeNotification to scrollView
-	[[scrollView contentView] setPostsBoundsChangedNotifications:YES];
-	NSNotificationCenter *aNotificationCenter = [NSNotificationCenter defaultCenter];
-	[aNotificationCenter addObserver:self selector:@selector(boundsDidChangeNotification:) name:@"NSViewBoundsDidChangeNotification" object:[scrollView contentView]];
+	[scrollView setPostsBoundsChangedNotifications:YES];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
@@ -775,6 +773,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 								object:nil];
 
 	// Check for table name aliases
+	NSString *alias = nil;
 	if(dbBrowseMode && tableDocumentInstance && customQueryInstance) {
 		NSString *theDb = (dbName == nil) ? [NSString stringWithString:currentDb] : [NSString stringWithString:dbName];
 		NSString *connectionID = [tableDocumentInstance connectionID];
@@ -790,7 +789,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				for(NSString* m in matches) {
 					NSRange aliasRange = [m rangeOfRegex:re capture:1L];
 					if(aliasRange.length) {
-						NSString *alias = [[m substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
+						alias = [[m substringWithRange:aliasRange] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
 						// If alias refers to db.table split and check it
 						if([alias rangeOfString:@"."].length) {
 							NSRange dbRange = [alias rangeOfRegex:@"^`?(.*?)`?\\." capture:1L];
@@ -819,6 +818,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	if (completionIsOpen) [completionPopup close], completionPopup = nil;
+
 	completionIsOpen = YES;
 	completionPopup = [[SPNarrowDownCompletion alloc] initWithItems:[self suggestionsForSQLCompletionWith:currentWord dictMode:isDictMode browseMode:dbBrowseMode withTableName:tableName withDbName:dbName] 
 					alreadyTyped:filter 
@@ -839,24 +839,19 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caretMovedLeft:caretMovedLeft
 					autoComplete:autoCompleteMode
 					oneColumn:isDictMode
+					alias:alias
 					isQueryingDBStructure:[mySQLConnection isQueryingDatabaseStructure]];
 
 	completionParseRangeLocation = parseRange.location;
 
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,0) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-	boundingRect = [self convertRect: boundingRect toView: NULL];
-	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-
-	// TODO: check if needed
-	// if(filter)
-	// 	pos.x -= [filter sizeWithAttributes:[NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName]].width;
-	
-	// Adjust list location to be under the current word or insertion point
+	boundingRect = [self convertRect:boundingRect toView:nil];
+	NSPoint pos = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 	pos.y -= [[self font] pointSize]*1.25;
-	
 	[completionPopup setCaretPos:pos];
+
 	[completionPopup orderFront:self];
 	[completionPopup insertAutocompletePlaceholder];
 
@@ -921,6 +916,24 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	} @catch(id ae) { }
 
 	return (leftIsAlphanum ^ rightIsAlphanum || leftIsAlphanum && rightIsAlphanum);
+}
+
+/**
+ * Checks if all the characters left from the caret are white spaces or caret is at the line begin.
+ */
+- (BOOL) isCaretAtIndentPositionIgnoreLineStart:(BOOL)ignoreLineStart
+{
+	NSString *textViewString = [[self textStorage] string];
+	NSUInteger caretPosition = [self selectedRange].location;
+	NSUInteger currentLineStartPosition = [textViewString lineRangeForRange:NSMakeRange(caretPosition, 0)].location;
+
+	// Check if caret is at the beginning of a line
+	// - used for deleteBackward: to allow to delete leading \n
+	if(!ignoreLineStart && caretPosition == currentLineStartPosition)
+		return NO;
+
+	NSString *lineHeadToCaret = [textViewString substringWithRange:NSMakeRange(currentLineStartPosition, caretPosition-currentLineStartPosition)];
+	return (![lineHeadToCaret length] || [lineHeadToCaret isMatchedByRegex:@"^\\s+$"]);
 }
 
 /**
@@ -1112,27 +1125,39 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSString *textViewString = [[self textStorage] string];
 	NSRange currentLineRange;
+	NSRange selectedRange = [self selectedRange];
 
-	if ([self selectedRange].location == NSNotFound || ![self isEditable]) return NO;
+	if (selectedRange.location == NSNotFound || ![self isEditable]) return NO;
+
+	NSString *indentString = @"\t";
+	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
+		NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
+		if(numberOfSpaces < 1) numberOfSpaces = 1;
+		if(numberOfSpaces > 32) numberOfSpaces = 32;
+		NSMutableString *spaces = [NSMutableString string];
+		for(NSInteger i = 0; i < numberOfSpaces; i++)
+			[spaces appendString:@" "];
+		indentString = [NSString stringWithString:spaces];
+	}
 
 	// Indent the currently selected line if the caret is within a single line
-	if ([self selectedRange].length == 0) {
+	if (selectedRange.length == 0) {
 
 		// Extract the current line range based on the text caret
-		currentLineRange = [textViewString lineRangeForRange:[self selectedRange]];
+		currentLineRange = [textViewString lineRangeForRange:selectedRange];
 
 		// Register the indent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:@"\t"];
+		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 0) replacementString:indentString];
 
 		// Insert the new tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:@"\t"];
+		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 0) withString:indentString];
 
 		return YES;
 	}
 
 	// Otherwise, something is selected
-	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange([self selectedRange].location,0)];
-	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange([self selectedRange])-1,0)]);
+	NSRange firstLineRange = [textViewString lineRangeForRange:NSMakeRange(selectedRange.location,0)];
+	NSUInteger lastLineMaxRange = NSMaxRange([textViewString lineRangeForRange:NSMakeRange(NSMaxRange(selectedRange)-1,0)]);
 	
 	// Expand selection for first and last line to begin and end resp. but not the last line ending
 	NSRange blockRange = NSMakeRange(firstLineRange.location, lastLineMaxRange - firstLineRange.location);
@@ -1143,13 +1168,13 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	NSString *newString;
 	// check for line ending
 	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [indentString stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
-				stringByReplacingOccurrencesOfString:@"\r" withString:@"\r\t"]];
+				stringByReplacingOccurrencesOfString:@"\r" withString:[NSString stringWithFormat:@"\r%@", indentString]]];
 	else
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [indentString stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
-				stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"]];
+				stringByReplacingOccurrencesOfString:@"\n" withString:[NSString stringWithFormat:@"\n%@", indentString]]];
 
 	// Register the indent for undo
 	[self shouldChangeTextInRange:blockRange replacementString:newString];
@@ -1190,11 +1215,30 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			|| ([textViewString characterAtIndex:currentLineRange.location] != '\t' && [textViewString characterAtIndex:currentLineRange.location] != ' '))
 			return NO;
 
+		NSRange replaceRange;
+
+		// Check for soft indention
+		NSUInteger indentStringLength = 1;
+		if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
+			NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
+			if(numberOfSpaces < 1) numberOfSpaces = 1;
+			if(numberOfSpaces > 32) numberOfSpaces = 32;
+			indentStringLength = numberOfSpaces;
+			replaceRange = NSIntersectionRange(NSMakeRange(currentLineRange.location, indentStringLength), NSMakeRange(0,[[self string] length]));
+			// Correct length for only white spaces
+			NSString *possibleIndentString = [[[self textStorage] string] substringWithRange:replaceRange];
+			NSUInteger numberOfLeadingWhiteSpaces = [possibleIndentString rangeOfRegex:@"^(\\s*)" capture:1L].length;
+			if(numberOfLeadingWhiteSpaces == NSNotFound) numberOfLeadingWhiteSpaces = 0;
+			replaceRange = NSMakeRange(currentLineRange.location, numberOfLeadingWhiteSpaces);
+		} else {
+			replaceRange = NSMakeRange(currentLineRange.location, indentStringLength);
+		}
+
 		// Register the undent for undo
-		[self shouldChangeTextInRange:NSMakeRange(currentLineRange.location, 1) replacementString:@""];
+		[self shouldChangeTextInRange:replaceRange replacementString:@""];
 
 		// Remove the tab
-		[self replaceCharactersInRange:NSMakeRange(currentLineRange.location, 1) withString:@""];
+		[self replaceCharactersInRange:replaceRange withString:@""];
 
 		return YES;
 	}
@@ -1208,25 +1252,36 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	if([textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\n' || [textViewString characterAtIndex:NSMaxRange(blockRange)-1] == '\r')
 		blockRange.length--;
 
+	// Check for soft or hard indention
+	NSString *indentString = @"\t";
+	NSUInteger indentStringLength = 1;
+	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
+		indentStringLength = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
+		if(indentStringLength < 1) indentStringLength = 1;
+		if(indentStringLength > 32) indentStringLength = 32;
+		NSMutableString *spaces = [NSMutableString string];
+		for(NSInteger i = 0; i < indentStringLength; i++)
+			[spaces appendString:@" "];
+		indentString = [NSString stringWithString:spaces];
+	}
+
 	// Check if blockRange starts with SPACE or TAB
 	// (this also catches the first line of the entire text buffer or
 	// if only one line is selected)
 	NSInteger leading = 0;
 	if([textViewString characterAtIndex:blockRange.location] == ' ' 
 		|| [textViewString characterAtIndex:blockRange.location] == '\t')
-		leading++;
+		leading += indentStringLength;
 
 	// Replace \n[ \t] by \n of all lines in blockRange
 	NSString *newString;
 	// check for line ending
 	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
-		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
-			stringByReplacingOccurrencesOfString:@"\r\t" withString:@"\r"] 
-			stringByReplacingOccurrencesOfString:@"\r " withString:@"\r"];
+		newString = [[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+			stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"\r%@", indentString] withString:@"\r"];
 	else
-		newString = [[[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
-			stringByReplacingOccurrencesOfString:@"\n\t" withString:@"\n"] 
-			stringByReplacingOccurrencesOfString:@"\n " withString:@"\n"];
+		newString = [[textViewString substringWithRange:NSMakeRange(blockRange.location+leading, blockRange.length-leading)] 
+		stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"\n%@", indentString] withString:@"\n"];
 
 	// Register the unindent for undo
 	[self shouldChangeTextInRange:blockRange replacementString:newString];
@@ -1407,10 +1462,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					caretMovedLeft:NO
 					autoComplete:NO
 					oneColumn:NO
+					alias:nil
 					isQueryingDBStructure:NO];
 
 	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,0) actualCharacterRange:NULL];
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
@@ -1563,10 +1619,11 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 											caretMovedLeft:NO
 											autoComplete:NO
 											oneColumn:YES
+											alias:nil
 											isQueryingDBStructure:NO];
 
 							//Get the NSPoint of the first character of the current word
-							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,0) actualCharacterRange:NULL];
+							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
 							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 							boundingRect = [self convertRect: boundingRect toView: NULL];
 							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
@@ -2033,6 +2090,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to SPCustomQuery
+	// and TAB as soft indention
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]){
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
@@ -2079,12 +2137,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Check if tab trigger is defined; if so insert it, otherwise pass through event
-		if(snippetControlCounter < 0 && [tableDocumentInstance fileURL]) {
+		if(snippetControlCounter < 0 && [tabTrigger length] && [tableDocumentInstance fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[tableDocumentInstance fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
 			if([snippets count] > 0 && [(NSString*)[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] length]) {
 				[self insertAsSnippet:[(NSDictionary*)[snippets objectAtIndex:0] objectForKey:@"query"] atRange:targetRange];
 				return;
 			}
+		}
+
+		// Check for TAB as indention for current line, i.e. left of the caret there are only white spaces
+		// but only if Soft Indent is set
+		if([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:YES]) {
+			if([self shiftSelectionRight]) return;
 		}
 	}
 
@@ -2277,7 +2341,14 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)moveWordRight:(id)sender
 {
 	[super moveWordRight:sender];
-	while([self selectedRange].location < [[[self textStorage] string] length] && [[[self textStorage] string] characterAtIndex:[self selectedRange].location] == '.')
+	NSCharacterSet *whiteSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	while([self selectedRange].location < [[[self textStorage] string] length] 
+		&& ([[[self textStorage] string] characterAtIndex:[self selectedRange].location] == '.' 
+		|| (
+				[[[self textStorage] string] characterAtIndex:[self selectedRange].location-1] == '.' 
+				&& ![whiteSet characterIsMember:[[[self textStorage] string] characterAtIndex:[self selectedRange].location]]
+			)
+		))
 		[super moveWordRight:sender];
 }
 
@@ -2298,22 +2369,41 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 - (void)moveWordRightAndModifySelection:(id)sender
 {
 	[super moveWordRightAndModifySelection:sender];
-	while(NSMaxRange([self selectedRange]) < [[[self textStorage] string] length] && [[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])] == '.')
+	NSCharacterSet *whiteSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	while(NSMaxRange([self selectedRange]) < [[[self textStorage] string] length] 
+		&& ([[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])] == '.' 
+		|| (
+				[[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])-1] == '.' 
+				&& ![whiteSet characterIsMember:[[[self textStorage] string] characterAtIndex:NSMaxRange([self selectedRange])]]
+			)
+		))
 		[super moveWordRightAndModifySelection:sender];
 }
 
 - (void) deleteBackward:(id)sender
 {
 
-	// If the caret is currently inside a marked auto-pair, delete the characters on both sides
-	// of the caret.
 	NSRange currentRange = [self selectedRange];
-	if (currentRange.length == 0 && currentRange.location > 0 && [self areAdjacentCharsLinked])
-		[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
 
-	// Avoid auto-uppercasing if resulting word would be a SQL keyword;
-	// e.g. type inta| and deleteBackward:
-	delBackwardsWasPressed = YES;	
+	if (currentRange.length == 0) {
+
+		// If the caret is currently inside a marked auto-pair, delete the characters on both sides
+		// of the caret.
+		if (currentRange.location > 0 && [self areAdjacentCharsLinked]) {
+			[self setSelectedRange:NSMakeRange(currentRange.location - 1,2)];
+			// Avoid auto-uppercasing if resulting word would be a SQL keyword;
+			// e.g. type inta| and deleteBackward:
+			delBackwardsWasPressed = YES;
+		}
+
+		// Remove soft indent if active and left from caret are only white spaces
+		else if ([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:NO])
+		{
+			[self shiftSelectionLeft];
+			return;
+		}
+
+	}
 
 	[super deleteBackward:sender];
 
@@ -2365,6 +2455,18 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		// Return to avoid the original implementation, preventing double linebreaks
 		return;
 	}
+
+	// Remove soft indent if active and left from caret are only white spaces
+	if (aSelector == @selector(deleteForward:)
+		&& ![self selectedRange].length
+		&& [prefs boolForKey:SPCustomQuerySoftIndent]
+		&& [self isCaretAtIndentPositionIgnoreLineStart:YES]
+		&& [self selectedRange].location < [[self string] length] && [[self string] characterAtIndex:[self selectedRange].location] == ' ')
+	{
+		[self shiftSelectionLeft];
+		return;
+	}
+
 	[super doCommandBySelector:aSelector];
 }
 
@@ -3015,9 +3117,9 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 /**
  * Scrollview delegate after the textView's view port was changed.
- * Manily used to update the syntax highlighting for a large text size.
+ * Manily used to update the syntax highlighting for a large text size and line numbering rendering.
  */
-- (void) boundsDidChangeNotification:(NSNotification *)notification
+- (void)boundsDidChangeNotification:(NSNotification *)notification
 {
 	// Invoke syntax highlighting if text view port was changed for large text
 	if(startListeningToBoundChanges && [[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
@@ -3029,6 +3131,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if(![[self textStorage] changeInLength])
 			[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.4];
 	}
+	// else
+	// 	[scrollView displayRect:[scrollView visibleRect]];
 
 }
 
@@ -3057,7 +3161,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Start autocompletion if enabled
-	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore editedRange].length)
+	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore changeInLength] == 1)
 		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] doubleValue]];
 
 	// Cancel calling doSyntaxHighlighting for large text
@@ -3068,6 +3172,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 	// Do syntax highlighting/re-calculate snippet ranges only if the user really changed the text
 	if(editedMask != 1) {
+
+		[customQueryInstance setTextViewWasChanged:YES];
 
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
@@ -3132,6 +3238,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			[self doSyntaxHighlighting];
 
 	} else {
+		[customQueryInstance setTextViewWasChanged:NO];
 		textBufferSizeIncreased = NO;
 	}
 

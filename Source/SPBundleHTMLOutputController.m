@@ -33,6 +33,7 @@
 @synthesize initHTMLSourceString;
 @synthesize windowUUID;
 @synthesize docUUID;
+@synthesize suppressExceptionAlert;
 
 /**
  * Initialisation
@@ -50,6 +51,7 @@
 		[webView setEditable:NO];
 		[webView setShouldCloseWithWindow:YES];
 		[webView setShouldUpdateWhileOffscreen:NO];
+		suppressExceptionAlert = NO;
 
 	}
 	
@@ -364,8 +366,18 @@
 		return @"run";
 	if (aSelector == @selector(getShellEnvironmentForName:))
 		return @"getShellEnvironmentForName";
+	if (aSelector == @selector(insertText:))
+		return @"insertText";
+	if (aSelector == @selector(setText:))
+		return @"setText";
+	if (aSelector == @selector(setSelectedTextRange:))
+		return @"setSelectedTextRange";
 	if (aSelector == @selector(makeHTMLOutputWindowKeyWindow))
 		return @"makeHTMLOutputWindowKeyWindow";
+	if (aSelector == @selector(closeHTMLOutputWindow))
+		return @"closeHTMLOutputWindow";
+	if (aSelector == @selector(suppressExceptionAlert))
+		return @"suppressExceptionAlert";
 	return @"";
 }
 
@@ -376,7 +388,22 @@
 	if (selector == @selector(getShellEnvironmentForName:)) {
 		return NO;
 	}
+	if (selector == @selector(insertText:)) {
+		return NO;
+	}
+	if (selector == @selector(setText:)) {
+		return NO;
+	}
+	if (selector == @selector(setSelectedTextRange:)) {
+		return NO;
+	}
 	if (selector == @selector(makeHTMLOutputWindowKeyWindow)) {
+		return NO;
+	}
+	if (selector == @selector(closeHTMLOutputWindow)) {
+		return NO;
+	}
+	if (selector == @selector(suppressExceptionAlert)) {
 		return NO;
 	}
 	return YES;
@@ -387,6 +414,15 @@
 		return NO;
 	}
 	if (strcmp(property, "getShellEnvironmentForName") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "insertText") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "setText") == 0) {
+		return NO;
+	}
+	if (strcmp(property, "setSelectedTextRange") == 0) {
 		return NO;
 	}
 	if (strcmp(property, "makeHTMLOutputWindowKeyWindow") == 0) {
@@ -411,7 +447,13 @@
 
 - (void)webView:(WebView *)webView exceptionWasRaised:(WebScriptCallFrame *)frame sourceId:(NSInteger)sid line:(NSInteger)lineno forWebFrame:(WebFrame *)webFrame
 {
+
 	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
+
+	if([self suppressExceptionAlert]) {
+		NSLog(@"%@", mes);
+		return;
+	}
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"JavaScript Exception", @"javascript exception")
 									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -438,6 +480,70 @@
 - (void)makeHTMLOutputWindowKeyWindow
 {
 	[[self window] makeKeyAndOrderFront:nil];
+}
+
+/**
+ * JavaScript window.system.makeHTMLOutputWindowKeyWindow() function
+ * to close the HTML window
+ */
+- (void)closeHTMLOutputWindow
+{
+	[[self window] close];
+}
+
+/**
+ * JavaScript window.system.insertText(text) function
+ * to insert text into the first responder
+ */
+- (void)insertText:(NSString*)text
+{
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder isKindOfClass:[NSTextView class]]) {
+		[firstResponder insertText:text];
+		return;
+	}
+	NSBeep();
+}
+
+/**
+ * JavaScript window.system.setText(text) function
+ * to set the content of the first responder to text
+ */
+- (void)setText:(NSString*)text
+{
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder isKindOfClass:[NSTextView class]]) {
+		[firstResponder setSelectedRange:NSMakeRange(0, [[firstResponder string] length])];
+		[firstResponder insertText:text];
+		return;
+	}
+	NSBeep();
+}
+
+/**
+ * JavaScript window.system.setSelectedRange({location,length}) function
+ * to set the selection range of the first responder
+ */
+- (void)setSelectedTextRange:(NSString*)range
+{
+	id firstResponder = [[NSApp keyWindow] firstResponder];
+	if([firstResponder isKindOfClass:[NSTextView class]]) {
+		NSRange theRange = NSIntersectionRange(NSRangeFromString(range), NSMakeRange(0, [[firstResponder string] length]));
+		if(theRange.location != NSNotFound) {
+			[firstResponder setSelectedRange:theRange];
+		}
+		return;
+	}
+	NSBeep();
+}
+
+/**
+ * JavaScript window.system.suppressExceptionAlert() function
+ * to suppress an exception alert, instead write the message to NSLog
+ */
+- (void)suppressExceptionAlert
+{
+	[self setSuppressExceptionAlert:YES];
 }
 
 /**

@@ -758,13 +758,7 @@
  */
 - (void)setAutoIncrementTo:(NSString*)valueAsString
 {
-	NSString *selTable = nil;
-
-	// if selectedTable is nil try to get the name from SPTablesList
-	if (selectedTable == nil || ![selectedTable length])
-		selTable = [tablesListInstance tableName];
-	else
-		selTable = [NSString stringWithString:selectedTable];
+	NSString *selTable = [tablesListInstance tableName];
 
 	if (selTable == nil || ![selTable length]) return;
 
@@ -1219,8 +1213,18 @@
 	alertSheetOpened = NO;
 
 	if(contextInfo && [contextInfo isEqualToString:@"autoincrementindex"]) {
-		if(returnCode) {
-			autoIncrementIndex = [chooseKeyButton titleOfSelectedItem];
+		if (returnCode) {
+			switch ([[chooseKeyButton selectedItem] tag]) {
+				case SPPrimaryKeyMenuTag:
+					autoIncrementIndex = @"PRIMARY KEY";
+					break;
+				case SPIndexMenuTag:
+					autoIncrementIndex = @"INDEX";
+					break;
+				case SPUniqueMenuTag:
+					autoIncrementIndex = @"UNIQUE";
+					break;
+			}
 		} else {
 			autoIncrementIndex = nil;
 			if([tableSourceView selectedRow] > -1 && [extraFieldSuggestions count])

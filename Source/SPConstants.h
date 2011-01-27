@@ -180,6 +180,16 @@ typedef enum
 	SPEncodingEUCKRKorean		= 180
 } SPEncodingTypes;
 
+// Table index type menu tags
+typedef enum
+{
+	SPPrimaryKeyMenuTag	= 0,
+	SPIndexMenuTag		= 1,
+	SPUniqueMenuTag		= 2,
+	SPFullTextMenuTag	= 3,
+	SPSpatialMenuTag	= 4
+} SPTableIndexTypeTags;
+
 // File compression formats
 typedef enum
 {
@@ -312,6 +322,8 @@ extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
 extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
 extern NSString *SPCustomQueryEditorThemeName;
+extern NSString *SPCustomQuerySoftIndent;
+extern NSString *SPCustomQuerySoftIndentWidth;
 
 // AutoUpdate Prefpane
 extern NSString *SPLastUsedVersion;
@@ -369,7 +381,6 @@ extern NSString *SPLastImportIntoNewTableEncoding;
 extern NSString *SPLastImportIntoNewTableType;
 extern NSString *SPGlobalValueHistory;
 extern NSString *SPBundleDeletedDefaultBundlesKey;
-extern NSString *SPBundleUpdatedDefaultBundlesKey;
 
 // URLs
 extern NSString *SPDonationsURL;
@@ -510,6 +521,7 @@ extern NSString *SPBundleShellVariableSelectedText;
 extern NSString *SPBundleShellVariableCurrentWord;
 extern NSString *SPBundleShellVariableCurrentLine;
 extern NSString *SPBundleShellVariableSelectedRowIndices;
+extern NSString *SPBundleShellVariableSelectedTextRange;
 extern NSString *SPBundleShellVariableAllDatabases;
 extern NSString *SPBundleShellVariableSelectedTables;
 extern NSString *SPBundleShellVariableSelectedDatabase;

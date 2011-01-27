@@ -48,7 +48,7 @@ void SPApplyRevisionChanges(void)
 	// Get the current revision
 	if ([prefs objectForKey:@"lastUsedVersion"]) recordedVersionNumber = [[prefs objectForKey:@"lastUsedVersion"] integerValue];
 	if ([prefs objectForKey:SPLastUsedVersion]) recordedVersionNumber = [[prefs objectForKey:SPLastUsedVersion] integerValue];
-	
+
 	// Skip processing if the current version matches or is less than recorded version
 	if (currentVersionNumber <= recordedVersionNumber) return;
 	
@@ -57,7 +57,10 @@ void SPApplyRevisionChanges(void)
 		[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];
 		return;
 	}
-	
+
+	// Inform SPAppController to check installed default Bundles for available updates
+	[prefs setObject:[NSNumber numberWithBool:YES] forKey:@"doBundleUpdate"];
+
 	// For versions prior to r336 (0.9.4), where column widths have been saved, walk through them and remove
 	// any table widths set to 15 or less (fix for mangled columns caused by Issue #140)
 	if (recordedVersionNumber < 336 && [prefs objectForKey:SPTableColumnWidths] != nil) {

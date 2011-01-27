@@ -147,6 +147,7 @@
 	BOOL queryIsTableSorter;
 	BOOL isDesc;
 	BOOL isFieldEditable;
+	BOOL textViewWasChanged;
 	NSNumber *sortField;
 
 	NSIndexSet *selectionIndexToRestore;
@@ -169,6 +170,8 @@
 	NSString *kCellEditorErrorNoMultiTabDb;
 	NSString *kCellEditorErrorTooManyMatches;
 }
+
+@property(assign) BOOL textViewWasChanged;
 
 // IBAction methods
 - (IBAction)runAllQueries:(id)sender;
@@ -245,7 +248,7 @@
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex;
 - (NSUInteger)numberOfQueries;
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;

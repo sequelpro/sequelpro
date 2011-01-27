@@ -226,12 +226,14 @@
 - (void) setFiltersToRestore:(NSDictionary *)filterSettings;
 - (void) storeCurrentDetailsForRestoration;
 - (void) clearDetailsToRestore;
+- (void) setFilterTableData:(NSData*)arcData;
+- (NSData*) filterTableData;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
 - (void)makeContentFilterHaveFocus;
 
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex;
 
 - (void)updateFilterTableClause:(id)currentValue;
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;

@@ -38,6 +38,8 @@
 #define SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING          NSLocalizedString(@"General", @"Bundle Editor : Scope dropdown : 'general' item")
 #define SP_BUNDLEEDITOR_OUTLINE_BUNDLE_TOOLTIP_STRING NSLocalizedString(@"“%@” Bundle",@"Bundle Editor : Outline View : Bundle item : tooltip")
 
+#define SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING     @"SPBundleEditorSplitView"
+
 @interface SPBundleEditorController (PrivateAPI)
 
 - (void)_updateBundleDataView;
@@ -116,6 +118,15 @@
 - (void)awakeFromNib
 {
 
+	// Set up the splitview width manually; autosave appears to save but not restore this value
+	// here, so restore in code if present.
+	NSString *splitViewKeyName = [NSString stringWithFormat:@"NSSplitView Subview Frames %@", SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING];
+	if ([[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName]) {
+		NSString *detailString = [[[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName] objectAtIndex:0];
+		float dividerPosition = [[[detailString componentsSeparatedByString:@", "] objectAtIndex:2] floatValue];
+		[splitView setPosition:dividerPosition ofDividerAtIndex:0];
+	}
+
 	// Init all needed variables; popup menus (with the chance for localization); and set
 	// defaults
 
@@ -131,6 +142,7 @@
 	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_INPUTFIELD_STRING, kBundleNameKey, nil]];
 	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_DATATABLE_STRING, kBundleNameKey, nil]];
 	[[commandBundleTree objectForKey:kChildrenKey] addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:[NSMutableArray array], kChildrenKey, SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING, kBundleNameKey, nil]];
+	[commandBundleTreeController setContent:commandBundleTree];
 
 	// Init all needed menus
 	inputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -353,6 +365,7 @@
 		SPBundleShellVariableSelectedTable,
 		SPBundleShellVariableSelectedTables,
 		SPBundleShellVariableSelectedText,
+		SPBundleShellVariableSelectedTextRange,
 		SPBundleShellVariableUsedQueryForTable,
 		nil
 	] retain];
@@ -1031,9 +1044,12 @@
 			if(deletionSuccessfully) {
 				[commandBundleTreeController removeObjectsAtArrangedObjectIndexPaths:selIndexPaths];
 				[commandBundleTreeController rearrangeObjects];
-			} else {
-				[self reloadBundles:self];
 			}
+
+			[self reloadBundles:self];
+
+			[commandBundleTreeController setSelectionIndexPath:[[selIndexPaths objectAtIndex:0] indexPathByRemovingLastIndex]];
+			[commandsOutlineView expandItem:[self _currentSelectedNode] expandChildren:NO];
 
 			// Set focus to table view to avoid an unstable state
 			[[self window] makeFirstResponder:commandsOutlineView];
@@ -1291,7 +1307,7 @@
 		[touchedBundleArray addObject:oldBundleName];
 
 	[self _updateBundleDataView];
-
+	[commandTextView setSelectedRange:NSMakeRange(0,0)];
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
@@ -1793,7 +1809,6 @@
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
-	[commandBundleTreeController setContent:commandBundleTree];
 	NSUInteger *selPath[2];
 	selPath[0] = 0;
 	selPath[1] = 0;

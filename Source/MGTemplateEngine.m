@@ -177,10 +177,16 @@
 - (void)reportError:(NSString *)errorStr code:(NSInteger)code continuing:(BOOL)continuing
 {
 	if (delegate) {
-		NSString *errStr = NSLocalizedString(errorStr, nil);
-		if (!continuing) {
-			errStr = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Fatal Error", nil), errStr];
-		}
+
+		NSString *errStr;
+		if(errorStr)
+			errStr = [NSString stringWithString:errorStr];
+		else
+			errStr = NSLocalizedString(@"MGTemplateEngine Error", @"mgtemplateengine error");
+
+		if (!continuing)
+			errStr = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Fatal Error", @"fatal error"), errStr];
+
 		SEL selector = @selector(templateEngine:encounteredError:isContinuing:);
 		if ([(NSObject *)delegate respondsToSelector:selector]) {
 			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN 

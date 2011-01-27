@@ -45,6 +45,8 @@
 
 @implementation SPCustomQuery
 
+@synthesize textViewWasChanged;
+
 #pragma mark IBAction methods
 
 /*
@@ -940,7 +942,8 @@
 
 	// Split the current text into ranges of queries
 	// only if the textView was really changed, otherwise use the cache
-	if([[textView textStorage] editedMask] != 0) {
+	if([[textView textStorage] editedMask] != 0 || [self textViewWasChanged]) {
+		[self setTextViewWasChanged:NO];
 		customQueryParser = [[SPSQLParser alloc] initWithString:[textView string]];
 		[customQueryParser setDelimiterSupport:YES];
 		queries = [[NSArray alloc] initWithArray:[customQueryParser splitStringIntoRangesByCharacter:';']];
@@ -1634,7 +1637,7 @@
  * -2 for other errors
  * and the used WHERE clause to identify
  */
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber*)columnIndex
 {
 	NSDictionary *columnDefinition = nil;
 
@@ -2580,6 +2583,7 @@
 	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
 	NSUInteger caretPosition = currentSelection.location;
+
 	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
 
 	if(qRange.length)
@@ -3679,8 +3683,9 @@
 	column = [customQueryView editedColumn];
 
 	// Retrieve the column defintion
+	NSNumber *colIdentifier = [NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier];
 	for(id c in cqColumnDefinition) {
-		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[NSNumber numberWithInteger:column]]) {
+		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:colIdentifier]) {
 			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
 			break;
 		}
@@ -3688,8 +3693,8 @@
 
 	if(!columnDefinition) return NO;
 
-	NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier]];
-	NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
+	NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:colIdentifier];
+	NSInteger numberOfPossibleUpdateRows = [NSArrayObjectAtIndex(editStatus, 0) integerValue];
 	NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[customQueryView convertPoint:[customQueryView frameOfCellAtColumn:column row:row].origin toView:nil]];
 	pos.y -= 20;
 	switch(numberOfPossibleUpdateRows) {

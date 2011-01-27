@@ -215,7 +215,7 @@
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
-	isQueryingDBStructure:(BOOL)isQueryingDBStructure
+	alias:(NSString*)anAlias isQueryingDBStructure:(BOOL)isQueryingDBStructure
 {
 	if(self = [self init])
 	{
@@ -228,6 +228,7 @@
 
 		autoCompletionMode = autoComplete;
 
+		theAliasName = anAlias;
 
 		oneColumnMode = oneColumn;
 		isQueryingDatabaseStructure = isQueryingDBStructure;
@@ -953,8 +954,10 @@
 		NSString* toInsert = [curMatch substringFromIndex:[originalFilterString length]];
 		theCharRange.length += [toInsert length] - currentAutocompleteLength;
 		theParseRange.length += [toInsert length];
+
 		[theView breakUndoCoalescing];
 		[theView insertText:[toInsert lowercaseString]];
+
 		autocompletePlaceholderWasInserted = YES;
 
 		// Restore the text selection location, and clearly mark the autosuggested text
@@ -970,8 +973,14 @@
 {
 	if (!autocompletePlaceholderWasInserted) return;
 
+	[theView breakUndoCoalescing];
+
 	if (useFastMethod) {
-		[theView setSelectedRange:theCharRange];
+		if(backtickMode) {
+			NSRange r = NSMakeRange(theCharRange.location+1,theCharRange.length);
+			[theView setSelectedRange:r];
+		} else
+			[theView setSelectedRange:theCharRange];
 		[theView insertText:originalFilterString];
 	} else {
 		NSRange attributeResultRange = NSMakeRange(0, 0);
@@ -1015,12 +1024,30 @@
 	if(NSMaxRange(theCharRange) > [[theView string] length])
 		theCharRange = NSIntersectionRange(NSMakeRange(0,[[theView string] length]), theCharRange);
 
+	[theView breakUndoCoalescing];
+
 	NSRange r = [theView selectedRange];
 	if(r.length)
 		[theView setSelectedRange:r];
-	else
-		[theView setSelectedRange:theCharRange];
+	else {
+		if(backtickMode == 100) {
+			NSString *replaceString = [[theView string] substringWithRange:theCharRange];
+			BOOL nextCharIsBacktick = ([replaceString hasSuffix:@"`"]);
+			if(theCharRange.length == 1) nextCharIsBacktick = NO;
+			if(!nextCharIsBacktick) {
+				if([replaceString hasPrefix:@"`"])
+					[theView setSelectedRange:NSMakeRange(theCharRange.location, theCharRange.length+2)];
+				else
+					[theView setSelectedRange:theCharRange];
+			} else {
+				[theView setSelectedRange:theCharRange];
+			}
+			backtickMode = 0;
+		} else
+			[theView setSelectedRange:theCharRange];
+	}
 
+	[theView breakUndoCoalescing];
 	[theView insertText:aString];
 	
 	// If completion string contains backticks move caret out of the backticks
@@ -1052,10 +1079,9 @@
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
 		if([selectedItem objectForKey:@"isRef"] 
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
-				&& [[selectedItem objectForKey:@"path"] length]) {
+				&& [[selectedItem objectForKey:@"path"] length] && theAliasName == nil) {
 
 			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
-
 			// Check if path's db name is the current selected db name
 			NSRange r = [path rangeOfString:[currentDb backtickQuotedString] options:NSCaseInsensitiveSearch range:NSMakeRange(0, [[currentDb backtickQuotedString] length])];
 			theCharRange = theParseRange;
@@ -1068,7 +1094,7 @@
 		} else {
 			// Is completion string a schema name for current connection
 			if([selectedItem objectForKey:@"isRef"]) {
-				backtickMode = 0; // suppress move the caret one step rightwards
+				backtickMode = 100; // suppress move the caret one step rightwards
 				[self insert_text:[candidateMatch backtickQuotedString]];
 			} else {
 				[self insert_text:candidateMatch];

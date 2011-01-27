@@ -41,41 +41,34 @@
 	if (curRange.length)
         return curRange;
 	
-	NSUInteger curLocation = curRange.location;
+	NSInteger curLocation = curRange.location;
+	NSInteger start = curLocation;
+	NSInteger end = curLocation;
+	NSUInteger strLen = [[self string] length];
 
-	[self moveWordLeft:self];
-	[self moveWordRightAndModifySelection:self];
-	
-	NSUInteger newStartRange = [self selectedRange].location;
-	NSUInteger newEndRange = newStartRange + [self selectedRange].length;
-	
-	// if current location does not intersect with found range
-	// then caret is at the begin of a word -> change strategy
-	if(curLocation < newStartRange || curLocation > newEndRange)
-	{
-		[self setSelectedRange:curRange];
-		[self moveWordRight:self];
-		[self moveWordLeftAndModifySelection:self];
-		newStartRange = [self selectedRange].location;
-		newEndRange = newStartRange + [self selectedRange].length;
+	NSMutableCharacterSet *wordCharSet = [NSMutableCharacterSet alphanumericCharacterSet];
+	[wordCharSet addCharactersInString:@"_."];
+	[wordCharSet removeCharactersInString:@"`"];
+
+	if(start) {
+		start--;
+		while([wordCharSet characterIsMember:[[self string] characterAtIndex:start]]) {
+			start--;
+			if(start < 0) break;
+		}
+		start++;
 	}
-	
-	// how many space in front of the selection
-	NSInteger bias = [self selectedRange].length - [[[[self string] substringWithRange:[self selectedRange]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length];
-	[self setSelectedRange:NSMakeRange([self selectedRange].location+bias, [self selectedRange].length-bias)];
-	newStartRange += bias;
-	newEndRange -= bias;
 
-	// is caret inside the selection still?
-	if(curLocation < newStartRange || curLocation > newEndRange 
-		|| [[[self string] substringWithRange:[self selectedRange]] rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].location != NSNotFound)
-		[self setSelectedRange:curRange];
-	
-	NSRange wordRange = [self selectedRange];
-	
-	[self setSelectedRange:curRange];
-	
+	while(end < strLen && [wordCharSet characterIsMember:[[self string] characterAtIndex:end]]) {
+		end++;
+	}
+
+	NSRange wordRange = NSMakeRange(start, end-start);
+	if(wordRange.length && [[self string] characterAtIndex:NSMaxRange(wordRange)-1] == '.')
+		wordRange.length--;
+
 	return(wordRange);
+
 }
 
 /*
@@ -534,7 +527,7 @@
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"] && [self respondsToSelector:@selector(currentQueryRange)]) ;
+			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"] && [[self delegate] respondsToSelector:@selector(currentQueryRange)]);
 
 			if([cmdData objectForKey:SPBundleFileInputSourceKey])
 				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
@@ -562,7 +555,7 @@
 						replaceRange = currentLineRange;
 					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
 						replaceRange = currentQueryRange;
-					else if([inputAction isEqualToString:SPBundleInputSourceEntireContent])
+					else if([inputFallBackAction isEqualToString:SPBundleInputSourceEntireContent])
 						replaceRange = NSMakeRange(0,[[self string] length]);
 				} else {
 					replaceRange = currentSelectionRange;
@@ -622,8 +615,11 @@
 			if(currentLineRange.length)
 				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:SPBundleShellVariableCurrentLine];
 
+			[env setObject:NSStringFromRange(replaceRange) forKey:SPBundleShellVariableSelectedTextRange];
+
 			NSError *inputFileError = nil;
 			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
+
 			[input writeToFile:bundleInputFilePath
 					  atomically:YES
 						encoding:NSUTF8StringEncoding
@@ -739,8 +735,9 @@
 						}
 
 						else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
-							[self shouldChangeTextInRange:replaceRange replacementString:output];
-							[self replaceCharactersInRange:replaceRange withString:output];
+							NSRange safeRange = NSIntersectionRange(replaceRange, NSMakeRange(0, [[self string] length]));
+							[self shouldChangeTextInRange:safeRange replacementString:output];
+							[self replaceCharactersInRange:safeRange withString:output];
 						}
 
 					} else {

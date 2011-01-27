@@ -285,15 +285,10 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	[favoritesOutlineView setEnabled:NO];
 	
 	[addToFavoritesButton setHidden:YES];
-	[addToFavoritesButton display];
 	[helpButton setHidden:YES];
-	[helpButton display];
 	[connectButton setEnabled:NO];
-	[connectButton display];
 	[progressIndicator startAnimation:self];
-	[progressIndicator display];
 	[progressIndicatorText setHidden:NO];
-	[progressIndicatorText display];
 	
 	// Start the current tab's progress indicator
 	[dbDocument setIsProcessing:YES];
@@ -424,7 +419,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 			[self setSslCertificateFileLocation:nil];
 			return;
 		}
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
 		[openPanel setAccessoryView:sslCertificateLocationHelp];
 		
 	// SSL CA certificate file location:
@@ -433,7 +428,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 			[self setSslCACertFileLocation:nil];
 			return;
 		}
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"", nil];
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
 		[openPanel setAccessoryView:sslCACertLocationHelp];
 	}
 

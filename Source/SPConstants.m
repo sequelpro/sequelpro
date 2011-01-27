@@ -123,6 +123,8 @@ NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
 NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
 NSString *SPCustomQueryFunctionCompletionInsertsArguments = @"CustomQueryFunctionCompletionInsertsArguments";
 NSString *SPCustomQueryEditorThemeName           = @"CustomQueryEditorThemeName";
+NSString *SPCustomQuerySoftIndent                = @"CustomQuerySoftIndent";
+NSString *SPCustomQuerySoftIndentWidth           = @"CustomQuerySoftIndentWidth";
 
 // AutoUpdate Prefpane
 NSString *SPLastUsedVersion                      = @"LastUsedVersion";
@@ -180,11 +182,10 @@ NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncod
 NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType";
 NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
-NSString *SPBundleUpdatedDefaultBundlesKey       = @"updatedDefaultBundles";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
-NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search?q=%@&site=refman-%@&lr=lang_%@";
+NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search/query/search?q=%@&group=refman-%@";
 NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
 
 // Toolbar constants
@@ -325,7 +326,7 @@ NSString *SPBundleShellVariableExitShowAsHTML               = @"SP_BUNDLE_EXIT_S
 NSString *SPBundleShellVariableExitShowAsHTMLTooltip        = @"SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP";
 NSString *SPBundleShellVariableExitInsertAsSnippet          = @"SP_BUNDLE_EXIT_INSERT_AS_SNIPPET";
 NSString *SPBundleShellVariableExitInsertAsText             = @"SP_BUNDLE_EXIT_INSERT_AS_TEXT";
-NSString *SPBundleShellVariableExitShowAsTextTooltip      = @"SP_BUNDLE_EXIT_SHOW_AS_TEXT_TOOLTIP";
+NSString *SPBundleShellVariableExitShowAsTextTooltip        = @"SP_BUNDLE_EXIT_SHOW_AS_TEXT_TOOLTIP";
 NSString *SPBundleShellVariableExitNone                     = @"SP_BUNDLE_EXIT_NONE";
 NSString *SPBundleShellVariableExitReplaceContent           = @"SP_BUNDLE_EXIT_REPLACE_CONTENT";
 NSString *SPBundleShellVariableExitReplaceSelection         = @"SP_BUNDLE_EXIT_REPLACE_SELECTION";
@@ -345,6 +346,7 @@ NSString *SPBundleShellVariableSelectedRowIndices           = @"SP_SELECTED_ROW_
 NSString *SPBundleShellVariableSelectedTable                = @"SP_SELECTED_TABLE";
 NSString *SPBundleShellVariableSelectedTables               = @"SP_SELECTED_TABLES";
 NSString *SPBundleShellVariableSelectedText                 = @"SP_SELECTED_TEXT";
+NSString *SPBundleShellVariableSelectedTextRange            = @"SP_SELECTED_TEXT_RANGE";
 NSString *SPBundleShellVariableUsedQueryForTable            = @"SP_USED_QUERY_FOR_TABLE";
 
 const NSInteger SPBundleRedirectActionNone                 = 200;

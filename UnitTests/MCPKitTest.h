@@ -27,6 +27,17 @@
 
 @class MCPConnection;
 
+/**
+ * @class MCPKitTest MCPKitTest.h
+ *
+ * MCPKit test case class.
+ *
+ * Note that this test case class uses the 'sakila' database to perform it's tests. It is available from: 
+ *
+ * http://downloads.mysql.com/docs/sakila-db.zip
+ *
+ * You must also create a user called 'sp_tester' with no password and all permissions on the database 'sakila'.
+ */
 @interface MCPKitTest : SenTestCase 
 {	
 	MCPConnection *connection;

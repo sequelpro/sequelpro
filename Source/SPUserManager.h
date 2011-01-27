@@ -59,6 +59,9 @@
 	
     IBOutlet NSTextField *userNameTextField;
 
+	IBOutlet NSWindow *errorsSheet;
+	IBOutlet NSTextView *errorsTextView;
+
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	NSMutableArray *schemas;
@@ -67,6 +70,9 @@
 	
 	NSArray *treeSortDescriptors;
 	NSSortDescriptor *treeSortDescriptor;
+
+	BOOL isSaving;
+	NSMutableString *errorsString;
 }
 
 @property (nonatomic, retain) MCPConnection *mySqlConnection;
@@ -93,6 +99,7 @@
 - (IBAction)doApply:(id)sender;
 - (IBAction)checkAllPrivileges:(id)sender;
 - (IBAction)uncheckAllPrivileges:(id)sender;
+- (IBAction)closeErrorsSheet:(id)sender;
 
 // Schema Privieges
 - (IBAction)addSchemaPriv:(id)sender;

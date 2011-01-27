@@ -65,6 +65,7 @@
 	BOOL supportsShowPrivileges;
 	
 	// Storage engines
+	NSString *engineTypeQueryName;
 	BOOL supportsInformationSchemaEngines;
 	BOOL supportsPre41StorageEngines;
 	BOOL supportsBlackholeStorageEngine;
@@ -170,6 +171,11 @@
  * @property supportsShowPrivileges Indicates if the server supports the SHOW PRIVILEGES statement
  */
 @property (readonly) BOOL supportsShowPrivileges;
+
+/**
+ * @property engineTypeQueryName Returns the appropriate query part for specifying table engine - ENGINE or TYPE
+ */
+@property (readonly) NSString *engineTypeQueryName;
 
 /**
  * @property supportsInformationSchemaEngines Indicates if the server supports the information_schema.engines table

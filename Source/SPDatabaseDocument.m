@@ -56,18 +56,6 @@
 #import "SPDatabaseRename.h"
 #import "SPServerSupport.h"
 #import "SPTooltip.h"
-#import "SPEditorTokens.h"
-
-#pragma mark lex init
-
-/*
-* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
-*/
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
 
 
 @interface SPDatabaseDocument (PrivateAPI)
@@ -2514,8 +2502,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			[saveConnectionEncrypt setState:[[spfDocData objectForKey:@"encrypted"] boolValue]];
 		if([spfDocData objectForKey:@"include_session"])
 			[saveConnectionIncludeData setState:[[spfDocData objectForKey:@"include_session"] boolValue]];
-		if([spfDocData objectForKey:@"save_editor_content"])
+		if([[spfDocData objectForKey:@"save_editor_content"] boolValue])
 			[saveConnectionIncludeQuery setState:[[spfDocData objectForKey:@"save_editor_content"] boolValue]];
+		else
+			[saveConnectionIncludeQuery setState:NSOnState];
 
 		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
 
@@ -2568,8 +2558,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			[saveConnectionEncrypt setState:[[spfSessionData objectForKey:@"encrypted"] boolValue]];
 		if([spfSessionData objectForKey:@"include_session"])
 			[saveConnectionIncludeData setState:[[spfSessionData objectForKey:@"include_session"] boolValue]];
-		if([spfSessionData objectForKey:@"save_editor_content"])
+		if([[spfSessionData objectForKey:@"save_editor_content"] boolValue])
 			[saveConnectionIncludeQuery setState:[[spfSessionData objectForKey:@"save_editor_content"] boolValue]];
+		else
+			[saveConnectionIncludeQuery setState:YES];
 
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];
@@ -4558,86 +4550,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #pragma mark Scheme scripting methods
 
 /** 
- * Return an HTML formatted string representing the passed SQL string syntax highlighted
- */
-- (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike
-{
-
-		NSMutableString *sqlHTML = [[[NSMutableString alloc] initWithCapacity:[sqlText length]] autorelease];
-
-		NSRange textRange = NSMakeRange(0, [sqlText length]);
-		NSString *tokenColor;
-		NSString *cssId;
-		size_t token;
-		NSRange tokenRange;
-
-		// initialise flex
-		yyuoffset = 0; yyuleng = 0;
-		yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
-		BOOL skipFontTag;
-
-		while (token=yylex()){
-			skipFontTag = NO;
-			switch (token) {
-				case SPT_SINGLE_QUOTED_TEXT:
-				case SPT_DOUBLE_QUOTED_TEXT:
-				    tokenColor = @"#A7221C";
-					cssId = @"sp_sql_quoted";
-				    break;
-				case SPT_BACKTICK_QUOTED_TEXT:
-				    tokenColor = @"#001892";
-					cssId = @"sp_sql_backtick";
-				    break;
-				case SPT_RESERVED_WORD:
-				    tokenColor = @"#0041F6";
-					cssId = @"sp_sql_keyword";
-				    break;
-				case SPT_NUMERIC:
-					tokenColor = @"#67350F";
-					cssId = @"sp_sql_numeric";
-					break;
-				case SPT_COMMENT:
-				    tokenColor = @"#265C10";
-					cssId = @"sp_sql_comment";
-				    break;
-				case SPT_VARIABLE:
-				    tokenColor = @"#6C6C6C";
-					cssId = @"sp_sql_variable";
-				    break;
-				case SPT_WHITESPACE:
-				    skipFontTag = YES;
-					cssId = @"";
-				    break;
-				default:
-			        skipFontTag = YES;
-					cssId = @"";
-			}
-
-			tokenRange = NSMakeRange(yyuoffset, yyuleng);
-
-			if(skipFontTag)
-				[sqlHTML appendString:[[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
-			else {
-				if(cssLike)
-					[sqlHTML appendFormat:@"<span class=\"%@\">%@</span>", cssId, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
-				else
-					[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
-			}
-
-		}
-
-		// Wrap lines, and replace tabs with spaces
-		[sqlHTML replaceOccurrencesOfString:@"\n" withString:@"<br>" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
-		[sqlHTML replaceOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
-
-		if(sqlHTML)
-			return sqlHTML;
-		else
-			return @"";
-
-}
-
-/** 
  * Called by handleSchemeCommand: to break a while loop
  */
 - (void)setTimeout
@@ -4733,57 +4645,52 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		return;
 	}
 
-	if([command isEqualToString:@"SyntaxHighlighting"]) {
-
-		NSFileManager *fm = [NSFileManager defaultManager];
-		BOOL isDir;
-
-		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
-		NSString *resultFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, docProcessID];
-		NSString *metaFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, docProcessID];
-		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
-
-		NSError *inError = nil;
-		NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
-		NSString *result = @"";
-		NSString *status = @"0";
-
-		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
-
-			if(inError == nil && query && [query length]) {
-				if([params count] > 1) {
-					if([[params lastObject] isEqualToString:@"html"])
-						result = [NSString stringWithString:[self doSQLSyntaxHighlightForString:query cssLike:NO]];
-					else if([[params lastObject] isEqualToString:@"htmlcss"])
-						result = [NSString stringWithString:[self doSQLSyntaxHighlightForString:query cssLike:YES]];
-				}
-			}
-		}
-
-		[fm removeItemAtPath:queryFileName error:nil];
-		[fm removeItemAtPath:resultFileName error:nil];
-		[fm removeItemAtPath:metaFileName error:nil];
-		[fm removeItemAtPath:statusFileName error:nil];
-
-		if(![result writeToFile:resultFileName atomically:YES encoding:NSUTF8StringEncoding error:nil])
-			status = @"1";
-
-		// write status file as notification that query was finished
-		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
-		if(!succeed) {
-			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
-		}
-		return;
-	}
-
 	// ==== the following commands need an authentication for safety reasons
 
 	// Authenticate command
 	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
 						  NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated"));
+		return;
+	}
+
+	if([command isEqualToString:@"SetSelectedTextRange"]) {
+		if([params count] > 1) {
+			id firstResponder = [parentWindow firstResponder];
+			if([firstResponder isKindOfClass:[NSTextView class]]) {
+				NSRange theRange = NSIntersectionRange(NSRangeFromString([params objectAtIndex:1]), NSMakeRange(0, [[firstResponder string] length]));
+				if(theRange.location != NSNotFound) {
+					[firstResponder setSelectedRange:theRange];
+				}
+				return;
+			}
+			NSBeep();
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"InsertText"]) {
+		if([params count] > 1) {
+			id firstResponder = [parentWindow firstResponder];
+			if([firstResponder isKindOfClass:[NSTextView class]]) {
+				[firstResponder insertText:[params objectAtIndex:1]];
+				return;
+			}
+			NSBeep();
+		}
+		return;
+	}
+
+	if([command isEqualToString:@"SetText"]) {
+		if([params count] > 1) {
+			id firstResponder = [parentWindow firstResponder];
+			if([firstResponder isKindOfClass:[NSTextView class]]) {
+				[firstResponder setSelectedRange:NSMakeRange(0, [[firstResponder string] length])];
+				[firstResponder insertText:[params objectAtIndex:1]];
+				return;
+			}
+			NSBeep();
+		}
 		return;
 	}
 
@@ -5141,17 +5048,50 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	[runningActivitiesArray addObject:commandDict];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+
+	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
+		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+	else {
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(setActivityPaneHidden:) 
+								object:[NSNumber numberWithInteger:0]];
+		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+	}
+
 }
 
 - (void)removeRegisteredActivity:(NSInteger)pid
 {
+
 	for(id cmd in runningActivitiesArray) {
 		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
 			[runningActivitiesArray removeObject:cmd];
 			break;
 		}
 	}
+
+	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
+		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+	else {
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(setActivityPaneHidden:) 
+								object:[NSNumber numberWithInteger:0]];
+		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+	}
+
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+
+}
+
+- (void)setActivityPaneHidden:(NSNumber*)hide
+{
+	if(![hide integerValue] == 1) {
+		[tableInfoScrollView setHidden:YES];
+		[activitiesScrollView setHidden:NO];
+	} else {
+		[activitiesScrollView setHidden:YES];
+		[tableInfoScrollView setHidden:NO];
+	}
 }
 
 - (NSArray*)runningActivities

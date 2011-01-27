@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Format</string>
+	<key>command</key>
+	<string>
+
+# check for empty STDIN
+SQL=$(cat)
+if [ -z "$SQL" ]; then
+	echo "No SQL statements passed."
+	exit $SP_BUNDLE_EXIT_SHOW_AS_TEXT_TOOLTIP
+fi
+
+# check if connected to the internet and if server is up
+connected=$(/sbin/ping -t 8 -c 1 -on www.dpriver.com 2&gt; /dev/null | grep '69\.5\.11\.169' | wc -l)
+if [ $connected -eq "0" ]; then
+	echo "&lt;font color=red&gt;You are probably not connected to the internet or http://www.dpriver.com/ server is down.&lt;/font&gt;"
+	exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
+fi
+
+# show info alert about sending the SQL statements to an online service
+if [ ! -e infoShowed ]; then
+	touch infoShowed
+	osascript -e 'tell app "Sequel Pro" to display dialog "This command will send the SQL statement(s) - unencrypted - to an online service (http://www.dpriver.com).  Please consider this before sending confidential data!\n\nThis message will only be displayed once." with icon caution' 2&gt; 1
+	if [ `cat 1 | wc -c` -ne 0 ]; then
+		rm -f 1
+		exit $SP_BUNDLE_EXIT_NONE
+	fi
+	rm -f 1
+fi
+
+# send SQL to www.dpriver.com and replace the formatted SQL string in first responder; if a parser error occurred
+# show error message and try to jump to the error
+cat &lt;&lt;HTML
+&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;base href="http://www.dpriver.com/pp/"&gt;
+	&lt;title&gt;Connecting www.dpriver.com&lt;/title&gt;
+	&lt;script&gt;
+		function lookForResult() {
+			if(document.all.outputsql.value.length &gt; 8) {
+				if(document.all.errorhint.style.display == "inline") {
+					var errormes = document.all.outputsql.value;
+					var re = /.*?\(\d+\s*,\s*(\d+)\).*/;
+					re.exec(errormes);
+					var pos = parseInt(RegExp.\$1) - 1;
+					re = /.*?(\d+).*/;
+					re.exec('$SP_SELECTED_TEXT_RANGE');
+					var offset = parseInt(RegExp.\$1);
+					pos = pos + offset;
+					alert(document.all.outputsql.value);
+					window.system.setSelectedTextRange(pos+'');
+				} else {
+					var txt = document.all.outputsql.value;
+					var len = txt.length;
+					window.system.setSelectedTextRange('$SP_SELECTED_TEXT_RANGE');
+ 					window.system.insertText(txt.slice(0,len-2));
+ 				}
+ 				window.system.closeHTMLOutputWindow();	
+			} else {
+				setTimeout("lookForResult()",50);
+			}
+		}
+
+		function waitForResult() {
+			window.system.suppressExceptionAlert();
+			setTimeout("lookForResult()",50);
+		}
+	&lt;/script&gt;
+	&lt;script language="JavaScript" type="text/javascript" src="pp.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body onload='window.resizeTo(300,200);SQLFMT.format(document.all.sp_submit);waitForResult()'&gt;
+&lt;div id="retvalues"&gt;&lt;/div&gt;
+&lt;p&gt;&lt;b&gt;Copyright &amp;copy; 2001-2010 Gudu Software&lt;br&gt;All Rights Reserved&lt;br&gt;&lt;a href="mailto:support@dpriver.com"&gt;Contact US&lt;/a&gt;&lt;/b&gt;&lt;/p&gt;
+&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
+&lt;p align=right&gt;Please wait…&lt;/p&gt;
+&lt;div class="page-container-1" style="display:none;"&gt;
+	&lt;div id="container"&gt;
+		&lt;div id="wrapper"&gt;
+			&lt;div id="content"&gt;
+				&lt;form id="SqlFmtForm" name="frm_sqlformat" method="post" action="/cgi-bin/ppserver" onsubmit="return false;"&gt;
+					&lt;div id="secondpanel"&gt; 
+						&lt;div id="sp_database"&gt;
+							&lt;label class="desc" style="display:inline;"&gt;Database&lt;/label&gt;
+							&lt;select name="dbvendor"&gt;
+								&lt;option value="mysql" selected&gt;MySQL&lt;/option&gt;
+							&lt;/select&gt;
+							&lt;label class="desc" style="display:inline;padding:0 0 0px 40px; border:0px solid;"&gt;Output:&lt;/label&gt;
+							&lt;select name="outputfmt"&gt;
+								&lt;option value="SQL" selected&gt;SQL(Text)&lt;/option&gt;
+							&lt;/select&gt;
+						&lt;/div&gt;
+					&lt;/div&gt;
+					&lt;div id="sqlpanel"&gt;
+						&lt;div id="sp_inputsql"&gt;
+							&lt;textarea id ="inputsql" name="inputsql" cols="1" rows="1" wrap="off"&gt;
+							$SQL
+							&lt;/textarea&gt;
+						&lt;/div&gt;
+						&lt;div id="sp_submit"&gt;
+							&lt;input type="button" id="btnformat" name="print" value="Format SQL" onclick="SQLFMT.format(this)" value="Format SQL"&gt;
+							&lt;label style="display:none;"&gt;(Time used: &lt;span id="timestamp"&gt;0&lt;/span&gt; seconds)&lt;/label&gt;
+						&lt;/div&gt;
+						&lt;div id="sp_submit" style="text-align:left;"&gt;
+						&lt;/div&gt;
+						&lt;label id="errorhint" class="desc" style="color:#DF0000 !important;display:none;"&gt;
+							Can't format input sql, make sure there is no syntax error and select correct database.
+							&lt;a href="" style="display:none;"&gt;OR Report a bug of this sql beautifier&lt;/a&gt;
+						&lt;/label&gt;
+						&lt;iframe id="ioutputsql" &gt;&lt;/iframe&gt;
+						&lt;div id="sp_outputsql" style="display:none;"&gt;
+							&lt;textarea id = "outputsql" name="outputsql" cols="80" rows="15" wrap="off" &gt;
+							&lt;/textarea&gt;
+						&lt;/div&gt;
+						&lt;div id="sp_errormsg" style="display:none;"&gt;
+							Error message goes to here!
+						&lt;/div&gt;
+					&lt;/div&gt;
+					&lt;div id="formatoptions"&gt;
+						&lt;select name="keywordcs"&gt;
+							&lt;option value="Uppercase" selected &gt;Uppercase&lt;/option&gt;
+							&lt;option value="Lowercase" &gt;Lowercase&lt;/option&gt;
+							&lt;option value="InitCap" &gt;InitCap&lt;/option&gt;
+							&lt;option value="Unchanged" &gt;Unchanged&lt;/option&gt;
+						&lt;/select&gt;
+						&lt;select name="identifiercs"&gt;
+							&lt;option value="Uppercase" &gt;Uppercase&lt;/option&gt;
+							&lt;option value="Lowercase" selected &gt;Lowercase&lt;/option&gt;
+							&lt;option value="InitCap" &gt;InitCap&lt;/option&gt;
+							&lt;option value="Unchanged" &gt;Unchanged&lt;/option&gt;
+							&lt;option value="initcapeachword" &gt;Init cap each word&lt;/option&gt;
+						&lt;/select&gt;
+						&lt;select name="functioncs"&gt;
+							&lt;option value="Uppercase" &gt;Uppercase&lt;/option&gt;
+							&lt;option value="Lowercase" &gt;Lowercase&lt;/option&gt;
+							&lt;option value="InitCap" selected &gt;InitCap&lt;/option&gt;
+							&lt;option value="Unchanged" &gt;Unchanged&lt;/option&gt;
+						&lt;/select&gt;
+						&lt;input type="radio" name="lnbrwithcomma" value="after" checked &gt; After
+						&lt;input type="radio" name="lnbrwithcomma" value="before" &gt; Before
+						&lt;input type="radio" name="lnbrwithcomma" value= "beforewithspace" &gt; Before with space
+						&lt;input type="radio" name="liststyle" value="stack" checked&gt;Stacked
+						&lt;input type="radio" name="liststyle" value="nostack"&gt;Not Stacked
+						&lt;input type="radio" name="salign" value="sleft" checked&gt; Align left
+						&lt;input type="radio" name="salign" value="sright" &gt; Align right
+						&lt;input type="checkbox" name="andorunderwhere" value="yes" checked&gt; And/Or under Where
+						&lt;input type="checkbox" name="removelnbr" value="no" checked&gt; Remove Linebreak before beautify
+						&lt;input type="checkbox" name="trimquotechar" value="yes"&gt; Trim Quoted Char of Each Line quoted char of eachline: &lt;input type="text" name="quotechar" value= "&amp;#34" size = 5 &gt; 
+						&lt;input type="checkbox" name="compactmode" value="yes"&gt; Compact the output of sql output
+						&lt;input type="text" name="maxlenincm" value= "80" size = 5 &gt; 
+					&lt;/div&gt;
+					&lt;input type="hidden" name="clientid" value="4149-9094-8133-2031" /&gt; 
+				&lt;/form&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+HTML
+</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>Send the current query or selection to www.dpriver.com and replace the current query or selection of the first responder by the server's formatted output. If a parser error occurred alert that error and tries to jump to the error location.
+
+Version 1.0</string>
+	<key>input</key>
+	<string>selectedtext</string>
+	<key>input_fallback</key>
+	<string>currentquery</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>T</string>
+		<key>keyCode</key>
+		<integer>17</integer>
+		<key>modifierFlags</key>
+		<integer>1835008</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>^~@t</string>
+	<key>name</key>
+	<string>Format SQL</string>
+	<key>output</key>
+	<string>showashtml</string>
+	<key>scope</key>
+	<string>inputfield</string>
+	<key>tooltip</key>
+	<string>Send query or selection to www.dpriver.com to insert the SQL statement formatted</string>
+	<key>uuid</key>
+	<string>36E1F94D-D6C4-460A-A663-C694AF85E099</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

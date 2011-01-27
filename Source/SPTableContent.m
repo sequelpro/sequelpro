@@ -1604,6 +1604,12 @@
 		column = NSArrayObjectAtIndex(dataColumns, i);
 		if ([column objectForKey:@"default"] == nil || [column objectForKey:@"default"] == [NSNull null]) {
 			[newRow addObject:[NSNull null]];
+		} else if ([[column objectForKey:@"default"] isEqualToString:@""]
+					&& ![[column objectForKey:@"null"] boolValue]
+					&& ([[column objectForKey:@"typegrouping"] isEqualToString:@"float"]
+						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"integer"]))
+		{
+			[newRow addObject:@"0"];
 		} else {
 			[newRow addObject:[column objectForKey:@"default"]];
 		}
@@ -2394,9 +2400,11 @@
 	NSMutableArray *rowFieldsToSave = [[NSMutableArray alloc] initWithCapacity:[dataColumns count]];
 	NSMutableArray *rowValuesToSave = [[NSMutableArray alloc] initWithCapacity:[dataColumns count]];
 	NSInteger i;
+	NSDictionary *fieldDefinition;
 	id rowObject;
 	for (i = 0; i < [dataColumns count]; i++) {
 		rowObject = [tableValues cellDataAtRow:currentlyEditingRow column:i];
+		fieldDefinition = NSArrayObjectAtIndex(dataColumns, i);
 
 		// Skip "not loaded" cells entirely - these only occur when editing tables when the
 		// preference setting is enabled, and don't need to be saved back to the table.
@@ -2408,13 +2416,13 @@
 
 		// Prepare to derive the value to save
 		NSString *fieldValue;
-		NSString *fieldTypeGroup = [NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"typegrouping"];
+		NSString *fieldTypeGroup = [fieldDefinition objectForKey:@"typegrouping"];
 
 		// Use NULL when the user has entered the nullValue string defined in the preferences,
 		// or when a numeric field is empty.
 		if ([rowObject isNSNull]
 			|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"])
-				&& [[rowObject description] isEqualToString:@""]))
+				&& [[rowObject description] isEqualToString:@""] && [[fieldDefinition objectForKey:@"null"] boolValue]))
 		{
 			fieldValue = @"NULL";
 
@@ -2449,7 +2457,7 @@
 		}
 
 		// Store the key and value in the ordered arrays for saving.
-		[rowFieldsToSave addObject:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]];
+		[rowFieldsToSave addObject:[fieldDefinition objectForKey:@"name"]];
 		[rowValuesToSave addObject:fieldValue];
 	}
 
@@ -2490,10 +2498,19 @@
 		} else {
 			NSBeep();
 		}
-		[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+
+		// If creating a new row, remove the row; otherwise revert the row contents
+		if (isEditingNewRow) {
+			tableRowsCount--;
+			[tableValues removeRowAtIndex:currentlyEditingRow];
+			[self updateCountText];
+			isEditingNewRow = NO;
+		} else {
+			[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
+		}
 		isEditingRow = NO;
-		isEditingNewRow = NO;
 		currentlyEditingRow = -1;
+		[tableContentView reloadData];
 		[[SPQueryController sharedQueryController] showErrorInConsole:NSLocalizedString(@"/* WARNING: No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db") connection:[tableDocumentInstance name]];
 		return YES;
 
@@ -2784,7 +2801,7 @@
  * -2 for other errors
  * and the used WHERE clause to identify
  */
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex
 {
 	NSDictionary *columnDefinition = nil;
 
@@ -2919,10 +2936,12 @@
 
 	NSInteger row = -1;
 	NSInteger column = -1;
+	NSInteger editedColumn = -1;
 
 	if(contextInfo) {
 		row = [[contextInfo objectForKey:@"row"] integerValue];
 		column = [[contextInfo objectForKey:@"column"] integerValue];
+		editedColumn = [[contextInfo objectForKey:@"editedColumn"] integerValue];
 	}
 
 	if (data && contextInfo) {
@@ -2958,8 +2977,8 @@
 
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableContentView];
 
-	if(row > -1 && column > -1)
-		[tableContentView editColumn:column row:row withEvent:nil select:YES];
+	if(row > -1 && editedColumn > -1)
+		[tableContentView editColumn:editedColumn row:row withEvent:nil select:YES];
 }
 
 #pragma mark -
@@ -3278,6 +3297,25 @@
 	[self setFiltersToRestore:nil];
 }
 
+- (void) setFilterTableData:(NSData*)arcData
+{
+	if(!arcData) return;
+	NSDictionary *filterData = [NSUnarchiver unarchiveObjectWithData:arcData];
+	[filterTableData removeAllObjects];
+	[filterTableData addEntriesFromDictionary:filterData];
+	[filterTableWindow makeKeyAndOrderFront:nil];
+	// [filterTableView reloadData];
+}
+
+- (NSData*) filterTableData
+{
+	if(![filterTableWindow isVisible]) return nil;
+
+	[filterTableView deselectAll:nil];
+
+	return [NSArchiver archivedDataWithRootObject:filterTableData];
+}
+
 #pragma mark -
 #pragma mark Table drawing and editing
 
@@ -3494,8 +3532,9 @@
 				return c;
 			} else
 				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"], [[aTableColumn identifier] integerValue]-1);
-		else
+		else {
 			return NSArrayObjectAtIndex([[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"], rowIndex);
+		}
 	}
 	else if(aTableView == tableContentView) {
 
@@ -4050,6 +4089,12 @@
 			if ([cellValue isNSNull])
 				cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 
+			NSInteger editedColumn = 0;
+			for(NSTableColumn* col in [tableContentView tableColumns]) {
+				if([[col identifier] isEqualToNumber:[aTableColumn identifier]]) break;
+				editedColumn++;
+			}
+
 			[fieldEditor editWithObject:cellValue
 							 fieldName:[[aTableColumn headerCell] stringValue]
 						 usingEncoding:[mySQLConnection stringEncoding]
@@ -4060,6 +4105,7 @@
 						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 											[NSNumber numberWithInteger:rowIndex], @"row",
 											[aTableColumn identifier], @"column",
+											[NSNumber numberWithInteger:editedColumn], @"editedColumn",
 											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
 											nil]];
 
@@ -4444,6 +4490,8 @@
 	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
 	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+	NSInteger editedRow = [filterTableView editedRow];
+	
 
 	if(currentValue == filterTableGearLookAllFields) {
 		numberOfRows = 1;
@@ -4477,7 +4525,7 @@
 				}
 			// Take value from currently edited table cell
 			} else if([currentValue isKindOfClass:[NSString class]]){
-				if(index == [filterTableView editedColumn] && i == [filterTableView editedRow])
+				if(i == editedRow && index == [[NSArrayObjectAtIndex([filterTableView tableColumns], [filterTableView editedColumn]) identifier] integerValue])
 					filterCell = (NSString*)currentValue;
 				else
 					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);

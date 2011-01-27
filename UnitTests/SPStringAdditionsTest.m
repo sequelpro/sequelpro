@@ -26,32 +26,35 @@
 #import "SPStringAdditionsTest.h"
 #import "SPStringAdditions.h"
 
+static const NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
+static const NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
+
 @implementation SPStringAdditionsTest
 
-- (void)setUp
-{
-	
-}
-
-- (void)tearDown
-{
-	
-}
-
+/**
+ * stringByRemovingCharactersInSet test case.
+ */
 - (void)testStringByRemovingCharactersInSet
 {
-	NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:@"abc',ü"];
+	NSString *charsToRemove = @"abc',ü";
 	
-	NSString *s = @"this is  big, crazy st'ring";
-	NSString *expect = @"this is  ig rzy string";
+	NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:charsToRemove];
 	
-	STAssertEqualObjects([s stringByRemovingCharactersInSet:junk], expect, @"stringByRemovingCharactersInSet");
+	NSString *actualUTFString = SPUTFTestString;
+	NSString *actualASCIIString = SPASCIITestString;
 	
-	// Check UTF
-	s = @"In der Kürze liegt die Würz";
-	expect = @"In der Krze liegt die Wrz";
+	NSString *expectedUTFString = @"In der Krze liegt die Wrz";
+	NSString *expectedASCIIString = @"this is  ig rzy test string  with some rndom  spes nd quotes";
 	
-	STAssertEqualObjects([s stringByRemovingCharactersInSet:junk], expect, @"stringByRemovingCharactersInSet");
+	STAssertEqualObjects([actualASCIIString stringByRemovingCharactersInSet:junk], 
+						 expectedASCIIString, 
+						 @"The following characters should have been removed %@", 
+						 charsToRemove);
+	
+	STAssertEqualObjects([actualUTFString stringByRemovingCharactersInSet:junk], 
+						 expectedUTFString, 
+						 @"The following characters should have been removed %@", 
+						 charsToRemove);
 }
 
 @end

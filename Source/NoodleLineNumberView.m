@@ -191,75 +191,78 @@
 	NSLayoutManager	*layoutManager;
 	NSTextContainer	*container;
 	NSRange			nullRange;
-	NSMutableArray	*lines;
+	NSArray			*lines;
 	id				view;
-		
+
 	view = [self clientView];
 	visibleRect = [[[self scrollView] contentView] bounds];
-	
+
 	lines = [self lineIndices];
 
 	location += NSMinY(visibleRect);
 	
 	if ([view isKindOfClass:[NSTextView class]])
 	{
+
 		nullRange = NSMakeRange(NSNotFound, 0);
 		layoutManager = [view layoutManager];
 		container = [view textContainer];
 		count = [lines count];
-		
-		for (line = 0; line < count; line++)
+
+		// Find the characters that are currently visible
+		NSRange range = [layoutManager characterRangeForGlyphRange:[layoutManager glyphRangeForBoundingRect:visibleRect inTextContainer:container] actualGlyphRange:NULL];
+
+		// Fudge the range a tad in case there is an extra new line at end.
+		// It doesn't show up in the glyphs so would not be accounted for.
+		range.length++;
+
+		for (line = [self lineNumberForCharacterIndex:range.location inText:@""]; line < count; line++)
 		{
+
 			index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
-			
+
 			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
 								 withinSelectedCharacterRange:nullRange
 											  inTextContainer:container
 													rectCount:&rectCount];
-			
+
 			for (i = 0; i < rectCount; i++)
-			{
 				if ((location >= NSMinY(rects[i])) && (location < NSMaxY(rects[i])))
-				{
 					return line + 1;
-				}
-			}
-		}	
+
+		}
 	}
 	return NSNotFound;
 }
 
 - (void)calculateLines
 {
-	id view;
-
-	view = [self clientView];
+	id view = [self clientView];
 
 	if ([view isKindOfClass:[NSTextView class]])
 	{
-		NSUInteger index, numberOfLines, stringLength, lineEnd, contentEnd;
+		NSUInteger index, stringLength, lineEnd, contentEnd;
 		NSString *text;
 		CGFloat oldThickness, newThickness;
 
 		text = [view string];
 		stringLength = [text length];
+
 		// Switch off line numbering if text larger than 6MB
 		// for performance reasons.
 		// TODO improve performance maybe via threading
 		if(stringLength>6000000)
 			return;
-		if (lineIndices) [lineIndices release];
-		lineIndices = [[NSMutableArray alloc] init];
+
+		if (lineIndices) [lineIndices release], lineIndices = nil;
+		lineIndices = [[NSMutableArray alloc] initWithCapacity:1];
 
 		index = 0;
-		numberOfLines = 0;
 
 		do
 		{
 			[lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-
 			index = NSMaxRange([text lineRangeForRange:NSMakeRange(index, 0)]);
-			numberOfLines++;
 		}
 		while (index < stringLength);
 
@@ -274,7 +277,7 @@
 		newThickness = [self requiredThickness];
 		if (fabs(oldThickness - newThickness) > 1)
 		{
-			NSInvocation			*invocation;
+			NSInvocation *invocation;
 
 			// Not a good idea to resize the view during calculations (which can happen during
 			// display). Do a delayed perform (using NSInvocation since arg is a float).
@@ -381,7 +384,7 @@
 		CGFloat					ypos, yinset;
 		NSDictionary			*textAttributes;
 		NSSize					stringSize;
-		NSMutableArray			*lines;
+		NSArray					*lines;
 
 		layoutManager = [view layoutManager];
 		container = [view textContainer];
@@ -407,7 +410,7 @@
  
 		CGFloat boundsRULERMargin2 = NSWidth(bounds) - RULER_MARGIN * 2.0;
 		CGFloat boundsWidthRULER   = NSWidth(bounds) - RULER_MARGIN;
-		CGFloat yinsetMinY    = yinset - NSMinY(visibleRect);
+		CGFloat yinsetMinY         = yinset - NSMinY(visibleRect);
 
 		for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
 		{
@@ -462,11 +465,11 @@
 	if (line != NSNotFound)
 	{
 		NSUInteger selectionStart, selectionEnd;
-		NSMutableArray *lines = [self lineIndices];
+		NSArray *lines = [self lineIndices];
 
-		selectionStart = [[lines objectAtIndex:(line - 1)] unsignedIntegerValue];
+		selectionStart = [NSArrayObjectAtIndex(lines, (line - 1)) unsignedIntegerValue];
 		if (line < [lines count]) {
-			selectionEnd = [[lines objectAtIndex:line] unsignedIntegerValue];
+			selectionEnd = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
 		} else {
 			selectionEnd = [[view string] length];
 		}
@@ -489,7 +492,7 @@
 	if (line != NSNotFound)
 	{
 		NSUInteger selectionStart, selectionEnd;
-		NSMutableArray *lines = [self lineIndices];
+		NSArray *lines = [self lineIndices];
 		if (line >= dragSelectionStartLine) {
 			startLine = dragSelectionStartLine;
 			endLine = line;
@@ -498,9 +501,9 @@
 			endLine = dragSelectionStartLine;
 		}
 
-		selectionStart = [[lines objectAtIndex:(startLine - 1)] unsignedIntegerValue];
+		selectionStart = [NSArrayObjectAtIndex(lines, (startLine - 1)) unsignedIntegerValue];
 		if (endLine < [lines count]) {
-			selectionEnd = [[lines objectAtIndex:endLine] unsignedIntegerValue];
+			selectionEnd = [NSArrayObjectAtIndex(lines, endLine) unsignedIntegerValue];
 		} else {
 			selectionEnd = [[view string] length];
 		}

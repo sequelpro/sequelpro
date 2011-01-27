@@ -282,10 +282,12 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 		// Close the advanced options view if it's open
 		[exportAdvancedOptionsView setHidden:YES];
 		[exportAdvancedOptionsViewButton setState:NSOffState];
+		showAdvancedView = NO;
 		
 		// Close the customize filename view if it's open
 		[exportCustomFilenameView setHidden:YES];
 		[exportCustomFilenameViewButton setState:NSOffState];
+		showCustomFilenameView = NO;
 		
 		// If open close the advanced options view and custom filename view
 		[self _resizeWindowForAdvancedOptionsViewByHeightDelta:0];

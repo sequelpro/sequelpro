@@ -83,6 +83,7 @@
 	NSString *sshKeyLocation;
 	NSString *sshPort;
 
+	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
