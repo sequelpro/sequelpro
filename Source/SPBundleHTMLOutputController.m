@@ -24,6 +24,7 @@
 
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
+#import "SPPrintAccessory.h"
 
 @class WebScriptCallFrame;
 
@@ -178,7 +179,49 @@
 
 - (IBAction)printDocument:(id)sender
 {
-	[[[[webView mainFrame] frameView] documentView] print:sender];
+
+	NSPrintInfo *printInfo = [NSPrintInfo sharedPrintInfo];
+
+	NSSize paperSize = [printInfo paperSize];
+	NSRect printableRect = [printInfo imageablePageBounds];
+
+	// Calculate page margins
+	CGFloat marginL = printableRect.origin.x;
+	CGFloat marginR = paperSize.width - (printableRect.origin.x + printableRect.size.width);
+	CGFloat marginB = printableRect.origin.y;
+	CGFloat marginT = paperSize.height - (printableRect.origin.y + printableRect.size.height);
+
+	// Make sure margins are symetric and positive
+	CGFloat marginLR = MAX(0, MAX(marginL, marginR));
+	CGFloat marginTB = MAX(0, MAX(marginT, marginB));
+
+	// Set the margins
+	[printInfo setLeftMargin:marginLR];
+	[printInfo setRightMargin:marginLR];
+	[printInfo setTopMargin:marginTB];
+	[printInfo setBottomMargin:marginTB];
+
+	[printInfo setHorizontalPagination:NSFitPagination];
+	[printInfo setVerticalPagination:NSFitPagination];
+	[printInfo setVerticallyCentered:NO];
+
+	NSPrintOperation *op = [NSPrintOperation printOperationWithView:[[[webView mainFrame] frameView] documentView] printInfo:printInfo];
+
+	// Perform the print operation on a background thread
+	[op setCanSpawnSeparateThread:YES];
+
+	// Add the ability to select the orientation to print panel
+	NSPrintPanel *printPanel = [op printPanel];
+
+	[printPanel setOptions:[printPanel options] + NSPrintPanelShowsOrientation + NSPrintPanelShowsScaling + NSPrintPanelShowsPaperSize];
+
+	[op setPrintPanel:printPanel];
+
+	[op runOperationModalForWindow:[self window]
+		delegate:self
+		didRunSelector:nil
+		contextInfo:nil];
+
 }
 
 - (void)showSourceCode
