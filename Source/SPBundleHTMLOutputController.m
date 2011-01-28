@@ -217,6 +217,14 @@
 
 	[op setPrintPanel:printPanel];
 
+	SPPrintAccessory *printAccessory = [[SPPrintAccessory alloc] initWithNibName:@"PrintAccessory" bundle:nil];
+
+	[printAccessory setPrintView:webView];
+	[printPanel addAccessoryController:printAccessory];
+
+	[[NSPageLayout pageLayout] addAccessoryController:printAccessory];
+	[printAccessory release];
+
 	[op runOperationModalForWindow:[self window]
 		delegate:self
 		didRunSelector:nil
