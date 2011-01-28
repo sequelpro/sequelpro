@@ -2062,6 +2062,28 @@
 				[tempRow addObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 			else if([o isKindOfClass:[NSString class]])
 				[tempRow addObject:[o description]];
+			else if([o isKindOfClass:[MCPGeometryData class]]) {
+				SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[o coordinates]];
+				NSImage *image = [v thumbnailImage];
+				NSString *imageStr = @"";
+				if(image) {
+					NSString *maxSizeValue = @"WIDTH";
+					NSInteger imageWidth = [image size].width;
+					NSInteger imageHeight = [image size].height;
+					if(imageHeight > imageWidth) {
+						maxSizeValue = @"HEIGHT";
+						imageWidth = imageHeight;
+					}
+					if (imageWidth > 100) imageWidth = 100;
+					imageStr = [NSString stringWithFormat:
+					@"<BR><IMG %@='%ld' SRC=\"data:image/auto;base64,%@\">",
+						maxSizeValue,
+						(long)imageWidth,
+						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01] base64EncodingWithLineLength:0]];
+				}
+				[v release];
+				[tempRow addObject:[NSString stringWithFormat:@"%@%@", [o wktString], imageStr]];
+			}
 			else {
 				NSImage *image = [[NSImage alloc] initWithData:o];
 				if (image) {
@@ -2476,8 +2498,7 @@
 		for (i = 0; i < [rowFieldsToSave count]; i++) {
 			if (i) [queryString appendString:@", "];
 			[queryString appendFormat:@"%@ = %@",
-									   [NSArrayObjectAtIndex(rowFieldsToSave, i) backtickQuotedString],
-									   NSArrayObjectAtIndex(rowValuesToSave, i)];
+									   [NSArrayObjectAtIndex(rowFieldsToSave, i) backtickQuotedString], NSArrayObjectAtIndex(rowValuesToSave, i)];
 		}
 		[queryString appendFormat:@" WHERE %@", [self argumentForRow:-2]];
 	}
