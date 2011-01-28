@@ -263,6 +263,7 @@
 
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
+
 	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
 
 	// sequelpro:// handler
@@ -270,9 +271,14 @@
 		[[NSApp delegate] handleEventWithURL:[request URL]];
 		[listener ignore];
 	}
-	// file://a_file_path opens the reveal the file in Finder
-	else if([[[request URL] scheme] isEqualToString:@"file"] && navigationType == WebNavigationTypeLinkClicked) {
-		[[NSWorkspace sharedWorkspace] selectFile:[[[request mainDocumentURL] absoluteString] substringFromIndex:6] inFileViewerRootedAtPath:nil];
+	// sp-reveal-file://a_file_path reveals the file in Finder
+	else if([[[request URL] scheme] isEqualToString:@"sp-reveal-file"] && navigationType == WebNavigationTypeLinkClicked) {
+		[[NSWorkspace sharedWorkspace] selectFile:[[[request mainDocumentURL] absoluteString] substringFromIndex:16] inFileViewerRootedAtPath:nil];
+		[listener ignore];
+	}
+	// sp-open-file://a_file_path opens the file with the default
+	else if([[[request URL] scheme] isEqualToString:@"sp-open-file"] && navigationType == WebNavigationTypeLinkClicked) {
+		[[NSWorkspace sharedWorkspace] openFile:[[[request mainDocumentURL] absoluteString] substringFromIndex:14]];
 		[listener ignore];
 	}
 	else {
