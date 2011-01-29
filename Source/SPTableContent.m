@@ -244,14 +244,14 @@
 
 		// Scroll the viewport to the saved location
 		selectionViewportToRestore.size = [tableContentView visibleRect].size;
-		[tableContentView scrollRectToVisible:selectionViewportToRestore];
+		[[tableContentView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 	}
 
 	// Restore selection indexes if appropriate
 	if (selectionIndexToRestore) {
 		BOOL previousTableRowsSelectable = tableRowsSelectable;
 		tableRowsSelectable = YES;
-		[tableContentView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+		[[tableContentView onMainThread] selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
 		tableRowsSelectable = previousTableRowsSelectable;
 	}
 
@@ -758,7 +758,7 @@
 	[self updateCountText];
 
 	// Update pagination
-	[self updatePaginationState];
+	[[self onMainThread] updatePaginationState];
 
 	// Retrieve and cache the column definitions for editing views
 	if (cqColumnDefinition) [cqColumnDefinition release];
@@ -784,7 +784,7 @@
 	} else {
 		// Trigger a full reload if required
 		if (fullTableReloadRequired) [self reloadTable:self];
-		[filterTableWindow setTitle:NSLocalizedString(@"Filter", @"filter label")];
+		[[filterTableWindow onMainThread] setTitle:NSLocalizedString(@"Filter", @"filter label")];
 	}
 }
 
@@ -1467,6 +1467,7 @@
 
 /**
  * Update the state of the pagination buttons and text.
+ * This function is not thread-safe and should be called on the main thread.
  */
 - (void) updatePaginationState
 {
