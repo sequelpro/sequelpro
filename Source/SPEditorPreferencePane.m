@@ -38,7 +38,6 @@
 
 @end
 
-
 @implementation SPEditorPreferencePane
 
 #pragma mark -
@@ -738,12 +737,16 @@
 		[[NSColorPanel sharedColorPanel] close];
 		
 		SPBeginWaitingAlertSheet(@"title",
-								 NSLocalizedString(@"Proceed", @"proceed button"), NSLocalizedString(@"Cancel", @"cancel button"), nil,
-								 NSWarningAlertStyle, [[self view] window], self,
+								 NSLocalizedString(@"Proceed", @"proceed button"), 
+								 NSLocalizedString(@"Cancel", @"cancel button"), 
+								 nil,
+								 NSWarningAlertStyle, 
+								 [[self view] window], 
+								 self,
 								 @selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:),
 								 nil,
-								 NSLocalizedString(@"Warning", @"warning"),
-								 NSLocalizedString(@"Current color theme is unsaved. Do you want to proceed without saving it?", @"Current color theme is unsaved. Do you want to proceed without saving it message"),
+								 NSLocalizedString(@"Unsaved Theme", @"unsaved theme message"),
+								 NSLocalizedString(@"The current color theme is unsaved. Do you want to proceed without saving it?", @"unsaved theme informative message"),
 								 checkForUnsavedThemeSheetStatus
 								 );
 		
