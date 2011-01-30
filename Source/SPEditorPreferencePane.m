@@ -29,6 +29,16 @@
 #import "SPAlertSheets.h"
 #import "SPCategoryAdditions.h"
 
+// Constants
+static const NSString *SPImportColorScheme             = @"ImportColorScheme";
+static const NSString *SPExportColorScheme             = @"ExportColorScheme";
+static const NSString *SPSaveColorScheme               = @"SaveColorScheme";
+static const NSString *SPDefaultColorSchemeName        = @"Default";
+static const NSString *SPDefaultColorSchemeNameLC      = @"default";
+static const NSString *SPCustomColorSchemeName         = @"User-defined";
+static const NSString *SPCustomColorSchemeNameLC       = @"user-defined";
+static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
+
 @interface SPEditorPreferencePane (PrivateAPI)
 
 - (BOOL)_checkForUnsavedTheme;
@@ -126,11 +136,11 @@
 	[panel setCanCreateDirectories:YES];
 	
 	[panel beginSheetForDirectory:nil 
-							 file:[@"MyTheme" stringByAppendingPathExtension:SPColorThemeFileExtension] 
+							 file:[SPDefaultExportColourSchemeName stringByAppendingPathExtension:SPColorThemeFileExtension] 
 				   modalForWindow:[[self view] window] 
 					modalDelegate:self 
 				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:@"exportColorScheme"];
+					  contextInfo:SPExportColorScheme];
 }
 
 - (IBAction)importColorScheme:(id)sender
@@ -150,7 +160,7 @@
 				   modalForWindow:[[self view] window]
 					modalDelegate:self 
 				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:@"importColorScheme"];
+					  contextInfo:SPImportColorScheme];
 	
 }
 
@@ -177,7 +187,7 @@
 	   modalForWindow:[[self view] window]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"saveTheme"];
+		  contextInfo:SPSaveColorScheme];
 	
 }
 
@@ -223,7 +233,7 @@
 			
 			// Refresh current color theme setting name
 			if ([[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:[[editThemeListItems objectAtIndex:[editThemeListTable selectedRow]] lowercaseString]]) {
-				[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 			}
 			
 			if (editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
@@ -270,7 +280,7 @@
 	
 	[[NSColorPanel sharedColorPanel] close];
 	
-	[prefs setObject:@"Default" forKey:SPCustomQueryEditorThemeName];
+	[prefs setObject:SPDefaultColorSchemeName forKey:SPCustomQueryEditorThemeName];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000 green:0.455 blue:0.000 alpha:1.000]] forKey:SPCustomQueryEditorCommentColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769 green:0.102 blue:0.086 alpha:1.000]] forKey:SPCustomQueryEditorQuoteColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200 green:0.250 blue:1.000 alpha:1.000]] forKey:SPCustomQueryEditorSQLKeywordColor];
@@ -378,7 +388,7 @@
 		return;
 	}
 	
-	if ([[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:@"user-defined"]) {
+	if ([[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:SPCustomColorSchemeNameLC]) {
 		[colorThemeName setHidden:YES];
 		[colorThemeNameLabel setHidden:YES];
 		
@@ -387,7 +397,7 @@
 	
 	NSString *currentThemeName = [[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString];
 	
-	if ([currentThemeName isEqualToString:@"default"]) {
+	if ([currentThemeName isEqualToString:SPDefaultColorSchemeNameLC]) {
 		[colorThemeName setHidden:NO];
 		[colorThemeNameLabel setHidden:NO];
 		
@@ -411,7 +421,7 @@
 		return;
 	} 
 	else {
-		[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+		[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 		[colorThemeName setHidden:YES];
 		[colorThemeNameLabel setHidden:YES];
 		
@@ -455,7 +465,7 @@
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[sender color]] forKey:[editorColors objectAtIndex:colorRow]];
 	[colorSettingTableView reloadData];
 	
-	[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+	[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 	
 	[self updateDisplayColorThemeName];
 }
@@ -486,7 +496,7 @@
 		[[sheet window] orderOut:nil];
 	}
 	
-	if ([contextInfo isEqualToString:@"saveTheme"]) {
+	if ([contextInfo isEqualToString:SPSaveColorScheme]) {
 		if (returnCode == NSOKButton) {
 			NSFileManager *fm = [NSFileManager defaultManager];
 			
@@ -509,15 +519,15 @@
 
 - (void)panelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-	if ([contextInfo isEqualToString:@"exportColorScheme"]) {
+	if ([contextInfo isEqualToString:SPExportColorScheme]) {
 		if (returnCode == NSOKButton) {
 			[self _saveColorThemeAtPath:[panel filename]];
 		}
 	}
-	else if ([contextInfo isEqualToString:@"importColorScheme"]) {
+	else if ([contextInfo isEqualToString:SPImportColorScheme]) {
 		if (returnCode == NSOKButton) {
 			if ([self _loadColorSchemeFromFile:[[panel filenames] objectAtIndex:0]]) {
-				[prefs setObject:@"User-defined" forKey:SPCustomQueryEditorThemeName];
+				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 				[self updateDisplayColorThemeName];
 			}
 		}
@@ -559,7 +569,7 @@
 		NSString *newName = (NSString*)anObject;
 		
 		// Check for non-valid names
-		if (![newName length] || [[newName lowercaseString] isEqualToString:@"default"] || [[newName lowercaseString] isEqualToString:@"user-defined"]) {
+		if (![newName length] || [[newName lowercaseString] isEqualToString:SPDefaultColorSchemeNameLC] || [[newName lowercaseString] isEqualToString:SPCustomColorSchemeNameLC]) {
 			NSBeep();
 			[editThemeListTable reloadData];
 			return;
@@ -672,7 +682,7 @@
 	if (field == enterNameInputField) {
 		NSString *name = [[enterNameInputField stringValue] lowercaseString];
 		
-		if (![name length] || [name isEqualToString:@"default"] || [name isEqualToString:@"user-defined"]) {
+		if (![name length] || [name isEqualToString:SPDefaultColorSchemeNameLC] || [name isEqualToString:SPCustomColorSchemeNameLC]) {
 			[themeNameSaveButton setEnabled:NO];
 		} 
 		else {
@@ -732,7 +742,7 @@
 
 - (BOOL)_checkForUnsavedTheme
 {
-	if (![prefs objectForKey:SPCustomQueryEditorThemeName] || [[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:@"user-defined"]) {
+	if (![prefs objectForKey:SPCustomQueryEditorThemeName] || [[[prefs objectForKey:SPCustomQueryEditorThemeName] lowercaseString] isEqualToString:SPCustomColorSchemeNameLC]) {
 		
 		[[NSColorPanel sharedColorPanel] close];
 		
