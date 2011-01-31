@@ -5,34 +5,36 @@ Sequel Pro uses two external frameworks which come with .ibplugins (Interface Bu
 Plugins); to build Sequel Pro, Interface Builder must have detected these plugins.
 
 The two frameworks are:
+
 	BWToolkit
 	ShortcutRecorder
 
-Each of these frameworks is included in the Sequel Pro source tree with its .ibplugin;
+Each of these frameworks are included in the Sequel Pro source tree with its .ibplugin;
 the locations of these .ibplugins are:
+
 	./Frameworks/BWToolkitFramework.framework/Versions/A/Resources/BWToolkit.ibplugin
 	./Frameworks/ShortcutRecorder.framework/Versions/A/Resources/ShortcutRecorder.ibplugin
 
-By including these .ibplugins within the frameworks, Interface Builder should detect them automatically when you build.  If you get build errors about "Unable to resolve plug-in 
-dependency for É", automatic detection has failed.  The first thing to try is to quit Xcode 
-and Interface Builder, re-open Xcode, and try again; if this still fails, locate 
-the .ibplugins and double click on them to add them to Interface Builder.
+By including these .ibplugins within the frameworks, Interface Builder should detect 
+them automatically when you build.  If you get build errors complaining "Unable to 
+resolve plug-in dependency for ...", automatic detection has failed.  The first thing 
+to try is to quit Xcode and Interface Builder, re-open Xcode, and try again; if this 
+still fails, locate the .ibplugins and double click on them to add them to Interface Builder.
 
-If Interface Builder complains that it's already installed then you might want 
-to replace the current version with the version in the project; to do this go to the
-Interface Builder preferences, click on 'Plugins', and remove the BWToolkit plugin
-using the [ - ] button below the list.
+If Interface Builder complains that they're already installed then you might want 
+to replace the current versions with the versions in the project; to do this go to the
+Interface Builder preferences, click on 'Plugins', and remove the BWToolkit and/or 
+ShortcutRecorder plugin using the [ - ] button below the list.
 
-You will need to relaunch Interface Builder before you can re-add the plugin 
-from the location mentioned above.
+You will need to relaunch Interface Builder before you can re-add the plugin from the 
+locations mentioned above.
 
-Note, that Interface Builder always looks in the same location that the plugin 
-was originally installed from and does not keep track of it when moved. If
-Interface Builder complains that it can't find it, either restore it to its 
-originally location or re-add it using the steps above.
+Note, that Interface Builder always looks in the same location that plugins are originally 
+installed from and does not keep track of them when they are moved. If Interface Builder 
+complains that it can't a plugin dependency, either restore it to its originally location 
+or re-add it using the steps above.
 
-As a last resort jump onto IRC and join #sequel-pro on irc.freenode.net and 
-any of the developers will be happy to help you out.
+As a last resort jump onto IRC and join #sequel-pro on irc.freenode.net and any of the 
+developers will be more than happy to help you out.
 
-- Ben (aka avenjamin)
-
+- The Sequel Pro team
