@@ -29,8 +29,8 @@
 
 @class SRRecorderControl, BWSplitView;
 
-@interface SPBundleEditorController : NSWindowController {
-
+@interface SPBundleEditorController : NSWindowController 
+{
 	IBOutlet SPBundleCommandTextView *commandTextView;
 	IBOutlet SPOutlineView *commandsOutlineView;
 	IBOutlet NSTextField *authorTextField;
@@ -112,7 +112,6 @@
 	NSArray *shellVariableSuggestions;
 
 	NSMutableArray *deletedDefaultBundles;
-
 }
 
 - (IBAction)inputPopupButtonChanged:(id)sender;
