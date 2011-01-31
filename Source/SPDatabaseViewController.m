@@ -287,7 +287,7 @@
 		triggersLoaded = NO;
 
 		// Update the window title
-		[[self onMainThread] updateWindowTitle:self];
+		[self updateWindowTitle:self];
 
 		// Add a history entry
 		[spHistoryControllerInstance updateHistoryEntries];
@@ -391,7 +391,7 @@
 	NSString *tableEncoding = nil;
 
 	// Update the window title
-	[[self onMainThread] updateWindowTitle:self];
+	[self updateWindowTitle:self];
 
 	// Reset table information caches
 	[tableDataInstance resetAllData];

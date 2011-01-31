@@ -835,12 +835,12 @@
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-				[[self onMainThread] updateWindowTitle:self];
+				[self updateWindowTitle:self];
 			}
 		} else {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
-			[[self onMainThread] updateWindowTitle:self];
+			[self updateWindowTitle:self];
 		}
 	}
 
@@ -3305,6 +3305,10 @@
  */
 - (void) updateWindowTitle:(id)sender
 {
+
+	// Ensure a call on the main thread
+	if (![NSThread isMainThread]) return [self updateWindowTitle:sender];
+
 	NSMutableString *tabTitle;
 	NSMutableString *windowTitle;
 	SPDatabaseDocument *frontTableDocument = [parentWindowController selectedTableDocument];
@@ -4543,7 +4547,7 @@
 - (void)connectionControllerConnectAttemptFailed:(id)controller
 {
 	// Reset the window title
-	[[self onMainThread] updateWindowTitle:self];
+	[self updateWindowTitle:self];
 }
 
 #pragma mark -
@@ -5506,7 +5510,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-	[[self onMainThread] updateWindowTitle:self];
+	[self updateWindowTitle:self];
 }
 
 /**
@@ -5545,7 +5549,7 @@
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-	[[self onMainThread] updateWindowTitle:self];
+	[self updateWindowTitle:self];
 }
 
 /**
@@ -5602,7 +5606,7 @@
 		[tableDumpInstance setConnection:mySQLConnection];
 
 		// Update the window title
-		[[self onMainThread] updateWindowTitle:self];
+		[self updateWindowTitle:self];
 
 		// Add a history entry
 		if (!historyStateChanging) {
