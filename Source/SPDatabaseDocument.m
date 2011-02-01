@@ -3307,7 +3307,7 @@
 {
 
 	// Ensure a call on the main thread
-	if (![NSThread isMainThread]) return [self updateWindowTitle:sender];
+	if (![NSThread isMainThread]) return [[self onMainThread] updateWindowTitle:sender];
 
 	NSMutableString *tabTitle;
 	NSMutableString *windowTitle;
