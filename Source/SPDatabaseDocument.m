@@ -871,30 +871,31 @@
  */
 - (void)toggleConsole:(id)sender
 {
-	BOOL isConsoleVisible = [[[SPQueryController sharedQueryController] window] isVisible];
 
-	// If the Console window is not visible data are not reloaded (for speed).
-	// Due to that update list if user opens the Console window.
-	if(!isConsoleVisible) {
-		[[SPQueryController sharedQueryController] updateEntries];
-	}
+	// Toggle Console will show the Console window if it isn't visible or if it isn't
+	// the front most window and hide it if it is the front most window 
+	if ([[[SPQueryController sharedQueryController] window] isVisible] 
+		&& [[[NSApp keyWindow] windowController] isKindOfClass:[SPQueryController class]])
 
-	// Show or hide the console
-	[[[SPQueryController sharedQueryController] window] setIsVisible:(!isConsoleVisible)];
+			[[[SPQueryController sharedQueryController] window] setIsVisible:NO];
+	else
+
+		[self showConsole:nil];
+
 }
 
 /**
- * Brings the console to the fron
+ * Brings the console to the front
  */
 - (void)showConsole:(id)sender
 {
-	BOOL isConsoleVisible = [[[SPQueryController sharedQueryController] window] isVisible];
 
-	if (!isConsoleVisible) {
-		[self toggleConsole:sender];
-	} else {
-		[[[SPQueryController sharedQueryController] window] makeKeyAndOrderFront:self];
-	}
+	// If the Console window is not visible data are not reloaded (for speed).
+	// Due to that update list if user opens the Console window.
+	if(![[[SPQueryController sharedQueryController] window] isVisible])
+		[[SPQueryController sharedQueryController] updateEntries];
+
+	[[[SPQueryController sharedQueryController] window] makeKeyAndOrderFront:self];
 
 }
 
@@ -3209,7 +3210,7 @@
 	
 	// Show/hide console
 	if ([menuItem action] == @selector(toggleConsole:)) {
-		[menuItem setTitle:([[[SPQueryController sharedQueryController] window] isVisible]) ? NSLocalizedString(@"Hide Console", @"hide console") : NSLocalizedString(@"Show Console", @"show console")];
+		[menuItem setTitle:([[[SPQueryController sharedQueryController] window] isVisible] && [[[NSApp keyWindow] windowController] isKindOfClass:[SPQueryController class]]) ? NSLocalizedString(@"Hide Console", @"hide console") : NSLocalizedString(@"Show Console", @"show console")];
 	}
 	
 	// Clear console
