@@ -29,37 +29,42 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class NoodleLineNumberMarker;
-
 @interface NoodleLineNumberView : NSRulerView
 {
-    // Array of character indices for the beginning of each line
-    NSMutableArray      *lineIndices;
-	NSFont              *font;
-	NSColor				*textColor;
-	NSColor				*alternateTextColor;
-	NSColor				*backgroundColor;
+
+	// Array of character indices for the beginning of each line
+	NSMutableArray  *lineIndices;
+
+	NSFont          *font;
+	NSColor         *textColor;
+	NSColor         *alternateTextColor;
+	NSColor         *backgroundColor;
+	CGFloat         maxWidthOfGlyph;
+	CGFloat         maxWidthOfGlyph1;
+	CGFloat         maxWidthOfGlyph2;
+	CGFloat         maxWidthOfGlyph3;
+	CGFloat         maxWidthOfGlyph4;
+	CGFloat         maxWidthOfGlyph5;
+	CGFloat         maxWidthOfGlyph6;
+	CGFloat         maxWidthOfGlyph7;
+	CGFloat         maxWidthOfGlyph8;
+	NSDictionary    *textAttributes;
 
 	// Add support for selection by clicking/dragging
-	NSUInteger			dragSelectionStartLine;
+	NSUInteger      dragSelectionStartLine;
+
 }
 
+@property(retain) NSColor *alternateTextColor;
+@property(retain) NSColor *backgroundColor;
+
+- (NSFont*)font;
+- (void)setFont:(NSFont*)aFont;
+- (NSColor*)textColor;
+- (void)setTextColor:(NSColor*)color;
+
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
-
-- (void)setFont:(NSFont *)aFont;
-- (NSFont *)font;
-
-- (void)setTextColor:(NSColor *)color;
-- (NSColor *)textColor;
-
-- (void)setAlternateTextColor:(NSColor *)color;
-- (NSColor *)alternateTextColor;
-
-- (void)setBackgroundColor:(NSColor *)color;
-- (NSColor *)backgroundColor;
-
 - (NSUInteger)lineNumberForLocation:(CGFloat)location;
-
-- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text;
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index;
 
 @end

@@ -28,32 +28,58 @@
 //
 
 // This version of the NoodleLineNumberView for Sequel Pro removes marker
-// functionality and adds selection by clicking on the ruler.
+// functionality and adds selection by clicking on the ruler. Furthermore
+// the code was optimized.
 
 #import "NoodleLineNumberView.h"
 
 #include <tgmath.h>
 
-#define DEFAULT_THICKNESS	22.0
-#define RULER_MARGIN		5.0
+#pragma mark NSCoding methods
+
+#define NOODLE_FONT_CODING_KEY              @"font"
+#define NOODLE_TEXT_COLOR_CODING_KEY        @"textColor"
+#define NOODLE_ALT_TEXT_COLOR_CODING_KEY    @"alternateTextColor"
+#define NOODLE_BACKGROUND_COLOR_CODING_KEY  @"backgroundColor"
+
+#pragma mark -
+
+#define DEFAULT_THICKNESS  22.0
+#define RULER_MARGIN        5.0
+#define RULER_MARGIN2       RULER_MARGIN * 2
+
+typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
+
+#pragma mark -
 
 @interface NoodleLineNumberView (Private)
 
 - (NSMutableArray *)lineIndices;
 - (void)invalidateLineIndices;
 - (void)calculateLines;
-- (NSDictionary *)textAttributes;
+- (void)updateGutterThicknessConstants;
 
 @end
 
 @implementation NoodleLineNumberView
 
+@synthesize alternateTextColor;
+@synthesize backgroundColor;
+
 - (id)initWithScrollView:(NSScrollView *)aScrollView
 {
+
 	if ((self = [super initWithScrollView:aScrollView orientation:NSVerticalRuler]) != nil)
 	{
 		[self setClientView:[aScrollView documentView]];
+		[self setAlternateTextColor:[NSColor whiteColor]];
 		lineIndices = nil;
+		textAttributes = [[NSDictionary dictionaryWithObjectsAndKeys:
+			[self font], NSFontAttributeName, 
+			[self textColor], NSForegroundColorAttributeName,
+			nil] retain];
+		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
+		[self updateGutterThicknessConstants];
 	}
 
 	return self;
@@ -69,10 +95,13 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
 	if (lineIndices) [lineIndices release];
-	[font release];
-
+	if (textAttributes) [textAttributes release];
+	if (font) [font release];
+	if (textColor) [textColor release];
 	[super dealloc];
 }
+
+#pragma mark -
 
 - (void)setFont:(NSFont *)aFont
 {
@@ -80,16 +109,22 @@
 	{
 		[font autorelease];
 		font = [aFont retain];
+		if (textAttributes) [textAttributes release];
+		textAttributes = [[NSDictionary dictionaryWithObjectsAndKeys:
+			font, NSFontAttributeName, 
+			[self textColor], NSForegroundColorAttributeName,
+			nil] retain];
+		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
+		[self updateGutterThicknessConstants];
 	}
 }
 
 - (NSFont *)font
 {
 	if (font == nil)
-	{
 		return [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
-	}
-    return font;
+
+	return font;
 }
 
 - (void)setTextColor:(NSColor *)color
@@ -98,101 +133,68 @@
 	{
 		[textColor autorelease];
 		textColor  = [color retain];
+		if (textAttributes) [textAttributes release];
+		textAttributes = [[NSDictionary dictionaryWithObjectsAndKeys:
+			[self font], NSFontAttributeName, 
+			textColor, NSForegroundColorAttributeName,
+			nil] retain];
+		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
+		[self updateGutterThicknessConstants];
 	}
 }
 
 - (NSColor *)textColor
 {
 	if (textColor == nil)
-	{
 		return [NSColor colorWithCalibratedWhite:0.42 alpha:1.0];
-	}
+
 	return textColor;
-}
-
-- (void)setAlternateTextColor:(NSColor *)color
-{
-	if (alternateTextColor != color)
-	{
-		[alternateTextColor autorelease];
-		alternateTextColor = [color retain];
-	}
-}
-
-- (NSColor *)alternateTextColor
-{
-	if (alternateTextColor == nil)
-	{
-		return [NSColor whiteColor];
-	}
-	return alternateTextColor;
-}
-
-- (void)setBackgroundColor:(NSColor *)color
-{
-	if (backgroundColor != color)
-	{
-		[backgroundColor autorelease];
-		backgroundColor = [color retain];
-	}
-}
-
-- (NSColor *)backgroundColor
-{
-	return backgroundColor;
 }
 
 - (void)setClientView:(NSView *)aView
 {
-	id oldClientView;
-
-	oldClientView = [self clientView];
+	id oldClientView = [self clientView];
 
 	if ((oldClientView != aView) && [oldClientView isKindOfClass:[NSTextView class]])
-	{
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)oldClientView textStorage]];
-	}
+
 	[super setClientView:aView];
+
 	if ((aView != nil) && [aView isKindOfClass:[NSTextView class]])
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)aView textStorage]];
-
 		[self invalidateLineIndices];
 	}
 }
 
-- (NSMutableArray *)lineIndices
-{
-	if (lineIndices == nil)
-	{
-		[self calculateLines];
-	}
-	return lineIndices;
-}
-
-- (void)invalidateLineIndices
-{
-	if (lineIndices) [lineIndices release], lineIndices = nil;
-}
+#pragma mark -
 
 - (void)textDidChange:(NSNotification *)notification
 {
-	// Invalidate the line indices. They will be recalculated and recached on demand.
-	[self invalidateLineIndices];
+
+	if(![self clientView]) return;
+
+	NSUInteger editMask = [[(NSTextView *)[self clientView] textStorage] editedMask];
+
+	// Invalidate the line indices only if text view was changed in length but not if the font was changed.
+	// They will be recalculated and recached on demand.
+	if(editMask != 1)
+		[self invalidateLineIndices];
 
 	[self setNeedsDisplay:YES];
+
 }
 
 - (NSUInteger)lineNumberForLocation:(CGFloat)location
 {
-	NSUInteger		line, count, index, rectCount, i;
-	NSRectArray		rects;
-	NSRect			visibleRect;
-	NSLayoutManager	*layoutManager;
-	NSTextContainer	*container;
-	NSRange			nullRange;
-	NSArray			*lines;
-	id				view;
+	NSUInteger      line, count, rectCount, i;
+	NSRectArray     rects;
+	NSRect          visibleRect;
+	NSLayoutManager *layoutManager;
+	NSTextContainer *container;
+	NSRange         nullRange;
+	NSArray         *lines;
+	id              view;
 
 	view = [self clientView];
 	visibleRect = [[[self scrollView] contentView] bounds];
@@ -216,148 +218,83 @@
 		// It doesn't show up in the glyphs so would not be accounted for.
 		range.length++;
 
-		for (line = [self lineNumberForCharacterIndex:range.location inText:@""]; line < count; line++)
+		// Cache loop methods for speed
+		SEL lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
+		IMP lineNumberForCharacterIndexIMP = [self methodForSelector:lineNumberForCharacterIndexSel];
+
+		for (line = (NSUInteger)(*lineNumberForCharacterIndexIMP)(self, lineNumberForCharacterIndexSel, range.location); line < count; line++)
 		{
 
-			index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
-
-			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
+			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange([NSArrayObjectAtIndex(lines, line) unsignedIntegerValue], 0)
 								 withinSelectedCharacterRange:nullRange
 											  inTextContainer:container
 													rectCount:&rectCount];
 
-			for (i = 0; i < rectCount; i++)
-				if ((location >= NSMinY(rects[i])) && (location < NSMaxY(rects[i])))
-					return line + 1;
+			if(!rectCount) return NSNotFound;
+
+			if ((location >= NSMinY(rects[0])) && (location < NSMaxY(rects[0])))
+				return line + 1;
 
 		}
 	}
 	return NSNotFound;
 }
 
-- (void)calculateLines
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index
 {
-	id view = [self clientView];
-
-	if ([view isKindOfClass:[NSTextView class]])
-	{
-		NSUInteger index, stringLength, lineEnd, contentEnd;
-		NSString *text;
-		CGFloat oldThickness, newThickness;
-
-		text = [view string];
-		stringLength = [text length];
-
-		// Switch off line numbering if text larger than 6MB
-		// for performance reasons.
-		// TODO improve performance maybe via threading
-		if(stringLength>6000000)
-			return;
-
-		if (lineIndices) [lineIndices release], lineIndices = nil;
-		lineIndices = [[NSMutableArray alloc] initWithCapacity:1];
-
-		index = 0;
-
-		do
-		{
-			[lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-			index = NSMaxRange([text lineRangeForRange:NSMakeRange(index, 0)]);
-		}
-		while (index < stringLength);
-
-		// Check if text ends with a new line.
-		[text getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
-		if (contentEnd < lineEnd)
-		{
-			[lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-		}
-
-		oldThickness = [self ruleThickness];
-		newThickness = [self requiredThickness];
-		if (fabs(oldThickness - newThickness) > 1)
-		{
-			NSInvocation *invocation;
-
-			// Not a good idea to resize the view during calculations (which can happen during
-			// display). Do a delayed perform (using NSInvocation since arg is a float).
-			invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:@selector(setRuleThickness:)]];
-			[invocation setSelector:@selector(setRuleThickness:)];
-			[invocation setTarget:self];
-			[invocation setArgument:&newThickness atIndex:2];
-
-			[invocation performSelector:@selector(invoke) withObject:nil afterDelay:0.0];
-		}
-	}
-}
-
-- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text
-{
-    NSUInteger			left, right, mid, lineStart;
-	NSMutableArray		*lines;
+	NSUInteger      left, right, mid, lineStart;
+	NSMutableArray  *lines;
 
 	lines = [self lineIndices];
-	
-    // Binary search
-    left = 0;
-    right = [lines count];
 
-    while ((right - left) > 1)
-    {
-        mid = (right + left) / 2;
-        lineStart = [NSArrayObjectAtIndex(lines, mid) unsignedIntegerValue];
-        
-        if (index < lineStart)
-        {
-            right = mid;
-        }
-        else if (index > lineStart)
-        {
-            left = mid;
-        }
-        else
-        {
-            return mid;
-        }
-    }
-    return left;
-}
+	// Binary search
+	left = 0;
+	right = [lines count];
 
-- (NSDictionary *)textAttributes
-{
-    return [NSDictionary dictionaryWithObjectsAndKeys:
-            [self font], NSFontAttributeName, 
-            [self textColor], NSForegroundColorAttributeName,
-            nil];
+	while ((right - left) > 1)
+	{
+
+		mid = (right + left) >> 1;
+		lineStart = [NSArrayObjectAtIndex(lines, mid) unsignedIntegerValue];
+
+		if (index < lineStart)
+			right = mid;
+		else if (index > lineStart)
+			left = mid;
+		else
+			return mid;
+
+	}
+	return left;
 }
 
 - (CGFloat)requiredThickness
 {
 	NSUInteger lineCount = [[self lineIndices] count];
 	if(lineCount < 10)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"8"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph1;
 	else if(lineCount < 100)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"88"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph2;
 	else if(lineCount < 1000)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph3;
 	else if(lineCount < 10000)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"8888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph4;
 	else if(lineCount < 100000)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"88888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph5;
 	else if(lineCount < 1000000)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"888888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph6;
 	else if(lineCount < 10000000)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"8888888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph7;
 	else if(lineCount < 100000000)
-		return ceil(MAX(DEFAULT_THICKNESS, [[NSString stringWithString:@"88888888"] sizeWithAttributes:[self textAttributes]].width + RULER_MARGIN * 2));
+		return maxWidthOfGlyph8;
 	else
 		return 100;
 }
 
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect
 {
-	id			view;
-	NSRect		bounds;
+	id     view;
+	NSRect bounds;
 
 	bounds = [self bounds];
 
@@ -374,45 +311,45 @@
 
 	if ([view isKindOfClass:[NSTextView class]])
 	{
-		NSLayoutManager			*layoutManager;
-		NSTextContainer			*container;
-		NSRect					visibleRect;
-		NSRange					range, glyphRange, nullRange;
-		NSString				*text, *labelText;
-		NSUInteger				rectCount, index, line, count;
-		NSRectArray				rects;
-		CGFloat					ypos, yinset;
-		NSDictionary			*textAttributes;
-		NSSize					stringSize;
-		NSArray					*lines;
+		NSLayoutManager  *layoutManager;
+		NSTextContainer  *container;
+		NSRect           visibleRect;
+		NSRange          range, nullRange;
+		NSString         *labelText;
+		NSUInteger       rectCount, index, line, count;
+		NSRectArray      rects;
+		CGFloat          ypos, yinset;
+		NSSize           stringSize;
+		NSArray          *lines;
 
-		layoutManager = [view layoutManager];
-		container = [view textContainer];
-		text = [view string];
-		nullRange = NSMakeRange(NSNotFound, 0);
+		layoutManager  = [view layoutManager];
+		container      = [view textContainer];
+		nullRange      = NSMakeRange(NSNotFound, 0);
 
-		yinset = [view textContainerInset].height;        
-		visibleRect = [[[self scrollView] contentView] bounds];
+		yinset         = [view textContainerInset].height;
+		visibleRect    = [[[self scrollView] contentView] bounds];
 
-		textAttributes = [self textAttributes];
-
-		lines = [self lineIndices];
+		lines          = [self lineIndices];
 
 		// Find the characters that are currently visible
-		glyphRange = [layoutManager glyphRangeForBoundingRect:visibleRect inTextContainer:container];
-		range = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:NULL];
+		range = [layoutManager characterRangeForGlyphRange:[layoutManager glyphRangeForBoundingRect:visibleRect inTextContainer:container] actualGlyphRange:NULL];
 
 		// Fudge the range a tad in case there is an extra new line at end.
 		// It doesn't show up in the glyphs so would not be accounted for.
 		range.length++;
 
 		count = [lines count];
- 
-		CGFloat boundsRULERMargin2 = NSWidth(bounds) - RULER_MARGIN * 2.0;
+
+		CGFloat boundsRULERMargin2 = NSWidth(bounds) - RULER_MARGIN2;
 		CGFloat boundsWidthRULER   = NSWidth(bounds) - RULER_MARGIN;
 		CGFloat yinsetMinY         = yinset - NSMinY(visibleRect);
+		CGFloat rectHeight;
 
-		for (line = [self lineNumberForCharacterIndex:range.location inText:text]; line < count; line++)
+		// Cache loop methods for speed
+		SEL lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
+		IMP lineNumberForCharacterIndexIMP = [self methodForSelector:lineNumberForCharacterIndexSel];
+
+		for (line = (NSUInteger)(*lineNumberForCharacterIndexIMP)(self, lineNumberForCharacterIndexSel, range.location); line < count; line++)
 		{
 			index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
 
@@ -433,35 +370,35 @@
 
 					stringSize = [labelText sizeWithAttributes:textAttributes];
 
+					rectHeight = NSHeight(rects[0]);
 					// Draw string flush right, centered vertically within the line
 					[labelText drawInRect:
 					NSMakeRect(boundsWidthRULER - stringSize.width,
-						yinsetMinY + NSMinY(rects[0]) + ((NSHeight(rects[0]) - stringSize.height) / 2.0),
-						boundsRULERMargin2, NSHeight(rects[0]))
+						yinsetMinY + NSMinY(rects[0]) + ((NSInteger)(rectHeight - stringSize.height) >> 1),
+						boundsRULERMargin2, rectHeight)
 						withAttributes:textAttributes];
 				}
 			}
+
 			if (index > NSMaxRange(range))
-			{
 				break;
-			}
+
 		}
 	}
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-	NSPoint					location;
-	NSUInteger				line;
-	NSTextView				*view;
-	
-    if (![[self clientView] isKindOfClass:[NSTextView class]]) return;
+
+	NSUInteger  line;
+	NSTextView  *view;
+
+	if (![[self clientView] isKindOfClass:[NSTextView class]]) return;
 	view = (NSTextView *)[self clientView];
-	
-	location = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-	line = [self lineNumberForLocation:location.y];
+
+	line = [self lineNumberForLocation:[self convertPoint:[theEvent locationInWindow] fromView:nil].y];
 	dragSelectionStartLine = line;
-	
+
 	if (line != NSNotFound)
 	{
 		NSUInteger selectionStart, selectionEnd;
@@ -479,15 +416,14 @@
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-	NSPoint					location;
-	NSUInteger				line, startLine, endLine;
-	NSTextView				*view;
-	
-    if (![[self clientView] isKindOfClass:[NSTextView class]] || dragSelectionStartLine == NSNotFound) return;
+
+	NSUInteger   line, startLine, endLine;
+	NSTextView   *view;
+
+	if (![[self clientView] isKindOfClass:[NSTextView class]] || dragSelectionStartLine == NSNotFound) return;
 	view = (NSTextView *)[self clientView];
-	
-	location = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-	line = [self lineNumberForLocation:location.y];
+
+	line = [self lineNumberForLocation:[self convertPoint:[theEvent locationInWindow] fromView:nil].y];
 
 	if (line != NSNotFound)
 	{
@@ -509,16 +445,11 @@
 		}
 		[view setSelectedRange:NSMakeRange(selectionStart, selectionEnd - selectionStart)];
 	}
-	
+
 	[view autoscroll:theEvent];
 }
 
-#pragma mark NSCoding methods
-
-#define NOODLE_FONT_CODING_KEY				@"font"
-#define NOODLE_TEXT_COLOR_CODING_KEY		@"textColor"
-#define NOODLE_ALT_TEXT_COLOR_CODING_KEY	@"alternateTextColor"
-#define NOODLE_BACKGROUND_COLOR_CODING_KEY	@"backgroundColor"
+#pragma mark -
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
@@ -560,6 +491,96 @@
 		[encoder encodeObject:alternateTextColor];
 		[encoder encodeObject:backgroundColor];
 	}
+}
+
+#pragma mark -
+#pragma mark PrivateAPI
+
+- (NSMutableArray *)lineIndices
+{
+
+	if (lineIndices == nil)
+		[self calculateLines];
+
+	return lineIndices;
+
+}
+
+- (void)invalidateLineIndices
+{
+
+	if (lineIndices) [lineIndices release], lineIndices = nil;
+
+}
+
+- (void)calculateLines
+{
+	id view = [self clientView];
+
+	if ([view isKindOfClass:[NSTextView class]])
+	{
+		NSUInteger index, stringLength, lineEnd, contentEnd;
+		NSString   *textString;
+		CGFloat    newThickness;
+
+		textString   = [view string];
+		stringLength = [textString length];
+
+		// Switch off line numbering if text larger than 6MB
+		// for performance reasons.
+		// TODO improve performance maybe via threading
+		if(stringLength>6000000)
+			return;
+
+		if (lineIndices) [lineIndices release], lineIndices = nil;
+		// Init lineIndices with text length / 16 + 1
+		lineIndices = [[NSMutableArray alloc] initWithCapacity:((NSUInteger)stringLength>>4)+1];
+
+		index = 0;
+
+		// Cache loop methods for speed
+		SEL lineRangeForRangeSel = @selector(lineRangeForRange:);
+		SEL addObjectSel = @selector(addObject:);
+		RangeOfLineIMP rangeOfLineIMP = (RangeOfLineIMP)[textString methodForSelector:lineRangeForRangeSel];
+		IMP addObjectIMP = [lineIndices methodForSelector:addObjectSel];
+
+		do
+		{
+			(void*)(*addObjectIMP)(lineIndices, addObjectSel, [NSNumber numberWithUnsignedInteger:index]);
+			index = NSMaxRange((*rangeOfLineIMP)(textString, lineRangeForRangeSel, NSMakeRange(index, 0)));
+		}
+		while (index < stringLength);
+
+		// Check if text ends with a new line.
+		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
+		if (contentEnd < lineEnd)
+			(void*)(*addObjectIMP)(lineIndices, addObjectSel, [NSNumber numberWithUnsignedInteger:index]);
+
+		newThickness = [self requiredThickness];
+		if (fabs([self ruleThickness] - newThickness) > 1)
+		{
+			// Not a good idea to resize the view during calculations (which can happen during
+			// display). Do a delayed perform (using NSInvocation since arg is a float).
+			NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:@selector(setRuleThickness:)]];
+			[invocation setSelector:@selector(setRuleThickness:)];
+			[invocation setTarget:self];
+			[invocation setArgument:&newThickness atIndex:2];
+
+			[invocation performSelector:@selector(invoke) withObject:nil afterDelay:0.0];
+		}
+	}
+}
+
+- (void)updateGutterThicknessConstants
+{
+	maxWidthOfGlyph1 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph     + RULER_MARGIN2));
+	maxWidthOfGlyph2 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 2 + RULER_MARGIN2));
+	maxWidthOfGlyph3 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 3 + RULER_MARGIN2));
+	maxWidthOfGlyph4 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 4 + RULER_MARGIN2));
+	maxWidthOfGlyph5 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 5 + RULER_MARGIN2));
+	maxWidthOfGlyph6 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 6 + RULER_MARGIN2));
+	maxWidthOfGlyph7 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 7 + RULER_MARGIN2));
+	maxWidthOfGlyph8 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 8 + RULER_MARGIN2));
 }
 
 @end
