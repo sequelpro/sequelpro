@@ -45,6 +45,7 @@ static inline void NSMutableArrayReplaceObject(NSArray *self, CFIndex idx, id an
 - (NSString *)componentsJoinedByPeriodAndBacktickQuoted;
 - (NSString *)componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst;
 - (NSString *)componentsJoinedAsCSV;
+
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
 @end

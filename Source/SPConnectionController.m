@@ -1193,6 +1193,9 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 {	
 	NSMutableArray *nodes = [[node mutableChildNodes] mutableCopy];
 	
+	// If this node only has one child and it's not another group node, don't bother proceeding
+	if (([nodes count] == 1) && (![[nodes objectAtIndex:0] isGroup])) return;
+	
 	for (SPTreeNode *node in nodes)
 	{
 		if ([node isGroup]) {
@@ -1200,19 +1203,33 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		}
 	}
 	
+	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init]; 
 	NSMutableArray *groupNodes = [[NSMutableArray alloc] init];
 	
-	for (node in nodes)
+	for (SPTreeNode *innerNode in nodes)
 	{
-		if ([node isGroup]) {
-			[groupNodes addObject:node];
-			[nodes removeObject:node];
+		if ([innerNode isGroup]) {
+			[groupNodes addObject:innerNode];
+			[indexes addIndex:[nodes indexOfObject:innerNode]];
 		}
 	}
+	
+	NSUInteger i = [indexes firstIndex];
+	
+	while (i != NSNotFound)
+	{
+		[nodes removeObjectAtIndex:i];
+		
+		i = [indexes indexGreaterThanIndex:i];
+	}
+	
+	[indexes release];
 	
 	[nodes sortUsingFunction:compareFavoritesUsingKey context:key];
 	
 	[nodes addObjectsFromArray:groupNodes];
+	
+	if (reverseFavoritesSort) [nodes reverse];
 	
 	[[node mutableChildNodes] setArray:nodes];
 	

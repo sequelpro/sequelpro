@@ -77,6 +77,8 @@
 		1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB65127DD5EA00F468C8 /* SPNetworkPreferencePane.m */; };
 		1785EB6A127DD79300F468C8 /* SPEditorPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB69127DD79300F468C8 /* SPEditorPreferencePane.m */; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
+		1791352712F9ED16000B27C1 /* SPMutableArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1791352612F9ED16000B27C1 /* SPMutableArrayAdditions.m */; };
+		1791353C12F9F052000B27C1 /* SPMutableArrayAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1791353B12F9F052000B27C1 /* SPMutableArrayAdditionsTest.m */; };
 		1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */; };
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
@@ -651,6 +653,10 @@
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
 		1791346512F75CC1000B27C1 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		1791352512F9ED16000B27C1 /* SPMutableArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMutableArrayAdditions.h; sourceTree = "<group>"; };
+		1791352612F9ED16000B27C1 /* SPMutableArrayAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMutableArrayAdditions.m; sourceTree = "<group>"; };
+		1791353A12F9F052000B27C1 /* SPMutableArrayAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMutableArrayAdditionsTest.h; sourceTree = "<group>"; };
+		1791353B12F9F052000B27C1 /* SPMutableArrayAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMutableArrayAdditionsTest.m; sourceTree = "<group>"; };
 		1792C13110AD752100ABE758 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseServerVariables.xib; sourceTree = "<group>"; };
 		1792C13510AD75C800ABE758 /* SPServerVariablesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPServerVariablesController.h; sourceTree = "<group>"; };
 		1792C13610AD75C800ABE758 /* SPServerVariablesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPServerVariablesController.m; sourceTree = "<group>"; };
@@ -1887,6 +1893,8 @@
 			children = (
 				380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */,
 				380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */,
+				1791353A12F9F052000B27C1 /* SPMutableArrayAdditionsTest.h */,
+				1791353B12F9F052000B27C1 /* SPMutableArrayAdditionsTest.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -2507,6 +2515,8 @@
 				175EC64C12733CDF009A7C0F /* SPCategoryAdditions.h */,
 				B52460D30F8EF92300171639 /* SPArrayAdditions.h */,
 				B52460D40F8EF92300171639 /* SPArrayAdditions.m */,
+				1791352512F9ED16000B27C1 /* SPMutableArrayAdditions.h */,
+				1791352612F9ED16000B27C1 /* SPMutableArrayAdditions.m */,
 				1789343A0F30C1DD0097539A /* SPStringAdditions.h */,
 				1789343B0F30C1DD0097539A /* SPStringAdditions.m */,
 				58DC10D112A1B8DF00B76DA5 /* SPMenuAdditions.h */,
@@ -3010,6 +3020,7 @@
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */,
 				1198F5C41174EF3F00670590 /* SPDatabaseCopyTest.m in Sources */,
 				17AF72DD12A88CBA00C54D6A /* MCPKitTest.m in Sources */,
+				1791353C12F9F052000B27C1 /* SPMutableArrayAdditionsTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3214,6 +3225,7 @@
 				17AF713912A842DE00C54D6A /* SPFlippedView.m in Sources */,
 				17AF739D12AAABDD00C54D6A /* SPChooseMenuItemDialog.m in Sources */,
 				1723F08B12F1F9350008253B /* SPWindow.m in Sources */,
+				1791352712F9ED16000B27C1 /* SPMutableArrayAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

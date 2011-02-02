@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPCategoryAdditions.h
+//  SPMutableArrayAdditionsTest.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 23, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on February 2, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,23 +23,19 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/**
- * This header is intended to import all of our custom category additions to classes outwith our control.
- * It is subsequently included in Sequel Pro's precompiled header making all of the additional methods/functions 
- * included in header available to all classes within the application.
- */
-
-#import "SPArrayAdditions.h"
+#import "SPMutableArrayAdditionsTest.h"
 #import "SPMutableArrayAdditions.h"
-#import "SPStringAdditions.h"
-#import "SPTextViewAdditions.h"
-#import "SPWindowAdditions.h"
-#import "SPDataAdditions.h"
-#import "SPMenuAdditions.h"
-#import "SPNotLoaded.h"
-#import "SPMainThreadTrampoline.h"
-#import "SPColorAdditions.h"
-#import "SPFileManagerAdditions.h"
 
-#import "NSNotificationAdditions.h"
-#import "NSMutableArray-MultipleSort.h"
+@implementation SPMutableArrayAdditionsTest
+
+- (void)testReverse
+{
+	NSMutableArray *testArray = [NSMutableArray arrayWithObjects:@"1", @"2", @"3", @"4", @"5", nil];
+	NSMutableArray *expectedArray = [NSMutableArray arrayWithObjects:@"5", @"4", @"3", @"2", @"1", nil];
+	
+	[testArray reverse];
+	
+	STAssertEqualObjects(testArray, expectedArray, @"The reversed array should look like: %@", expectedArray);
+}
+
+@end
