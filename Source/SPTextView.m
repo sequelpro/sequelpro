@@ -2153,12 +2153,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
-	if([charactersIgnMod isEqualToString:@"c"]) // ^C copy as RTF
-		if(curFlags==(NSControlKeyMask))
-		{
-			[self copyAsRTF];
-			return;
-		}
 	if([charactersIgnMod isEqualToString:@"h"]) // ^H show MySQL Help
 		if(curFlags==(NSControlKeyMask))
 		{
@@ -2986,9 +2980,8 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	}
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG] == nil)
 	{
-		NSMenuItem *copyAsRTFMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Copy as RTF", @"Copy as RTF") action:@selector(copyAsRTF) keyEquivalent:@"c"];
+		NSMenuItem *copyAsRTFMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Copy as RTF", @"Copy as RTF") action:@selector(copyAsRTF) keyEquivalent:@""];
 		[copyAsRTFMenuItem setTag:SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG];
-		[copyAsRTFMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:copyAsRTFMenuItem atIndex:2];
 		[copyAsRTFMenuItem release];
 	}
