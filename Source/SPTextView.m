@@ -863,7 +863,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
  */
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex
 {
-	return [lineNumberView lineNumberForCharacterIndex:anIndex inText:[self string]]+1;
+	return [lineNumberView lineNumberForCharacterIndex:anIndex]+1;
 }
 
 /**
