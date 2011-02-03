@@ -121,7 +121,7 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 	[pc setURL:[NSURL fileURLWithPath:sourcePath]];
 	if([pc pathComponentCells])
 		[fileSourcePath setPathComponentCells:[pc pathComponentCells]];
-	[fileSourcePath setDoubleAction:@selector(goBackToFileChooser:)];
+	[fileSourcePath setDoubleAction:@selector(goBackToFileChooserFromPathControl:)];
 
 	[onupdateTextView setDelegate:theDelegate];
 	windowMinWidth = [[self window] minSize].width;
@@ -701,15 +701,24 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 
 	if(possibleImports < 1) return;
 
+	// Set all operators to doNotImport
+	[fieldMappingOperatorArray removeAllObjects];
+	for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+		[fieldMappingOperatorArray addObject:doNotImport];
+
 	switch([[alignByPopup selectedItem] tag]) {
 		case 0: // file order
-		for(i=0; i<possibleImports; i++)
+		for(i=0; i<possibleImports; i++) {
 			[fieldMappingArray replaceObjectAtIndex:i withObject:[NSNumber numberWithInteger:i]];
+			[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doImport];
+		}
 		break;
 		case 1: // reversed file order
 		possibleImports--;
-		for(i=possibleImports; i>=0; i--)
+		for(i=possibleImports; i>=0; i--) {
 			[fieldMappingArray replaceObjectAtIndex:possibleImports-i withObject:[NSNumber numberWithInteger:i]];
+			[fieldMappingOperatorArray replaceObjectAtIndex:possibleImports-i withObject:doImport];
+		}
 		break;
 		case 2: // try to align header and table target field names via Levenshtein distance
 		[self matchHeaderNames];
@@ -764,14 +773,21 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 	}
 }
 
+- (IBAction)goBackToFileChooserFromPathControl:(id)sender
+{
+	[gobackButton performSelector:@selector(performClick:) withObject:nil afterDelay:0.0f];
+}
+
 - (IBAction)goBackToFileChooser:(id)sender
 {
+
 	[NSApp endSheet:[self window] returnCode:[sender tag]];
-	if([sourcePath hasPrefix:SPImportClipboardTempFileNamePrefix]) {
+
+	if([sourcePath hasPrefix:SPImportClipboardTempFileNamePrefix])
 		[theDelegate importFromClipboard];
-	} else {
+	else
 		[theDelegate importFile];
-	}
+
 }
 
 - (IBAction)newTable:(id)sender
@@ -1360,11 +1376,6 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 - (void)matchHeaderNames
 {
 	if(![fieldMappingImportArray count]) return;
-
-	// Set all operators to doNotImport
-	[fieldMappingOperatorArray removeAllObjects];
-	for(NSInteger i=0; i < [fieldMappingTableColumnNames count]; i++)
-		[fieldMappingOperatorArray addObject:doNotImport];
 
 	NSMutableArray *fileHeaderNames = [NSMutableArray array];
 	[fileHeaderNames setArray:NSArrayObjectAtIndex(fieldMappingImportArray, 0)];

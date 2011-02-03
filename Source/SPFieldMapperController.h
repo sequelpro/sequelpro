@@ -76,6 +76,7 @@
 	IBOutlet id highPriorityCheckBox;
 	IBOutlet id skipexistingRowsCheckBox;
 	IBOutlet SPTextView *onupdateTextView;
+	IBOutlet id gobackButton;
 
 	IBOutlet id advancedButton;
 
@@ -171,6 +172,7 @@
 - (IBAction)openAdvancedSheet:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)goBackToFileChooser:(id)sender;
+- (IBAction)goBackToFileChooserFromPathControl:(id)sender;
 
 - (IBAction)addGlobalValue:(id)sender;
 - (IBAction)removeGlobalValue:(id)sender;
