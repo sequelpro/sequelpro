@@ -269,15 +269,16 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
-		// Only parse for words if text size is less than 6MB
-		if([[self string] length] && [[self string] length]<6000000)
+		// Only parse for words if text size is less than 1MB
+		if([[self string] length] && [[self string] length]<1000000)
 		{
 			NSMutableSet *uniqueArray = [NSMutableSet setWithCapacity:5];
 
 			for(id w in [[self textStorage] words])
-				[uniqueArray addObject:[w string]];
-			// Remove current word from list
+				if([[w string] hasPrefix:currentWord])
+					[uniqueArray addObject:[w string]];
 
+			// Remove current word from list
 			[uniqueArray removeObject:currentWord];
 
 			NSInteger reverseSort = NO;
@@ -2684,10 +2685,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 			    tokenColor = quoteColor;
 				allowToCheckForUpperCase = NO;
 			    break;
-			case SPT_BACKTICK_QUOTED_TEXT:
-			    tokenColor = backtickColor;
-				allowToCheckForUpperCase = NO;
-			    break;
 			case SPT_RESERVED_WORD:
 			    tokenColor = keywordColor;
 			    break;
@@ -2695,6 +2692,10 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 				tokenColor = numericColor;
 				allowToCheckForUpperCase = NO;
 				break;
+			case SPT_BACKTICK_QUOTED_TEXT:
+			    tokenColor = backtickColor;
+				allowToCheckForUpperCase = NO;
+			    break;
 			case SPT_COMMENT:
 			    tokenColor = commentColor;
 				allowToCheckForUpperCase = NO;
@@ -2720,31 +2721,28 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 		if (!tokenRange.length) continue;
 
 		// If the current token is marked as SQL keyword, uppercase it if required.
-		tokenEnd = tokenRange.location+tokenRange.length-1;
+		tokenEnd = NSMaxRange(tokenRange) - 1;
 
 		// Check the end of the token
-		if (textBufferSizeIncreased 
+		if (autouppercaseKeywordsEnabled 
 			&& allowToCheckForUpperCase 
-			&& autouppercaseKeywordsEnabled 
+			&& textBufferSizeIncreased
 			&& !delBackwardsWasPressed
+			&& (tokenEnd+1) < strlength
 			&& [(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword, tokenEnd, nil) length])
 			// check if next char is not a kSQLkeyword or current kSQLkeyword is at the end; 
 			// if so then upper case keyword if not already done
-			// @try catch() for catching valid index esp. after deleteBackward:
 		{
 	
-			NSString* curTokenString = [selfstr substringWithRange:tokenRange];
-			BOOL doIt = NO;
-			@try
+			NSString* curTokenString = [selfstr substringWithRange:tokenRange];	
+			if(![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length])
 			{
-				doIt = ![(NSString*)NSMutableAttributedStringAttributeAtIndex(textStore, kSQLkeyword,tokenEnd+1,nil) length];
-			} @catch(id ae) { doIt = NO; }
-	
-			if(doIt)
-			{
-				// Register it for undo works only partly for now, at least the uppercased keyword will be selected
-				[self shouldChangeTextInRange:tokenRange replacementString:curTokenString];
-				[self replaceCharactersInRange:tokenRange withString:[curTokenString uppercaseString]];
+				NSString *curTokenStringUP = [curTokenString uppercaseString];
+				if(![curTokenString isEqualToString:curTokenStringUP]) {
+					// Register it for undo works only partly for now, at least the uppercased keyword will be selected
+					[self shouldChangeTextInRange:tokenRange replacementString:curTokenStringUP];
+					[self replaceCharactersInRange:tokenRange withString:curTokenStringUP];
+				}
 			}
 		}
 
