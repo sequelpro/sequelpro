@@ -29,6 +29,7 @@
 #import "SPTextView.h"
 #import "SPTableView.h"
 #import "SPCategoryAdditions.h"
+#import "RegexKitLite.h"
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
@@ -1360,39 +1361,94 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 {
 	if(![fieldMappingImportArray count]) return;
 
+	// Set all operators to doNotImport
+	[fieldMappingOperatorArray removeAllObjects];
+	for(NSInteger i=0; i < [fieldMappingTableColumnNames count]; i++)
+		[fieldMappingOperatorArray addObject:doNotImport];
+
 	NSMutableArray *fileHeaderNames = [NSMutableArray array];
 	[fileHeaderNames setArray:NSArrayObjectAtIndex(fieldMappingImportArray, 0)];
 	NSMutableArray *tableHeaderNames = [NSMutableArray array];
 	[tableHeaderNames setArray:fieldMappingTableColumnNames];
 
+	// Create a distance matrix for each file-table name
+	// distance will be calculated by using Levenshtein distance minus common prefix and suffix length
+	// and minus the length of a fuzzy regex search for a common sequence of characters
 	NSInteger i,j;
-	NSMutableArray *matchedHeaderNames = [NSMutableArray array];
+	NSMutableArray *distMatrix = [NSMutableArray array];
 	for(i=0; i < [tableHeaderNames count]; i++) {
-		CGFloat minDist = 1e6;
+		CGFloat   minDist  = 1e6;
 		NSInteger minIndex = 0;
+		CGFloat   dist     = 1e6;
 		for(j=0; j < [fileHeaderNames count]; j++) {
 			id fileHeaderName = NSArrayObjectAtIndex(fileHeaderNames,j);
 			if([fileHeaderName isKindOfClass:[NSNull class]] || [fileHeaderName isSPNotLoaded]) continue;
 			NSString *headerName = [(NSString*)fileHeaderName lowercaseString];
-			CGFloat dist = [[NSArrayObjectAtIndex(tableHeaderNames,i) lowercaseString] levenshteinDistanceWithWord:headerName];
-			if(dist < minDist && ![matchedHeaderNames containsObject:headerName]) {
-				minDist = dist;
-				minIndex = j;
+			NSString *tableHeadName = [NSArrayObjectAtIndex(tableHeaderNames,i) lowercaseString];
+			dist = [tableHeadName levenshteinDistanceWithWord:headerName];
+
+			// if dist > 0 subtract the length of common prefixes, suffixes, and in common sequence characters
+			if(dist > 0.0) {
+				dist -= [[tableHeadName commonPrefixWithString:headerName options:NSCaseInsensitiveSearch] length];
+				dist -= [[tableHeadName commonPrefixWithString:headerName options:NSCaseInsensitiveSearch|NSBackwardsSearch] length];
+
+				NSMutableString *fuzzyRegexp = [[NSMutableString alloc] initWithCapacity:3];
+				NSInteger i;
+				unichar c;
+
+				for(i=0; i<[headerName length]; i++) {
+					c = [headerName characterAtIndex:i];
+					if (c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
+						[fuzzyRegexp appendFormat:@".*?\\%c",c];
+					else
+						[fuzzyRegexp appendFormat:@".*?%c",c];
+				}
+				dist -= [tableHeadName rangeOfRegex:fuzzyRegexp].length;
+				[fuzzyRegexp release];
+
+			} else {
+				// Levenshtein distance == 0 means that both names are equal set dist to 
+				// a large negative number since dist can be negative due to search for in common chars
+				dist = -1e6;
 			}
-			if(dist == 0.0f) [matchedHeaderNames addObject:headerName];
+
+			[distMatrix addObject:[NSDictionary dictionaryWithObjectsAndKeys:
+				[NSNumber numberWithFloat:dist], @"dist",
+				NSStringFromRange(NSMakeRange(i,j)), @"match",
+				(NSString*)fileHeaderName, @"file",
+				NSArrayObjectAtIndex(tableHeaderNames,i), @"table",
+				nil]];
+
 		}
-		[fieldMappingArray replaceObjectAtIndex:i withObject:[NSNumber numberWithInteger:minIndex]];
-		[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doImport];
+
 	}
 
-	// If a pair with distance 0 was found set doNotImport to those fields which are still mapped
-	// to such csv file header name
-	if([matchedHeaderNames count])
-		for(i=0; i < [tableHeaderNames count]; i++) {
-			NSString *mappedFileHeaderName = [NSArrayObjectAtIndex(fileHeaderNames, [[fieldMappingArray objectAtIndex:i] integerValue]) lowercaseString];
-			if([matchedHeaderNames containsObject:mappedFileHeaderName] && ![mappedFileHeaderName isEqualToString:[NSArrayObjectAtIndex(tableHeaderNames, i) lowercaseString]])
-				[fieldMappingOperatorArray replaceObjectAtIndex:i withObject:doNotImport];
+	// Sort the matrix according distance
+	NSSortDescriptor *sortByDistance = [[[NSSortDescriptor alloc] initWithKey:@"dist" ascending:TRUE] autorelease];
+	[distMatrix sortUsingDescriptors:[NSArray arrayWithObjects:sortByDistance, nil]];
+
+	NSMutableArray *matchedFile  = [NSMutableArray array];
+	NSMutableArray *matchedTable = [NSMutableArray array];
+	NSInteger cnt = 0;
+	for(NSDictionary* m in distMatrix) {
+		if(![matchedFile containsObject:[m objectForKey:@"file"]] && ![matchedTable containsObject:[m objectForKey:@"table"]]) {
+
+			NSRange match = NSRangeFromString([m objectForKey:@"match"]);
+
+			// Set best match
+			[fieldMappingArray replaceObjectAtIndex:match.location withObject:[NSNumber numberWithInteger:match.length]];
+			[fieldMappingOperatorArray replaceObjectAtIndex:match.location withObject:doImport];
+
+			// Remember matched pair
+			[matchedTable addObject:[m objectForKey:@"table"]];
+			[matchedFile addObject:[m objectForKey:@"file"]];
+			cnt++;
 		}
+
+		// break if all file names are mapped
+		if(cnt >= [fileHeaderNames count]) break;
+
+	}
 }
 
 /*
