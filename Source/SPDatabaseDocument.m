@@ -3795,7 +3795,6 @@
 
 	// Add the progress window to this window
 	[self centerTaskWindow];	
-	[taskProgressWindow orderFront:self];
 	[parentWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
 }
 
