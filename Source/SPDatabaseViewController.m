@@ -426,6 +426,12 @@
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
+	// Cache table information on the working thread
+	if (selectedTableType == SPTableTypeView)
+		[tableDataInstance updateInformationForCurrentView];
+	else
+		[tableDataInstance updateInformationForCurrentTable];
+
 	// Notify listeners of the table change now that the state is fully set up.
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
 
