@@ -382,16 +382,28 @@
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel
 {
 	if (cancellingConnection) return;
+	
 	NSInteger newState = [theTunnel state];
+	
+	// If the user cancelled the password prompt dialog
+	if ([theTunnel passwordPromptCancelled]) {
+		[self _restoreConnectionInterface];
+		
+		return;
+	}
 
 	if (newState == PROXY_STATE_IDLE) {
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
+		
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
 		[self _restoreConnectionInterface];
-	} else if (newState == PROXY_STATE_CONNECTED) {
+	} 
+	else if (newState == PROXY_STATE_CONNECTED) {
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
+		
 		[self initiateMySQLConnection];
-	} else {
+	} 
+	else {
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting…", @"SSH connecting titlebar marker")];
 	}
 }

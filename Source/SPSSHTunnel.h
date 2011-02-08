@@ -27,18 +27,11 @@
 
 @interface SPSSHTunnel : NSObject <MCPConnectionProxy>
 {
-	IBOutlet NSWindow *sshQuestionDialog;
-	IBOutlet NSTextField *sshQuestionText;
-	IBOutlet NSButton *sshPasswordKeychainCheckbox;
-	IBOutlet NSWindow *sshPasswordDialog;
-	IBOutlet NSTextField *sshPasswordText;
-	IBOutlet NSSecureTextField *sshPasswordField;
+	id delegate;
 
 	NSWindow *parentWindow;
 	NSTask *task;
 	NSPipe *standardError;
-	id delegate;
-	SEL stateChangeSelector;
 	NSConnection *tunnelConnection;
 	NSString *lastError;
 	NSString *tunnelConnectionName;
@@ -53,9 +46,6 @@
 	NSString *identityFilePath;
 	NSMutableArray *debugMessages;
 	NSLock *debugMessagesLock;
-	BOOL useHostFallback;
-	BOOL requestedResponse;
-	BOOL passwordInKeychain;
 	NSInteger sshPort;
 	NSInteger remotePort;
 	NSInteger localPort;
@@ -64,29 +54,45 @@
     
     NSLock *answerAvailableLock;
     NSString *currentKeyName;
+	
+	SEL stateChangeSelector;
+
+	BOOL useHostFallback;
+	BOOL requestedResponse;
+	BOOL passwordInKeychain;
+	BOOL passwordPromptCancelled;
+	
+	IBOutlet NSWindow *sshQuestionDialog;
+	IBOutlet NSTextField *sshQuestionText;
+	IBOutlet NSButton *sshPasswordKeychainCheckbox;
+	IBOutlet NSWindow *sshPasswordDialog;
+	IBOutlet NSTextField *sshPasswordText;
+	IBOutlet NSSecureTextField *sshPasswordField;
 }
 
-- (id) initToHost:(NSString *) theHost port:(NSInteger) thePort login:(NSString *) theLogin tunnellingToPort:(NSInteger) targetPort onHost:(NSString *) targetHost;
-- (BOOL) setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
-- (void) setParentWindow:(NSWindow *)theWindow;
-- (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
-- (BOOL) setPassword:(NSString *)thePassword;
-- (BOOL) setKeyFilePath:(NSString *)thePath;
-- (NSInteger) state;
-- (NSString *) lastError;
-- (NSString *) debugMessages;
-- (NSInteger) localPort;
-- (NSInteger) localPortFallback;
-- (void) connect;
-- (void) launchTask:(id) dummy;
-- (void) disconnect;
-- (void) standardErrorHandler:(NSNotification*)aNotification;
-- (NSString *) getPasswordWithVerificationHash:(NSString *)theHash;
-- (BOOL) getResponseForQuestion:(NSString *)theQuestion;
-- (void) workerGetResponseForQuestion:(NSString *)theQuestion;
-- (NSString *) getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash;
-- (void) workerGetPasswordForQuery:(NSString *)theQuery;
-- (IBAction) closeSSHQuestionSheet:(id)sender;
-- (IBAction) closeSSHPasswordSheet:(id)sender;
+@property (readonly) BOOL passwordPromptCancelled;
+
+- (id)initToHost:(NSString *)theHost port:(NSInteger)thePort login:(NSString *)theLogin tunnellingToPort:(NSInteger)targetPort onHost:(NSString *)targetHost;
+- (BOOL)setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
+- (void)setParentWindow:(NSWindow *)theWindow;
+- (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
+- (BOOL)setPassword:(NSString *)thePassword;
+- (BOOL)setKeyFilePath:(NSString *)thePath;
+- (NSInteger)state;
+- (NSString *)lastError;
+- (NSString *)debugMessages;
+- (NSInteger)localPort;
+- (NSInteger)localPortFallback;
+- (void)connect;
+- (void)launchTask:(id)dummy;
+- (void)disconnect;
+- (void)standardErrorHandler:(NSNotification*)aNotification;
+- (NSString *)getPasswordWithVerificationHash:(NSString *)theHash;
+- (BOOL)getResponseForQuestion:(NSString *)theQuestion;
+- (void)workerGetResponseForQuestion:(NSString *)theQuestion;
+- (NSString *)getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash;
+- (void)workerGetPasswordForQuery:(NSString *)theQuery;
+- (IBAction)closeSSHQuestionSheet:(id)sender;
+- (IBAction)closeSSHPasswordSheet:(id)sender;
 
 @end

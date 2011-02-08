@@ -32,56 +32,61 @@
 
 @implementation SPSSHTunnel
 
+@synthesize passwordPromptCancelled;
+
 /*
  * Initialise with the supplied connection details.  Host, login and port should all be provided.
  * The password can either be set later via setPassword:, which stores the password locally and is
  * therefore not recommended, or via setPasswordKeychainName:, which will use the keychain on-demand
  * and is therefore preferred.
  */
-- (id) initToHost:(NSString *) theHost port:(NSInteger) thePort login:(NSString *) theLogin tunnellingToPort:(NSInteger) targetPort onHost:(NSString *) targetHost
+- (id)initToHost:(NSString *)theHost port:(NSInteger)thePort login:(NSString *)theLogin tunnellingToPort:(NSInteger)targetPort onHost:(NSString *)targetHost
 {
 	if (!theHost || !targetPort || !targetHost) return nil;
 
-	self = [super init];
-
-	// Store the connection settings as appropriate
-	sshHost = [[NSString alloc] initWithString:theHost];
-	sshLogin = [[NSString alloc] initWithString:(theLogin?theLogin:@"")];
-	sshPort = thePort;
-	useHostFallback = [theHost isEqualToString:targetHost];
-	remoteHost = [[NSString alloc] initWithString:targetHost];
-	remotePort = targetPort;
-	delegate = nil;
-	stateChangeSelector = nil;
-	lastError = nil;
-	debugMessages = [[NSMutableArray alloc] init];
-	debugMessagesLock = [[NSLock alloc] init];
-	answerAvailableLock = [[NSLock alloc] init];
-
-	// Set up a connection for use by the tunnel process
-	tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
-	tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
-	tunnelConnection = [NSConnection new];
-	[tunnelConnection runInNewThread];
-	[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
-	[tunnelConnection setRootObject:self];
-	if ([tunnelConnection registerName:tunnelConnectionName] == NO) {
-		return nil;
+	if ((self = [super init])) {
+		
+		// Store the connection settings as appropriate
+		sshHost = [[NSString alloc] initWithString:theHost];
+		sshLogin = [[NSString alloc] initWithString:(theLogin?theLogin:@"")];
+		sshPort = thePort;
+		useHostFallback = [theHost isEqualToString:targetHost];
+		remoteHost = [[NSString alloc] initWithString:targetHost];
+		remotePort = targetPort;
+		delegate = nil;
+		stateChangeSelector = nil;
+		lastError = nil;
+		debugMessages = [[NSMutableArray alloc] init];
+		debugMessagesLock = [[NSLock alloc] init];
+		answerAvailableLock = [[NSLock alloc] init];
+		
+		// Set up a connection for use by the tunnel process
+		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
+		tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
+		tunnelConnection = [NSConnection new];
+		
+		[tunnelConnection runInNewThread];
+		[tunnelConnection removeRunLoop:[NSRunLoop currentRunLoop]];
+		[tunnelConnection setRootObject:self];
+		
+		if (![tunnelConnection registerName:tunnelConnectionName]) return nil;
+		
+		parentWindow = nil;
+		identityFilePath = nil;
+		sshQuestionDialog = nil;
+		sshPasswordDialog = nil;
+		password = nil;
+		keychainName = nil;
+		keychainAccount = nil;
+		requestedPassphrase = nil;
+		task = nil;
+		localPort = 0;
+		connectionState = PROXY_STATE_IDLE;
+		
+		requestedResponse = NO;
+		passwordInKeychain = NO;
+		passwordPromptCancelled = NO;
 	}
-
-	parentWindow = nil;
-	identityFilePath = nil;
-	sshQuestionDialog = nil;
-	sshPasswordDialog = nil;
-	password = nil;
-	keychainName = nil;
-	keychainAccount = nil;
-	passwordInKeychain = NO;
-	requestedPassphrase = nil;
-	requestedResponse = NO;
-	task = nil;
-	localPort = 0;
-	connectionState = PROXY_STATE_IDLE;
 
 	return self;
 }
@@ -90,7 +95,7 @@
  * Sets the connection callback selector; a function to be called whenever the tunnel state changes.
  * The callback function will be called and passed this SSH Tunnel object..
  */
-- (BOOL) setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate
+- (BOOL)setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate
 {
 	delegate = theDelegate;
 	stateChangeSelector = theStateChangeSelector;
@@ -119,7 +124,7 @@
  * Sets the password to be stored (and returned to the tunnel authenticator) locally.
  * Providing a keychain name is much more secure.
  */
-- (BOOL) setPassword:(NSString *)thePassword
+- (BOOL)setPassword:(NSString *)thePassword
 {
 	if (passwordInKeychain) return NO;
 	password = [[NSString alloc] initWithString:thePassword];
@@ -130,7 +135,7 @@
 /**
  * Sets the path of an identity file, or public key file, to use when connecting.
  */
-- (BOOL) setKeyFilePath:(NSString *)thePath
+- (BOOL)setKeyFilePath:(NSString *)thePath
 {
 	NSString *expandedPath = [thePath stringByExpandingTildeInPath];
 	if (![[NSFileManager defaultManager] fileExistsAtPath:expandedPath]) return NO;
@@ -144,7 +149,7 @@
  * Sets the keychain name to use to retrieve the password.  This is the recommended and
  * secure way of supplying a password to the SSH tunnel.
  */
-- (BOOL) setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
+- (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
 {
 	if (password) [password release], password = nil;
 
@@ -158,7 +163,7 @@
 /*
  * Get the state of the connection.
  */
-- (NSInteger) state
+- (NSInteger)state
 {
 
 	// See if an auth dialog is up
@@ -174,9 +179,10 @@
 /*
  * Returns the last error string, if any.
  */
-- (NSString *) lastError
+- (NSString *)lastError
 {
 	if (!lastError) return nil;
+	
 	return [NSString stringWithString:lastError];
 }
 
@@ -184,7 +190,7 @@
  * Returns all the debug text for this tunnel as a string, separated
  * by line endings.
  */
-- (NSString *) debugMessages {
+- (NSString *)debugMessages {
 	[debugMessagesLock lock];
 	NSString *debugMessagesString = [debugMessages componentsJoinedByString:@"\n"];
 	[debugMessagesLock unlock];
@@ -194,7 +200,7 @@
 /*
  * Initiate the SSH tunnel connection, launching the task in a background thread.
  */
-- (void) connect
+- (void)connect
 {
 	localPort = 0;
 
@@ -210,7 +216,7 @@
  * tunnel to the remote server.
  * Sets up and tears down as appropriate for usage in a background thread.
  */
-- (void) launchTask:(id) dummy
+- (void)launchTask:(id) dummy
 {
 	if (connectionState != PROXY_STATE_IDLE || task) return;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -482,7 +488,7 @@
 /*
  * Returns the local port assigned for use by the tunnel
  */
-- (NSInteger) localPort
+- (NSInteger)localPort
 {
 	return localPort;
 }
@@ -490,9 +496,10 @@
 /*
  * Returns the local port assigned for fallback use by the tunnel, if any
  */
-- (NSInteger) localPortFallback
+- (NSInteger)localPortFallback
 {
 	if (!useHostFallback) return 0;
+	
 	return localPortFallback;
 }
 
@@ -513,7 +520,7 @@
  * a boolean.  This is used by the SSH_ASKPASS environment setting to deal with situations like
  * host key mismatches.
  */
-- (BOOL) getResponseForQuestion:(NSString *)theQuestion
+- (BOOL)getResponseForQuestion:(NSString *)theQuestion
 {
     // Lock the answer available lock
     [[answerAvailableLock onMainThread] lock];
@@ -530,12 +537,12 @@
     // Unlock the lock again
     [answerAvailableLock unlock];
     
-    //return the answer
+    // Return the answer
 	return response;
 }
-- (void) workerGetResponseForQuestion:(NSString *)theQuestion
-{	
 
+- (void)workerGetResponseForQuestion:(NSString *)theQuestion
+{	
 	NSSize questionTextSize;
 	NSRect windowFrameRect;
 
@@ -550,10 +557,11 @@
 	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[parentWindow makeKeyAndOrderFront:self];
 }
+
 /*
  * Ends an existing modal session
  */
-- (IBAction) closeSSHQuestionSheet:(id)sender
+- (IBAction)closeSSHQuestionSheet:(id)sender
 {
     requestedResponse = [sender tag]==1 ? YES : NO;
     [NSApp endSheet:sshQuestionDialog];
@@ -565,9 +573,11 @@
  * Method to allow an SSH tunnel to request a password.  This is used by the program set by the
  * SSH_ASKPASS environment setting to request passphrases for SSH keys.
  */
-- (NSString *) getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash
+- (NSString *)getPasswordForQuery:(NSString *)theQuery verificationHash:(NSString *)theHash
 {
 	if (![theHash isEqualToString:tunnelConnectionVerifyHash]) return nil;
+	
+	if (passwordPromptCancelled) return nil;
 
     // Lock the answer available lock
     [[answerAvailableLock onMainThread] lock];
@@ -591,18 +601,21 @@
     // Return the answer
 	return thePassword;
 }
-- (void) workerGetPasswordForQuery:(NSString *)theQuery
+
+- (void)workerGetPasswordForQuery:(NSString *)theQuery
 {
 	NSSize queryTextSize;
 	NSRect windowFrameRect;
 
 	// Work out whether a passphrase is being requested, extracting the key name
 	NSString *keyName = [theQuery stringByMatching:@"^\\s*Enter passphrase for key \\'(.*)\\':\\s*$" capture:1L];
+	
 	if (keyName) {
 		[sshPasswordText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Enter your password for the SSH key\n\"%@\"", @"SSH key password prompt"), keyName]];
 		[sshPasswordKeychainCheckbox setHidden:NO];
         currentKeyName = [keyName retain];
-	} else {
+	} 
+	else {
 		[sshPasswordText setStringValue:theQuery];
 		[sshPasswordKeychainCheckbox setHidden:YES];
         currentKeyName = nil;
@@ -612,6 +625,7 @@
 	queryTextSize = [[sshPasswordText cell] cellSizeForBounds:NSMakeRect(0, 0, [sshPasswordText bounds].size.width, 500)];
 	windowFrameRect = [sshPasswordDialog frame];
 	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
+	
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
 	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
 	[parentWindow makeKeyAndOrderFront:self];
@@ -620,9 +634,10 @@
 /*
  * Ends an existing modal session
  */
-- (IBAction) closeSSHPasswordSheet:(id)sender
+- (IBAction)closeSSHPasswordSheet:(id)sender
 {
     requestedResponse = [sender tag]==1 ? YES : NO;
+	
 	[NSApp endSheet:sshPasswordDialog];
 	[sshPasswordDialog orderOut:nil];
     
@@ -645,10 +660,13 @@
             currentKeyName = nil;
         }
     }
+	
+	if (!requestedPassphrase) passwordPromptCancelled = YES;
     
     [[answerAvailableLock onMainThread] unlock];
 }
 
+#pragma mark -
 
 - (void)dealloc
 {
