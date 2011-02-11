@@ -49,7 +49,10 @@
 			NSInteger end = [enc length] - start - 1;
 			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, end)]];
 		} else {
-			if([tableDataInstance tableEncoding] != nil) {
+
+			// If the structure has loaded (not still loading!) and the table encoding
+			// is set, use the appropriate collations.
+			if([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) {
 				collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 			} else {
 				collations = [NSArray array];

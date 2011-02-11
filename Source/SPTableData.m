@@ -31,11 +31,13 @@
 #import "RegexKitLite.h"
 #import "SPServerSupport.h"
 
+@interface SPTableData (PrivateAPI)
+- (void)_loopWhileWorking;
+@end
+
 @implementation SPTableData
 
-@synthesize isWorking;
 @synthesize tableHasAutoIncrementField;
-;
 
 /**
  * Init class.
@@ -52,9 +54,9 @@
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
 		mySQLConnection = nil;
-		isWorking = NO;
 		tableHasAutoIncrementField = NO;
 
+		pthread_mutex_init(&dataProcessingLock, NULL);
 	}
 
 	return self;
@@ -79,8 +81,8 @@
 - (NSString *) tableEncoding
 {
 
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return nil;
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if (tableEncoding == nil) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -98,8 +100,8 @@
 - (NSString *) tableCreateSyntax
 {
 
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return nil;
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if (tableCreateSyntax == nil) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -123,8 +125,8 @@
 - (NSArray *) columns
 {
 
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return [NSArray array];
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -149,9 +151,8 @@
  */
 - (NSArray *) triggers
 {
-	// Return if CREATE SYNTAX is being parsed
-	if (isWorking) return [NSArray array];
-	
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];	
 
 	// If triggers is nil, the triggers need to be loaded - if a table is selected on MySQL >= 5.0.2
 	if (!triggers) {
@@ -173,10 +174,8 @@
  */
 - (NSDictionary *) columnWithName:(NSString *)colName
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return nil;
-	
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -196,10 +195,8 @@
  */
 - (NSArray *) columnNames
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return [NSArray array];
-	
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([columnNames count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -219,9 +216,8 @@
  */
 - (NSDictionary *) columnAtIndex:(NSInteger)index
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return nil;
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -242,9 +238,8 @@
 
 - (BOOL) columnIsBlobOrText:(NSString *)colName
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return YES; // to be at the safe side
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -266,9 +261,8 @@
 
 - (BOOL) columnIsGeometry:(NSString *)colName
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return YES; // to be at the safe side
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([columns count] == 0) {
 		if ([tableListInstance tableType] == SPTableTypeView) {
@@ -289,9 +283,8 @@
  */
 - (NSString *) statusValueForKey:(NSString *)aKey
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return nil;
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([status count] == 0) {
 		[self updateStatusInformationForCurrentTable];
@@ -318,9 +311,8 @@
  */
 - (NSDictionary *) statusValues
 {
-
-	// Return if CREATE SYNTAX is being parsed
-	if(isWorking) return nil;
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
 	if ([status count] == 0) {
 		[self updateStatusInformationForCurrentTable];
@@ -380,7 +372,7 @@
  */
 - (BOOL) updateInformationForCurrentTable
 {
-	isWorking = YES;
+	pthread_mutex_lock(&dataProcessingLock);
 
 	NSDictionary *tableData = nil;
 	NSDictionary *columnData;
@@ -396,7 +388,7 @@
 	}
 
 	if (tableData == nil ) {
-		isWorking = NO;
+		pthread_mutex_unlock(&dataProcessingLock);
 		return FALSE;
 	}
 
@@ -412,7 +404,7 @@
 	}
 	tableEncoding = [[NSString alloc] initWithString:[tableData objectForKey:@"encoding"]];
 
-	isWorking = NO;
+	pthread_mutex_unlock(&dataProcessingLock);
 
 	return TRUE;
 }
@@ -423,8 +415,7 @@
  */
 - (BOOL) updateInformationForCurrentView
 {
-
-	isWorking = YES;
+	pthread_mutex_lock(&dataProcessingLock);
 
 	NSDictionary *viewData = [self informationForView:[tableListInstance tableName]];
 	NSDictionary *columnData;
@@ -436,7 +427,7 @@
 		[columns removeAllObjects];
 		[columnNames removeAllObjects];
 		[constraints removeAllObjects];
-		isWorking = NO;
+		pthread_mutex_unlock(&dataProcessingLock);
 		return FALSE;
 	}
 
@@ -452,7 +443,7 @@
 	}
 	tableEncoding = [[NSString alloc] initWithString:[viewData objectForKey:@"encoding"]];
 
-	isWorking = NO;
+	pthread_mutex_unlock(&dataProcessingLock);
 
 	return TRUE;
 }
@@ -475,10 +466,6 @@
 	NSUInteger i, stringStart;
 	unichar quoteCharacter;
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
-
-	[columns removeAllObjects];
-	[columnNames removeAllObjects];
-	[constraints removeAllObjects];
 
 	// Catch unselected tables and return nil
 	if ([tableName isEqualToString:@""] || !tableName) return nil;
@@ -925,14 +912,13 @@
  */
 - (BOOL)updateStatusInformationForCurrentTable
 {
-
-	isWorking = YES;
+	pthread_mutex_lock(&dataProcessingLock);
 
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected tables and return false
 	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName]) {
-		isWorking = NO;
+		pthread_mutex_unlock(&dataProcessingLock);
 		return FALSE;
 	}
 
@@ -979,7 +965,7 @@
 					   [mySQLConnection getLastErrorMessage]]);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
-		isWorking = NO;
+		pthread_mutex_unlock(&dataProcessingLock);
 		return FALSE;
 	}
 
@@ -997,7 +983,7 @@
 		if ([[status objectForKey:@"Engine"] isNSNull]) {
 			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:NSLocalizedString(@"An error occurred retrieving table information.  MySQL said: %@", @"MySQL table info retrieval error message"), [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
-			isWorking = NO;
+			pthread_mutex_unlock(&dataProcessingLock);
 			return FALSE;
 		}
 
@@ -1032,7 +1018,7 @@
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
-	isWorking = NO;
+	pthread_mutex_unlock(&dataProcessingLock);
 
 	return TRUE;
 }
@@ -1042,8 +1028,7 @@
  */
 - (BOOL) updateTriggersForCurrentTable
 {
-
-	isWorking = YES;
+	pthread_mutex_lock(&dataProcessingLock);
 
 	// Ensure queries are made in UTF8
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
@@ -1067,7 +1052,7 @@
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
-		isWorking = NO;
+		pthread_mutex_unlock(&dataProcessingLock);
 		return NO;
 	}
 
@@ -1079,7 +1064,7 @@
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
-	isWorking = NO;
+	pthread_mutex_unlock(&dataProcessingLock);
 
 	return YES;
 }
@@ -1364,7 +1349,18 @@
 	if (tableCreateSyntax) [tableCreateSyntax release];
 	if (mySQLConnection) [mySQLConnection release];
 
+	pthread_mutex_destroy(&dataProcessingLock);
+
 	[super dealloc];
+}
+
+#pragma mark -
+#pragma mark Private API
+
+- (void)_loopWhileWorking
+{
+	while (pthread_mutex_trylock(&dataProcessingLock)) usleep(10000);
+	pthread_mutex_unlock(&dataProcessingLock);
 }
 
 @end

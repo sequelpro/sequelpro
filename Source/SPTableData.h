@@ -41,9 +41,9 @@
 	
 	MCPConnection *mySQLConnection;
 
-	BOOL isWorking;
-	BOOL tableHasAutoIncrementField;
+	pthread_mutex_t dataProcessingLock;
 
+	BOOL tableHasAutoIncrementField;
 }
 
 @property (readwrite, assign) BOOL isWorking;

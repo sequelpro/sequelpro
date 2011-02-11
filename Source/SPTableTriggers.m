@@ -111,17 +111,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	BOOL enableInteraction = ((![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) || (![tableDocumentInstance isWorking]));
 
-	// Disable all interface elements by default
-	[addTriggerButton setEnabled:NO];
-	[refreshTriggersButton setEnabled:NO];
-	[triggersTableView setEnabled:NO];
-	[labelTextField setStringValue:@""];
-
-	// Show a warning if the version of MySQL is too low to support triggers
-	if (![[tableDocumentInstance serverSupport] supportsTriggers]) {
-		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
-		return;
-	}
+	[self resetInterface];
 
 	// If no item is selected, or the item selected is not a table, return.
 	if (![tablesListInstance tableName] || [tablesListInstance tableType] != SPTableTypeTable)
@@ -137,6 +127,26 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 	// Ensure trigger data is loaded
 	[self _refreshTriggerDataForcingCacheRefresh:NO];
+}
+
+/**
+ * Reset the trigger interface, as for no selected table.
+ */
+- (void)resetInterface
+{
+	[triggerData removeAllObjects];
+	[triggersTableView noteNumberOfRowsChanged];
+
+	// Disable all interface elements by default
+	[addTriggerButton setEnabled:NO];
+	[refreshTriggersButton setEnabled:NO];
+	[triggersTableView setEnabled:NO];
+	[labelTextField setStringValue:@""];
+
+	// Show a warning if the version of MySQL is too low to support triggers
+	if (![[tableDocumentInstance serverSupport] supportsTriggers]) {
+		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
+	}
 }
 
 #pragma mark -

@@ -280,7 +280,7 @@
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
 		[[extendedTableInfoInstance onMainThread] loadTable:nil];
-		[[tableTriggersInstance onMainThread] loadTriggers];
+		[[tableTriggersInstance onMainThread] resetInterface];
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
@@ -393,8 +393,12 @@
 	// Update the window title
 	[self updateWindowTitle:self];
 
-	// Reset table information caches
+	// Reset table information caches and mark that all loaded views require their data reloading
 	[tableDataInstance resetAllData];
+	structureLoaded = NO;
+	contentLoaded = NO;
+	statusLoaded = NO;
+	triggersLoaded = NO;
 
 	// Ensure status and details are fetched using UTF8
 	NSString *previousEncoding = [mySQLConnection encoding];
@@ -408,7 +412,8 @@
 	[tableDataInstance updateStatusInformationForCurrentTable];
 
 	// Check the current encoding against the table encoding to see whether
-	// an encoding change and reset is required
+	// an encoding change and reset is required.  This also caches table information on
+	// the working thread.
 	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 
 		// tableEncoding == nil indicates that there was an error while retrieving table data
@@ -426,23 +431,11 @@
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
-	// Cache table information on the working thread
-	if (selectedTableType == SPTableTypeView)
-		[tableDataInstance updateInformationForCurrentView];
-	else
-		[tableDataInstance updateInformationForCurrentTable];
-
 	// Notify listeners of the table change now that the state is fully set up.
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
 
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
-
-	// Mark that all loaded views require their data reloading
-	structureLoaded = NO;
-	contentLoaded = NO;
-	statusLoaded = NO;
-	triggersLoaded = NO;
 
 	// Load the currently selected view if looking at a table or view
 	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
@@ -475,7 +468,7 @@
 	if (!structureLoaded) [tableSourceInstance loadTable:nil];
 	if (!contentLoaded) [tableContentInstance loadTable:nil];
 	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
-	if (!triggersLoaded) [[tableTriggersInstance onMainThread] loadTriggers];
+	if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
 
 	// Update the "Show Create Syntax" window if it's already opened
 	// according to the selected table/view/proc/func
