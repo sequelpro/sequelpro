@@ -410,15 +410,16 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 			while (row != NSNotFound)
 			{
-				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:@"trigger"];
+				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:SPTriggerName];
 				NSString *query = [NSString stringWithFormat:@"DROP TRIGGER %@.%@", [database backtickQuotedString], [triggerName backtickQuotedString]];
 
 				[connection queryString:query];
 
 				if ([connection queryErrored]) {
+					[[alert window] orderOut:self];
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil,
+									  nil, nil, [tableDocumentInstance parentWindow], nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection getLastErrorMessage]]);
 
 					// Abort loop
@@ -564,7 +565,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Timin title is different then what we have saved in the database (case difference)
 	for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
 	{
-		if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]]) {
+		if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:SPTriggerActionTime] uppercaseString]]) {
 			[triggerActionTimePopUpButton selectItemAtIndex:i];
 			break;
 		}
@@ -573,7 +574,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Event title is different then what we have saved in the database (case difference)
 	for (NSUInteger i = 0; i < [[triggerEventPopUpButton itemArray] count]; i++)
 	{
-		if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]]) {
+		if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:SPTriggerEvent] uppercaseString]]) {
 			[triggerEventPopUpButton selectItemAtIndex:i];
 			break;
 		}
