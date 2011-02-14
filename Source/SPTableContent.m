@@ -2257,7 +2257,10 @@
 		return;
 	}
 
+	// Retrieve the current field comparison setting for later restoration if possible
+	NSString *titleToRestore = [[compareField selectedItem] title];
 
+	// Reset the menu before building it back up
 	[compareField removeAllItems];
 
 	NSString *fieldTypeGrouping;
@@ -2377,6 +2380,10 @@
 	[item setTag:i];
 	[menu addItem:item];
 	[item release];
+
+	// Attempt to reselect the previously selected title, falling back to the first item
+	[compareField selectItemWithTitle:titleToRestore];
+	if (![compareField selectedItem]) [compareField selectItemAtIndex:0];
 
 	// Update the argumentField enabled state
 	[self performSelectorOnMainThread:@selector(toggleFilterField:) withObject:self waitUntilDone:YES];
