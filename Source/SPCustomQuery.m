@@ -882,11 +882,12 @@
 	[resultData removeAllRows];
 	pthread_mutex_unlock(&resultDataLock);
 
+	// Set the column count on the data store before setting up anything else -
+	// ensures that SPDataStorage is set up for timer-driven data loads
+	[resultData setColumnCount:[theResult numOfFields]];
+
 	// Set up the table updates timer
 	[[self onMainThread] initQueryLoadTimer];
-
-	// Set the column count on the data store
-	[resultData setColumnCount:[theResult numOfFields]];
 
 	// Set up an autorelease pool for row processing
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];

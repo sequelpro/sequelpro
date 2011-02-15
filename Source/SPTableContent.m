@@ -805,11 +805,12 @@
 	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
 	tableLoadTargetRowCount = targetRowCount;
 
+	// Set the column count on the data store before setting up anything else -
+	// ensures that SPDataStorage is set up for timer-driven data loads
+	[tableValues setColumnCount:dataColumnsCount];
+
 	// Set up the table updates timer
 	[[self onMainThread] initTableLoadTimer];
-
-	// Set the column count on the data store
-	[tableValues setColumnCount:dataColumnsCount];
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
