@@ -198,7 +198,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	if(editMask != 1)
 		[self invalidateLineIndices];
 
-	[self setNeedsDisplayInRect:[[[self scrollView] contentView] bounds]];
+	[self setNeedsDisplay:YES];
 
 }
 
