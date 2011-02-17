@@ -207,8 +207,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	NSUInteger      line, count, rectCount, i;
 	NSRectArray     rects;
 	NSRect          visibleRect;
-	NSLayoutManager *layoutManager;
-	NSTextContainer *container;
 	NSRange         nullRange;
 	NSArray         *lines;
 	id              view;
@@ -224,8 +222,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	{
 
 		nullRange = NSMakeRange(NSNotFound, 0);
-		layoutManager = [view layoutManager];
-		container = [view textContainer];
 		count = [lines count];
 
 		// Find the characters that are currently visible
@@ -288,14 +284,14 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	bounds = [self bounds];
 
-	if (backgroundColor != nil)
-	{
-		[backgroundColor set];
-		NSRectFill(bounds);
-
-		[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
-		[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
-	}
+	// if (backgroundColor != nil)
+	// {
+	// 	[backgroundColor set];
+	// 	NSRectFill(bounds);
+	// 
+	// 	[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
+	// 	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
+	// }
 
 	view = [self clientView];
 
