@@ -57,8 +57,14 @@
 	SEL lineNumberForCharacterIndexSel;
 	IMP lineNumberForCharacterIndexIMP;
 	SEL lineRangeForRangeSel;
+	SEL numberWithUnsignedIntegerSel;
+	IMP numberWithUnsignedIntegerIMP;
 	SEL addObjectSel;
 	IMP addObjectIMP;
+
+	NSLayoutManager  *layoutManager;
+	NSTextContainer  *container;
+
 }
 
 @property(retain) NSColor *alternateTextColor;

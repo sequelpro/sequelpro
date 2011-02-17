@@ -668,6 +668,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	// Cache frequently used selectors, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(_charAtIndex:)];
+	SEL charAtIndexSEL = @selector(_charAtIndex:);
 	IMP endIndex = [self methodForSelector:@selector(endIndexOfStringQuotedByCharacter:startingAtIndex:)];
 	IMP substringWithRange = [self methodForSelector:@selector(substringWithRange:)];
 
@@ -676,7 +677,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	// Walk along the string, processing characters
 	for (currentStringIndex = startIndex + 1; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex);
+		currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex);
 
 		// Check for the ending character, and if it has been found and quoting/brackets is valid, return.
 		// If delimiter support is active and a delimiter is set, check for the delimiter
@@ -722,8 +723,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			// For comments starting "--[\s]", ensure the start syntax is valid before proceeding.
 			case '-':
 				if (stringLength < currentStringIndex + 2) break;
-				if ((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+1) != '-') break;
-				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+2)]) break;
+				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) != '-') break;
+				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+2)]) break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPDoubleDashComment startingAtIndex:currentStringIndex];
 				break;
 
@@ -736,7 +737,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			case '/':
 				if(ignoreCommentStrings) break;
 				if (stringLength < currentStringIndex + 1) break;
-				if ((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+1) != '*') break;
+				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) != '*') break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
 				break;
 
@@ -754,15 +755,15 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				// and that the "d" is the start of a word
 				if (supportDelimiters && stringLength >= currentStringIndex + 11
 					&& (currentStringIndex == 0
-						|| [[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex-1)]))
+						|| [[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex-1)]))
 				{
-					switch((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+1)) {
+					switch((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1)) {
 						case 'e':
 						case 'E':
-						switch((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+2)) {
+						switch((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+2)) {
 							case 'l':
 							case 'L':
-							switch((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+3)) {
+							switch((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+3)) {
 								case 'i':
 								case 'I':
 									if([self isMatchedByRegex:@"^(delimiter[ \\t]+(\\S+))(?=\\s|\\Z)" 
@@ -819,18 +820,19 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	// Cache the charAtIndex selector, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(_charAtIndex:)];
+	SEL charAtIndexSEL = @selector(_charAtIndex:);
 
 	stringLength = [string length];
 
 	// Walk the string looking for the string end
 	for ( currentStringIndex = index; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex);
+		currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex);
 
 		// If the string end is a backtick and one has been encountered, treat it as end of string
 		if (quoteCharacter == '`' && currentCharacter == '`') {
 		
 			// ...as long as the next character isn't also a backtick, in which case it's being quoted.  Skip both.
-			if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+1) == '`') {
+			if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) == '`') {
 				currentStringIndex++;
 				continue;
 			}
@@ -844,7 +846,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			characterIsEscaped = NO;
 			i = 1;
 			quotedStringLength = currentStringIndex - 1;
-			while ((quotedStringLength - i) > 0 && (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex - i) == '\\') {
+			while ((quotedStringLength - i) > 0 && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex - i) == '\\') {
 				characterIsEscaped = !characterIsEscaped;
 				i++;
 			}
@@ -852,7 +854,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			// If an even number have been found, it may be the end of the string - as long as the subsequent character
 			// isn't also the same character, in which case it's another form of escaping.
 			if (!characterIsEscaped) {
-				if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), currentStringIndex+1) == quoteCharacter) {
+				if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) == quoteCharacter) {
 					currentStringIndex++;
 					continue;
 				}
@@ -876,6 +878,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	// Cache the charAtIndex selector, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(_charAtIndex:)];
+	SEL charAtIndexSEL = @selector(_charAtIndex:);
 
 	switch (commentType) {
 	
@@ -888,7 +891,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		case SPHashComment:
 			index++;
 			for ( ; index < stringLength; index++ ) {
-				currentCharacter = (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), index);
+				currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, index);
 				if (currentCharacter == '\r') containsCRs = YES;
 				if (currentCharacter == '\r' || currentCharacter == '\n') {
 					return index-1;
@@ -901,8 +904,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		case SPCStyleComment:
 			index = index+2;
 			for ( ; index < stringLength; index++ ) {
-				if ((unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), index) == '*') {
-					if ((stringLength > index + 1) && (unichar)(long)(*charAtIndex)(self, @selector(_charAtIndex:), index+1) == '/') {
+				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, index) == '*') {
+					if ((stringLength > index + 1) && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, index+1) == '/') {
 						return (index+1);
 					}
 				}

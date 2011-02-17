@@ -56,7 +56,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 @interface NoodleLineNumberView (Private)
 
-- (NSMutableArray *)lineIndices;
+- (NSArray *)lineIndices;
 - (void)invalidateLineIndices;
 - (void)calculateLines;
 - (void)updateGutterThicknessConstants;
@@ -89,6 +89,8 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		lineNumberForCharacterIndexIMP = [self methodForSelector:lineNumberForCharacterIndexSel];
 		lineRangeForRangeSel = @selector(lineRangeForRange:);
 		addObjectSel = @selector(addObject:);
+		numberWithUnsignedIntegerSel = @selector(numberWithUnsignedInteger:);
+		numberWithUnsignedIntegerIMP = [NSNumber methodForSelector:numberWithUnsignedIntegerSel];
 
 
 	}
@@ -173,9 +175,13 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if ((aView != nil) && [aView isKindOfClass:[NSTextView class]])
 	{
+		layoutManager  = [aView layoutManager];
+		container      = [aView textContainer];
+
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)aView textStorage]];
 		[self invalidateLineIndices];
 	}
+
 }
 
 #pragma mark -
@@ -192,7 +198,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	if(editMask != 1)
 		[self invalidateLineIndices];
 
-	[self setNeedsDisplay:YES];
+	[self setNeedsDisplayInRect:[[[self scrollView] contentView] bounds]];
 
 }
 
@@ -295,8 +301,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if ([view isKindOfClass:[NSTextView class]])
 	{
-		NSLayoutManager  *layoutManager;
-		NSTextContainer  *container;
 		NSRect           visibleRect;
 		NSRange          range, nullRange;
 		NSString         *labelText;
@@ -306,8 +310,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		NSSize           stringSize;
 		NSArray          *lines;
 
-		layoutManager  = [view layoutManager];
-		container      = [view textContainer];
 		nullRange      = NSMakeRange(NSNotFound, 0);
 
 		yinset         = [view textContainerInset].height;
@@ -477,7 +479,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 #pragma mark -
 #pragma mark PrivateAPI
 
-- (NSMutableArray *)lineIndices
+- (NSArray *)lineIndices
 {
 
 	if (lineIndices == nil)
@@ -500,7 +502,8 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if ([view isKindOfClass:[NSTextView class]])
 	{
-		NSUInteger index, stringLength, lineEnd, contentEnd;
+
+		NSUInteger index, stringLength, lineEnd, contentEnd, lastLine;
 		NSString   *textString;
 		CGFloat    newThickness;
 
@@ -522,18 +525,19 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		// Cache loop methods for speed
 		RangeOfLineIMP rangeOfLineIMP = (RangeOfLineIMP)[textString methodForSelector:lineRangeForRangeSel];
 		addObjectIMP = [lineIndices methodForSelector:addObjectSel];
-
+		
 		do
 		{
-			(void*)(*addObjectIMP)(lineIndices, addObjectSel, [NSNumber numberWithUnsignedInteger:index]);
+			(void*)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, index));
+			lastLine = index;
 			index = NSMaxRange((*rangeOfLineIMP)(textString, lineRangeForRangeSel, NSMakeRange(index, 0)));
 		}
 		while (index < stringLength);
 
 		// Check if text ends with a new line.
-		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
+		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange(lastLine, 0)];
 		if (contentEnd < lineEnd)
-			(void*)(*addObjectIMP)(lineIndices, addObjectSel, [NSNumber numberWithUnsignedInteger:index]);
+			(void*)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, index));
 
 		NSUInteger lineCount = [lineIndices count];
 		if(lineCount < 10)
