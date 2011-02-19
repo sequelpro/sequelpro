@@ -387,7 +387,11 @@
 		tableData = [self informationForTable:[tableListInstance tableName]];
 	}
 
+	// If nil is returned, return failure.
 	if (tableData == nil ) {
+
+		// The table information fetch may have already unlocked the data lock.
+		pthread_mutex_trylock(&dataProcessingLock);
 		pthread_mutex_unlock(&dataProcessingLock);
 		return FALSE;
 	}
@@ -487,8 +491,13 @@
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 					   tableName, [mySQLConnection getLastErrorMessage]]);
+
 			// If the current table doesn't exist anymore reload table list
 			if([mySQLConnection getLastErrorID] == 1146) {
+
+				// Release the table loading lock to allow reselection/reloading to requery the database.
+				pthread_mutex_unlock(&dataProcessingLock);
+
 				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
 				[tableListInstance updateTables:self];
 			}
