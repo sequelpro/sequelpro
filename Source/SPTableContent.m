@@ -445,7 +445,13 @@
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
-		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@", [columnDefinition objectForKey:@"name"], [columnDefinition objectForKey:@"type"], ([columnDefinition objectForKey:@"length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"length"]] : @""]];
+		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@%@%@", 
+			[columnDefinition objectForKey:@"name"], 
+			[columnDefinition objectForKey:@"type"], 
+			([columnDefinition objectForKey:@"length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"length"]] : @"", 
+			([columnDefinition objectForKey:@"values"]) ? [NSString stringWithFormat:@"(\n- %@\n)", [[columnDefinition objectForKey:@"values"] componentsJoinedByString:@"\n- "]] : @"", 
+			([columnDefinition objectForKey:@"comment"] && [[columnDefinition objectForKey:@"comment"] length]) ? [NSString stringWithFormat:@"\n%@", [[columnDefinition objectForKey:@"comment"] stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"]] : @""
+			]];
 		[theCol setEditable:YES];
 
 		// Set up column for filterTable 
@@ -799,11 +805,12 @@
 	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
 	tableLoadTargetRowCount = targetRowCount;
 
+	// Set the column count on the data store before setting up anything else -
+	// ensures that SPDataStorage is set up for timer-driven data loads
+	[tableValues setColumnCount:dataColumnsCount];
+
 	// Set up the table updates timer
 	[[self onMainThread] initTableLoadTimer];
-
-	// Set the column count on the data store
-	[tableValues setColumnCount:dataColumnsCount];
 
 	NSAutoreleasePool *dataLoadingPool;
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
@@ -2251,7 +2258,10 @@
 		return;
 	}
 
+	// Retrieve the current field comparison setting for later restoration if possible
+	NSString *titleToRestore = [[compareField selectedItem] title];
 
+	// Reset the menu before building it back up
 	[compareField removeAllItems];
 
 	NSString *fieldTypeGrouping;
@@ -2371,6 +2381,10 @@
 	[item setTag:i];
 	[menu addItem:item];
 	[item release];
+
+	// Attempt to reselect the previously selected title, falling back to the first item
+	[compareField selectItemWithTitle:titleToRestore];
+	if (![compareField selectedItem]) [compareField selectItemAtIndex:0];
 
 	// Update the argumentField enabled state
 	[self performSelectorOnMainThread:@selector(toggleFilterField:) withObject:self waitUntilDone:YES];
@@ -3455,7 +3469,7 @@
  * - if blob data can be interpret as image data display the image as  transparent thumbnail
  *    (up to now using base64 encoded HTML data)
  */
-- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(SPTextAndLinkCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
+- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
 
 	if(aTableView == filterTableView) {
@@ -4063,9 +4077,17 @@
 		BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
 		BOOL isFieldEditable = YES;
 
+		// Retrieve the column defintion
+		NSDictionary *columnDefinition = nil;
+		for(id c in cqColumnDefinition) {
+			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
+				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+				break;
+			}
+		}
 
 		// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
+		if (([multipleLineEditingButton state] == NSOnState || isBlob) && ![[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"]) {
 
 			// A table is per definitionem editable
 			isFieldEditable = YES;
@@ -4081,19 +4103,13 @@
 			NSString *fieldEncoding = nil;
 			BOOL allowNULL = YES;
 
-			// Retrieve the column defintion
-			for(id c in cqColumnDefinition) {
-				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
-					fieldType = [c objectForKey:@"type"];
-					if([c objectForKey:@"char_length"])
-						fieldLength = [[c objectForKey:@"char_length"] integerValue];
-					if([c objectForKey:@"null"])
-						allowNULL = (![[c objectForKey:@"null"] integerValue]);
-					if([c objectForKey:@"charset_name"] && ![[c objectForKey:@"charset_name"] isEqualToString:@"binary"])
-						fieldEncoding = [c objectForKey:@"charset_name"];
-					break;
-				}
-			}
+			fieldType = [columnDefinition objectForKey:@"type"];
+			if([columnDefinition objectForKey:@"char_length"])
+				fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
+			if([columnDefinition objectForKey:@"null"])
+				allowNULL = (![[columnDefinition objectForKey:@"null"] integerValue]);
+			if([columnDefinition objectForKey:@"charset_name"] && ![[columnDefinition objectForKey:@"charset_name"] isEqualToString:@"binary"])
+				fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
 
 			if(fieldEditor) [fieldEditor release], fieldEditor = nil;
 			fieldEditor = [[SPFieldEditorController alloc] init];
@@ -4393,7 +4409,7 @@
 
 	// Check if current edited field is a blob
 	if ((fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"])
-		&& ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"] || [multipleLineEditingButton state] == NSOnState))
+		&& ![fieldType isEqualToString:@"enum"] && ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"] || [multipleLineEditingButton state] == NSOnState))
 	{
 		[tableContentView setFieldEditorSelectedRange:[fieldEditor selectedRange]];
 

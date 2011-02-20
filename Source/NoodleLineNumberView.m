@@ -50,11 +50,13 @@
 
 typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
+// Cache loop methods for speed
+
 #pragma mark -
 
 @interface NoodleLineNumberView (Private)
 
-- (NSMutableArray *)lineIndices;
+- (NSArray *)lineIndices;
 - (void)invalidateLineIndices;
 - (void)calculateLines;
 - (void)updateGutterThicknessConstants;
@@ -80,6 +82,17 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			nil] retain];
 		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
 		[self updateGutterThicknessConstants];
+		currentRuleThickness = 0.0f;
+
+		// Cache loop methods for speed
+		lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
+		lineNumberForCharacterIndexIMP = [self methodForSelector:lineNumberForCharacterIndexSel];
+		lineRangeForRangeSel = @selector(lineRangeForRange:);
+		addObjectSel = @selector(addObject:);
+		numberWithUnsignedIntegerSel = @selector(numberWithUnsignedInteger:);
+		numberWithUnsignedIntegerIMP = [NSNumber methodForSelector:numberWithUnsignedIntegerSel];
+
+
 	}
 
 	return self;
@@ -162,9 +175,13 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if ((aView != nil) && [aView isKindOfClass:[NSTextView class]])
 	{
+		layoutManager  = [aView layoutManager];
+		container      = [aView textContainer];
+
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)aView textStorage]];
 		[self invalidateLineIndices];
 	}
+
 }
 
 #pragma mark -
@@ -190,8 +207,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	NSUInteger      line, count, rectCount, i;
 	NSRectArray     rects;
 	NSRect          visibleRect;
-	NSLayoutManager *layoutManager;
-	NSTextContainer *container;
 	NSRange         nullRange;
 	NSArray         *lines;
 	id              view;
@@ -207,8 +222,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	{
 
 		nullRange = NSMakeRange(NSNotFound, 0);
-		layoutManager = [view layoutManager];
-		container = [view textContainer];
 		count = [lines count];
 
 		// Find the characters that are currently visible
@@ -217,10 +230,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		// Fudge the range a tad in case there is an extra new line at end.
 		// It doesn't show up in the glyphs so would not be accounted for.
 		range.length++;
-
-		// Cache loop methods for speed
-		SEL lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
-		IMP lineNumberForCharacterIndexIMP = [self methodForSelector:lineNumberForCharacterIndexSel];
 
 		for (line = (NSUInteger)(*lineNumberForCharacterIndexIMP)(self, lineNumberForCharacterIndexSel, range.location); line < count; line++)
 		{
@@ -268,29 +277,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	return left;
 }
 
-- (CGFloat)requiredThickness
-{
-	NSUInteger lineCount = [[self lineIndices] count];
-	if(lineCount < 10)
-		return maxWidthOfGlyph1;
-	else if(lineCount < 100)
-		return maxWidthOfGlyph2;
-	else if(lineCount < 1000)
-		return maxWidthOfGlyph3;
-	else if(lineCount < 10000)
-		return maxWidthOfGlyph4;
-	else if(lineCount < 100000)
-		return maxWidthOfGlyph5;
-	else if(lineCount < 1000000)
-		return maxWidthOfGlyph6;
-	else if(lineCount < 10000000)
-		return maxWidthOfGlyph7;
-	else if(lineCount < 100000000)
-		return maxWidthOfGlyph8;
-	else
-		return 100;
-}
-
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect
 {
 	id     view;
@@ -298,21 +284,19 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	bounds = [self bounds];
 
-	if (backgroundColor != nil)
-	{
-		[backgroundColor set];
-		NSRectFill(bounds);
-
-		[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
-		[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
-	}
+	// if (backgroundColor != nil)
+	// {
+	// 	[backgroundColor set];
+	// 	NSRectFill(bounds);
+	// 
+	// 	[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
+	// 	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
+	// }
 
 	view = [self clientView];
 
 	if ([view isKindOfClass:[NSTextView class]])
 	{
-		NSLayoutManager  *layoutManager;
-		NSTextContainer  *container;
 		NSRect           visibleRect;
 		NSRange          range, nullRange;
 		NSString         *labelText;
@@ -322,8 +306,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		NSSize           stringSize;
 		NSArray          *lines;
 
-		layoutManager  = [view layoutManager];
-		container      = [view textContainer];
 		nullRange      = NSMakeRange(NSNotFound, 0);
 
 		yinset         = [view textContainerInset].height;
@@ -345,9 +327,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		CGFloat yinsetMinY         = yinset - NSMinY(visibleRect);
 		CGFloat rectHeight;
 
-		// Cache loop methods for speed
-		SEL lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
-		IMP lineNumberForCharacterIndexIMP = [self methodForSelector:lineNumberForCharacterIndexSel];
 
 		for (line = (NSUInteger)(*lineNumberForCharacterIndexIMP)(self, lineNumberForCharacterIndexSel, range.location); line < count; line++)
 		{
@@ -496,7 +475,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 #pragma mark -
 #pragma mark PrivateAPI
 
-- (NSMutableArray *)lineIndices
+- (NSArray *)lineIndices
 {
 
 	if (lineIndices == nil)
@@ -519,7 +498,8 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if ([view isKindOfClass:[NSTextView class]])
 	{
-		NSUInteger index, stringLength, lineEnd, contentEnd;
+
+		NSUInteger index, stringLength, lineEnd, contentEnd, lastLine;
 		NSString   *textString;
 		CGFloat    newThickness;
 
@@ -539,26 +519,47 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		index = 0;
 
 		// Cache loop methods for speed
-		SEL lineRangeForRangeSel = @selector(lineRangeForRange:);
-		SEL addObjectSel = @selector(addObject:);
 		RangeOfLineIMP rangeOfLineIMP = (RangeOfLineIMP)[textString methodForSelector:lineRangeForRangeSel];
-		IMP addObjectIMP = [lineIndices methodForSelector:addObjectSel];
-
+		addObjectIMP = [lineIndices methodForSelector:addObjectSel];
+		
 		do
 		{
-			(void*)(*addObjectIMP)(lineIndices, addObjectSel, [NSNumber numberWithUnsignedInteger:index]);
+			(void*)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, index));
+			lastLine = index;
 			index = NSMaxRange((*rangeOfLineIMP)(textString, lineRangeForRangeSel, NSMakeRange(index, 0)));
 		}
 		while (index < stringLength);
 
 		// Check if text ends with a new line.
-		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
+		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange(lastLine, 0)];
 		if (contentEnd < lineEnd)
-			(void*)(*addObjectIMP)(lineIndices, addObjectSel, [NSNumber numberWithUnsignedInteger:index]);
+			(void*)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, index));
 
-		newThickness = [self requiredThickness];
-		if (fabs([self ruleThickness] - newThickness) > 1)
+		NSUInteger lineCount = [lineIndices count];
+		if(lineCount < 10)
+			newThickness = maxWidthOfGlyph1;
+		else if(lineCount < 100)
+			newThickness = maxWidthOfGlyph2;
+		else if(lineCount < 1000)
+			newThickness = maxWidthOfGlyph3;
+		else if(lineCount < 10000)
+			newThickness = maxWidthOfGlyph4;
+		else if(lineCount < 100000)
+			newThickness = maxWidthOfGlyph5;
+		else if(lineCount < 1000000)
+			newThickness = maxWidthOfGlyph6;
+		else if(lineCount < 10000000)
+			newThickness = maxWidthOfGlyph7;
+		else if(lineCount < 100000000)
+			newThickness = maxWidthOfGlyph8;
+		else
+			newThickness = 100;
+
+		if (fabs(currentRuleThickness - newThickness) > 1)
 		{
+
+			currentRuleThickness = newThickness;
+
 			// Not a good idea to resize the view during calculations (which can happen during
 			// display). Do a delayed perform (using NSInvocation since arg is a float).
 			NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:@selector(setRuleThickness:)]];

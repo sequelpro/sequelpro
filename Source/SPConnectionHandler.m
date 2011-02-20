@@ -282,6 +282,13 @@ certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self 
 	
 	NSInteger newState = [theTunnel state];
 	
+	// If the user cancelled the password prompt dialog
+	if ([theTunnel passwordPromptCancelled]) {
+		[self _restoreConnectionInterface];
+		
+		return;
+	}
+	
 	if (newState == PROXY_STATE_IDLE) {
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 		

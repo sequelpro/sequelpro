@@ -111,17 +111,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	BOOL enableInteraction = ((![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableTriggers]) || (![tableDocumentInstance isWorking]));
 
-	// Disable all interface elements by default
-	[addTriggerButton setEnabled:NO];
-	[refreshTriggersButton setEnabled:NO];
-	[triggersTableView setEnabled:NO];
-	[labelTextField setStringValue:@""];
-
-	// Show a warning if the version of MySQL is too low to support triggers
-	if (![[tableDocumentInstance serverSupport] supportsTriggers]) {
-		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
-		return;
-	}
+	[self resetInterface];
 
 	// If no item is selected, or the item selected is not a table, return.
 	if (![tablesListInstance tableName] || [tablesListInstance tableType] != SPTableTypeTable)
@@ -137,6 +127,26 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 	// Ensure trigger data is loaded
 	[self _refreshTriggerDataForcingCacheRefresh:NO];
+}
+
+/**
+ * Reset the trigger interface, as for no selected table.
+ */
+- (void)resetInterface
+{
+	[triggerData removeAllObjects];
+	[triggersTableView noteNumberOfRowsChanged];
+
+	// Disable all interface elements by default
+	[addTriggerButton setEnabled:NO];
+	[refreshTriggersButton setEnabled:NO];
+	[triggersTableView setEnabled:NO];
+	[labelTextField setStringValue:@""];
+
+	// Show a warning if the version of MySQL is too low to support triggers
+	if (![[tableDocumentInstance serverSupport] supportsTriggers]) {
+		[labelTextField setStringValue:NSLocalizedString(@"This version of MySQL does not support triggers. Support for triggers was added in MySQL 5.0.2", @"triggers not supported label")];
+	}
 }
 
 #pragma mark -
@@ -400,15 +410,16 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 			while (row != NSNotFound)
 			{
-				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:@"trigger"];
+				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:SPTriggerName];
 				NSString *query = [NSString stringWithFormat:@"DROP TRIGGER %@.%@", [database backtickQuotedString], [triggerName backtickQuotedString]];
 
 				[connection queryString:query];
 
 				if ([connection queryErrored]) {
+					[[alert window] orderOut:self];
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil,
+									  nil, nil, [tableDocumentInstance parentWindow], nil, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection getLastErrorMessage]]);
 
 					// Abort loop
@@ -554,7 +565,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Timin title is different then what we have saved in the database (case difference)
 	for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
 	{
-		if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"timing"] uppercaseString]]) {
+		if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:SPTriggerActionTime] uppercaseString]]) {
 			[triggerActionTimePopUpButton selectItemAtIndex:i];
 			break;
 		}
@@ -563,7 +574,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Event title is different then what we have saved in the database (case difference)
 	for (NSUInteger i = 0; i < [[triggerEventPopUpButton itemArray] count]; i++)
 	{
-		if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:@"event"] uppercaseString]]) {
+		if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:SPTriggerEvent] uppercaseString]]) {
 			[triggerEventPopUpButton selectItemAtIndex:i];
 			break;
 		}

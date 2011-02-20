@@ -48,10 +48,22 @@
 	CGFloat         maxWidthOfGlyph6;
 	CGFloat         maxWidthOfGlyph7;
 	CGFloat         maxWidthOfGlyph8;
+	CGFloat         currentRuleThickness;
 	NSDictionary    *textAttributes;
 
 	// Add support for selection by clicking/dragging
 	NSUInteger      dragSelectionStartLine;
+
+	SEL lineNumberForCharacterIndexSel;
+	IMP lineNumberForCharacterIndexIMP;
+	SEL lineRangeForRangeSel;
+	SEL numberWithUnsignedIntegerSel;
+	IMP numberWithUnsignedIntegerIMP;
+	SEL addObjectSel;
+	IMP addObjectIMP;
+
+	NSLayoutManager  *layoutManager;
+	NSTextContainer  *container;
 
 }
 

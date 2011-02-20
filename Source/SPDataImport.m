@@ -1014,7 +1014,7 @@
 						insertBaseStringHasEntries = NO;
 						for (i = 0; i < [fieldMappingArray count]; i++) {
 							if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
-								if (insertBaseStringHasEntries) [insertBaseString appendString:@","];
+								if (insertBaseStringHasEntries) [insertRemainingBaseString appendString:@","];
 								else insertBaseStringHasEntries = YES;
 								[insertRemainingBaseString appendString:[NSArrayObjectAtIndex(fieldMappingTableColumnNames, i) backtickQuotedString]];
 							}
