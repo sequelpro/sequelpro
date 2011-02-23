@@ -2382,9 +2382,12 @@
 	[menu addItem:item];
 	[item release];
 
-	// Attempt to reselect the previously selected title, falling back to the first item
-	[compareField selectItemWithTitle:titleToRestore];
-	if (![compareField selectedItem]) [compareField selectItemAtIndex:0];
+	// Attempt to reselect the previously selected title, falling back to the first
+	// item on failure, as long as there is no filter selection to be restored.
+	if (!filterFieldToRestore) {
+		[compareField selectItemWithTitle:titleToRestore];
+		if (![compareField selectedItem]) [compareField selectItemAtIndex:0];
+	}
 
 	// Update the argumentField enabled state
 	[self performSelectorOnMainThread:@selector(toggleFilterField:) withObject:self waitUntilDone:YES];
