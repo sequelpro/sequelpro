@@ -33,6 +33,8 @@
 #import "SPGrowlController.h"
 #import "SPExportFile.h"
 #import "SPAlertSheets.h"
+#import "SPExportFilenameUtilities.h"
+#import "SPDatabaseDocument.h"
 
 // Constants
 static const NSUInteger SPExportUIPadding = 20;
@@ -775,7 +777,6 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 	NSUInteger padding = (2 * SPExportUIPadding);
 	
 	CGFloat width  = (!display) ? (windowFrame.size.width - (padding + 2)) : (windowFrame.size.width - ([exportOptionsTabBar frame].size.width + (padding + 4)));
-	CGFloat width2 = (!display) ? (windowFrame.size.width - (padding + 2)) : (windowFrame.size.width - ([exportTableListButtonBar frame].size.width + (padding + 4)));
 	
 	[NSAnimationContext beginGrouping];
 	[[NSAnimationContext currentContext] setDuration:0.3];
@@ -803,7 +804,6 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 	BOOL isXML  = (exportType == SPXMLExport);
 	BOOL isHTML = (exportType == SPHTMLExport);
 	BOOL isPDF  = (exportType == SPPDFExport);
-	BOOL isDot  = (exportType == SPDotExport);
 	
 	BOOL structureEnabled = [[uiStateDict objectForKey:@"SQLExportStructureEnabled"] integerValue];
 	BOOL contentEnabled   = [[uiStateDict objectForKey:@"SQLExportContentEnabled"] integerValue];

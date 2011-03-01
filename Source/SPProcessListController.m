@@ -26,6 +26,7 @@
 #import "SPProcessListController.h"
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
+#import "SPAppController.h"
 
 static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 
@@ -74,7 +75,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
  */
 - (void)awakeFromNib
 {	
-	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[[NSApp delegate] frontDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
+	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[(SPAppController*)[NSApp delegate] frontDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
 	
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	
@@ -644,7 +645,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	}
 	
 	// If a match wasn't found then a custom value is set
-	if (!found) [[items objectAtIndex:([items count] - 1)] setState:NSOnState];
+	if (!found) [(NSMenuItem*)[items objectAtIndex:([items count] - 1)] setState:NSOnState];
 }
 
 /**

@@ -27,6 +27,7 @@
 #import "SPPreferencesUpgrade.h"
 #import "SPTablesPreferencePane.h"
 #import "SPEditorPreferencePane.h"
+#import "SPGeneralPreferencePane.h"
 
 @interface SPPreferenceController (PrivateAPI)
 

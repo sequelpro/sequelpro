@@ -31,8 +31,9 @@
 #import "SPLogger.h"
 #import "SPTooltip.h"
 #import "SPAppController.h"
+#import "SPDatabaseViewController.h"
 
-#import <objc/runtime.h>
+#import <objc/message.h>
 
 static SPNavigatorController *sharedNavigatorController = nil;
 

@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportFile.h"
+#import "SPFileHandle.h"
 
 @interface SPExportFile (PrivateAPI)
 

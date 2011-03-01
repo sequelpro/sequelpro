@@ -26,6 +26,7 @@
 #import "SPTableContent.h"
 #import "SPTablesList.h"
 #import "SPHistoryController.h"
+#import "SPDatabaseViewController.h"
 
 @implementation SPHistoryController
 

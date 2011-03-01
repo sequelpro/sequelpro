@@ -29,6 +29,7 @@
 #import "SPFileHandle.h"
 #import "SPTableData.h"
 #import "SPExportUtilities.h"
+#import "SPExportFile.h"
 
 @implementation SPCSVExporter
 
@@ -394,7 +395,7 @@
 	}
 	
 	// Write data to disk
-	[[[self exportOutputFile] exportFileHandle] synchronizeFile];
+	[[(SPExportFile*)[self exportOutputFile] exportFileHandle] synchronizeFile];
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];

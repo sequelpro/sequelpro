@@ -32,9 +32,9 @@
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 
 // Table view column identifier constants
-static const NSString *SPTableViewMessageColumnID    = @"message";
-static const NSString *SPTableViewDateColumnID       = @"messageDate";
-static const NSString *SPTableViewConnectionColumnID = @"messageConnection";
+static NSString *SPTableViewMessageColumnID    = @"message";
+static NSString *SPTableViewDateColumnID       = @"messageDate";
+static NSString *SPTableViewConnectionColumnID = @"messageConnection";
 
 @interface SPQueryController (PrivateAPI)
 

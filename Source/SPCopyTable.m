@@ -23,6 +23,7 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #import <MCPKit/MCPKit.h>
+#import "MCPGeometryData.h"
 
 #import "SPCopyTable.h"
 #import "SPTableContent.h"

@@ -20,7 +20,7 @@
 
 - (id)initWithTemplateEngine:(MGTemplateEngine *)theEngine
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		self.engine = theEngine; // weak ref
 	}
 	

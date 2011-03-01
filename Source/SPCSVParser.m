@@ -48,7 +48,7 @@
 	totalLengthParsed = 0;
 
 	// Loop through the results fetching process
-	while (csvRowArray = [self getRowAsArrayAndTrimString:NO stringIsComplete:YES])
+	while ((csvRowArray = [self getRowAsArrayAndTrimString:NO stringIsComplete:YES]))
 	{
 		CFArrayAppendValue((CFMutableArrayRef)csvArray, csvRowArray);
 	}
@@ -603,7 +603,7 @@
 #pragma mark -
 
 - (id) init {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		csvString = [[NSMutableString alloc] init];
 		[self _initialiseCSVParserDefaults];
 	}
@@ -611,14 +611,14 @@
 }
 - (id) initWithString:(NSString *)aString
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		csvString = [[NSMutableString alloc] initWithString:aString];
 		[self _initialiseCSVParserDefaults];
 	}
 	return self;
 }
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)encoding error:(NSError **)error {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		csvString = [[NSMutableString alloc] initWithContentsOfFile:path encoding:encoding error:error];
 		[self _initialiseCSVParserDefaults];
 	}

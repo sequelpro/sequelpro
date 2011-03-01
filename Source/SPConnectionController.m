@@ -34,6 +34,8 @@
 #import "SPSSHTunnel.h"
 #import "SPFavoriteNode.h"
 #import "SPTableTextFieldCell.h"
+#import "SPGeneralPreferencePane.h"
+#import "SPDatabaseViewController.h"
 
 @interface SPConnectionController (PrivateAPI)
 
@@ -85,7 +87,7 @@
  */
 - (id) initWithDocument:(SPDatabaseDocument *)theTableDocument
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		tableDocument = theTableDocument;
 		databaseConnectionSuperview = [tableDocument databaseView];
 		databaseConnectionView = [tableDocument valueForKey:@"contentViewSplitter"];

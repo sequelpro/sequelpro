@@ -33,6 +33,7 @@
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPBundleHTMLOutputController.h"
+#import "SPDatabaseViewController.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -2673,7 +2674,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL allowToCheckForUpperCase;
 	
 	// now loop through all the tokens
-	while (token=yylex()){
+	while ((token=yylex())){
 
 		allowToCheckForUpperCase = YES;
 		

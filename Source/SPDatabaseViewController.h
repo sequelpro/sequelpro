@@ -49,4 +49,6 @@
 // Table control
 - (void)loadTable:(NSString *)aTable ofType:(NSInteger)aTableType;
 
+- (NSView *)databaseView;
+
 @end

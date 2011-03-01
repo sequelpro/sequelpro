@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPActivityTextFieldCell.h"
+#import "SPTableInfo.h"
 
 #define FAVORITE_NAME_FONT_SIZE 12.0
 
