@@ -23,8 +23,15 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPAppController.h"
+#import "SPBundleHTMLOutputController.h"
+#import "SPCopyTable.h"
 #import "SPDatabaseViewController.h"
+#import "SPHistoryController.h"
+#import "SPTableContent.h"
 #import "SPTableData.h"
+#import "SPTablesList.h"
+#import "SPTableTriggers.h"
 
 @interface SPDatabaseDocument (SPDatabaseViewControllerPrivateAPI)
 
@@ -490,7 +497,7 @@
 
 		// For HTML output check if corresponding window already exists
 		BOOL stopTrigger = NO;
-		if([[data objectAtIndex:2] length]) {
+		if([(NSString*)[data objectAtIndex:2] length]) {
 			BOOL correspondingWindowFound = NO;
 			NSString *uuid = [data objectAtIndex:2];
 			for(id win in [NSApp windows]) {

@@ -23,7 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindow.h"
-
+#import "SPWindowController.h"
 
 @implementation SPWindow
 

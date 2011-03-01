@@ -29,7 +29,6 @@
 @interface SPDatabaseDocument (SPDatabaseViewController)
 
 // Getters
-- (NSView *)parentView;
 - (NSString *)table;
 - (NSInteger)tableType;
 - (BOOL)structureLoaded;
