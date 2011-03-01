@@ -57,6 +57,8 @@
 #import "SPServerSupport.h"
 #import "SPTooltip.h"
 #import "SPDatabaseViewController.h"
+#import "SPBundleHTMLOutputController.h"
+#import "SPConnectionDelegate.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -4741,7 +4743,6 @@
 			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
 			NSFileManager *fm = [NSFileManager defaultManager];
 			NSString *status = @"0";
-			BOOL isDir;
 			BOOL userTerminated = NO;
 			BOOL doSyntaxHighlighting = NO;
 			BOOL doSyntaxHighlightingViaCSS = NO;

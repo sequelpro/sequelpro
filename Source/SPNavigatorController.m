@@ -30,6 +30,7 @@
 #import "SPTablesList.h"
 #import "SPLogger.h"
 #import "SPTooltip.h"
+#import "SPAppController.h"
 
 #import <objc/runtime.h>
 

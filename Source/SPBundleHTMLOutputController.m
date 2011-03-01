@@ -114,7 +114,6 @@
 - (void)keyDown:(NSEvent *)theEvent
 {
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
-	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 

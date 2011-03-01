@@ -30,17 +30,18 @@
 #import "SPTableView.h"
 #import "SPCategoryAdditions.h"
 #import "RegexKitLite.h"
+#import "SPDatabaseData.h"
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
 // Constants
-static const NSString *SPTableViewImportValueColumnID = @"import_value";
-static const NSString *SPTableViewTypeColumnID        = @"type";
-static const NSString *SPTableViewTargetFieldColumnID = @"target_field";
-static const NSString *SPTableViewOperatorColumnID    = @"operator";
-static const NSString *SPTableViewValueIndexColumnID  = @"value_index";
-static const NSString *SPTableViewGlobalValueColumnID = @"global_value";
-static const NSString *SPTableViewSqlColumnID         = @"sql";
+static NSString *SPTableViewImportValueColumnID = @"import_value";
+static NSString *SPTableViewTypeColumnID        = @"type";
+static NSString *SPTableViewTargetFieldColumnID = @"target_field";
+static NSString *SPTableViewOperatorColumnID    = @"operator";
+static NSString *SPTableViewValueIndexColumnID  = @"value_index";
+static NSString *SPTableViewGlobalValueColumnID = @"global_value";
+static NSString *SPTableViewSqlColumnID         = @"sql";
 
 
 @implementation SPFieldMapperController
@@ -55,7 +56,7 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
  */
 - (id)initWithDelegate:(id)managerDelegate
 {
-	if (self = [super initWithWindowNibName:@"DataMigrationDialog"]) {
+	if ((self = [super initWithWindowNibName:@"DataMigrationDialog"])) {
 
 		fieldMappingCurrentRow = 0;
 		if(managerDelegate == nil) {
@@ -1388,8 +1389,6 @@ static const NSString *SPTableViewSqlColumnID         = @"sql";
 	NSInteger i,j;
 	NSMutableArray *distMatrix = [NSMutableArray array];
 	for(i=0; i < [tableHeaderNames count]; i++) {
-		CGFloat   minDist  = 1e6;
-		NSInteger minIndex = 0;
 		CGFloat   dist     = 1e6;
 		for(j=0; j < [fileHeaderNames count]; j++) {
 			id fileHeaderName = NSArrayObjectAtIndex(fileHeaderNames,j);

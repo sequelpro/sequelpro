@@ -39,6 +39,7 @@
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
 
+#import <MCPKit/MCPKit.h>
 #import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")

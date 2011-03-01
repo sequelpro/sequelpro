@@ -35,7 +35,7 @@
 	   SPWindowController,
 	   SPServerSupport;
 
-@protocol SPConnectionControllerDelegateProtocol;
+#import "SPConnectionControllerDelegateProtocol.h"
 
 /**
  * The SPDatabaseDocument class controls the primary database view window.
@@ -321,6 +321,8 @@
 - (NSString *)connectionID;
 - (NSString *)tabTitleForTooltip;
 - (BOOL)isSaveInBundle;
+- (NSURL *)fileURL;
+- (NSString *)displayName;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;

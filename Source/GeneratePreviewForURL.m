@@ -372,7 +372,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 					truncatedString = [[NSString alloc] initWithString:@"\n ✂ ..."];
 				}
 
-				NSRange textRange = NSMakeRange(0, [sqlText length]);
 				NSString *tokenColor;
 				size_t token;
 				NSRange tokenRange;
@@ -385,7 +384,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				// now loop through all the tokens
 				NSUInteger poolCount = 0;
 				NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
-				while (token=yylex()){
+				while ((token=yylex())){
 					skipFontTag = NO;
 					switch (token) {
 						case SPT_SINGLE_QUOTED_TEXT:

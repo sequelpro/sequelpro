@@ -45,6 +45,13 @@
 #import "SPAlertSheets.h"
 #import "SPHistoryController.h"
 #import "SPGeometryDataView.h"
+#import "SPTextView.h"
+#import "SPDatabaseViewController.h"
+#import "SPAppController.h"
+
+@interface SPTableContent (Private)
+- (BOOL)cancelRowEditing;
+@end
 
 @implementation SPTableContent
 
@@ -826,7 +833,7 @@
 
 	// Loop through the result rows as they become available
 	tableRowsCount = 0;
-	while (tempRow = [theResult fetchNextRowAsArray]) {
+	while ((tempRow = [theResult fetchNextRowAsArray])) {
 		pthread_mutex_lock(&tableValuesLock);
 
 		if (tableRowsCount < previousTableRowsCount) {

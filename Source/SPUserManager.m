@@ -173,7 +173,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	}
 	
 	if (result && [result numOfRows]) {
-		while (privRow = [result fetchRowAsArray]) 
+		while ((privRow = [result fetchRowAsArray])) 
 		{
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
 
@@ -192,7 +192,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		
 		[result setReturnDataAsStrings:YES];
 		
-		while (privRow = [result fetchRowAsArray]) 
+		while ((privRow = [result fetchRowAsArray])) 
 		{
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
 			

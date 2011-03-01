@@ -95,7 +95,7 @@
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger i, j, k, t, s, rowCount, queryLength, lastProgressValue;
+	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;

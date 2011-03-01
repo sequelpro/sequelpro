@@ -30,14 +30,14 @@
 #import "SPCategoryAdditions.h"
 
 // Constants
-static const NSString *SPImportColorScheme             = @"ImportColorScheme";
-static const NSString *SPExportColorScheme             = @"ExportColorScheme";
-static const NSString *SPSaveColorScheme               = @"SaveColorScheme";
-static const NSString *SPDefaultColorSchemeName        = @"Default";
-static const NSString *SPDefaultColorSchemeNameLC      = @"default";
-static const NSString *SPCustomColorSchemeName         = @"User-defined";
-static const NSString *SPCustomColorSchemeNameLC       = @"user-defined";
-static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
+static NSString *SPImportColorScheme             = @"ImportColorScheme";
+static NSString *SPExportColorScheme             = @"ExportColorScheme";
+static NSString *SPSaveColorScheme               = @"SaveColorScheme";
+static NSString *SPDefaultColorSchemeName        = @"Default";
+static NSString *SPDefaultColorSchemeNameLC      = @"default";
+static NSString *SPCustomColorSchemeName         = @"User-defined";
+static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
+static NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 
 @interface SPEditorPreferencePane (PrivateAPI)
 

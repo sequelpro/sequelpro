@@ -177,13 +177,13 @@ static NSMutableArray *deliciousBindingKeys = nil;
                 }
                 
             } else if ([view isKindOfClass:[NSTableView class]]) {
-                for (NSTableColumn *column in [view tableColumns]) {
+                for (NSTableColumn *column in [(NSTableView*)view tableColumns]) {
                     [self _localizeStringValueOfObject:[column headerCell] table:table];
                 }
             
             } else if ([view isKindOfClass:[NSTextField class]]) {
                 NSDictionary *vb;
-                if (vb = [view infoForBinding:@"value"]) {
+                if ((vb = [view infoForBinding:@"value"])) {
                     NSMutableDictionary *lvb = [NSMutableDictionary dictionaryWithDictionary:[vb objectForKey:NSOptionsKey]];
                     for (NSString *bindingKey in deliciousBindingKeys) {
                         if ([lvb objectForKey:bindingKey] == [NSNull null]) continue;

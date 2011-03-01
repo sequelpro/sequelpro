@@ -25,6 +25,7 @@
 #import "SPDBActionCommons.h"
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
+#import "SPDatabaseInfo.h"
 
 @implementation SPDatabaseRename
 

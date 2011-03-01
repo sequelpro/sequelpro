@@ -35,6 +35,8 @@
 #import "SPAlertSheets.h"
 #import "SPBundleHTMLOutputController.h"
 #import "SPGeometryDataView.h"
+#import "SPBundleEditorController.h"
+#import "SPAppController.h"
 
 NSInteger MENU_EDIT_COPY             = 2001;
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
@@ -157,7 +159,6 @@ NSInteger kBlobAsImageFile = 4;
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
-	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	Class mcpGeometryData = [MCPGeometryData class];
 	NSUInteger rowCounter = 0;
 
@@ -296,7 +297,6 @@ NSInteger kBlobAsImageFile = 4;
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
-	NSStringEncoding connectionEncoding = [mySQLConnection encoding];
 	Class mcpGeometryData = [MCPGeometryData class];
 
 	NSUInteger rowCounter = 0;
@@ -699,7 +699,7 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger allColumnWidths = 0;
 
 	// Determine the available size
-	NSScrollView *parentScrollView = [[self superview] superview];
+	NSScrollView *parentScrollView = (NSScrollView*)[[self superview] superview];
  	CGFloat visibleTableWidth = [parentScrollView bounds].size.width - [NSScroller scrollerWidth] - [columnDefinitions count] * 3.5;
 
 	for (NSDictionary *columnDefinition in columnDefinitions) {

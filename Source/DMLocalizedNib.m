@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 #import <objc/runtime.h>
 
-
 @interface NSNib (DMLocalizedNib)
 - (id)deliciousInitWithNibNamed:(NSString *)nibName bundle:(NSBundle *)bundle;
 - (id)deliciousInitWithContentsOfURL:(NSURL *)nibFileURL;

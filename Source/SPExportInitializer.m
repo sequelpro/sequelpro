@@ -40,6 +40,8 @@
 #import "SPDotExporter.h"
 #import "SPConnectionControllerDelegateProtocol.h"
 #import "SPExportFile.h"
+#import "SPExportFileUtilities.h"
+#import "SPExportFilenameUtilities.h"
 
 @implementation SPExportController (SPExportInitializer)
 

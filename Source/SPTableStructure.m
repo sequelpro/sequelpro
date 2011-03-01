@@ -251,7 +251,6 @@
 	// Set up the encoding PopUpButtonCell
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	if ([encodings count]) {
-		NSString *selectedTitle = @"";
 		[encodingPopupCell removeAllItems];
 		[encodingPopupCell addItemWithTitle:@""];
 
@@ -873,7 +872,6 @@
 
 	if (alertSheetOpened) return NO;
 
-	NSInteger code;
 	NSMutableString *queryString;
 	BOOL fieldDefIncludesLen = NO;
 	

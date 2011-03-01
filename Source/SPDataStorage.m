@@ -379,7 +379,7 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 #pragma mark -
 
 - (id) init {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		numColumns = 0;
 		columnPointerByteSize = 0;
 		numRows = 0;

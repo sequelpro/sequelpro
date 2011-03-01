@@ -3723,8 +3723,6 @@
 		shouldBeginEditing = NO;
 	}
 
-	NSString *fieldType;
-
 	BOOL isBlob = NO;
 
 	// Check if current field is a blob
