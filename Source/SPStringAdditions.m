@@ -25,6 +25,7 @@
 
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
+#import "SPDatabaseDocument.h"
 
 @interface NSString (PrivateAPI)
 

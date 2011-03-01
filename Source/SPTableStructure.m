@@ -189,7 +189,6 @@
 {
 	NSArray *theTableIndexes;
 	NSMutableDictionary *theTableEnumLists = [NSMutableDictionary dictionary];
-	NSInteger i;
 
 	// Check whether a save of the current row is required.
 	if ( ![[self onMainThread] saveRowOnDeselect] ) return;

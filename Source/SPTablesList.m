@@ -1229,7 +1229,6 @@
 - (BOOL)selectItemsWithNames:(NSArray *)theNames
 {
 	NSInteger i, tableType;
-	NSInteger itemIndex = NSNotFound;
 	NSMutableIndexSet *selectionIndexSet = [NSMutableIndexSet indexSet];
 
 	// Loop through the unfiltered tables/views to find the desired item

@@ -56,7 +56,7 @@
 #import "SPDatabaseRename.h"
 #import "SPServerSupport.h"
 #import "SPTooltip.h"
-
+#import "SPDatabaseViewController.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 

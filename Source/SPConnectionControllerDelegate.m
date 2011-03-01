@@ -25,6 +25,7 @@
 
 #import "SPConnectionControllerDelegate.h"
 #import "SPTableTextFieldCell.h"
+#import "SPFavoriteNode.h"
 
 @implementation SPConnectionController (SPConnectionControllerDelegate)
 

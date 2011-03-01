@@ -1147,7 +1147,6 @@ NSInteger kBlobAsImageFile = 4;
 			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 			NSString *inputAction = @"";
 			NSString *inputFallBackAction = @"";
-			NSString *withBlobHandling = @"";
 			NSError *err = nil;
 			NSString *uuid = [NSString stringWithNewUUID];
 			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];

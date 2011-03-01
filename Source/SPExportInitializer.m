@@ -38,6 +38,8 @@
 #import "SPSQLExporter.h"
 #import "SPXMLExporter.h"
 #import "SPDotExporter.h"
+#import "SPConnectionControllerDelegateProtocol.h"
+#import "SPExportFile.h"
 
 @implementation SPExportController (SPExportInitializer)
 
@@ -174,7 +176,6 @@
  */
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
-	NSUInteger i;
 	BOOL singleFileHandleSet = NO;
 	SPExportFile *singleExportFile = nil, *file = nil;
 	

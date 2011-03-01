@@ -546,7 +546,7 @@ static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 		return [editThemeListItems count];
 	}
 	
-	return nil;
+	return 0;
 }
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
@@ -806,11 +806,7 @@ static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 	NSMutableDictionary *scheme = [NSMutableDictionary dictionary];
 	NSMutableDictionary *mainsettings = [NSMutableDictionary dictionary];
 	NSMutableArray *settings = [NSMutableArray array];
-	
-	CGFloat red, green, blue, alpha;
-	NSInteger redInt, greenInt, blueInt, alphaInt;
-	NSString *redHexValue, *greenHexValue, *blueHexValue, *alphaHexValue;
-	
+		
 	[prefs synchronize];
 	
 	NSColor *aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];

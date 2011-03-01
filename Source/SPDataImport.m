@@ -363,7 +363,6 @@
 	NSInteger dataBufferPosition = 0;
 	NSInteger dataBufferLastQueryEndPosition = 0;
 	BOOL fileIsCompressed;
-	BOOL importSQLAsUTF8 = YES;
 	BOOL allDataRead = NO;
 	BOOL ignoreSQLErrors = ([importSQLErrorHandlingPopup selectedTag] == SPSQLImportIgnoreErrors);
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;

@@ -27,6 +27,8 @@
 #import "SPFavoriteTextFieldCell.h"
 #import "SPPreferenceController.h"
 #import "SPKeychain.h"
+#import <BWToolkitFramework/BWToolkitFramework.h>
+#import "SPGeneralPreferencePane.h"
 
 @interface SPFavoritesPreferencePane (PrivateAPI)
 

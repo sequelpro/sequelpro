@@ -25,6 +25,7 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPAlertSheets.h"
 #import "SPPrintAccessory.h"
+#import "SPAppController.h"
 
 @class WebScriptCallFrame;
 
@@ -42,7 +43,7 @@
 - (id)init
 {
 
-	if (self = [super initWithWindowNibName:@"BundleHTMLOutput"]) {
+	if ((self = [super initWithWindowNibName:@"BundleHTMLOutput"])) {
 
 		[[self window] setReleasedWhenClosed:YES];
 
@@ -115,7 +116,6 @@
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	NSString *characters = [theEvent characters];
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
-	unichar insertedCharacter = [characters characterAtIndex:0];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
 	if(curFlags & NSCommandKeyMask) {

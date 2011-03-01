@@ -4444,9 +4444,6 @@
 	// Trap the escape key
 	if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
 	{
-
-		NSUInteger row = [control editedRow];
-
 		// Abort editing
 		[control abortEditing];
 		if(control == tableContentView)
@@ -4530,7 +4527,6 @@
 
 	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
-	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSInteger editedRow = [filterTableView editedRow];
 	
 

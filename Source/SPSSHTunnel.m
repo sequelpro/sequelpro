@@ -425,7 +425,7 @@
 	if ([notificationText length]) {
 		messages = [notificationText componentsSeparatedByString:@"\n"];
 		enumerator = [messages objectEnumerator];
-		while (message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {			
+		while ((message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]])) {			
 			if (![message length]) continue;
 			[debugMessagesLock lock];
 			[debugMessages addObject:[NSString stringWithString:message]];

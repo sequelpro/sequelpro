@@ -69,17 +69,17 @@ void SPApplyRevisionChanges(void)
 		
 		databaseEnumerator = [[prefs objectForKey:SPTableColumnWidths] keyEnumerator];
 		
-		while (databaseKey = [databaseEnumerator nextObject]) 
+		while ((databaseKey = [databaseEnumerator nextObject])) 
 		{
 			newDatabase = [[NSMutableDictionary alloc] init];
 			tableEnumerator = [[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] keyEnumerator];
 			
-			while (tableKey = [tableEnumerator nextObject]) 
+			while ((tableKey = [tableEnumerator nextObject])) 
 			{
 				newTable = [[NSMutableDictionary alloc] init];
 				columnEnumerator = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] keyEnumerator];
 				
-				while (columnKey = [columnEnumerator nextObject]) 
+				while ((columnKey = [columnEnumerator nextObject])) 
 				{
 					columnWidth = [[[[[prefs objectForKey:SPTableColumnWidths] objectForKey:databaseKey] objectForKey:tableKey] objectForKey:columnKey] doubleValue];
 				
@@ -129,7 +129,7 @@ void SPApplyRevisionChanges(void)
 		
 		keyEnumerator = [keysToUpgrade keyEnumerator];
 		
-		while (newKey = [keyEnumerator nextObject]) 
+		while ((newKey = [keyEnumerator nextObject])) 
 		{
 			oldKey = [keysToUpgrade objectForKey:newKey];
 			

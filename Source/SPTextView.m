@@ -415,8 +415,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					continue;
 				}
 
-				NSString *dbpath = [db substringFromIndex:[db rangeOfString:SPUniqueSchemaDelimiter].location];
-
 				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
 					[sortedTables addObject:aTableName_id];

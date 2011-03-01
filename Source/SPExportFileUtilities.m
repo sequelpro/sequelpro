@@ -26,6 +26,9 @@
 #import "SPExportFileUtilities.h"
 #import "SPExporter.h"
 #import "SPAlertSheets.h"
+#import "SPExportFile.h"
+#import "SPDatabaseDocument.h"
+#import "SPCustomQuery.h"
 
 @implementation SPExportController (SPExportFileUtilities)
 

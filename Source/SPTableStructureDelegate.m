@@ -25,6 +25,10 @@
 
 #import "SPTableStructureDelegate.h"
 #import "SPAlertSheets.h"
+#import "SPDatabaseData.h"
+#import "SPDatabaseViewController.h"
+#import "SPTableData.h"
+#import "SPTableFieldValidation.h"
 
 @implementation SPTableStructure (SPTableStructureDelegate)
 
@@ -498,7 +502,7 @@
 		// validate cell against current field type
 		NSDictionary *theRow = NSArrayObjectAtIndex(tableFields, rowIndex);
 		NSString *theRowType = @"";
-		if(theRowType = [theRow objectForKey:@"type"])
+		if((theRowType = [theRow objectForKey:@"type"]))
 			theRowType = [[theRowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 		
 		// Only string fields allow encoding settings
