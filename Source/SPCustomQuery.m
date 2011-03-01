@@ -167,7 +167,7 @@
 		// If carriage returns were found, normalise the queries
 		if ([queryParser containsCarriageReturns]) {
 			NSMutableArray *normalisedQueries = [NSMutableArray arrayWithCapacity:[queries count]];
-			for (NSString *query in queries) {
+			for (query in queries) {
 				[normalisedQueries addObject:[SPSQLParser normaliseQueryForExecution:query]];
 			}
 			queries = normalisedQueries;
@@ -893,7 +893,7 @@
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
 
 	// Loop through the result rows as they become available
-	while (tempRow = [theResult fetchNextRowAsArray]) {
+	while ((tempRow = [theResult fetchNextRowAsArray])) {
 
 		pthread_mutex_lock(&resultDataLock);
 		SPDataStorageAddRow(resultData, tempRow);
@@ -3158,9 +3158,11 @@
 		// Remove all needless default menu items
 		NSEnumerator *itemEnumerator = [defaultMenuItems objectEnumerator];
 		NSMenuItem *menuItem = nil;
-		while (menuItem = [itemEnumerator nextObject])
+		
+		while ((menuItem = [itemEnumerator nextObject]))
 		{
 			NSInteger tag = [menuItem tag];
+			
 			switch (tag)
 			{
 				case 2000: // WebMenuItemTagOpenLink

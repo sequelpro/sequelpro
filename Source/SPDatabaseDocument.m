@@ -2789,15 +2789,19 @@
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
-				return NO;
+				
+				return;
 			}
 
 			NSError *error = nil;
+			
 			[plist writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName] options:NSAtomicWrite error:&error];
+			
 			if(error != nil){
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
-				return NO;
+				
+				return;
 			}
 
 			[[NSApp delegate] setSessionURL:fileName];

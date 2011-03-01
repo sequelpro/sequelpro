@@ -838,84 +838,77 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike
 {
+	NSMutableString *sqlHTML = [[[NSMutableString alloc] initWithCapacity:[sqlText length]] autorelease];
 
-		NSMutableString *sqlHTML = [[[NSMutableString alloc] initWithCapacity:[sqlText length]] autorelease];
+	NSString *tokenColor;
+	NSString *cssId;
+	size_t token;
+	NSRange tokenRange;
 
-		NSRange textRange = NSMakeRange(0, [sqlText length]);
-		NSString *tokenColor;
-		NSString *cssId;
-		size_t token;
-		NSRange tokenRange;
+	// initialise flex
+	yyuoffset = 0; yyuleng = 0;
+	yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
+	BOOL skipFontTag;
 
-		// initialise flex
-		yyuoffset = 0; yyuleng = 0;
-		yy_switch_to_buffer(yy_scan_string([sqlText UTF8String]));
-		BOOL skipFontTag;
-
-		while (token=yylex()){
-			skipFontTag = NO;
-			switch (token) {
-				case SPT_SINGLE_QUOTED_TEXT:
-				case SPT_DOUBLE_QUOTED_TEXT:
-				    tokenColor = @"#A7221C";
-					cssId = @"sp_sql_quoted";
-				    break;
-				case SPT_BACKTICK_QUOTED_TEXT:
-				    tokenColor = @"#001892";
-					cssId = @"sp_sql_backtick";
-				    break;
-				case SPT_RESERVED_WORD:
-				    tokenColor = @"#0041F6";
-					cssId = @"sp_sql_keyword";
-				    break;
-				case SPT_NUMERIC:
-					tokenColor = @"#67350F";
-					cssId = @"sp_sql_numeric";
-					break;
-				case SPT_COMMENT:
-				    tokenColor = @"#265C10";
-					cssId = @"sp_sql_comment";
-				    break;
-				case SPT_VARIABLE:
-				    tokenColor = @"#6C6C6C";
-					cssId = @"sp_sql_variable";
-				    break;
-				case SPT_WHITESPACE:
-				    skipFontTag = YES;
-					cssId = @"";
-				    break;
-				default:
-			        skipFontTag = YES;
-					cssId = @"";
-			}
-
-			tokenRange = NSMakeRange(yyuoffset, yyuleng);
-
-			if(skipFontTag)
-				[sqlHTML appendString:[[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
-			else {
-				if(cssLike)
-					[sqlHTML appendFormat:@"<span class=\"%@\">%@</span>", cssId, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
-				else
-					[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
-			}
-
+	while ((token=yylex())) {
+		skipFontTag = NO;
+		switch (token) {
+			case SPT_SINGLE_QUOTED_TEXT:
+			case SPT_DOUBLE_QUOTED_TEXT:
+				tokenColor = @"#A7221C";
+				cssId = @"sp_sql_quoted";
+				break;
+			case SPT_BACKTICK_QUOTED_TEXT:
+				tokenColor = @"#001892";
+				cssId = @"sp_sql_backtick";
+				break;
+			case SPT_RESERVED_WORD:
+				tokenColor = @"#0041F6";
+				cssId = @"sp_sql_keyword";
+				break;
+			case SPT_NUMERIC:
+				tokenColor = @"#67350F";
+				cssId = @"sp_sql_numeric";
+				break;
+			case SPT_COMMENT:
+				tokenColor = @"#265C10";
+				cssId = @"sp_sql_comment";
+				break;
+			case SPT_VARIABLE:
+				tokenColor = @"#6C6C6C";
+				cssId = @"sp_sql_variable";
+				break;
+			case SPT_WHITESPACE:
+				skipFontTag = YES;
+				cssId = @"";
+				break;
+			default:
+				skipFontTag = YES;
+				cssId = @"";
 		}
 
-		// Wrap lines, and replace tabs with spaces
-		[sqlHTML replaceOccurrencesOfString:@"\n" withString:@"<br>" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
-		[sqlHTML replaceOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+		tokenRange = NSMakeRange(yyuoffset, yyuleng);
 
-		if(sqlHTML)
-			return sqlHTML;
-		else
-			return @"";
+		if(skipFontTag)
+			[sqlHTML appendString:[[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
+		else {
+			if(cssLike)
+				[sqlHTML appendFormat:@"<span class=\"%@\">%@</span>", cssId, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
+			else
+				[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
+		}
 
+	}
+
+	// Wrap lines, and replace tabs with spaces
+	[sqlHTML replaceOccurrencesOfString:@"\n" withString:@"<br>" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+	[sqlHTML replaceOccurrencesOfString:@"\t" withString:@"&nbsp;&nbsp;&nbsp;&nbsp;" options:NSLiteralSearch range:NSMakeRange(0, [sqlHTML length])];
+
+	return (sqlHTML) ? sqlHTML : @"";
 }
 
 - (IBAction)executeBundleItemForApp:(id)sender
 {
-	
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeGeneral];

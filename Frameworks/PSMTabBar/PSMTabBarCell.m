@@ -348,7 +348,7 @@
 {
     if (_isPlaceholder) {
 		if (![_controlView usesSafariStyleDragging]) {
-			[[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
+			[[NSColor colorWithCalibratedWhite:0.0 alpha:0.2f] set];
 			NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
 		}
         return;

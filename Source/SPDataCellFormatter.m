@@ -91,4 +91,11 @@
 	return YES;
 }
 
+- (void)dealloc
+{
+	if (fieldType) [fieldType release], fieldType = nil;
+	
+	[super dealloc];
+}
+
 @end

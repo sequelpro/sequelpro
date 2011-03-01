@@ -90,13 +90,13 @@
 
 - (IBAction)displayPreferencePane:(id)sender
 {	
-	SPPreferencePane *preferencePane = nil;
+	SPPreferencePane <SPPreferencePaneProtocol> *preferencePane = nil;
 	
 	if (!sender) {
 		preferencePane = generalPreferencePane;
 	}
 	else {
-		for (SPPreferencePane *prefPane in preferencePanes)
+		for (SPPreferencePane <SPPreferencePaneProtocol> *prefPane in preferencePanes)
 		{
 			if ([[prefPane preferencePaneIdentifier] isEqualToString:[sender itemIdentifier]]) {
 				preferencePane = prefPane;

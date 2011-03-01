@@ -46,7 +46,6 @@
 	BOOL tableHasAutoIncrementField;
 }
 
-@property (readwrite, assign) BOOL isWorking;
 @property (readonly, assign) BOOL tableHasAutoIncrementField;
 
 - (void) setConnection:(MCPConnection *)theConnection;

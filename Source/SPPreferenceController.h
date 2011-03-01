@@ -43,13 +43,13 @@
 @interface SPPreferenceController : NSWindowController
 {	
 	// Preference pane controllers
-	IBOutlet SPGeneralPreferencePane       *generalPreferencePane;
-	IBOutlet SPTablesPreferencePane        *tablesPreferencePane;
-	IBOutlet SPFavoritesPreferencePane     *favoritesPreferencePane;
-	IBOutlet SPNotificationsPreferencePane *notificationsPreferencePane;
-	IBOutlet SPEditorPreferencePane        *editorPreferencePane;
-	IBOutlet SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;
-	IBOutlet SPNetworkPreferencePane       *networkPreferencePane;
+	IBOutlet SPGeneralPreferencePane <SPPreferencePaneProtocol>       *generalPreferencePane;
+	IBOutlet SPTablesPreferencePane  <SPPreferencePaneProtocol>       *tablesPreferencePane;
+	IBOutlet SPFavoritesPreferencePane <SPPreferencePaneProtocol>     *favoritesPreferencePane;
+	IBOutlet SPNotificationsPreferencePane <SPPreferencePaneProtocol> *notificationsPreferencePane;
+	IBOutlet SPEditorPreferencePane <SPPreferencePaneProtocol>        *editorPreferencePane;
+	IBOutlet SPAutoUpdatePreferencePane <SPPreferencePaneProtocol>    *autoUpdatePreferencePane;
+	IBOutlet SPNetworkPreferencePane <SPPreferencePaneProtocol>       *networkPreferencePane;
 
 	NSToolbar *toolbar;
 	NSArray *preferencePanes;
