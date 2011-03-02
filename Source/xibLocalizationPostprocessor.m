@@ -51,7 +51,7 @@ int main(int argc, const char *argv[])
                 }
             }
             
-            NSLog(@"Warning: skipped garbage input line %d, contents: \"%@\"", lineCount, line);
+            NSLog(@"Warning: skipped garbage input line %lu, contents: \"%@\"", (unsigned long)lineCount, line);
         }
         
         if (outputStrings.length && ![outputStrings writeToFile:[NSString stringWithUTF8String:argv[2]] atomically:NO encoding:usedEncoding error:&error]) {

@@ -60,7 +60,7 @@ enum PROXY_TUNNEL_STATES
 /**
  * Get the local port being used by the proxy.
  */ 
-- (NSInteger)localPort;
+- (NSUInteger)localPort;
 
 /**
  * Sets the method the proxy should call whenever the state of the connection changes.

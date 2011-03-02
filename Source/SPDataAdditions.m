@@ -57,8 +57,8 @@ static char base64encodingTable[64] = {
 	NSUInteger lentext = [self length];
 	NSInteger ctremaining = 0;
 	unsigned char inbuf[3], outbuf[4];
-	short i = 0;
-	short charsonline = 0, ctcopy = 0;
+	NSUInteger i = 0;
+	NSUInteger charsonline = 0, ctcopy = 0;
 	NSUInteger ix = 0;
 
 	NSMutableString *base64 = [NSMutableString stringWithCapacity:lentext];
@@ -111,7 +111,7 @@ static char base64encodingTable[64] = {
 - (NSData *)dataEncryptedWithPassword:(NSString *)password
 {
 	// Create a random 128-bit initialization vector
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	NSInteger ivIndex;
 	unsigned char iv[16];
 	for (ivIndex = 0; ivIndex < 16; ivIndex++)
@@ -131,7 +131,7 @@ static char base64encodingTable[64] = {
 	memcpy(paddedBytes, [self bytes], dataLength);
 
 	// The last 32-bit chunk is the size of the plaintext, which is encrypted with the plaintext
-	NSInteger bigIntDataLength = NSSwapHostIntToBig(dataLength);
+	NSInteger bigIntDataLength = NSSwapHostIntToBig((unsigned int)dataLength);
 	memcpy(paddedBytes + (paddedLength - 4), &bigIntDataLength, 4);
 
 	// Create the key from first 128-bits of the 160-bit password hash
@@ -180,7 +180,7 @@ static char base64encodingTable[64] = {
 
 	// Get the size of the data from the last 32-bit chunk
 	NSInteger bigIntDataLength = *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 1));
-	NSInteger dataLength = NSSwapBigIntToHost(bigIntDataLength);
+	NSInteger dataLength = NSSwapBigIntToHost((unsigned int)bigIntDataLength);
 
 	return [NSData dataWithBytesNoCopy:decryptedBytes length:dataLength];
 }
@@ -198,7 +198,7 @@ static char base64encodingTable[64] = {
 
 	z_stream zlibStream;
 	zlibStream.next_in = (Bytef *)[self bytes];
-	zlibStream.avail_in = [self length];
+	zlibStream.avail_in = (uInt)[self length];
 	zlibStream.total_out = 0;
 	zlibStream.zalloc = Z_NULL;
 	zlibStream.zfree = Z_NULL;
@@ -210,7 +210,7 @@ static char base64encodingTable[64] = {
 		if (zlibStream.total_out >= [unzipData length])
 			[unzipData increaseLengthBy: half_length];
 		zlibStream.next_out = [unzipData mutableBytes] + zlibStream.total_out;
-		zlibStream.avail_out = [unzipData length] - zlibStream.total_out;
+		zlibStream.avail_out = (uInt)([unzipData length] - zlibStream.total_out);
 
 		status = inflate (&zlibStream, Z_SYNC_FLUSH);
 		if (status == Z_STREAM_END) done = YES;
@@ -238,7 +238,7 @@ static char base64encodingTable[64] = {
 	zlibStream.opaque = Z_NULL;
 	zlibStream.total_out = 0;
 	zlibStream.next_in=(Bytef *)[self bytes];
-	zlibStream.avail_in = [self length];
+	zlibStream.avail_in = (uInt)[self length];
 
 	if (deflateInit(&zlibStream, Z_DEFAULT_COMPRESSION) != Z_OK) return nil;
 
@@ -251,7 +251,7 @@ static char base64encodingTable[64] = {
 			[zipData increaseLengthBy: 16384];
 
 		zlibStream.next_out = [zipData mutableBytes] + zlibStream.total_out;
-		zlibStream.avail_out = [zipData length] - zlibStream.total_out;
+		zlibStream.avail_out = (uInt)([zipData length] - zlibStream.total_out);
 
 		deflate(&zlibStream, Z_FINISH);
 

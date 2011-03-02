@@ -66,9 +66,9 @@ typedef struct {
 	NSString *connectionLogin;
 	NSString *connectionPassword;
 	NSString *connectionHost;
-	NSInteger connectionPort;
+	NSUInteger connectionPort;
 	NSString *connectionSocket;
-	NSInteger maxAllowedPacketSize;
+	NSUInteger maxAllowedPacketSize;
 	unsigned long connectionThreadId;
 
 	BOOL useSSL;
@@ -136,7 +136,7 @@ typedef struct {
 @property (readwrite, assign) CGFloat keepAliveInterval;
 
 // Initialisation
-- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(NSInteger)port;
+- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(NSUInteger)port;
 - (id)initToSocket:(NSString *)socket withLogin:(NSString *)login;
 
 // Delegate
@@ -145,7 +145,7 @@ typedef struct {
 - (MCPConnectionCheck)delegateDecisionForLostConnection;
 
 // Connection details
-- (BOOL)setPort:(NSInteger)thePort;
+- (BOOL)setPort:(NSUInteger)thePort;
 - (BOOL)setPassword:(NSString *)thePassword;
 - (void) setSSL:(BOOL)shouldUseSSL usingKeyFilePath:(NSString *)keyFilePath certificatePath:(NSString *)certificatePath certificateAuthorityCertificatePath:(NSString *)caCertificatePath;
 
@@ -169,7 +169,7 @@ typedef struct {
 - (BOOL)pingConnectionUsingLoopDelay:(NSUInteger)loopDelay;
 void backgroundPingTask(void *ptr);
 void forceThreadExit(int signalNumber);
-void pingThreadCleanup();
+void pingThreadCleanup(void *pingDetails);
 - (void)keepAlive:(NSTimer *)theTimer;
 - (void)threadedKeepAlive;
 
@@ -189,7 +189,7 @@ void pingThreadCleanup();
 + (void)setTruncateLongFieldInLogs:(BOOL)iTruncFlag;
 + (BOOL)truncateLongField;
 - (BOOL)setConnectionOption:(NSInteger)option toValue:(BOOL)value;
-- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSInteger)port socket:(NSString *)socket;
+- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSUInteger)port socket:(NSString *)socket;
 
 - (BOOL)selectDB:(NSString *)dbName;
 
@@ -266,9 +266,9 @@ void pingThreadCleanup();
 
 // Packet size
 - (BOOL)fetchMaxAllowedPacket;
-- (NSInteger)getMaxAllowedPacket;
+- (NSUInteger)getMaxAllowedPacket;
 - (BOOL)isMaxAllowedPacketEditable;
-- (NSInteger)setMaxAllowedPacketTo:(NSInteger)newSize resetSize:(BOOL)reset;
+- (NSUInteger)setMaxAllowedPacketTo:(NSUInteger)newSize resetSize:(BOOL)reset;
 
 // Data conversion
 - (const char *)cStringFromString:(NSString *)theString;

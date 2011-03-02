@@ -26,7 +26,7 @@
 //  More info at <http://mysql-cocoa.sourceforge.net/>
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@protocol MCPConnectionDelegate
+@protocol MCPConnectionDelegate <NSObject>
 
 /**
  *
