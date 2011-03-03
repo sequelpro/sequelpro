@@ -23,9 +23,9 @@
 #define kPSMTabBarCellPadding 4
 // fixed size objects
 #define kPSMMinimumTitleWidth 30
-#define kPSMTabBarIndicatorWidth 16.0
-#define kPSMTabBarIconWidth 16.0
-#define kPSMHideAnimationSteps 3.0
+#define kPSMTabBarIndicatorWidth 16.0f
+#define kPSMTabBarIconWidth 16.0f
+#define kPSMHideAnimationSteps 3.0f
 
 // Value used in _currentStep to indicate that resizing operation is not in progress
 #define kPSMIsNotBeingResized -1
@@ -185,9 +185,13 @@ enum {
 - (PSMRolloverButton *)addTabButton;
 - (PSMOverflowPopUpButton *)overflowPopUpButton;
 
+// actions
+- (void)tabClick:(id)sender;
+- (void)overflowMenuAction:(id)sender;
+
 // tab information
 - (NSMutableArray *)representedTabViewItems;
-- (NSInteger)numberOfVisibleTabs;
+- (NSUInteger)numberOfVisibleTabs;
 - (PSMTabBarCell *)lastVisibleTab;
 
 // special effects
@@ -221,6 +225,7 @@ enum {
 - (BOOL)tabView:(NSTabView *)aTabView shouldAllowTabViewItem:(NSTabViewItem *)tabViewItem toLeaveTabBar:(PSMTabBarControl *)tabBarControl;
 - (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl;
 - (void)draggingEvent:(id <NSDraggingInfo>)dragEvent enteredTabBar:(PSMTabBarControl *)tabBarControl tabView:(NSTabViewItem *)tabViewItem;
+- (void)tabViewDragWindowCreated:(NSWindow *)dragWindow;
 
 //Tear-off tabs methods
 - (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(NSUInteger *)styleMask;

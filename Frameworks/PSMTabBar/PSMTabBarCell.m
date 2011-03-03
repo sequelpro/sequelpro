@@ -28,7 +28,7 @@
         _cellTrackingTag = 0;
         _closeButtonOver = NO;
         _closeButtonPressed = NO;
-        _indicator = [[PSMProgressIndicator alloc] initWithFrame:NSMakeRect(0.0,0.0,kPSMTabBarIndicatorWidth,kPSMTabBarIndicatorWidth)];
+        _indicator = [[PSMProgressIndicator alloc] initWithFrame:NSMakeRect(0.0f,0.0f,kPSMTabBarIndicatorWidth,kPSMTabBarIndicatorWidth)];
         [_indicator setStyle:NSProgressIndicatorSpinningStyle];
         [_indicator setAutoresizingMask:NSViewMinYMargin];
         _hasCloseButton = YES;
@@ -48,9 +48,9 @@
         _isPlaceholder = YES;
         if (!value) {
 			if ([controlView orientation] == PSMTabBarHorizontalOrientation) {
-				frame.size.width = 0.0;
+				frame.size.width = 0.0f;
 			} else {
-				frame.size.height = 0.0;
+				frame.size.height = 0.0f;
 			}
 		}
         [self setFrame:frame];
@@ -348,7 +348,7 @@
 {
     if (_isPlaceholder) {
 		if (![_controlView usesSafariStyleDragging]) {
-			[[NSColor colorWithCalibratedWhite:0.0 alpha:0.2f] set];
+			[[NSColor colorWithCalibratedWhite:0.0f alpha:0.2f] set];
 			NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
 		}
         return;
@@ -373,7 +373,7 @@
 	
 	// scrubtastic
 	if ([_controlView allowsScrubbing] && ([theEvent modifierFlags] & NSAlternateKeyMask))
-		[_controlView performSelector:@selector(tabClick:) withObject:self];
+		[_controlView tabClick:self];
 	
 	// tell the control we only need to redraw the affected tab
 	[_controlView setNeedsDisplayInRect:NSInsetRect([self frame], -2, -2)];
@@ -410,7 +410,13 @@
 
 	// Draw the tab into a new image
 	NSImage *image = [[[NSImage alloc] initWithSize:cellFrame.size] autorelease];
+
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+	[image setFlipped:YES];
+	[image lockFocus];
+#else
 	[image lockFocusFlipped:YES];
+#endif
 	[self setFrame:tabDrawFrame];
 	[(id <PSMTabStyle>)[(PSMTabBarControl *)_controlView style] drawTabCell:self];
 	[self setFrame:oldFrame];
@@ -418,12 +424,12 @@
 
 	// Add the indicator if appropriate
     if (![[self indicator] isHidden]) {
-        NSImage *pi = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"pi"]];
+        NSImage *pieImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"pi"]];
         [image lockFocus];
         NSPoint indicatorPoint = NSMakePoint([self frame].size.width - MARGIN_X - kPSMTabBarIndicatorWidth, MARGIN_Y);
-        [pi compositeToPoint:indicatorPoint operation:NSCompositeSourceOver fraction:1.0];
+        [pieImage compositeToPoint:indicatorPoint operation:NSCompositeSourceOver fraction:1.0f];
         [image unlockFocus];
-        [pi release];
+        [pieImage release];
     }
 
 	return image;
@@ -528,7 +534,7 @@
 - (void)accessibilityPerformAction:(NSString *)action {
 	if ([action isEqualToString:NSAccessibilityPressAction]) {
 		// this tab was selected
-		[_controlView performSelector:@selector(tabClick:) withObject:self];
+		[_controlView tabClick:self];
 	}
 }
 

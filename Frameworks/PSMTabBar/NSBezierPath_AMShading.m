@@ -23,7 +23,7 @@ static void linearShadedColor(void *info, const CGFloat *in, CGFloat *out)
 static void bilinearShadedColor(void *info, const CGFloat *in, CGFloat *out)
 {
 	CGFloat *colors = (CGFloat *)info;
-	CGFloat factor = (*in)*2.0;
+	CGFloat factor = (*in)*2.0f;
 	if (*in > 0.5) {
 		factor = 2-factor;
 	}
@@ -87,7 +87,7 @@ static void bilinearShadedColor(void *info, const CGFloat *in, CGFloat *out)
 	// draw gradient
 	colorspace = CGColorSpaceCreateDeviceRGB();
 	size_t components = 1 + CGColorSpaceGetNumberOfComponents(colorspace);
-	static const CGFloat  domain[2] = {0.0, 1.0};
+	static const CGFloat  domain[2] = {0.0f, 1.0f};
 	static const CGFloat  range[10] = {0, 1, 0, 1, 0, 1, 0, 1, 0, 1};
 	//static const CGFunctionCallbacks callbacks = {0, &bilinearShadedColor, NULL};
 	

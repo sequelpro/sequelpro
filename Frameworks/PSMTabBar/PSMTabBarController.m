@@ -83,13 +83,13 @@
     @returns    The tracking rect of the cell at the requested index.
 */
 
-- (NSRect)cellTrackingRectAtIndex:(NSInteger)index
+- (NSRect)cellTrackingRectAtIndex:(NSUInteger)anIndex
 {
     NSRect rect;
-    if (index > -1 && index < [_cellTrackingRects count]) {
-        rect = [[_cellTrackingRects objectAtIndex:index] rectValue];
+    if (anIndex < [_cellTrackingRects count]) {
+        rect = [[_cellTrackingRects objectAtIndex:anIndex] rectValue];
     } else {
-        NSLog(@"cellTrackingRectAtIndex: Invalid index (%ld)", (long)index);
+        NSLog(@"cellTrackingRectAtIndex: Invalid index (%lu)", (unsigned long)anIndex);
         rect = NSZeroRect;
     }
     return rect;
@@ -103,13 +103,13 @@
     @returns    The close button tracking rect of the cell at the requested index.
 */
 
-- (NSRect)closeButtonTrackingRectAtIndex:(NSInteger)index
+- (NSRect)closeButtonTrackingRectAtIndex:(NSUInteger)anIndex
 {
     NSRect rect;
-    if (index > -1 && index < [_closeButtonTrackingRects count]) {
-        rect = [[_closeButtonTrackingRects objectAtIndex:index] rectValue];
+    if (anIndex < [_closeButtonTrackingRects count]) {
+        rect = [[_closeButtonTrackingRects objectAtIndex:anIndex] rectValue];
     } else {
-        NSLog(@"closeButtonTrackingRectAtIndex: Invalid index (%ld)", (long)index);
+        NSLog(@"closeButtonTrackingRectAtIndex: Invalid index (%lu)", (unsigned long)anIndex);
         rect = NSZeroRect;
     }
     return rect;
@@ -123,14 +123,14 @@
     @returns    The frame of the cell at the requested index.
 */
 
-- (NSRect)cellFrameAtIndex:(NSInteger)index
+- (NSRect)cellFrameAtIndex:(NSUInteger)anIndex
 {
     NSRect rect;
     
-    if (index > -1 && index < [_cellFrames count]) {
-        rect = [[_cellFrames objectAtIndex:index] rectValue];
+    if (anIndex < [_cellFrames count]) {
+        rect = [[_cellFrames objectAtIndex:anIndex] rectValue];
     } else {
-        NSLog(@"cellFrameAtIndex: Invalid index (%ld)", (long)index);
+        NSLog(@"cellFrameAtIndex: Invalid index (%lu)", (unsigned long)anIndex);
         rect = NSZeroRect;
     }
     return rect;
@@ -169,7 +169,7 @@
     [cell setTabState:PSMTab_SelectedMask];
     
     if (![cell isInOverflowMenu]) {
-        NSInteger cellIndex = [cells indexOfObject:cell];
+        NSUInteger cellIndex = [cells indexOfObject:cell];
         
         if (cellIndex > 0) {
             nextCell = [cells objectAtIndex:cellIndex - 1];
@@ -214,10 +214,10 @@
     _addButtonRect.size = [[_control addTabButton] frame].size;
     if ([_control orientation] == PSMTabBarHorizontalOrientation) {
         _addButtonRect.origin.y = MARGIN_Y;
-        _addButtonRect.origin.x += [[cellWidths valueForKeyPath:@"@sum.floatValue"] doubleValue] + MARGIN_X;
+        _addButtonRect.origin.x += [[cellWidths valueForKeyPath:@"@sum.floatValue"] floatValue] + MARGIN_X;
     } else {
         _addButtonRect.origin.x = 0;
-        _addButtonRect.origin.y = [[cellWidths lastObject] doubleValue];
+        _addButtonRect.origin.y = [[cellWidths lastObject] floatValue];
     }	
 }
 
@@ -241,7 +241,7 @@
 		
         NSInteger q = 0;
 		for (q = (count - 1); q >= 0; q--) {
-			CGFloat cellWidth = [[newWidths objectAtIndex:q] doubleValue];
+			CGFloat cellWidth = [[newWidths objectAtIndex:q] floatValue];
 			if (cellWidth - 1 >= minimum) {
 				cellWidth--;
 				totalWidths--;
@@ -296,7 +296,7 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
     NSInteger cellCount = [cells count], i, numberOfVisibleCells = ([_control orientation] == PSMTabBarHorizontalOrientation) ? 1 : 0;
     NSMutableArray *newWidths = [NSMutableArray arrayWithCapacity:cellCount];
     id <PSMTabStyle> style = [_control style];
-    CGFloat availableWidth = [_control availableCellWidth], currentOrigin = 0, totalOccupiedWidth = 0.0, width;
+    CGFloat availableWidth = [_control availableCellWidth], currentOrigin = 0, totalOccupiedWidth = 0.0f, width;
     NSRect cellRect = [_control genericCellRect], controlRect = [_control frame];
     PSMTabBarCell *currentCell;
     
@@ -329,7 +329,7 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 				width = [_control cellOptimumWidth];
 			}
 			
-			width = ceil(width);
+			width = ceilf(width);
 				
 			//check to see if there is not enough space to place all tabs as preferred
 			if (totalOccupiedWidth + width >= availableWidth) {
@@ -498,11 +498,11 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 			
 			cellWidth = [NSNumber numberWithDouble:[cell1 desiredWidthOfCell] < availableWidth * 0.5f ? [cell1 desiredWidthOfCell] : availableWidth * 0.5f];
 			[newWidths addObject:cellWidth];
-			totalOccupiedWidth += [cellWidth doubleValue];
+			totalOccupiedWidth += [cellWidth floatValue];
 			
 			cellWidth = [NSNumber numberWithDouble:[cell2 desiredWidthOfCell] < (availableWidth - totalOccupiedWidth) ? [cell2 desiredWidthOfCell] : (availableWidth - totalOccupiedWidth)];
 			[newWidths addObject:cellWidth];
-			totalOccupiedWidth += [cellWidth doubleValue];
+			totalOccupiedWidth += [cellWidth floatValue];
 			
 			if (totalOccupiedWidth < availableWidth) {
 				[newWidths replaceObjectAtIndex:0 withObject:[NSNumber numberWithDouble:availableWidth - [cellWidth doubleValue]]];
@@ -523,7 +523,7 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 
 - (void)_setupCells:(NSArray *)cells withWidths:(NSArray *)widths
 {
-    NSInteger i, tabState, cellCount = [cells count];
+    NSUInteger i, tabState, cellCount = [cells count];
     NSRect cellRect = [_control genericCellRect];
     PSMTabBarCell *cell;
     NSTabViewItem *selectedTabViewItem = [[_control tabView] selectedTabViewItem];
@@ -539,10 +539,10 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
             
             // set cell frame
             if ([_control orientation] == PSMTabBarHorizontalOrientation) {
-                cellRect.size.width = [[widths objectAtIndex:i] doubleValue];
+                cellRect.size.width = [[widths objectAtIndex:i] floatValue];
             } else {
                 cellRect.size.width = [_control frame].size.width;
-                cellRect.origin.y = [[widths objectAtIndex:i] doubleValue];
+                cellRect.origin.y = [[widths objectAtIndex:i] floatValue];
                 cellRect.origin.x = 0;
             }
             
@@ -589,7 +589,7 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
             }
             
             // next...
-            cellRect.origin.x += [[widths objectAtIndex:i] doubleValue];
+            cellRect.origin.x += [[widths objectAtIndex:i] floatValue];
         } else {
             [cell setState:NSOffState];
             [cell setIsInOverflowMenu:YES];
@@ -625,7 +625,7 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
     }
 }
 
-- (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)menuItem atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
+- (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)menuItem atIndex:(NSInteger)anIndex shouldCancel:(BOOL)shouldCancel
 {
 	if (menu == _overflowMenu) {
 		if ([[[menuItem representedObject] identifier] respondsToSelector:@selector(icon)]) {

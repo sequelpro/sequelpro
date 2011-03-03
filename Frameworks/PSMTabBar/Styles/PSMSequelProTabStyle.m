@@ -28,9 +28,9 @@
 #import "NSBezierPath_AMShading.h"
 #import "PSMTabDragAssistant.h"
 
-#define kPSMSequelProObjectCounterRadius 7.0
+#define kPSMSequelProObjectCounterRadius 7.0f
 #define kPSMSequelProCounterMinWidth 20
-#define kPSMSequelProTabCornerRadius 4.5
+#define kPSMSequelProTabCornerRadius 4.5f
 #define MARGIN_X 6
 
 @implementation PSMSequelProTabStyle
@@ -58,8 +58,8 @@
         _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButtonPushed"]];
         _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButtonRollover"]];
 		
-		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
-																					[[NSColor whiteColor] colorWithAlphaComponent:0.85], NSForegroundColorAttributeName,
+		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0f] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
+																					[[NSColor whiteColor] colorWithAlphaComponent:0.85f], NSForegroundColorAttributeName,
 																					nil, nil];
     }
     return self;
@@ -134,13 +134,13 @@
 	
 	if ([cell tabState] & PSMTab_SelectedMask) {
 		if (tabOrientation == PSMTabBarHorizontalOrientation) {
-			dragRect.origin.x -= 5.0;
-			dragRect.size.width += 10.0;
+			dragRect.origin.x -= 5.0f;
+			dragRect.size.width += 10.0f;
 		} else {
-			dragRect.size.height += 1.0;
-			dragRect.origin.y -= 1.0;
-			dragRect.origin.x += 2.0;
-			dragRect.size.width -= 3.0;
+			dragRect.size.height += 1.0f;
+			dragRect.origin.y -= 1.0f;
+			dragRect.origin.x += 2.0f;
+			dragRect.size.width -= 3.0f;
 		}
 	} else if (tabOrientation == PSMTabBarVerticalOrientation) {
 		dragRect.origin.x--;
@@ -158,7 +158,7 @@
     NSRect result;
     result.size = [sequelProCloseButton size];
     result.origin.x = cellFrame.origin.x + MARGIN_X;
-    result.origin.y = cellFrame.origin.y + MARGIN_Y + 2.0;
+    result.origin.y = cellFrame.origin.y + MARGIN_Y + 2.0f;
     
     return result;
 }
@@ -208,7 +208,7 @@
     }
     
     CGFloat countWidth = [[self attributedObjectCountValueForTabCell:cell] size].width;
-    countWidth += (2 * kPSMSequelProObjectCounterRadius - 6.0);
+    countWidth += (2 * kPSMSequelProObjectCounterRadius - 6.0f);
     if (countWidth < kPSMSequelProCounterMinWidth) {
         countWidth = kPSMSequelProCounterMinWidth;
     }
@@ -216,7 +216,7 @@
     NSRect result;
     result.size = NSMakeSize(countWidth, 2 * kPSMSequelProObjectCounterRadius); // temp
     result.origin.x = cellFrame.origin.x + cellFrame.size.width - MARGIN_X - result.size.width;
-    result.origin.y = cellFrame.origin.y + MARGIN_Y + 1.0;
+    result.origin.y = cellFrame.origin.y + MARGIN_Y + 1.0f;
     
     if (![[cell indicator] isHidden]) {
         result.origin.x -= kPSMTabBarIndicatorWidth + kPSMTabBarCellPadding;
@@ -228,7 +228,7 @@
 
 - (CGFloat)minimumWidthOfTabCell:(PSMTabBarCell *)cell
 {
-    CGFloat resultWidth = 0.0;
+    CGFloat resultWidth = 0.0f;
     
     // left margin
     resultWidth = MARGIN_X;
@@ -258,12 +258,12 @@
     // right margin
     resultWidth += MARGIN_X;
     
-    return ceil(resultWidth);
+    return ceilf(resultWidth);
 }
 
 - (CGFloat)desiredWidthOfTabCell:(PSMTabBarCell *)cell
 {
-    CGFloat resultWidth = 0.0;
+    CGFloat resultWidth = 0.0f;
     
     // left margin
     resultWidth = MARGIN_X;
@@ -292,7 +292,7 @@
     // right margin
     resultWidth += MARGIN_X;
     
-    return ceil(resultWidth);
+    return ceilf(resultWidth);
 }
 
 - (CGFloat)tabCellHeight
@@ -317,22 +317,22 @@
     NSRange range = NSMakeRange(0, [contents length]);
     
     // Add font attribute
-    [attrStr addAttribute:NSFontAttributeName value:[NSFont boldSystemFontOfSize:11.0] range:range];
-    [attrStr addAttribute:NSForegroundColorAttributeName value:[[NSColor textColor] colorWithAlphaComponent:0.75] range:range];
+    [attrStr addAttribute:NSFontAttributeName value:[NSFont boldSystemFontOfSize:11.0f] range:range];
+    [attrStr addAttribute:NSForegroundColorAttributeName value:[[NSColor textColor] colorWithAlphaComponent:0.75f] range:range];
     
     // Add shadow attribute
-    NSShadow* shadow;
-    shadow = [[[NSShadow alloc] init] autorelease];
+    NSShadow* textShadow;
+    textShadow = [[[NSShadow alloc] init] autorelease];
     CGFloat shadowAlpha;
     if (([cell state] == NSOnState) || [cell isHighlighted]) {
-        shadowAlpha = 0.8;
+        shadowAlpha = 0.8f;
     } else {
-        shadowAlpha = 0.5;
+        shadowAlpha = 0.5f;
     }
-    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:shadowAlpha]];
-    [shadow setShadowOffset:NSMakeSize(0, -1)];
-    [shadow setShadowBlurRadius:1.0];
-    [attrStr addAttribute:NSShadowAttributeName value:shadow range:range];
+    [textShadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0f alpha:shadowAlpha]];
+    [textShadow setShadowOffset:NSMakeSize(0, -1)];
+    [textShadow setShadowBlurRadius:1.0f];
+    [attrStr addAttribute:NSShadowAttributeName value:textShadow range:range];
     
     // Paragraph Style for Truncating Long Text
     static NSMutableParagraphStyle *TruncatingTailParagraphStyle = nil;
@@ -365,13 +365,13 @@
 	// no tab view == not connected
     if (![bar tabView]) {
         NSRect labelRect = rect;
-        labelRect.size.height -= 4.0;
-        labelRect.origin.y += 4.0;
+        labelRect.size.height -= 4.0f;
+        labelRect.origin.y += 4.0f;
         NSMutableAttributedString *attrStr;
         NSString *contents = @"PSMTabBarControl";
         attrStr = [[[NSMutableAttributedString alloc] initWithString:contents] autorelease];
 		NSRange range = NSMakeRange(0, [contents length]);
-        [attrStr addAttribute:NSFontAttributeName value:[NSFont systemFontOfSize:11.0] range:range];
+        [attrStr addAttribute:NSFontAttributeName value:[NSFont systemFontOfSize:11.0f] range:range];
         NSMutableParagraphStyle *centeredParagraphStyle = nil;
         
 		if (!centeredParagraphStyle) {
@@ -404,42 +404,42 @@
 	[NSGraphicsContext saveGraphicsState];
 	[[NSGraphicsContext currentContext] setShouldAntialias:NO];
 
-	float backgroundCalibratedWhite = 0.495;
+	float backgroundCalibratedWhite = 0.495f;
 	float lineCalibratedWhite = [[NSColor darkGrayColor] whiteComponent];
-	float shadowAlpha = 0.4;
+	float shadowAlpha = 0.4f;
 
 	// When the window is in the background, tone down the colours
 	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
-		backgroundCalibratedWhite = 0.73;
-		lineCalibratedWhite = 0.49;
-		shadowAlpha = 0.3;
+		backgroundCalibratedWhite = 0.73f;
+		lineCalibratedWhite = 0.49f;
+		shadowAlpha = 0.3f;
 	}
 
 	// fill in background of tab bar
-	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0] set];
+	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
 	NSRectFillUsingOperation(rect, NSCompositeSourceAtop);
 
 	// Draw horizontal line across bottom edge, with a slight bottom glow
-	[[NSColor colorWithCalibratedWhite:lineCalibratedWhite alpha:1.0] set];
+	[[NSColor colorWithCalibratedWhite:lineCalibratedWhite alpha:1.0f] set];
 	[NSGraphicsContext saveGraphicsState];
-	NSShadow *shadow = [[NSShadow alloc] init];
-	[shadow setShadowBlurRadius:1];
-	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.2]];
-	[shadow setShadowOffset:NSMakeSize(0,1)];
-	[shadow set];
-	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + rect.size.height - 0.5) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height - 0.5)];
-	[shadow release];
+	NSShadow *lineGlow = [[NSShadow alloc] init];
+	[lineGlow setShadowBlurRadius:1];
+	[lineGlow setShadowColor:[NSColor colorWithCalibratedWhite:1.0f alpha:0.2f]];
+	[lineGlow setShadowOffset:NSMakeSize(0,1)];
+	[lineGlow set];
+	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + rect.size.height - 0.5f) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height - 0.5f)];
+	[lineGlow release];
 	[NSGraphicsContext restoreGraphicsState];
 
 	// Add a shadow before drawing the top edge
 	[NSGraphicsContext saveGraphicsState];
-	shadow = [[NSShadow alloc] init];
-	[shadow setShadowBlurRadius:4];
-	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:shadowAlpha]];
-	[shadow setShadowOffset:NSMakeSize(0,0)];
-	[shadow set];
-	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + 0.5) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + 0.5)];
-	[shadow release];
+	NSShadow *edgeShadow = [[NSShadow alloc] init];
+	[edgeShadow setShadowBlurRadius:4];
+	[edgeShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:shadowAlpha]];
+	[edgeShadow setShadowOffset:NSMakeSize(0,0)];
+	[edgeShadow set];
+	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + 0.5f) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + 0.5f)];
+	[edgeShadow release];
 	[NSGraphicsContext restoreGraphicsState];
 	
 	[NSGraphicsContext restoreGraphicsState];
@@ -456,7 +456,6 @@
 	NSColor *shadowColor = nil;
     NSBezierPath *outlineBezier = [NSBezierPath bezierPath];
     NSBezierPath *fillBezier = [NSBezierPath bezierPath];
-	NSPoint center = NSZeroPoint;
 	NSPoint topLeftArcCenter, bottomLeftArcCenter, topRightArcCenter, bottomRightArcCenter;
 	BOOL drawRightEdge = YES;
 	BOOL drawLeftEdge = YES;
@@ -503,20 +502,20 @@
 	if ([[tabBar window] isMainWindow] && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
 		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:0.59 alpha:1.0];
-			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.7];
+			fillColor = [NSColor colorWithCalibratedWhite:0.59f alpha:1.0f];
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:0.495 alpha:1.0];		
-			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:1.0];
+			fillColor = [NSColor colorWithCalibratedWhite:0.495f alpha:1.0f];		
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:1.0f];
 		}
 	} else {
-		lineColor = [NSColor colorWithCalibratedWhite:0.49 alpha:1.0];
+		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
 		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:0.81 alpha:1.0];
-			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.4];
+			fillColor = [NSColor colorWithCalibratedWhite:0.81f alpha:1.0f];
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.4f];
 		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:0.73 alpha:1.0];
-			shadowColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.7];
+			fillColor = [NSColor colorWithCalibratedWhite:0.73f alpha:1.0f];
+			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		}
 	}
 	
@@ -531,10 +530,10 @@
 	}
 
 	// Set up the corner bezier paths arc centers
-	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
-	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + kPSMSequelProTabCornerRadius);
-	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + kPSMSequelProTabCornerRadius);
+	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + kPSMSequelProTabCornerRadius);
+	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
 
 	// Construct the outline path
 	if (drawLeftEdge) {
@@ -551,21 +550,21 @@
 
 	// If one edge is missing, apply a local fill to the other edge
 	if (drawRightEdge && !drawLeftEdge) {
-		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y)];
-		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + aRect.size.height)];
+		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y)];
+		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height)];
 	} else if (!drawRightEdge && drawLeftEdge) {
-		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + 0.5 + kPSMSequelProTabCornerRadius, aRect.origin.y)];
+		[fillBezier lineToPoint:NSMakePoint(aRect.origin.x + 0.5f + kPSMSequelProTabCornerRadius, aRect.origin.y)];
 	}
 
 	// Set the tab outer shadow and draw the shadow
 	[NSGraphicsContext saveGraphicsState];
-	NSShadow *shadow = [[NSShadow alloc] init];
-	[shadow setShadowBlurRadius:4];
-	[shadow setShadowColor:shadowColor];
-	[shadow setShadowOffset:NSMakeSize(0, 0)];
-	[shadow set];
+	NSShadow *cellShadow = [[NSShadow alloc] init];
+	[cellShadow setShadowBlurRadius:4];
+	[cellShadow setShadowColor:shadowColor];
+	[cellShadow setShadowOffset:NSMakeSize(0, 0)];
+	[cellShadow set];
 	[outlineBezier stroke];
-	[shadow release];
+	[cellShadow release];
 	[NSGraphicsContext restoreGraphicsState];
 
 	// Fill the tab with a solid colour
@@ -582,20 +581,20 @@
 		if (drawLeftEdge) {
 			[outlineBezier appendBezierPathWithArcWithCenter:bottomLeftArcCenter radius:kPSMSequelProTabCornerRadius startAngle:145 endAngle:90 clockwise:YES];
 		} else {
-			[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y + aRect.size.height - 0.5)];
+			[outlineBezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y + aRect.size.height - 0.5f)];
 		}
 		if (drawRightEdge) {
 			[outlineBezier appendBezierPathWithArcWithCenter:bottomRightArcCenter radius:kPSMSequelProTabCornerRadius startAngle:90 endAngle:35 clockwise:YES];
 		} else {
-			[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width, aRect.origin.y + aRect.size.height - 0.5)];
+			[outlineBezier lineToPoint:NSMakePoint(aRect.origin.x + aRect.size.width, aRect.origin.y + aRect.size.height - 0.5f)];
 		}
-		shadow = [[NSShadow alloc] init];
-		[shadow setShadowBlurRadius:1];
-		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
-		[shadow setShadowOffset:NSMakeSize(0, 1)];
-		[shadow set];
+		cellShadow = [[NSShadow alloc] init];
+		[cellShadow setShadowBlurRadius:1];
+		[cellShadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0f alpha:0.4f]];
+		[cellShadow setShadowOffset:NSMakeSize(0, 1)];
+		[cellShadow set];
 		[outlineBezier stroke];
-		[shadow release];
+		[cellShadow release];
 
 	// Add the shadow over the tops of background tabs
 	} else if (drawLeftEdge || drawRightEdge) {
@@ -604,37 +603,37 @@
 		CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 		CGContextSaveGState(context);
 		NSPoint topLeft, topRight;
-		CGFloat drawAlpha = ([[tabBar window] isMainWindow] && [NSApp isActive])? 1.0 : 0.7;
+		CGFloat drawAlpha = ([[tabBar window] isMainWindow] && [NSApp isActive])? 1.0f : 0.7f;
 		outlineBezier = [NSBezierPath bezierPath];
 
 		// Calculate the endpoints of the line
 		if (drawLeftEdge) {
-			topLeft = NSMakePoint(aRect.origin.x + 0.5 - kPSMSequelProTabCornerRadius + 2, aRect.origin.y + 0.5);
+			topLeft = NSMakePoint(aRect.origin.x + 0.5f - kPSMSequelProTabCornerRadius + 2, aRect.origin.y + 0.5f);
 		} else {
-			topLeft = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5, aRect.origin.y + 0.5);
+			topLeft = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + 0.5f);
 		}
 		if (drawRightEdge) {
-			topRight = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5 - 2, aRect.origin.y + 0.5);
+			topRight = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5f - 2, aRect.origin.y + 0.5f);
 		} else {
-			topRight = NSMakePoint(aRect.origin.x + 0.5 + kPSMSequelProTabCornerRadius, aRect.origin.y + 0.5);
+			topRight = NSMakePoint(aRect.origin.x + 0.5f + kPSMSequelProTabCornerRadius, aRect.origin.y + 0.5f);
 		}
 
 		// Set up the line and clipping point
 		CGContextClipToRect(context, CGRectMake(topLeft.x, topLeft.y, topRight.x-topLeft.x, aRect.size.height));
-		[[NSColor colorWithCalibratedWhite:0.2 alpha:drawAlpha] set];
+		[[NSColor colorWithCalibratedWhite:0.2f alpha:drawAlpha] set];
 		[outlineBezier moveToPoint:topLeft];
 		[outlineBezier lineToPoint:topRight];
 
 		// Set up the shadow
-		shadow = [[NSShadow alloc] init];
-		[shadow setShadowBlurRadius:4];
-		[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.2 alpha:drawAlpha]];
-		[shadow setShadowOffset:NSMakeSize(0,0)];
-		[shadow set];
+		cellShadow = [[NSShadow alloc] init];
+		[cellShadow setShadowBlurRadius:4];
+		[cellShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.2f alpha:drawAlpha]];
+		[cellShadow setShadowOffset:NSMakeSize(0,0)];
+		[cellShadow set];
 
 		// Draw, and then restore the previous graphics state
 		[outlineBezier stroke];
-		[shadow release];
+		[cellShadow release];
 		CGContextRestoreGState(context);
 	}
 	
@@ -679,7 +678,7 @@
             closeButtonRect.origin.y += closeButtonRect.size.height;
         }
         
-        [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0];
+        [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0f];
     }
     
     // icon
@@ -693,13 +692,13 @@
         
         // center in available space (in case icon image is smaller than kPSMTabBarIconWidth)
         if ([icon size].width < kPSMTabBarIconWidth) {
-            iconRect.origin.x += (kPSMTabBarIconWidth - [icon size].width)/2.0;
+            iconRect.origin.x += (kPSMTabBarIconWidth - [icon size].width)/2.0f;
         }
         if ([icon size].height < kPSMTabBarIconWidth) {
-            iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0;
+            iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0f;
         }
         
-		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0];
+		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0f];
         
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
@@ -720,7 +719,7 @@
 
     // object counter
     if ([cell count] > 0) {
-        [[cell countColor] ?: [NSColor colorWithCalibratedWhite:0.3 alpha:0.6] set];
+        [[cell countColor] ?: [NSColor colorWithCalibratedWhite:0.3f alpha:0.6f] set];
         NSBezierPath *path = [NSBezierPath bezierPath];
         NSRect myRect = [self objectCounterRectForTabCell:cell];
         if ([cell state] == NSOnState) {
@@ -728,17 +727,17 @@
         }
         [path moveToPoint:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y)];
         [path lineToPoint:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMSequelProObjectCounterRadius, myRect.origin.y)];
-        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMSequelProObjectCounterRadius, myRect.origin.y + kPSMSequelProObjectCounterRadius) radius:kPSMSequelProObjectCounterRadius startAngle:270.0 endAngle:90.0];
+        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + myRect.size.width - kPSMSequelProObjectCounterRadius, myRect.origin.y + kPSMSequelProObjectCounterRadius) radius:kPSMSequelProObjectCounterRadius startAngle:270.0f endAngle:90.0f];
         [path lineToPoint:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y + myRect.size.height)];
-        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y + kPSMSequelProObjectCounterRadius) radius:kPSMSequelProObjectCounterRadius startAngle:90.0 endAngle:270.0];
+        [path appendBezierPathWithArcWithCenter:NSMakePoint(myRect.origin.x + kPSMSequelProObjectCounterRadius, myRect.origin.y + kPSMSequelProObjectCounterRadius) radius:kPSMSequelProObjectCounterRadius startAngle:90.0f endAngle:270.0f];
         [path fill];
         
         // draw attributed string centered in area
         NSRect counterStringRect;
         NSAttributedString *counterString = [self attributedObjectCountValueForTabCell:cell];
         counterStringRect.size = [counterString size];
-        counterStringRect.origin.x = myRect.origin.x + ((myRect.size.width - counterStringRect.size.width) / 2.0) + 0.25;
-        counterStringRect.origin.y = myRect.origin.y + ((myRect.size.height - counterStringRect.size.height) / 2.0) + 0.5;
+        counterStringRect.origin.x = myRect.origin.x + ((myRect.size.width - counterStringRect.size.width) / 2.0f) + 0.25f;
+        counterStringRect.origin.y = myRect.origin.y + ((myRect.size.height - counterStringRect.size.height) / 2.0f) + 0.5f;
         [counterString drawInRect:counterStringRect];
         
         // shrink label width to make room for object counter

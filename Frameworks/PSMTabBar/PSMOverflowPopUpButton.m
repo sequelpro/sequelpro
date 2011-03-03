@@ -63,7 +63,7 @@
 			drawPoint.y += altImageSize.height;
 		}
 		
-		[[self alternateImage] compositeToPoint:drawPoint operation:NSCompositeSourceOver fraction:sin(_animationValue * M_PI)];
+		[[self alternateImage] compositeToPoint:drawPoint operation:NSCompositeSourceOver fraction:sinf(_animationValue * (float)M_PI)];
 	}
 }
 

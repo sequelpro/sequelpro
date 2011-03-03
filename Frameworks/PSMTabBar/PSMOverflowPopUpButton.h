@@ -22,6 +22,14 @@
 - (BOOL)animatingAlternateImage;
 - (void)setAnimatingAlternateImage:(BOOL)flag;
 
+// Notifications
+- (void)notificationReceived:(NSNotification *)notification;
+
+// Animations
+- (void)setAnimatingAlternateImage:(BOOL)flag;
+- (BOOL)animatingAlternateImage;
+- (void)animateStep:(NSTimer *)timer;
+
 // archiving
 - (void)encodeWithCoder:(NSCoder *)aCoder;
 - (id)initWithCoder:(NSCoder *)aDecoder;

@@ -9,8 +9,8 @@
 #import <Cocoa/Cocoa.h>
 #import "PSMTabBarControl.h"
 
-#define kPSMTabDragWindowAlpha 0.75
-#define kPSMTabDragAlphaInterval 0.15
+#define kPSMTabDragWindowAlpha 0.75f
+#define kPSMTabDragAlphaInterval 0.15f
 
 @class PSMTabDragView;
 
@@ -30,4 +30,5 @@
 - (void)setAlternateImage:(NSImage *)image;
 - (BOOL)isAnimating;
 - (void)switchImages;
+- (void)animateTimer:(NSTimer *)timer;
 @end
