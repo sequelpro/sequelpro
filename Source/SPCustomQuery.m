@@ -534,7 +534,7 @@
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
 
-	NSInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
+	NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
 	NSInteger firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
@@ -3641,7 +3641,7 @@
  */
 - (IBAction)filterQueryFavorites:(id)sender
 {
-	NSUInteger i;
+	NSInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
 	NSString *searchPattern = [queryFavoritesSearchField stringValue];
 

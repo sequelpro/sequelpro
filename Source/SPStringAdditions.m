@@ -27,6 +27,21 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseDocument.h"
 
+// Defined to suppress warnings
+@interface NSObject (SPBundleMethods)
+
+- (NSString *)lastBundleBlobFilesDirectory;
+- (void)setLastBundleBlobFilesDirectory:(NSString *)path;
+
+@end
+
+// Defined to suppress warnings
+@interface NSObject (SPWindowControllerTabMethods)
+
+- (id)selectedTableDocument;
+
+@end
+
 @interface NSString (PrivateAPI)
 
 - (NSInteger)smallestOf:(NSInteger)a andOf:(NSInteger)b andOf:(NSInteger)c;

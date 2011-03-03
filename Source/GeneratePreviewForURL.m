@@ -256,7 +256,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				}
 				// Get info.plist data as dictionary
 				NSDictionary *sessionSpf;
-				NSData *pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
+				pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
 				sessionSpf = [[NSPropertyListSerialization propertyListFromData:pData 
 						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 

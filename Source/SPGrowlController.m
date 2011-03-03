@@ -25,6 +25,7 @@
 
 #import "SPGrowlController.h"
 #import "SPDatabaseDocument.h"
+#import "SPWindowController.h"
 
 #include <mach/mach_time.h>
 

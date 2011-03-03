@@ -1852,7 +1852,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 													 NSLocalizedString(@"Data Table", @"data table menu item label"),
 													 NSLocalizedString(@"General", @"general menu item label"),nil];
 
-	NSInteger k = 0;
+	NSUInteger k = 0;
 	BOOL bundleOtherThanGeneralFound = NO;
 	for(NSString* scope in scopes) {
 
