@@ -112,6 +112,7 @@
 - (void)dealloc 
 {
 	[dbInfo release], dbInfo = nil;
+	[super dealloc];
 }
 
 @end

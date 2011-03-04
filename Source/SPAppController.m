@@ -695,7 +695,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, anUUID];
 
 		NSError *inError = nil;
-		NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+		NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
 		NSString *result = @"";
 		NSString *status = @"0";
 

@@ -35,6 +35,7 @@
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
 	[prefs release];
 	[lineNumberView release];
+	[super dealloc];
 }
 
 - (void)awakeFromNib
@@ -373,7 +374,7 @@
 	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 	[paragraphStyle setTabStops:myArrayOfTabs];
 	// Soft wrapped lines are indented slightly
-	[paragraphStyle setHeadIndent:4.0];
+	[paragraphStyle setHeadIndent:4.0f];
 
 	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
 	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
@@ -668,14 +669,14 @@
 {
 	NSUInteger glyphIndex;
 	NSLayoutManager *layoutManager = [self layoutManager];
-	CGFloat fraction;
+	CGFloat partialFraction;
 	NSRange range;
 
 	range = [layoutManager glyphRangeForTextContainer:[self textContainer]];
 	glyphIndex = [layoutManager glyphIndexForPoint:aPoint
 		inTextContainer:[self textContainer]
-		fractionOfDistanceThroughGlyph:&fraction];
-	if( fraction > 0.5 ) glyphIndex++;
+		fractionOfDistanceThroughGlyph:&partialFraction];
+	if( partialFraction > 0.5 ) glyphIndex++;
 
 	if( glyphIndex == NSMaxRange(range) )
 		return  [[self textStorage] length];
@@ -697,20 +698,20 @@
 
 	// Make usage of the UNIX command "file" to get an info
 	// about file type and encoding.
-	NSTask *task=[[NSTask alloc] init];
-	NSPipe *pipe=[[NSPipe alloc] init];
+	NSTask *aTask=[[NSTask alloc] init];
+	NSPipe *aPipe=[[NSPipe alloc] init];
 	NSFileHandle *handle;
 	NSString *result;
-	[task setLaunchPath:@"/usr/bin/file"];
-	[task setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
-	[task setStandardOutput:pipe];
-	handle=[pipe fileHandleForReading];
-	[task launch];
+	[aTask setLaunchPath:@"/usr/bin/file"];
+	[aTask setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
+	[aTask setStandardOutput:aPipe];
+	handle=[aPipe fileHandleForReading];
+	[aTask launch];
 	result=[[NSString alloc] initWithData:[handle readDataToEndOfFile]
 		encoding:NSASCIIStringEncoding];
 
-	[pipe release];
-	[task release];
+	[aPipe release];
+	[aTask release];
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
 	if( [result hasPrefix:@"text/plain"] 

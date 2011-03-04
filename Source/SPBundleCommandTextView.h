@@ -45,4 +45,8 @@
 - (void)commentOut;
 - (BOOL)wrapSelectionWithPrefix:(unichar)prefix;
 
+- (void)dragAlertSheetDidEnd:(NSAlert *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+
+- (void)boundsDidChangeNotification:(NSNotification *)notification;
+
 @end

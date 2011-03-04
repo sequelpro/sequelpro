@@ -120,7 +120,7 @@ NSString* const DirectoryLocationDomain = @"DirectoryLocationDomain";
 
 		if(create) {
 			// Create the path if it doesn't exist
-			NSError *error = nil;
+			error = nil;
 			BOOL success = [self createDirectoryAtPath:resolvedPath withIntermediateDirectories:YES attributes:nil error:&error];
 			if (!success)  {
 				if (errorOut) {

@@ -55,7 +55,7 @@
  */
 + (NSString *)stringForByteSize:(long long)byteSize
 {
-	CGFloat size = byteSize;
+	double size = byteSize;
 	
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 	
@@ -64,7 +64,7 @@
 	if (size < 1023) {
 		[numberFormatter setFormat:@"#,##0 B"];
 		
-		return [numberFormatter stringFromNumber:[NSNumber numberWithInteger:size]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
 	
 	size = (size / 1024);
@@ -422,7 +422,7 @@
 		return distance;
 	}
 	
-	return 0.0;
+	return 0.0f;
 }
 
 /**

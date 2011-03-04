@@ -183,9 +183,9 @@
 - (IBAction)setToNull:(id)sender;
 - (void)updateBitSheet;
 
-- (id)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
-	isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
-	withSender:(id)sender contextInfo:(NSDictionary*)theContextInfo;
+- (void)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
+		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
+		sender:(id)sender contextInfo:(NSDictionary*)theContextInfo;
 
 - (void)setTextMaxLength:(NSUInteger)length;
 - (void)setFieldType:(NSString*)aType;

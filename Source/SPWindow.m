@@ -62,7 +62,7 @@
 				        context:[NSGraphicsContext currentContext]
 				        eventNumber:0
 				        clickCount:1
-				        pressure:0.0];
+				        pressure:0.0f];
 
 			    [NSMenu popUpContextMenu:[firstResponder menuForEvent:theEvent] withEvent:anEvent forView:firstResponder];
 

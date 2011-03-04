@@ -29,7 +29,7 @@
 - (void) drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView
 {
 	// Set initial inset from cellFrame
-	NSRect rect = NSInsetRect (cellFrame, 0.5, 0.5);
+	NSRect rect = NSInsetRect (cellFrame, 0.5f, 0.5f);
 
 	// General inset for colored rect shown inside rect
 	CGFloat insetFactor = 2.0f;
@@ -38,7 +38,7 @@
 	[[NSColor darkGrayColor] set];
 	[NSBezierPath strokeRect: rect];
 	[[NSColor grayColor] set];
-	[NSBezierPath fillRect: NSInsetRect (rect, 1.0, 1.0)];
+	[NSBezierPath fillRect: NSInsetRect (rect, 1.0f, 1.0f)];
 
 	// The following rectangle and triangle are needed for displaying color with alpha values
 	// Draw black rectangle

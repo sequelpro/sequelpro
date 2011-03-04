@@ -55,7 +55,7 @@
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
-	IBOutlet id copyTableContentSwitch;
+	IBOutlet NSButton *copyTableContentSwitch;
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
@@ -118,6 +118,9 @@
 - (IBAction)truncateTable:(id)sender;
 - (IBAction)openTableInNewTab:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
+
+// Alert sheet callbacks
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;

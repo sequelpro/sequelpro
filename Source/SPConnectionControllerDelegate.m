@@ -135,11 +135,11 @@
 	return [[node nodeChildren] count];
 }
 
-- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
+- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)anIndex ofItem:(id)item
 {
 	SPFavoriteNode *node = (item == nil ? favoritesRoot : (SPFavoriteNode *)item);
 	
-	return NSArrayObjectAtIndex([node nodeChildren], index);
+	return NSArrayObjectAtIndex([node nodeChildren], anIndex);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item

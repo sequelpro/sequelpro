@@ -25,6 +25,7 @@
 
 #import "SPTablesList.h"
 #import "SPDatabaseDocument.h"
+#import "SPDatabaseViewController.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
@@ -62,7 +63,7 @@
 {
 	MCPResult *theResult;
 	NSArray *resultRow;
-	NSInteger i;
+	NSUInteger i;
 	NSString *previousSelectedTable = nil;
 	NSString *previousFilterString = nil;
 	BOOL previousTableListIsSelectable = tableListIsSelectable;

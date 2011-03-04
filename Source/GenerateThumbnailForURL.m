@@ -26,6 +26,9 @@
 #include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
 
+void CancelThumbnailGeneration(void* thisInterface, QLThumbnailRequestRef thumbnail);
+OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maximumSize);
+
 /* -----------------------------------------------------------------------------
 Generate a thumbnail for file
 
@@ -38,7 +41,7 @@ void CancelThumbnailGeneration(void* thisInterface, QLThumbnailRequestRef thumbn
 	// implement only if supported
 }
 
-OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize)
+OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maximumSize)
 
 {
 	return noErr;
@@ -54,7 +57,7 @@ OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thum
 	// 	return noErr;
 	// }
 	// 
-	// NSSize canvasSize = NSMakeSize((NSInteger)(maxSize.height/1.3f), maxSize.height);
+	// NSSize canvasSize = NSMakeSize((NSInteger)(maximumSize.height/1.3f), maximumSize.height);
 	// 
 	// // Thumbnail will be drawn with maximum resolution for desired thumbnail request
 	// // Here we create a graphics context to draw the Quick Look Thumbnail in.

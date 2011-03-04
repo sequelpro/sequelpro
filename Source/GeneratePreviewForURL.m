@@ -30,6 +30,11 @@
 #import "SPDataAdditions.h"
 #import "SPEditorTokens.h"
 
+OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize);
+OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options);
+void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview);
+
+
 /* -----------------------------------------------------------------------------
   Generate a preview for file
 
@@ -338,7 +343,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		{
 
 			NSNumber *filesize = [fileAttributes objectForKey:NSFileSize];
-			NSUInteger kMaxSQLFileSize = (0.7 * 1024 * 1024);
+			NSUInteger kMaxSQLFileSize = (0.7f * 1024 * 1024);
 
 			// compose the html and perform syntax highlighting
 
@@ -489,7 +494,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	props    = [[NSMutableDictionary alloc] initWithCapacity:6];
 	imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
 
-	[props setObject:[NSNumber numberWithInt:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
+	[props setObject:[NSNumber numberWithInteger:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
 	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
 
 	if(image) {

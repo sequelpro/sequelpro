@@ -4727,7 +4727,7 @@
 		BOOL isDir;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
 			NSError *inError = nil;
-			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
 			[fm removeItemAtPath:queryFileName error:nil];
 			if(inError == nil && query && [query length]) {
 				[tableContentInstance filterTable:query];
@@ -4895,7 +4895,7 @@
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
 
 			NSError *inError = nil;
-			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
 
 			[fm removeItemAtPath:queryFileName error:nil];
 			[fm removeItemAtPath:resultFileName error:nil];
