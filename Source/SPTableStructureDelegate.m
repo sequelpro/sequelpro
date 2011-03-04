@@ -98,7 +98,7 @@
 		currentlyEditingRow = rowIndex;
 	}
 	
-	NSDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
+	NSMutableArray *currentRow = [tableFields objectAtIndex:rowIndex];
 	
 	// Reset collation if encoding was changed
 	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {

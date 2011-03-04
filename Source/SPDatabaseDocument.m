@@ -59,6 +59,7 @@
 #import "SPDatabaseViewController.h"
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
+#import "SPWindowController.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -3312,7 +3313,6 @@
  */
 - (void) updateWindowTitle:(id)sender
 {
-
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] updateWindowTitle:sender];
 

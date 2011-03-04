@@ -24,6 +24,15 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportControllerDelegate.h"
+#import "SPExportFilenameUtilities.h"
+
+// Defined to suppress warnings
+@interface SPExportController (SPExportControllerPrivateAPI)
+
+- (void)_toggleExportButtonOnBackgroundThread;
+- (void)_switchTab;
+
+@end
 
 @implementation SPExportController (SPExportControllerDelegate)
 

@@ -517,7 +517,7 @@ static NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 	}
 }
 
-- (void)panelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)panelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if ([contextInfo isEqualToString:SPExportColorScheme]) {
 		if (returnCode == NSOKButton) {

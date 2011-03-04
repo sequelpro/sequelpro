@@ -87,7 +87,7 @@
 	[favoritesTabView setTabViewType:NSNoTabsNoBorder];
 	
 	// Sort favorites if a sort type has been selected
-	if (currentSortItem > -1) [self _sortFavorites];
+	if ((NSInteger)currentSortItem > -1) [self _sortFavorites];
 }
 
 #pragma mark -
@@ -205,7 +205,7 @@
 	// Perform sorting
 	[self _sortFavorites];
 	
-	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	if ((NSInteger)previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
 	
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];	
 }

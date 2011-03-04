@@ -306,6 +306,7 @@
 - (IBAction)copyChecksumFromSheet:(id)sender;
 - (void)setIsSavedInBundle:(BOOL)savedInBundle;
 - (void)setFileURL:(NSURL *)fileURL;
+- (void)connect;
 
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;

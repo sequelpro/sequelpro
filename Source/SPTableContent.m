@@ -1771,9 +1771,8 @@
 /**
  * Perform the requested row deletion action.
  */
-- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
 	NSString *wherePart;
 	NSInteger i, errors;
@@ -1783,8 +1782,8 @@
 	// Order out current sheet to suppress overlapping of sheets
 	[[alert window] orderOut:nil];
 
-	if ( [contextInfo isEqualToString:@"removeallrows"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
+	if ([contextInfo isEqualToString:@"removeallrows"]) {
+		if (returnCode == NSAlertDefaultReturn) {
 
 			// Check if the user is currently editing a row, and revert to ensure a somewhat
 			// consistent state if deletion fails.
@@ -1816,8 +1815,9 @@
 					afterDelay:0.3];
 			}
 		}
-	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
+	} 
+	else if ([contextInfo isEqualToString:@"removerow"]) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
 
 			//check if the user is currently editing a row
@@ -3481,11 +3481,10 @@
  */
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
-
-	if(aTableView == filterTableView) {
+	if (aTableView == filterTableView) {
 		return nil;
 	}
-	else if(aTableView == tableContentView) {
+	else if (aTableView == tableContentView) {
 
 		if([[aCell stringValue] length] < 2 || [tableDocumentInstance isWorking]) return nil;
 
@@ -3552,26 +3551,29 @@
 
 		return nil;
 	}
+	
+	return nil;
 }
 
 - (NSInteger)numberOfRowsInTableView:(SPCopyTable *)aTableView
 {
-	if(aTableView == filterTableView) {
-		if(filterTableIsSwapped)
+	if (aTableView == filterTableView) {
+		if (filterTableIsSwapped)
 			return [filterTableData count];
 		else
 			return [[[filterTableData objectForKey:[NSNumber numberWithInteger:0]] objectForKey:@"filter"] count];
 	}
-	else if(aTableView == tableContentView) {
+	else if (aTableView == tableContentView) {
 		return tableRowsCount;
 	}
+	
+	return 0;
 }
 
 - (id)tableView:(SPCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-
-	if(aTableView == filterTableView) {
-		if(filterTableIsSwapped)
+	if (aTableView == filterTableView) {
+		if (filterTableIsSwapped)
 			// First column shows the field names
 			if([[aTableColumn identifier] integerValue] == 0) {
 				NSTableHeaderCell *c = [[[NSTableHeaderCell alloc] initTextCell:[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"name"]] autorelease];
@@ -3582,7 +3584,7 @@
 			return NSArrayObjectAtIndex([[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"], rowIndex);
 		}
 	}
-	else if(aTableView == tableContentView) {
+	else if (aTableView == tableContentView) {
 
 		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 		id theValue = nil;
@@ -3617,6 +3619,8 @@
 
 		return theValue;
 	}
+	
+	return nil;
 }
 
 /**

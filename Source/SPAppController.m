@@ -2073,7 +2073,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
 {
-
 	// Manually open a table document
 	[self newWindow:self];
 
