@@ -41,12 +41,11 @@
 size_t utf8strlen(const char * _s);
 size_t yyuoffset, yyuleng;
 
-#define YY_NO_UNPUT
-
 //keep track of the current utf-8 character (not byte) offset and token length
 #define YY_USER_ACTION { yyuoffset += yyuleng; yyuleng = utf8strlen(yytext); }
 %}
 %option noyywrap
+%option nounput
 %option case-insensitive
 
 s		[ \t\n\r]+
