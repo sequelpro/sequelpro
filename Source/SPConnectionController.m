@@ -1444,7 +1444,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		
 		// Add the new keychain item if the password field has a value
 		if ([[sshPasswordField stringValue] length]) {
-			[keychain addPassword:[sshPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+			[keychain addPassword:[sshSSHPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
 		}
 	}
 	
