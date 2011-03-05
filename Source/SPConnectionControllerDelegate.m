@@ -104,21 +104,26 @@
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
 {
-	return (![[item parentNode] parentNode]) ? 22 : 17;
+	return ([[item parentNode] parentNode]) ? 17 : 22;
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn item:(id)item mouseLocation:(NSPoint)mouseLocation
 {
+	NSString *toolTip = nil;
+	
 	SPTreeNode *node = (SPTreeNode *)item;
 	
 	if (![node isGroup]) {
-		return [NSString stringWithFormat:@"%@ (%@)", [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey], [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteHostKey]];
+		toolTip = [NSString stringWithFormat:@"%@ (%@)", [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey], [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteHostKey]];
 	}
-	else {
+	// Only display a tooltip for group nodes that are a child of the root node
+	else if ([[node parentNode] parentNode]) {
 		NSUInteger favCount = [[node childNodes] count];
 		
-		return [NSString stringWithFormat:@"%@ - %d %@", [[node representedObject] nodeName], favCount, (favCount == 1) ? NSLocalizedString(@"favorite", @"favorite singular label") : NSLocalizedString(@"favorites", @"favorites plural label")];
+		toolTip = [NSString stringWithFormat:@"%@ - %d %@", [[node representedObject] nodeName], favCount, (favCount == 1) ? NSLocalizedString(@"favorite", @"favorite singular label") : NSLocalizedString(@"favorites", @"favorites plural label")];
 	}
+	
+	return toolTip;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
@@ -239,7 +244,7 @@
 {
 	id field = [notification object];
 				
-	if ([self selectedFavoriteNode] && ((field == standardNameField) || (field == socketNameField) || (field == sshNameField))) {
+	if (((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) && [self selectedFavoriteNode]) {
 		
 		favoriteNameFieldWasTouched = YES;
 		
@@ -313,7 +318,7 @@
  */
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
 {
-	// Request a password refresh to keep keychain references in synch with favorites, but only if a favorite
+	// Request a password refresh to keep keychain references in sync with favorites, but only if a favorite
 	// is selected, meaning we're editing an existing one, not a new one.
 	if ((control != favoritesOutlineView) && ([self selectedFavoriteNode])) {
 		[self _updateFavoritePasswordsFromField:control];
