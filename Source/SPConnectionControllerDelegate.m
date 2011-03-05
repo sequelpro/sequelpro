@@ -239,7 +239,9 @@
 {
 	id field = [notification object];
 				
-	if ([self selectedFavoriteNode]) {
+	if ([self selectedFavoriteNode] && ((field == standardNameField) || (field == socketNameField) || (field == sshNameField))) {
+		
+		favoriteNameFieldWasTouched = YES;
 		
 		BOOL nameFieldIsEmpty = [[field stringValue] isEqualToString:@""];
 		
@@ -290,11 +292,7 @@
 				}
 				
 				break;
-			default:
-				break;
 		}
-		
-		if ((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) favoriteNameFieldWasTouched = YES;
 	}
 }
 
