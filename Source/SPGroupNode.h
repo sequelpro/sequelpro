@@ -30,7 +30,7 @@
  *
  * Tree node that represents a group.
  */
-@interface SPGroupNode : NSObject <NSCopying>
+@interface SPGroupNode : NSObject <NSCopying, NSCoding>
 {
 	NSString *nodeName;
 }

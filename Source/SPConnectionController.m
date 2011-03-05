@@ -167,9 +167,14 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		// Register double click action for the favorites outline view (double click favorite to connect)
 		[favoritesOutlineView setTarget:self];
 		[favoritesOutlineView setDoubleAction:@selector(nodeDoubleClicked:)];
+		
+		// Register drag types for the favorites outline view
         [favoritesOutlineView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
         [favoritesOutlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
+		// Preserve expanded group nodes
+		[favoritesOutlineView setAutosaveExpandedItems:YES];
+		
 		// Registered to be notified of changes to connection information
 		[self addObserver:self forKeyPath:SPFavoriteNameKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
 		[self addObserver:self forKeyPath:SPFavoriteHostKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
@@ -1283,7 +1288,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 - (void)_reloadFavoritesViewData
 {	
 	[favoritesOutlineView reloadData];
-	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:YES];
+	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:NO];
 	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
 }
 

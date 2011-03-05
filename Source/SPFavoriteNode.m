@@ -25,6 +25,9 @@
 
 #import "SPFavoriteNode.h"
 
+// Constants
+static const NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
+
 @implementation SPFavoriteNode
 
 @synthesize nodeFavorite;
@@ -67,6 +70,24 @@
 	return node;
 }
 
+#pragma mark -
+#pragma mark Coding protocol methods
+
+- (id)initWithCoder:(NSCoder *)coder
+{
+	if ((self = [super initWithCoder:coder])) {
+		[self setNodeFavorite:[coder decodeObjectForKey:SPFavoriteNodeKey]];
+	}
+	
+	return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+	[super encodeWithCoder:coder];
+	
+	[coder encodeObject:[self nodeFavorite] forKey:SPFavoriteNodeKey];
+}
 
 #pragma mark -
 #pragma mark Other

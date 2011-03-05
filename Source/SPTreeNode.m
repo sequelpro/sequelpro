@@ -27,6 +27,9 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 
+// Constants
+static const NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
+
 @implementation SPTreeNode
 
 @synthesize isGroup;
@@ -245,6 +248,21 @@
 	}
 	
 	return dictionary;
+}
+
+#pragma mark -
+#pragma mark Coding protocol methods
+
+- (id)initWithCoder:(NSCoder *)coder
+{
+	[self setIsGroup:[[coder decodeObjectForKey:SPTreeNodeIsGroupKey] boolValue]];
+	
+	return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+	[coder encodeObject:[NSNumber numberWithBool:[self isGroup]] forKey:SPTreeNodeIsGroupKey];
 }
 
 #pragma mark -

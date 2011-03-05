@@ -30,7 +30,7 @@
  *
  * Tree node the represents a connection favorite.
  */
-@interface SPFavoriteNode : NSObject <NSCopying>
+@interface SPFavoriteNode : NSObject <NSCopying, NSCoding>
 {	
 	NSDictionary *nodeFavorite;
 }

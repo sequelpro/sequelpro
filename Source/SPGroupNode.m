@@ -25,6 +25,9 @@
 
 #import "SPGroupNode.h"
 
+// Constants
+static const NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
+
 @implementation SPGroupNode
 
 @synthesize nodeName;
@@ -65,6 +68,25 @@
 	[node setNodeName:[self nodeName]];
 	
 	return node;
+}
+
+#pragma mark -
+#pragma mark Coding protocol methods
+
+- (id)initWithCoder:(NSCoder *)coder
+{
+	if ((self = [super initWithCoder:coder])) {
+		[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
+	}
+	
+	return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+	[super encodeWithCoder:coder];
+	
+	[coder encodeObject:[self nodeName] forKey:SPGroupNodeNameKey];
 }
 
 #pragma mark -

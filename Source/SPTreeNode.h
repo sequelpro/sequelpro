@@ -30,7 +30,7 @@
  *
  * NSTreeNode subclass which adds some convenience methods.
  */
-@interface SPTreeNode : NSTreeNode
+@interface SPTreeNode : NSTreeNode <NSCoding>
 {
 	BOOL isGroup;
 }
