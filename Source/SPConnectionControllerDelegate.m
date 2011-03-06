@@ -30,6 +30,8 @@
 
 #define CELL(cell) (SPTableTextFieldCell *)cell
 
+static const NSString *SPDatabaseImage = @"database-small";
+
 @implementation SPConnectionController (SPConnectionControllerDelegate)
 
 #pragma mark -
@@ -98,7 +100,7 @@
 		[CELL(cell) setImage:nil];
 	}
 	else {
-		[CELL(cell) setImage:(![node isGroup]) ? [NSImage imageNamed:@"database-small"] : folderImage];
+		[CELL(cell) setImage:(![node isGroup]) ? [NSImage imageNamed:SPDatabaseImage] : folderImage];
 	}	
 }
 
@@ -277,7 +279,7 @@
 				
 				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == socketUserField)) {
 					[socketNameField setStringValue:[NSString stringWithFormat:@"%@@localhost", [socketUserField stringValue]]];
-					
+										
 					// Trigger KVO update
 					[self setName:[socketNameField stringValue]];
 					

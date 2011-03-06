@@ -1021,7 +1021,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
-	// Remove the current favorite/group
+	// Remove the current favorite/group node
 	if ([contextInfo isEqualToString:SPRemoveNode]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			
@@ -1052,7 +1052,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 					[prefs setInteger:0	forKey:SPLastFavoriteID];
 				}
 				
-				// Reset default favorite
+				// If required, reset the default favorite
 				if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
 					[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
 				}
@@ -1272,7 +1272,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		[self setHost:@""];
 	}
 	
-	// Update the name for newly added favorites if not already touched by the user, by trigger a KVO update
+	// Update the name for newly added favorites if not already touched by the user, by triggering a KVO update
 	if (!favoriteNameFieldWasTouched) {
 		[self setName:[NSString stringWithFormat:@"%@@%@", 
 					   ([favorite objectForKey:SPFavoriteUserKey]) ? [favorite objectForKey:SPFavoriteUserKey] : @"", 
