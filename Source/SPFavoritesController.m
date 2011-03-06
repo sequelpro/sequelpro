@@ -143,7 +143,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	[self _addNode:node asChildOfNode:parent];
 	
-	return [node autorelease];
+	return node;
 }
 
 /**
@@ -160,7 +160,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		
 	[self _addNode:node asChildOfNode:parent];
 	
-	return [node autorelease];
+	return node;
 }
 
 /**
