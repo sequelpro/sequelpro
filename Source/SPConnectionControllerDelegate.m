@@ -114,7 +114,11 @@
 	SPTreeNode *node = (SPTreeNode *)item;
 	
 	if (![node isGroup]) {
-		toolTip = [NSString stringWithFormat:@"%@ (%@)", [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey], [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteHostKey]];
+		
+		NSString *favoriteName = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey];
+		NSString *favoriteHostname = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteHostKey];
+		
+		toolTip = ([favoriteHostname length]) ? [NSString stringWithFormat:@"%@ (%@)", favoriteName, favoriteHostname] : favoriteName;	
 	}
 	// Only display a tooltip for group nodes that are a child of the root node
 	else if ([[node parentNode] parentNode]) {
