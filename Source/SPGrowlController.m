@@ -139,7 +139,7 @@ static SPGrowlController *sharedGrowlController = nil;
 									description:description
 							   notificationName:name
 									   iconData:data
-									   priority:priority
+									   priority:(int)priority
 									   isSticky:sticky
 								   clickContext:clickContext];
 	}
