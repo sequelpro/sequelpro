@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10F569</string>
-		<string key="IBDocument.InterfaceBuilderVersion">788</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">461.00</string>
+		<string key="IBDocument.SystemVersion">10J567</string>
+		<string key="IBDocument.InterfaceBuilderVersion">804</string>
+		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.HIToolboxVersion">462.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">788</string>
+			<string key="NS.object.0">804</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -91,7 +91,7 @@
 						<object class="NSButton" id="725257225">
 							<reference key="NSNextResponder" ref="552671949"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{414, 12}, {105, 32}}</string>
+							<string key="NSFrame">{{365, 12}, {154, 32}}</string>
 							<reference key="NSSuperview" ref="552671949"/>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
@@ -112,7 +112,7 @@
 						<object class="NSButton" id="946689239">
 							<reference key="NSNextResponder" ref="552671949"/>
 							<int key="NSvFlags">289</int>
-							<string key="NSFrame">{{266, 12}, {148, 32}}</string>
+							<string key="NSFrame">{{198, 12}, {167, 32}}</string>
 							<reference key="NSSuperview" ref="552671949"/>
 							<int key="NSTag">2</int>
 							<bool key="NSEnabled">YES</bool>
@@ -398,8 +398,10 @@
 					<string>1.IBWindowTemplateEditedContentRect</string>
 					<string>1.NSWindowTemplate.visibleAtLaunch</string>
 					<string>11.IBPluginDependency</string>
+					<string>11.IBViewBoundsToFrameTransform</string>
 					<string>12.IBPluginDependency</string>
 					<string>13.IBPluginDependency</string>
+					<string>13.IBViewBoundsToFrameTransform</string>
 					<string>14.IBPluginDependency</string>
 					<string>2.IBPluginDependency</string>
 					<string>26.IBPluginDependency</string>
@@ -414,13 +416,19 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{469, 495}, {533, 147}}</string>
+					<string>{{433, 866}, {533, 147}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{469, 495}, {533, 147}}</string>
+					<string>{{433, 866}, {533, 147}}</string>
 					<boolean value="NO"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABDwwAAwigAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABDTQAAwigAAA</bytes>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -462,10 +470,10 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
+					<string key="className">NSMenu</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Frameworks/MCPKit/MCPFoundationKit/MCPConnection.h</string>
+						<string key="minorKey">Source/SPMenuAdditions.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -487,6 +495,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -973,6 +988,27 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">PrintCore.framework/Headers/PDEPluginInterface.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">ShortcutRecorder.framework/Headers/SRRecorderCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">ShortcutRecorder.framework/Headers/SRRecorderControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">ShortcutRecorder.framework/Headers/SRValidator.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
