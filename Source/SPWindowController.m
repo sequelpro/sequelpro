@@ -25,6 +25,8 @@
 #import "SPWindowController.h"
 #import "SPDatabaseDocument.h"
 #import "PSMTabDragAssistant.h"
+#import "SPDatabaseViewController.h"
+#import "SPAppController.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
@@ -160,7 +162,7 @@
 {
 
 	// Return if the selected tab shouldn't be closed
-	if (![selectedTableDocument parentTabShouldClose]) return NO;
+	if (![selectedTableDocument parentTabShouldClose]) return;
 
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {

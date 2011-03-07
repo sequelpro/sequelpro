@@ -76,7 +76,7 @@
 
 - (id)initWithTemplateEngine:(MGTemplateEngine *)theEngine
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		engine = theEngine;
 		forStack = [[NSMutableArray alloc] init];
 		sectionStack = [[NSMutableArray alloc] init];

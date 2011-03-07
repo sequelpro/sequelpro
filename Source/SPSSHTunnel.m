@@ -425,7 +425,7 @@
 	if ([notificationText length]) {
 		messages = [notificationText componentsSeparatedByString:@"\n"];
 		enumerator = [messages objectEnumerator];
-		while (message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {			
+		while ((message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]])) {			
 			if (![message length]) continue;
 			[debugMessagesLock lock];
 			[debugMessages addObject:[NSString stringWithString:message]];
@@ -488,7 +488,7 @@
 /*
  * Returns the local port assigned for use by the tunnel
  */
-- (NSInteger)localPort
+- (NSUInteger)localPort
 {
 	return localPort;
 }
@@ -496,7 +496,7 @@
 /*
  * Returns the local port assigned for fallback use by the tunnel, if any
  */
-- (NSInteger)localPortFallback
+- (NSUInteger)localPortFallback
 {
 	if (!useHostFallback) return 0;
 	

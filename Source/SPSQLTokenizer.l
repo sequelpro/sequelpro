@@ -29,8 +29,6 @@
 int utf8strlenfortoken(const char * _s);
 int yyuoffset, yyuleng;
 
-#define YY_NO_UNPUT
-
 //keep track of the current utf-8 character (not byte) offset and token length
 #define YY_USER_ACTION { yyuoffset += yyuleng; yyuleng = utf8strlenfortoken(yytext); }
 //ignore the output of unmatched characters
@@ -38,6 +36,7 @@ int yyuoffset, yyuleng;
 %}
 %option prefix="to"
 %option noyywrap
+%option nounput
 %option case-insensitive
 %option nostdinit
 
@@ -135,5 +134,5 @@ int utf8strlenfortoken(const char * _s)
 	}
 
 done:
-	return ((s - _s) - count);
+	return (int)((s - _s) - count);
 }

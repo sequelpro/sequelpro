@@ -32,7 +32,9 @@
 #import "SPServerSupport.h"
 
 @interface SPTableData (PrivateAPI)
+
 - (void)_loopWhileWorking;
+
 @end
 
 @implementation SPTableData

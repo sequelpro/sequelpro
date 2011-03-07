@@ -24,7 +24,7 @@
 
 static inline id NSArrayObjectAtIndex(NSArray *self, NSUInteger i) 
 {
-	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, i);
+	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, (long)i);
 }
 
 static inline void NSMutableArrayAddObject(NSArray *self, id anObject) 

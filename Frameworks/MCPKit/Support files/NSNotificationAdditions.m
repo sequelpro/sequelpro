@@ -26,6 +26,12 @@
 #import "NSNotificationAdditions.h"
 #import "pthread.h"
 
+@interface NSNotificationCenter (NSNotificationCenterAdditions_PrivateAPI)
++ (void)_postNotification:(NSNotification *)notification;
++ (void)_postNotificationName:(NSDictionary *)info;
++ (void)_postNotificationForwarder:(NSDictionary *)info;
+@end
+
 @implementation NSNotificationCenter (NSNotificationCenterAdditions)
 
 - (void)postNotificationOnMainThread:(NSNotification *)notification 
@@ -35,16 +41,11 @@
 	[self postNotificationOnMainThread:notification waitUntilDone:NO];
 }
 
-- (void)postNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)wait 
+- (void)postNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)shouldWaitUntilDone 
 {
 	if (pthread_main_np()) return [self postNotification:notification];
 	
-	[[self class] performSelectorOnMainThread:@selector(_postNotification:) withObject:notification waitUntilDone:wait];
-}
-
-+ (void)_postNotification:(NSNotification *)notification 
-{
-	[[self defaultCenter] postNotification:notification];
+	[self performSelectorOnMainThread:@selector(_postNotification:) withObject:notification waitUntilDone:shouldWaitUntilDone];
 }
 
 - (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object 
@@ -61,7 +62,7 @@
 	[self postNotificationOnMainThreadWithName:name object:object userInfo:userInfo waitUntilDone:NO];
 }
 
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)wait 
+- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)shouldWaitUntilDone 
 {
 	if (pthread_main_np()) return [self postNotificationName:name object:object userInfo:userInfo];
 
@@ -71,12 +72,32 @@
 	if (object) [info setObject:object forKey:@"object"];
 	if (userInfo) [info setObject:userInfo forKey:@"userInfo"];
 
-	[[self class] performSelectorOnMainThread:@selector(_postNotificationName:) withObject:info waitUntilDone:wait];
+	[[self class] performSelectorOnMainThread:@selector(_postNotificationName:) withObject:info waitUntilDone:shouldWaitUntilDone];
 
 	[info release];
 }
 
+@end
+
+@implementation NSNotificationCenter (NSNotificationCenterAdditions_PrivateAPI)
+
++ (void)_postNotification:(NSNotification *)notification 
+{
+	[[self defaultCenter] postNotification:notification];
+}
+
 + (void)_postNotificationName:(NSDictionary *)info 
+{
+	NSString *name = [info objectForKey:@"name"];
+	
+	id object = [info objectForKey:@"object"];
+	
+	NSDictionary *userInfo = [info objectForKey:@"userInfo"];
+
+	[[self defaultCenter] postNotificationName:name object:object userInfo:userInfo];
+}
+
++ (void)_postNotificationForwarder:(NSDictionary *)info 
 {
 	NSString *name = [info objectForKey:@"name"];
 	

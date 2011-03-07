@@ -44,15 +44,14 @@
 - (void)_checkWindowFrame;
 
     // actions
-- (void)overflowMenuAction:(id)sender;
 - (void)closeTabClick:(id)sender;
-- (void)tabClick:(id)sender;
 - (void)tabNothing:(id)sender;
 
 	// notification handlers
 - (void)frameDidChange:(NSNotification *)notification;
 - (void)windowDidMove:(NSNotification *)aNotification;
 - (void)windowDidUpdate:(NSNotification *)notification;
+- (void)windowStatusDidChange:(NSNotification *)notification;
 
     // NSTabView delegate
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem;
@@ -68,6 +67,8 @@
 - (void)_bindPropertiesForCell:(PSMTabBarCell *)cell andTabViewItem:(NSTabViewItem *)item;
 - (id)cellForPoint:(NSPoint)point cellFrame:(NSRectPointer)outFrame;
 
+- (void)fireSpring:(NSTimer *)timer;
+- (void)animateShowHide:(NSTimer *)timer;
 - (void)_animateCells:(NSTimer *)timer;
 @end
 
@@ -105,7 +106,7 @@
 {
     NSRect aRect=[self frame];
     aRect.origin.x = [style leftMarginForTabBarControl];
-    aRect.origin.y = 0.0;
+    aRect.origin.y = 0.0f;
     aRect.size.width = [self availableCellWidth];
     aRect.size.height = [style tabCellHeight];
     return aRect;
@@ -153,7 +154,7 @@
     [self _positionOverflowMenu];
     
     // new tab button
-    NSRect addTabButtonRect = NSMakeRect([self frame].size.width - [style rightMarginForTabBarControl] + 1, 3.0, 16.0, 16.0);
+    NSRect addTabButtonRect = NSMakeRect([self frame].size.width - [style rightMarginForTabBarControl] + 1, 3.0f, 16.0f, 16.0f);
     _addTabButton = [[PSMRolloverButton alloc] initWithFrame:addTabButtonRect];
     if (_addTabButton) {
         NSImage *newButtonImage = [style addTabButtonImage];
@@ -682,7 +683,7 @@
     // add to collection
     [_cells addObject:cell];
     [cell release];
-    if ([_cells count] == [tabView numberOfTabViewItems]) {
+    if ((NSInteger)[_cells count] == [tabView numberOfTabViewItems]) {
         [self update]; // don't update unless all are accounted for!
 	}
 }
@@ -714,7 +715,7 @@
 	}
 	
 	if ([item identifier] != nil) {
-		if ([[item identifier] respondsToSelector:@selector(objectCount)]) {
+		if ([[item identifier] respondsToSelector:@selector(count)]) {
 			[[item identifier] removeObserver:cell forKeyPath:@"objectCount"];
 		}
 	}
@@ -947,10 +948,10 @@
     // moves the frame of the tab bar and window (or partner view) linearly to hide or show the tab bar
     NSRect myFrame = [self frame];
 	NSDictionary *userInfo = [timer userInfo];
-    CGFloat myCurrentOrigin = ([[userInfo objectForKey:@"myOriginalOrigin"] doubleValue] + (([[userInfo objectForKey:@"myTargetOrigin"] doubleValue] - [[userInfo objectForKey:@"myOriginalOrigin"] doubleValue]) * (_currentStep/kPSMHideAnimationSteps)));
-    CGFloat myCurrentSize = ([[userInfo objectForKey:@"myOriginalSize"] doubleValue] + (([[userInfo objectForKey:@"myTargetSize"] doubleValue] - [[userInfo objectForKey:@"myOriginalSize"] doubleValue]) * (_currentStep/kPSMHideAnimationSteps)));
-    CGFloat partnerCurrentOrigin = ([[userInfo objectForKey:@"partnerOriginalOrigin"] doubleValue] + (([[userInfo objectForKey:@"partnerTargetOrigin"] doubleValue] - [[userInfo objectForKey:@"partnerOriginalOrigin"] doubleValue]) * (_currentStep/kPSMHideAnimationSteps)));
-    CGFloat partnerCurrentSize = ([[userInfo objectForKey:@"partnerOriginalSize"] doubleValue] + (([[userInfo objectForKey:@"partnerTargetSize"] doubleValue] - [[userInfo objectForKey:@"partnerOriginalSize"] doubleValue]) * (_currentStep/kPSMHideAnimationSteps)));
+    CGFloat myCurrentOrigin = ([[userInfo objectForKey:@"myOriginalOrigin"] floatValue] + (([[userInfo objectForKey:@"myTargetOrigin"] floatValue] - [[userInfo objectForKey:@"myOriginalOrigin"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
+    CGFloat myCurrentSize = ([[userInfo objectForKey:@"myOriginalSize"] floatValue] + (([[userInfo objectForKey:@"myTargetSize"] floatValue] - [[userInfo objectForKey:@"myOriginalSize"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
+    CGFloat partnerCurrentOrigin = ([[userInfo objectForKey:@"partnerOriginalOrigin"] floatValue] + (([[userInfo objectForKey:@"partnerTargetOrigin"] floatValue] - [[userInfo objectForKey:@"partnerOriginalOrigin"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
+    CGFloat partnerCurrentSize = ([[userInfo objectForKey:@"partnerOriginalSize"] floatValue] + (([[userInfo objectForKey:@"partnerTargetSize"] floatValue] - [[userInfo objectForKey:@"partnerOriginalSize"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
     
 	NSRect myNewFrame;
 	if ([self orientation] == PSMTabBarHorizontalOrientation) {
@@ -1053,7 +1054,7 @@
 {
     // make sure all of our tabs are accounted for before updating,
 	// or only proceed if a drag is in progress (where counts may mismatch)
-    if ([[self tabView] numberOfTabViewItems] != [_cells count] && ![[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
+    if ([[self tabView] numberOfTabViewItems] != (NSInteger)[_cells count] && ![[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
         return;
     }
 
@@ -1082,7 +1083,7 @@
     if (animate) {
         NSMutableArray *targetFrames = [NSMutableArray arrayWithCapacity:[_cells count]];
         
-        for (NSInteger i = 0; i < [_cells count]; i++) {
+        for (NSUInteger i = 0; i < [_cells count]; i++) {
             currentCell = [_cells objectAtIndex:i];
             
             //we're going from NSRect -> NSValue -> NSRect -> NSValue here - oh well
@@ -1104,7 +1105,7 @@
 		[self _animateCells:_animationTimer];
 
     } else {
-        for (NSInteger i = 0; i < [_cells count]; i++) {
+        for (NSUInteger i = 0; i < [_cells count]; i++) {
             currentCell = [_cells objectAtIndex:i];
             [currentCell setFrame:[_controller cellFrameAtIndex:i]];
             
@@ -1124,11 +1125,11 @@
     NSAnimation *animation = [[timer userInfo] objectAtIndex:1];
 	NSArray *targetFrames = [[timer userInfo] objectAtIndex:0];
     PSMTabBarCell *currentCell;
-	NSInteger cellCount = [_cells count];
+	NSUInteger cellCount = (NSUInteger)[_cells count];
 	
     if ((cellCount > 0) && [animation isAnimating]) {
 		//compare our target position with the current position and move towards the target
-		for (NSInteger i = 0; i < [targetFrames count] && i < cellCount; i++) {
+		for (NSUInteger i = 0; i < [targetFrames count] && i < cellCount; i++) {
 			currentCell = [_cells objectAtIndex:i];
 			NSRect cellFrame = [currentCell frame], targetFrame = [[targetFrames objectAtIndex:i] rectValue];
 			CGFloat sizeChange;
@@ -1164,8 +1165,8 @@
     } else { 
 		//put all the cells where they should be in their final position
 		if (cellCount > 0) {
-			for (NSInteger i = 0; i < [targetFrames count] && i < cellCount; i++) {
-				PSMTabBarCell *currentCell = [_cells objectAtIndex:i];
+			for (NSUInteger i = 0; i < [targetFrames count] && i < cellCount; i++) {
+				currentCell = [_cells objectAtIndex:i];
 				NSRect cellFrame = [currentCell frame], targetFrame = [[targetFrames objectAtIndex:i] rectValue];
 				
                 if ([self orientation] == PSMTabBarHorizontalOrientation) {
@@ -1196,7 +1197,7 @@
 		[_animationTimer invalidate];
 		[_animationTimer release]; _animationTimer = nil;
 		
-        for (NSInteger i = 0; i < cellCount; i++) {
+        for (NSUInteger i = 0; i < cellCount; i++) {
             currentCell = [_cells objectAtIndex:i];
             
             //we've hit the cells that are in overflow, stop setting up tracking rects
@@ -1217,8 +1218,9 @@
 	// Skip tracking rects for placeholders - not required.
 	if ([cell isPlaceholder]) return;
 
-    NSInteger tag, index = [_cells indexOfObject:cell];
-    NSRect cellTrackingRect = [_controller cellTrackingRectAtIndex:index];
+    NSInteger tag;
+	NSUInteger anIndex = [_cells indexOfObject:cell];
+    NSRect cellTrackingRect = [_controller cellTrackingRectAtIndex:anIndex];
     NSPoint mousePoint = [self convertPoint:[[self window] mouseLocationOutsideOfEventStream] fromView:nil];
     BOOL mouseInCell = NSMouseInRect(mousePoint, cellTrackingRect, [self isFlipped]);
 
@@ -1232,7 +1234,7 @@
     [cell setHighlighted:mouseInCell];
     
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed]) {
-        NSRect closeRect = [_controller closeButtonTrackingRectAtIndex:index];
+        NSRect closeRect = [_controller closeButtonTrackingRectAtIndex:anIndex];
         BOOL mouseInCloseRect = NSMouseInRect(mousePoint, closeRect, [self isFlipped]);
         
         //set the close button tracking rect
@@ -1390,9 +1392,9 @@
 			return;
 		}
 		
-		CGFloat dx = fabs(currentPoint.x - trackingStartPoint.x);
-		CGFloat dy = fabs(currentPoint.y - trackingStartPoint.y);
-		CGFloat distance = sqrt(dx * dx + dy * dy);
+		CGFloat dx = fabsf(currentPoint.x - trackingStartPoint.x);
+		CGFloat dy = fabsf(currentPoint.y - trackingStartPoint.y);
+		CGFloat distance = sqrtf(dx * dx + dy * dy);
 		
 		if (distance >= 10 && !_didDrag && ![[PSMTabDragAssistant sharedDragAssistant] isDragging] &&
 				[self delegate] && [[self delegate] respondsToSelector:@selector(tabView:shouldDragTabViewItem:fromTabBar:)] &&
@@ -1815,7 +1817,7 @@
     // message, thus I can end up updating when there are no cells, if no tabs were (yet) present
 	NSInteger tabIndex = [aTabView indexOfTabViewItem:tabViewItem];
 	
-    if ([_cells count] > 0 && tabIndex < [_cells count]) {
+    if ([_cells count] > 0 && tabIndex < (NSInteger)[_cells count]) {
 		PSMTabBarCell *thisCell = [_cells objectAtIndex:tabIndex];
 		if (_alwaysShowActiveTab && [thisCell isInOverflowMenu]) {
 			
@@ -2002,12 +2004,12 @@
 
 - (NSSize)minimumFrameSizeFromKnobPosition:(NSInteger)position
 {
-    return NSMakeSize(100.0, 22.0);
+    return NSMakeSize(100.0f, 22.0f);
 }
 
 - (NSSize)maximumFrameSizeFromKnobPosition:(NSInteger)knobPosition
 {
-    return NSMakeSize(10000.0, 22.0);
+    return NSMakeSize(10000.0f, 22.0f);
 }
 
 - (void)placeView:(NSRect)newFrame
@@ -2056,7 +2058,7 @@
     // bind for the existence of a counter
     [cell setCount:0];
     if ([item identifier] != nil) {
-		if ([[[cell representedObject] identifier] respondsToSelector:@selector(objectCount)]) {
+		if ([[[cell representedObject] identifier] respondsToSelector:@selector(count)]) {
 			[cell bind:@"count" toObject:[item identifier] withKeyPath:@"objectCount" options:nil];
 			[[item identifier] addObserver:cell forKeyPath:@"objectCount" options:0 context:nil];
 		}
@@ -2138,9 +2140,9 @@
     return [_cells objectAtIndex:(cellCount - 1)];
 }
 
-- (NSInteger)numberOfVisibleTabs
+- (NSUInteger)numberOfVisibleTabs
 {
-    NSInteger i, cellCount = 0;
+    NSUInteger i, cellCount = 0;
 	PSMTabBarCell *nextCell;
 	
     for (i = 0; i < [_cells count]; i++) {

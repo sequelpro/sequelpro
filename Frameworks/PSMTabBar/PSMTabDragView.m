@@ -13,7 +13,7 @@
 
 - (id)initWithFrame:(NSRect)frame {
     if ( (self = [super initWithFrame:frame]) ) {
-		_alpha = 1.0;
+		_alpha = 1.0f;
     }
     return self;
 }

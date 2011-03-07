@@ -26,6 +26,9 @@
 #import "SPExportFileUtilities.h"
 #import "SPExporter.h"
 #import "SPAlertSheets.h"
+#import "SPExportFile.h"
+#import "SPDatabaseDocument.h"
+#import "SPCustomQuery.h"
 
 @implementation SPExportController (SPExportFileUtilities)
 
@@ -135,8 +138,17 @@
 			}
 		}
 	}
-	
-		
+
+	// Compare the count of exported files to the count of failed files
+	NSUInteger totalFilesExported = [exportFiles count];
+
+	// If all the files failed, show a simplified export dialog
+
+
+	// If only some of the files failed, show an export dialog with the option to ignore the failed files.
+
+
+	// For single files, show a dialog very close to the OS dialog
 	if (i > 0) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error creating export files", @"export file handle creation error message") 

@@ -70,6 +70,9 @@
 - (void)draggingBeganAt:(NSPoint)aPoint;
 - (void)draggingMovedTo:(NSPoint)aPoint;
 
+- (void)fadeInDragWindow:(NSTimer *)timer;
+- (void)fadeOutDragWindow:(NSTimer *)timer;
+
 // Animation
 - (void)animateDrag:(NSTimer *)timer;
 - (void)calculateDragAnimationForTabBar:(PSMTabBarControl *)control;
@@ -88,7 +91,7 @@
 - (void)setControlView:(id)view;
 - (id)cellForPoint:(NSPoint)point cellFrame:(NSRectPointer)outFrame;
 - (PSMTabBarCell *)lastVisibleTab;
-- (NSInteger)numberOfVisibleTabs;
+- (NSUInteger)numberOfVisibleTabs;
 
 @end
 

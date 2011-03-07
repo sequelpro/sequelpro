@@ -23,7 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindow.h"
-
+#import "SPWindowController.h"
 
 @implementation SPWindow
 
@@ -62,7 +62,7 @@
 				        context:[NSGraphicsContext currentContext]
 				        eventNumber:0
 				        clickCount:1
-				        pressure:0.0];
+				        pressure:0.0f];
 
 			    [NSMenu popUpContextMenu:[firstResponder menuForEvent:theEvent] withEvent:anEvent forView:firstResponder];
 

@@ -112,7 +112,7 @@
 
 	maxWindowWidth = 450;
 
-	if(self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:YES])
+	if((self = [super initWithContentRect:NSMakeRect(0,0,maxWindowWidth,0) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:YES]))
 	{
 		mutablePrefix = [NSMutableString new];
 		originalFilterString = [NSMutableString new];
@@ -217,7 +217,7 @@
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
 	alias:(NSString*)anAlias isQueryingDBStructure:(BOOL)isQueryingDBStructure
 {
-	if(self = [self init])
+	if((self = [self init]))
 	{
 
 		// Set filter string 

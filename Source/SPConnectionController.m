@@ -35,6 +35,9 @@
 #import "SPTableTextFieldCell.h"
 #import "SPFavoritesController.h"
 #import "SPFavoriteNode.h"
+#import "SPGeneralPreferencePane.h"
+#import "SPDatabaseViewController.h"
+#import "SPTreeNode.h"
 
 // Constants
 static const NSString *SPRemoveNode              = @"RemoveNode";
@@ -101,7 +104,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  */
 - (id)initWithDocument:(SPDatabaseDocument *)document
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		
 		// Weak reference
 		dbDocument = document;
@@ -533,7 +536,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	// Perform re-sorting
 	[self _sortFavorites];
 	
-	[sender setState:reverseFavoritesSort]; 
+	[(NSMenuItem *)sender setState:reverseFavoritesSort]; 
 }
 
 /**
@@ -1039,8 +1042,6 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 				NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
 				NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
 				
-				NSInteger favoriteType     = [[favorite objectForKey:SPFavoriteTypeKey] integerValue];
-				
 				// Remove passwords from the Keychain
 				[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
 										account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
@@ -1351,16 +1352,18 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  */
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID
 {	
-	SPTreeNode *node = nil;
+	SPTreeNode *favoriteNode = nil;
 	
-	if (!favoritesRoot) return;
+	if (!favoritesRoot) return favoriteNode;
 		
-	for (node in [favoritesRoot allChildLeafs]) 
+	for (SPTreeNode *node in [favoritesRoot allChildLeafs]) 
 	{						
 		if ([[[[node representedObject] nodeFavorite] objectForKey:SPFavoriteIDKey] integerValue] == favoriteID) {
-			return node;
+			favoriteNode = node;
 		} 
 	}
+	
+	return favoriteNode;
 }
 
 /**

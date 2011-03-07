@@ -24,6 +24,10 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionControllerDataSource.h"
+#import "SPFavoritesController.h"
+#import "SPFavoriteNode.h"
+#import "SPGroupNode.h"
+#import "SPTreeNode.h"
 
 @implementation SPConnectionController (SPConnectionControllerDataSource)
 

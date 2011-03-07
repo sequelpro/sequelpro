@@ -22,12 +22,22 @@
 
 - (NSRect)addButtonRect;
 - (NSMenu *)overflowMenu;
-- (NSRect)cellTrackingRectAtIndex:(NSInteger)index;
-- (NSRect)closeButtonTrackingRectAtIndex:(NSInteger)index;
-- (NSRect)cellFrameAtIndex:(NSInteger)index;
+- (NSRect)cellTrackingRectAtIndex:(NSUInteger)anIndex;
+- (NSRect)closeButtonTrackingRectAtIndex:(NSUInteger)anIndex;
+- (NSRect)cellFrameAtIndex:(NSUInteger)anIndex;
 
 - (void)setSelectedCell:(PSMTabBarCell *)cell;
 
 - (void)layoutCells;
+
+@end
+
+@interface NSObject (TabRepresentedObjectIdentifierMethods)
+
+// Method for generating a tooltip for a tab
+- (NSString *)tabTitleForTooltip;
+
+// Retrieving whether a tab is working
+- (BOOL)isProcessing;
 
 @end

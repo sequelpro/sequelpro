@@ -32,6 +32,7 @@
 #import "MCPNull.h"
 #import "MCPStreamingResult.h"
 #import "MCPConnectionProxy.h"
+#import "MCPConnectionDelegate.h"
 #import "MCPStringAdditions.h"
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
@@ -133,7 +134,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		lastKeepAliveTime = 0;
 		pingThread = NULL;
 		connectionProxy = nil;
-		connectionStartTime = -1;
+		connectionStartTime = 0;
 		lastQueryExecutedAtTime = CGFLOAT_MAX;
 		lastDelegateDecisionForLostConnection = NSNotFound;
 		queryCancelled = NO;
@@ -195,7 +196,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 /**
  * Inialize connection using the supplied host details.
  */
-- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(NSInteger)port
+- (id)initToHost:(NSString *)host withLogin:(NSString *)login usingPort:(NSUInteger)port
 {
 	if ((self = [self init])) {
 		if (!host) host = @"";
@@ -213,19 +214,19 @@ static BOOL sTruncateLongFieldInLogs = YES;
 /**
  * Inialize connection using the supplied socket details.
  */
-- (id)initToSocket:(NSString *)socket withLogin:(NSString *)login
+- (id)initToSocket:(NSString *)aSocket withLogin:(NSString *)login
 {
 	if ((self = [self init])) {
-		if (!socket || ![socket length]) {
-			socket = [self findSocketPath];
-			if (!socket) socket = @"";
+		if (!aSocket || ![aSocket length]) {
+			aSocket = [self findSocketPath];
+			if (!aSocket) aSocket = @"";
 		}
 		
 		if (!login) login = @"";
 		
 		connectionHost = nil;
 		connectionLogin = [[NSString alloc] initWithString:login];
-		connectionSocket = [[NSString alloc] initWithString:socket];
+		connectionSocket = [[NSString alloc] initWithString:aSocket];
 		connectionPort = 0;
 	}
 	
@@ -298,7 +299,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 /**
  * Sets or updates the connection port - for use with tunnels.
  */
-- (BOOL)setPort:(NSInteger)thePort
+- (BOOL)setPort:(NSUInteger)thePort
 {
 	connectionPort = thePort;
 	
@@ -456,7 +457,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	}
 
 	// Connect
-	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, (unsigned int)connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
 
 	if (theRet != mConnection) {
@@ -558,12 +559,12 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 	// Check whether a reconnection attempt is already being made - if so, wait and return the status of that reconnection attempt.
 	if (isReconnecting) {
-		NSDate *reconnectLoopStartdate = [NSDate date], *eventLoopStartDate;
+		NSDate *eventLoopStartDate;
 		while (isReconnecting) {
 			eventLoopStartDate = [NSDate date];
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
 			if ([[NSDate date] timeIntervalSinceDate:eventLoopStartDate] < 0.1) {
-				usleep(100000 - (1000000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate]));
+				usleep((useconds_t)(100000 - (1000000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate])));
 			}
 		}
 		[reconnectionPool drain];
@@ -624,7 +625,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			eventLoopStartDate = [NSDate date];
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
 			if ([[NSDate date] timeIntervalSinceDate:eventLoopStartDate] < 0.25) {
-				usleep(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate]));
+				usleep((useconds_t)(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:eventLoopStartDate])));
 			}
 		}
 
@@ -653,7 +654,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 			[[NSRunLoop mainRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
 			//[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
 			if ([[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer] < 0.25) {
-				usleep(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]));
+				usleep((useconds_t)(250000 - (1000000 * [[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer])));
 			}
 			if ([connectionProxy state] == PROXY_STATE_WAITING_FOR_AUTH) {
 				proxyStartDate = [proxyStartDate addTimeInterval:[[NSDate date] timeIntervalSinceDate:interfaceInteractionTimer]];
@@ -844,7 +845,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
  */
 - (double)timeConnected
 {
-	if (connectionStartTime == -1) return -1;
+	if (connectionStartTime == 0) return -1;
 
 	uint64_t currentTime_t = mach_absolute_time() - connectionStartTime;
 	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
@@ -901,7 +902,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 
 	// Loop until the ping completes
 	do {
-		usleep(loopDelay);
+		usleep((useconds_t)loopDelay);
 
 		// If the ping timeout has been exceeded, force a timeout; double-check that the
 		// thread is still active.
@@ -959,9 +960,10 @@ void forceThreadExit(int signalNumber)
 	pthread_exit(NULL);
 }
 
-void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
+void pingThreadCleanup(void *pingDetails)
 {
-	*(pingDetails->pingActivePointer) = NO;
+	MCPConnectionPingDetails *pingDetailsStruct = pingDetails;
+	*(pingDetailsStruct->pingActivePointer) = NO;
 }
 
 /**
@@ -1348,12 +1350,12 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
  * The socket is used if the host is set to !{@"localhost"}, to an empty or a !{nil} string
  * For the moment the implementation might not be safe if you have a nil pointer to one of the NSString* variables (underestand: I don't know what the result will be).
  */
-- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSInteger)port socket:(NSString *)socket
+- (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSUInteger)port socket:(NSString *)aSocket
 {
 	const char *theLogin  = [self cStringFromString:login];
 	const char *theHost	  = [self cStringFromString:host];
 	const char *thePass	  = [self cStringFromString:pass];
-	const char *theSocket = [self cStringFromString:socket];
+	const char *theSocket = [self cStringFromString:aSocket];
 	void	   *theRet;
 	
 	// Disconnect if it was already connected
@@ -1394,7 +1396,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 						kMCPSSLCipherList);
 	}
 	
-	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, port, theSocket, mConnectionFlags);
+	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, (unsigned int)port, theSocket, mConnectionFlags);
 	if (theRet != mConnection) {
 		return mConnected = NO;
 	}
@@ -1758,7 +1760,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 			
 		} 
 		else {
-			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %ld bytes is larger than max_allowed_packet size (%ld).", 
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"The query length of %lu bytes is larger than max_allowed_packet size (%lu).", 
 																				  @"error message if max_allowed_packet < query size"),
 									  (unsigned long)theCQueryLength, maxAllowedPacketSize];
 			
@@ -1836,7 +1838,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 			
 			queryErrorMessage = [[NSString alloc] initWithString:@""];
 			queryErrorId = 0;
-			if (streamResultType == MCPStreamingNone && queryAffectedRows == -1) {
+			if (streamResultType == MCPStreamingNone && queryAffectedRows == (my_ulonglong)~0) {
 				queryAffectedRows = mysql_affected_rows(mConnection);
 			}
 			
@@ -1983,7 +1985,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 		}
 		
 		// Connect
-		connectionSetupStatus = mysql_real_connect(killerConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+		connectionSetupStatus = mysql_real_connect(killerConnection, theHost, theLogin, thePass, NULL, (unsigned int)connectionPort, theSocket, mConnectionFlags);
 		thePass = NULL;
 		if (connectionSetupStatus) {
 		
@@ -2153,7 +2155,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 	[self lockConnection];
 	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
-		if (theResPtr = mysql_list_dbs(mConnection, NULL)) {
+		if ((theResPtr = mysql_list_dbs(mConnection, NULL))) {
 			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
@@ -2163,7 +2165,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 	else {
 		const char *theCDBsName = (const char *)[self cStringFromString:dbsName];
 		
-		if (theResPtr = mysql_list_dbs(mConnection, theCDBsName)) {
+		if ((theResPtr = mysql_list_dbs(mConnection, theCDBsName))) {
 			theResult = [[MCPResult alloc] initWithResPtr:theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
@@ -2210,7 +2212,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 	[self lockConnection];
 	if ((tablesName == nil) || ([tablesName isEqualToString:@""])) {
-		if (theResPtr = mysql_list_tables(mConnection, NULL)) {
+		if ((theResPtr = mysql_list_tables(mConnection, NULL))) {
 			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
@@ -2219,7 +2221,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 	}
 	else {
 		const char	*theCTablesName = (const char *)[self cStringFromString:tablesName];
-		if (theResPtr = mysql_list_tables(mConnection, theCTablesName)) {
+		if ((theResPtr = mysql_list_tables(mConnection, theCTablesName))) {
 			theResult = [[MCPResult alloc] initWithResPtr: theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		}
 		else {
@@ -2263,7 +2265,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 		
 	// NSLog(@"num of fields: %@; num of rows: %@", [theResult numOfFields], [theResult numOfRows]);
 	if ([theResult numOfRows] > 0) {
-		int i;
+		my_ulonglong i;
 		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 			theTableName = [[theResult fetchRowAsArray] objectAtIndex:0];
 			[theDBTables addObject:theTableName];
@@ -2440,7 +2442,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 	// Do not parse more than 2000 tables/views per db
 	if([tablesAndViews count] > 2000) {
-		NSLog(@"%ld items in database %@. Only 2000 items can be parsed. Stopped parsing.", [tablesAndViews count], currentDatabase);
+		NSLog(@"%lu items in database %@. Only 2000 items can be parsed. Stopped parsing.", (unsigned long)[tablesAndViews count], currentDatabase);
 		[queryPool release];
 		return;
 	}
@@ -2507,7 +2509,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 		}
 
 		// Connect
-		connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, connectionPort, theSocket, mConnectionFlags);
+		connectionSetupStatus = mysql_real_connect(structConnection, theHost, theLogin, thePass, NULL, (unsigned int)connectionPort, theSocket, mConnectionFlags);
 		thePass = NULL;
 		if (connectionSetupStatus) {
 			MYSQL_RES *theResult;
@@ -2558,12 +2560,12 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 				if(![aTableName isKindOfClass:[NSString class]]) continue;
 				if(![aTableName length]) continue;
 				// Retrieve the column details
-				NSString *query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
+				query = [NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", 
 					[aTableName stringByReplacingOccurrencesOfString:@"`" withString:@"``"],
 					currentDatabaseEscaped];
-				NSData *encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
-				const char *queryCString = [encodedQueryData bytes];
-				unsigned long queryCStringLength = [encodedQueryData length];
+				encodedQueryData = NSStringDataUsingLossyEncoding(query, theConnectionEncoding, 1);
+				queryCString = [encodedQueryData bytes];
+				queryCStringLength = [encodedQueryData length];
 				if (mysql_real_query(structConnection, queryCString, queryCStringLength) != 0) {
 					// NSLog(@"error %@", aTableName);
 					continue;
@@ -2579,7 +2581,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 				NSMutableDictionary *tableStructure = [databaseStructure objectForKey:table_id];
 
 				// Loop through the fields, extracting details for each
-				while (row = mysql_fetch_row(theResult)) {
+				while ((row = mysql_fetch_row(theResult))) {
 					NSString *field = [self stringWithCString:row[0] usingEncoding:theConnectionEncoding] ;
 					NSString *type = [self stringWithCString:row[1] usingEncoding:theConnectionEncoding] ;
 					NSString *type_display = [type stringByReplacingOccurrencesOfRegex:@"\\(.*?,.*?\\)" withString:@"(…)"];
@@ -2627,10 +2629,9 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 					queryCStringLength = [encodedQueryData length];
 					if (mysql_real_query(structConnection, queryCString, queryCStringLength) == 0) {
 						theResult = mysql_use_result(structConnection);
-						NSUInteger numberOfFields = mysql_num_fields(theResult);
 						
 						// Loop through the rows and extract the function details
-						while(row = mysql_fetch_row(theResult)) {
+						while ((row = mysql_fetch_row(theResult))) {
 
 							// If cancelled, abort without saving the new structure
 							if(cancelQueryingDbStructure) {
@@ -2643,7 +2644,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 							NSString *type = ([[self stringWithUTF8CString:row[4]] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
 							NSString *dtd = [self stringWithUTF8CString:row[5]];
 							NSString *det = [self stringWithUTF8CString:row[11]];
-							NSString *access = [self stringWithUTF8CString:row[12]];
+							NSString *dataaccess = [self stringWithUTF8CString:row[12]];
 							NSString *security_type = [self stringWithUTF8CString:row[14]];
 							NSString *definer = [self stringWithUTF8CString:row[19]];
 
@@ -2659,7 +2660,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 							// Add the "field" details
 							[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:
-								[NSArray arrayWithObjects:dtd, access, det, security_type, definer, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
+								[NSArray arrayWithObjects:dtd, dataaccess, det, security_type, definer, [NSNumber numberWithUnsignedLongLong:uniqueCounter], nil] forKey:field_id];
 							[[[queriedStructure valueForKey:db_id] valueForKey:table_id] setObject:type forKey:@"  struct_type  "];
 							uniqueCounter++;
 						}
@@ -2802,7 +2803,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 	[self lockConnection];
 	
 	if (mConnected && (mConnection != NULL)) {
-		if (theResPtr = mysql_list_processes(mConnection)) {
+		if ((theResPtr = mysql_list_processes(mConnection))) {
 			result = [[MCPResult alloc] initWithResPtr:theResPtr encoding:stringEncoding timeZone:mTimeZone];
 		} 
 		else {
@@ -2850,7 +2851,7 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 										@"/opt/local/lib/mysql/mysql.sock",			// Alternate fedora
 										nil];
 	
-	for (NSInteger i = 0; i < [possibleSocketLocations count]; i++) 
+	for (NSUInteger i = 0; i < [possibleSocketLocations count]; i++) 
 	{
 		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
 			return [possibleSocketLocations objectAtIndex:i];
@@ -3091,9 +3092,9 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 
 /**
  * Retrieves max_allowed_packet size set as global variable.
- * It returns -1 if it fails.
+ * It returns NSNotFound if it fails.
  */
-- (NSInteger)getMaxAllowedPacket
+- (NSUInteger)getMaxAllowedPacket
 {
 	MCPResult *r;
 	r = [self queryString:@"SELECT @@global.max_allowed_packet" usingEncoding:stringEncoding streamingResult:NO];
@@ -3105,13 +3106,13 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
 			else
 				NSRunAlertPanel(@"Error", errorMessage, @"OK", nil, nil);
 		}
-		return -1;
+		return NSNotFound;
 	}
 	NSArray *a = [r fetchRowAsArray];
 	if([a count])
 		return [[a objectAtIndex:0] integerValue];
 	
-	return -1;
+	return NSNotFound;
 }
 
 /*
@@ -3120,21 +3121,22 @@ void pingThreadCleanup(MCPConnectionPingDetails *pingDetails)
  * if the maximal size was reached (e.g. set it to 4GB it'll return 1GB up to now).
  * If something failed it return -1;
  */
-- (NSInteger)setMaxAllowedPacketTo:(NSInteger)newSize resetSize:(BOOL)reset
+- (NSUInteger)setMaxAllowedPacketTo:(NSUInteger)newSize resetSize:(BOOL)reset
 {
 	if(![self isMaxAllowedPacketEditable] || newSize < 1024) return maxAllowedPacketSize;
 	
 	[self lockConnection];
-	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %ld", newSize] UTF8String]);
+	mysql_query(mConnection, [[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %lu", newSize] UTF8String]);
 	[self unlockConnection];
 
 	// Inform the user via a log entry about that change according to reset value
-	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:connection:)])
+	if(delegate && [delegate respondsToSelector:@selector(queryGaveError:connection:)]) {
 		if(reset)
-			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %ld for new session", newSize] connection:self];
+			[delegate queryGaveError:[NSString stringWithFormat:@"max_allowed_packet was reset to %lu for new session", newSize] connection:self];
 		else
-			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %ld for the current session to allow query to succeed", newSize] connection:self];
-	
+			[delegate queryGaveError:[NSString stringWithFormat:@"Query too large; max_allowed_packet temporarily set to %lu for the current session to allow query to succeed", newSize] connection:self];
+	}
+
 	return maxAllowedPacketSize;
 }
 

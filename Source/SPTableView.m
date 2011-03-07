@@ -25,6 +25,7 @@
 #import "SPTableView.h"
 #import "SPQueryFavoriteManager.h"
 #import "SPDatabaseDocument.h"
+#import "SPWindowController.h"
 
 @implementation SPTableView
 

@@ -175,8 +175,8 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if ((aView != nil) && [aView isKindOfClass:[NSTextView class]])
 	{
-		layoutManager  = [aView layoutManager];
-		container      = [aView textContainer];
+		layoutManager  = [(NSTextView*)aView layoutManager];
+		container      = [(NSTextView*)aView textContainer];
 
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)aView textStorage]];
 		[self invalidateLineIndices];
@@ -204,7 +204,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 - (NSUInteger)lineNumberForLocation:(CGFloat)location
 {
-	NSUInteger      line, count, rectCount, i;
+	NSUInteger      line, count, rectCount;
 	NSRectArray     rects;
 	NSRect          visibleRect;
 	NSRange         nullRange;
@@ -252,7 +252,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 - (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index
 {
 	NSUInteger      left, right, mid, lineStart;
-	NSMutableArray  *lines;
+	NSArray  *lines;
 
 	lines = [self lineIndices];
 
@@ -302,7 +302,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		NSString         *labelText;
 		NSUInteger       rectCount, index, line, count;
 		NSRectArray      rects;
-		CGFloat          ypos, yinset;
+		CGFloat          yinset;
 		NSSize           stringSize;
 		NSArray          *lines;
 

@@ -30,6 +30,11 @@
 #import "SPDataAdditions.h"
 #import "SPEditorTokens.h"
 
+OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize);
+OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options);
+void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview);
+
+
 /* -----------------------------------------------------------------------------
   Generate a preview for file
 
@@ -256,7 +261,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				}
 				// Get info.plist data as dictionary
 				NSDictionary *sessionSpf;
-				NSData *pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
+				pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
 				sessionSpf = [[NSPropertyListSerialization propertyListFromData:pData 
 						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
@@ -338,7 +343,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		{
 
 			NSNumber *filesize = [fileAttributes objectForKey:NSFileSize];
-			NSUInteger kMaxSQLFileSize = (0.7 * 1024 * 1024);
+			NSUInteger kMaxSQLFileSize = (0.7f * 1024 * 1024);
 
 			// compose the html and perform syntax highlighting
 
@@ -372,7 +377,6 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 					truncatedString = [[NSString alloc] initWithString:@"\n ✂ ..."];
 				}
 
-				NSRange textRange = NSMakeRange(0, [sqlText length]);
 				NSString *tokenColor;
 				size_t token;
 				NSRange tokenRange;
@@ -385,7 +389,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				// now loop through all the tokens
 				NSUInteger poolCount = 0;
 				NSAutoreleasePool *loopPool = [[NSAutoreleasePool alloc] init];
-				while (token=yylex()){
+				while ((token=yylex())){
 					skipFontTag = NO;
 					switch (token) {
 						case SPT_SINGLE_QUOTED_TEXT:
@@ -490,7 +494,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	props    = [[NSMutableDictionary alloc] initWithCapacity:6];
 	imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
 
-	[props setObject:[NSNumber numberWithInt:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
+	[props setObject:[NSNumber numberWithInteger:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
 	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
 
 	if(image) {

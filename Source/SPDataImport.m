@@ -39,6 +39,7 @@
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
 
+#import <MCPKit/MCPKit.h>
 #import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
@@ -363,7 +364,6 @@
 	NSInteger dataBufferPosition = 0;
 	NSInteger dataBufferLastQueryEndPosition = 0;
 	BOOL fileIsCompressed;
-	BOOL importSQLAsUTF8 = YES;
 	BOOL allDataRead = NO;
 	BOOL ignoreSQLErrors = ([importSQLErrorHandlingPopup selectedTag] == SPSQLImportIgnoreErrors);
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;

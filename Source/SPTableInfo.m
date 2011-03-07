@@ -319,7 +319,7 @@
 			[aTableColumn setDataCell:c];
 			return NSLocalizedString(@"ACTIVITIES", @"header for activities pane");
 		}
-		else if(!_activitiesWillBeUpdated && rowIndex > 0 && rowIndex < [activities count]) {
+		else if(!_activitiesWillBeUpdated && rowIndex > 0 && rowIndex < (NSInteger)[activities count]) {
 			NSDictionary *dict = NSArrayObjectAtIndex(activities,rowIndex);
 			SPActivityTextFieldCell *c = [[[SPActivityTextFieldCell alloc] init] autorelease];
 			[c setActivityName:[[dict objectForKey:@"contextInfo"] objectForKey:@"name"]];

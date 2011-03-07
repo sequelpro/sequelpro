@@ -29,7 +29,6 @@
 @interface SPDatabaseDocument (SPDatabaseViewController)
 
 // Getters
-- (NSView *)parentView;
 - (NSString *)table;
 - (NSInteger)tableType;
 - (BOOL)structureLoaded;
@@ -49,5 +48,7 @@
 
 // Table control
 - (void)loadTable:(NSString *)aTable ofType:(NSInteger)aTableType;
+
+- (NSView *)databaseView;
 
 @end

@@ -22,6 +22,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPAlertSheets.h"
+
 /**
  * Provide a simple alias of NSBeginAlertSheet, with a few differences:
  *  - printf-type format strings are no longer supported within the "msg"
@@ -101,7 +103,7 @@ void SPBeginWaitingAlertSheet(
 	// Initialize returnCode with a value which can't be returned as
 	// returnCode in the didEndSelector method
 	NSInteger initialReturnCode = -5;
-	returnCode = initialReturnCode;
+	returnCode = &initialReturnCode;
 
 	// Set up an NSAlert with the supplied details
 	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
@@ -141,7 +143,7 @@ void SPBeginWaitingAlertSheet(
 		// Since the returnCode can only be -1, 0, or 1
 		// run the session until returnCode was changed in 
 		// the didEndSelector method of the calling class
-		if(returnCode != initialReturnCode)
+		if(returnCode != &initialReturnCode)
 			break;
 
 		// Execute code on DefaultRunLoop

@@ -56,7 +56,10 @@
 #import "SPDatabaseRename.h"
 #import "SPServerSupport.h"
 #import "SPTooltip.h"
-
+#import "SPDatabaseViewController.h"
+#import "SPBundleHTMLOutputController.h"
+#import "SPConnectionDelegate.h"
+#import "SPWindowController.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -2787,15 +2790,19 @@
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
-				return NO;
+				
+				return;
 			}
 
 			NSError *error = nil;
+			
 			[plist writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName] options:NSAtomicWrite error:&error];
+			
 			if(error != nil){
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
-				return NO;
+				
+				return;
 			}
 
 			[[NSApp delegate] setSessionURL:fileName];
@@ -3306,7 +3313,6 @@
  */
 - (void) updateWindowTitle:(id)sender
 {
-
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] updateWindowTitle:sender];
 
@@ -4721,7 +4727,7 @@
 		BOOL isDir;
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
 			NSError *inError = nil;
-			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
 			[fm removeItemAtPath:queryFileName error:nil];
 			if(inError == nil && query && [query length]) {
 				[tableContentInstance filterTable:query];
@@ -4741,7 +4747,6 @@
 			NSString *statusFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, docProcessID];
 			NSFileManager *fm = [NSFileManager defaultManager];
 			NSString *status = @"0";
-			BOOL isDir;
 			BOOL userTerminated = NO;
 			BOOL doSyntaxHighlighting = NO;
 			BOOL doSyntaxHighlightingViaCSS = NO;
@@ -4890,7 +4895,7 @@
 		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
 
 			NSError *inError = nil;
-			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:inError];
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
 
 			[fm removeItemAtPath:queryFileName error:nil];
 			[fm removeItemAtPath:resultFileName error:nil];

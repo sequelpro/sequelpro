@@ -24,6 +24,7 @@
 - (NSImage *)rolloverImage;
 
 // tracking rect for mouse events
+- (void)rolloverFrameDidChange:(NSNotification *)inNotification;
 - (void)addTrackingRect;
 - (void)removeTrackingRect;
 @end

@@ -42,7 +42,7 @@
  */
 - (NSArray *)fetchColAtIndex:(NSUInteger)col
 {
-    NSMutableArray   *theCol = [NSMutableArray arrayWithCapacity:[self numOfRows]];
+    NSMutableArray   *theCol = [NSMutableArray arrayWithCapacity:(NSUInteger)[self numOfRows]];
     MYSQL_ROW_OFFSET thePosition;
     NSArray			 *theRow;
 
@@ -61,7 +61,7 @@
     [self dataSeek:0];
 
 	// One might want to have optimized code here. Maybe in later versions
-    while (theRow = [self fetchRowAsType:MCPTypeArray]) 
+    while ((theRow = [self fetchRowAsType:MCPTypeArray]))
 	{
         [theCol addObject:[theRow objectAtIndex:col]];
     }
@@ -131,9 +131,9 @@
     switch (type) 
 	{
         case MCPTypeArray :
-            theTable = [NSMutableArray arrayWithCapacity:[self numOfRows]];
+            theTable = [NSMutableArray arrayWithCapacity:(NSUInteger)[self numOfRows]];
 			
-            while (theVect = [self fetchRowAsArray]) 
+            while ((theVect = [self fetchRowAsArray]))
 			{
                 [theTable addObject:theVect];
             }
@@ -141,9 +141,9 @@
             theTable = [NSArray arrayWithArray:theTable];
             break;
         case MCPTypeDictionary :
-            theTable = [NSMutableArray arrayWithCapacity:[self numOfRows]];
+            theTable = [NSMutableArray arrayWithCapacity:(NSUInteger)[self numOfRows]];
             
-			while (theVect = [self fetchRowAsDictionary]) 
+			while ((theVect = [self fetchRowAsDictionary]))
 			{
                 [theTable addObject:theVect];
             }
@@ -175,7 +175,7 @@
             theTable = [NSDictionary dictionaryWithDictionary:theTable];
             break;
         default :
-            NSLog (@"Unknown MCPReturnType : %ld; return nil\n", (NSInteger)type);
+            NSLog (@"Unknown MCPReturnType : %d; return nil\n", (int)type);
             theTable = nil;
             break;
     }

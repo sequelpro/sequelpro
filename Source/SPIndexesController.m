@@ -26,6 +26,10 @@
 #import "SPIndexesController.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
+#import "SPTableContent.h"
+#import "SPTableData.h"
+#import <MCPKit/MCPKit.h>
+#import "SPDatabaseDocument.h"
 
 // Constants
 static const NSString *SPNewIndexIndexName      = @"IndexName";

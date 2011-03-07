@@ -48,8 +48,8 @@
 	NSLock *debugMessagesLock;
 	NSInteger sshPort;
 	NSInteger remotePort;
-	NSInteger localPort;
-	NSInteger localPortFallback;
+	NSUInteger localPort;
+	NSUInteger localPortFallback;
 	NSInteger connectionState;
     
     NSLock *answerAvailableLock;
@@ -81,8 +81,8 @@
 - (NSInteger)state;
 - (NSString *)lastError;
 - (NSString *)debugMessages;
-- (NSInteger)localPort;
-- (NSInteger)localPortFallback;
+- (NSUInteger)localPort;
+- (NSUInteger)localPortFallback;
 - (void)connect;
 - (void)launchTask:(id)dummy;
 - (void)disconnect;

@@ -33,6 +33,7 @@
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPBundleHTMLOutputController.h"
+#import "SPDatabaseViewController.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -414,8 +415,6 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[[[dbs objectForKey:db] description] componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"database-small", @"image", @"", @"isRef", nil]];
 					continue;
 				}
-
-				NSString *dbpath = [db substringFromIndex:[db rangeOfString:SPUniqueSchemaDelimiter].location];
 
 				NSMutableArray *sortedTables = [NSMutableArray array];
 				if(aTableNameExists) {
@@ -2675,7 +2674,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 	BOOL allowToCheckForUpperCase;
 	
 	// now loop through all the tokens
-	while (token=yylex()){
+	while ((token=yylex())){
 
 		allowToCheckForUpperCase = YES;
 		

@@ -58,7 +58,7 @@
  */
 - (id) initWithObject:(id)theObject
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		trampolineObject = theObject;
 	}
 	return self;

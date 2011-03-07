@@ -66,7 +66,7 @@
 			NSArray *trustedApps = [NSArray arrayWithObjects:(id)sequelProRef, (id)sequelProHelperRef, nil];
 			status = SecAccessCreate((CFStringRef)name, (CFArrayRef)trustedApps, &passwordAccessRef);
 			if (status != noErr) {
-				NSLog(@"Error (%i) while trying to create access list for name: %@ account: %@", status, name, account);
+				NSLog(@"Error (%i) while trying to create access list for name: %@ account: %@", (int)status, name, account);
 				passwordAccessRef = NULL;
 			}
 		}
@@ -77,13 +77,13 @@
 		attributes[0].length = 20;
 		attributes[1].tag = kSecLabelItemAttr;
 		attributes[1].data = (unichar *)[label UTF8String];
-		attributes[1].length = strlen([label UTF8String]);
+		attributes[1].length = (UInt32)strlen([label UTF8String]);
 		attributes[2].tag = kSecAccountItemAttr;
 		attributes[2].data = (unichar *)[account UTF8String];
-		attributes[2].length = strlen([account UTF8String]);
+		attributes[2].length = (UInt32)strlen([account UTF8String]);
 		attributes[3].tag = kSecServiceItemAttr;
 		attributes[3].data = (unichar *)[name UTF8String];
-		attributes[3].length = strlen([name UTF8String]);
+		attributes[3].length = (UInt32)strlen([name UTF8String]);
 		attList.count = 4;
 		attList.attr = attributes;
 
@@ -91,7 +91,7 @@
 		status = SecKeychainItemCreateFromContent(
 			kSecGenericPasswordItemClass,			// Generic password type
 			&attList,								// The attribute list created for the keychain item
-			strlen([password UTF8String]),			// Length of password
+			(UInt32)strlen([password UTF8String]),	// Length of password
 			[password UTF8String],					// Password data
 			NULL,									// Default keychain
 			passwordAccessRef,						// Access list for this keychain
@@ -100,7 +100,7 @@
 		if (passwordAccessRef) CFRelease(passwordAccessRef);
 		
 		if (status != noErr) {
-			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", status, name, account);
+			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", (int)status, name, account);
 			
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding password to Keychain", @"error adding password to keychain message"), 
 							  NSLocalizedString(@"OK", @"OK button"), 
@@ -127,15 +127,15 @@
 	if (!account) account = @"";
 
 	status = SecKeychainFindGenericPassword(
-											NULL,						// default keychain
-											strlen([name UTF8String]),		// length of service name (bytes)
-											[name UTF8String],				// service name
-						
-											strlen([account UTF8String]),	// length of account name (bytes)
-											[account UTF8String],			// account name
-											&passwordLength,			// length of password
-											&passwordData,				// pointer to password data
-											&itemRef					// the item reference
+											NULL,									// default keychain
+											(UInt32)strlen([name UTF8String]),		// length of service name (bytes)
+											[name UTF8String],						// service name
+
+											(UInt32)strlen([account UTF8String]),	// length of account name (bytes)
+											[account UTF8String],					// account name
+											&passwordLength,						// length of password
+											&passwordData,							// pointer to password data
+											&itemRef								// the item reference
 											);
 	
 	if (status == noErr) {
@@ -171,21 +171,21 @@
 	// Check if password already exists before deleting
 	if ([self passwordExistsForName:name account:account]) {
 		status = SecKeychainFindGenericPassword(
-												NULL,						// default keychain
-												strlen([name UTF8String]),		// length of service name
-												[name UTF8String],				// service name
-												strlen([account UTF8String]),	// length of account name
-												[account UTF8String],			// account name
-												nil,						// length of password
-												nil,						// pointer to password data
-												&itemRef					// the item reference
+												NULL,									// default keychain
+												(UInt32)strlen([name UTF8String]),		// length of service name
+												[name UTF8String],						// service name
+												(UInt32)strlen([account UTF8String]),	// length of account name
+												[account UTF8String],					// account name
+												nil,									// length of password
+												nil,									// pointer to password data
+												&itemRef								// the item reference
 												);
 		
 		if (status == noErr) {
 			status = SecKeychainItemDelete(itemRef);
 			
 			if (status != noErr) {
-				NSLog(@"Error (%i) while trying to delete password for name: %@ account: %@", status, name, account);
+				NSLog(@"Error (%i) while trying to delete password for name: %@ account: %@", (int)status, name, account);
 			}
 		}
 		
@@ -209,12 +209,12 @@
 	if (!account) account = @"";
 
 	attributes[0].tag    = kSecAccountItemAttr;
-	attributes[0].data   = (void *)[account UTF8String];	// Account name
-	attributes[0].length = strlen([account UTF8String]);	// Length of account name (bytes)
+	attributes[0].data   = (void *)[account UTF8String];			// Account name
+	attributes[0].length = (UInt32)strlen([account UTF8String]);	// Length of account name (bytes)
 	
 	attributes[1].tag    = kSecServiceItemAttr;
-    attributes[1].data   = (void *)[name UTF8String];	// Service name
-    attributes[1].length = strlen([name UTF8String]);	// Length of service name (bytes)
+    attributes[1].data   = (void *)[name UTF8String];			// Service name
+    attributes[1].length = (UInt32)strlen([name UTF8String]);	// Length of service name (bytes)
 	
     list.count = 2;
     list.attr  = attributes;

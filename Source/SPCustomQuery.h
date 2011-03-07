@@ -63,7 +63,7 @@
 	IBOutlet NSWindow *queryFavoritesSheet;
 	IBOutlet NSButton *saveQueryFavoriteButton;
 	IBOutlet NSTextField *queryFavoriteNameTextField;
-	IBOutlet id saveQueryFavoriteGlobal;
+	IBOutlet NSButton *saveQueryFavoriteGlobal;
 
 	IBOutlet id queryHistoryButton;
 	IBOutlet NSMenuItem *queryHistorySearchMenuItem;
@@ -238,6 +238,9 @@
 // Task interaction
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification;
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+
+// Tableview interaction
+- (void)tableSortCallback;
 
 // Other
 - (void)setConnection:(MCPConnection *)theConnection;

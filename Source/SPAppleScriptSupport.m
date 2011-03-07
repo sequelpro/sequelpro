@@ -25,6 +25,9 @@
 
 #import "SPAppleScriptSupport.h"
 #import "SPWindowController.h"
+#import "SPAppController.h"
+#import "SPPrintController.h"
+#import "SPDatabaseDocument.h"
 
 @implementation SPAppController (SPAppleScriptSupport)
 

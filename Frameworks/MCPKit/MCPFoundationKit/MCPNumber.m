@@ -246,12 +246,12 @@
 
 - (int)intValue
 {
-   return [number integerValue];
+   return [number intValue];
 }
 
 - (unsigned int)unsignedIntValue
 {
-   return [number unsignedIntegerValue];
+   return [number unsignedIntValue];
 }
 
 - (long)longValue
@@ -276,7 +276,7 @@
 
 - (float)floatValue
 {
-   return [number doubleValue];
+   return [number floatValue];
 }
 
 - (double)doubleValue

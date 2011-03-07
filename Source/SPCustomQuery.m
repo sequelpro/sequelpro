@@ -167,7 +167,7 @@
 		// If carriage returns were found, normalise the queries
 		if ([queryParser containsCarriageReturns]) {
 			NSMutableArray *normalisedQueries = [NSMutableArray arrayWithCapacity:[queries count]];
-			for (NSString *query in queries) {
+			for (query in queries) {
 				[normalisedQueries addObject:[SPSQLParser normaliseQueryForExecution:query]];
 			}
 			queries = normalisedQueries;
@@ -534,7 +534,7 @@
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
 
-	NSInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
+	NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
 	NSInteger firstErrorOccuredInQuery = -1;
 	BOOL suppressErrorSheet = NO;
@@ -633,7 +633,7 @@
 		}
 
 		// Record any affected rows
-		if ( [mySQLConnection affectedRows] != -1 )
+		if ( [mySQLConnection affectedRows] >= 0 )
 			totalAffectedRows += [mySQLConnection affectedRows];
 		else if ( [streamingResult numOfRows] )
 			totalAffectedRows += [streamingResult numOfRows];
@@ -893,7 +893,7 @@
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
 
 	// Loop through the result rows as they become available
-	while (tempRow = [theResult fetchNextRowAsArray]) {
+	while ((tempRow = [theResult fetchNextRowAsArray])) {
 
 		pthread_mutex_lock(&resultDataLock);
 		SPDataStorageAddRow(resultData, tempRow);
@@ -937,8 +937,8 @@
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *whitespaceSet           = [NSCharacterSet whitespaceCharacterSet];
 
-	// If the supplied position is negative or beyond the end of the string, return nil.
-	if (position < 0 || position > [[textView string] length])
+	// If the supplied position is beyond the end of the string, return nil.
+	if (position > [[textView string] length])
 		return NSMakeRange(NSNotFound, 0);
 
 	// Split the current text into ranges of queries
@@ -1054,8 +1054,8 @@
 	SPSQLParser *customQueryParser;
 	NSArray *queries;
 
-	// If the supplied position is negative or beyond the end of the string, return nil.
-	if (position < 0 || position > [[textView string] length])
+	// If the supplied position beyond the end of the string, return nil.
+	if (position > [[textView string] length])
 		return NSMakeRange(NSNotFound,0);
 
 	// Split the current text into ranges of queries
@@ -1314,7 +1314,7 @@
  */
 - (void) initQueryLoadTimer
 {
-	if (queryLoadTimer) [self clearTableLoadTimer];
+	if (queryLoadTimer) [self clearQueryLoadTimer];
 	queryLoadInterfaceUpdateInterval = 1;
 	queryLoadLastRowCount = 0;
 	queryLoadTimerTicksSinceLastUpdate = 0;
@@ -1750,7 +1750,7 @@
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	if ([theResult numOfRows]) [theResult dataSeek:0];
-	NSInteger i;
+	NSUInteger i;
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		theRow = [theResult fetchRowAsDictionary];
 		if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
@@ -2056,7 +2056,7 @@
 
 	// Remove all quoted strings as a temp string to match the correct clauses
 	NSRange matchedRange;
-	NSInteger i;
+	NSUInteger i;
 	NSMutableString *tmpString = [NSMutableString stringWithString:queryString];
 	NSMutableString *qq = [NSMutableString string];
 	matchedRange = [tmpString rangeOfRegex:@"\"(?:[^\"\\\\]*+|\\\\.)*\""];
@@ -2333,7 +2333,7 @@
 			isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
 
 			NSString *fieldType = nil;
-			NSUInteger *fieldLength = 0;
+			NSUInteger fieldLength = 0;
 			NSString *fieldEncoding = nil;
 			BOOL allowNULL = YES;
 
@@ -3158,9 +3158,11 @@
 		// Remove all needless default menu items
 		NSEnumerator *itemEnumerator = [defaultMenuItems objectEnumerator];
 		NSMenuItem *menuItem = nil;
-		while (menuItem = [itemEnumerator nextObject])
+		
+		while ((menuItem = [itemEnumerator nextObject]))
 		{
 			NSInteger tag = [menuItem tag];
+			
 			switch (tag)
 			{
 				case 2000: // WebMenuItemTagOpenLink
@@ -3639,7 +3641,7 @@
  */
 - (IBAction)filterQueryFavorites:(id)sender
 {
-	NSUInteger i;
+	NSInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
 	NSString *searchPattern = [queryFavoritesSearchField stringValue];
 
@@ -3722,8 +3724,6 @@
 				ofType:@"text"];
 		shouldBeginEditing = NO;
 	}
-
-	NSString *fieldType;
 
 	BOOL isBlob = NO;
 

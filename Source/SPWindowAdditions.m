@@ -25,6 +25,7 @@
 
 #import "SPWindowAdditions.h"
 #import "SPDatabaseDocument.h"
+#import "SPWindowController.h"
 
 @implementation NSWindow (SPWindowAdditions)
 

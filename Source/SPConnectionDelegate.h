@@ -29,4 +29,6 @@
 
 @interface SPDatabaseDocument (SPConnectionDelegate) <MCPConnectionDelegate>
 
+- (void) closeAndDisconnect;
+
 @end

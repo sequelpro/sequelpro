@@ -31,7 +31,7 @@
 - (void)compatibleRemoveAllItems
 {
 	if ([self respondsToSelector:@selector(removeAllItems)]) {
-		[self removeAllItems];
+		[(id)self removeAllItems];
 	} else {
 		while ([self numberOfItems]) [self removeItemAtIndex:0];
 	}

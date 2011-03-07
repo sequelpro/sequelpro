@@ -47,7 +47,7 @@
 /**
  * Initialize the MCPGeometryData object with the WKB data
  */
-- (id)initWithBytes:(Byte*)geoData length:(NSUInteger)length
+- (id)initWithBytes:(const void *)geoData length:(NSUInteger)length
 {
 	if ((self = [self init])) {
 		bufferLength = length;
@@ -60,7 +60,7 @@
 /**
  * Return an autorelease MCPGeometryData object
  */
-+ (id)dataWithBytes:(Byte*)geoData length:(NSUInteger)length
++ (id)dataWithBytes:(const void *)geoData length:(NSUInteger)length
 {
 	return [[[MCPGeometryData alloc] initWithBytes:geoData length:length] autorelease];
 }
@@ -370,10 +370,10 @@
 	uint32_t i, j, k, n;          // Loop counter for numberOf...Items
 	uint32_t ptr = BUFFER_START;  // pointer to geoBuffer while parsing
 
-	double x_min = 1e998;
-	double x_max = -1e998;
-	double y_min = 1e998;
-	double y_max = -1e998;
+	double x_min = DBL_MAX;
+	double x_max = -DBL_MAX;
+	double y_min = DBL_MAX;
+	double y_max = -DBL_MAX;
 
 	NSMutableArray *coordinates = [NSMutableArray array];
 	NSMutableArray *subcoordinates = [NSMutableArray array];
@@ -406,7 +406,7 @@
 		x_max = aPoint.x;
 		y_min = aPoint.y;
 		y_max = aPoint.y;
-		[coordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+		[coordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 		return [NSDictionary dictionaryWithObjectsAndKeys:
 			[NSArray arrayWithObjects:
 				[NSNumber numberWithDouble:x_min],
@@ -429,7 +429,7 @@
 			x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 			y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 			y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-			[coordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+			[coordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 			ptr += POINT_DATA_SIZE;
 		}
 		return [NSDictionary dictionaryWithObjectsAndKeys:
@@ -456,7 +456,7 @@
 				x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 				y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 				y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-				[subcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+				[subcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 				ptr += POINT_DATA_SIZE;
 			}
 			[coordinates addObject:[[subcoordinates copy] autorelease]];
@@ -484,7 +484,7 @@
 			x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 			y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 			y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-			[coordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+			[coordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 			ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
 		}
 		return [NSDictionary dictionaryWithObjectsAndKeys:
@@ -512,7 +512,7 @@
 				x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 				y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 				y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-				[subcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+				[subcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 				ptr += POINT_DATA_SIZE;
 			}
 			ptr += WKB_HEADER_SIZE;
@@ -547,7 +547,7 @@
 					x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 					y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 					y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-					[subcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+					[subcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 					ptr += POINT_DATA_SIZE;
 				}
 				[coordinates addObject:[[subcoordinates copy] autorelease]];
@@ -591,7 +591,7 @@
 				x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 				y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 				y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-				[pointcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+				[pointcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 				ptr += POINT_DATA_SIZE;
 				break;
 		
@@ -604,7 +604,7 @@
 					x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 					y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 					y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-					[linesubcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+					[linesubcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 					ptr += POINT_DATA_SIZE;
 				}
 				[linecoordinates addObject:[[linesubcoordinates copy] autorelease]];
@@ -623,7 +623,7 @@
 						x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 						y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 						y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-						[polygonsubcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+						[polygonsubcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 						ptr += POINT_DATA_SIZE;
 					}
 					[polygoncoordinates addObject:[[polygonsubcoordinates copy] autorelease]];
@@ -640,7 +640,7 @@
 					x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 					y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 					y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-					[pointcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+					[pointcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 					ptr += POINT_DATA_SIZE+WKB_HEADER_SIZE;
 				}
 				ptr -= WKB_HEADER_SIZE;
@@ -658,7 +658,7 @@
 						x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 						y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 						y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-						[linesubcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+						[linesubcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 						ptr += POINT_DATA_SIZE;
 					}
 					[linecoordinates addObject:[[linesubcoordinates copy] autorelease]];
@@ -683,7 +683,7 @@
 							x_max = (aPoint.x > x_max) ? aPoint.x : x_max;
 							y_min = (aPoint.y < y_min) ? aPoint.y : y_min;
 							y_max = (aPoint.y > y_max) ? aPoint.y : y_max;
-							[polygonsubcoordinates addObject:NSStringFromPoint(NSMakePoint(aPoint.x, aPoint.y))];
+							[polygonsubcoordinates addObject:NSStringFromPoint(NSMakePoint((CGFloat)aPoint.x, (CGFloat)aPoint.y))];
 							ptr += POINT_DATA_SIZE;
 						}
 						[polygoncoordinates addObject:[[polygonsubcoordinates copy] autorelease]];
@@ -728,7 +728,7 @@
 	NSUInteger ptr = BUFFER_START;  // pointer to geoBuffer while parsing
 
 	if (bufferLength < WKB_HEADER_SIZE)
-		return @"-1";
+		return -1;
 
 	byteOrder = geoBuffer[ptr];
 

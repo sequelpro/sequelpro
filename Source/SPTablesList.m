@@ -25,6 +25,7 @@
 
 #import "SPTablesList.h"
 #import "SPDatabaseDocument.h"
+#import "SPDatabaseViewController.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
@@ -62,18 +63,21 @@
 {
 	MCPResult *theResult;
 	NSArray *resultRow;
-	NSInteger i;
+	NSUInteger i;
 	NSString *previousSelectedTable = nil;
+	NSString *previousFilterString = nil;
 	BOOL previousTableListIsSelectable = tableListIsSelectable;
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	if (selectedTableName) previousSelectedTable = [[NSString alloc] initWithString:selectedTableName];
 	if (isTableListFiltered) {
+		previousFilterString = [[NSString alloc] initWithString:[listFilterField stringValue]];
 		if (filteredTables) [filteredTables release];
 		filteredTables = tables;
 		if (filteredTableTypes) [filteredTableTypes release];
 		filteredTableTypes = tableTypes;
 		isTableListFiltered = NO;
+		[[self onMainThread] clearFilter];
 	}
 	tableListContainsViews = NO;
 
@@ -256,11 +260,17 @@
 		selectedTableType = SPTableTypeNone;
 	}
 
-	// Determine whether or not to show the list filter based on the number of tables, and clear it
-	[[self onMainThread] clearFilter];
-	
-	if ([tables count] > 20) [self showFilter];
-	else [self hideFilter];
+	// Determine whether or not to preserve the existing filter, and whether to
+	// show or hide the list filter based on the number of tables
+	if ([tables count] > 20) {
+		[self showFilter];
+		if (previousFilterString) {
+			[[listFilterField onMainThread] setStringValue:previousFilterString];
+			[[self onMainThread] updateFilter:self];
+		}
+	} else {
+		[self hideFilter];
+	}
 
 	// Set the filter placeholder text
 	if ([tableDocumentInstance database]) {
@@ -268,6 +278,7 @@
 	}
 
 	if (previousSelectedTable) [previousSelectedTable release];
+	if (previousFilterString) [previousFilterString release];
 
 	// Query the structure of all databases in the background
 	if (sender == self)
@@ -1219,7 +1230,6 @@
 - (BOOL)selectItemsWithNames:(NSArray *)theNames
 {
 	NSInteger i, tableType;
-	NSInteger itemIndex = NSNotFound;
 	NSMutableIndexSet *selectionIndexSet = [NSMutableIndexSet indexSet];
 
 	// Loop through the unfiltered tables/views to find the desired item

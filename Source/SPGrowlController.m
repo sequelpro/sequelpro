@@ -24,6 +24,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPGrowlController.h"
+#import "SPDatabaseDocument.h"
+#import "SPWindowController.h"
 
 #include <mach/mach_time.h>
 

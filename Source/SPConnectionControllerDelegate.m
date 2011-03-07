@@ -27,6 +27,7 @@
 #import "SPTableTextFieldCell.h"
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
+#import "SPTreeNode.h"
 
 #define CELL(cell) (SPTableTextFieldCell *)cell
 

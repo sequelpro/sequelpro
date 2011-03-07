@@ -26,6 +26,7 @@
 #import "SPTooltip.h"
 #import "SPBundleHTMLOutputController.h"
 #import "SPCustomQuery.h"
+#import "SPAppController.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -635,7 +636,7 @@
 
 			NSString *output = [cmd runBashCommandWithEnvironment:env 
 											atCurrentDirectoryPath:nil 
-											callerInstance:[[NSApp delegate] frontDocument] 
+											callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",

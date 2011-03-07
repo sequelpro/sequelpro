@@ -164,7 +164,7 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 	MYSQL_ROW theRow;
 	char *theRowData, *buf;
 	unsigned long *fieldLengths;
-	NSInteger i, copiedDataLength;
+	NSUInteger i, copiedDataLength;
 	NSMutableArray *returnArray;
 
 	// Retrieve the next row according to the mode this result set is in.
@@ -290,7 +290,7 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 					// Get a binary representation of the data
 
 					buf = malloc(fieldDefinitions[i].length + 1);
-					_bytes2bin(theData, fieldLengths[i], fieldDefinitions[i].length, buf);
+					_bytes2bin((Byte *)theData, fieldLengths[i], fieldDefinitions[i].length, buf);
 
 					cellData = (theData != NULL) ? [NSString stringWithUTF8String:buf] : @"";
 
@@ -323,7 +323,7 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 					break;
 
 				default:
-					NSLog(@"in fetchNextRowAsArray : Unknown type : %ld for column %ld, sending back a NSData object", (NSInteger)fieldDefinitions[i].type, (NSInteger)i);
+					NSLog(@"in fetchNextRowAsArray : Unknown type : %d for column %lu, sending back a NSData object", (int)fieldDefinitions[i].type, (unsigned long)i);
 					cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 				break;
 			}
@@ -435,10 +435,10 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf)
 {
 
-	int i = 0;
+	NSUInteger i = 0;
 	nbytes--;
-	while (i < len)
-		buf[len - ++i] = ( (n[nbytes - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+	while (++i <= len)
+		buf[len - i] = ( (n[nbytes - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
 
 	buf[len] = '\0';
 }
@@ -451,14 +451,14 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf)
 	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
 	MYSQL_ROW theRow;
 	unsigned long *fieldLengths;
-	NSInteger i, dataCopiedLength, rowDataLength;
+	NSUInteger i, dataCopiedLength, rowDataLength;
 	LOCAL_ROW_DATA *newRowStore;
 
 	size_t sizeOfLocalRowData = sizeof(LOCAL_ROW_DATA);
 	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * mNumOfFields);
 
 	// Loop through the rows until the end of the data is reached - indicated via a NULL
-	while (	(BOOL)(*isConnectedPtr)(parentConnection, isConnectedSEL) && (theRow = mysql_fetch_row(mResult))) {
+	while ((*isConnectedPtr)(parentConnection, isConnectedSEL) && (theRow = mysql_fetch_row(mResult))) {
 
 		// Retrieve the lengths of the returned data
 		fieldLengths = mysql_fetch_lengths(mResult);

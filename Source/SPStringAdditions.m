@@ -25,6 +25,22 @@
 
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
+#import "SPDatabaseDocument.h"
+
+// Defined to suppress warnings
+@interface NSObject (SPBundleMethods)
+
+- (NSString *)lastBundleBlobFilesDirectory;
+- (void)setLastBundleBlobFilesDirectory:(NSString *)path;
+
+@end
+
+// Defined to suppress warnings
+@interface NSObject (SPWindowControllerTabMethods)
+
+- (id)selectedTableDocument;
+
+@end
 
 @interface NSString (PrivateAPI)
 
@@ -39,7 +55,7 @@
  */
 + (NSString *)stringForByteSize:(long long)byteSize
 {
-	CGFloat size = byteSize;
+	double size = byteSize;
 	
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 	
@@ -48,7 +64,7 @@
 	if (size < 1023) {
 		[numberFormatter setFormat:@"#,##0 B"];
 		
-		return [numberFormatter stringFromNumber:[NSNumber numberWithInteger:size]];
+		return [numberFormatter stringFromNumber:[NSNumber numberWithDouble:size]];
 	}
 	
 	size = (size / 1024);
@@ -163,7 +179,7 @@
 {
 	NSMutableString *holder = [[NSMutableString alloc] init];
 	unichar theChar;
-	int i;
+	NSUInteger i;
 
 	for(i = 0; i < [self length]; i++) {
 		theChar = [self characterAtIndex:i];
@@ -406,7 +422,7 @@
 		return distance;
 	}
 	
-	return 0.0;
+	return 0.0f;
 }
 
 /**
@@ -491,7 +507,7 @@
 		if([scriptPath hasPrefix:@"/"] && [fm fileExistsAtPath:scriptPath isDirectory:&isDir] && !isDir) {
 			NSString *script = [self substringWithRange:NSMakeRange(NSMaxRange(firstLineRange), [self length] - NSMaxRange(firstLineRange))];
 			NSError *writeError = nil;
-			[script writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
+			[script writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:&writeError];
 			if(writeError == nil) {
 				redirectForScript = YES;
 				[scriptHeaderArguments addObject:scriptFilePath];
@@ -503,7 +519,7 @@
 	} else {
 		[scriptHeaderArguments addObject:@"/bin/sh"];
 		NSError *writeError = nil;
-		[self writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:writeError];
+		[self writeToFile:scriptFilePath atomically:YES encoding:NSUTF8StringEncoding error:&writeError];
 		if(writeError == nil) {
 			redirectForScript = YES;
 			[scriptHeaderArguments addObject:scriptFilePath];
@@ -672,12 +688,12 @@
 
 	// Read STDOUT saved to file 
 	if([fm fileExistsAtPath:stdoutFilePath isDirectory:nil]) {
-		NSString *stdout = [NSString stringWithContentsOfFile:stdoutFilePath encoding:NSUTF8StringEncoding error:nil];
-		if(bashTask) [bashTask release];
+		NSString *stdoutContent = [NSString stringWithContentsOfFile:stdoutFilePath encoding:NSUTF8StringEncoding error:nil];
+		if(bashTask) [bashTask release], bashTask = nil;
 		[fm removeItemAtPath:stdoutFilePath error:nil];
-		if(stdout != nil) {
+		if(stdoutContent != nil) {
 			if (status == 0) {
-				return stdout;
+				return stdoutContent;
 			} else {
 				if(theError != NULL) {
 					if(status == 9 || userTerminated) return @"";
@@ -693,7 +709,7 @@
 					NSBeep();
 				}
 				if(status > SPBundleRedirectActionNone && status <= SPBundleRedirectActionLastCode)
-					return stdout;
+					return stdoutContent;
 				else
 					return @"";
 			}
@@ -701,12 +717,11 @@
 			NSLog(@"Couldn't read return string from “%@” by using UTF-8 encoding.", self);
 			NSBeep();
 		}
-	} else {
-		if(bashTask) [bashTask release];
-		[fm removeItemAtPath:stdoutFilePath error:nil];
-		return @"";
 	}
 
+	if (bashTask) [bashTask release];
+	[fm removeItemAtPath:stdoutFilePath error:nil];
+	return @"";
 }
 
 /**

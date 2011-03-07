@@ -480,7 +480,6 @@
 	}
 
 	if(selectedTag != kDisabledScopeTag && ![[currentDict objectForKey:SPBundleFileScopeKey] isEqualToString:oldScope]) {
-		NSString *newScope = [currentDict objectForKey:SPBundleFileScopeKey];
 		NSUInteger newScopeIndex = [self _arrangedScopeIndexForScopeIndex:selectedTag];
 		NSString *currentCategory = [currentDict objectForKey:SPBundleFileCategoryKey];
 		if(!currentCategory) currentCategory = @"";
@@ -578,7 +577,6 @@
 - (IBAction)addCommandBundle:(id)sender
 {
 	NSMutableDictionary *bundle;
-	NSUInteger insertIndex;
 
 	// Store pending changes in Query
 	[[self window] makeFirstResponder:nameTextField];
@@ -1015,7 +1013,6 @@
 				NSString *thePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleName, SPUserBundleFileExtension];
 				if([[NSFileManager defaultManager] fileExistsAtPath:thePath isDirectory:nil]) {
 					NSError *error = nil;
-					NSString *trashDir = [NSHomeDirectory() stringByAppendingPathComponent:@".Trash"];
 
 					// Use a AppleScript script since NSWorkspace performFileOperation or NSFileManager moveItemAtPath 
 					// have problems probably due access rights.
@@ -1148,8 +1145,6 @@
 		draggedFilePath = nil;
 	}
 	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
-
-	return YES;
 }
 
 #pragma mark -

@@ -30,14 +30,14 @@
 #import "SPCategoryAdditions.h"
 
 // Constants
-static const NSString *SPImportColorScheme             = @"ImportColorScheme";
-static const NSString *SPExportColorScheme             = @"ExportColorScheme";
-static const NSString *SPSaveColorScheme               = @"SaveColorScheme";
-static const NSString *SPDefaultColorSchemeName        = @"Default";
-static const NSString *SPDefaultColorSchemeNameLC      = @"default";
-static const NSString *SPCustomColorSchemeName         = @"User-defined";
-static const NSString *SPCustomColorSchemeNameLC       = @"user-defined";
-static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
+static NSString *SPImportColorScheme             = @"ImportColorScheme";
+static NSString *SPExportColorScheme             = @"ExportColorScheme";
+static NSString *SPSaveColorScheme               = @"SaveColorScheme";
+static NSString *SPDefaultColorSchemeName        = @"Default";
+static NSString *SPDefaultColorSchemeNameLC      = @"default";
+static NSString *SPCustomColorSchemeName         = @"User-defined";
+static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
+static NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 
 @interface SPEditorPreferencePane (PrivateAPI)
 
@@ -517,7 +517,7 @@ static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 	}
 }
 
-- (void)panelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)panelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if ([contextInfo isEqualToString:SPExportColorScheme]) {
 		if (returnCode == NSOKButton) {
@@ -546,7 +546,7 @@ static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 		return [editThemeListItems count];
 	}
 	
-	return nil;
+	return 0;
 }
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
@@ -806,11 +806,7 @@ static const NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 	NSMutableDictionary *scheme = [NSMutableDictionary dictionary];
 	NSMutableDictionary *mainsettings = [NSMutableDictionary dictionary];
 	NSMutableArray *settings = [NSMutableArray array];
-	
-	CGFloat red, green, blue, alpha;
-	NSInteger redInt, greenInt, blueInt, alphaInt;
-	NSString *redHexValue, *greenHexValue, *blueHexValue, *alphaHexValue;
-	
+		
 	[prefs synchronize];
 	
 	NSColor *aColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];

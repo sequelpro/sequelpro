@@ -37,7 +37,7 @@
 }
 - (id)init;
 {
-	if(self = [super initWithFrame:NSMakeRect(1,1,2,2)])
+	if((self = [super initWithFrame:NSMakeRect(1,1,2,2)]))
 	{
 		;
 	}
@@ -65,8 +65,8 @@
 
 - (id)init;
 {
-	if(self = [super initWithContentRect:NSMakeRect(1,1,2,2) 
-					styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO])
+	if((self = [super initWithContentRect:NSMakeRect(1,1,2,2) 
+					styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO]))
 	{
 		waitForChoice = YES;
 		selectedItemIndex = -1;
@@ -86,7 +86,7 @@
 	[self setLevel:NSNormalWindowLevel];
 	[self setHidesOnDeactivate:YES];
 	[self setHasShadow:YES];
-	[self setAlphaValue:0.0];
+	[self setAlphaValue:0.0f];
 
 	dummyTextView = [[SPChooseMenuItemDialogTextView alloc] init];
 	[dummyTextView setDelegate:self];
@@ -138,7 +138,7 @@
 	        context:[NSGraphicsContext currentContext]
 	        eventNumber:0
 	        clickCount:1
-	        pressure:0.0];
+	        pressure:0.0f];
 
 	[[NSApplication sharedApplication] sendEvent:theEvent];
 

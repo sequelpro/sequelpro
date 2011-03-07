@@ -16,7 +16,7 @@
 
 - (id)initWithFrame:(NSRect)frameRect pullsDown:(BOOL)flag
 {
-    if (self = [super initWithFrame:frameRect pullsDown:YES]) {
+    if ((self = [super initWithFrame:frameRect pullsDown:YES])) {
         [self setBezelStyle:NSRegularSquareBezelStyle];
         [self setBordered:NO];
         [self setTitle:@""];
@@ -63,7 +63,7 @@
 			drawPoint.y += altImageSize.height;
 		}
 		
-		[[self alternateImage] compositeToPoint:drawPoint operation:NSCompositeSourceOver fraction:sin(_animationValue * M_PI)];
+		[[self alternateImage] compositeToPoint:drawPoint operation:NSCompositeSourceOver fraction:sinf(_animationValue * (float)M_PI)];
 	}
 }
 

@@ -45,6 +45,13 @@
 #import "SPAlertSheets.h"
 #import "SPHistoryController.h"
 #import "SPGeometryDataView.h"
+#import "SPTextView.h"
+#import "SPDatabaseViewController.h"
+#import "SPAppController.h"
+
+@interface SPTableContent (Private)
+- (BOOL)cancelRowEditing;
+@end
 
 @implementation SPTableContent
 
@@ -826,7 +833,7 @@
 
 	// Loop through the result rows as they become available
 	tableRowsCount = 0;
-	while (tempRow = [theResult fetchNextRowAsArray]) {
+	while ((tempRow = [theResult fetchNextRowAsArray])) {
 		pthread_mutex_lock(&tableValuesLock);
 
 		if (tableRowsCount < previousTableRowsCount) {
@@ -1764,9 +1771,8 @@
 /**
  * Perform the requested row deletion action.
  */
-- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
 	NSString *wherePart;
 	NSInteger i, errors;
@@ -1776,8 +1782,8 @@
 	// Order out current sheet to suppress overlapping of sheets
 	[[alert window] orderOut:nil];
 
-	if ( [contextInfo isEqualToString:@"removeallrows"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
+	if ([contextInfo isEqualToString:@"removeallrows"]) {
+		if (returnCode == NSAlertDefaultReturn) {
 
 			// Check if the user is currently editing a row, and revert to ensure a somewhat
 			// consistent state if deletion fails.
@@ -1809,8 +1815,9 @@
 					afterDelay:0.3];
 			}
 		}
-	} else if ( [contextInfo isEqualToString:@"removerow"] ) {
-		if ( returnCode == NSAlertDefaultReturn ) {
+	} 
+	else if ([contextInfo isEqualToString:@"removerow"]) {
+		if (returnCode == NSAlertDefaultReturn) {
 			[selectedRows addIndexes:[tableContentView selectedRowIndexes]];
 
 			//check if the user is currently editing a row
@@ -2382,9 +2389,12 @@
 	[menu addItem:item];
 	[item release];
 
-	// Attempt to reselect the previously selected title, falling back to the first item
-	[compareField selectItemWithTitle:titleToRestore];
-	if (![compareField selectedItem]) [compareField selectItemAtIndex:0];
+	// Attempt to reselect the previously selected title, falling back to the first
+	// item on failure, as long as there is no filter selection to be restored.
+	if (!filterFieldToRestore) {
+		[compareField selectItemWithTitle:titleToRestore];
+		if (![compareField selectedItem]) [compareField selectItemAtIndex:0];
+	}
 
 	// Update the argumentField enabled state
 	[self performSelectorOnMainThread:@selector(toggleFilterField:) withObject:self waitUntilDone:YES];
@@ -3471,11 +3481,10 @@
  */
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
-
-	if(aTableView == filterTableView) {
+	if (aTableView == filterTableView) {
 		return nil;
 	}
-	else if(aTableView == tableContentView) {
+	else if (aTableView == tableContentView) {
 
 		if([[aCell stringValue] length] < 2 || [tableDocumentInstance isWorking]) return nil;
 
@@ -3542,26 +3551,29 @@
 
 		return nil;
 	}
+	
+	return nil;
 }
 
 - (NSInteger)numberOfRowsInTableView:(SPCopyTable *)aTableView
 {
-	if(aTableView == filterTableView) {
-		if(filterTableIsSwapped)
+	if (aTableView == filterTableView) {
+		if (filterTableIsSwapped)
 			return [filterTableData count];
 		else
 			return [[[filterTableData objectForKey:[NSNumber numberWithInteger:0]] objectForKey:@"filter"] count];
 	}
-	else if(aTableView == tableContentView) {
+	else if (aTableView == tableContentView) {
 		return tableRowsCount;
 	}
+	
+	return 0;
 }
 
 - (id)tableView:(SPCopyTable *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-
-	if(aTableView == filterTableView) {
-		if(filterTableIsSwapped)
+	if (aTableView == filterTableView) {
+		if (filterTableIsSwapped)
 			// First column shows the field names
 			if([[aTableColumn identifier] integerValue] == 0) {
 				NSTableHeaderCell *c = [[[NSTableHeaderCell alloc] initTextCell:[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"name"]] autorelease];
@@ -3572,7 +3584,7 @@
 			return NSArrayObjectAtIndex([[filterTableData objectForKey:[aTableColumn identifier]] objectForKey:@"filter"], rowIndex);
 		}
 	}
-	else if(aTableView == tableContentView) {
+	else if (aTableView == tableContentView) {
 
 		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 		id theValue = nil;
@@ -3607,6 +3619,8 @@
 
 		return theValue;
 	}
+	
+	return nil;
 }
 
 /**
@@ -4441,9 +4455,6 @@
 	// Trap the escape key
 	if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
 	{
-
-		NSUInteger row = [control editedRow];
-
 		// Abort editing
 		[control abortEditing];
 		if(control == tableContentView)
@@ -4527,7 +4538,6 @@
 
 	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
-	NSCharacterSet *whiteSpaceCharSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSInteger editedRow = [filterTableView editedRow];
 	
 

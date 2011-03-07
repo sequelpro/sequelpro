@@ -38,6 +38,10 @@
 #import "SPSQLExporter.h"
 #import "SPXMLExporter.h"
 #import "SPDotExporter.h"
+#import "SPConnectionControllerDelegateProtocol.h"
+#import "SPExportFile.h"
+#import "SPExportFileUtilities.h"
+#import "SPExportFilenameUtilities.h"
 
 @implementation SPExportController (SPExportInitializer)
 
@@ -174,7 +178,6 @@
  */
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
-	NSUInteger i;
 	BOOL singleFileHandleSet = NO;
 	SPExportFile *singleExportFile = nil, *file = nil;
 	
@@ -277,7 +280,7 @@
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Create custom filename if required
-		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]]];
+		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
 		
 		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
 				

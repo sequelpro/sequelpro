@@ -78,7 +78,7 @@
 			filename = @"query_result";
 			break;
 		case SPTableExport:
-			filename = [tableDocumentInstance database];
+			filename = [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
 			break;
 	}
 	

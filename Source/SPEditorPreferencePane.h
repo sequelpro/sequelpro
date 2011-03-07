@@ -63,7 +63,6 @@
 }
 
 - (IBAction)showCustomQueryFontPanel:(id)sender;
-- (IBAction)showGlobalResultTableFontPanel:(id)sender;
 - (IBAction)setDefaultColors:(id)sender;
 - (IBAction)exportColorScheme:(id)sender;
 - (IBAction)importColorScheme:(id)sender;

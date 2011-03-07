@@ -52,7 +52,7 @@ static SPNotLoaded *notLoaded = nil;
 	Class notLoadedClass = [self class];
 	@synchronized(notLoadedClass) {
 		if (notLoaded == nil) {
-			if (self = [super init]) {
+			if ((self = [super init])) {
 				notLoaded = self;
 			}
 		}

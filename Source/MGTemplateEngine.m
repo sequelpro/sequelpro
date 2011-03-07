@@ -60,7 +60,7 @@
 
 - (id)init
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		_openBlocksStack = [[NSMutableArray alloc] init];
 		_globals = [[NSMutableDictionary alloc] init];
 		_markers = [[NSMutableDictionary alloc] init];
@@ -249,7 +249,7 @@
 		// Attempt to find firstVar in stack variables.
 		NSEnumerator *stack = [_openBlocksStack reverseObjectEnumerator];
 		NSDictionary *stackFrame = nil;
-		while (stackFrame = [stack nextObject]) {
+		while ((stackFrame = [stack nextObject])) {
 			NSDictionary *vars = [stackFrame objectForKey:BLOCK_VARIABLES_KEY];
 			if (vars && [vars objectForKey:firstVar]) {
 				currObj = vars;
