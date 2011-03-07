@@ -635,7 +635,7 @@
 		}
 
 		// Record any affected rows
-		if ( [mySQLConnection affectedRows] >= (my_ulonglong)0 )
+		if ( [mySQLConnection affectedRows] != (my_ulonglong)~0 )
 			totalAffectedRows += (NSUInteger)[mySQLConnection affectedRows];
 		else if ( [streamingResult numOfRows] )
 			totalAffectedRows += (NSUInteger)[streamingResult numOfRows];
