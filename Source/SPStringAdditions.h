@@ -58,7 +58,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 @interface NSString (SPStringAdditions)
 
 + (NSString *)stringForByteSize:(long long)byteSize;
-+ (NSString *)stringForTimeInterval:(CGFloat)timeInterval;
++ (NSString *)stringForTimeInterval:(double)timeInterval;
 + (NSString*)stringWithNewUUID;
 
 

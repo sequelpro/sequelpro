@@ -333,7 +333,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 			SPWindowController *frontController = nil;
 
-			for (NSWindow *aWindow in [self orderedWindows]) {
+			for (NSWindow *aWindow in [NSApp orderedWindows]) {
 				if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
 					frontController = [aWindow windowController];
 					break;
@@ -568,11 +568,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					NSInteger answer = [alert runModal];
 					if(answer == NSAlertDefaultReturn) {
 						NSError *error = nil;
-						NSString *removePath = [[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] substringToIndex:([[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] length]-[SPBundleFileName length]-1)];
+						NSString *removePath = [[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] substringToIndex:([(NSString *)[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] length]-[SPBundleFileName length]-1)];
 						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", removePath];
 						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 						if(error != nil) {
-							NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), removePath]
+							alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), removePath]
 															 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : OK button") 
 														   alternateButton:nil 
 															  otherButton:nil 
@@ -677,7 +677,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		}
 		if(![status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
 			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self frontDocumentWindow], self, nil, nil,
 							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
 		}
 		[result writeToFile:resultFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
@@ -723,7 +723,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 		if(!succeed) {
 			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self frontDocumentWindow], self, nil, nil,
 							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
 		}
 		return;
@@ -911,9 +911,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeGeneral];
-	if(idx >=0 && idx < [bundleItems count]) {
-		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
+	NSArray *scopeBundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeGeneral];
+	if(idx >=0 && idx < (NSInteger)[scopeBundleItems count]) {
+		infoPath = [[scopeBundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
 		if([sender tag] == 0 && [[sender toolTip] length]) {
 			infoPath = [sender toolTip];
@@ -941,11 +941,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		if (cmdData) [cmdData release];
 		return;
 	} else {
-		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
 
 			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
-			NSString *inputAction = @"";
-			NSString *inputFallBackAction = @"";
 			NSError *err = nil;
 			NSString *uuid = [NSString stringWithNewUUID];
 			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
@@ -969,7 +967,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			
 			if(inputFileError != nil) {
 				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self frontDocumentWindow], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 				if (cmdData) [cmdData release];
 				return;
@@ -988,7 +986,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 			NSString *action = SPBundleOutputActionNone;
-			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
 				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
 			// Redirect due exit code
@@ -1249,7 +1247,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	SPWindowController *frontController = nil;
 
-	for (NSWindow *aWindow in [self orderedWindows]) {
+	for (NSWindow *aWindow in [NSApp orderedWindows]) {
 		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
 			frontController = [aWindow windowController];
 			break;
@@ -1299,7 +1297,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (NSWindow *) frontDocumentWindow
 {
-	for (NSWindow *aWindow in [self orderedWindows]) {
+	for (NSWindow *aWindow in [NSApp orderedWindows]) {
 		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
 			return aWindow;
 		}
@@ -1366,7 +1364,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (SPDatabaseDocument *) frontDocument
 {
-	for (NSWindow *aWindow in [self orderedWindows]) {
+	for (NSWindow *aWindow in [NSApp orderedWindows]) {
 		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
 			return [[aWindow windowController] selectedTableDocument];
 		}
@@ -1596,13 +1594,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 					if((![cmdData objectForKey:SPBundleFileDisabledKey] || ![[cmdData objectForKey:SPBundleFileDisabledKey] intValue]) 
 						&& [cmdData objectForKey:SPBundleFileNameKey] 
-						&& [[cmdData objectForKey:SPBundleFileNameKey] length] 
+						&& [(NSString *)[cmdData objectForKey:SPBundleFileNameKey] length] 
 						&& [cmdData objectForKey:SPBundleFileScopeKey])
 					{
 
 						BOOL defaultBundleWasUpdated = NO;
 
-						if([cmdData objectForKey:SPBundleFileUUIDKey] && [[cmdData objectForKey:SPBundleFileUUIDKey] length]) {
+						if([cmdData objectForKey:SPBundleFileUUIDKey] && [(NSString *)[cmdData objectForKey:SPBundleFileUUIDKey] length]) {
 
 							if(processDefaultBundles) {
 
@@ -1625,9 +1623,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 									if([installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
 
 										NSString *oldPath = [NSString stringWithFormat:@"%@/%@/%@", [bundlePaths objectAtIndex:0], bundle, SPBundleFileName];
-										NSError *readError = nil;
-										NSString *convError = nil;
-										NSPropertyListFormat format;
+										readError = nil;
+										convError = nil;
 										NSDictionary *cmdDataOld = nil;
 
 										NSData *pDataOld = [NSData dataWithContentsOfFile:oldPath options:NSUncachedRead error:&readError];
@@ -1667,7 +1664,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 												[dupData removeObjectForKey:SPBundleFileIsDefaultBundleKey];
 												[dupData writeToFile:duplicatedBundleCommand atomically:YES];
 
-												NSError *error = nil;
+												error = nil;
 												NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
 												[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 
@@ -1703,7 +1700,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 									NSString *newPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
 									if([fm fileExistsAtPath:newPath isDirectory:&isDir] && isDir)
 										newPath = [NSString stringWithFormat:@"%@_%ld", newPath, (NSUInteger)(random() % 35000)];
-									NSError *error = nil;
+									error = nil;
 									[fm copyItemAtPath:orgPath toPath:newPath error:&error];
 									if(error != nil) {
 										NSBeep();
@@ -1740,7 +1737,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 							[bundleCategories setObject:[NSMutableArray array] forKey:scope];
 							[bundleKeyEquivalents setObject:[NSMutableDictionary dictionary] forKey:scope];
 						}
-						if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
+						if([cmdData objectForKey:SPBundleFileCategoryKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCategoryKey] length] && ![[bundleCategories objectForKey:scope] containsObject:[cmdData objectForKey:SPBundleFileCategoryKey]])
 							[[bundleCategories objectForKey:scope] addObject:[cmdData objectForKey:SPBundleFileCategoryKey]];
 
 						NSMutableDictionary *aDict = [NSMutableDictionary dictionary];
@@ -1759,7 +1756,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 						}
 
 						// Register key equivalent
-						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
+						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [(NSString *)[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length]) {
 
 							NSString *theKey = [cmdData objectForKey:SPBundleFileKeyEquivalentKey];
 							NSString *theChar = [theKey substringFromIndex:[theKey length]-1];
@@ -1784,13 +1781,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 							[aDict setObject:[NSArray arrayWithObjects:theChar, [NSNumber numberWithInteger:mask], nil] forKey:SPBundleInternKeyEquivalentKey];
 						}
 
-						if([cmdData objectForKey:SPBundleFileTooltipKey] && [[cmdData objectForKey:SPBundleFileTooltipKey] length])
+						if([cmdData objectForKey:SPBundleFileTooltipKey] && [(NSString *)[cmdData objectForKey:SPBundleFileTooltipKey] length])
 							[aDict setObject:[cmdData objectForKey:SPBundleFileTooltipKey] forKey:SPBundleFileTooltipKey];
 
-						if([cmdData objectForKey:SPBundleFileCategoryKey] && [[cmdData objectForKey:SPBundleFileCategoryKey] length])
+						if([cmdData objectForKey:SPBundleFileCategoryKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCategoryKey] length])
 							[aDict setObject:[cmdData objectForKey:SPBundleFileCategoryKey] forKey:SPBundleFileCategoryKey];
 
-						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length])
+						if([cmdData objectForKey:SPBundleFileKeyEquivalentKey] && [(NSString *)[cmdData objectForKey:SPBundleFileKeyEquivalentKey] length])
 							[aDict setObject:[cmdData objectForKey:SPBundleFileKeyEquivalentKey] forKey:@"key"];
 
 						[[bundleItems objectForKey:scope] addObject:aDict];
@@ -1856,10 +1853,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	BOOL bundleOtherThanGeneralFound = NO;
 	for(NSString* scope in scopes) {
 
-		NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:scope];
-		NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:scope];
+		NSArray *scopeBundleCategories = [[NSApp delegate] bundleCategoriesForScope:scope];
+		NSArray *scopeBundleItems = [[NSApp delegate] bundleItemsForScope:scope];
 
-		if(![bundleItems count]) {
+		if(![scopeBundleItems count]) {
 			k++;
 			continue;
 		}
@@ -1886,8 +1883,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		// Add found Category submenus
 		NSMutableArray *categorySubMenus = [NSMutableArray array];
 		NSMutableArray *categoryMenus = [NSMutableArray array];
-		if([bundleCategories count]) {
-			for(NSString* title in bundleCategories) {
+		if([scopeBundleCategories count]) {
+			for(NSString* title in scopeBundleCategories) {
 				[categorySubMenus addObject:[[[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""] autorelease]];
 				[categoryMenus addObject:[[[NSMenu alloc] init] autorelease]];
 				[bundleMenu addItem:[categorySubMenus lastObject]];
@@ -1896,7 +1893,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		}
 
 		NSInteger i = 0;
-		for(NSDictionary *item in bundleItems) {
+		for(NSDictionary *item in scopeBundleItems) {
 
 			NSString *keyEq;
 			if([item objectForKey:SPBundleFileKeyEquivalentKey])
@@ -1918,7 +1915,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				([item objectForKey:@"key"])?:@"", @"key", nil]];
 
 			if([item objectForKey:SPBundleFileCategoryKey]) {
-				[[categoryMenus objectAtIndex:[bundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
+				[[categoryMenus objectAtIndex:[scopeBundleCategories indexOfObject:[item objectForKey:SPBundleFileCategoryKey]]] addItem:mItem];
 			} else {
 				[bundleMenu addItem:mItem];
 			}
@@ -1992,7 +1989,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
-					[[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
+					[(SPTextView *)[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
 				}
 			}
 		} else {
@@ -2011,7 +2008,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
-					[[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
+					[(SPCopyTable *)[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
 				}
 			}
 		} else {

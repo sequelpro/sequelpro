@@ -27,11 +27,11 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
+@class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
 
 @interface SPTableContent : NSObject 
 {	
-	IBOutlet id tableDocumentInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id tableSourceInstance;
@@ -172,6 +172,7 @@
 - (IBAction)addRow:(id)sender;
 - (IBAction)copyRow:(id)sender;
 - (IBAction)removeRow:(id)sender;
+- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
 // Filter Table
 - (IBAction)tableFilterClear:(id)sender;
@@ -198,6 +199,7 @@
 - (IBAction)setCompareTypes:(id)sender;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)saveRowToTable;
+- (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (NSString *)argumentForRow:(NSInteger)row;
 - (NSString *)argumentForRow:(NSInteger)row excludingLimits:(BOOL)excludeLimits;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
@@ -208,6 +210,7 @@
 - (void)autosizeColumns;
 - (BOOL)saveRowOnDeselect;
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
+- (void)showErrorSheetWith:(id)error;
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 // Retrieving and setting table state

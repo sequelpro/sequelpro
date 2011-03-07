@@ -101,7 +101,7 @@
 /**
  * Returns a human readable version string of the supplied time interval.
  */ 
-+ (NSString *)stringForTimeInterval:(CGFloat)timeInterval
++ (NSString *)stringForTimeInterval:(double)timeInterval
 {
 	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 

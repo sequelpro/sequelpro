@@ -111,6 +111,7 @@
 - (NSArray*)runningActivities;
 
 - (void)handleEventWithURL:(NSURL*)url;
+- (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike;
 
 - (IBAction)executeBundleItemForApp:(id)sender;
 - (NSDictionary*)shellEnvironmentForDocument:(NSString*)docUUID;

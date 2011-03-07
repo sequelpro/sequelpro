@@ -40,6 +40,8 @@
 #import "SPAlertSheets.h"
 #import "SPCopyTable.h"
 #import "SPGeometryDataView.h"
+#import "SPAppController.h"
+#import "SPBundleHTMLOutputController.h"
 
 #import <BWToolkitFramework/BWToolkitFramework.h>
 
@@ -633,10 +635,10 @@
 		}
 
 		// Record any affected rows
-		if ( [mySQLConnection affectedRows] >= 0 )
-			totalAffectedRows += [mySQLConnection affectedRows];
+		if ( [mySQLConnection affectedRows] >= (my_ulonglong)0 )
+			totalAffectedRows += (NSUInteger)[mySQLConnection affectedRows];
 		else if ( [streamingResult numOfRows] )
-			totalAffectedRows += [streamingResult numOfRows];
+			totalAffectedRows += (NSUInteger)[streamingResult numOfRows];
 
 		[streamingResult release];
 
@@ -677,7 +679,7 @@
 							@"runAllContinueStopSheet",
 							NSLocalizedString(@"MySQL Error", @"mysql error message"),
 							[mySQLConnection getLastErrorMessage],
-							runAllContinueStopSheetReturnCode
+							&runAllContinueStopSheetReturnCode
 						);
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
 
@@ -1066,7 +1068,7 @@
 
 	// Check for a valid index
 	anIndex--;
-	if(anIndex < 0 || anIndex >= [queries count])
+	if(anIndex < 0 || anIndex >= (NSInteger)[queries count])
 	{
 		[queries release];
 		return NSMakeRange(NSNotFound, 0);
@@ -1230,7 +1232,7 @@
 
 		// set the error text
 		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-		[[errorTextScrollView verticalScroller] setFloatValue:1.0];
+		[[errorTextScrollView verticalScroller] setFloatValue:1.0f];
 
 		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
 		// by capturing the last number of the error string
@@ -1350,7 +1352,7 @@
 
 	// Check whether a table update is required, based on whether new rows are
 	// available to display.
-	if (resultDataCount == queryLoadLastRowCount) {
+	if (resultDataCount == (NSInteger)queryLoadLastRowCount) {
 		return;
 	}
 
@@ -1527,7 +1529,7 @@
 		if ([columnDefinition objectForKey:@"org_name"] && [(NSString *)[columnDefinition objectForKey:@"org_name"] length]) {
 			NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
 			if ( colWidth ) {
-				[theCol setWidth:[colWidth doubleValue]];
+				[theCol setWidth:[colWidth floatValue]];
 			}
 		}
 
@@ -2246,7 +2248,7 @@
 	// cases.
 	if (isWorking) {
 		pthread_mutex_lock(&resultDataLock);
-		if (row < resultDataCount && [[aTableColumn identifier] integerValue] < [resultData columnCount]) {
+		if (row < resultDataCount && [[aTableColumn identifier] unsignedIntegerValue] < [resultData columnCount]) {
 			theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]) copy] autorelease];
 		}
 		pthread_mutex_unlock(&resultDataLock);
@@ -2414,12 +2416,12 @@
 
 		// For HTML output check if corresponding window already exists
 		BOOL stopTrigger = NO;
-		if([[data objectAtIndex:2] length]) {
+		if ([(NSString *)[data objectAtIndex:2] length]) {
 			BOOL correspondingWindowFound = NO;
 			NSString *uuid = [data objectAtIndex:2];
-			for(id win in [NSApp windows]) {
-				if([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
-					if([[[win delegate] windowUUID] isEqualToString:uuid]) {
+			for (id win in [NSApp windows]) {
+				if ([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
+					if ([[[win delegate] windowUUID] isEqualToString:uuid]) {
 						correspondingWindowFound = YES;
 						break;
 					}
@@ -2683,6 +2685,7 @@
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	if (sender != queryInfoPaneSplitView) return (offset == 0) ? (proposedMax - 100) : (proposedMax - 73);
+	return proposedMax;
 }
 
 /*
@@ -2691,6 +2694,7 @@
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	if (sender != queryInfoPaneSplitView) return proposedMin + 100;
+	return proposedMin;
 }
 
 /**
@@ -3077,8 +3081,8 @@
 
 		}
 	} else { // list all found topics
-		NSInteger i;
-		NSInteger r = [theResult numOfRows];
+		NSUInteger i;
+		NSUInteger r = (NSUInteger)[theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
@@ -3280,7 +3284,7 @@
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:[NSArray array]];
-		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0] autorelease]];
+		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
 			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
@@ -3304,7 +3308,7 @@
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:[NSArray array]];
-		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0] autorelease]];
+		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
 			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
@@ -3548,9 +3552,9 @@
 	}
 
 	if (data && contextInfo) {
-		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
+		BOOL isResultFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
 
-		if(isFieldEditable) {
+		if(isResultFieldEditable) {
 			[self tableView:customQueryView setObjectValue:[[data copy] autorelease] forTableColumn:[customQueryView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
 		}
 	}
@@ -3673,7 +3677,7 @@
  * cancel the fieldEditor, display the field editor sheet instead for editing
  * and re-enable the fieldEditor after editing.
  */
-- (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)fieldEditor
+- (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)aFieldEditor
 {
 
 	if(![control isKindOfClass:[SPCopyTable class]]) return YES;
@@ -3740,7 +3744,7 @@
 	if (isBlob || [multipleLineEditingButton state] == NSOnState)
 	{
 
-		[customQueryView setFieldEditorSelectedRange:[fieldEditor selectedRange]];
+		[customQueryView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
 
 		// Cancel editing
 		[control abortEditing];
@@ -3753,7 +3757,7 @@
 	}
 
 	// Set editing color to black for NULL values while editing
-	[fieldEditor setTextColor:[NSColor blackColor]];
+	[aFieldEditor setTextColor:[NSColor blackColor]];
 
 	return shouldBeginEditing;
 
@@ -3763,7 +3767,7 @@
  * Abort editing of the Favorite and History search field editors if user presses ARROW UP or DOWN
  * to allow to navigate through the menu item list.
  */
-- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView doCommandBySelector:(SEL)command
+- (BOOL)control:(NSControl*)control textView:(NSTextView*)aTextView doCommandBySelector:(SEL)command
 {
 
 	if(control == queryHistorySearchField || control == queryFavoritesSearchField) {
@@ -3786,7 +3790,7 @@
 	else if([control isKindOfClass:[SPCopyTable class]]) {
 
 		// Check firstly if SPCopyTable can handle command
-		if([customQueryView control:control textView:textView doCommandBySelector:(SEL)command])
+		if([customQueryView control:control textView:aTextView doCommandBySelector:(SEL)command])
 			return YES;
 
 		// Trap the escape key

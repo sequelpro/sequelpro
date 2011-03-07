@@ -256,6 +256,7 @@
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;
 - (void)addHistoryEntry:(NSString *)entryString;
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo;
 
 - (void)historyItemsHaveBeenUpdated:(id)manager;
 
