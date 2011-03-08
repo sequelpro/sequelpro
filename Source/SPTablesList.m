@@ -38,6 +38,8 @@
 #import "SPNavigatorController.h"
 #import "SPHistoryController.h"
 #import "SPServerSupport.h"
+#import "SPWindowController.h"
+#import "SPAppController.h"
 
 @interface SPTablesList (PrivateAPI)
 
@@ -252,7 +254,7 @@
 		tableListIsSelectable = previousTableListIsSelectable;
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
-		selectedTableType = [[tableTypes objectAtIndex:itemToReselect] integerValue];
+		selectedTableType = (SPTableType)[[tableTypes objectAtIndex:itemToReselect] integerValue];
 	} 
 	else {
 		if (selectedTableName) [selectedTableName release];
@@ -829,7 +831,7 @@
 
 	// If a new selection has been provided, store variables and update the interface to match
 	NSString *selectedItemName = [selectionDetails objectForKey:@"name"];
-	NSInteger selectedItemType = [[selectionDetails objectForKey:@"type"] integerValue];
+	SPTableType selectedItemType = (SPTableType)[[selectionDetails objectForKey:@"type"] integerValue];
 
 	// Update the selected table name and type
 	if (selectedTableName) [selectedTableName release];
@@ -837,7 +839,7 @@
 	selectedTableType = selectedItemType;
 
 	// Remove the "current selection" item for filtered lists if appropriate
-	if (isTableListFiltered && [tablesListView selectedRow] < [filteredTables count] - 2 && [filteredTables count] > 2
+	if (isTableListFiltered && [tablesListView selectedRow] < (NSInteger)[filteredTables count] - 2 && [filteredTables count] > 2
 		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] integerValue] == SPTableTypeNone
 		&& [[filteredTables objectAtIndex:[filteredTables count]-2] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
 	{
@@ -1066,7 +1068,7 @@
 /**
  * Returns the currently selected table type, or -1 if no table or multiple tables are selected
  */
-- (NSInteger) tableType
+- (SPTableType) tableType
 {
 	return selectedTableType;
 }
@@ -1179,8 +1181,8 @@
  */
 - (BOOL)selectItemWithName:(NSString *)theName
 {
-	NSInteger i, tableType;
-	NSInteger itemIndex = NSNotFound;
+	NSUInteger i;
+	NSInteger tableType, itemIndex = NSNotFound;
 	NSInteger caseInsensitiveItemIndex = NSNotFound;
 
 	// Loop through the unfiltered tables/views to find the desired item
@@ -1212,7 +1214,7 @@
 			[tablesListView deselectAll:nil];
 			if (selectedTableName) [selectedTableName release];
 			selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemIndex]];
-			selectedTableType = [[tableTypes objectAtIndex:itemIndex] integerValue];
+			selectedTableType = (SPTableType)[[tableTypes objectAtIndex:itemIndex] integerValue];
 			[self updateFilter:self];
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 		}
@@ -1229,7 +1231,8 @@
  */
 - (BOOL)selectItemsWithNames:(NSArray *)theNames
 {
-	NSInteger i, tableType;
+	NSUInteger i;
+	NSInteger tableType;
 	NSMutableIndexSet *selectionIndexSet = [NSMutableIndexSet indexSet];
 
 	// Loop through the unfiltered tables/views to find the desired item
@@ -1282,7 +1285,7 @@
 	// During imports the table view sometimes appears to request items beyond the end of the array.
 	// Using a hinted noteNumberOfRowsChanged after dropping tables fixes this but then seems to stick
 	// even after override, so check here for the time being and display empty rows during import.
-	if (rowIndex >= [filteredTables count]) return @"";
+	if (rowIndex >= (NSInteger)[filteredTables count]) return @"";
 
 	return [filteredTables objectAtIndex:rowIndex];
 }
@@ -1427,7 +1430,7 @@
 
 	// Perform no action if the selected table hasn't actually changed - reselection etc
 	NSString *newName = [filteredTables objectAtIndex:selectedRowIndex];
-	NSInteger newType = [[filteredTableTypes objectAtIndex:selectedRowIndex] integerValue];
+	SPTableType newType = (SPTableType)[[filteredTableTypes objectAtIndex:selectedRowIndex] integerValue];
 	if ([selectedTableName isEqualToString:newName] && selectedTableType == newType) {
 		return;
 	}
@@ -1479,7 +1482,7 @@
 - (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)rowIndex
 {
 	// For empty tables - title still present - or while lists are being altered
-	if (rowIndex >= [filteredTableTypes count]) return (rowIndex == 0 );
+	if (rowIndex >= (NSInteger)[filteredTableTypes count]) return (rowIndex == 0 );
 
 	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeNone );
 }
@@ -1489,7 +1492,7 @@
  */
 - (void)tableView:(NSTableView *)aTableView  willDisplayCell:(ImageAndTextCell*)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if (rowIndex > 0 && rowIndex < [filteredTableTypes count] && [[aTableColumn identifier] isEqualToString:@"tables"]) {
+	if (rowIndex > 0 && rowIndex < (NSInteger)[filteredTableTypes count] && [[aTableColumn identifier] isEqualToString:@"tables"]) {
 
 		id item = NSArrayObjectAtIndex(filteredTables, rowIndex);
 
@@ -1669,7 +1672,8 @@
 		filteredTables = [[NSMutableArray alloc] init];
 		filteredTableTypes = [[NSMutableArray alloc] init];
 
-		NSInteger i, lastTableType = NSNotFound, tableType;
+		NSUInteger i;
+		NSInteger lastTableType = NSNotFound, tableType;
 		NSRange substringRange;
 		for (i = 0; i < [tables count]; i++) {
 			tableType = [[tableTypes objectAtIndex:i] integerValue];
@@ -1723,7 +1727,7 @@
 	}
 
 	// Reselect correct row and reload the table view display
-	if ([tablesListView numberOfRows] < [filteredTables count]) [tablesListView noteNumberOfRowsChanged];
+	if ([tablesListView numberOfRows] < (NSInteger)[filteredTables count]) [tablesListView noteNumberOfRowsChanged];
 	if (selectedTableName) [tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[filteredTables indexOfObject:selectedTableName]] byExtendingSelection:NO];
 	[tablesListView reloadData];
 }
@@ -1734,7 +1738,7 @@
  */
 - (void) selectTableAtIndex:(NSNumber *)row
 {
-	NSInteger rowIndex = [row integerValue];
+	NSUInteger rowIndex = [row unsignedIntegerValue];
 	if (rowIndex == NSNotFound || rowIndex > [filteredTables count] || [[filteredTableTypes objectAtIndex:rowIndex] integerValue] == SPTableTypeNone)
 		return;
 
@@ -2048,12 +2052,12 @@
 		// Table creation was successful - insert the new item into the tables list and select it.
 		NSInteger addItemAtIndex = NSNotFound;
 
-		for (NSInteger i = 0; i < [tables count]; i++)
+		for (NSUInteger i = 0; i < [tables count]; i++)
 		{
-			NSInteger tableType = [[tableTypes objectAtIndex:i] integerValue];
+			NSInteger eachTableType = [[tableTypes objectAtIndex:i] integerValue];
 
-			if (tableType == SPTableTypeNone) continue;
-			if (tableType == SPTableTypeProc || tableType == SPTableTypeFunc) {
+			if (eachTableType == SPTableTypeNone) continue;
+			if (eachTableType == SPTableTypeProc || eachTableType == SPTableTypeFunc) {
 				addItemAtIndex = (i - 1);
 				break;
 			}
@@ -2119,7 +2123,7 @@
 
 	BOOL copyTableContent = ([copyTableContentSwitch state] == NSOnState);
 
-	NSInteger tblType = [[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
+	SPTableType tblType = (SPTableType)[[filteredTableTypes objectAtIndex:[tablesListView selectedRow]] integerValue];
 
 	// Set up the table type and whether content can be duplicated.  The table type is used
 	// in queries and should not be localized.
@@ -2139,6 +2143,8 @@
 		case SPTableTypeFunc:
 			tableType = @"function";
 			[copyTableContentSwitch setEnabled:NO];
+			break;
+		default:
 			break;
 	}
 
@@ -2247,7 +2253,7 @@
 
 			// Insert the new item into the tables list and select it.
 			NSInteger addItemAtIndex = NSNotFound;
-			for (NSInteger i = 0; i < [tables count]; i++) {
+			for (NSUInteger i = 0; i < [tables count]; i++) {
 				NSInteger theTableType = [[tableTypes objectAtIndex:i] integerValue];
 				if (theTableType == SPTableTypeNone) continue;
 				if ((theTableType == SPTableTypeView || theTableType == SPTableTypeTable)
@@ -2339,6 +2345,7 @@
 		switch (tableType){
 			case SPTableTypeProc: stringTableType = @"PROCEDURE"; break;
 			case SPTableTypeFunc: stringTableType = @"FUNCTION"; break;
+			default: break;
 		}
 
 		MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];

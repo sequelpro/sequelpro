@@ -25,13 +25,13 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPTableFieldValidation;
+@class SPDatabaseDocument, SPTableFieldValidation;
 
 @interface SPTableStructure : NSObject 
 {
 	IBOutlet id tablesListInstance;
 	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tableInfoInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id indexesController;
@@ -57,7 +57,7 @@
 	IBOutlet NSButton *indexesShowButton;
 
 	IBOutlet id viewColumnsMenu;
-	IBOutlet id encodingPopupCell;
+	IBOutlet NSPopUpButtonCell *encodingPopupCell;
 
 	MCPConnection *mySQLConnection;
 	MCPResult *tableSourceResult;
@@ -89,7 +89,9 @@
 - (IBAction)addField:(id)sender;
 - (IBAction)copyField:(id)sender;
 - (IBAction)removeField:(id)sender;
+- (void)removeFieldSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (IBAction)resetAutoIncrement:(id)sender;
+- (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (IBAction)showOptimizedFieldType:(id)sender;
 - (IBAction)toggleColumnView:(id)sender;
 - (BOOL)cancelRowEditing;
@@ -102,6 +104,7 @@
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
+- (void)addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (void)setAutoIncrementTo:(NSString*)valueAsString;
 
 // Accessors

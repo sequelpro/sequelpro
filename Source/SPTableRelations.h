@@ -65,11 +65,14 @@
 - (IBAction)selectReferenceTable:(id)sender;
 - (IBAction)refreshRelations:(id)sender;
 
+- (void)tableSelectionChanged:(NSNotification *)notification;
+
 // Task interaction
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification;
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Other
 - (NSArray *)relationDataForPrinting;
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
 @end

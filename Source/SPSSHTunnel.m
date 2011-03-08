@@ -245,15 +245,15 @@
 
 	// If no local port has yet been chosen, choose one
 	if (!localPort) {
-		NSInteger tempSocket;
+		int tempSocket;
 		struct sockaddr_in tempSocketAddress;
-		NSInteger addressLength = sizeof(tempSocketAddress);
+		size_t addressLength = sizeof(tempSocketAddress);
 		if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
 			memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
 			tempSocketAddress.sin_family = AF_INET;
 			tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 			tempSocketAddress.sin_port = 0;
-			if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, addressLength) >= 0) {
+			if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
 				if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
 					localPort = ntohs(tempSocketAddress.sin_port);
 				}
@@ -267,7 +267,7 @@
 				tempSocketAddress.sin_family = AF_INET;
 				tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 				tempSocketAddress.sin_port = 0;
-				if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, addressLength) >= 0) {
+				if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
 					if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
 						localPortFallback = ntohs(tempSocketAddress.sin_port);
 					}

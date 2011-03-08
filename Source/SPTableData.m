@@ -216,7 +216,7 @@
  *
  * @param index The index of the column array.
  */
-- (NSDictionary *) columnAtIndex:(NSInteger)index
+- (NSDictionary *) columnAtIndex:(NSInteger)columnIndex
 {
 	// If processing is already in action, wait for it to complete
 	[self _loopWhileWorking];
@@ -228,7 +228,7 @@
 			[self updateInformationForCurrentTable];
 		}
 	}
-	return [columns objectAtIndex:index];
+	return [columns objectAtIndex:columnIndex];
 }
 
 /**
@@ -401,7 +401,7 @@
 	[columns addObjectsFromArray:[tableData objectForKey:@"columns"]];
 
 	enumerator = [columns objectEnumerator];
-	while (columnData = [enumerator nextObject]) {
+	while ((columnData = [enumerator nextObject])) {
 		[columnNames addObject:[NSString stringWithString:[columnData objectForKey:@"name"]]];
 	}
 
@@ -440,7 +440,7 @@
 	[columns addObjectsFromArray:[viewData objectForKey:@"columns"]];
 
 	enumerator = [columns objectEnumerator];
-	while (columnData = [enumerator nextObject]) {
+	while ((columnData = [enumerator nextObject])) {
 		[columnNames addObject:[NSString stringWithString:[columnData objectForKey:@"name"]]];
 	}
 
@@ -642,7 +642,7 @@
 				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
 
-				NSInteger nextOffs = 12;
+				NSUInteger nextOffs = 12;
 				if( [parts count] > 8 ) {
 					// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
 					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
@@ -674,7 +674,7 @@
 						}
 					}
 				}
-				if( [parts count] > nextOffs - 1 ) {
+				if ([parts count] > nextOffs - 1) {
 					if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
 						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
@@ -1069,7 +1069,7 @@
 
 	if (triggers) [triggers release];
 	triggers = [[NSMutableArray alloc] init];
-	for (int i=0; i<[theResult numOfRows]; i++) {
+	for (NSUInteger i=0; i<[theResult numOfRows]; i++) {
 		[triggers addObject:[theResult fetchRowAsDictionary]];
 	}
 
@@ -1095,7 +1095,7 @@
 	NSMutableDictionary *fieldDetails = [[NSMutableDictionary alloc] init];
 	NSMutableArray *detailParts;
 	NSString *detailString;
-	NSInteger i, definitionPartsIndex = 0, partsArrayLength;
+	NSUInteger i, definitionPartsIndex = 0, partsArrayLength;
 
 	NSCharacterSet *whitespaceCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 
@@ -1306,7 +1306,7 @@
 
 	MCPResult *r;
 	NSArray *resultRow;
-	NSInteger i;
+	NSUInteger i;
 	NSMutableArray *keyColumns = [NSMutableArray array];
 
 	// select all columns that are primary keys

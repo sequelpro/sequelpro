@@ -627,13 +627,13 @@
 				if(fuzzyMode) { // eg filter = "inf" this regexp search will be performed: (?i).*?i.*?n.*?f
 
 					NSMutableString *fuzzyRegexp = [[NSMutableString alloc] initWithCapacity:3];
-					NSInteger i;
+					NSUInteger i;
 					unichar c;
 
-					if(!caseSensitive)
+					if (!caseSensitive)
 						[fuzzyRegexp setString:@"(?i)"];
 
-					for(i=0; i<[[self filterString] length]; i++) {
+					for (i=0; i<[[self filterString] length]; i++) {
 						c = [[self filterString] characterAtIndex:i];
 						if(c != '`') {
 							if(c == '.')
@@ -645,8 +645,8 @@
 						}
 					}
 
-					for(id s in suggestions)
-						if([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"path"] isMatchedByRegex:fuzzyRegexp])
+					for (id s in suggestions)
+						if ([[s objectForKey:@"display"] isMatchedByRegex:fuzzyRegexp] || [[s objectForKey:@"path"] isMatchedByRegex:fuzzyRegexp])
 							[newFiltered addObject:s];
 
 

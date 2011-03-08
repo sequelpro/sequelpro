@@ -65,13 +65,13 @@
 		return YES;
 
 	// A single character over the length of the string - likely typed.  Prevent the change.
-	if ([partialString length] == textLimit + 1) {
+	if ((NSInteger)[partialString length] == textLimit + 1) {
 		[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %ld.", @"Maximum text length is set to %ld."), (long)textLimit]];
 		return NO;
 	}
 
 	// If the string is considerably longer than the limit, likely pasted.  Accept but truncate.
-	if ([partialString length] > textLimit) {
+	if ((NSInteger)[partialString length] > textLimit) {
 		[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %ld. Inserted text was truncated.", @"Maximum text length is set to %ld. Inserted text was truncated."), (long)textLimit]];
 		*newString = [NSString stringWithString:[partialString substringToIndex:textLimit]];
 		return NO;

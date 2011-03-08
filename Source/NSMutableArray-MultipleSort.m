@@ -51,7 +51,7 @@
 						[array1 replaceObjectAtIndex: d withObject: a1];
 						[a1 release];
 						va_start(argumentList, array1);		 
-						while (eachObject = va_arg(argumentList, id)) {
+						while ((eachObject = va_arg(argumentList, id))) {
 							id ax = [eachObject objectAtIndex:d+stride];
 							id bx = [eachObject objectAtIndex:d];
 							[ax retain];

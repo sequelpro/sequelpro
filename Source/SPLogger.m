@@ -37,6 +37,7 @@ static SPLogger *logger = nil;
 
 - (void)_initLogFile;
 - (void)_outputTimeString;
+int _isSPLeaksLog(struct direct *entry);
 
 @end
 
@@ -137,10 +138,9 @@ static SPLogger *logger = nil;
 		if ([self removeOldLeakDumpsOnTermination]) {
 			
 			int cnt, cnt2, i;
-			int isSPLeaksLog();
 			struct direct **files;
 			
-			cnt  = scandir("/tmp", &files, isSPLeaksLog, NULL);
+			cnt  = scandir("/tmp", &files, _isSPLeaksLog, NULL);
 			
 			char fpath[32], fpath2[32], fpath3[64];
 			
@@ -158,7 +158,7 @@ static SPLogger *logger = nil;
 			if (hdir) {
 				snprintf(fpath2, sizeof(fpath2), "%s/Desktop", pw->pw_dir);
 				
-				cnt2 = scandir(fpath2, &files, isSPLeaksLog, NULL);
+				cnt2 = scandir(fpath2, &files, _isSPLeaksLog, NULL);
 				
 				for (i = 0; i < cnt2; i++)
 				{
@@ -181,7 +181,7 @@ static SPLogger *logger = nil;
 		// Write new leaks log
 		if ((fp = popen(cmd, "r")) && (fp2 = fopen(file, "w"))) {
 			
-			while (len = fread(buf, 1, sizeof(buf), fp))
+			while ((len = fread(buf, 1, sizeof(buf), fp)))
 			{
 				fwrite(buf, 1, len, fp2);
 			}
@@ -189,11 +189,6 @@ static SPLogger *logger = nil;
 			pclose(fp);
 		}
 	}
-}
-
-int isSPLeaksLog(struct direct *entry)
-{
-	return (strstr(entry->d_name, "sp.leaks") != NULL);
 }
 
 #pragma mark -
@@ -247,6 +242,11 @@ int isSPLeaksLog(struct direct *entry)
 	if (!initializedSuccessfully) return;
 	
 	[logFileHandle writeData:[[NSString stringWithFormat:@"Launched at %@\n\n", [[NSDate date] description]] dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+int _isSPLeaksLog(struct direct *entry)
+{
+	return (strstr(entry->d_name, "sp.leaks") != NULL);
 }
 
 @end

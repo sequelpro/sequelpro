@@ -31,4 +31,7 @@
 
 - (void) closeAndDisconnect;
 
+- (NSString *)keychainPasswordForConnection:(MCPConnection *)connection;
+- (NSString *)keychainPasswordForSSHConnection:(MCPConnection *)connection;
+
 @end

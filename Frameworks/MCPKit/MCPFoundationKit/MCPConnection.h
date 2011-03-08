@@ -182,6 +182,7 @@ void pingThreadCleanup(void *pingDetails);
 // MySQL defaults
 + (NSDictionary *)getMySQLLocales;
 + (NSStringEncoding)encodingForMySQLEncoding:(const char *)mysqlEncoding;
++ (NSString *) mySQLEncodingForStringEncoding:(NSStringEncoding)stringEncoding;
 + (NSStringEncoding)defaultMySQLEncoding;
 + (BOOL)isErrorNumberConnectionError:(NSInteger)theErrorNumber;
 

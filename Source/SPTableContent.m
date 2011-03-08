@@ -2645,8 +2645,11 @@
 		return YES;
 	}
 
-	// Save any edits which have been made but not saved to the table yet.
-	[[tableDocumentInstance parentWindow] endEditingFor:nil];
+	// Save any edits which have been made but not saved to the table yet;
+	// but not for any NSSearchFields which could cause a crash for undo, redo.
+	if([[[tableDocumentInstance parentWindow] firstResponder] respondsToSelector:@selector(delegate)] 
+			&& ![[[[tableDocumentInstance parentWindow] firstResponder] delegate] isKindOfClass:[NSSearchField class]])
+		[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;

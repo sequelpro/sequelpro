@@ -59,7 +59,7 @@
 
 	NSTimer *stateTimer;
 	NSArray *syncArrowImages;
-	NSInteger currentSyncImage;
+	NSUInteger currentSyncImage;
 
 	NSUInteger timeCounter;
 

@@ -49,6 +49,8 @@
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
 - (NSUInteger) currentlySelectedView;
 - (void) setupInterface;
+- (void) startDocumentTask:(NSNotification *)aNotification;
+- (void) endDocumentTask:(NSNotification *)aNotification;
 
 // Adding or updating history entries
 - (void) updateHistoryEntries;

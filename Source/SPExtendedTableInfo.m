@@ -28,9 +28,11 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "SPDatabaseDocument.h"
+#import "SPDatabaseViewController.h"
 #import "SPTablesList.h"
 #import "SPAlertSheets.h"
 #import "SPTableStructure.h"
+#import "SPServerSupport.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
