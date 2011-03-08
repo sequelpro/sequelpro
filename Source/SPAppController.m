@@ -653,11 +653,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSString *command = [url host];
 	NSString *passedProcessID = [url user];
 	NSArray *parameter;
-	NSArray *pathComponents = [url pathComponents];
-	if([pathComponents count] > 1)
-		parameter = [pathComponents subarrayWithRange:NSMakeRange(1,[[url pathComponents] count]-1)];
+	NSArray *pathComponents = [[url absoluteString] pathComponents];
+
+	if([pathComponents count] > 2)
+		parameter = [pathComponents subarrayWithRange:NSMakeRange(2, [pathComponents count]-2)];
 	else
 		parameter = [NSArray array];
+
 
 	NSFileManager *fm = [NSFileManager defaultManager];
 
@@ -1984,7 +1986,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
 
 			if(idx > -1) {
-				NSArray *eq = [assignedKeyEquivalents objectAtIndex:idx];
+				NSDictionary *eq = [assignedKeyEquivalents objectAtIndex:idx];
 				if(eq && [eq count]) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
@@ -2003,7 +2005,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
 
 			if(idx > -1) {
-				NSArray *eq = [assignedKeyEquivalents objectAtIndex:idx];
+				NSDictionary *eq = [assignedKeyEquivalents objectAtIndex:idx];
 				if(eq && [eq count]) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
@@ -2022,7 +2024,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				idx = [SPChooseMenuItemDialog withItems:assignedKeyEquivalents atPosition:[NSEvent mouseLocation]];
 
 			if(idx > -1) {
-				NSArray *eq = [assignedKeyEquivalents objectAtIndex:idx];
+				NSDictionary *eq = [assignedKeyEquivalents objectAtIndex:idx];
 				if(eq && [eq count]) {
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
