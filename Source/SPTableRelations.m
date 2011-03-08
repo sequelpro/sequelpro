@@ -184,7 +184,7 @@
 
 	[result dataSeek:0];
 
-	for (NSInteger i = 0; i < [result numOfRows]; i++)
+	for (NSUInteger i = 0; i < [result numOfRows]; i++)
 	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
@@ -369,16 +369,16 @@
 	[headings release];
 
 	// Get the relation data
-	for (NSDictionary *relation in relationData)
+	for (NSDictionary *eachRelation in relationData)
 	{
 		NSMutableArray *temp = [[NSMutableArray alloc] init];
 
-		[temp addObject:[relation objectForKey:@"name"]];
-		[temp addObject:[relation objectForKey:@"columns"]];
-		[temp addObject:[relation objectForKey:@"fk_table"]];
-		[temp addObject:[relation objectForKey:@"fk_columns"]];
-		[temp addObject:([relation objectForKey:@"on_update"]) ? [relation objectForKey:@"on_update"] : @""];
-		[temp addObject:([relation objectForKey:@"on_delete"]) ? [relation objectForKey:@"on_delete"] : @""];
+		[temp addObject:[eachRelation objectForKey:@"name"]];
+		[temp addObject:[eachRelation objectForKey:@"columns"]];
+		[temp addObject:[eachRelation objectForKey:@"fk_table"]];
+		[temp addObject:[eachRelation objectForKey:@"fk_columns"]];
+		[temp addObject:([eachRelation objectForKey:@"on_update"]) ? [eachRelation objectForKey:@"on_update"] : @""];
+		[temp addObject:([eachRelation objectForKey:@"on_delete"]) ? [eachRelation objectForKey:@"on_delete"] : @""];
 
 		[data addObject:temp];
 

@@ -96,7 +96,7 @@
 	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
 	NSMutableArray *filteredTableTypes;
-	NSInteger selectedTableType;
+	SPTableType selectedTableType;
 	NSString *selectedTableName;
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;
@@ -124,7 +124,6 @@
 
 // Additional methods
 - (void)setConnection:(MCPConnection *)theConnection;
-- (void)doPerformQueryService:(NSString *)query;
 - (void)setSelectionState:(NSDictionary *)selectionDetails;
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
@@ -134,7 +133,7 @@
 - (NSArray *)selectedTableItems;
 - (NSArray *)selectedTableTypes;
 - (NSString *)tableName;
-- (NSInteger)tableType;
+- (SPTableType)tableType;
 - (NSArray *)tables;
 - (NSArray *)tableTypes;
 - (NSArray *)allTableAndViewNames;
@@ -147,8 +146,6 @@
 - (NSString *)selectedDatabase;
 
 // Setters
-- (void)setContentRequiresReload:(BOOL)reload;
-- (void)setStatusRequiresReload:(BOOL)reload;
 - (BOOL)selectItemWithName:(NSString *)theName;
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 

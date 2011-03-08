@@ -66,7 +66,7 @@
 /**
  * Returns the currently selected table type, or -1 if no table or multiple tables are selected
  */
-- (NSInteger)tableType
+- (SPTableType)tableType
 {
 	return selectedTableType;
 }

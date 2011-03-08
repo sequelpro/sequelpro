@@ -29,6 +29,7 @@
 #import "SPTablesList.h"
 #import "SPFileHandle.h"
 #import "SPExportUtilities.h"
+#import "SPExportFile.h"
 #import "SPTableData.h"
 
 @interface SPSQLExporter (PrivateAPI)
@@ -294,7 +295,7 @@
 			
 			if ([connection queryErrored] || ![rowArray count]) {
 				[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
-				[[self exportOutputFileHandle] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				continue;
 			}
@@ -329,7 +330,7 @@
 				// Inform the delegate that we are about to start writing the data to disk
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 				
-				while (row = [streamingResult fetchNextRowAsArray]) 
+				while ((row = [streamingResult fetchNextRowAsArray])) 
 				{
 					// Check for cancellation flag
 					if ([self isCancelled]) {
@@ -348,7 +349,7 @@
 					[sqlString setString:@""];
 											
 					// Update the progress 
-					NSUInteger progress = (j * ([self exportMaxProgress] / rowCount));
+					NSUInteger progress = (NSUInteger)(j * ([self exportMaxProgress] / rowCount));
 					
 					if (progress > lastProgressValue) {
 						[self setExportProgressValue:progress];
@@ -773,7 +774,7 @@
  */
 - (NSString *)_createViewPlaceholderSyntaxForView:(NSString *)viewName
 {
-	NSInteger i, j;
+	NSUInteger i, j;
 	NSMutableString *placeholderSyntax;
 	
 	// Get structured information for the view via the SPTableData parsers

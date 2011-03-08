@@ -30,7 +30,7 @@
 
 // Getters
 - (NSString *)table;
-- (NSInteger)tableType;
+- (SPTableType)tableType;
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;

@@ -41,7 +41,7 @@
  */
 - (id) init
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		history = [[NSMutableArray alloc] init];
 		tableContentStates = [[NSMutableDictionary alloc] init];
 		historyPosition = NSNotFound;
@@ -109,7 +109,7 @@
 	}
 	if (forwardEnabled) {
 		navMenu = [[NSMenu alloc] init];
-		for (i = historyPosition + 1; i < [history count]; i++) {
+		for (i = historyPosition + 1; i < (NSInteger)[history count]; i++) {
 			[navMenu addItem:[self menuEntryForHistoryEntryAtIndex:i]];
 		}
 		[historyControl setMenu:navMenu forSegment:1];
@@ -303,7 +303,7 @@
 		// creating a new entry every time detail is changed.
 		if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
 			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] integerValue] != theView
+			&& ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] != theView
 				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && !contentFilter)
 					|| (![currentHistoryEntry objectForKey:@"contentFilter"]
 						&& ![(NSString *)[contentFilter objectForKey:@"filterValue"] length]
@@ -317,7 +317,7 @@
 		// position details on the *previous* history item
 		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
 			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] integerValue] == theView
+			&& ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] == theView
 				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && contentFilter)
 					|| ![[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
 		{
@@ -338,7 +338,7 @@
 	NSMutableDictionary *newEntry = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 										theDatabase, @"database",
 										theTable, @"table",
-										[NSNumber numberWithInteger:theView], @"view",
+										[NSNumber numberWithUnsignedInteger:theView], @"view",
 										[NSNumber numberWithBool:contentSortColIsAsc], @"contentSortColIsAsc",
 										[NSNumber numberWithInteger:contentPageNumber], @"contentPageNumber",
 										[NSValue valueWithRect:contentViewport], @"contentViewport",
@@ -367,7 +367,7 @@
 {
 
 	// Sanity check the input
-	if (position == NSNotFound || position < 0 || position >= [history count]) {
+	if (position == NSNotFound || position >= [history count]) {
 		NSBeep();
 		return;
 	}
@@ -404,7 +404,8 @@
 	// If the database, table, and view are the same and content - just trigger a table reload (filters)
 	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
 		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] integerValue] == [self currentlySelectedView] == SPTableViewContent)
+		&& [[historyEntry objectForKey:@"view"] unsignedIntegerValue] == [self currentlySelectedView]
+		&& [[historyEntry objectForKey:@"view"] unsignedIntegerValue] == SPTableViewContent)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingState = NO;
@@ -433,7 +434,7 @@
 	}
 
 	// Check and set the view
-	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] unsignedIntegerValue]) {
 		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
 			case SPTableViewStructure:
 				[theDocument viewStructure:self];
@@ -454,7 +455,7 @@
 				[theDocument viewTriggers:self];
 				break;
 		}
-		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] unsignedIntegerValue]) {
 			return [self abortEntryLoadWithPool:loadPool];
 		}
 	}

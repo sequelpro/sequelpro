@@ -25,7 +25,7 @@
 
 #import "SPFavoriteTextFieldCell.h"
 
-#define FAVORITE_NAME_FONT_SIZE 12.0
+#define FAVORITE_NAME_FONT_SIZE 12.0f
 
 @interface SPFavoriteTextFieldCell (PrivateAPI)
 
@@ -115,21 +115,21 @@
 	NSAttributedString *mainString = [self attributedStringForFavoriteName];
 	NSAttributedString *subString = [self constructSubStringAttributedString];
 	
-	NSRect subFrame = NSMakeRect(0.0, 0.0, [subString size].width, [subString size].height);
+	NSRect subFrame = NSMakeRect(0.0f, 0.0f, [subString size].width, [subString size].height);
 	
 	// Total height of both strings with a 2 pixel separation space
-	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0;
+	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0f;
 	
-	cellFrame.origin.y += (cellFrame.size.height - totalHeight) / 2.0;
-	cellFrame.origin.x += 10.0; // Indent main string from image
+	cellFrame.origin.y += (cellFrame.size.height - totalHeight) / 2.0f;
+	cellFrame.origin.x += 10.0f; // Indent main string from image
 	
 	// Position the sub text's frame rect
-	subFrame.origin.y = [mainString size].height + cellFrame.origin.y + 1.0;
+	subFrame.origin.y = [mainString size].height + cellFrame.origin.y + 1.0f;
 	subFrame.origin.x = cellFrame.origin.x;
 	
 	cellFrame.size.height = totalHeight;
 	
-	NSInteger i;
+	NSUInteger i;
 	CGFloat maxWidth = cellFrame.size.width;
 	CGFloat mainStringWidth = [mainString size].width;
 	CGFloat subStringWidth = [subString size].width;
@@ -166,10 +166,10 @@
 	// 15 := indention 10 from image to string plus 5 px padding
 	CGFloat theWidth = MAX([mainString size].width, [subString size].width) + (([self image] != nil) ? [[self image] size].width : 0) + 15;
 
-	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0;
+	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0f;
 
 	cellSize.width = theWidth;
-	cellSize.height = totalHeight + 13.0;
+	cellSize.height = totalHeight + 13.0f;
 	return cellSize;
 }
 

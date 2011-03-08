@@ -38,7 +38,7 @@
 
 	IBOutlet id importView;
 	IBOutlet id importTabView;
-	IBOutlet id importFieldNamesSwitch;
+	IBOutlet NSButton *importFieldNamesSwitch;
 	IBOutlet id importFieldsTerminatedField;
 	IBOutlet id importFieldsEnclosedField;
 	IBOutlet id importFieldsEscapedField;
@@ -117,12 +117,15 @@
 
 // Import methods
 - (void)importFile;
+- (void)importFileSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)importFromClipboard;
+- (void)importFromClipboardSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (void)importSQLFile:(NSString *)filename;
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
 - (BOOL)buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
+- (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (NSString *)mappedValueStringForRowArray:(NSArray *)csvRowArray;
 - (NSString *)mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;
 

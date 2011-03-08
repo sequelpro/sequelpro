@@ -25,13 +25,16 @@
 
 #import "SPTableStructure.h"
 #import "SPDatabaseDocument.h"
+#import "SPDatabaseViewController.h"
 #import "SPTableInfo.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
+#import "SPDatabaseData.h"
 #import "SPSQLParser.h"
 #import "SPAlertSheets.h"
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
+#import "SPTableFieldValidation.h"
 
 @interface SPTableStructure (PrivateAPI)
 
@@ -279,7 +282,7 @@
 			}
 			selectedIndex++; // due to leading @"" in popup list
 		}
-		[theField setObject:[NSNumber numberWithInt:selectedIndex] forKey:@"encoding"];
+		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"encoding"];
 		selectedIndex = 0;
 		if([fieldEncoding length] && [theField objectForKey:@"collation"]) {
 			NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
@@ -294,7 +297,7 @@
 			}
 			selectedIndex++; // due to leading @"" in popup list
 		}
-		[theField setObject:[NSNumber numberWithInt:selectedIndex] forKey:@"collation"];
+		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"collation"];
 
 		NSString *type = [[theField objectForKey:@"type"] uppercaseString];
 
@@ -530,7 +533,7 @@
 
 		if([[col identifier] isEqualToString:columnIdentifierName]) {
 			[col setHidden:([sender state] == NSOffState) ? NO : YES];
-			[sender setState:![sender state]];
+			[(NSMenuItem *)sender setState:![sender state]];
 			break;
 		}
 
@@ -582,9 +585,9 @@
 	// Check whether a save of the current row is required.
 	if (![self saveRowOnDeselect]) return;
 
-	NSInteger index = [tableSourceView selectedRow];
+	NSInteger anIndex = [tableSourceView selectedRow];
 
-	if ((index == -1) || (index > ([tableFields count] - 1))) return;
+	if ((anIndex == -1) || (anIndex > (NSInteger)([tableFields count] - 1))) return;
 
 	// Check if the user tries to delete the last defined field in table
 	// Note that because of better menu item validation, this check will now never evaluate to true.
@@ -601,7 +604,7 @@
 
 	}
 
-	NSString *field = [[tableFields objectAtIndex:index] objectForKey:@"name"];
+	NSString *field = [[tableFields objectAtIndex:anIndex] objectForKey:@"name"];
 
 	BOOL hasForeignKey = NO;
 	NSString *referencedTable = @"";
@@ -689,7 +692,7 @@
 	if (returnCode == NSAlertDefaultReturn) {
 		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
 
-		NSNumber *removeKey = [NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]];
+		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]];
 
 		if ([NSThread isMainThread]) {
 			[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
@@ -798,11 +801,11 @@
  */
 - (NSArray *)fetchResultAsArray:(MCPResult *)theResult
 {
-	NSUInteger numOfRows = [theResult numOfRows];
+	NSUInteger numOfRows = (NSUInteger)[theResult numOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
-	NSInteger i;
+	NSUInteger i;
 	id prefsNullValue = [prefs objectForKey:SPNullValue];
 
 	// Ensure table information is returned as strings to avoid problems with some server versions
@@ -922,7 +925,7 @@
 				[queryString appendString:@"\n DEFAULT NULL "];
 			}
 		}
-		else if (![[theRow objectForKey:@"default"] length]) {
+		else if (![(NSString *)[theRow objectForKey:@"default"] length]) {
 			;
 		}
 		// Otherwise, use the provided default
@@ -1003,12 +1006,12 @@
 			}
 			// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
 			// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
-			else if ([[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
+			else if ([(NSString *)[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
 				[queryString appendFormat:@"\n DEFAULT %@", [theRow objectForKey:@"default"]];
 			}
 			// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages;
 			// also don't specify a default for TEXT/BLOB or geometry fields to avoid strict mode errors
-			else if (![[theRow objectForKey:@"default"] length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType] || [theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType])) {
+			else if (![(NSString *)[theRow objectForKey:@"default"] length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType] || [theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType])) {
 				;
 			}
 			// Otherwise, use the provided default
@@ -1023,14 +1026,14 @@
 	}
 
 	// Any column comments
-	if ([[theRow objectForKey:@"comment"] length]) {
+	if ([(NSString *)[theRow objectForKey:@"comment"] length]) {
 		[queryString appendFormat:@"\n COMMENT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"comment"]]];
 	}
 
 	if (!isEditingNewRow) {
 
 		// Unparsed details - column formats, storage, reference definitions
-		if ([[theRow objectForKey:@"unparsed"] length]) {
+		if ([(NSString *)[theRow objectForKey:@"unparsed"] length]) {
 			[queryString appendFormat:@"\n %@", [theRow objectForKey:@"unparsed"]];
 		}
 	}
@@ -1048,16 +1051,16 @@
 				// UNSIGNED keyword.
 				NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
 				
-				NSInteger index = (range.location + range.length);
+				NSInteger insertionIndex = (range.location + range.length);
 				
 				// If the field definition's data type includes the length then we must take this into
 				// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the
 				// parentheses used.
 				if (fieldDefIncludesLen) {
-					index += ([[theRow objectForKey:@"length"] length] + 2); 
+					insertionIndex += ([(NSString *)[theRow objectForKey:@"length"] length] + 2); 
 				}
 				
-				[queryString insertString:@" UNSIGNED" atIndex:index];
+				[queryString insertString:@" UNSIGNED" atIndex:insertionIndex];
 			}
 							
 			// Add AFTER ... only if the user added a new field
@@ -1099,7 +1102,7 @@
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInt:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}
@@ -1353,7 +1356,7 @@
  */
 - (NSDictionary *)tableSourceForPrinting
 {
-	NSInteger i, j;
+	NSUInteger i, j;
 	NSMutableArray *tempResult  = [NSMutableArray array];
 	NSMutableArray *tempResult2 = [NSMutableArray array];
 
@@ -1397,22 +1400,22 @@
 	}
 
 	for (i = 0; i < [indexesQueryResult numOfRows]; i++) {
-		NSMutableArray *index = [[indexesQueryResult fetchRowAsArray] mutableCopy];
+		NSMutableArray *eachIndex = [[indexesQueryResult fetchRowAsArray] mutableCopy];
 
 		// Remove the 'table' column values
-		[index removeObjectAtIndex:0];
+		[eachIndex removeObjectAtIndex:0];
 
 		// For every NULL value replace it with the user's NULL value placeholder so we can actually print it
-		for (j = 0; j < [index count]; j++)
+		for (j = 0; j < [eachIndex count]; j++)
 		{
-			if ([[index objectAtIndex:j] isNSNull]) {
-				[index replaceObjectAtIndex:j withObject:(NSString *)escapedNullValue];
+			if ([[eachIndex objectAtIndex:j] isNSNull]) {
+				[eachIndex replaceObjectAtIndex:j withObject:(NSString *)escapedNullValue];
 			}
 		}
 
-		[tempResult2 addObject:index];
+		[tempResult2 addObject:eachIndex];
 
-		[index release];
+		[eachIndex release];
 	}
 
 	CFRelease(escapedNullValue);

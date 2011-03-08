@@ -208,7 +208,7 @@ static CGFloat slow_in_out (CGFloat t)
 	[webPreferences setJavaScriptEnabled:YES];
 
 	NSString *fontName = ([displayOptions objectForKey:@"fontname"]) ? [displayOptions objectForKey:@"fontname"] : @"Lucida Grande";
-	NSInteger fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] integerValue] : 10;
+	int fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] integerValue] : 10;
 	if(fontSize < 5) fontSize = 5;
 	
 	NSFont* font = [NSFont fontWithName:fontName size:fontSize];

@@ -40,7 +40,7 @@
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface SPDatabaseDocument : NSObject <NSUserInterfaceValidations, SPConnectionControllerDelegateProtocol>
+@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol>
 {
 	// IBOutlets
 	IBOutlet id tablesListInstance;
@@ -121,12 +121,12 @@
 	IBOutlet NSWindow *connectionErrorDialog;
 
 	IBOutlet id saveConnectionAccessory;
-	IBOutlet id saveConnectionIncludeData;
-	IBOutlet id saveConnectionIncludeQuery;
-	IBOutlet id saveConnectionSavePassword;
+	IBOutlet NSButton *saveConnectionIncludeData;
+	IBOutlet NSButton *saveConnectionIncludeQuery;
+	IBOutlet NSButton *saveConnectionSavePassword;
 	IBOutlet id saveConnectionSavePasswordAlert;
-	IBOutlet id saveConnectionEncrypt;
-	IBOutlet id saveConnectionAutoConnect;
+	IBOutlet NSButton *saveConnectionEncrypt;
+	IBOutlet NSButton *saveConnectionAutoConnect;
 	IBOutlet NSSecureTextField *saveConnectionEncryptString;
 	
 	IBOutlet id inputTextWindow;
@@ -145,7 +145,7 @@
 	NSInteger currentTabIndex;
 
 	NSString *selectedTableName;
-	NSInteger selectedTableType;
+	SPTableType selectedTableType;
 
 	BOOL structureLoaded;
 	BOOL contentLoaded;
@@ -303,6 +303,7 @@
 - (IBAction)closePasswordSheet:(id)sender;
 - (IBAction)backForwardInHistory:(id)sender;
 - (IBAction)showUserManager:(id)sender;
+- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context;
 - (IBAction)copyChecksumFromSheet:(id)sender;
 - (void)setIsSavedInBundle:(BOOL)savedInBundle;
 - (void)setFileURL:(NSURL *)fileURL;
@@ -366,7 +367,6 @@
 - (NSWindow *)parentWindow;
 
 // Scripting
-- (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike;
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
 - (void)registerActivity:(NSDictionary*)commandDict;
 - (void)removeRegisteredActivity:(NSInteger)pid;
@@ -378,5 +378,6 @@
 - (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
 - (void)setStateFromConnectionFile:(NSString *)path;
+- (void)restoreSession;
 
 @end

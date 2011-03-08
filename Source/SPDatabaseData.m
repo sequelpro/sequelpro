@@ -317,7 +317,7 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if (![connection queryErrored]) {
 		[result dataSeek:0];
 
-		for (NSInteger i = 0; i < [result numOfRows]; i++)
+		for (NSUInteger i = 0; i < [result numOfRows]; i++)
 		{
 			[array addObject:[result fetchRowAsDictionary]];
 		}

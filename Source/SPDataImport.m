@@ -25,6 +25,7 @@
 
 #import "SPDataImport.h"
 #import "SPDatabaseDocument.h"
+#import "SPDatabaseViewController.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPTableContent.h"
@@ -176,7 +177,7 @@
 {
 
 	// clipboard textview with no wrapping
-	const CGFloat LargeNumberForText = 1.0e7;
+	const CGFloat LargeNumberForText = 1.0e7f;
 	[[importFromClipboardTextView textContainer] setContainerSize:NSMakeSize(LargeNumberForText, LargeNumberForText)];
 	[[importFromClipboardTextView textContainer] setWidthTracksTextView:NO];
 	[[importFromClipboardTextView textContainer] setHeightTracksTextView:NO];
@@ -387,7 +388,7 @@
 	fileIsCompressed = [sqlFileHandle isCompressed];
 
 	// Grab the file length
-	fileTotalLength = [[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
+	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
 
 	// If importing a bzipped file, use indeterminate progress bars as no progress is available
@@ -543,7 +544,7 @@
 		}
 
 		// Extract and process any complete SQL queries that can be found in the strings parsed so far
-		while (query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO]) {
+		while ((query = [sqlParser trimAndReturnStringToCharacter:';' trimmingInclusively:YES returningInclusively:NO])) {
 			if (progressCancelled) break;
 			fileProcessedLength += [query lengthOfBytesUsingEncoding:sqlEncoding] + 1;
 
@@ -708,14 +709,14 @@
 	NSMutableArray *parsePositions = [[NSMutableArray alloc] init];
 	NSArray *csvRowArray;
 	NSInteger fileChunkMaxLength = 256 * 1024;
-	NSInteger csvRowsPerQuery = 50;
+	NSUInteger csvRowsPerQuery = 50;
 	NSUInteger csvRowsThisQuery;
 	NSUInteger fileTotalLength = 0;
 	NSInteger rowsImported = 0;
 	NSInteger dataBufferLength = 0;
 	NSInteger dataBufferPosition = 0;
 	NSInteger dataBufferLastQueryEndPosition = 0;
-	NSInteger i;
+	NSUInteger i;
 	BOOL allDataRead = NO;
 	BOOL insertBaseStringHasEntries;
 	
@@ -746,7 +747,7 @@
 	}
 
 	// Grab the file length
-	fileTotalLength = [[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
+	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
 
 	// Reset progress interface
@@ -1336,7 +1337,7 @@
 							[globalVar flushCachedRegexData];
 							NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
 							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
-							if(colIndex > 0 && colIndex <= [csvRowArray count]) {
+							if (colIndex > 0 && colIndex <= (NSInteger)[csvRowArray count]) {
 								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
 								if(colStr == [NSNull null])
 									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
@@ -1388,7 +1389,7 @@
 							[globalVar flushCachedRegexData];
 							NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
 							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
-							if(colIndex > 0 && colIndex <= [csvRowArray count]) {
+							if(colIndex > 0 && colIndex <= (NSInteger)[csvRowArray count]) {
 								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
 								if(colStr == [NSNull null])
 									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
@@ -1462,7 +1463,7 @@
 						[globalVar flushCachedRegexData];
 						NSRange aRange = [globalVar rangeOfRegex:re capture:0L];
 						NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
-						if(colIndex > 0 && colIndex <= [csvRowArray count]) {
+						if(colIndex > 0 && colIndex <= (NSInteger)[csvRowArray count]) {
 							id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
 							if(colStr == [NSNull null])
 								[globalVar replaceCharactersInRange:aRange withString:@"NULL"];

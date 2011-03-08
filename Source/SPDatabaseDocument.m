@@ -60,6 +60,8 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
 #import "SPWindowController.h"
+#import "SPFileHandle.h"
+#import "SPFavoritesPreferencePane.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 
@@ -236,16 +238,16 @@
 	// Set up the progress indicator child window and layer - change indicator color and size
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
-	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0, -1.0)];
-	[progressIndicatorShadow setShadowBlurRadius:1.0];
-	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.75]];
+	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
+	[progressIndicatorShadow setShadowBlurRadius:1.0f];
+	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
 	[taskProgressIndicator setShadow:progressIndicatorShadow];
 	[progressIndicatorShadow release];
 	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
 	[taskProgressWindow setReleasedWhenClosed:NO];
 	[taskProgressWindow setOpaque:NO];
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
-	[taskProgressWindow setAlphaValue:0.0];
+	[taskProgressWindow setAlphaValue:0.0f];
 	[taskProgressWindow setContentView:taskProgressLayer];
 
 	[contentViewSplitter setDelegate:self];
@@ -429,7 +431,7 @@
 		}
 	}
 
-	(void *)[self databaseEncoding];
+	(void)[self databaseEncoding];
 }
 
 /**
@@ -475,11 +477,11 @@
 	if (allDatabases) [allDatabases release];
 	if (allSystemDatabases) [allSystemDatabases release];
 	
-	allDatabases = [[NSMutableArray alloc] initWithCapacity:[queryResult numOfRows]];
+	allDatabases = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)[queryResult numOfRows]];
 
 	allSystemDatabases = [[NSMutableArray alloc] initWithCapacity:2];
 	
-	for (NSInteger i = 0 ; i < [queryResult numOfRows] ; i++)
+	for (NSUInteger i = 0 ; i < [queryResult numOfRows] ; i++)
 	{
 		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
 		
@@ -828,7 +830,7 @@
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if (![mySQLConnection queryErrored]) {
 		NSInteger i;
-		NSInteger r = [theResult numOfRows];
+		NSInteger r = (NSInteger)[theResult numOfRows];
 		if (r) [theResult dataSeek:0];
 		for ( i = 0 ; i < r ; i++ ) {
 			dbName = NSArrayObjectAtIndex([theResult fetchRowAsArray], 0);
@@ -1003,7 +1005,7 @@
  */
 - (void) fadeInTaskProgressWindow:(NSTimer *)theTimer
 {
-	float timeSinceFadeInStart = [[NSDate date] timeIntervalSinceDate:taskFadeInStartDate];
+	double timeSinceFadeInStart = [[NSDate date] timeIntervalSinceDate:taskFadeInStartDate];
 
 	// Keep the window hidden for the first ~0.5 secs
 	if (timeSinceFadeInStart < 0.5) return;
@@ -1014,8 +1016,8 @@
 	if (alphaValue == 0) [self centerTaskWindow];
 
 	// Fade in the task window over 0.6 seconds
-	alphaValue = (timeSinceFadeInStart - 0.5) / 0.6;
-	if (alphaValue > 1.0) alphaValue = 1.0;
+	alphaValue = (float)(timeSinceFadeInStart - 0.5) / 0.6f;
+	if (alphaValue > 1.0f) alphaValue = 1.0f;
 	[taskProgressWindow setAlphaValue:alphaValue];
 
 	// If the window has been fully faded in, clean up the timer.
@@ -1031,14 +1033,14 @@
  */
 - (void) setTaskDescription:(NSString *)description
 {
-	NSShadow *shadow = [[NSShadow alloc] init];
-	[shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.75]];
-	[shadow setShadowOffset:NSMakeSize(1.0, -1.0)];
-	[shadow setShadowBlurRadius:3.0];
+	NSShadow *textShadow = [[NSShadow alloc] init];
+	[textShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
+	[textShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
+	[textShadow setShadowBlurRadius:3.0f];
 
 	NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-													[NSFont boldSystemFontOfSize:13.0], NSFontAttributeName,
-													shadow, NSShadowAttributeName,
+													[NSFont boldSystemFontOfSize:13.0f], NSFontAttributeName,
+													textShadow, NSShadowAttributeName,
 													nil];
 	NSAttributedString *string = [[NSAttributedString alloc] initWithString:description attributes:attributes];
 
@@ -1046,7 +1048,7 @@
 
 	[string release];
 	[attributes release];
-	[shadow release];
+	[textShadow release];
 }
 
 /**
@@ -1129,7 +1131,7 @@
 
 		// Hide the task interface and reset to indeterminate
 		if (taskDisplayIsIndeterminate) [taskProgressIndicator stopAnimation:self];
-		[taskProgressWindow setAlphaValue:0.0];
+		[taskProgressWindow setAlphaValue:0.0f];
 		taskDisplayIsIndeterminate = YES;
 		[taskProgressIndicator setIndeterminate:YES];
 
@@ -1224,8 +1226,8 @@
 	NSRect mainWindowRect = [parentWindow frame];
 	NSRect taskWindowRect = [taskProgressWindow frame];
 
-	newBottomLeftPoint.x = round(mainWindowRect.origin.x + mainWindowRect.size.width/2 - taskWindowRect.size.width/2);
-	newBottomLeftPoint.y = round(mainWindowRect.origin.y + mainWindowRect.size.height/2 - taskWindowRect.size.height/2);
+	newBottomLeftPoint.x = roundf(mainWindowRect.origin.x + mainWindowRect.size.width/2 - taskWindowRect.size.width/2);
+	newBottomLeftPoint.y = roundf(mainWindowRect.origin.y + mainWindowRect.size.height/2 - taskWindowRect.size.height/2);
 
 	[taskProgressWindow setFrameOrigin:newBottomLeftPoint];
 }
@@ -1407,7 +1409,7 @@
  */
 - (IBAction)chooseEncoding:(id)sender
 {
-	[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:[NSNumber numberWithInt:[(NSMenuItem *)sender tag]]] reloadingViews:YES];
+	[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:[NSNumber numberWithInteger:[(NSMenuItem *)sender tag]]] reloadingViews:YES];
 }
 
 /**
@@ -1435,7 +1437,7 @@
 	NSIndexSet *indexes = [[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes];
 
 	NSUInteger currentIndex = [indexes firstIndex];
-	NSInteger counter = 0;
+	NSUInteger counter = 0;
 	NSInteger type;
 
 	NSArray *types = [tablesListInstance selectedTableTypes];
@@ -2794,11 +2796,11 @@
 				return;
 			}
 
-			NSError *error = nil;
+			error = nil;
 			
 			[plist writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName] options:NSAtomicWrite error:&error];
 			
-			if(error != nil){
+			if (error != nil){
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
 				[errorAlert runModal];
 				
@@ -2875,7 +2877,7 @@
 				@"saveDocPrefSheetStatus",
 				[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")],
 				[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]],
-				saveDocPrefSheetStatus
+				&saveDocPrefSheetStatus
 			);
 
 			if (spf) [spf release];
@@ -3137,9 +3139,9 @@
 			}
 		} 
 		else {
-			for (NSNumber *type in [tablesListInstance selectedTableTypes]) 
+			for (NSNumber *eachType in [tablesListInstance selectedTableTypes]) 
 			{
-				if ([type intValue] == SPTableTypeTable || [type intValue] == SPTableTypeView) return enable;
+				if ([eachType intValue] == SPTableTypeTable || [eachType intValue] == SPTableTypeView) return enable;
 			}
 			
 			return (enable && (tag == SPSQLExport));
@@ -3327,11 +3329,11 @@
 	}
 	
 	if ([connectionController isConnecting]) {
-		windowTitle = NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting");
+		windowTitle = [NSMutableString stringWithString:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
 		tabTitle = windowTitle;
 	}
 	else if (!_isConnected) {
-		windowTitle = [NSString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
+		windowTitle = [NSMutableString stringWithFormat:@"%@%@", pathName, @"Sequel Pro"];
 		tabTitle = windowTitle;
 	} 
 	else {
@@ -4253,6 +4255,8 @@
 	if ([stateDetails objectForKey:@"auto_connect"] && [[stateDetails valueForKey:@"auto_connect"] boolValue]) {
 		[connectionController initiateConnection:self];
 	}
+
+	return YES;
 }
 
 /**
@@ -4706,7 +4710,7 @@
 
 	if([command isEqualToString:@"SelectTableRows"]) {
 		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
-			[[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
+			[(SPCopyTable *)[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
 		}
 		return;
 	}
@@ -4780,7 +4784,7 @@
 
 				NSInteger itemType = SPTableTypeNone;
 				NSString *itemTypeStr = @"TABLE";
-				NSInteger i;
+				NSUInteger i;
 				NSInteger queryCol = 1;
 
 				// Loop through the unfiltered tables/views to find the desired item
@@ -4846,7 +4850,7 @@
 						return;
 					}
 					if(doSyntaxHighlighting) {
-						[result appendFormat:@"%@<br>", [self doSQLSyntaxHighlightForString:[syntaxString createViewSyntaxPrettifier] cssLike:doSyntaxHighlightingViaCSS]];
+						[result appendFormat:@"%@<br>", [[NSApp delegate] doSQLSyntaxHighlightForString:[syntaxString createViewSyntaxPrettifier] cssLike:doSyntaxHighlightingViaCSS]];
 					} else {
 						[result appendFormat:@"%@\n", [syntaxString createViewSyntaxPrettifier]];
 					}
@@ -4946,7 +4950,7 @@
 					}
 
 					// write data
-					NSInteger i, j;
+					NSUInteger i, j;
 					NSArray *theRow;
 					NSMutableString *result = [NSMutableString string];
 					if(writeAsCsv) {
@@ -5277,7 +5281,7 @@
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(statusTableView && aTableView == statusTableView && rowIndex < [statusValues count]) {
+	if (statusTableView && aTableView == statusTableView && rowIndex < (NSInteger)[statusValues count]) {
 		if ([[aTableColumn identifier] isEqualToString:@"table_name"]) {
 			if([[statusValues objectAtIndex:rowIndex] objectForKey:@"table_name"])
 				return [[statusValues objectAtIndex:rowIndex] objectForKey:@"table_name"];
@@ -5483,7 +5487,7 @@
 	
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
 	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromEncodingTag:[databaseEncodingButton tag]] backtickQuotedString]];
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromEncodingTag:[NSNumber numberWithInteger:[databaseEncodingButton tag]]] backtickQuotedString]];
 	}
 	
 	// Create the database
@@ -5649,7 +5653,7 @@
 
 		// For HTML output check if corresponding window already exists
 		BOOL stopTrigger = NO;
-		if([[data objectAtIndex:2] length]) {
+		if ([(NSString *)[data objectAtIndex:2] length]) {
 			BOOL correspondingWindowFound = NO;
 			NSString *uuid = [data objectAtIndex:2];
 			for(id win in [NSApp windows]) {
