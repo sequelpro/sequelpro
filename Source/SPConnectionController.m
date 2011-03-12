@@ -617,7 +617,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	}
 	
-	[prefs setInteger:([favoritesOutlineView selectedRow] - 1) forKey:SPLastFavoriteID];
+	[prefs setInteger:[[fav objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
 	
 	// Set first responder to password field if it is empty
 	switch ([self type]) 
