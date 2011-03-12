@@ -26,8 +26,8 @@
 #import "SPPreferencesUpgrade.h"
 #import "SPKeychain.h"
 
-static const NSString *SPOldFavoritesKey       = @"favorites";
-static const NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
+static NSString *SPOldFavoritesKey       = @"favorites";
+static NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
 
 @implementation SPPreferencesUpgrade
 
