@@ -184,7 +184,6 @@
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
 
 @property (readonly, assign) BOOL isConnecting;
-@property (readonly, assign) NSString *favoritesPBoardType;
 
 - (id)initWithDocument:(SPDatabaseDocument *)document;
 
@@ -204,7 +203,7 @@
 
 // Favorites interaction
 - (void)updateFavoriteSelection:(id)sender;
-- (NSMutableDictionary *)selectedFavorite;
+- (NSDictionary *)selectedFavorite;
 - (SPTreeNode *)selectedFavoriteNode;
 - (NSArray *)selectedFavoriteNodes;
 

@@ -40,10 +40,10 @@
 #import "SPTreeNode.h"
 
 // Constants
-static const NSString *SPRemoveNode              = @"RemoveNode";
-static const NSString *SPImportFavorites         = @"ImportFavorites";
-static const NSString *SPExportFavorites         = @"ExportFavorites";
-static const NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
+static NSString *SPRemoveNode              = @"RemoveNode";
+static NSString *SPImportFavorites         = @"ImportFavorites";
+static NSString *SPExportFavorites         = @"ExportFavorites";
+static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
 @interface SPConnectionController (PrivateAPI)
 
@@ -637,7 +637,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 /**
  * Returns the selected favorite data dictionary or nil if nothing is selected.
  */
-- (NSMutableDictionary *)selectedFavorite
+- (NSDictionary *)selectedFavorite
 {
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
@@ -1202,10 +1202,10 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	// If this node only has one child and it's not another group node, don't bother proceeding
 	if (([nodes count] == 1) && (![[nodes objectAtIndex:0] isGroup])) return;
 	
-	for (SPTreeNode *node in nodes)
+	for (SPTreeNode *treeNode in nodes)
 	{
-		if ([node isGroup]) {
-			[self _sortTreeNode:node usingKey:key];
+		if ([treeNode isGroup]) {
+			[self _sortTreeNode:treeNode usingKey:key];
 		}
 	}
 	
