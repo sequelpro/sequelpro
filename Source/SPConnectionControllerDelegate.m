@@ -24,14 +24,27 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionControllerDelegate.h"
+#import "SPFavoritesController.h"
 #import "SPTableTextFieldCell.h"
+#import "SPPreferenceController.h"
+#import "SPGeneralPreferencePane.h"
+#import "SPAppController.h"
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
 
 #define CELL(cell) (SPTableTextFieldCell *)cell
 
-static const NSString *SPDatabaseImage = @"database-small";
+static NSString *SPDatabaseImage = @"database-small";
+
+@interface SPConnectionController (PrivateAPI)
+
+- (void)_checkHost;
+- (void)_favoriteTypeDidChange;
+- (void)_reloadFavoritesViewData;
+- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+
+@end
 
 @implementation SPConnectionController (SPConnectionControllerDelegate)
 
@@ -143,6 +156,17 @@ static const NSString *SPDatabaseImage = @"database-small";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {	
+	// If the user is in the process of changing a node's name, trigger a save and prevent dragging.
+	if (isEditing) {
+		[favoritesController saveFavorites];
+		
+		[self _reloadFavoritesViewData];
+		
+		isEditing = NO;
+		
+		return NO;
+	}
+	
 	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
 	[pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
 	
@@ -327,7 +351,7 @@ static const NSString *SPDatabaseImage = @"database-small";
 {
 	// Request a password refresh to keep keychain references in sync with favorites, but only if a favorite
 	// is selected, meaning we're editing an existing one, not a new one.
-	if ((control != favoritesOutlineView) && ([self selectedFavoriteNode])) {
+	if (((id)control != (id)favoritesOutlineView) && ([self selectedFavoriteNode])) {
 		[self _updateFavoritePasswordsFromField:control];
 	}
 	

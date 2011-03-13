@@ -29,6 +29,13 @@
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
 
+@interface SPConnectionController (PrivateAPI)
+
+- (void)_reloadFavoritesViewData;
+- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+
+@end
+
 @implementation SPConnectionController (SPConnectionControllerDataSource)
 
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item

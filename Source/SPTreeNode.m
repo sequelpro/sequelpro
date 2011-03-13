@@ -28,7 +28,7 @@
 #import "SPGroupNode.h"
 
 // Constants
-static const NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
+static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 
 @implementation SPTreeNode
 
@@ -65,7 +65,7 @@ static const NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 	for (SPTreeNode *node in [self childNodes])
 	{
 		if (node == object) {
-			[[self childNodes] removeObjectIdenticalTo:object];
+			[[self mutableChildNodes] removeObjectIdenticalTo:object];
 			return;
 		}
 		

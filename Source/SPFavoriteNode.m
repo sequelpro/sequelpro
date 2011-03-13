@@ -23,10 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPTreeNode.h"
 #import "SPFavoriteNode.h"
 
 // Constants
-static const NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
+static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 @implementation SPFavoriteNode
 
@@ -44,7 +45,7 @@ static const NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 	return self;
 }
 
-- (id)initWithDictionary:(NSDictionary *)dictionary
+- (id)initWithDictionary:(NSMutableDictionary *)dictionary
 {
 	if ((self = [self init])) {
 		[self setNodeFavorite:dictionary];
@@ -53,7 +54,7 @@ static const NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 	return self;
 }
 
-+ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSDictionary *)dictionary
++ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSMutableDictionary *)dictionary
 {
 	return [[[self alloc] initWithDictionary:dictionary] autorelease];
 }

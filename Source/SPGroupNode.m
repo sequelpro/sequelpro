@@ -26,7 +26,7 @@
 #import "SPGroupNode.h"
 
 // Constants
-static const NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
+static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 
 @implementation SPGroupNode
 

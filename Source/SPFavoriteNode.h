@@ -32,18 +32,16 @@
  */
 @interface SPFavoriteNode : NSObject <NSCopying, NSCoding>
 {	
-	NSDictionary *nodeFavorite;
+	NSMutableDictionary *nodeFavorite;
 }
 
 /**
  * @property nodeFavorite The actual favorite dictionary
  */
-@property (readwrite, retain) NSDictionary *nodeFavorite;
+@property (readwrite, retain) NSMutableDictionary *nodeFavorite;
 
-- (id)initWithDictionary:(NSDictionary *)dictionary;
+- (id)initWithDictionary:(NSMutableDictionary *)dictionary;
 
-+ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSDictionary *)dictionary;
-
-- (NSDictionary *)dictionaryRepresentation;
++ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSMutableDictionary *)dictionary;
 
 @end

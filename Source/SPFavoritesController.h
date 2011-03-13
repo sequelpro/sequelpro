@@ -60,7 +60,7 @@
 - (void)reloadFavoritesWithSave:(BOOL)save;
 
 - (SPTreeNode *)addGroupNodeWithName:(NSString *)name asChildOfNode:(SPTreeNode *)parent;
-- (SPTreeNode *)addFavoriteNodeWithData:(NSDictionary *)data asChildOfNode:(SPTreeNode *)parent;
+- (SPTreeNode *)addFavoriteNodeWithData:(NSMutableDictionary *)data asChildOfNode:(SPTreeNode *)parent;
 
 - (void)removeFavoriteNode:(SPTreeNode *)node;
 

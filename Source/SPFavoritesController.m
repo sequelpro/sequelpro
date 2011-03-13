@@ -25,6 +25,7 @@
 
 #import "SPFavoritesController.h"
 #import "SPFavoriteNode.h"
+#import "SPTreeNode.h"
 #import "SPGroupNode.h"
 #import "pthread.h"
 
@@ -154,7 +155,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
  *
  * @return The node instance that was created and added
  */
-- (SPTreeNode *)addFavoriteNodeWithData:(NSDictionary *)data asChildOfNode:(SPTreeNode *)parent
+- (SPTreeNode *)addFavoriteNodeWithData:(NSMutableDictionary *)data asChildOfNode:(SPTreeNode *)parent
 {
 	SPTreeNode *node = [SPTreeNode treeNodeWithRepresentedObject:[SPFavoriteNode favoriteNodeWithDictionary:data]];
 		
@@ -210,9 +211,9 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		favoritesData = [[NSDictionary alloc] initWithContentsOfFile:favoritesFile];
 	}
 	else {
-		NSDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [NSArray array], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
+		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [NSArray array], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
 		
-		NSError *error = nil;
+		error = nil;
 		NSString *errorString = nil;
 		
 		NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites

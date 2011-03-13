@@ -44,7 +44,7 @@
 
 @interface SPConnectionController : NSObject 
 {
-	id <SPConnectionControllerDelegateProtocol> delegate;
+	NSObject <SPConnectionControllerDelegateProtocol> *delegate;
 	
 	SPDatabaseDocument *dbDocument;
 	SPSSHTunnel *sshTunnel;
@@ -139,6 +139,7 @@
 	IBOutlet NSTextField *progressIndicatorText;
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
 	
+	BOOL isEditing;
 	BOOL isConnecting;
 	BOOL cancellingConnection;
     BOOL reverseFavoritesSort;
@@ -203,7 +204,7 @@
 
 // Favorites interaction
 - (void)updateFavoriteSelection:(id)sender;
-- (NSDictionary *)selectedFavorite;
+- (NSMutableDictionary *)selectedFavorite;
 - (SPTreeNode *)selectedFavoriteNode;
 - (NSArray *)selectedFavoriteNodes;
 

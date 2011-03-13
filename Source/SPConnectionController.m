@@ -118,9 +118,11 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		connectionSSHKeychainItemName = nil;
 		connectionSSHKeychainItemAccount = nil;
 		
+		isEditing = NO;
+		isConnecting = NO;
+		
 		sshTunnel = nil;
 		mySQLConnection = nil;
-		isConnecting = NO;
 		cancellingConnection = NO;
 		mySQLConnectionCancelled = NO;
 		
@@ -519,7 +521,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	// Perform sorting
 	[self _sortFavorites];
 	
-	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	if ((NSInteger)previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
 	
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
 }
@@ -637,7 +639,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 /**
  * Returns the selected favorite data dictionary or nil if nothing is selected.
  */
-- (NSDictionary *)selectedFavorite
+- (NSMutableDictionary *)selectedFavorite
 {
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
@@ -714,7 +716,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 				
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
-	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : [selectedNode parentNode];
+	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
 	
 	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:parent];
 	
@@ -722,7 +724,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
     [self _selectNode:node];
 	
     [[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
-	
+
 	favoriteNameFieldWasTouched = NO;
 		
 	[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
@@ -829,12 +831,14 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 {
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
-	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : [selectedNode parentNode];
+	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
 	
 	SPTreeNode *node = [favoritesController addGroupNodeWithName:NSLocalizedString(@"New Folder", @"new folder placeholder name") asChildOfNode:parent];
 	
 	[self _reloadFavoritesViewData];
 	[self _selectNode:node];
+	
+	isEditing = YES;
 	
 	[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
 }
@@ -928,7 +932,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		
 		SPTreeNode *selectedNode = [self selectedFavoriteNode];
 		
-		SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : [selectedNode parentNode];
+		SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
 		
 		SPTreeNode *node = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:parent];
 		
@@ -1322,7 +1326,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	
 	// Re-enable favorites table view
 	[favoritesOutlineView setEnabled:YES];
-	[favoritesOutlineView display];
+	[(NSView *)favoritesOutlineView display];
 	
 	mySQLConnectionCancelled = NO;
 	

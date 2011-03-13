@@ -24,7 +24,17 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionHandler.h"
+#import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
+#import "SPSSHTunnel.h"
+#import "SPKeychain.h"
+#import "RegexKitLite.h"
+
+@interface SPConnectionController (PrivateAPI)
+
+- (void)_restoreConnectionInterface;
+
+@end
 
 @implementation SPConnectionController (SPConnectionHandler)
 
@@ -80,8 +90,7 @@
 	if ([self useSSL]) {
 		[mySQLConnection setSSL:YES
 			   usingKeyFilePath:[self sslKeyFileLocationEnabled] ? [self sslKeyFileLocation] : nil
-				certificatePath:[self sslCertificateFileLocationEnabled] ? [self sslCertificateFileLocation] : nil
-certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self sslCACertFileLocation] : nil];
+				certificatePath:[self sslCertificateFileLocationEnabled] ? [self sslCertificateFileLocation] : nil certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self sslCACertFileLocation] : nil];
 	}
 	
 	// Connection delegate must be set before actual connection attempt is made
@@ -262,7 +271,7 @@ certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self 
 	
 	// Re-enable favorites table view
 	[favoritesOutlineView setEnabled:YES];
-	[favoritesOutlineView display];
+	[(NSView *)favoritesOutlineView display];
 	
 	// Release the tunnel if set - will now be retained by the connection
 	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
@@ -335,7 +344,7 @@ certificateAuthorityCertificatePath:[self sslCACertFileLocationEnabled] ? [self 
 	// Restore the toolbar icons
 	NSArray *toolbarItems = [[[dbDocument parentWindow] toolbar] items];
 	
-	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
+	for (NSUInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 	
 	if (connectionKeychainID) [dbDocument setKeychainID:connectionKeychainID];
 	
