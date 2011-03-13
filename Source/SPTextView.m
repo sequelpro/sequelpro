@@ -74,6 +74,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 
+NSInteger _alphabeticSort(id string1, id string2, void *reverse);
+
 // some helper functions for handling rectangles and points
 // needed in roundedBezierPathAroundRange:
 static inline CGFloat SPRectTop(NSRect rectangle) { return rectangle.origin.y; }
@@ -102,7 +104,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 /**
  * Sort function (mainly used to sort the words in the textView)
  */
-NSInteger alphabeticSort(id string1, id string2, void *reverse)
+NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 	return [string1 localizedCaseInsensitiveCompare:string2];
 }
@@ -284,7 +286,7 @@ NSInteger alphabeticSort(id string1, id string2, void *reverse)
 
 			NSInteger reverseSort = NO;
 
-			for(id w in [[uniqueArray allObjects] sortedArrayUsingFunction:alphabeticSort context:&reverseSort])
+			for(id w in [[uniqueArray allObjects] sortedArrayUsingFunction:_alphabeticSort context:&reverseSort])
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
 
 		}

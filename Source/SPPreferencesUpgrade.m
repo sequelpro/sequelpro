@@ -34,8 +34,8 @@
  */
 void SPApplyRevisionChanges(void)
 {
-	NSInteger i;
-	NSInteger currentVersionNumber, recordedVersionNumber = 0;
+	NSUInteger i;
+	NSUInteger currentVersionNumber, recordedVersionNumber = 0;
 	
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	
