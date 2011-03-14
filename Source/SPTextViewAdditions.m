@@ -27,6 +27,10 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPCustomQuery.h"
 #import "SPAppController.h"
+#import "SPFieldEditorController.h"
+#import "SPTextView.h"
+#import "SPWindowController.h"
+#import "SPDatabaseDocument.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -42,34 +46,33 @@
 	if (curRange.length)
         return curRange;
 	
-	NSInteger curLocation = curRange.location;
+	NSUInteger curLocation = curRange.location;
 	NSInteger start = curLocation;
-	NSInteger end = curLocation;
+	NSUInteger end = curLocation;
 	NSUInteger strLen = [[self string] length];
 
 	NSMutableCharacterSet *wordCharSet = [NSMutableCharacterSet alphanumericCharacterSet];
 	[wordCharSet addCharactersInString:@"_."];
 	[wordCharSet removeCharactersInString:@"`"];
 
-	if(start) {
+	if (start) {
 		start--;
-		while([wordCharSet characterIsMember:[[self string] characterAtIndex:start]]) {
+		while ([wordCharSet characterIsMember:[[self string] characterAtIndex:start]]) {
 			start--;
 			if(start < 0) break;
 		}
 		start++;
 	}
 
-	while(end < strLen && [wordCharSet characterIsMember:[[self string] characterAtIndex:end]]) {
+	while (end < strLen && [wordCharSet characterIsMember:[[self string] characterAtIndex:end]]) {
 		end++;
 	}
 
 	NSRange wordRange = NSMakeRange(start, end-start);
-	if(wordRange.length && [[self string] characterAtIndex:NSMaxRange(wordRange)-1] == '.')
+	if (wordRange.length && [[self string] characterAtIndex:NSMaxRange(wordRange)-1] == '.')
 		wordRange.length--;
 
-	return(wordRange);
-
+	return wordRange;
 }
 
 /*
@@ -109,10 +112,8 @@
 	NSInteger bcnt = 0;
 	NSInteger scnt = 0;
 
-	NSInteger i;
-
 	// look for the first non-balanced closing bracket
-	for(i=caretPosition; i<stringLength; i++) {
+	for(NSUInteger i=caretPosition; i<stringLength; i++) {
 		switch([[self string] characterAtIndex:i]) {
 			case ')': 
 			if(!pcnt) {
@@ -147,7 +148,7 @@
 	if([[self string] characterAtIndex:caretPosition] == co)
 		bracketCounter++;
 
-	for(i=caretPosition; i>=0; i--) {
+	for(NSInteger i=caretPosition; i>=0; i--) {
 		if([[self string] characterAtIndex:i] == co) {
 			if(!bracketCounter) {
 				start = i;
@@ -162,7 +163,7 @@
 	if(start < 0 ) return;
 
 	bracketCounter = 0;
-	for(i=caretPosition; i<stringLength; i++) {
+	for(NSUInteger i=caretPosition; i<stringLength; i++) {
 		if([[self string] characterAtIndex:i] == co) {
 			bracketCounter++;
 		}
@@ -390,12 +391,12 @@
 {
 
 	id prefs = [NSUserDefaults standardUserDefaults];
-	if([self respondsToSelector:@selector(insertText:)])
-		if([prefs objectForKey:SPNullValue] && [[prefs objectForKey:SPNullValue] length])
+	if ([self respondsToSelector:@selector(insertText:)]) {
+		if([prefs stringForKey:SPNullValue] && [[prefs stringForKey:SPNullValue] length])
 			[self insertText:[prefs objectForKey:SPNullValue]];
 		else
 			[self insertText:@"NULL"];
-
+	}
 }
 
 /**
@@ -487,7 +488,7 @@
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
-	if(idx >=0 && idx < [bundleItems count]) {
+	if(idx >=0 && idx < (NSInteger)[bundleItems count]) {
 		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
 		if([sender tag] == 0 && [[sender toolTip] length]) {
@@ -515,7 +516,7 @@
 		if (cmdData) [cmdData release];
 		return;
 	} else {
-		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
 
 			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 			NSString *inputAction = @"";
@@ -647,7 +648,7 @@
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 			NSString *action = SPBundleOutputActionNone;
-			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
 				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
 			// Redirect due exit code
@@ -724,7 +725,7 @@
 
 						else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
 							if([self respondsToSelector:@selector(insertAsSnippet:atRange:)])
-								[self insertAsSnippet:output atRange:replaceRange];
+								[(SPTextView *)self insertAsSnippet:output atRange:replaceRange];
 							else
 								[SPTooltip showWithObject:NSLocalizedString(@"Input Field doesn't support insertion of snippets.", @"input field  doesn't support insertion of snippets.")];
 						}

@@ -32,6 +32,13 @@
 #import "SPCopyTable.h"
 #include <objc/objc-runtime.h>
 
+@interface SPFieldEditorController (SPFieldEditorControllerDelegate)
+
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
+
+@end
+
+
 @implementation SPFieldEditorController
 
 @synthesize editedFieldInfo;
@@ -72,11 +79,11 @@
 
 		NSMenu *menu = [editSheetQuickLookButton menu];
 		[menu setAutoenablesItems:NO];
-		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Interpret data as:", @"Interpret data as:") action:NULL keyEquivalent:@""];
-		[item setTag:1];
-		[item setEnabled:NO];
-		[menu addItem:item];
-		[item release];
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Interpret data as:", @"Interpret data as:") action:NULL keyEquivalent:@""];
+		[menuItem setTag:1];
+		[menuItem setEnabled:NO];
+		[menu addItem:menuItem];
+		[menuItem release];
 		NSUInteger tag = 2;
 
 		// Load default QL types
@@ -94,11 +101,11 @@
 			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@\n%@", [readError localizedDescription], convError);
 		if(defaultQLTypes != nil && [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
 			for(id type in [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
-				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
-				[item setTag:tag];
-				[item setAction:@selector(quickLookFormatButton:)];
-				[menu addItem:item];
-				[item release];
+				NSMenuItem *aMenuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
+				[aMenuItem setTag:tag];
+				[aMenuItem setAction:@selector(quickLookFormatButton:)];
+				[menu addItem:aMenuItem];
+				[aMenuItem release];
 				tag++;
 				[qlTypesItems addObject:type];
 			}
@@ -106,11 +113,11 @@
 		// Load user-defined QL types
 		if([prefs objectForKey:SPQuickLookTypes]) {
 			for(id type in [prefs objectForKey:SPQuickLookTypes]) {
-				NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
-				[item setTag:tag];
-				[item setAction:@selector(quickLookFormatButton:)];
-				[menu addItem:item];
-				[item release];
+				NSMenuItem *aMenuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
+				[aMenuItem setTag:tag];
+				[aMenuItem setAction:@selector(quickLookFormatButton:)];
+				[menu addItem:aMenuItem];
+				[aMenuItem release];
 				tag++;
 				[qlTypesItems addObject:type];
 			}
@@ -212,8 +219,8 @@
 		[bitSheetFieldName setStringValue:label];
 
 		// Init according bit check boxes
-		NSInteger i = 0;
-		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+		NSUInteger i = 0;
+		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 		if([bitSheetNULLButton state] == NSOffState)
 			for( i = 0; i<maxBit; i++ )
 				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]]
@@ -315,7 +322,7 @@
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
 		} else if ([sheetEditData isKindOfClass:[MCPGeometryData class]]) {
-			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
+			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
 			image = [v thumbnailImage];
 			stringValue = [[sheetEditData wktString] retain];
 			[hexTextView setString:@""];
@@ -544,7 +551,7 @@
 	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
 		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
+			[editTextView setSelectedRange:NSMakeRange((NSUInteger)maxTextLength, [[editTextView textStorage] length] - (NSUInteger)maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
 			return;
@@ -670,7 +677,7 @@
 
 			} else if (editImage != nil){
 
-				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0] autorelease];
+				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
 				NSData *pdf = [v pdfData];
 				if(pdf)
 					[pdf writeToFile:fileName atomically:YES];
@@ -715,7 +722,7 @@
  */
 - (IBAction)quickLookFormatButton:(id)sender
 {
-	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > [sender tag] - 2) {
+	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > (NSUInteger)[sender tag] - 2) {
 		NSDictionary *type = [[qlTypes objectForKey:@"QuickLookTypes"] objectAtIndex:[sender tag] - 2];
 		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] integerValue])];
 	}
@@ -915,7 +922,7 @@
  *
  * @return It returns as NSURL the temporarily created file.
  */
-- (id)previewPanel:(id)panel previewItemAtIndex:(NSInteger)index
+- (id)previewPanel:(id)panel previewItemAtIndex:(NSInteger)anIndex
 {
 	if(tmpFileName)
 		return [NSURL fileURLWithPath:tmpFileName];
@@ -1047,8 +1054,8 @@
  */
 - (void)updateBitSheet
 {
-	NSInteger i = 0;
-	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+	NSUInteger i = 0;
+	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	if([bitSheetNULLButton state] == NSOnState) {
 		if ( sheetEditData != nil ) {
@@ -1074,7 +1081,7 @@
 	for(i=0; i<maxBit; i++) {
 		if([[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
 			intValue += bitValue;
-			[bitString replaceCharactersInRange:NSMakeRange(maxTextLength-i-1, 1) withString:@"1"];
+			[bitString replaceCharactersInRange:NSMakeRange((NSUInteger)maxTextLength-i-1, 1) withString:@"1"];
 		}
 		bitValue <<= 1;
 	}
@@ -1097,9 +1104,9 @@
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
 {
 
-	NSInteger i = 0;
-	NSInteger aBit;
-	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+	NSUInteger i = 0;
+	NSUInteger aBit;
+	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	switch([sender tag]) {
 		case 0: // all to 1
@@ -1159,8 +1166,8 @@
 - (IBAction)setToNull:(id)sender
 {
 
-	NSInteger i;
-	NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+	NSUInteger i;
+	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	if([sender state] == NSOnState) {
 		for(i=0; i<maxBit; i++)
@@ -1202,10 +1209,10 @@
 
 	if (object == bitSheetIntegerTextField) {
 
-		NSInteger i = 0;
-		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+		NSUInteger i = 0;
+		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
-		NSUInteger intValue = strtoull([[bitSheetIntegerTextField stringValue] UTF8String], NULL, 0);
+		NSUInteger intValue = (NSUInteger)strtoull([[bitSheetIntegerTextField stringValue] UTF8String], NULL, 0);
 
 		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
@@ -1224,10 +1231,10 @@
 	}
 	else if (object == bitSheetHexTextField) {
 
-		NSInteger i = 0;
-		NSInteger maxBit = (maxTextLength > 64) ? 64 : maxTextLength;
+		NSUInteger i = 0;
+		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
-		NSUInteger intValue;
+		unsigned long long intValue;
 
 		[[NSScanner scannerWithString:[bitSheetHexTextField stringValue]] scanHexLongLong: &intValue];
 
@@ -1273,7 +1280,8 @@
 		if (r.location==NSNotFound) return NO;
 
 		// Length checking while using the Input Manager (eg for Japanese)
-		if ([textView hasMarkedText] && (maxTextLength > 0) && (r.location < maxTextLength))
+		if ([textView hasMarkedText] && (maxTextLength > 0) && (r.location < maxTextLength)) {
+
 			// User tries to insert a new char but max text length was already reached - return NO
 			if( !r.length  && ([[textView textStorage] length] >= maxTextLength) ) {
 				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
@@ -1288,20 +1296,21 @@
 			// that part which won't be saved will be hilited if user pressed the OK button.
 			else if (r.location < maxTextLength)
 				return YES;
+		}
 
 		// Calculate the length of the text after the change.
 		newLength=[[[textView textStorage] string] length]+[replacementString length]-r.length;
 
 		// If it's too long, disallow the change but try
 		// to insert a text chunk partially to maxTextLength.
-		if (newLength > maxTextLength) {
+		if ((NSUInteger)newLength > maxTextLength) {
 
 			if((maxTextLength-[[textView textStorage] length]+[textView selectedRange].length) <= [replacementString length]) {
 				if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length)
 					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu. Inserted text was truncated.", @"Maximum text length is set to %llu. Inserted text was truncated."), maxTextLength]];
 				else
 					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
-				[textView insertText:[replacementString substringToIndex:maxTextLength-[[textView textStorage] length]+[textView selectedRange].length]];
+				[textView insertText:[replacementString substringToIndex:(NSUInteger)maxTextLength-[[textView textStorage] length]+[textView selectedRange].length]];
 			}
 			return NO;
 		}

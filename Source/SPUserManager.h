@@ -100,6 +100,7 @@
 - (IBAction)checkAllPrivileges:(id)sender;
 - (IBAction)uncheckAllPrivileges:(id)sender;
 - (IBAction)closeErrorsSheet:(id)sender;
+- (IBAction)doubleClickSchemaPriv:(id)sender;
 
 // Schema Privieges
 - (IBAction)addSchemaPriv:(id)sender;

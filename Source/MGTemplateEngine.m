@@ -312,9 +312,9 @@
 					NSString *digits;
 					BOOL scanned = [scanner scanCharactersFromSet:numbersSet intoString:&digits];
 					if (scanned && digits && [digits length] > 0) {
-						NSInteger index = [digits integerValue];
-						if (index >= 0 && index < [((NSArray *)currObj) count]) {
-							newObj = [((NSArray *)currObj) objectAtIndex:index];
+						NSInteger indexValue = [digits integerValue];
+						if (indexValue >= 0 && indexValue < (NSInteger)[((NSArray *)currObj) count]) {
+							newObj = [((NSArray *)currObj) objectAtIndex:indexValue];
 						}
 					}
 				}

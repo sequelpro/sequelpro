@@ -86,15 +86,15 @@
 - (void)drawRect:(NSRect)rect
 {
 	NSInteger i;
-	CGFloat alpha = 1.0;
+	CGFloat alpha = 1.0f;
 
 	// Determine size based on current bounds
 	NSSize size = [self bounds].size;
-	CGFloat maxSize;
+	CGFloat rectMaxSize;
 	if(size.width >= size.height)
-		maxSize = size.height;
+		rectMaxSize = size.height;
 	else
-		maxSize = size.width;
+		rectMaxSize = size.width;
 
 	CGContextRef currentContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 	[NSGraphicsContext saveGraphicsState];
@@ -112,12 +112,12 @@
 
 	if (_isIndeterminate) {
 		// do initial rotation to start place
-		CGContextRotateCTM(currentContext, 3.14159*2/_numFins * _position);
+		CGContextRotateCTM(currentContext, 3.14159f*2/_numFins * _position);
 
 		NSBezierPath *path = [[NSBezierPath alloc] init];
-		CGFloat lineWidth = 0.08 * maxSize; // should be 2.75 for 32x32
-		CGFloat lineStart = 0.234375 * maxSize; // should be 7.5 for 32x32
-		CGFloat lineEnd = 0.421875 * maxSize;  // should be 13.5 for 32x32
+		CGFloat lineWidth = 0.08f * rectMaxSize; // should be 2.75 for 32x32
+		CGFloat lineStart = 0.234375f * rectMaxSize; // should be 7.5 for 32x32
+		CGFloat lineEnd = 0.421875f * rectMaxSize;  // should be 13.5 for 32x32
 		[path setLineWidth:lineWidth];
 		[path setLineCapStyle:NSRoundLineCapStyle];
 		[path moveToPoint:NSMakePoint(0,lineStart)];
@@ -127,21 +127,21 @@
 			if(_isAnimating) {
 				[[_foreColor colorWithAlphaComponent:alpha] set];
 			} else {
-				[[_foreColor colorWithAlphaComponent:0.2] set];
+				[[_foreColor colorWithAlphaComponent:0.2f] set];
 			}
 
 			[path stroke];
 
 			// we draw all the fins by rotating the CTM, then just redraw the same segment again
-			CGContextRotateCTM(currentContext, 6.282185/_numFins);
-			alpha -= 1.0/_numFins;
+			CGContextRotateCTM(currentContext, 6.282185f/_numFins);
+			alpha -= 1.0f/_numFins;
 		}
 		[path release];
 
 	} else {
 
-		CGFloat lineWidth = 1 + (0.01 * maxSize);
-		CGFloat circleRadius = (maxSize - lineWidth) / 2.1;
+		CGFloat lineWidth = 1 + (0.01f * rectMaxSize);
+		CGFloat circleRadius = (rectMaxSize - lineWidth) / 2.1f;
 		NSPoint circleCenter = NSMakePoint(0, 0);
 		[[_foreColor colorWithAlphaComponent:alpha] set];
 		NSBezierPath *path = [[NSBezierPath alloc] init];
@@ -150,7 +150,7 @@
 		[path stroke];
 		[path release];
 		path = [[NSBezierPath alloc] init];
-		[path appendBezierPathWithArcWithCenter:circleCenter radius:circleRadius startAngle:90 endAngle:90-(360*(_currentValue/_maxValue)) clockwise:YES];
+		[path appendBezierPathWithArcWithCenter:circleCenter radius:circleRadius startAngle:90 endAngle:90-(360*(float)(_currentValue/_maxValue)) clockwise:YES];
 		[path lineToPoint:circleCenter] ;
 		[path fill];
 		[path release];
@@ -186,7 +186,7 @@
 	NSAutoreleasePool *animationPool = [[NSAutoreleasePool alloc] init];
 	
 	// Set up the animation speed to subtly change with size > 32.
-	NSInteger animationDelay = 38000 + (2000 * ([self bounds].size.height / 32));
+	useconds_t animationDelay = 38000 + (2000 * ([self bounds].size.height / 32));
 	NSInteger poolFlushCounter = 0;
 
 	do {

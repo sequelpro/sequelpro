@@ -50,4 +50,6 @@
 + (void)showWithObject:(id)content ofType:(NSString *)type;
 + (void)showWithObject:(id)content;
 
+- (void)animationTick:(id)sender;
+
 @end

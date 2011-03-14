@@ -255,4 +255,6 @@
 - (IBAction)toggleSQLIncludeContent:(id)sender;
 - (IBAction)toggleSQLIncludeDropSyntax:(id)sender;
 
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+
 @end

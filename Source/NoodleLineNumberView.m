@@ -44,8 +44,8 @@
 
 #pragma mark -
 
-#define DEFAULT_THICKNESS  22.0
-#define RULER_MARGIN        5.0
+#define DEFAULT_THICKNESS  22.0f
+#define RULER_MARGIN        5.0f
 #define RULER_MARGIN2       RULER_MARGIN * 2
 
 typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
@@ -159,7 +159,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 - (NSColor *)textColor
 {
 	if (textColor == nil)
-		return [NSColor colorWithCalibratedWhite:0.42 alpha:1.0];
+		return [NSColor colorWithCalibratedWhite:0.42f alpha:1.0f];
 
 	return textColor;
 }
@@ -249,7 +249,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	return NSNotFound;
 }
 
-- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)charIndex
 {
 	NSUInteger      left, right, mid, lineStart;
 	NSArray  *lines;
@@ -266,9 +266,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		mid = (right + left) >> 1;
 		lineStart = [NSArrayObjectAtIndex(lines, mid) unsignedIntegerValue];
 
-		if (index < lineStart)
+		if (charIndex < lineStart)
 			right = mid;
-		else if (index > lineStart)
+		else if (charIndex > lineStart)
 			left = mid;
 		else
 			return mid;
@@ -300,7 +300,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		NSRect           visibleRect;
 		NSRange          range, nullRange;
 		NSString         *labelText;
-		NSUInteger       rectCount, index, line, count;
+		NSUInteger       rectCount, lineIndex, line, count;
 		NSRectArray      rects;
 		CGFloat          yinset;
 		NSSize           stringSize;
@@ -330,11 +330,11 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 		for (line = (NSUInteger)(*lineNumberForCharacterIndexIMP)(self, lineNumberForCharacterIndexSel, range.location); line < count; line++)
 		{
-			index = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
+			lineIndex = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];
 
-			if (NSLocationInRange(index, range))
+			if (NSLocationInRange(lineIndex, range))
 			{
-				rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
+				rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(lineIndex, 0)
 					withinSelectedCharacterRange:nullRange
 					inTextContainer:container
 					rectCount:&rectCount];
@@ -359,7 +359,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 				}
 			}
 
-			if (index > NSMaxRange(range))
+			if (lineIndex > NSMaxRange(range))
 				break;
 
 		}
@@ -499,7 +499,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	if ([view isKindOfClass:[NSTextView class]])
 	{
 
-		NSUInteger index, stringLength, lineEnd, contentEnd, lastLine;
+		NSUInteger anIndex, stringLength, lineEnd, contentEnd, lastLine;
 		NSString   *textString;
 		CGFloat    newThickness;
 
@@ -516,7 +516,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		// Init lineIndices with text length / 16 + 1
 		lineIndices = [[NSMutableArray alloc] initWithCapacity:((NSUInteger)stringLength>>4)+1];
 
-		index = 0;
+		anIndex = 0;
 
 		// Cache loop methods for speed
 		RangeOfLineIMP rangeOfLineIMP = (RangeOfLineIMP)[textString methodForSelector:lineRangeForRangeSel];
@@ -524,16 +524,16 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		
 		do
 		{
-			(void*)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, index));
-			lastLine = index;
-			index = NSMaxRange((*rangeOfLineIMP)(textString, lineRangeForRangeSel, NSMakeRange(index, 0)));
+			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, anIndex));
+			lastLine = anIndex;
+			anIndex = NSMaxRange((*rangeOfLineIMP)(textString, lineRangeForRangeSel, NSMakeRange(anIndex, 0)));
 		}
-		while (index < stringLength);
+		while (anIndex < stringLength);
 
 		// Check if text ends with a new line.
 		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange(lastLine, 0)];
 		if (contentEnd < lineEnd)
-			(void*)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, index));
+			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, anIndex));
 
 		NSUInteger lineCount = [lineIndices count];
 		if(lineCount < 10)
@@ -574,14 +574,14 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 - (void)updateGutterThicknessConstants
 {
-	maxWidthOfGlyph1 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph     + RULER_MARGIN2));
-	maxWidthOfGlyph2 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 2 + RULER_MARGIN2));
-	maxWidthOfGlyph3 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 3 + RULER_MARGIN2));
-	maxWidthOfGlyph4 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 4 + RULER_MARGIN2));
-	maxWidthOfGlyph5 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 5 + RULER_MARGIN2));
-	maxWidthOfGlyph6 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 6 + RULER_MARGIN2));
-	maxWidthOfGlyph7 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 7 + RULER_MARGIN2));
-	maxWidthOfGlyph8 = ceil(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 8 + RULER_MARGIN2));
+	maxWidthOfGlyph1 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph     + RULER_MARGIN2));
+	maxWidthOfGlyph2 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 2 + RULER_MARGIN2));
+	maxWidthOfGlyph3 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 3 + RULER_MARGIN2));
+	maxWidthOfGlyph4 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 4 + RULER_MARGIN2));
+	maxWidthOfGlyph5 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 5 + RULER_MARGIN2));
+	maxWidthOfGlyph6 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 6 + RULER_MARGIN2));
+	maxWidthOfGlyph7 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 7 + RULER_MARGIN2));
+	maxWidthOfGlyph8 = ceilf(MAX(DEFAULT_THICKNESS, maxWidthOfGlyph * 8 + RULER_MARGIN2));
 }
 
 @end

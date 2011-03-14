@@ -34,6 +34,7 @@
 #import "RegexKitLite.h"
 #import "SPBundleHTMLOutputController.h"
 #import "SPDatabaseViewController.h"
+#import "SPAppController.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -82,8 +83,8 @@ static inline CGFloat SPRectTop(NSRect rectangle) { return rectangle.origin.y; }
 static inline CGFloat SPRectBottom(NSRect rectangle) { return rectangle.origin.y+rectangle.size.height; }
 static inline CGFloat SPRectLeft(NSRect rectangle) { return rectangle.origin.x; }
 static inline CGFloat SPRectRight(NSRect rectangle) { return rectangle.origin.x+rectangle.size.width; }
-static inline CGFloat SPPointDistance(NSPoint a, NSPoint b) { return sqrt( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y) ); }
-static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NSMakePoint(a.x*(1.-t) + b.x*t, a.y*(1.-t) + b.y*t); }
+static inline CGFloat SPPointDistance(NSPoint a, NSPoint b) { return sqrtf( (a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y) ); }
+static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NSMakePoint(a.x*(1.0f-t) + b.x*t, a.y*(1.0f-t) + b.y*t); }
 
 @implementation SPTextView
 
@@ -851,7 +852,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
 	boundingRect = [self convertRect:boundingRect toView:nil];
 	NSPoint pos = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-	pos.y -= [[self font] pointSize]*1.25;
+	pos.y -= [[self font] pointSize]*1.25f;
 	[completionPopup setCaretPos:pos];
 
 	[completionPopup orderFront:self];
@@ -917,7 +918,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		
 	} @catch(id ae) { }
 
-	return (leftIsAlphanum ^ rightIsAlphanum || leftIsAlphanum && rightIsAlphanum);
+	return (leftIsAlphanum ^ rightIsAlphanum || (leftIsAlphanum && rightIsAlphanum));
 }
 
 /**
@@ -1137,7 +1138,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		if(numberOfSpaces < 1) numberOfSpaces = 1;
 		if(numberOfSpaces > 32) numberOfSpaces = 32;
 		NSMutableString *spaces = [NSMutableString string];
-		for(NSInteger i = 0; i < numberOfSpaces; i++)
+		for(NSUInteger i = 0; i < numberOfSpaces; i++)
 			[spaces appendString:@" "];
 		indentString = [NSString stringWithString:spaces];
 	}
@@ -1262,7 +1263,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		if(indentStringLength < 1) indentStringLength = 1;
 		if(indentStringLength > 32) indentStringLength = 32;
 		NSMutableString *spaces = [NSMutableString string];
-		for(NSInteger i = 0; i < indentStringLength; i++)
+		for(NSUInteger i = 0; i < indentStringLength; i++)
 			[spaces appendString:@" "];
 		indentString = [NSString stringWithString:spaces];
 	}
@@ -1473,7 +1474,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	boundingRect = [self convertRect: boundingRect toView: NULL];
 	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 	// Adjust list location to be under the current word or insertion point
-	pos.y -= [[self font] pointSize]*1.25;
+	pos.y -= [[self font] pointSize]*1.25f;
 	[completionPopup setCaretPos:pos];
 	[completionPopup orderFront:self];
 
@@ -1519,7 +1520,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 				// If a completion list is open adjust the theCharRange and theParseRange if a mirrored snippet
 				// was updated which is located before the initial position 
-				if(completionIsOpen && snippetMirroredControlArray[i][1] < completionParseRangeLocation)
+				if(completionIsOpen && snippetMirroredControlArray[i][1] < (NSInteger)completionParseRangeLocation)
 					[completionPopup adjustWorkingRangeByDelta:deltaLength];
 
 				// Adjust all other snippets accordingly
@@ -1630,7 +1631,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 							boundingRect = [self convertRect: boundingRect toView: NULL];
 							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 							// Adjust list location to be under the current word or insertion point
-							pos.y -= [[self font] pointSize]*1.25;
+							pos.y -= [[self font] pointSize]*1.25f;
 							[completionPopup setCaretPos:pos];
 							[completionPopup orderFront:self];
 						}
@@ -1878,7 +1879,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		while([snip isMatchedByRegex:ure]) {
 			NSRange escapeRange = [snip rangeOfRegex:ure capture:0L];
 			[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
-			NSUInteger loc = escapeRange.location + targetRange.location;
+			NSInteger loc = escapeRange.location + targetRange.location;
 			[snip flushCachedRegexData];
 			for(i=0; i<=snippetControlMax; i++)
 				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
@@ -1898,8 +1899,14 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self insertText:snip];
 
 		// If autopair is enabled check whether snip begins with ( and ends with ), if so mark ) as pair-linked
-		if([prefs boolForKey:SPCustomQueryAutoPairCharacters] && ([snip hasPrefix:@"("] && [snip hasSuffix:@")"] || ([snip hasPrefix:@"`"] && [snip hasSuffix:@"`"]) || ([snip hasPrefix:@"'"] && [snip hasSuffix:@"'"]) || ([snip hasPrefix:@"\""] && [snip hasSuffix:@"\""])))
+		if ([prefs boolForKey:SPCustomQueryAutoPairCharacters]
+			&& (([snip hasPrefix:@"("] && [snip hasSuffix:@")"])
+				|| ([snip hasPrefix:@"`"] && [snip hasSuffix:@"`"])
+				|| ([snip hasPrefix:@"'"] && [snip hasSuffix:@"'"])
+				|| ([snip hasPrefix:@"\""] && [snip hasSuffix:@"\""])))
+		{
 			[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange([self selectedRange].location - 1, 1)];
+		}
 
 		// Any snippets defined?
 		if(snippetControlCounter > -1) {
@@ -1939,7 +1946,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	}
 	
 	[[self textStorage] ensureAttributesAreFixedInRange:[self selectedRange]];
-	NSUInteger caretPos = [self selectedRange].location;
+	NSInteger caretPos = [self selectedRange].location;
 	NSInteger i, j;
 	NSInteger foundSnippetIndices[20]; // array to hold nested snippets
 
@@ -1968,24 +1975,24 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	if(!isCaretInsideASnippet && foundSnippetIndices[currentSnippetIndex] == 1) {
 		isCaretInsideASnippet = YES;
 	} else if(![self selectedRange].length) {
-		NSInteger index = -1;
+		NSInteger curIndex = -1;
 		NSInteger smallestLength = -1;
 		for(i=0; i<snippetControlMax; i++) {
 			if(foundSnippetIndices[i] == 1) {
-				if(index == -1) {
-					index = i;
+				if(curIndex == -1) {
+					curIndex = i;
 					smallestLength = snippetControlArray[i][1];
 				} else {
 					if(smallestLength > snippetControlArray[i][1]) {
-						index = i;
+						curIndex = i;
 						smallestLength = snippetControlArray[i][1];
 					}
 				}
 			}
 		}
 		// Reset the active snippet
-		if(index > -1 && smallestLength > -1) {
-			currentSnippetIndex = index;
+		if(curIndex > -1 && smallestLength > -1) {
+			currentSnippetIndex = curIndex;
 			isCaretInsideASnippet = YES;
 		}
 	}
@@ -2805,7 +2812,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
 	[paragraphStyle setTabStops:myArrayOfTabs];
 	// Soft wrapped lines are indented slightly
-	[paragraphStyle setHeadIndent:4.0];
+	[paragraphStyle setHeadIndent:4.0f];
 
 	NSMutableDictionary *textAttributes = [[[NSMutableDictionary alloc] initWithCapacity:1] autorelease];
 	[textAttributes setObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
@@ -2853,15 +2860,15 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			if(snippetControlCounter > -1) {
 				// Is the caret still inside a snippet
 				if([self checkForCaretInsideSnippet]) {
-					for(NSUInteger i=0; i<snippetControlMax; i++) {
+					for(NSInteger i=0; i<snippetControlMax; i++) {
 						if(snippetControlArray[i][0] > -1) {
 							// choose the colors for the snippet parts
 							if(i == currentSnippetIndex) {
-								[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.4] setFill];
-								[[NSColor colorWithCalibratedRed:1.0 green:0.6 blue:0.0 alpha:0.8] setStroke];
+								[[NSColor colorWithCalibratedRed:1.0f green:0.6f blue:0.0f alpha:0.4f] setFill];
+								[[NSColor colorWithCalibratedRed:1.0f green:0.6f blue:0.0f alpha:0.8f] setStroke];
 							} else {
-								[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.2] setFill];
-								[[NSColor colorWithCalibratedRed:1.0 green:0.8 blue:0.2 alpha:0.5] setStroke];
+								[[NSColor colorWithCalibratedRed:1.0f green:0.8f blue:0.2f alpha:0.2f] setFill];
+								[[NSColor colorWithCalibratedRed:1.0f green:0.8f blue:0.2f alpha:0.5f] setStroke];
 							}
 							NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
 							[snippetPath fill];
@@ -2882,10 +2889,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange
 {
 	// parameters for snippet highlighting
-	CGFloat kappa = 0.5522847498; // magic number from http://www.whizkidtech.redprince.net/bezier/circle/
+	CGFloat kappa = 0.5522847498f; // magic number from http://www.whizkidtech.redprince.net/bezier/circle/
 	CGFloat radius = 6;
 	CGFloat horzInset = -3;
-	CGFloat vertInset = 0.3;
+	CGFloat vertInset = 0.3f;
 	BOOL connectDisconnectedPartsWithLine = NO;
 
 	NSBezierPath *funkyPath = [NSBezierPath bezierPath];
@@ -2918,15 +2925,15 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			NSPoint next = vertices[(j+1)%8];
 
 			CGFloat s = radius/SPPointDistance(prev, curr);
-			if (s>0.5) s = 0.5;
+			if (s>0.5) s = 0.5f;
 			CGFloat t = radius/SPPointDistance(curr, next);
-			if (t>0.5) t = 0.5;
+			if (t>0.5) t = 0.5f;
 
-			NSPoint a = SPPointOnLine(curr, prev, 0.5);
+			NSPoint a = SPPointOnLine(curr, prev, 0.5f);
 			NSPoint b = SPPointOnLine(curr, prev, s);
 			NSPoint c = curr;
 			NSPoint d = SPPointOnLine(curr, next, t);
-			NSPoint e = SPPointOnLine(curr, next, 0.5);
+			NSPoint e = SPPointOnLine(curr, next, 0.5f);
 
 			if (j==0) [funkyPath moveToPoint:a];
 			[funkyPath lineToPoint: b];
@@ -3170,8 +3177,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
-			NSUInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-			NSUInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
+			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
 			NSInteger i;
 			for(i=0; i<snippetControlMax; i++) {
 				if(snippetControlArray[i][0] > -1
@@ -3187,7 +3194,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 				}
 			}
 
-			NSUInteger editStartPosition = [textStore editedRange].location;
+			NSInteger editStartPosition = [textStore editedRange].location;
 			NSUInteger changeInLength = [textStore changeInLength];
 
 			// Adjust length change to current snippet
@@ -3381,14 +3388,14 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 	NSUInteger glyphIndex;
 	NSLayoutManager *layoutManager = [self layoutManager];
-	CGFloat fraction;
+	CGFloat fractionalDistance;
 	NSRange range;
 
 	range = [layoutManager glyphRangeForTextContainer:[self textContainer]];
 	glyphIndex = [layoutManager glyphIndexForPoint:aPoint
 		inTextContainer:[self textContainer]
-		fractionOfDistanceThroughGlyph:&fraction];
-	if( fraction > 0.5 ) glyphIndex++;
+		fractionOfDistanceThroughGlyph:&fractionalDistance];
+	if( fractionalDistance > 0.5 ) glyphIndex++;
 
 	if( glyphIndex == NSMaxRange(range) )
 		return  [[self textStorage] length];
@@ -3410,20 +3417,20 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	// Make usage of the UNIX command "file" to get an info
 	// about file type and encoding.
-	NSTask *task=[[NSTask alloc] init];
-	NSPipe *pipe=[[NSPipe alloc] init];
+	NSTask *aTask=[[NSTask alloc] init];
+	NSPipe *aPipe=[[NSPipe alloc] init];
 	NSFileHandle *handle;
 	NSString *result;
-	[task setLaunchPath:@"/usr/bin/file"];
-	[task setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
-	[task setStandardOutput:pipe];
-	handle=[pipe fileHandleForReading];
-	[task launch];
+	[aTask setLaunchPath:@"/usr/bin/file"];
+	[aTask setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
+	[aTask setStandardOutput:aPipe];
+	handle=[aPipe fileHandleForReading];
+	[aTask launch];
 	result=[[NSString alloc] initWithData:[handle readDataToEndOfFile]
 		encoding:NSASCIIStringEncoding];
 
-	[pipe release];
-	[task release];
+	[aPipe release];
+	[aTask release];
 
 	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
 	if( [result hasPrefix:@"text/plain"] 
