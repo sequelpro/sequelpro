@@ -231,12 +231,12 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 		if (isEdit) {
 			[triggerStatementTextView setString:editTriggerStatement];
 			
-			NSString *query = [NSString stringWithFormat:createTriggerStatementTemplate,
-							   [editTriggerName backtickQuotedString],
-							   editTriggerActionTime,
-							   editTriggerEvent,
-							   [editTriggerTableName backtickQuotedString],
-							   editTriggerStatement];
+			query = [NSString stringWithFormat:createTriggerStatementTemplate,
+					 [editTriggerName backtickQuotedString],
+					 editTriggerActionTime,
+					 editTriggerEvent,
+					 [editTriggerTableName backtickQuotedString],
+					 editTriggerStatement];
 		
 			// If this attempt to re-create the trigger failed, then we're screwed as we've just lost the user's 
 			// data, but they had a backup and everything's cool, right? Should we be displaying an error here
@@ -339,12 +339,12 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 /**
  * Double-click action on table cells - for the time being, return NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSUInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Start Edit panel
-	if (([triggerData count] > rowIndex) && ([triggerData objectAtIndex:rowIndex] != NSNotFound)) {
+	if (([triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
 		[self _editTriggerAtIndex:rowIndex];
 	}
 

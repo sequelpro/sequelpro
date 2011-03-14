@@ -35,7 +35,7 @@
 	// Construct and get the sub text attributed string
 	NSAttributedString *string = [self attributedStringValue];
 
-	NSInteger i;
+	NSUInteger i;
 	CGFloat maxWidth = cellFrame.size.width;
 	CGFloat stringWidth = [string size].width;
 

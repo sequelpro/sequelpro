@@ -43,7 +43,7 @@
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	// Return a placeholder if the table is reloading
-	if (rowIndex >= [tableFields count]) return @"...";
+	if ((NSUInteger)rowIndex >= [tableFields count]) return @"...";
 	
 	if([[tableColumn identifier] isEqualToString:@"collation"]) {
 		NSInteger idx = 0;
@@ -98,7 +98,7 @@
 		currentlyEditingRow = rowIndex;
 	}
 	
-	NSMutableArray *currentRow = [tableFields objectAtIndex:rowIndex];
+	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
 	
 	// Reset collation if encoding was changed
 	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {

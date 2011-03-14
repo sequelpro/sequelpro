@@ -36,6 +36,8 @@
 #import "SPTableTextFieldCell.h"
 #import "SPGeneralPreferencePane.h"
 #import "SPDatabaseViewController.h"
+#import "SPPreferenceController.h"
+#import "SPFavoritesPreferencePane.h"
 
 @interface SPConnectionController (PrivateAPI)
 
@@ -144,9 +146,9 @@
 		[favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
 		// Sort the favourites to match prefs and select the appropriate row - if a valid sort option is selected
-		if (currentSortItem > -1) [self _sortFavorites];
+		if ((NSInteger)currentSortItem > -1) [self _sortFavorites];
 
-		NSInteger tableRow = [prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite];
+		NSUInteger tableRow = [prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite];
 
 		if (tableRow < [favorites count]) {
 			previousType = [[[favorites objectAtIndex:tableRow] objectForKey:SPFavoriteTypeKey] integerValue];
@@ -844,7 +846,7 @@
 	// Perform sorting
 	[self _sortFavorites];
 
-	if (previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	if ((NSInteger)previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
 
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
 }
@@ -861,7 +863,7 @@
 	// Perform re-sorting
 	[self _sortFavorites];
 
-	[sender setState:reverseFavoritesSort];
+	[(NSMenuItem *)sender setState:reverseFavoritesSort];
 }
 
 /**

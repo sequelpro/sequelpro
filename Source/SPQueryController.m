@@ -665,7 +665,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
-	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
+	NSInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
 
 	// Save each history item due to its document source
 	if([historyContainer objectForKey:[fileURL absoluteString]]) {

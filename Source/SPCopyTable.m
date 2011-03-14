@@ -38,6 +38,7 @@
 #import "SPGeometryDataView.h"
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
+#import "SPTablesList.h"
 
 NSInteger MENU_EDIT_COPY             = 2001;
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
