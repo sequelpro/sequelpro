@@ -50,7 +50,7 @@
 @synthesize initHTMLSourceString;
 @synthesize windowUUID;
 @synthesize docUUID;
-@synthesize suppressExceptionAlert;
+@synthesize suppressExceptionAlerting;
 
 /**
  * Initialisation
@@ -70,7 +70,7 @@
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 		[webView setShouldUpdateWhileOffscreen:NO];
 #endif
-		suppressExceptionAlert = NO;
+		suppressExceptionAlerting = NO;
 
 	}
 	
@@ -523,7 +523,7 @@
 
 	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
 
-	if([self suppressExceptionAlert]) {
+	if([self suppressExceptionAlerting]) {
 		NSLog(@"%@", mes);
 		return;
 	}
@@ -616,7 +616,7 @@
  */
 - (void)suppressExceptionAlert
 {
-	[self setSuppressExceptionAlert:YES];
+	[self setSuppressExceptionAlerting:YES];
 }
 
 /**
