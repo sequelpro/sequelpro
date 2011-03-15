@@ -27,4 +27,10 @@
 
 @interface SPAppController (SPAppleScriptSupport)
 
+- (NSArray *)orderedDocuments;
+- (void)insertInOrderedDocuments:(SPDatabaseDocument *)doc;
+- (NSArray *)orderedWindows;
+- (id)handleQuitScriptCommand:(NSScriptCommand *)command;
+- (id)handleOpenScriptCommand:(NSScriptCommand *)command;
+
 @end

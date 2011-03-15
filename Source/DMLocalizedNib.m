@@ -17,6 +17,11 @@
 - (void)deliciousDealloc;
 @end
 
+// Private methods from DMLocalizedNib used here
+@interface NSBundle ()
++ (void)_localizeStringsInObject:(id)object table:(NSString *)table;
+@end
+
 static NSMutableDictionary *deliciousNibNames = nil;
 
 @implementation NSNib (DMLocalizedNib)

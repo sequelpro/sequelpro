@@ -81,4 +81,14 @@
  */
 @property (readwrite, assign) NSUInteger fontChangeTarget;
 
+
+// Toolbar item IBAction methods
+- (IBAction)displayPreferencePane:(id)sender;
+- (IBAction)displayTablePreferences:(id)sender;
+- (IBAction)displayFavoritePreferences:(id)sender;
+- (IBAction)displayEditorPreferences:(id)sender;
+
+// Other
+- (void)changeFont:(id)sender;
+
 @end

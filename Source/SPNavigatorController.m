@@ -218,7 +218,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		if(!pathArray || [pathArray count] == 0) return;
 		NSMutableString *aKey = [NSMutableString string];
 		[outlineSchema2 collapseItem:[item objectForKey:[pathArray objectAtIndex:0]] collapseChildren:YES];
-		for(NSInteger i=0; i < [pathArray count]; i++) {
+		for(NSUInteger i=0; i < [pathArray count]; i++) {
 			[aKey appendString:[pathArray objectAtIndex:i]];
 			if(!item || ![item isKindOfClass:NSDictionaryClass] || ![item objectForKey:aKey]) break;
 			item = [item objectForKey:aKey];
@@ -231,13 +231,14 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				[outlineSchema2 selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
 				if([outlineSchema2 numberOfSelectedRows] != 1) return;
 				[outlineSchema2 scrollRowToVisible:[outlineSchema2 selectedRow]];
-				id item = [outlineSchema2 selectedItem];
+				id selectedItem = [outlineSchema2 selectedItem];
 				// Try to scroll the view that all children of schemaPath are visible if possible
 				NSInteger cnt = 1;
-				if([item isKindOfClass:NSDictionaryClass] || [item isKindOfClass:[NSArray class]])
-					cnt = [item count]+1;
+				if([selectedItem isKindOfClass:NSDictionaryClass] || [selectedItem isKindOfClass:[NSArray class]])
+					cnt = [selectedItem count]+1;
 				NSRange r = [outlineSchema2 rowsInRect:[outlineSchema2 visibleRect]];
-				NSInteger offset = (cnt > r.length) ? (r.length-2) : cnt;
+				NSInteger rangeLength = r.length;
+				NSInteger offset = (cnt > rangeLength) ? (rangeLength-2) : cnt;
 				offset += [outlineSchema2 selectedRow];
 				if(offset >= [outlineSchema2 numberOfRows])
 					offset = [outlineSchema2 numberOfRows] - 1;
@@ -259,7 +260,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		id item = schemaData;
 		NSArray *pathArray = [selectedKey2 componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		NSMutableString *aKey = [NSMutableString string];
-		for(NSInteger i=0; i < [pathArray count]; i++) {
+		for(NSUInteger i=0; i < [pathArray count]; i++) {
 			[aKey appendString:[pathArray objectAtIndex:i]];
 			if(![item objectForKey:aKey]) break;
 			item = [item objectForKey:aKey];
@@ -512,8 +513,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
  */
 - (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID ignoreFields:(BOOL)ignoreFields
 {
-
-	NSString *SPUniqueSchemaDelimiter = @"￸";
 
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH[c] %@", [NSString stringWithFormat:@"%@%@", SPUniqueSchemaDelimiter, [term lowercaseString]]];
 	NSMutableArray *result = [NSMutableArray arrayWithCapacity:5];
@@ -1050,7 +1049,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		// selected item is a field
 		if([selectedItem isKindOfClass:[NSArray class]]) {
-			NSInteger i = 0;
+			NSUInteger i = 0;
 			for(i=0; i<[selectedItem count]-2; i++) {
 				NSString *item = NSArrayObjectAtIndex(selectedItem, i);
 				if(![item length]) continue;
@@ -1180,7 +1179,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(aTableView == infoTable && infoArray && rowIndex < [infoArray count]) {
+	if(aTableView == infoTable && infoArray && (NSUInteger)rowIndex < [infoArray count]) {
 		return [infoArray objectAtIndex:rowIndex];
 	}
 

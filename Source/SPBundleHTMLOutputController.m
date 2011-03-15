@@ -29,6 +29,21 @@
 
 @class WebScriptCallFrame;
 
+#pragma mark -
+
+@interface WebView (WebViewPrivate)
+- (void) setScriptDebugDelegate:(id) delegate;
+@end
+
+@interface WebScriptCallFrame : NSObject
+- (id)userInfo;
+- (WebScriptCallFrame *)caller;
+- (NSString *)functionName;
+- (id)exception;
+@end
+
+#pragma mark -
+
 @implementation SPBundleHTMLOutputController
 
 @synthesize docTitle;
@@ -52,7 +67,9 @@
 		[webView setDrawsBackground:YES];
 		[webView setEditable:NO];
 		[webView setShouldCloseWithWindow:YES];
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 		[webView setShouldUpdateWhileOffscreen:NO];
+#endif
 		suppressExceptionAlert = NO;
 
 	}
@@ -311,7 +328,7 @@
 	[newWebView showWindows];
 }
 
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
+- (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
 
 	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
@@ -335,11 +352,11 @@
 
 		switch(navigationType) {
 			case WebNavigationTypeLinkClicked:
-			[[webView mainFrame] loadRequest:request];
+			[[aWebView mainFrame] loadRequest:request];
 			[listener use];
 			break;
 			case WebNavigationTypeReload:
-			[[webView mainFrame] loadHTMLString:[self initHTMLSourceString] baseURL:nil];
+			[[aWebView mainFrame] loadHTMLString:[self initHTMLSourceString] baseURL:nil];
 			break;
 			default:
 			[listener use];

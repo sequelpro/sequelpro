@@ -149,6 +149,10 @@
 - (BOOL)selectItemWithName:(NSString *)theName;
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
+// Data validation
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
+
 // Table list filter interaction
 - (void) showFilter;
 - (void) hideFilter;

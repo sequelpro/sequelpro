@@ -38,8 +38,7 @@ void SPExportDelegateConformsToProtocol(NSObject *delegate, Protocol *protocol)
 	// Check that the the supplied delegate conforms to the supplied protocol, if not throw an exception
 	if (![delegate conformsToProtocol:protocol]) {
 		[NSException raise:@"Protocol Conformance" 
-					format:@"The supplied delegate does not conform to the protocol '%@'." 
-				 arguments:NSStringFromProtocol(protocol)];
+					format:@"The supplied delegate does not conform to the protocol '%@'.", NSStringFromProtocol(protocol)];
 	}
 }
 

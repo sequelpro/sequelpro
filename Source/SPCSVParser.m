@@ -121,7 +121,7 @@
 					j = 1;
 					isEscaped = NO;
 					if (!escapeStringIsFieldQuoteString) {
-						while (j * escapeLength <= nextQuoteDistance
+						while (j * escapeLength <= (NSInteger)nextQuoteDistance
 								&& ([[csvString substringWithRange:NSMakeRange((parserPosition + nextQuoteDistance - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
 						{
 							isEscaped = !isEscaped;
@@ -203,7 +203,7 @@
 			if (escapeLength) {
 				j = 1;
 				isEscaped = NO;
-				while (j * escapeLength <= nextFieldEndDistance
+				while (j * escapeLength <= (NSInteger)nextFieldEndDistance
 						&& ([[csvString substringWithRange:NSMakeRange((parserPosition + nextFieldEndDistance - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
 				{
 					isEscaped = !isEscaped;
@@ -298,7 +298,7 @@
 	// to allow to replace these by the table column's DEFAULT value)
 	if (fieldCount == NSNotFound) {
 		fieldCount = [csvRowArray count];
-	} else if ([csvRowArray count] < fieldCount) {
+	} else if ([csvRowArray count] < (NSUInteger)fieldCount) {
 		for (j = [csvRowArray count]; j < fieldCount; j++) [csvRowArray addObject:[SPNotLoaded notLoaded]];
 	}
 

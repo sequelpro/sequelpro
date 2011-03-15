@@ -1504,7 +1504,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	// Add global values if any
 	if((NSInteger)[fieldMappingGlobalValues count]>numberOfImportColumns)
-		for(i; i < [fieldMappingGlobalValues count]; i++) {
+		for( ; i < [fieldMappingGlobalValues count]; i++) {
 			if ([NSArrayObjectAtIndex(fieldMappingGlobalValues, i) isNSNull])
 				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
 			else

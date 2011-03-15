@@ -37,6 +37,7 @@ int yyuoffset, yyuleng;
 %option prefix="to"
 %option noyywrap
 %option nounput
+%option noinput
 %option case-insensitive
 %option nostdinit
 

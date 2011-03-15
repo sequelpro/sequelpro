@@ -28,8 +28,9 @@
 #import "SPServerSupport.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
+#import "SPTablesList.h"
 #import <MCPKit/MCPKit.h>
-#import "SPDatabaseDocument.h"
+#import "SPDatabaseViewController.h"
 
 // Constants
 static const NSString *SPNewIndexIndexName      = @"IndexName";
@@ -152,7 +153,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	for (NSDictionary *field in fields)
 	{
 		BOOL hasCompositePrimaryKey = NO;
-		BOOL isPrimaryKey = [field objectForKey:@"isprimarykey"];
+		BOOL isPrimaryKey = [[field objectForKey:@"isprimarykey"] boolValue];
 		
 		// The 'isprimarykey' key of a field is only present for single column primary keys, not composite keys, 
 		// so we need to check the indexes manually.
@@ -245,7 +246,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	NSInteger index = [indexesTableView selectedRow];
 
-	if ((index == -1) || (index > ([indexes count] - 1))) return;
+	if ((index == -1) || (index > ((NSInteger)[indexes count] - 1))) return;
 
 	NSString *keyName    =  [[indexes objectAtIndex:index] objectForKey:@"Key_name"];
 	NSString *columnName =  [[indexes objectAtIndex:index] objectForKey:@"Column_name"];
@@ -290,7 +291,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)chooseIndexType:(id)sender
 {
-	NSInteger *indexType = [[indexTypePopUpButton selectedItem] tag];
+	NSInteger indexType = [[indexTypePopUpButton selectedItem] tag];
 	
 	if (indexType == SPPrimaryKeyMenuTag) {
 		[indexNameTextField setEnabled:NO];
@@ -531,7 +532,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		for (i = ([copy count] - 1); i > 0; i--)
 		{
-			NSDictionary *field = [[copy objectAtIndex:i] objectForKey:@"name"];
+			NSString *field = [[copy objectAtIndex:i] objectForKey:@"name"];
 
 			for (j = 0; j < i; j++)
 			{
@@ -602,7 +603,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		NSMutableDictionary *indexDetails = [NSMutableDictionary dictionary];
 
 		[indexDetails setObject:[indexes objectAtIndex:[indexesTableView selectedRow]] forKey:@"Index"];
-		[indexDetails setObject:[NSNumber numberWithBool:[contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
+		[indexDetails setObject:[NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
 
 		if ([NSThread isMainThread]) {
 			[NSThread detachNewThreadSelector:@selector(_removeIndexUsingDetails:) toTarget:self withObject:indexDetails];
@@ -684,7 +685,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		if ([requiresLength containsObject:[[field objectForKey:@"type"] uppercaseString]]) {
 			sizeRequired++;
 			sizeRequiredFieldAndNotYetSet++;
-			if([field objectForKey:@"Size"] && [[field objectForKey:@"Size"] length])
+			if([field objectForKey:@"Size"] && [(NSString *)[field objectForKey:@"Size"] length])
 				sizeRequiredFieldAndNotYetSet--;
 		}
 	}
@@ -740,7 +741,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 			// If this field type requires a length and one hasn't been specified (interface validation
 			// should ensure this doesn't happen), then skip it.
-			if ([requiresLength containsObject:[columnType uppercaseString]] && (![[column objectForKey:@"Size"] length])) continue;
+			if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length])) continue;
 
 			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType]) {
 

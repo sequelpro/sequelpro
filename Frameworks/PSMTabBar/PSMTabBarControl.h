@@ -203,6 +203,10 @@ enum {
 - (void)bindPropertiesForCell:(PSMTabBarCell *)cell andTabViewItem:(NSTabViewItem *)item;
 - (void)removeTabForCell:(PSMTabBarCell *)cell;
 
+// External drawing accessors
+- (void)update;
+- (void)update:(BOOL)animate;
+
 @end
 
 

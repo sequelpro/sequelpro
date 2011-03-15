@@ -24,7 +24,7 @@
 
 @class PSMTabBarControl, SPDatabaseDocument;
 
-@interface SPWindowController : NSWindowController <NSUserInterfaceValidations>
+@interface SPWindowController : NSWindowController
 {
 	IBOutlet PSMTabBarControl *tabBar;
 	IBOutlet NSTabView *tabView;

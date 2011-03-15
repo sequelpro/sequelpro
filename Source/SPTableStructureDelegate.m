@@ -323,7 +323,7 @@
 	}
 	
 	// Any column comments
-	if ([[originalRow objectForKey:@"comment"] length]) {
+	if ([(NSString *)[originalRow objectForKey:@"comment"] length]) {
 		[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"comment"]]];
 	}
 	

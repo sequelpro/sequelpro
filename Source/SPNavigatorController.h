@@ -30,7 +30,7 @@
 	IBOutlet id navigatorWindow;
 	IBOutlet id infoTable;
 	IBOutlet id searchField;
-	IBOutlet id syncButton;
+	IBOutlet NSButton *syncButton;
 
 	IBOutlet id schemaStatusSplitView;
 	IBOutlet id schema12SplitView;

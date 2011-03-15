@@ -206,7 +206,7 @@ NSInteger kBlobAsImageFile = 4;
 							[image release];
 						} else {
 							NSString *noData = @"";
-							[noData writeToFile:fp atomically:NO];
+							[noData writeToFile:fp atomically:NO encoding:NSUTF8StringEncoding error:NULL];
 						}
 						[result appendFormat:@"%@\t", fp];
 					}
@@ -345,7 +345,7 @@ NSInteger kBlobAsImageFile = 4;
 							[image release];
 						} else {
 							NSString *noData = @"";
-							[noData writeToFile:fp atomically:NO];
+							[noData writeToFile:fp atomically:NO encoding:NSUTF8StringEncoding error:NULL];
 						}
 						[result appendFormat:@"\"%@\",", fp];
 					}
@@ -793,7 +793,7 @@ NSInteger kBlobAsImageFile = 4;
 			// Otherwise, ensure the cell is represented as a short string
 			if ([contentString isKindOfClass:[NSData class]]) {
 				contentString = [contentString shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
-			} else if ([contentString length] > 500) {
+			} else if ([(NSString *)contentString length] > 500) {
 				contentString = [contentString substringToIndex:500];
 			}
 
@@ -915,10 +915,10 @@ NSInteger kBlobAsImageFile = 4;
 
 	NSMutableIndexSet *selection = [NSMutableIndexSet indexSet];
 	NSInteger rows = [[self delegate] numberOfRowsInTableView:self];
-	NSUInteger i;
+	NSInteger i;
 	if(rows > 0) {
 		for(NSString* idx in rowIndices) {
-			i = [idx longLongValue];
+			i = [idx integerValue];
 			if(i >= 0 && i < rows)
 				[selection addIndex:i];
 		}
@@ -970,7 +970,7 @@ NSInteger kBlobAsImageFile = 4;
 - (BOOL) control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 
-	NSUInteger row, column;
+	NSInteger row, column;
 
 	row = [self editedRow];
 	column = [self editedColumn];
@@ -1034,7 +1034,7 @@ NSInteger kBlobAsImageFile = 4;
 		if([self isCellComplex])
 			return NO;
 
-		NSUInteger newRow = row+1;
+		NSInteger newRow = row+1;
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
 
 		[[control window] makeFirstResponder:control];
@@ -1042,7 +1042,7 @@ NSInteger kBlobAsImageFile = 4;
 			[[self delegate] saveRowToTable];
 
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
-		if (tableStorage && column>=[tableStorage columnCount]) return YES;     //the column count could change too
+		if (tableStorage && column >= (NSInteger)[tableStorage columnCount]) return YES;     //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
@@ -1058,14 +1058,14 @@ NSInteger kBlobAsImageFile = 4;
 			return NO;
 
 		if (row==0) return YES; //already at the beginning of the list
-		NSUInteger newRow = row-1;
+		NSInteger newRow = row-1;
 
 		[[control window] makeFirstResponder:control];
 		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
 			[[self delegate] saveRowToTable];
 
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
-		if (tableStorage && column>=[tableStorage columnCount]) return YES;     //the column count could change too
+		if (tableStorage && column >= (NSInteger)[tableStorage columnCount]) return YES;     //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
@@ -1116,7 +1116,7 @@ NSInteger kBlobAsImageFile = 4;
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
-	if(idx >=0 && idx < [bundleItems count]) {
+	if(idx >=0 && idx < (NSInteger)[bundleItems count]) {
 		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
 		if([sender tag] == 0 && [[sender toolTip] length]) {
@@ -1144,7 +1144,7 @@ NSInteger kBlobAsImageFile = 4;
 		if (cmdData) [cmdData release];
 		return;
 	} else {
-		if([cmdData objectForKey:SPBundleFileCommandKey] && [[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+		if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
 
 			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
 			NSString *inputAction = @"";
@@ -1242,7 +1242,7 @@ NSInteger kBlobAsImageFile = 4;
 			NSArray *columns = [self tableColumns];
 			NSUInteger numColumns = [columns count];
 			NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
-			NSInteger c;
+			NSUInteger c;
 			for ( c = 0; c < numColumns; c++ )
 				columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
 
@@ -1307,7 +1307,7 @@ NSInteger kBlobAsImageFile = 4;
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
 			NSString *action = SPBundleOutputActionNone;
-			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
 				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
 
 			// Redirect due exit code
@@ -1371,10 +1371,10 @@ NSInteger kBlobAsImageFile = 4;
 							}
 						}
 						if(!correspondingWindowFound) {
-							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
-							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
-							[c displayHTMLContent:output withOptions:nil];
-							[[NSApp delegate] addHTMLOutputController:c];
+							SPBundleHTMLOutputController *bundleController = [[SPBundleHTMLOutputController alloc] init];
+							[bundleController setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
+							[bundleController displayHTMLContent:output withOptions:nil];
+							[[NSApp delegate] addHTMLOutputController:bundleController];
 						}
 					}
 				}

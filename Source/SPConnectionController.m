@@ -80,6 +80,7 @@
 @synthesize connectionSSHKeychainItemAccount;
 
 @synthesize isConnecting;
+@synthesize favoritesPBoardType;
 
 #pragma mark -
 
@@ -527,7 +528,7 @@
 	// Restore the toolbar icons
 	NSArray *toolbarItems = [[[tableDocument parentWindow] toolbar] items];
 
-	for (NSInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
+	for (NSUInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 
 	// Set keychain id for saving SPF files
 	if (connectionKeychainID) [tableDocument setKeychainID:connectionKeychainID];

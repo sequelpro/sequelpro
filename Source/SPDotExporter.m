@@ -27,6 +27,7 @@
 #import "SPFileHandle.h"
 #import "SPTableData.h"
 #import "SPExportUtilities.h"
+#import "SPExportFile.h"
 
 @implementation SPDotExporter
 
@@ -105,7 +106,7 @@
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
 	// Process the tables
-	for (NSInteger i = 0; i < [[self dotExportTables] count]; i++) 
+	for (NSUInteger i = 0; i < [[self dotExportTables] count]; i++) 
 	{
 
 		// Check for cancellation flag

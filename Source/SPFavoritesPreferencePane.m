@@ -644,7 +644,6 @@
 		}
 		
 		[favoritesController setValue:abbreviatedFileName forKeyPath:@"selection.sshKeyLocation"];
-		[self setSshKeyLocation:abbreviatedFileName];
 		
 		// SSL key file selection
 	} 

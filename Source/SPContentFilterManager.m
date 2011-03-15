@@ -171,7 +171,7 @@
 
 	// Take all content filters until the next header or end of all content filters
 	NSUInteger numOfArgs;
-	for(i; i<[contentFilters count]; i++) {
+	for ( ; i<[contentFilters count]; i++) {
 
 		if(![[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"]) {
 			NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
@@ -609,7 +609,7 @@
 		originalRow += offset;
 
 		// For safety reasons
-		if(originalRow > [contentFilters count]-1) originalRow = [contentFilters count] - 1;
+		if(originalRow > (NSInteger)[contentFilters count]-1) originalRow = [contentFilters count] - 1;
 
 		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[contentFilters objectAtIndex:originalRow]];
 		[contentFilters removeObjectAtIndex:originalRow];

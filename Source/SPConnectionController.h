@@ -44,7 +44,7 @@
 
 @interface SPConnectionController : NSObject 
 {
-	id <SPConnectionControllerDelegateProtocol> delegate;
+	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
 	SPDatabaseDocument *tableDocument;
 	NSView *databaseConnectionSuperview;

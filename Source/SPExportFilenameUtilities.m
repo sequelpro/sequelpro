@@ -24,6 +24,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportFilenameUtilities.h"
+#import "SPTablesList.h"
+#import "SPDatabaseViewController.h"
 
 @implementation SPExportController (SPExportFilenameUtilities)
 
