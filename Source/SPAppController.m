@@ -653,7 +653,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	NSString *command = [url host];
 	NSString *passedProcessID = [url user];
 	NSArray *parameter;
-	NSArray *pathComponents = [[url absoluteString] pathComponents];
+	NSArray *pathComponents;
+	if([[url absoluteString] hasSuffix:@"/"])
+		pathComponents = [[[url absoluteString] substringToIndex:[[url absoluteString] length]-1] pathComponents];
+	else
+		pathComponents = [[url absoluteString] pathComponents];
 
 	if([pathComponents count] > 2)
 		parameter = [pathComponents subarrayWithRange:NSMakeRange(2, [pathComponents count]-2)];
