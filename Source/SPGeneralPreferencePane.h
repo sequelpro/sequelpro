@@ -35,8 +35,6 @@
 @interface SPGeneralPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
 {	
 	IBOutlet NSPopUpButton *defaultFavoritePopup;
-	
-	IBOutlet NSArrayController *favoritesController;
 }
 
 - (IBAction)updateDefaultFavorite:(id)sender;

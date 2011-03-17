@@ -30,7 +30,6 @@
 
 @interface SPAppController : NSObject <FRFeedbackReporterDelegate>
 {
-
 	IBOutlet NSWindow* bundleEditorWindow;
 
 	BOOL isNewFavorite;
@@ -55,7 +54,6 @@
 	NSMutableArray *runningActivitiesArray;
 
 	NSString *lastBundleBlobFilesDirectory;
-
 }
 
 @property (readwrite, retain) NSString *lastBundleBlobFilesDirectory;

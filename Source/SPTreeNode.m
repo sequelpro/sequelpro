@@ -69,7 +69,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 			return;
 		}
 		
-		if (![node isLeaf]) {
+		if ([node isGroup]) {
 			[node removeObjectFromChildren:object];
 		}
 	}
@@ -88,7 +88,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 	{
 		[descendants addObject:node];
 		
-		if (![node isLeaf]) {
+		if ([node isGroup]) {
 			[descendants addObjectsFromArray:[node descendants]];
 		}
 	}
@@ -107,7 +107,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 	
 	for (SPTreeNode *node in [self childNodes])
 	{
-		if ([node isLeaf]) {
+		if (![node isGroup]) {
 			[childLeafs addObject:node];
 		}
 	}
@@ -127,7 +127,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 	
 	for (SPTreeNode *node in [self childNodes])
 	{
-		if ([node isLeaf]) {
+		if (![node isGroup]) {
 			[childLeafs addObject:node];
 		}
 		else {
@@ -149,7 +149,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 	
 	for (SPTreeNode *node in [self childNodes])
 	{
-		if (![node isLeaf]) {
+		if ([node isGroup]) {
 			[groupChildren addObject:node];	
 		}
 	}
@@ -177,7 +177,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 			break;
 		}
 		
-		if (![node isLeaf]) {
+		if ([node isGroup]) {
 			SPTreeNode *innerNode = [self parentFromArray:[node childNodes]];
 			
 			if (innerNode) {
@@ -205,7 +205,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 		if (node == self) return YES;
 		
 		// Check all the sub-nodes
-		if (![node isLeaf]) {
+		if ([node isGroup]) {
 			if ([self isDescendantOfOrOneOfNodes:[node childNodes]]) {
 				return YES;
 			}

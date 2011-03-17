@@ -24,6 +24,16 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPGeneralPreferencePane.h"
+#import "SPFavoritesController.h"
+#import "SPTreeNode.h"
+#import "SPFavoriteNode.h"
+#import "SPGroupNode.h"
+
+@interface SPGeneralPreferencePane ()
+
+- (NSMenuItem *)_constructMenuItemForNode:(SPTreeNode *)node;
+
+@end
 
 @implementation SPGeneralPreferencePane
 
@@ -37,7 +47,7 @@
 {
 	[prefs setBool:([defaultFavoritePopup indexOfSelectedItem] == 0) forKey:SPSelectLastFavoriteUsed];
 			
-	[prefs setInteger:[[sender selectedItem] tag] forKey:SPDefaultFavorite];
+	[prefs setInteger:[sender tag] forKey:SPDefaultFavorite];
 }
 
 #pragma mark -
@@ -55,15 +65,13 @@
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
 	// Add all favorites to the menu
-	for (NSDictionary *favorite in [favoritesController arrangedObjects])
+	for (SPTreeNode *node in [[[[[SPFavoritesController sharedFavoritesController] favoritesTree] childNodes] objectAtIndex:0] childNodes])
 	{
-		NSMenuItem *favoriteMenuItem = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:SPFavoriteNameKey] action:NULL keyEquivalent:@""];
-				
-		[favoriteMenuItem setTag:[[favorite objectForKey:SPFavoriteIDKey] integerValue]];
+		NSMenuItem *menuItem = [self _constructMenuItemForNode:node];
 		
-		[[defaultFavoritePopup menu] addItem:favoriteMenuItem];
+		[[defaultFavoritePopup menu] addItem:menuItem];
 		
-		[favoriteMenuItem release];
+		[menuItem release];
 	}
 	
 	// Select the default favorite from prefs
@@ -73,6 +81,52 @@
 	else {
 		[defaultFavoritePopup selectItemAtIndex:0];
 	}
+}
+
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Builds a menu item and sub-menu (if required) of the supplied tree node.
+ *
+ * @param node The node to build the menu item for
+ *
+ * @return The menu item
+ */
+- (NSMenuItem *)_constructMenuItemForNode:(SPTreeNode *)node
+{
+	NSMenuItem *menuItem = nil;
+	
+	if ([node isGroup]) {
+		
+		SPGroupNode *groupNode = (SPGroupNode *)[node representedObject];
+		
+		menuItem = [[NSMenuItem alloc] initWithTitle:[groupNode nodeName] action:NULL keyEquivalent:@""];
+		
+		NSMenu *subMenu = [[NSMenu alloc] initWithTitle:[groupNode nodeName]];
+		
+		for (SPTreeNode *childNode in [node childNodes])
+		{
+			NSMenuItem *innerItem = [self _constructMenuItemForNode:childNode];
+			
+			[subMenu addItem:innerItem];
+			
+			[innerItem release];
+		}
+		
+		[menuItem setSubmenu:subMenu];
+	}
+	else {
+		NSDictionary *favorite = [(SPFavoriteNode *)[node representedObject] nodeFavorite];
+		
+		menuItem = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:SPFavoriteNameKey] action:@selector(updateDefaultFavorite:) keyEquivalent:@""];
+	
+		[menuItem setTag:[[favorite objectForKey:SPFavoriteIDKey] integerValue]];
+	
+		[menuItem setTarget:self];
+	}
+	
+	return menuItem;
 }
 
 #pragma mark -
