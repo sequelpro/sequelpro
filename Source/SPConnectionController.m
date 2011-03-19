@@ -1293,7 +1293,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 - (void)_reloadFavoritesViewData
 {	
 	[favoritesOutlineView reloadData];
-	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:NO];
+	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:YES];
 	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
 }
 
