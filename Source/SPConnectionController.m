@@ -45,7 +45,7 @@ static NSString *SPImportFavorites         = @"ImportFavorites";
 static NSString *SPExportFavorites         = @"ExportFavorites";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
-@interface SPConnectionController (PrivateAPI)
+@interface SPConnectionController ()
 
 - (BOOL)_checkHost;
 - (void)_sortFavorites;

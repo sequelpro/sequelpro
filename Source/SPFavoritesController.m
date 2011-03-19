@@ -31,7 +31,7 @@
 
 static SPFavoritesController *sharedFavoritesController = nil;
 
-@interface SPFavoritesController (PrivateAPI)
+@interface SPFavoritesController ()
 
 - (void)_loadFavorites;
 - (void)_constructFavoritesTree;
