@@ -26,6 +26,13 @@
 #import "SPQueryFavoriteManager.h"
 #import "SPDatabaseDocument.h"
 #import "SPWindowController.h"
+#import "SPFieldMapperController.h"
+
+@interface SPTableView (SPTableViewDelegate)
+
+- (BOOL)cancelRowEditing;
+
+@end
 
 @implementation SPTableView
 

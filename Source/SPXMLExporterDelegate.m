@@ -26,7 +26,7 @@
 #import "SPXMLExporterDelegate.h"
 #import "SPXMLExporter.h"
 #import "SPDatabaseDocument.h"
-#import "SPFileHandle.h"
+#import "SPExportFile.h"
 
 @implementation SPExportController (SPXMLExporterDelegate)
 

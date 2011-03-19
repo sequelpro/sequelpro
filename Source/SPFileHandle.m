@@ -55,7 +55,7 @@
  */
 - (id)initWithFile:(void *)theFile fromPath:(const char *)path mode:(int)mode
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		dataWritten = NO;
 		allDataWritten = YES;
 		fileIsClosed = NO;
@@ -215,10 +215,10 @@
 			
 	if (useCompression) {
 		if (compressionFormat == SPGzipCompression) {
-			theDataLength = gzread(wrappedFile, theData, length);
+			theDataLength = gzread(wrappedFile, theData, (unsigned)length);
 		}
 		else if (compressionFormat == SPBzip2Compression) {
-			theDataLength = BZ2_bzread(wrappedFile, theData, length);
+			theDataLength = BZ2_bzread(wrappedFile, theData, (int)length);
 		}		
 	}
 	else {
@@ -426,10 +426,12 @@
 			switch (compressionFormat) 
 			{
 				case SPGzipCompression:
-					bufferLengthWrittenOut = gzwrite(wrappedFile, [dataToBeWritten bytes], [dataToBeWritten length]);
+					bufferLengthWrittenOut = gzwrite(wrappedFile, [dataToBeWritten bytes], (unsigned)[dataToBeWritten length]);
 					break;
 				case SPBzip2Compression:
-					bufferLengthWrittenOut = BZ2_bzwrite(wrappedFile, [dataToBeWritten bytes], [dataToBeWritten length]);
+					bufferLengthWrittenOut = BZ2_bzwrite(wrappedFile, (void *)[dataToBeWritten bytes], (int)[dataToBeWritten length]);
+					break;
+				default:
 					break;
 			}
 		} 
@@ -439,7 +441,7 @@
 
 		// Restore data to the buffer if it wasn't written out
 		pthread_mutex_lock(&bufferLock);
-		if (bufferLengthWrittenOut < [dataToBeWritten length]) {
+		if (bufferLengthWrittenOut < (NSInteger)[dataToBeWritten length]) {
 			if ([buffer length]) {
 				long dataLengthToRestore = [dataToBeWritten length] - bufferLengthWrittenOut;
 				[buffer replaceBytesInRange:NSMakeRange(0, 0) withBytes:[[dataToBeWritten subdataWithRange:NSMakeRange(bufferLengthWrittenOut, dataLengthToRestore)] bytes] length:dataLengthToRestore];

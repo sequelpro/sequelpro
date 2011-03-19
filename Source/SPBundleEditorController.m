@@ -484,7 +484,7 @@
 		NSString *currentCategory = [currentDict objectForKey:SPBundleFileCategoryKey];
 		if(!currentCategory) currentCategory = @"";
 		if([currentCategory length]) {
-			NSUInteger *newIndexPath[4];
+			NSUInteger newIndexPath[4];
 			newIndexPath[0] = 0;
 			newIndexPath[1] = newScopeIndex;
 			newIndexPath[2] = [self _arrangedCategoryIndexForScopeIndex:selectedTag andCategory:currentCategory];
@@ -494,7 +494,7 @@
 			[commandsOutlineView reloadData];
 		} else {
 			// Move current Bundle command to according new scope without category
-			NSUInteger *newIndexPath[3];
+			NSUInteger newIndexPath[3];
 			newIndexPath[0] = 0;
 			newIndexPath[1] = newScopeIndex;
 			newIndexPath[2] = 0;
@@ -640,8 +640,8 @@
 		[self saveBundle:bundle atPath:nil];
 
 		// Insert duplicate below selected one
-		NSUInteger *currentPath[[currentIndexPath length]];
-		[currentIndexPath getIndexes:&currentPath];
+		NSUInteger currentPath[[currentIndexPath length]];
+		[currentIndexPath getIndexes:currentPath];
 		currentPath[[currentIndexPath length]-1] = (NSUInteger)currentPath[[currentIndexPath length]-1] + 1;
 		currentIndexPath = [NSIndexPath indexPathWithIndexes:currentPath length:[currentIndexPath length]];
 
@@ -656,24 +656,24 @@
 
 		// If selected item is one of the main scopes go one item deeper
 		if([currentIndexPath length] == 2) {
-			NSUInteger *newPath[3];
-			[currentIndexPath getIndexes:&newPath];
+			NSUInteger newPath[3];
+			[currentIndexPath getIndexes:newPath];
 			newPath[2] = 0;
 			currentIndexPath = [NSIndexPath indexPathWithIndexes:newPath length:3];
 			lastIndexWasAlreadyFixed = YES;
 		}
 		// If selected item is a category go one item deeper
 		else if([currentIndexPath length] == 3 && [currentObject objectForKey:kChildrenKey]) {
-			NSUInteger *newPath[4];
-			[currentIndexPath getIndexes:&newPath];
+			NSUInteger newPath[4];
+			[currentIndexPath getIndexes:newPath];
 			newPath[3] = 0;
 			currentIndexPath = [NSIndexPath indexPathWithIndexes:newPath length:4];
 			lastIndexWasAlreadyFixed = YES;
 			category = [currentObject objectForKey:kBundleNameKey];
 		}
 
-		NSUInteger *currentPath[[currentIndexPath length]];
-		[currentIndexPath getIndexes:&currentPath];
+		NSUInteger currentPath[[currentIndexPath length]];
+		[currentIndexPath getIndexes:currentPath];
 
 		// Last index plus 1 to insert bundle under the current selection
 		if(!lastIndexWasAlreadyFixed) {
@@ -854,7 +854,7 @@
 
 		// Get all Bundles out of commandBundleTree which were touched
 		NSMutableArray *allBundles = [NSMutableArray array];
-		for(NSInteger k = 0; k < [[commandBundleTree objectForKey:kChildrenKey] count]; k++) {
+		for (NSUInteger k = 0; k < [[commandBundleTree objectForKey:kChildrenKey] count]; k++) {
 			for(id item in [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:k] objectForKey:kChildrenKey]) {
 				if([item objectForKey:kChildrenKey]) {
 					for(id b in [item objectForKey:kChildrenKey]) {
@@ -1094,7 +1094,7 @@
 
 			if(![selectedRows count]) return;
 
-			NSInteger rowIndex;
+			NSUInteger rowIndex;
 			NSMutableArray *stillUndeletedBundles = [NSMutableArray array];
 			for(rowIndex = 0; rowIndex < [deletedDefaultBundles count]; rowIndex++) {
 				if(![selectedRows containsIndex:rowIndex])
@@ -1460,8 +1460,8 @@
 
 		NSIndexPath *currentIndexPath = [commandBundleTreeController selectionIndexPath];
 		NSUInteger newIndexPathLength = 4;
-		NSUInteger *newIndexPath[newIndexPathLength];
-		[currentIndexPath getIndexes:&newIndexPath];
+		NSUInteger newIndexPath[newIndexPathLength];
+		[currentIndexPath getIndexes:newIndexPath];
 		newIndexPath[3] = 0;
 
 		// Set the category index
@@ -1804,10 +1804,10 @@
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
-	NSUInteger *selPath[2];
+	NSUInteger selPath[2];
 	selPath[0] = 0;
 	selPath[1] = 0;
-	[commandBundleTreeController setSelectionIndexPath:[NSIndexPath indexPathWithIndexes:&selPath length:2]];
+	[commandBundleTreeController setSelectionIndexPath:[NSIndexPath indexPathWithIndexes:selPath length:2]];
 	[commandBundleTreeController rearrangeObjects];
 	[commandsOutlineView reloadData];
 
@@ -2091,10 +2091,6 @@
 				NSMutableDictionary *newCat = [NSMutableDictionary dictionary];
 				[newCat setObject:category forKey:kBundleNameKey];
 				[newCat setObject:[NSMutableArray array] forKey:kChildrenKey];
-				NSUInteger *newPath[3];
-				newPath[0] = 0;
-				newPath[1] = k;
-				newPath[2] = 0;
 				
 				// Add it
 				[[[j representedObject] objectForKey:kChildrenKey] addObject:newCat];

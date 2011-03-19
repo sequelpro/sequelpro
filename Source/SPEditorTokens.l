@@ -46,6 +46,7 @@ size_t yyuoffset, yyuleng;
 %}
 %option noyywrap
 %option nounput
+%option noinput
 %option case-insensitive
 
 s		[ \t\n\r]+

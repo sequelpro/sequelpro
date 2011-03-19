@@ -29,6 +29,7 @@
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
+#import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
@@ -146,11 +147,11 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	// Select users from the mysql.user table
 	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
 	
-	NSInteger rows = [result numOfRows];
+	NSUInteger rows = (NSUInteger)[result numOfRows];
 	
 	if (rows > 0) [result dataSeek:0];
 	
-	for (NSInteger i = 0; i < rows; i++)
+	for (NSUInteger i = 0; i < rows; i++)
 	{
 		[resultAsArray addObject:[result fetchRowAsDictionary]];
 	}
@@ -217,7 +218,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
-	for (NSInteger i = 0; i < [items count]; i++)
+	for (NSUInteger i = 0; i < [items count]; i++)
 	{
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
@@ -312,7 +313,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	if ([results numOfRows]) [results dataSeek:0];
 	
-	for (NSInteger i = 0; i < [results numOfRows]; i++) 
+	for (NSUInteger i = 0; i < [results numOfRows]; i++) 
 	{
 		[schemas addObject:[results fetchRowAsDictionary]];
 	}
@@ -383,7 +384,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		[queryResults dataSeek:0];
 	}
 	
-	for (NSInteger i = 0; i < [queryResults numOfRows]; i++) 
+	for (NSUInteger i = 0; i < [queryResults numOfRows]; i++) 
 	{
 		NSDictionary *rowDict = [queryResults fetchRowAsDictionary];
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
@@ -844,7 +845,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	for (NSPersistentStore* store in stores)
     {
         NSError *error = nil;
-        [[self.managedObjectContext persistentStoreCoordinator] removePersistentStore:store error:error];
+        [[self.managedObjectContext persistentStoreCoordinator] removePersistentStore:store error:&error];
     }
 	
     // Add a new store
@@ -1209,7 +1210,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	MCPResult *result = [self.mySqlConnection queryString:statement];
 	
-	NSUInteger rows = [result numOfRows];
+	NSUInteger rows = (NSUInteger)[result numOfRows];
 	BOOL userExists = YES;
 	
 	if (rows == 0) userExists = NO;
@@ -1257,6 +1258,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
         [self.mySqlConnection queryString:updateResourcesStatement];
         [self _checkAndDisplayMySqlError];
     }
+	return YES;
 }
 
 /**

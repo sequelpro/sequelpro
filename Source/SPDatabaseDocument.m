@@ -61,6 +61,7 @@
 #import "SPConnectionDelegate.h"
 #import "SPWindowController.h"
 #import "SPFileHandle.h"
+#import "SPConnectionHandler.h"
 
 @interface SPDatabaseDocument (PrivateAPI)
 

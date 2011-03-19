@@ -255,7 +255,8 @@
 
 	[[control tabView] addTabViewItem:selectedTabViewItem];
 
-	[control update:NO]; //make sure the new tab is set in the correct position
+	// Make sure the new tab is set in the correct position by forcing an update
+	[tabBar update:NO];
 
 	// Update tabBar of the new window
 	[newWindowController tabView:[tabBar tabView] didDropTabViewItem:[selectedCell representedObject] inTabBar:control];
@@ -318,7 +319,7 @@
  */
 - (void)selectTabAtIndex:(NSInteger)index
 {
-	if([[tabBar cells] count] > 0 && [[tabBar cells] count] > index) {
+	if([[tabBar cells] count] > 0 && [[tabBar cells] count] > (NSUInteger)index) {
 		[tabView selectTabViewItemAtIndex:index];
 	} else if([[tabBar cells] count]) {
 		[tabView selectTabViewItemAtIndex:0];
@@ -438,7 +439,7 @@
 
 	NSInteger tabIndex = [tabView indexOfTabViewItem:tabViewItem];
 
-	if([[tabBar cells] count] < tabIndex) return @"";
+	if([[tabBar cells] count] < (NSUInteger)tabIndex) return @"";
 
 	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:tabIndex];
 
@@ -539,7 +540,7 @@
 	NSImage *viewImage = [[NSImage alloc] init];
 
 	// Capture an image of the entire window
-	CGImageRef windowImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, [[self window] windowNumber], kCGWindowImageBoundsIgnoreFraming);
+	CGImageRef windowImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, (unsigned int)[[self window] windowNumber], kCGWindowImageBoundsIgnoreFraming);
 	NSBitmapImageRep *viewRep = [[NSBitmapImageRep alloc] initWithCGImage:windowImage];
 	[viewImage addRepresentation:viewRep];
 
@@ -750,7 +751,7 @@
 	[bindingOptions setObject:NSNegateBooleanTransformerName forKey:@"NSValueTransformerName"];
 	[[theCell indicator] bind:@"animate" toObject:theDocument withKeyPath:@"isProcessing" options:nil];
 	[[theCell indicator] bind:@"hidden" toObject:theDocument withKeyPath:@"isProcessing" options:bindingOptions];
-	[theDocument addObserver:self forKeyPath:@"isProcessing" options:nil context:nil];
+	[theDocument addObserver:self forKeyPath:@"isProcessing" options:0 context:nil];
 }
 
 /**

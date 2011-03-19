@@ -30,6 +30,7 @@
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
+#import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -164,7 +165,7 @@
 	}
 
 	// Take all favorites until the next header or end of favorites
-	for(i; i<[favorites count]; i++) {
+	for( ; i<[favorites count]; i++) {
 
 		if(![[favorites objectAtIndex:i] objectForKey:@"headerOfFileURL"])
 			[favs addObject:[favorites objectAtIndex:i]];
@@ -654,7 +655,7 @@
 	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
 	NSUInteger rowIndex = [draggedIndexes firstIndex];
 	while ( rowIndex != NSNotFound ) {
-		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
+		[draggedRows addObject:[NSNumber numberWithUnsignedInteger:rowIndex]];
 		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
 	}
 
@@ -672,7 +673,7 @@
 		originalRow += offset;
 
 		// For safety reasons
-		if(originalRow > [favorites count]-1) originalRow = [favorites count] - 1;
+		if(originalRow > (NSInteger)[favorites count]-1) originalRow = [favorites count] - 1;
 
 		NSMutableDictionary *draggedRow = [NSMutableDictionary dictionaryWithDictionary:[favorites objectAtIndex:originalRow]];
 		[favorites removeObjectAtIndex:originalRow];

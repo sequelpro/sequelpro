@@ -24,7 +24,7 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPTextView, SPTableView;
+@class SPTextView, SPTableView, SPTablesList;
 
 @interface SPFieldMapperController : NSWindowController 
 {
@@ -89,7 +89,7 @@
 	id theDelegate;
 	id customQueryInstance;
 	id fieldMappingImportArray;
-	id tablesListInstance;
+	SPTablesList *tablesListInstance;
 	id databaseDataInstance;
 
 	NSInteger fieldMappingCurrentRow;

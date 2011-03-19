@@ -76,17 +76,13 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-	if ((self = [super initWithCoder:coder])) {
-		[self setNodeFavorite:[coder decodeObjectForKey:SPFavoriteNodeKey]];
-	}
+	[self setNodeFavorite:[coder decodeObjectForKey:SPFavoriteNodeKey]];
 	
 	return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder
-{
-	[super encodeWithCoder:coder];
-	
+{	
 	[coder encodeObject:[self nodeFavorite] forKey:SPFavoriteNodeKey];
 }
 

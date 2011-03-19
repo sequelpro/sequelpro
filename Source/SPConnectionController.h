@@ -44,7 +44,7 @@
 
 @interface SPConnectionController : NSObject 
 {
-	NSObject <SPConnectionControllerDelegateProtocol> *delegate;
+	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
 	SPDatabaseDocument *dbDocument;
 	SPSSHTunnel *sshTunnel;

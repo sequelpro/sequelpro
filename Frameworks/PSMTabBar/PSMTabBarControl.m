@@ -37,8 +37,6 @@
 - (void)removeTabForCell:(PSMTabBarCell *)cell;
 
     // draw
-- (void)update;
-- (void)update:(BOOL)animate;
 - (void)_setupTrackingRectsForCell:(PSMTabBarCell *)cell;
 - (void)_positionOverflowMenu;
 - (void)_checkWindowFrame;

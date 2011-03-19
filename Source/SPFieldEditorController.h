@@ -171,7 +171,10 @@
 
 - (IBAction)closeEditSheet:(id)sender;
 - (IBAction)openEditSheet:(id)sender;
+- (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)saveEditSheet:(id)sender;
+- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (IBAction)dropImage:(id)sender;
 - (IBAction)segmentControllerChanged:(id)sender;
 - (IBAction)quickLookFormatButton:(id)sender;
@@ -201,6 +204,7 @@
 - (void)textViewDidChangeSelection:(NSNotification *)notification;
 
 - (void)setWasCutPaste;
+- (void)setAllowedUndo;
 - (void)setDoGroupDueToChars;
 
 @end

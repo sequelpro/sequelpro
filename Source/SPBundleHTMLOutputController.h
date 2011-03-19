@@ -33,7 +33,7 @@
 	NSString       *initHTMLSourceString;
 	NSString       *windowUUID;
 	NSString       *docUUID;
-	BOOL           suppressExceptionAlert;
+	BOOL           suppressExceptionAlerting;
 	WebPreferences *webPreferences;
 
 }
@@ -42,7 +42,7 @@
 @property(readwrite,retain) NSString *initHTMLSourceString;
 @property(readwrite,retain) NSString *windowUUID;
 @property(readwrite,retain) NSString *docUUID;
-@property(assign) BOOL suppressExceptionAlert;
+@property(assign) BOOL suppressExceptionAlerting;
 
 - (IBAction)printDocument:(id)sender;
 

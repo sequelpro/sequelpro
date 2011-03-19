@@ -259,7 +259,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 				// Remove it from the list directly since the list will be updated in the background
 				// to avoid to cancel a command which is already cancelled
 				if(status == 0)
-					[[[controlView delegate] onMainThread] removeActivity:[[contextInfo objectForKey:@"pid"] intValue]];
+					[[[(id)controlView delegate] onMainThread] removeActivity:[[contextInfo objectForKey:@"pid"] intValue]];
 				return YES;
 			}
 

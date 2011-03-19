@@ -515,7 +515,7 @@
 				NSArray *vals = [cycle objectForKey:CYCLE_VALUES];
 				NSInteger currIndex = [[cycle objectForKey:CYCLE_INDEX] integerValue];
 				currIndex++;
-				if (currIndex >= [vals count]) {
+				if (currIndex >= (NSInteger)[vals count]) {
 					currIndex = 0;
 				}
 				[cycle setObject:[NSNumber numberWithInteger:currIndex] forKey:CYCLE_INDEX];

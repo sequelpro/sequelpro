@@ -48,8 +48,6 @@
 - (void)addTable;
 - (void)copyTable;
 - (void)renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
 @end
 
@@ -1266,6 +1264,70 @@
 }
 
 #pragma mark -
+#pragma mark Data validation
+
+/**
+ * Check tableName for length and if the tableName doesn't match
+ * against current database table/view names (case-insensitive).
+ */
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType
+{
+    return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
+}
+
+/**
+ * Check tableName for length and if the tableName doesn't match
+ * against current database table/view names (case-insensitive).
+ */
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
+{
+	BOOL isValid = YES;
+
+	// delete trailing whitespaces since 'foo  ' or '   ' are not valid table names
+	NSString *fieldStr = [tableName stringByMatching:@"(.*?)\\s*$" capture:1];
+	NSString *lowercaseFieldStr = [fieldStr lowercaseString];
+
+	// If table name has trailing whitespaces return 'no valid'
+	if([fieldStr length] != [tableName length]) return NO;
+
+	// empty table names are invalid
+	if([fieldStr length] == 0) return NO;
+
+
+	NSArray *similarTables;
+	switch (tableType) {
+		case SPTableTypeView:
+		case SPTableTypeTable:
+			similarTables = [self allTableAndViewNames];
+			break;
+		case SPTableTypeProc:
+			similarTables = [self allProcedureNames];
+			break;
+		case SPTableTypeFunc:
+			similarTables = [self allFunctionNames];
+			break;
+		default:
+		// if some other table type is given, just return yes
+		// better a mysql error than not being able to change something at all
+		return YES;
+	}
+
+	for(id table in similarTables) {
+		//compare case insensitive here
+		if([lowercaseFieldStr isEqualToString:[table lowercaseString]]) {
+			if (ignoreSelectedTable) {
+				// if table is the selectedTable, ignore it
+				// we must compare CASE SENSITIVE here!
+				if ([table isEqualToString:selectedTableName]) continue;
+			}
+			isValid = NO;
+			break;
+		}
+	}
+	return isValid;
+}
+
+#pragma mark -
 #pragma mark Datasource methods
 
 /**
@@ -2375,68 +2437,6 @@
 	}
 
 	[NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
-}
-
-
-/**
- * Check tableName for length and if the tableName doesn't match
- * against current database table/view names (case-insensitive).
- */
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType
-{
-    return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
-}
-
-/**
- * Check tableName for length and if the tableName doesn't match
- * against current database table/view names (case-insensitive).
- */
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
-{
-	BOOL isValid = YES;
-
-	// delete trailing whitespaces since 'foo  ' or '   ' are not valid table names
-	NSString *fieldStr = [tableName stringByMatching:@"(.*?)\\s*$" capture:1];
-	NSString *lowercaseFieldStr = [fieldStr lowercaseString];
-
-	// If table name has trailing whitespaces return 'no valid'
-	if([fieldStr length] != [tableName length]) return NO;
-
-	// empty table names are invalid
-	if([fieldStr length] == 0) return NO;
-
-
-	NSArray *similarTables;
-	switch (tableType) {
-		case SPTableTypeView:
-		case SPTableTypeTable:
-			similarTables = [self allTableAndViewNames];
-			break;
-		case SPTableTypeProc:
-			similarTables = [self allProcedureNames];
-			break;
-		case SPTableTypeFunc:
-			similarTables = [self allFunctionNames];
-			break;
-		default:
-		// if some other table type is given, just return yes
-		// better a mysql error than not being able to change something at all
-		return YES;
-	}
-
-	for(id table in similarTables) {
-		//compare case insensitive here
-		if([lowercaseFieldStr isEqualToString:[table lowercaseString]]) {
-			if (ignoreSelectedTable) {
-				// if table is the selectedTable, ignore it
-				// we must compare CASE SENSITIVE here!
-				if ([table isEqualToString:selectedTableName]) continue;
-			}
-			isValid = NO;
-			break;
-		}
-	}
-	return isValid;
 }
 
 @end

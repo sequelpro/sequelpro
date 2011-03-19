@@ -29,9 +29,9 @@
 #import "SPAppController.h"
 
 // Constants
-static const NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
-static const NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
-static const NSString *SPTableViewIDColumnIdentifier = @"Id";
+static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
+static NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
+static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 @interface SPProcessListController (PrivateAPI)
 
@@ -471,7 +471,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
  */
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {	
-	id object = (row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
+	id object = ((NSUInteger)row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
 		
 	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
 }
@@ -627,7 +627,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 - (void)_updateSelectedAutoRefreshIntervalInterface
 {	
 	BOOL found = NO;
-	NSUInteger interval = [prefs integerForKey:SPProcessListAutoRrefreshInterval];
+	NSInteger interval = [prefs integerForKey:SPProcessListAutoRrefreshInterval];
 	
 	NSArray *items = [[autoRefreshIntervalMenuItem submenu] itemArray];
 	

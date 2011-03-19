@@ -208,7 +208,7 @@ static CGFloat slow_in_out (CGFloat t)
 	[webPreferences setJavaScriptEnabled:YES];
 
 	NSString *fontName = ([displayOptions objectForKey:@"fontname"]) ? [displayOptions objectForKey:@"fontname"] : @"Lucida Grande";
-	int fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] integerValue] : 10;
+	int fontSize = ([displayOptions objectForKey:@"fontsize"]) ? [[displayOptions objectForKey:@"fontsize"] intValue] : 10;
 	if(fontSize < 5) fontSize = 5;
 	
 	NSFont* font = [NSFont fontWithName:fontName size:fontSize];
@@ -263,7 +263,7 @@ static CGFloat slow_in_out (CGFloat t)
 		boundingRect = [fr convertRect: boundingRect toView:NULL];
 		pos = [[fr window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
 		NSFont* font = [fr font];
-		if(font) pos.y -= [font pointSize]*1.3;
+		if(font) pos.y -= [font pointSize]*1.3f;
 		return pos;
 	// Otherwise return mouse location
 	} else {
@@ -297,10 +297,10 @@ static CGFloat slow_in_out (CGFloat t)
 				@"</html>";
 
 	NSString *bgColor = ([displayOptions objectForKey:@"backgroundcolor"]) ? [displayOptions objectForKey:@"backgroundcolor"] : @"#F9FBC5";
-	BOOL transparent = ([displayOptions objectForKey:@"transparent"]) ? YES : NO;
+	BOOL isTransparent = ([displayOptions objectForKey:@"transparent"]) ? YES : NO;
 
 
-	fullContent = [NSString stringWithFormat:fullContent, transparent ? @"transparent" : bgColor, content];
+	fullContent = [NSString stringWithFormat:fullContent, isTransparent ? @"transparent" : bgColor, content];
 	[[webView mainFrame] loadHTMLString:fullContent baseURL:nil];
 
 }
@@ -387,9 +387,9 @@ static CGFloat slow_in_out (CGFloat t)
 	[self setValue:[NSDate date] forKey:@"didOpenAtDate"];
 	mousePositionWhenOpened = NSZeroPoint;
 
-	NSWindow* keyWindow = [[NSApp keyWindow] retain];
-	BOOL didAcceptMouseMovedEvents = [keyWindow acceptsMouseMovedEvents];
-	[keyWindow setAcceptsMouseMovedEvents:YES];
+	NSWindow* appKeyWindow = [[NSApp keyWindow] retain];
+	BOOL didAcceptMouseMovedEvents = [appKeyWindow acceptsMouseMovedEvents];
+	[appKeyWindow setAcceptsMouseMovedEvents:YES];
 	NSEvent* event = nil;
 	NSInteger eventType;
 	while((event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES]))
@@ -401,7 +401,7 @@ static CGFloat slow_in_out (CGFloat t)
 		if(eventType == NSMouseMoved && [self shouldCloseForMousePosition:[NSEvent mouseLocation]])
 			break;
 
-		if(keyWindow != [NSApp keyWindow] || ![NSApp isActive])
+		if(appKeyWindow != [NSApp keyWindow] || ![NSApp isActive])
 			break;
 		
 		if(spTooltipCounter > 1)
@@ -410,8 +410,8 @@ static CGFloat slow_in_out (CGFloat t)
 
 	}
 
-	[keyWindow setAcceptsMouseMovedEvents:didAcceptMouseMovedEvents];
-	[keyWindow release];
+	[appKeyWindow setAcceptsMouseMovedEvents:didAcceptMouseMovedEvents];
+	[appKeyWindow release];
 
 	[self orderOut:self];
 
@@ -434,7 +434,7 @@ static CGFloat slow_in_out (CGFloat t)
 
 - (void)animationTick:(id)sender
 {
-	CGFloat alpha = 0.97f * (1.0f - 40*slow_in_out(-2.2 * [animationStart timeIntervalSinceNow]));
+	CGFloat alpha = 0.97f * (1.0f - 40*slow_in_out(-2.2f * (float)[animationStart timeIntervalSinceNow]));
 
 	if(alpha > 0.0f && spTooltipCounter==1)
 	{

@@ -56,7 +56,7 @@
 
 @interface SPSQLParser : NSMutableString
 {
-	id string;
+	NSMutableString *string;
 	unichar *stringCharCache;
 	unichar parsedToChar;
 	NSInteger parsedToPosition;

@@ -75,17 +75,13 @@ static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-	if ((self = [super initWithCoder:coder])) {
-		[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
-	}
+	[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
 	
 	return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
-	[super encodeWithCoder:coder];
-	
 	[coder encodeObject:[self nodeName] forKey:SPGroupNodeNameKey];
 }
 

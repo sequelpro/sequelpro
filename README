@@ -15,11 +15,19 @@ the locations of these .ibplugins are:
 	./Frameworks/BWToolkitFramework.framework/Versions/A/Resources/BWToolkit.ibplugin
 	./Frameworks/ShortcutRecorder.framework/Versions/A/Resources/ShortcutRecorder.ibplugin
 
+(NOTE: Xcode 4 does not yet support interface builder plugins. Xcode 3.2.x is recommended)
+
 By including these .ibplugins within the frameworks, Interface Builder should detect 
 them automatically when you build.  If you get build errors complaining "Unable to 
 resolve plug-in dependency for ...", automatic detection has failed.  The first thing 
-to try is to quit Xcode and Interface Builder, re-open Xcode, and try again; if this 
-still fails, locate the .ibplugins and double click on them to add them to Interface Builder.
+to try is the following steps to try and make Xcode pick up the plugins iteself:
+
+1) Quit Xcode and Interface Builder
+2) Re-open Xcode
+3) Locate one of the .xib files with dependencies, for example DBView.xib, and open it from Xcode
+4) Close it, and try building again.
+
+If this still fails, locate the .ibplugins and double click on them to add them to Interface Builder.
 
 If Interface Builder complains that they're already installed then you might want 
 to replace the current versions with the versions in the project; to do this go to the

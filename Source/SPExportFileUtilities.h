@@ -37,7 +37,7 @@
 @interface SPExportController (SPExportFileUtilities)
 
 - (void)writeCSVHeaderToExportFile:(SPExportFile *)file;
-- (void)writeXMLHeaderToexportFile:(SPExportFile *)file;
+- (void)writeXMLHeaderToExportFile:(SPExportFile *)file;
 
 - (void)errorCreatingExportFileHandles:(NSArray *)files;
 

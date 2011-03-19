@@ -132,6 +132,8 @@
 	if (frontDoc && ![frontDoc isWorking] && ![[frontDoc connectionID] isEqualToString:@"_"]) {
 		[frontDoc startPrintDocumentOperation];
 	}
+
+	return nil;
 }
 
 @end

@@ -37,8 +37,8 @@ static NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
  */
 void SPApplyRevisionChanges(void)
 {
-	NSInteger i;
-	NSInteger currentVersionNumber, recordedVersionNumber = 0;
+	NSUInteger i;
+	NSUInteger currentVersionNumber, recordedVersionNumber = 0;
 	
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	
@@ -321,11 +321,11 @@ void SPMigrateConnectionFavoritesData(void)
 		NSInteger lastFavoriteIndex    = [prefs integerForKey:@"LastFavoriteIndex"];
 		NSInteger defaultFavoriteIndex = [prefs integerForKey:SPDefaultFavorite];
 		
-		if ((lastFavoriteIndex >= 0) && (lastFavoriteIndex <= [favorites count])) {
+		if ((lastFavoriteIndex >= (NSInteger)0) && ((NSUInteger)lastFavoriteIndex <= [favorites count])) {
 			[prefs setInteger:[[[favorites objectAtIndex:lastFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
 		}
 		
-		if ((defaultFavoriteIndex >= 0) && (defaultFavoriteIndex <= [favorites count])) {
+		if ((defaultFavoriteIndex >= (NSInteger)0) && ((NSUInteger)defaultFavoriteIndex <= [favorites count])) {
 			[prefs setInteger:[[[favorites objectAtIndex:defaultFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPDefaultFavorite];
 		}
 		

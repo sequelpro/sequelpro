@@ -100,7 +100,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	
 	// Walk along the string, processing characters.
 	for (currentStringIndex = 0; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = CFStringGetCharacterAtIndex(string ,currentStringIndex);
+		currentCharacter = CFStringGetCharacterAtIndex((CFStringRef)string ,currentStringIndex);
 		switch (currentCharacter) {
 
 			// When quote characters are encountered walk to the end of the quoted string.
@@ -117,8 +117,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			// For comments starting "--[\s]", ensure the start syntax is valid before proceeding.
 			case '-':
 				if (stringLength < currentStringIndex + 2) break;
-				if (CFStringGetCharacterAtIndex(string, currentStringIndex+1) != '-') break;
-				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:CFStringGetCharacterAtIndex(string, currentStringIndex+2)]) break;
+				if (CFStringGetCharacterAtIndex((CFStringRef)string, currentStringIndex+1) != '-') break;
+				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:CFStringGetCharacterAtIndex((CFStringRef)string, currentStringIndex+2)]) break;
 				commentEndIndex = [self endIndexOfCommentOfType:SPDoubleDashComment startingAtIndex:currentStringIndex];
 				
 				// Remove the comment
@@ -139,7 +139,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			// For comments starting "/*", ensure the start syntax is valid before proceeding.
 			case '/':
 				if (stringLength < currentStringIndex + 1) break;
-				if (CFStringGetCharacterAtIndex(string, currentStringIndex+1) != '*') break;
+				if (CFStringGetCharacterAtIndex((CFStringRef)string, currentStringIndex+1) != '*') break;
 				commentEndIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];
 				
 				// Remove the comment
@@ -163,7 +163,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	if (![string length]) return nil;
 
 	// If the first character is not a quote character, return the entire string.
-	quoteCharacter = CFStringGetCharacterAtIndex(string, 0);
+	quoteCharacter = CFStringGetCharacterAtIndex((CFStringRef)string, 0);
 	if (quoteCharacter != '`' && quoteCharacter != '"' && quoteCharacter != '\'') {
 		return [NSString stringWithString:string];
 	}
@@ -204,9 +204,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	// Check the ends of the string for whitespace, to determine if it needs removing
 	NSUInteger whitespaceCharsAtStart = 0;
 	NSUInteger whitespaceCharsAtEnd = 0;
-	while (whitespaceCharsAtStart < stringLength && [trimCharset characterIsMember:CFStringGetCharacterAtIndex(queryString, whitespaceCharsAtStart)])
+	while (whitespaceCharsAtStart < stringLength && [trimCharset characterIsMember:CFStringGetCharacterAtIndex((CFStringRef)queryString, whitespaceCharsAtStart)])
 		whitespaceCharsAtStart++;
-	while (whitespaceCharsAtEnd < stringLength && [trimCharset characterIsMember:CFStringGetCharacterAtIndex(queryString, stringLength - whitespaceCharsAtEnd - 1)])
+	while (whitespaceCharsAtEnd < stringLength && [trimCharset characterIsMember:CFStringGetCharacterAtIndex((CFStringRef)queryString, stringLength - whitespaceCharsAtEnd - 1)])
 		whitespaceCharsAtEnd++;
 
 	// Trim if necessary
@@ -221,7 +221,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	unichar currentCharacter, innerCharacter;
 	BOOL characterIsEscaped;
 	for (currentStringIndex = 0; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = CFStringGetCharacterAtIndex(queryString, currentStringIndex);
+		currentCharacter = CFStringGetCharacterAtIndex((CFStringRef)queryString, currentStringIndex);
 		switch (currentCharacter) {
 
 			// When quote characters are encountered walk to the end of the quoted string.
@@ -229,13 +229,13 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			case '"':
 			case '`':
 				for (innerStringIndex = currentStringIndex+1; innerStringIndex < stringLength; innerStringIndex++) {
-					innerCharacter = CFStringGetCharacterAtIndex(queryString, innerStringIndex);
+					innerCharacter = CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex);
 
 					// If the string end is a backtick and one has been encountered, treat it as end of string
 					if (innerCharacter == '`' && currentCharacter == '`') {
 					
 						// ...as long as the next character isn't also a backtick, in which case it's being quoted.  Skip both.
-						if ((innerStringIndex + 1) < stringLength && CFStringGetCharacterAtIndex(queryString, innerStringIndex+1) == '`') {
+						if ((innerStringIndex + 1) < stringLength && CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex+1) == '`') {
 							innerStringIndex++;
 							continue;
 						}
@@ -250,7 +250,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 						characterIsEscaped = NO;
 						i = 1;
 						quotedStringLength = innerStringIndex - 1;
-						while ((quotedStringLength - i) > 0 && CFStringGetCharacterAtIndex(queryString, innerStringIndex - i) == '\\') {
+						while ((quotedStringLength - i) > 0 && CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex - i) == '\\') {
 							characterIsEscaped = !characterIsEscaped;
 							i++;
 						}
@@ -258,7 +258,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 						// If an even number have been found, it may be the end of the string - as long as the subsequent character
 						// isn't also the same character, in which case it's another form of escaping.
 						if (!characterIsEscaped) {
-							if ((innerStringIndex + 1) < stringLength && CFStringGetCharacterAtIndex(queryString, innerStringIndex+1) == currentCharacter) {
+							if ((innerStringIndex + 1) < stringLength && CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex+1) == currentCharacter) {
 								innerStringIndex++;
 								continue;
 							}
@@ -289,7 +289,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			
 			// Check whether it's a CRLF or just a CR
 			isCRLF = NO;
-			if ([normalisedString length] > CRLocation + 1 && CFStringGetCharacterAtIndex(normalisedString, CRLocation + 1) == '\n') isCRLF = YES;
+			if ([normalisedString length] > CRLocation + 1 && CFStringGetCharacterAtIndex((CFStringRef)normalisedString, CRLocation + 1) == '\n') isCRLF = YES;
 
 			// Normalise the line endings
 			if (isCRLF) {
@@ -572,7 +572,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	}
 	
 	// Add the end of the string after the previously matched character where appropriate.
-	if (stringIndex + 1 < [string length]) {
+	if ((NSUInteger)(stringIndex + 1) < [string length]) {
 		NSString *finalQuery = [[string substringFromIndex:stringIndex + 1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		if (supportDelimiters && [finalQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
 			finalQuery = nil;
@@ -616,7 +616,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	
 	// Add the end of the string after the previously matched character where appropriate.
 	stringIndex++;
-	if (stringIndex < [string length]) {
+	if ((NSUInteger)stringIndex < [string length]) {
 		NSString *finalQuery = [[string substringFromIndex:stringIndex] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		if (supportDelimiters && [finalQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
 			finalQuery = nil;
@@ -811,10 +811,10 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * into account the various forms of SQL escaping.
  * A method intended for use by the functions above.
  */
-- (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)index
+- (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)startIndex
 {
-	NSInteger currentStringIndex;
-	NSUInteger stringLength, i, quotedStringLength;
+	NSInteger currentStringIndex, stringLength;
+	NSUInteger i, quotedStringLength;
 	BOOL characterIsEscaped;
 	unichar currentCharacter;
 
@@ -825,7 +825,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	stringLength = [string length];
 
 	// Walk the string looking for the string end
-	for ( currentStringIndex = index; currentStringIndex < stringLength; currentStringIndex++) {
+	for ( currentStringIndex = startIndex; currentStringIndex < stringLength; currentStringIndex++) {
 		currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex);
 
 		// If the string end is a backtick and one has been encountered, treat it as end of string
@@ -871,9 +871,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 /**
  * A method intended for use by the functions above.
  */
-- (NSUInteger) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(NSInteger)index
+- (NSUInteger) endIndexOfCommentOfType:(SPCommentType)commentType startingAtIndex:(NSInteger)anIndex
 {
-	NSUInteger stringLength = [string length];
+	NSInteger stringLength = [string length];
 	unichar currentCharacter;
 
 	// Cache the charAtIndex selector, avoiding dynamic binding overhead
@@ -885,16 +885,16 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		// For comments of type "--[\s]", start the comment processing two characters in to match the start syntax,
 		// then flow into the Hash comment handling (looking for first newline).
 		case SPDoubleDashComment:
-			index = index+2;
+			anIndex = anIndex+2;
 		
 		// For comments starting "--[\s]" and "#", continue until the first newline.
 		case SPHashComment:
-			index++;
-			for ( ; index < stringLength; index++ ) {
-				currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, index);
+			anIndex++;
+			for ( ; anIndex < stringLength; anIndex++ ) {
+				currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, anIndex);
 				if (currentCharacter == '\r') containsCRs = YES;
 				if (currentCharacter == '\r' || currentCharacter == '\n') {
-					return index-1;
+					return anIndex-1;
 				}
 			}
 			break;
@@ -902,11 +902,11 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		// For comments starting "/*", start the comment processing one character in to match the start syntax, then
 		// continue until the first matching "*/".
 		case SPCStyleComment:
-			index = index+2;
-			for ( ; index < stringLength; index++ ) {
-				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, index) == '*') {
-					if ((stringLength > index + 1) && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, index+1) == '/') {
-						return (index+1);
+			anIndex = anIndex+2;
+			for ( ; anIndex < stringLength; anIndex++ ) {
+				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, anIndex) == '*') {
+					if ((stringLength > anIndex + 1) && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, anIndex+1) == '/') {
+						return (anIndex+1);
 					}
 				}
 			}
@@ -921,35 +921,35 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 - (id) init {
 
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString string] retain];
 	}
 	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithBytes:(const void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString alloc] initWithBytes:bytes length:length encoding:encoding];
 	}
 	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithBytesNoCopy:(void *)bytes length:(NSUInteger)length encoding:(NSStringEncoding)encoding freeWhenDone:(BOOL)flag {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString alloc] initWithBytesNoCopy:bytes length:length encoding:encoding freeWhenDone:flag];
 	}
 	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithCapacity:(NSUInteger)capacity {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString stringWithCapacity:capacity] retain];
 	}
 	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithCharactersNoCopy:(unichar *)characters length:(NSUInteger)length freeWhenDone:(BOOL)flag {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString alloc] initWithCharactersNoCopy:characters length:length freeWhenDone:flag];
 	}
 	[self initSQLExtensions];
@@ -959,14 +959,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	return [self initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:NULL];
 }
 - (id) initWithContentsOfFile:(NSString *)path encoding:(NSStringEncoding)encoding error:(NSError **)error {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString alloc] initWithContentsOfFile:path encoding:encoding error:error];
 	}
 	[self initSQLExtensions];
 	return self;
 }
 - (id) initWithCString:(const char *)nullTerminatedCString encoding:(NSStringEncoding)encoding {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString alloc] initWithCString:nullTerminatedCString encoding:encoding];
 	}
 	[self initSQLExtensions];
@@ -981,7 +981,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	return str;
 }
 - (id) initWithFormat:(NSString *)format arguments:(va_list)argList {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		string = [[NSMutableString alloc] initWithFormat:format arguments:argList];
 	}
 	[self initSQLExtensions];
@@ -1001,8 +1001,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 - (NSUInteger) length {
 	return [string length];
 }
-- (unichar) characterAtIndex:(NSUInteger)index {
-	return CFStringGetCharacterAtIndex(string, index);
+- (unichar) characterAtIndex:(NSUInteger)anIndex {
+	return CFStringGetCharacterAtIndex((CFStringRef)string, anIndex);
 }
 - (id) description {
 	return [string description];
@@ -1048,22 +1048,22 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * Does no bounds checking on the underlying string, and so is kept
  * separate from characterAtIndex:.
  */
-- (unichar) _charAtIndex:(NSInteger)index
+- (unichar) _charAtIndex:(NSInteger)anIndex
 {
 
 	// If the current cache doesn't include the current character, update it.
-	if (index > charCacheEnd || index < charCacheStart) {
+	if (anIndex > charCacheEnd || anIndex < charCacheStart) {
 		if (charCacheEnd > -1) {
 			free(stringCharCache);
 		}
-		NSUInteger remainingStringLength = [string length] - index;
+		NSUInteger remainingStringLength = [string length] - anIndex;
 		NSUInteger newcachelength = (CHARACTER_CACHE_LENGTH < remainingStringLength)?CHARACTER_CACHE_LENGTH:remainingStringLength;
 		stringCharCache = (unichar *)calloc(newcachelength, sizeof(unichar));
-		CFStringGetCharacters(string, CFRangeMake(index, newcachelength), stringCharCache);
-		charCacheEnd = index + newcachelength - 1;
-		charCacheStart = index;
+		CFStringGetCharacters((CFStringRef)string, CFRangeMake(anIndex, newcachelength), stringCharCache);
+		charCacheEnd = anIndex + newcachelength - 1;
+		charCacheStart = anIndex;
 	}
-	return stringCharCache[index - charCacheStart];
+	return stringCharCache[anIndex - charCacheStart];
 }
 
 /**

@@ -104,6 +104,7 @@
 	if ([fileManager fileExistsAtPath:[self exportFilePath]]) {
 		return [[NSFileManager defaultManager] removeItemAtPath:[self exportFilePath] error:nil];
 	}
+	return NO;
 }
 
 /**
@@ -136,10 +137,9 @@
 	// The file path must be set before attempting to create the file handle
 	if ((![self exportFilePath]) || ([[self exportFilePath] length] == 0)) {
 		[NSException raise:NSInternalInconsistencyException 
-					format:@"Attempting to create an export filehandle for a path that is either not set or has zero length: %@." 
-				 arguments:[self exportFilePath]];
+					format:@"Attempting to create an export filehandle for a path that is either not set or has zero length: %@." , [self exportFilePath]];
 		
-		return;
+		return SPExportFileHandleFailed;
 	}
 	
 	NSFileManager *fileManager = [NSFileManager defaultManager];

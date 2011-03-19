@@ -246,29 +246,29 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
  */
 - (IBAction)export:(id)sender
 {
-	SPExportType exportType = SPSQLExport;
-	SPExportSource exportSource = SPTableExport;
+	SPExportType selectedExportType = SPSQLExport;
+	SPExportSource selectedExportSource = SPTableExport;
 	
-	NSArray *tables = [tablesListInstance selectedTableItems];
+	NSArray *selectedTables = [tablesListInstance selectedTableItems];
 	
 	BOOL isCustomQuerySelected = ([tableDocumentInstance isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1)); 
 	BOOL isContentSelected     = ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
 	
 	if (isContentSelected) {		
-		tables = nil;
-		exportType = SPCSVExport;
-		exportSource = SPFilteredExport;
+		selectedTables = nil;
+		selectedExportType = SPCSVExport;
+		selectedExportSource = SPFilteredExport;
 	}
 	else if (isCustomQuerySelected) {
-		tables = nil;
-		exportType = SPCSVExport;
-		exportSource = SPQueryExport;
+		selectedTables = nil;
+		selectedExportType = SPCSVExport;
+		selectedExportSource = SPQueryExport;
 	}
 	else {
-		tables = ([tables count]) ? tables : nil; 
+		selectedTables = ([selectedTables count]) ? selectedTables : nil; 
 	}
 	
-	[self exportTables:tables asFormat:exportType usingSource:exportSource];
+	[self exportTables:selectedTables asFormat:selectedExportType usingSource:selectedExportSource];
 	
 	// Ensure UI validation
 	[self switchInput:exportInputPopUpButton];

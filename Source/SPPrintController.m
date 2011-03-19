@@ -34,6 +34,7 @@
 #import "SPConnectionController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPTableTriggers.h"
+#import "SPDatabaseViewController.h"
 
 @implementation SPDatabaseDocument (SPPrintController)
 
@@ -107,7 +108,7 @@
 		NSInteger rowLimit = [prefs integerForKey:SPPrintWarningRowLimit];
 
 		// Result count minus one because the first element is the column names
-		NSUInteger resultRows = ([[tableContentInstance currentResult] count] - 1);
+		NSInteger resultRows = ([[tableContentInstance currentResult] count] - 1);
 
 		if (resultRows > rowLimit) {
 

@@ -25,6 +25,7 @@
 
 #import "SPExporter.h"
 #import "SPExportFile.h"
+#import "SPFileHandle.h"
 
 @implementation SPExporter
 
