@@ -29,13 +29,26 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 
+static NSString *SPDatabaseImage = @"database-small";
+
 @interface SPGeneralPreferencePane ()
 
-- (NSMenuItem *)_constructMenuItemForNode:(SPTreeNode *)node;
+- (NSArray *)_constructMenuItemsForNode:(SPTreeNode *)node atLevel:(NSUInteger)level;
 
 @end
 
 @implementation SPGeneralPreferencePane
+
+#pragma mark -
+#pragma mark Initialisation
+
+- (void)awakeFromNib
+{
+	// Generic folder image for use in the outline view's groups
+	folderImage = [[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericFolderIcon)] retain];
+	
+	[folderImage setSize:NSMakeSize(16, 16)];
+}
 
 #pragma mark -
 #pragma mark IB action methods
@@ -44,7 +57,15 @@
  * Updates the default favorite.
  */ 
 - (IBAction)updateDefaultFavorite:(id)sender
-{
+{		
+	for (NSMenuItem *item in [defaultFavoritePopup itemArray])
+	{
+		[item setState:NSOffState];
+	}
+	
+	[sender setState:NSOnState];
+	[defaultFavoritePopup setTitle:[sender title]];
+	
 	[prefs setBool:([defaultFavoritePopup indexOfSelectedItem] == 0) forKey:SPSelectLastFavoriteUsed];
 			
 	[prefs setInteger:[sender tag] forKey:SPDefaultFavorite];
@@ -60,18 +81,18 @@
 {
 	[defaultFavoritePopup removeAllItems];
 	
-	// Use the last used favorite
 	[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"Last Used", @"Last Used entry in favorites menu")];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
 	// Add all favorites to the menu
 	for (SPTreeNode *node in [[[[[SPFavoritesController sharedFavoritesController] favoritesTree] childNodes] objectAtIndex:0] childNodes])
 	{
-		NSMenuItem *menuItem = [self _constructMenuItemForNode:node];
+		NSArray *items = [self _constructMenuItemsForNode:node atLevel:0];
 		
-		[[defaultFavoritePopup menu] addItem:menuItem];
-		
-		[menuItem release];
+		for (NSMenuItem *item in items)
+		{
+			[[defaultFavoritePopup menu] addItem:item];
+		}
 	}
 	
 	// Select the default favorite from prefs
@@ -93,40 +114,48 @@
  *
  * @return The menu item
  */
-- (NSMenuItem *)_constructMenuItemForNode:(SPTreeNode *)node
+- (NSArray *)_constructMenuItemsForNode:(SPTreeNode *)node atLevel:(NSUInteger)level
 {
-	NSMenuItem *menuItem = nil;
+	NSMutableArray *items = [NSMutableArray array];
 	
 	if ([node isGroup]) {
 		
+		level++;
+		
 		SPGroupNode *groupNode = (SPGroupNode *)[node representedObject];
 		
-		menuItem = [[NSMenuItem alloc] initWithTitle:[groupNode nodeName] action:NULL keyEquivalent:@""];
+		NSMenuItem *groupItem = [[NSMenuItem alloc] initWithTitle:[groupNode nodeName] action:NULL keyEquivalent:@""];
 		
-		NSMenu *subMenu = [[NSMenu alloc] initWithTitle:[groupNode nodeName]];
+		[groupItem setEnabled:NO];
+		[groupItem setImage:folderImage];
+		
+		[items addObject:groupItem];
+		
+		[groupItem release];
 		
 		for (SPTreeNode *childNode in [node childNodes])
 		{
-			NSMenuItem *innerItem = [self _constructMenuItemForNode:childNode];
-			
-			[subMenu addItem:innerItem];
-			
-			[innerItem release];
+			NSArray *innerItems = [self _constructMenuItemsForNode:childNode atLevel:level];
+	
+			[items addObjectsFromArray:innerItems];
 		}
-		
-		[menuItem setSubmenu:subMenu];
 	}
 	else {
 		NSDictionary *favorite = [(SPFavoriteNode *)[node representedObject] nodeFavorite];
 		
-		menuItem = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:SPFavoriteNameKey] action:@selector(updateDefaultFavorite:) keyEquivalent:@""];
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:SPFavoriteNameKey] action:@selector(updateDefaultFavorite:) keyEquivalent:@""];
 	
 		[menuItem setTag:[[favorite objectForKey:SPFavoriteIDKey] integerValue]];
-	
+		[menuItem setImage:[NSImage imageNamed:SPDatabaseImage]];
+		[menuItem setIndentationLevel:level];
 		[menuItem setTarget:self];
+		
+		[items addObject:menuItem];
+		
+		[menuItem release];
 	}
 	
-	return menuItem;
+	return items;
 }
 
 #pragma mark -
@@ -160,6 +189,15 @@
 - (BOOL)preferencePaneAllowsResizing
 {
 	return NO;
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[folderImage release], folderImage = nil;
+	
+	[super dealloc];
 }
 
 @end

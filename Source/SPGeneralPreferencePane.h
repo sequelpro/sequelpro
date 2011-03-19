@@ -34,6 +34,8 @@
  */
 @interface SPGeneralPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
 {	
+	NSImage *folderImage;
+	
 	IBOutlet NSPopUpButton *defaultFavoritePopup;
 }
 
