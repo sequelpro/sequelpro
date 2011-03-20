@@ -44,7 +44,7 @@ Usage: perl $0 [options]
 
 Possible options are:
   
-  --header  (-h)      Source header file path (required)
+  --header  (-s)      Source header file path (required)
   --output  (-c)      The output path (required)
   --author  (-a)      The author of the eventual test cases (required)
   --help    (-h)      Print this help message
