@@ -115,7 +115,7 @@ static NSString *SPDatabaseImage = @"database-small";
  * @return The menu item
  */
 - (NSArray *)_constructMenuItemsForNode:(SPTreeNode *)node atLevel:(NSUInteger)level
-{
+{	
 	NSMutableArray *items = [NSMutableArray array];
 	
 	if ([node isGroup]) {
@@ -126,8 +126,11 @@ static NSString *SPDatabaseImage = @"database-small";
 		
 		NSMenuItem *groupItem = [[NSMenuItem alloc] initWithTitle:[groupNode nodeName] action:NULL keyEquivalent:@""];
 		
+		NSUInteger groupLevel = (level - 1);
+		
 		[groupItem setEnabled:NO];
 		[groupItem setImage:folderImage];
+		[groupItem setIndentationLevel:groupLevel];
 		
 		[items addObject:groupItem];
 		
