@@ -23,17 +23,13 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		112730571180788A000737FD /* SPTableCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 112730551180788A000737FD /* SPTableCopyTest.m */; };
-		1127305B11807894000737FD /* SPDatabaseInfoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1127305911807894000737FD /* SPDatabaseInfoTest.m */; };
 		1141A389117BBFF200126A28 /* SPTableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1141A388117BBFF200126A28 /* SPTableCopy.m */; };
 		1141A38A117BBFF200126A28 /* SPTableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1141A388117BBFF200126A28 /* SPTableCopy.m */; };
 		115D63E2117CBC5900419057 /* SPDatabaseInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 115D63E1117CBC5900419057 /* SPDatabaseInfo.m */; };
 		115D63E3117CBC5900419057 /* SPDatabaseInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 115D63E1117CBC5900419057 /* SPDatabaseInfo.m */; };
 		1198F5B31174EDD500670590 /* SPDatabaseCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5B21174EDD500670590 /* SPDatabaseCopy.m */; };
-		1198F5C41174EF3F00670590 /* SPDatabaseCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */; };
 		1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5B21174EDD500670590 /* SPDatabaseCopy.m */; };
 		11B55BFE1189E3B2009EF465 /* SPDBActionCommons.m in Sources */ = {isa = PBXBuildFile; fileRef = 11B55BFD1189E3B2009EF465 /* SPDBActionCommons.m */; };
-		11C211261180EBFF00758039 /* SPDatabaseRenameTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */; };
 		11C211271180EC0400758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		11D44DF0118F5887002AA43C /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; };
@@ -61,6 +57,11 @@
 		174CE11E10AB80B5008F892B /* DatabaseProcessList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 174CE11C10AB80B5008F892B /* DatabaseProcessList.xib */; };
 		174CE14210AB9281008F892B /* SPProcessListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CE14110AB9281008F892B /* SPProcessListController.m */; };
 		175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */; };
+		1760599F1336199D0098E162 /* SPMenuAdditionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1760599E1336199D0098E162 /* SPMenuAdditionsTests.m */; };
+		176059B713361D380098E162 /* SPDatabaseRenameTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */; };
+		176059B813361D380098E162 /* SPDatabaseInfoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1127305911807894000737FD /* SPDatabaseInfoTest.m */; };
+		176059B913361D390098E162 /* SPTableCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 112730551180788A000737FD /* SPTableCopyTest.m */; };
+		176059BA13361D3A0098E162 /* SPDatabaseCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
 		177E792E0FCB54EC00E9E122 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792B0FCB54EC00E9E122 /* database-small.png */; };
 		177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792C0FCB54EC00E9E122 /* dummy-small.png */; };
@@ -628,6 +629,8 @@
 		175EC63312733B36009A7C0F /* SPExportControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportControllerDelegate.h; sourceTree = "<group>"; };
 		175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportControllerDelegate.m; sourceTree = "<group>"; };
 		175EC64C12733CDF009A7C0F /* SPCategoryAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCategoryAdditions.h; sourceTree = "<group>"; };
+		1760599D1336199D0098E162 /* SPMenuAdditionsTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMenuAdditionsTests.h; sourceTree = "<group>"; };
+		1760599E1336199D0098E162 /* SPMenuAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMenuAdditionsTests.m; sourceTree = "<group>"; };
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
 		177E792B0FCB54EC00E9E122 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
@@ -1872,6 +1875,8 @@
 			children = (
 				380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */,
 				380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */,
+				1760599D1336199D0098E162 /* SPMenuAdditionsTests.h */,
+				1760599E1336199D0098E162 /* SPMenuAdditionsTests.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -2983,15 +2988,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				11C211271180EC0400758039 /* SPDatabaseRename.m in Sources */,
-				11C211261180EBFF00758039 /* SPDatabaseRenameTest.m in Sources */,
 				1141A38A117BBFF200126A28 /* SPTableCopy.m in Sources */,
 				115D63E3117CBC5900419057 /* SPDatabaseInfo.m in Sources */,
-				112730571180788A000737FD /* SPTableCopyTest.m in Sources */,
-				1127305B11807894000737FD /* SPDatabaseInfoTest.m in Sources */,
 				1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */,
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */,
 				380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */,
-				1198F5C41174EF3F00670590 /* SPDatabaseCopyTest.m in Sources */,
+				1760599F1336199D0098E162 /* SPMenuAdditionsTests.m in Sources */,
+				176059B713361D380098E162 /* SPDatabaseRenameTest.m in Sources */,
+				176059B813361D380098E162 /* SPDatabaseInfoTest.m in Sources */,
+				176059B913361D390098E162 /* SPTableCopyTest.m in Sources */,
+				176059BA13361D3A0098E162 /* SPDatabaseCopyTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3703,7 +3709,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
@@ -3736,7 +3742,7 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
@@ -3767,6 +3773,7 @@
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
 				INFOPLIST_FILE = "Resources/Plists/Unit Tests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (

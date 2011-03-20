@@ -26,8 +26,8 @@
 #import "SPStringAdditionsTest.h"
 #import "SPStringAdditions.h"
 
-static const NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
-static const NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
+static NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
+static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
 
 @implementation SPStringAdditionsTest
 
