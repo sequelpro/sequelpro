@@ -203,7 +203,6 @@
 	}
 
 	NSMutableArray *theTableFields = [[NSMutableArray alloc] init];
-	[theTableFields setArray:[NSArray array]];
 
 	// Make a mutable copy out of the cached [tableDataInstance columns] since we're adding infos
 	for (id col in [tableDataInstance columns])
@@ -352,6 +351,10 @@
  */
 - (IBAction)reloadTable:(id)sender
 {
+
+	// Check whether a save of the current row is required
+	if ( ![[self onMainThread] saveRowOnDeselect] ) return;
+
 	[tableDataInstance resetAllData];
 	[tableDocumentInstance setStatusRequiresReload:YES];
 
@@ -379,9 +382,9 @@
 	[indexesController setTable:selectedTable];
 
 	// Reset the table store and display
+	[tableSourceView deselectAll:self];
 	[tableFields removeAllObjects];
 	[enumFields removeAllObjects];
-	[tableSourceView deselectAll:self];
 	[indexesTableView deselectAll:self];
 	[addFieldButton setEnabled:NO];
 	[copyFieldButton setEnabled:NO];
@@ -846,6 +849,14 @@
  */
 - (BOOL)saveRowOnDeselect
 {
+
+	// Save any edits which have been made but not saved to the table yet;
+	// but not for any NSSearchFields which could cause a crash for undo, redo.
+	id currentFirstResponder = [[tableDocumentInstance parentWindow] firstResponder];
+	if (currentFirstResponder && [currentFirstResponder isKindOfClass:[NSView class]] && [(NSView *)currentFirstResponder isDescendantOf:tableSourceView]) {
+		[[tableDocumentInstance parentWindow] endEditingFor:nil];
+	}
+
 	// If no rows are currently being edited, or a save is already in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
 	isSavingRow = YES;
