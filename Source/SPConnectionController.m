@@ -1089,7 +1089,7 @@
 	// Update the favorites list and selection
 	[self updateFavorites];
 
-	[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:[favorites count]-1] byExtendingSelection:NO];
+	[favoritesTable selectRowIndexes:[NSIndexSet indexSetWithIndex:[favorites count]] byExtendingSelection:NO];
 	[favoritesTable scrollRowToVisible:[favoritesTable selectedRow]];
 
 	// Update the favorites popup button in the preferences
