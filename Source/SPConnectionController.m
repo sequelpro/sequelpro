@@ -147,7 +147,7 @@
 		[favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
 		// Sort the favourites to match prefs and select the appropriate row - if a valid sort option is selected
-		if ((NSInteger)currentSortItem > -1) [self _sortFavorites];
+		if (currentSortItem != SPFavoritesSortUnsorted) [self _sortFavorites];
 
 		NSUInteger tableRow = [prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteIndex : SPDefaultFavorite];
 
@@ -1151,6 +1151,8 @@
 		case SPFavoritesSortTypeItem:
 			sortKey = SPFavoriteTypeKey;
 			break;
+		default:
+			return;
 	}
 
 	NSSortDescriptor *sortDescriptor = nil;
@@ -1162,11 +1164,7 @@
 		sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:sortKey ascending:(!reverseFavoritesSort) selector:@selector(caseInsensitiveCompare:)] autorelease];
 	}
 
-	NSDictionary *first = [[favorites objectAtIndex:0] retain];
-
-	[favorites removeObjectAtIndex:0];
 	[favorites sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-	[favorites insertObject:first atIndex:0];
 
 	// Rebuild the favorites tree
 	[self _buildFavoritesTree];
@@ -1174,8 +1172,6 @@
 	[favoritesTable reloadData];
 
 	[favoritesTable expandItem:[[favoritesRoot nodeChildren] objectAtIndex:0]];
-
-	[first release];
 }
 
 /**

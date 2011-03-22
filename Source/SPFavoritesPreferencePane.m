@@ -87,7 +87,7 @@
 	[favoritesTabView setTabViewType:NSNoTabsNoBorder];
 	
 	// Sort favorites if a sort type has been selected
-	if ((NSInteger)currentSortItem > -1) [self _sortFavorites];
+	if (currentSortItem != SPFavoritesSortUnsorted) [self _sortFavorites];
 }
 
 #pragma mark -
@@ -783,6 +783,8 @@
 		case SPFavoritesSortTypeItem:
 			sortKey = SPFavoriteTypeKey;
 			break;
+		default:
+			return;
 	}
 	
 	NSSortDescriptor *sortDescriptor = nil;
