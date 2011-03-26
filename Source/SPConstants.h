@@ -129,6 +129,7 @@ typedef enum
 // Sort by constants
 typedef enum
 {
+	SPFavoritesSortUnsorted = -1,
 	SPFavoritesSortNameItem = 0,
 	SPFavoritesSortHostItem = 1,
 	SPFavoritesSortTypeItem = 2

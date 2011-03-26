@@ -521,7 +521,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	// Perform sorting
 	[self _sortFavorites];
 	
-	if ((NSInteger)previousSortItem > -1) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
+	if (previousSortItem > SPFavoritesSortUnsorted) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
 	
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
 }
@@ -1183,6 +1183,8 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 			break;
 		case SPFavoritesSortTypeItem:
 			sortKey = SPFavoriteTypeKey;
+			break;
+		case SPFavoritesSortUnsorted:
 			break;
 	}
 	
