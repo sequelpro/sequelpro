@@ -316,7 +316,7 @@ void SPMigrateConnectionFavoritesData(void)
 	NSMutableArray *favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPOldFavoritesKey]];
 	
 	// Change the last used favorite and default favorite's indexes to be ID based
-	if (![prefs objectForKey:SPLastFavoriteID]) {
+	if (![prefs objectForKey:SPLastFavoriteID] && [favorites count]) {
 		
 		NSInteger lastFavoriteIndex    = [prefs integerForKey:@"LastFavoriteIndex"];
 		NSInteger defaultFavoriteIndex = [prefs integerForKey:SPDefaultFavorite];
