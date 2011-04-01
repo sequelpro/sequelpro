@@ -167,7 +167,7 @@
 	
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
-	
+
 	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
@@ -201,6 +201,9 @@
 
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
+
+	// Hide the activity list
+	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 
 	// Bind the background color of the create syntax text view to the users preference
 	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
@@ -5098,9 +5101,9 @@
 {
 	if(![hide integerValue] == 1) {
 		[tableInfoScrollView setHidden:YES];
-		[activitiesScrollView setHidden:NO];
+		[documentActivityScrollView setHidden:NO];
 	} else {
-		[activitiesScrollView setHidden:YES];
+		[documentActivityScrollView setHidden:YES];
 		[tableInfoScrollView setHidden:NO];
 	}
 }

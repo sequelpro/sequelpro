@@ -66,7 +66,7 @@
 	IBOutlet NSSearchField *listFilterField;
 
 	IBOutlet NSScrollView *tableInfoScrollView;
-	IBOutlet NSScrollView *activitiesScrollView;
+	IBOutlet NSScrollView *documentActivityScrollView;
 
 	IBOutlet NSView *parentView;
 	

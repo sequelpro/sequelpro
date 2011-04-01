@@ -63,9 +63,6 @@
 		name:SPActivitiesUpdateNotification 
 		object:nil];
 
-	[tableInfoScrollView setHidden:NO];
-	[activitiesScrollView setHidden:YES];
-
 	// Add activities header
 	[activities addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
 	[activitiesTable reloadData];
@@ -364,12 +361,10 @@
 	if(rowIndex > 0) return NO;
 
 	if(![tableInfoScrollView isHidden]) {
-		[tableInfoScrollView setHidden:YES];
-		[activitiesScrollView setHidden:NO];
+		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:0]];
 		[[NSApp mainWindow] makeFirstResponder:activitiesTable];
 	} else {
-		[activitiesScrollView setHidden:YES];
-		[tableInfoScrollView setHidden:NO];
+		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 		[[NSApp mainWindow] makeFirstResponder:infoTable];
 	}
 
