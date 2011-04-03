@@ -350,6 +350,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			}
 
 			[[self frontDocument] setStateFromConnectionFile:filename];
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPBundleFileExtension lowercaseString]]) {
 
@@ -471,6 +472,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			}
 
 			[spfs release];
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
 		}
 		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) {
 

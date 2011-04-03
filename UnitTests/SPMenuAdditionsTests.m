@@ -1,10 +1,11 @@
 //
-//  $Id$
+//  $Id$  
 //
-//  SPTableInfo.h
+//  SPMenuAdditionsTests.m
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Stuart Connolly on March 20, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,26 +23,36 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPTableInfo : NSObject 
+#import "SPMenuAdditionsTests.h"
+#import "SPMenuAdditions.h"
+
+static NSString *SPTestMenuItemTitle = @"Menu Item";
+
+@implementation SPMenuAdditionsTests
+
+- (void)setUp
 {
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
-
-	IBOutlet NSTableView *activitiesTable;
-
-	IBOutlet NSScrollView *tableInfoScrollView;
-	IBOutlet NSView *containerView;
-
-	NSMutableArray *info;
-	NSMutableArray *activities;
-	BOOL _activitiesWillBeUpdated;
+	NSUInteger num = 5;
+	
+	menu = [[NSMenu alloc] init];
+	
+	for (NSUInteger i = 0; i < num; i++)
+	{
+		[menu addItemWithTitle:[NSString stringWithFormat:@"%@ %d", SPTestMenuItemTitle, i] action:NULL keyEquivalent:@""];	
+	}
 }
 
-- (void)tableChanged:(NSNotification *)notification;
-- (void)updateActivities;
-- (void)removeActivity:(NSInteger)pid;
+- (void)tearDown
+{
+	[menu release], menu = nil;
+}
+
+- (void)testCompatibleRemoveAllItems
+{
+	[menu compatibleRemoveAllItems];
+	
+	STAssertFalse([menu numberOfItems], @"The menu should have no menu items.");
+}
 
 @end
+

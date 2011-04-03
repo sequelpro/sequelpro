@@ -1,10 +1,11 @@
 //
-//  $Id$
+//  $Id$  
 //
-//  SPTableInfo.h
+//  SPMenuAdditionsTests.h
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Stuart Connolly on March 20, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,26 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPTableInfo : NSObject 
+#import <SenTestingKit/SenTestingKit.h>
+
+@interface SPMenuAdditionsTests : SenTestCase
 {
-	IBOutlet id infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
-
-	IBOutlet NSTableView *activitiesTable;
-
-	IBOutlet NSScrollView *tableInfoScrollView;
-	IBOutlet NSView *containerView;
-
-	NSMutableArray *info;
-	NSMutableArray *activities;
-	BOOL _activitiesWillBeUpdated;
+	NSMenu *menu;
 }
-
-- (void)tableChanged:(NSNotification *)notification;
-- (void)updateActivities;
-- (void)removeActivity:(NSInteger)pid;
 
 @end

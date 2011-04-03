@@ -83,9 +83,9 @@
 	[target release];
 }
 
-- (void) testCreateDatabase {
-	SPDatabaseCopy *dbCopy = [self getDatabaseCopyFixture];
-	// test missing :)
+- (void)testCreateDatabase 
+{
+	[self getDatabaseCopyFixture];
 }
 
 @end

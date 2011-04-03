@@ -1387,7 +1387,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	// Create a distance matrix for each file-table name
 	// distance will be calculated by using Levenshtein distance minus common prefix and suffix length
 	// and minus the length of a fuzzy regex search for a common sequence of characters
-	NSUInteger i,j;
+	NSUInteger i,j,k;
 	NSMutableArray *distMatrix = [NSMutableArray array];
 	for(i=0; i < [tableHeaderNames count]; i++) {
 		CGFloat   dist     = 1e6f;
@@ -1406,8 +1406,8 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 				NSMutableString *fuzzyRegexp = [[NSMutableString alloc] initWithCapacity:3];
 				unichar c;
 
-				for(i=0; i<[headerName length]; i++) {
-					c = [headerName characterAtIndex:i];
+				for(k=0; k<[headerName length]; k++) {
+					c = [headerName characterAtIndex:k];
 					if (c == '.' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
 						[fuzzyRegexp appendFormat:@".*?\\%c",c];
 					else

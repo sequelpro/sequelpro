@@ -93,7 +93,7 @@
 
 - (void)testCreateDatabase 
 {
-	SPDatabaseRename *dbRename = [self getDatabaseRenameFixture];
+	[self getDatabaseRenameFixture];
 }
 
 @end

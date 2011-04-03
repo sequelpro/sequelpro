@@ -78,7 +78,7 @@
 
 	// Add global group row to contentFilters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			@"Global", @"MenuLabel",
+			NSLocalizedString(@"Global",@"Content Filter Manager : Filter Entry List: 'Global' Header"), @"MenuLabel",
 			@"", @"headerOfFileURL",
 			@"", @"Clause",
 			@"", @"ConjunctionLabel",

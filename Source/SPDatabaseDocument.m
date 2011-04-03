@@ -167,7 +167,7 @@
 	
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
-	
+
 	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
@@ -201,6 +201,9 @@
 
 	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
+
+	// Hide the activity list
+	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 
 	// Bind the background color of the create syntax text view to the users preference
 	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
@@ -2173,8 +2176,7 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"),
-																																					  [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection getLastErrorMessage]]);
 	}
 }
 
@@ -4439,7 +4441,6 @@
 
 	if (![self isSaveInBundle]) {
 		[self setFileURL:[NSURL fileURLWithPath:path]];
-		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:path]];
 	}
 
 	[spfDocData setObject:[NSNumber numberWithBool:([[data objectForKey:@"connection"] objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
@@ -5100,9 +5101,9 @@
 {
 	if(![hide integerValue] == 1) {
 		[tableInfoScrollView setHidden:YES];
-		[activitiesScrollView setHidden:NO];
+		[documentActivityScrollView setHidden:NO];
 	} else {
-		[activitiesScrollView setHidden:YES];
+		[documentActivityScrollView setHidden:YES];
 		[tableInfoScrollView setHidden:NO];
 	}
 }

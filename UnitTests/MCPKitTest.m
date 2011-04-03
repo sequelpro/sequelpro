@@ -27,10 +27,10 @@
 
 #import "MCPKitTest.h"
 
-static const NSString *SPTestDatabaseHost     = @"127.0.0.1";
-static const NSString *SPTestDatabaseName     = @"sakila";
-static const NSString *SPTestDatabaseUser     = @"sp_tester";
-static const NSString *SPTestDatabasePassword = @"";
+static NSString *SPTestDatabaseHost     = @"127.0.0.1";
+static NSString *SPTestDatabaseName     = @"sakila";
+static NSString *SPTestDatabaseUser     = @"sp_tester";
+static NSString *SPTestDatabasePassword = @"";
 
 static const NSInteger SPTestDatabasePort     = 3306;
 
