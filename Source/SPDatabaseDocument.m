@@ -42,6 +42,7 @@
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPConnectionController.h"
+#import "SPKeychain.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
 #import "SPUserManager.h"
@@ -4115,6 +4116,7 @@
 {
 	NSDictionary *connection = nil;
 	NSInteger connectionType = -1;
+	SPKeychain *keychain = nil;
 
 	// If this document already has a connection, don't proceed.
 	if (mySQLConnection) return NO;
@@ -4122,6 +4124,8 @@
 	// Load the connection data from the state dictionary
 	connection = [NSDictionary dictionaryWithDictionary:[stateDetails objectForKey:@"connection"]];
 	if (!connection) return NO;
+
+	if ([connection objectForKey:@"kcid"]) keychain = [[SPKeychain alloc] init];
 
 	[self updateWindowTitle:self];
 
@@ -4153,7 +4157,11 @@
 	[connectionController setSshPort:@""];
 	[connectionController setDatabase:@""];
 	[connectionController setPassword:nil];
+	[connectionController setConnectionKeychainItemName:nil];
+	[connectionController setConnectionKeychainItemAccount:nil];
 	[connectionController setSshPassword:nil];
+	[connectionController setConnectionSSHKeychainItemName:nil];
+	[connectionController setConnectionSSHKeychainItemAccount:nil];
 
 	// Set the correct connection type
 	if ([connection objectForKey:@"type"]) {
@@ -4197,8 +4205,11 @@
 		[connectionController setSslCACertFileLocation:[connection objectForKey:@"sslCACertFileLocation"]];
 
 	// Set the keychain details if available
-	if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length])
+	if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length]) {
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
+		[connectionController setConnectionKeychainItemName:[keychain nameForFavoriteName:[connectionController name] id:[self keyChainID]]];
+		[connectionController setConnectionKeychainItemAccount:[keychain accountForUser:[connectionController user] host:[connectionController host] database:[connection objectForKey:@"database"]]];
+	}
 
 	// Set password - if not in SPF file try to get it via the KeyChain
 	if ([connection objectForKey:@"password"])
@@ -4229,6 +4240,10 @@
 	if ([connection objectForKey:@"ssh_password"])
 		[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
 	else {
+		if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length]) {
+			[connectionController setConnectionSSHKeychainItemName:[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]]];
+			[connectionController setConnectionSSHKeychainItemAccount:[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]]];
+		}
 		NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
 		if(sshpw)
 			[connectionController setSshPassword:sshpw];
@@ -4257,6 +4272,8 @@
 	if ([stateDetails objectForKey:@"auto_connect"] && [[stateDetails valueForKey:@"auto_connect"] boolValue]) {
 		[connectionController initiateConnection:self];
 	}
+
+	if (keychain) [keychain release];
 
 	return YES;
 }
