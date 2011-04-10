@@ -23,5 +23,10 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 @interface SPTableView : NSTableView
+{
+	BOOL tabEditingDisabled;
+}
+
+@property (readwrite, assign) BOOL tabEditingDisabled;
 
 @end

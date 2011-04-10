@@ -31,6 +31,7 @@
 #import "SPTableData.h"
 #import "SPTableInfo.h"
 #import "SPDataImport.h"
+#import "SPTableView.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
@@ -1428,15 +1429,16 @@
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
+
+	// When enter/return is used, save the row.
 	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ) {
-		//save current line
 		[[control window] makeFirstResponder:control];
 		return TRUE;
 
+	// When the escape key is used, abort the rename.
 	} else if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] ||
 		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 
-		//abort editing
 		[control abortEditing];
 		[[NSApp mainWindow] makeFirstResponder:tablesListView];
 
@@ -1902,6 +1904,9 @@
 		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 1)];
 		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
 	}
+
+	// Disable tab edit behaviour in the tables list
+	[tablesListView setTabEditingDisabled:YES];
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self

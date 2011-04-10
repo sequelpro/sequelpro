@@ -36,6 +36,8 @@
 
 @implementation SPTableView
 
+@synthesize tabEditingDisabled;
+
 /**
  * Right-click at row will select that row before ordering out the contextual menu
  * if not more than one row is selected.
@@ -91,6 +93,19 @@
 	return YES;
 }
 
+/**
+ * On becomeFirstResponder, if editing is disabled, override the super and just
+ * display instead; this prevents the selected cell from automatically editing
+ * if the table is backtabbed to.
+ */
+- (BOOL)becomeFirstResponder {
+	if (tabEditingDisabled) {
+		[self display];
+		return YES;
+	}
+	return [super becomeFirstResponder];
+}
+
 - (void)keyDown:(NSEvent *)theEvent
 {
 	// Check if ENTER or RETURN is hit and edit the column.
@@ -131,9 +146,20 @@
 			return;
 		}
 	}
+
 	// Check if ESCAPE is hit and use it to cancel row editing if supported
 	else if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)]) {
 		if ([[self delegate] cancelRowEditing]) return;
+	}
+	
+	// If the Tab key is used, but tab editing is disabled, change focus rather than entering edit mode.
+	else if (tabEditingDisabled && [[theEvent characters] length] && [[theEvent characters] characterAtIndex:0] == NSTabCharacter) {
+		if (([theEvent modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
+			[[self window] selectKeyViewFollowingView:self];
+		} else {
+			[[self window] selectKeyViewPrecedingView:self];
+		}
+		return;
 	}
 	
 	[super keyDown:theEvent];

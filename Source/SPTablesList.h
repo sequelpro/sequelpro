@@ -25,7 +25,7 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPHistoryController;
+@class SPHistoryController, SPTableView;
 
 @interface NSObject (NSSplitView)
 
@@ -51,7 +51,7 @@
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id copyTableSheet;
-	IBOutlet id tablesListView;
+	IBOutlet SPTableView *tablesListView;
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
