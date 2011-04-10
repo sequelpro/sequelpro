@@ -280,12 +280,14 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		}
 	}
 
-	if ([carriageReturnPositions count]) {
+	// If any CRs were found, iterate over them backwards, converting to LFs by replacing or subtracting as appropriate
+	NSUInteger carriageReturnCount = [carriageReturnPositions count];
+	if (carriageReturnCount) {
 		NSMutableString *normalisedString = [NSMutableString stringWithString:queryString];
 		BOOL isCRLF;
 		NSUInteger CRLocation;
-		for (NSNumber *position in carriageReturnPositions) {
-			CRLocation = [position unsignedIntegerValue];
+		while ( carriageReturnCount-- ) {
+			CRLocation = [[carriageReturnPositions objectAtIndex:carriageReturnCount] unsignedIntegerValue];
 			
 			// Check whether it's a CRLF or just a CR
 			isCRLF = NO;
