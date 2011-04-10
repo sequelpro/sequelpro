@@ -2153,7 +2153,9 @@
 		[self updateFilter:self];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 
+		// Select the newly created table and switch to the table structure view for easier setup
 		[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
+		[tableDocumentInstance viewStructure:self];
 
 		// Query the structure of all databases in the background (mainly for completion)
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
