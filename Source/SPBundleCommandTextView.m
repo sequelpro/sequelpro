@@ -488,7 +488,13 @@
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"["]) // decrease text size by 1; ⌘- and numpad -
+		if([charactersIgnMod isEqualToString:@"0"]) // return text to standard size; ⌘0
+		{
+			[self makeTextStandardSize];
+			[self saveChangedFontInUserDefaults];
+			return;
+		}
+		if([charactersIgnMod isEqualToString:@"["]) // shift left
 		{
 			[self shiftSelectionLeft];
 			return;
@@ -498,7 +504,7 @@
 			[self shiftSelectionRight];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"/"]) // shift right
+		if([charactersIgnMod isEqualToString:@"/"]) // comment out text
 		{
 			[self commentOut];
 			return;

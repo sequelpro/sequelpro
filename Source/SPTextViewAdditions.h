@@ -46,5 +46,6 @@
 
 - (void)makeTextSizeLarger;
 - (void)makeTextSizeSmaller;
+- (void)makeTextStandardSize;
 
 @end

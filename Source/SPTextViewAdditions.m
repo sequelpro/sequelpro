@@ -482,6 +482,18 @@
 	[self setEditable:editableStatus];
 }
 
+/**
+ * Increase the textView's font size by 1
+ */
+- (void)makeTextStandardSize
+{
+	NSFont *aFont = [self font];
+	BOOL editableStatus = [self isEditable];
+	[self setEditable:YES];
+	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:11.0f]];
+	[self setEditable:editableStatus];
+}
+
 - (IBAction)executeBundleItemForInputField:(id)sender
 {
 
