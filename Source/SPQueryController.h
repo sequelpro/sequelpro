@@ -53,7 +53,9 @@
 	NSArray *completionFunctionList;
 	NSDictionary *functionArgumentSnippets;
 
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 	NSDateFormatter *dateFormatter;
 	
 	pthread_mutex_t consoleLock;

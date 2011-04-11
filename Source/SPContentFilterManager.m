@@ -29,7 +29,9 @@
 #import "SPQueryController.h"
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
+#ifndef SP_REFACTOR /* headers */
 #import <BWToolkitFramework/BWToolkitFramework.h>
+#endif
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -45,7 +47,9 @@
 {
 	if ((self = [super initWithWindowNibName:@"ContentFilterManager"])) {
 
+#ifndef SP_REFACTOR
 		prefs = [NSUserDefaults standardUserDefaults];
+#endif
 
 		contentFilters = [[NSMutableArray alloc] init];
 
@@ -84,6 +88,7 @@
 			@"", @"ConjunctionLabel",
 			nil]];
 
+#ifndef SP_REFACTOR /* prefs access */
 	// Build data source for global content filter (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
 	if([[prefs objectForKey:SPContentFilters] objectForKey:filterType]) {
@@ -94,6 +99,7 @@
 			[contentFilters addObject:f];
 		}
 	}
+#endif
 
 	// Build doc-based filters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -135,8 +141,10 @@
 	// Set column header
 	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"table column header. Read: 'Showing all content filters for fields of type %@' (ContentFilterManager)"), filterType]];
 
+#ifndef SP_REFACTOR /* split view delegate */
 	// Set the button delegate
 	[splitViewButtonBar setSplitViewDelegate:self];
+#endif
 }
 
 #pragma mark -
@@ -359,6 +367,7 @@
 		[[SPQueryController sharedQueryController] replaceContentFilterByArray:
 			[self contentFilterForFileURL:delegatesFileURL] ofType:filterType forFileURL:delegatesFileURL];
 
+#ifndef SP_REFACTOR
 		// Update global preferences' list
 		id cf = [[prefs objectForKey:SPContentFilters] mutableCopy];
 		[cf setObject:[self contentFilterForFileURL:nil] forKey:filterType];
@@ -370,6 +379,7 @@
 			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
 				[[doc valueForKeyPath:@"tableContentInstance"] setCompareTypes:nil];
 
+#endif
 
 	}
 
@@ -833,7 +843,7 @@
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:SP_FILE_PARSER_ERROR_TITLE_STRING]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:SP_FILE_PARSER_ERROR_TITLE_STRING]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil
@@ -861,7 +871,7 @@
 				[contentFilterTableView reloadData];
 				[spf release];
 			} else {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:SP_FILE_PARSER_ERROR_TITLE_STRING]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:SP_FILE_PARSER_ERROR_TITLE_STRING]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil
@@ -913,7 +923,7 @@
 											errorDescription:&err];
 
 			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting content filter data", @"Content filters could not be converted to plist upon export - message title (ContentFilterManager)")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while converting content filter data", @"Content filters could not be converted to plist upon export - message title (ContentFilterManager)")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												  otherButton:nil

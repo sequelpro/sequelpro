@@ -42,7 +42,9 @@
 - (IBAction)moveSelectionLineUp:(id)sender;
 - (IBAction)moveSelectionLineDown:(id)sender;
 
+#ifndef SP_REFACTOR
 - (IBAction)executeBundleItemForInputField:(id)sender;
+#endif
 
 - (void)makeTextSizeLarger;
 - (void)makeTextSizeSmaller;

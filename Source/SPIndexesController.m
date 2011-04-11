@@ -28,9 +28,11 @@
 #import "SPServerSupport.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
-#import "SPTablesList.h"
 #import <MCPKit/MCPKit.h>
+#import "SPDatabaseDocument.h"
+#import "SPTablesList.h"
 #import "SPDatabaseViewController.h"
+#import "SPTableStructure.h"
 
 // Constants
 static const NSString *SPNewIndexIndexName      = @"IndexName";
@@ -70,7 +72,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		indexes = [[NSMutableArray alloc] init];
 		indexedFields = [[NSMutableArray alloc] init];
 
+#ifndef SP_REFACTOR /* init ivars */
 		prefs = [NSUserDefaults standardUserDefaults];
+#endif
 
 		showAdvancedView = NO;
 
@@ -97,11 +101,15 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (void)awakeFromNib
 {
+#ifndef SP_REFACTOR /* patch */
 	// Set the index tables view's vertical gridlines if required
 	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+#else
+	BOOL useMonospacedFont = NO;
+#endif
 
 	for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 	{
@@ -113,7 +121,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
+#ifndef SP_REFACTOR /* patch */
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+#endif
 }
 
 #pragma mark -
@@ -225,7 +235,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	
 	// Begin the sheet
 	[NSApp beginSheet:[self window]
-	   modalForWindow:[dbDocument parentWindow]
+	   modalForWindow:[NSApp keyWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(addIndexSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
@@ -283,7 +293,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
-	[alert beginSheetModalForWindow:[dbDocument parentWindow] modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
+	[alert beginSheetModalForWindow:[NSApp keyWindow] modalDelegate:self didEndSelector:@selector(removeIndexSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeIndexAndForeignKey" : @"removeIndex"];
 }
 
 /**
@@ -785,7 +795,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		// Check for errors, but only if the query wasn't cancelled
 		if ([connection queryErrored] && ![connection queryCancelled]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection getLastErrorMessage]]);
 		}
 		else {
@@ -846,7 +856,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
 			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [connection getLastErrorMessage]] forKey:@"message"];
 
-			[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
+			[(SPTableStructure*)[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
 		}
 	}
 
@@ -865,7 +875,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
 		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection getLastErrorMessage]] forKey:@"message"];
 
-		[[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
+		[(SPTableStructure*)[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
 	}
 	else {
 		[tableData resetAllData];
@@ -895,7 +905,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	NSUInteger advancedViewMask = [indexAdvancedOptionsView autoresizingMask];
 	NSUInteger typeLabelMask    = [indexTypeLabel autoresizingMask];
 	NSUInteger nameLabelMask    = [indexNameLabel autoresizingMask];
-	NSUInteger buttonBarMask    = [anchoredButtonBar autoresizingMask];
+	NSUInteger buttonBarMask    = [(NSView*)anchoredButtonBar autoresizingMask];
 
 	NSRect frame = [[self window] frame];
 
@@ -914,7 +924,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexTypeLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[(NSView*)anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 
 	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
 
@@ -938,7 +948,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexAdvancedOptionsView setAutoresizingMask:advancedViewMask];
 	[indexTypeLabel setAutoresizingMask:typeLabelMask];
 	[indexNameLabel setAutoresizingMask:nameLabelMask];
-	[anchoredButtonBar setAutoresizingMask:buttonBarMask];
+	[(NSView*)anchoredButtonBar setAutoresizingMask:buttonBarMask];
 }
 
 #pragma mark -

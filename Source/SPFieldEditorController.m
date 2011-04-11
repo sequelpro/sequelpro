@@ -31,6 +31,8 @@
 #import "SPGeometryDataView.h"
 #import "SPCopyTable.h"
 #include <objc/objc-runtime.h>
+#import "SPCustomQuery.h"
+#import "SPTableContent.h"
 
 @interface SPFieldEditorController (SPFieldEditorControllerDelegate)
 
@@ -63,8 +65,9 @@
 		callerInstance = nil;
 		doGroupDueToChars = NO;
 
+#ifndef SP_REFACTOR
 		prefs = [NSUserDefaults standardUserDefaults];
-
+#endif
 		// Used for max text length recognition if last typed char is a non-space char
 		editTextViewWasChanged = NO;
 
@@ -110,6 +113,7 @@
 				[qlTypesItems addObject:type];
 			}
 		}
+#ifndef SP_REFACTOR
 		// Load user-defined QL types
 		if([prefs objectForKey:SPQuickLookTypes]) {
 			for(id type in [prefs objectForKey:SPQuickLookTypes]) {
@@ -122,6 +126,7 @@
 				[qlTypesItems addObject:type];
 			}
 		}
+#endif
 
 		qlTypes = [[NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes] retain];
 		[qlTypesItems release];
@@ -209,7 +214,13 @@
 		[bitSheetNULLButton setEnabled:_allowNULL];
 
 		// Check for NULL
-		if([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
+		if([sheetEditData isEqualToString:
+#ifndef SP_REFACTOR
+		[prefs objectForKey:SPNullValue]
+#else
+		@"NULL"
+#endif
+		]) {
 			[bitSheetNULLButton setState:NSOnState];
 			[self setToNull:bitSheetNULLButton];
 		} else {
@@ -239,14 +250,28 @@
 		usedSheet = editSheet;
 
 		// If required, use monospaced fonts
+#ifndef SP_REFACTOR
 		if (![prefs objectForKey:SPFieldEditorSheetFont]) {
-			[editTextView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+#endif
+			[editTextView setFont:
+#ifndef SP_REFACTOR
+			([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : 
+#endif			
+			[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+#ifndef SP_REFACTOR
 		}
 		else {
 			[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
 		}
+#endif
 
-		[editTextView setContinuousSpellCheckingEnabled:[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]];
+		[editTextView setContinuousSpellCheckingEnabled:
+#ifndef SP_REFACTOR
+		[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]
+#else
+		NO
+#endif
+		];
 
 		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 
@@ -381,7 +406,13 @@
 			[callerInstance setFieldEditorSelectedRange:NSMakeRange(0,0)];
 
 			// If the string content is NULL select NULL for convenience
-			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
+			if([stringValue isEqualToString:
+#ifndef SP_REFACTOR
+			[prefs objectForKey:SPNullValue]
+#else
+			@"NULL"
+#endif
+			])
 				[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
 
 			// Set focus
@@ -532,8 +563,10 @@
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+#ifndef SP_REFACTOR
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
+#endif
 }
 
 /**
@@ -550,8 +583,14 @@
 	// - for max text length (except for NULL value string) select the part which won't be saved
 	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
-		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			[editTextView setSelectedRange:NSMakeRange((NSUInteger)maxTextLength, [[editTextView textStorage] length] - (NSUInteger)maxTextLength)];
+		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:
+#ifndef SP_REFACTOR
+					[prefs objectForKey:SPNullValue]
+#else
+					@"NULL"
+#endif
+					]) {
+			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
 			return;
@@ -580,7 +619,15 @@
 
 	if(callerInstance) {
 		id returnData = ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
+		
+#ifdef SP_REFACTOR /* patch */
+		if ( [callerInstance isKindOfClass:[SPCustomQuery class]] )
+			[(SPCustomQuery*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+		else if ( [callerInstance isKindOfClass:[SPTableContent class]] )
+			[(SPTableContent*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+#else
 		[callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+#endif
 	}
 
 }
@@ -1062,7 +1109,13 @@
 			[sheetEditData release];
 		}
 
-		NSString *nullString = [prefs objectForKey:SPNullValue];
+		NSString *nullString = 
+#ifndef SP_REFACTOR
+		[prefs objectForKey:SPNullValue]
+#else
+		@"NULL"
+#endif
+		;
 		sheetEditData = [[NSString stringWithString:nullString] retain];
 		[bitSheetIntegerTextField setStringValue:nullString];
 		[bitSheetHexTextField setStringValue:nullString];
@@ -1263,7 +1316,13 @@
 {
 
 	if(textView == editTextView && (maxTextLength > 0)
-		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:
+#ifndef SP_REFACTOR
+		[prefs objectForKey:SPNullValue]
+#else
+		@"NULL"
+#endif
+		]) {
 
 		NSInteger newLength;
 

@@ -92,7 +92,7 @@
 				[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 			}
 			[self scrollRowToVisible:row];
-			[[self delegate] insertAutocompletePlaceholder];
+			[(SPNarrowDownCompletion*)[self delegate] insertAutocompletePlaceholder];
 			return YES;
 		}
 	}
@@ -124,9 +124,15 @@
 		staticPrefix = nil;
 		suggestions = nil;
 		autocompletePlaceholderWasInserted = NO;
+#ifndef SP_REFACTOR
 		prefs = [NSUserDefaults standardUserDefaults];
+#endif
 
+#ifndef SP_REFACTOR
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
+#else
+		tableFont = [NSFont userFixedPitchFontOfSize:10.0];
+#endif
 		[self setupInterface];
 
 		syncArrowImages = [[NSArray alloc] initWithObjects:
@@ -270,7 +276,7 @@
 			if(!dictMode) {
 				NSUInteger maxLength = 0;
 				for(id w in someSuggestions) {
-					NSUInteger len = [[w objectForKey:@"display"] length];
+					NSUInteger len = [(NSString*)[w objectForKey:@"display"] length];
 					if(len>maxLength) maxLength = len;
 				}
 				NSMutableString *dummy = [NSMutableString string];
@@ -1054,12 +1060,14 @@
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
 	// If it's a function or procedure append () and if a argument list can be retieved insert them as snippets
+#ifndef SP_REFACTOR
 	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && ([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] || [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"proc"]) && ![aString hasSuffix:@")"]) {
 		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
 		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];
 		if([functionArgumentSnippet length] == 2)
 			[theView performSelector:@selector(moveLeft:)];
 	}
+#endif
 }
 
 - (void)completeAndInsertSnippet
@@ -1079,7 +1087,7 @@
 		NSString* candidateMatch = [selectedItem objectForKey:@"match"] ?: [selectedItem objectForKey:@"display"];
 		if([selectedItem objectForKey:@"isRef"] 
 				&& ([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask))
-				&& [[selectedItem objectForKey:@"path"] length] && theAliasName == nil) {
+				&& [(NSString*)[selectedItem objectForKey:@"path"] length] && theAliasName == nil) {
 
 			NSString *path = [[[selectedItem objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] componentsJoinedByPeriodAndBacktickQuotedAndIgnoreFirst];
 			// Check if path's db name is the current selected db name

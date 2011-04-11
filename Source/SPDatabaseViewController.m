@@ -32,6 +32,9 @@
 #import "SPTableData.h"
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
+#ifdef SP_REFACTOR /* headers */
+#import "SPTableStructure.h"
+#endif
 
 @interface SPDatabaseDocument (SPDatabaseViewControllerPrivateAPI)
 
@@ -46,6 +49,7 @@
 #pragma mark -
 #pragma mark Getters
 
+#ifndef SP_REFACTOR /* getters */
 /**
  * Returns the master database view, containing the tables list and views for
  * table setup and contents.
@@ -54,6 +58,7 @@
 {
 	return parentView;
 }
+#endif
 
 /**
  * Returns the name of the currently selected table/view/procedure/function.
@@ -95,6 +100,7 @@
 	return statusLoaded;
 }
 
+#ifndef SP_REFACTOR /* toolbar ibactions */
 
 #pragma mark -
 #pragma mark Tab view control and delegate methods
@@ -204,6 +210,7 @@
 	
 	[prefs setInteger:SPTriggersViewMode forKey:SPLastViewMode];
 }
+#endif
 
 /**
  * Mark the structure tab for refresh when it's next switched to,
@@ -224,7 +231,11 @@
  */
 - (void)setContentRequiresReload:(BOOL)reload
 {
-	if (reload && selectedTableName && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewContent) {
+	if (reload && selectedTableName
+#ifndef SP_REFACTOR /* check which tab is selected */
+	 && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewContent
+#endif
+	 ) {
 		[tableContentInstance loadTable:selectedTableName];
 	} else {
 		contentLoaded = !reload;
@@ -237,14 +248,18 @@
  */
 - (void)setStatusRequiresReload:(BOOL)reload
 {
-	if (reload && selectedTableName && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStatus) {
+	if (reload && selectedTableName 
+#ifndef SP_REFACTOR /* check which tab is selected */
+		&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStatus
+#endif
+		) {
 		[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
 	} else {
 		statusLoaded = !reload;
 	}
 }
 
-
+#ifndef SP_REFACTOR /* !!! respond to tab change */
 /**
  * Triggers a task to update the newly selected tab view, ensuring
  * the data is fully loaded and up-to-date.
@@ -258,6 +273,7 @@
 		[self _loadTabTask:tabViewItem];
 	}
 }
+#endif
 
 #pragma mark -
 #pragma mark Table control
@@ -286,18 +302,22 @@
 		[[tablesListInstance onMainThread] setSelectionState:nil];
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
+#ifndef SP_REFACTOR /* [extendedTableInfoInstance loadTable:] */
 		[[extendedTableInfoInstance onMainThread] loadTable:nil];
 		[[tableTriggersInstance onMainThread] resetInterface];
+#endif
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
 		triggersLoaded = NO;
 
+#ifndef SP_REFACTOR
 		// Update the window title
 		[self updateWindowTitle:self];
 
 		// Add a history entry
 		[spHistoryControllerInstance updateHistoryEntries];
+#endif
 
 		// Notify listeners of the table change
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
@@ -370,6 +390,7 @@
 				contentLoaded = YES;
 			}
 			break;
+#ifndef SP_REFACTOR /* case SPTableViewStatus: case SPTableViewTriggers: */
 		case SPTableViewStatus:
 			if (!statusLoaded) {
 				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
@@ -382,6 +403,7 @@
 				triggersLoaded = YES;
 			}
 			break;
+#endif
 	}
 
 	[self endTask];
@@ -397,8 +419,10 @@
 	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
 	NSString *tableEncoding = nil;
 
+#ifndef SP_REFACTOR /* Update the window title */
 	// Update the window title
 	[self updateWindowTitle:self];
+#endif
 
 	// Reset table information caches and mark that all loaded views require their data reloading
 	[tableDataInstance resetAllData];
@@ -440,23 +464,30 @@
 
 	// Notify listeners of the table change now that the state is fully set up.
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+#ifndef SP_REFACTOR /* [spHistoryControllerInstance restoreViewStates] */
 
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
+#endif
 
 	// Load the currently selected view if looking at a table or view
 	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
 	{
+#ifndef SP_REFACTOR /* load everything in Coda */
 		NSInteger selectedTabViewIndex = [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]];
 
 		switch (selectedTabViewIndex) {
 			case SPTableViewStructure:
+#endif
 				[tableSourceInstance loadTable:selectedTableName];
 				structureLoaded = YES;
+#ifndef SP_REFACTOR /* load everything in Coda */
 				break;
 			case SPTableViewContent:
+#endif
 				[tableContentInstance loadTable:selectedTableName];
 				contentLoaded = YES;
+#ifndef SP_REFACTOR /* load everything in Coda */
 				break;
 			case SPTableViewStatus:
 				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
@@ -467,6 +498,7 @@
 				triggersLoaded = YES;
 				break;
 		}
+#endif
 	}
 
 	// Clear any views which haven't been loaded as they weren't visible.  Note
@@ -477,6 +509,7 @@
 	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
 	if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
 
+#ifndef SP_REFACTOR /* show Create Table syntax */
 	// Update the "Show Create Syntax" window if it's already opened
 	// according to the selected table/view/proc/func
 	if([[[self onMainThread] getCreateTableSyntaxWindow] isVisible])
@@ -484,10 +517,11 @@
 
 	// Add a history entry
 	[spHistoryControllerInstance updateHistoryEntries];
-
+#endif
 	// Empty the loading pool and exit the thread
 	[self endTask];
 
+#ifndef SP_REFACTOR /* triggered commands */
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
 	for(NSString* cmdPath in triggeredCommands) {
 		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
@@ -524,6 +558,7 @@
 			}
 		}
 	}
+#endif
 
 
 	[loadPool drain];

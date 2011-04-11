@@ -1374,4 +1374,17 @@
 	pthread_mutex_unlock(&dataProcessingLock);
 }
 
+#ifdef SP_REFACTOR /* glue */
+
+- (void)setTableDocumentInstance:(SPDatabaseDocument*)doc
+{
+	tableDocumentInstance = doc;
+}
+
+- (void)setTableListInstance:(SPTablesList*)list
+{
+	tableListInstance = list;
+}
+#endif
+
 @end

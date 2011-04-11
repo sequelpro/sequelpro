@@ -29,11 +29,17 @@
 
 @class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
 
-@interface SPTableContent : NSObject 
+@class SPTableData, SPDatabaseDocument, SPTablesList;
+
+#ifndef SP_REFACTOR
+@interface SPTableContent : NSObject
+#else
+@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource>
+#endif
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tablesListInstance;
-	IBOutlet id tableDataInstance;
+	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id tableSourceInstance;
 
 	IBOutlet SPTableInfo *tableInfoInstance;
@@ -92,7 +98,9 @@
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 	NSInteger currentlyEditingRow, maxNumRows;
 
 	NSMutableDictionary *contentFilters;
@@ -240,5 +248,11 @@
 
 - (void)updateFilterTableClause:(id)currentValue;
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
+
+#ifdef SP_REFACTOR /* glue */
+- (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
+- (void)setTableListInstance:(SPTablesList*)list;
+- (void)setConnection:(MCPConnection *)theConnection;
+#endif
 
 @end

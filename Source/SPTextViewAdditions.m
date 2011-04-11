@@ -389,12 +389,17 @@
  */
 - (IBAction)insertNULLvalue:(id)sender
 {
+#ifndef SP_REFACTOR
 
 	id prefs = [NSUserDefaults standardUserDefaults];
-	if ([self respondsToSelector:@selector(insertText:)]) {
-		if([prefs stringForKey:SPNullValue] && [[prefs stringForKey:SPNullValue] length])
+#endif
+	if([self respondsToSelector:@selector(insertText:)])
+	{
+#ifndef SP_REFACTOR
+		if([prefs objectForKey:SPNullValue] && [(NSString*)[prefs objectForKey:SPNullValue] length])
 			[self insertText:[prefs objectForKey:SPNullValue]];
 		else
+#endif
 			[self insertText:@"NULL"];
 	}
 }
@@ -494,6 +499,7 @@
 	[self setEditable:editableStatus];
 }
 
+#ifndef SP_REFACTOR
 - (IBAction)executeBundleItemForInputField:(id)sender
 {
 
@@ -871,5 +877,6 @@
 	else if([anEvent deltaZ]<-5.0)
 		[self makeTextSizeSmaller];
 }
+#endif
 
 @end

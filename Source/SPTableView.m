@@ -44,6 +44,7 @@
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
+#ifndef SP_REFACTOR /* menuForEvent: */
 	// Try to retrieve a reference to the table document (assuming this is frontmost tab)
 	SPDatabaseDocument *parentTableDocument = nil;
 	
@@ -67,24 +68,24 @@
 		
 		// Check for SPTablesList if right-click on header, then suppress context menu
 		if ([[[[self delegate] class] description] isEqualToString:@"SPTablesList"]) {
-			if ([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"tableTypes"], row) integerValue] == -1)
+			if ([NSArrayObjectAtIndex([(NSObject*)[self delegate] valueForKeyPath:@"tableTypes"], row) integerValue] == -1)
 				return nil;
 		}
 		
 		if ([[[[self delegate] class] description] isEqualToString:@"SPQueryFavoriteManager"]) {
-			if ([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:SPFavorites], row)  objectForKey:@"headerOfFileURL"])
+			if ([NSArrayObjectAtIndex([(NSObject*)[self delegate] valueForKeyPath:SPFavorites], row)  objectForKey:@"headerOfFileURL"])
 				return nil;
 		}
 		
 		if ([[[[self delegate] class] description] isEqualToString:@"SPContentFilterManager"]) {
-			if ([NSArrayObjectAtIndex([[self delegate] valueForKeyPath:@"contentFilters"], row)  objectForKey:@"headerOfFileURL"])
+			if ([NSArrayObjectAtIndex([(NSObject*)[self delegate] valueForKeyPath:@"contentFilters"], row)  objectForKey:@"headerOfFileURL"])
 				return nil;
 		}
 		
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
 		[[self window] makeFirstResponder:self];
 	}
-	
+#endif
 	return [self menu];
 }
 
@@ -112,17 +113,17 @@
 	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
 
 		if ([[[[self delegate] class] description] isEqualToString:@"SPFieldMapperController"]) {
-			if ([[self delegate] isGlobalValueSheetOpen]) {
-				[[self delegate] closeGlobalValuesSheet:nil];
+			if ([(SPFieldMapperController*)[self delegate] isGlobalValueSheetOpen]) {
+				[(SPFieldMapperController*)[self delegate] closeGlobalValuesSheet:nil];
 				return;
 			}
 
 			// ENTER or RETURN closes the SPFieldMapperController sheet
 			// by sending an object with the tag 1 if no table cell is edited
-			if ([[self delegate] canBeClosed]) {
+			if ([(SPFieldMapperController*)[self delegate] canBeClosed]) {
 				NSButton *b = [[[NSButton alloc] init] autorelease];
 				[b setTag:1];
-				[[self delegate] closeSheet:b];
+				[(SPFieldMapperController*)[self delegate] closeSheet:b];
 				
 				return;
 			} 
@@ -149,7 +150,7 @@
 
 	// Check if ESCAPE is hit and use it to cancel row editing if supported
 	else if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)]) {
-		if ([[self delegate] cancelRowEditing]) return;
+		if ([[self delegate] performSelector:@selector(cancelRowEditing)]) return;
 	}
 	
 	// If the Tab key is used, but tab editing is disabled, change focus rather than entering edit mode.

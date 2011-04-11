@@ -23,7 +23,9 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #import <MCPKit/MCPKit.h>
+#ifndef SP_REFACTOR /* headers */
 #import "MCPGeometryData.h"
+#endif
 
 #import "SPCopyTable.h"
 #import "SPTableContent.h"
@@ -67,8 +69,8 @@ NSInteger kBlobAsImageFile = 4;
 
 	return ([[self delegate] isKindOfClass:[SPCustomQuery class]] 
 		|| ([[self delegate] isKindOfClass:[SPTableContent class]] 
-				&& [[self delegate] valueForKeyPath:@"tablesListInstance"] 
-				&& [[[self delegate] valueForKeyPath:@"tablesListInstance"] tableType] == SPTableTypeView));
+				&& [(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] 
+				&& [(SPTablesList*)([(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"]) tableType] == SPTableTypeView));
 
 }
 
@@ -90,6 +92,7 @@ NSInteger kBlobAsImageFile = 4;
  */
 - (void) copy:(id)sender
 {
+#ifndef SP_REFACTOR /* copy table rows */
 	NSString *tmp = nil;
 
 	if([sender tag] == MENU_EDIT_COPY_AS_SQL) {
@@ -119,12 +122,14 @@ NSInteger kBlobAsImageFile = 4;
 			[pb setString:tmp forType:NSTabularTextPboardType];
 		}
 	}
+#endif
 }
 
 /**
  * Get selected rows a string of newline separated lines of tab separated fields
  * the value in each field is from the objects description method
  */
+#ifndef SP_REFACTOR /* get rows as string */
 - (NSString *) rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
@@ -397,6 +402,7 @@ NSInteger kBlobAsImageFile = 4;
 
 	return result;
 }
+#endif
 
 /*
  * Return selected rows as SQL INSERT INTO `foo` VALUES (baz) string.
@@ -478,7 +484,7 @@ NSInteger kBlobAsImageFile = 4;
 			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:spTableContentClass]) {
 
 				// Abort if no table name given, not table content, or if there are no indices on this table
-				if (!selectedTable || ![[self delegate] isKindOfClass:spTableContentClass] || ![[tableInstance argumentForRow:rowIndex] length]) {
+				if (!selectedTable || ![[self delegate] isKindOfClass:spTableContentClass] || ![(NSString*)[tableInstance argumentForRow:rowIndex] length]) {
 					NSBeep();
 					free(columnMappings);
 					free(columnTypes);
@@ -612,7 +618,11 @@ NSInteger kBlobAsImageFile = 4;
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
+#ifndef SP_REFACTOR
 	NSString *nullString = [prefs objectForKey:SPNullValue];
+#else
+	NSString *nullString = @"NULL";
+#endif
 	Class nsDataClass = [NSData class];
 	Class mcpGeometryData = [MCPGeometryData class];
 	NSStringEncoding connectionEncoding = [mySQLConnection stringEncoding];
@@ -753,7 +763,11 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger cellWidth, maxCellWidth, i;
 	NSRange linebreakRange;
 	double rowStep;
+#ifndef SP_REFACTOR /* patch */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
+#else
+	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+#endif
 	NSUInteger columnIndex = [[columnDefinition objectForKey:@"datacolumnindex"] unsignedIntegerValue];
 	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName];
 	Class mcpGeometryData = [MCPGeometryData class];
@@ -782,7 +796,11 @@ NSInteger kBlobAsImageFile = 4;
 
 		// Replace NULLs with their placeholder string
 		else if ([contentString isNSNull]) {
+#ifndef SP_REFACTOR /* patch */
 			contentString = [prefs objectForKey:SPNullValue];
+#else
+			contentString = @"NULL";
+#endif
 
 		// Same for cells for which loading has been deferred - likely blobs
 		} else if ([contentString isSPNotLoaded]) {
@@ -836,6 +854,7 @@ NSInteger kBlobAsImageFile = 4;
 {
 
 	NSMenu *menu = [self menu];
+#ifndef SP_REFACTOR /* menuForEvent: */
 
 	if(![[self delegate] isKindOfClass:[SPCustomQuery class]] && ![[self delegate] isKindOfClass:[SPTableContent class]]) return menu;
 
@@ -903,7 +922,7 @@ NSInteger kBlobAsImageFile = 4;
 		[bundleSubMenuItem release];
 
 	}
-
+#endif
 	return menu;
 
 }
@@ -914,7 +933,11 @@ NSInteger kBlobAsImageFile = 4;
 	if(!rowIndices || ![rowIndices count]) return;
 
 	NSMutableIndexSet *selection = [NSMutableIndexSet indexSet];
+#ifndef SP_REFACTOR
 	NSInteger rows = [[self delegate] numberOfRowsInTableView:self];
+#else
+	NSInteger rows = [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self];
+#endif
 	NSInteger i;
 	if(rows > 0) {
 		for(NSString* idx in rowIndices) {
@@ -934,6 +957,7 @@ NSInteger kBlobAsImageFile = 4;
  */
 - (BOOL) validateMenuItem:(NSMenuItem*)anItem
 {
+#ifndef SP_REFACTOR /* validateMenuItem: */
 	NSInteger menuItemTag = [anItem tag];
 
 	if ([anItem action] == @selector(performFindPanelAction:)) {
@@ -959,7 +983,7 @@ NSInteger kBlobAsImageFile = 4;
 	if (menuItemTag == MENU_EDIT_COPY_AS_SQL) {
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
-
+#endif
 	return NO;
 }
 
@@ -984,7 +1008,7 @@ NSInteger kBlobAsImageFile = 4;
 		// Save the current line if it's the last field in the table
 		if ( [self numberOfColumns] - 1 == column ) {
 			if([[self delegate] respondsToSelector:@selector(saveRowToTable)])
-				[[self delegate] saveRowToTable];
+				[(SPTableContent*)[self delegate] saveRowToTable];
 			[[self window] makeFirstResponder:self];
 		} else {
 			// Select the next field for editing
@@ -1002,7 +1026,7 @@ NSInteger kBlobAsImageFile = 4;
 		// Save the current line if it's the last field in the table
 		if ( column < 1 ) {
 			if([[self delegate] respondsToSelector:@selector(saveRowToTable)])
-				[[self delegate] saveRowToTable];
+				[(SPTableContent*)([self delegate]) saveRowToTable];
 			[[self window] makeFirstResponder:self];
 		} else {
 			// Select the previous field for editing
@@ -1021,7 +1045,7 @@ NSInteger kBlobAsImageFile = 4;
 
 		[[control window] makeFirstResponder:control];
 		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
-			[[self delegate] saveRowToTable];
+			[(SPTableContent*)[self delegate] saveRowToTable];
 		return YES;
 
 	}
@@ -1035,14 +1059,22 @@ NSInteger kBlobAsImageFile = 4;
 			return NO;
 
 		NSInteger newRow = row+1;
+#ifndef SP_REFACTOR
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
+#else
+		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
+#endif
 
 		[[control window] makeFirstResponder:control];
 		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
-			[[self delegate] saveRowToTable];
+			[(SPTableContent*)([self delegate]) saveRowToTable];
 
+#ifndef SP_REFACTOR
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
-		if (tableStorage && column >= (NSInteger)[tableStorage columnCount]) return YES;     //the column count could change too
+#else
+		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
+#endif		
+		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;     //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
@@ -1062,10 +1094,14 @@ NSInteger kBlobAsImageFile = 4;
 
 		[[control window] makeFirstResponder:control];
 		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
-			[[self delegate] saveRowToTable];
+			[(SPTableContent*)([self delegate]) saveRowToTable];
 
+#ifndef SP_REFACTOR
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
-		if (tableStorage && column >= (NSInteger)[tableStorage columnCount]) return YES;     //the column count could change too
+#else
+		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
+#endif
+		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;     //the column count could change too
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
@@ -1089,7 +1125,7 @@ NSInteger kBlobAsImageFile = 4;
 	// Check if ESCAPE is hit and use it to cancel row editing if supported
 	if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)])
 	{
-		if ([[self delegate] cancelRowEditing]) return;
+		if ([[self delegate] performSelector:@selector(cancelRowEditing)]) return;
 	}
 
 	else if ([theEvent keyCode] == 48 && ([[self delegate] isKindOfClass:[SPCustomQuery class]] 
@@ -1104,7 +1140,7 @@ NSInteger kBlobAsImageFile = 4;
 - (void)performFindPanelAction:(id)sender
 {
 	if([sender tag] == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]) {
-		[[self delegate] showFilterTable:self];
+		[(SPTableContent*)[self delegate] showFilterTable:self];
 	}
 }
 
@@ -1113,6 +1149,7 @@ NSInteger kBlobAsImageFile = 4;
 
 - (IBAction)executeBundleItemForDataTable:(id)sender
 {
+#ifndef SP_REFACTOR /* executeBundleItemForDataTable: */
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
@@ -1389,7 +1426,7 @@ NSInteger kBlobAsImageFile = 4;
 		if (cmdData) [cmdData release];
 
 	}
-
+#endif
 }
 
 #pragma mark -
@@ -1397,7 +1434,9 @@ NSInteger kBlobAsImageFile = 4;
 - (void) awakeFromNib
 {
 	columnDefinitions = nil;
+#ifndef SP_REFACTOR
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
+#endif
 
 	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
 		[super awakeFromNib];
@@ -1407,7 +1446,9 @@ NSInteger kBlobAsImageFile = 4;
 - (void) dealloc
 {
 	if (columnDefinitions) [columnDefinitions release];
+#ifndef SP_REFACTOR
 	[prefs release];
+#endif
 
 	[super dealloc];
 }

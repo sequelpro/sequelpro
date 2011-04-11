@@ -31,9 +31,15 @@
 
 @end
 
-@interface SPQueryFavoriteManager : NSWindowController 
+#ifndef SP_REFACTOR
+@interface SPQueryFavoriteManager : NSWindowController
+#else
+@interface SPQueryFavoriteManager : NSWindowController <NSOpenSavePanelDelegate>
+#endif
 {
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 	
 	NSURL *delegatesFileURL;
 	SPDatabaseDocument *tableDocumentInstance;

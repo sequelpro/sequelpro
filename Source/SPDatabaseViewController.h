@@ -35,6 +35,7 @@
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;
 
+#ifndef SP_REFACTOR /* method decls */
 // Tab view control
 - (IBAction)viewStructure:(id)sender;
 - (IBAction)viewContent:(id)sender;
@@ -42,6 +43,7 @@
 - (IBAction)viewStatus:(id)sender;
 - (IBAction)viewRelations:(id)sender;
 - (IBAction)viewTriggers:(id)sender;
+#endif
 - (void)setStructureRequiresReload:(BOOL)reload;
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
@@ -49,6 +51,8 @@
 // Table control
 - (void)loadTable:(NSString *)aTable ofType:(NSInteger)aTableType;
 
+#ifndef SP_REFACTOR /* method decls */
 - (NSView *)databaseView;
+#endif
 
 @end

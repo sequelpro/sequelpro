@@ -26,7 +26,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPNarrowDownCompletion : NSWindow 
+#ifndef SP_REFACTOR
+@interface SPNarrowDownCompletion : NSWindow
+#else
+@interface SPNarrowDownCompletion : NSWindow <NSTableViewDelegate, NSTableViewDataSource, NSTokenFieldCellDelegate>
+#endif
 {
 	NSArray* suggestions;
 	NSMutableString* mutablePrefix;
@@ -70,7 +74,9 @@
 	
 	NSMutableCharacterSet* textualInputCharacters;
 
+#ifndef SP_REFACTOR
 	NSUserDefaults *prefs;
+#endif
 }
 
 - (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 

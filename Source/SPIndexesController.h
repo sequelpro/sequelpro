@@ -62,7 +62,9 @@
 	
 	NSMutableArray *fields, *indexes, *indexedFields, *supportsLength, *requiresLength;
 	
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 	
 	MCPConnection *connection;
 	

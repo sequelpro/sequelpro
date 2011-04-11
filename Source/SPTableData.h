@@ -25,10 +25,13 @@
 
 #import <MCPKit/MCPKit.h>
 
+@class SPDatabaseDocument;
+@class SPTablesList;
+
 @interface SPTableData : NSObject 
 {
-	IBOutlet id tableDocumentInstance;
-	IBOutlet id tableListInstance;
+	IBOutlet SPDatabaseDocument* tableDocumentInstance;
+	IBOutlet SPTablesList* tableListInstance;
 
 	NSMutableArray *columns;
 	NSMutableArray *columnNames;
@@ -73,5 +76,10 @@
 - (BOOL) updateTriggersForCurrentTable;
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts;
 - (NSArray *) primaryKeyColumnNames;
+
+#ifdef SP_REFACTOR /* glue */
+- (void)setTableDocumentInstance:(SPDatabaseDocument*)doc;
+- (void)setTableListInstance:(SPTablesList*)list;
+#endif
 
 @end

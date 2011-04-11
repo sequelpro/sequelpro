@@ -26,8 +26,13 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDatabaseDocument.h"
+#import "SPConnectionController.h"
+
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
+#ifndef SP_REFACTOR /* headers */
+#import "SPFileHandle.h"
+#import "SPKeychain.h"
 #import "SPTableContent.h"
 #import "SPCustomQuery.h"
 #import "SPDataImport.h"
@@ -35,14 +40,15 @@
 #import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPQueryController.h"
+#import "SPWindowController.h"
+#endif
 #import "SPNavigatorController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
-#import "SPConnectionController.h"
-#import "SPKeychain.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
 #import "SPUserManager.h"
@@ -55,38 +61,57 @@
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
+#endif
 #import "SPServerSupport.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPTooltip.h"
+#endif
 #import "SPDatabaseViewController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
-#import "SPWindowController.h"
-#import "SPFileHandle.h"
-#import "SPFavoritesPreferencePane.h"
+#endif
+
+#ifdef SP_REFACTOR /* headers */
+#import "SPAlertSheets.h"
+#endif
 
 @interface SPDatabaseDocument (PrivateAPI)
 
+#ifndef SP_REFACTOR /* method decls */
 - (void)_addDatabase;
 - (void)_copyDatabase;
 - (void)_renameDatabase;
 - (void)_removeDatabase;
+#endif
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
 @end
 
 @implementation SPDatabaseDocument
 
+#ifndef SP_REFACTOR /* ivars */
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
+#endif
 @synthesize isProcessing;
 @synthesize serverSupport;
+#ifndef SP_REFACTOR /* ivars */
 @synthesize processID;
+#endif
+
+#ifdef SP_REFACTOR /* ivars */
+@synthesize allDatabases;
+@synthesize delegate;
+#endif
 
 - (id)init
 {
 	if ((self = [super init])) {
+#ifndef SP_REFACTOR /* init ivars */
 
 		_mainNibLoaded = NO;
+#endif
 		_isConnected = NO;
 		_isWorkingLevel = 0;
 		_isSavedInBundle = NO;
@@ -110,14 +135,18 @@
 		mySQLVersion = nil;
 		allDatabases = nil;
 		allSystemDatabases = nil;
+#ifndef SP_REFACTOR /* init ivars */
 		mainToolbar = nil;
 		parentWindow = nil;
+#endif
 		isProcessing = NO;
 
+#ifndef SP_REFACTOR /* init ivars */
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
 
 		prefs = [NSUserDefaults standardUserDefaults];
+#endif
 		queryEditorInitString = nil;
 
 		spfFileURL = nil;
@@ -139,6 +168,7 @@
 		taskCancellationCallbackSelector = NULL;
 
 		keyChainID = nil;
+#ifndef SP_REFACTOR /* init ivars */
 		statusValues = nil;
 		printThread = nil;
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
@@ -150,10 +180,46 @@
 		[nibLoader instantiateNibWithOwner:self topLevelObjects:&dbViewTopLevelObjects];
 		[nibLoader release];
 		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
+#endif
 	}
 	
 	return self;
 }
+
+#ifdef SP_REFACTOR /* glue */
+- (SPConnectionController*)createConnectionController
+{
+	// Set up the connection controller
+	connectionController = [[SPConnectionController alloc] initWithDocument:self];
+	
+	// Set the connection controller's delegate
+	[connectionController setDelegate:self];
+	return connectionController;
+}
+
+- (void)setTableSourceInstance:(SPTableStructure*)source
+{
+	tableSourceInstance = source;
+}
+
+- (void)setTableContentInstance:(SPTableContent*)content
+{
+	tableContentInstance = content;
+}
+
+- (void)setTableDataInstance:(SPTableData*)data
+{
+	tableDataInstance = data;
+}
+
+- (SPTableData*)tableDataInstance
+{
+	return tableDataInstance;
+}
+
+#endif
+
+#ifndef SP_REFACTOR /* awakeFromNib */
 
 - (void)awakeFromNib
 {
@@ -256,7 +322,9 @@
 
 	[contentViewSplitter setDelegate:self];
 }
+#endif
 
+#ifndef SP_REFACTOR /* password sheet and history navigation */
 /**
  * Set the return code for entering the encryption passowrd sheet
  */
@@ -291,6 +359,7 @@
 			break;
 	}
 }
+#endif
 
 #pragma mark -
 #pragma mark Connection callback and methods
@@ -305,12 +374,14 @@
 	serverSupport = [[SPServerSupport alloc] initWithMajorVersion:[mySQLConnection serverMajorVersion] 
 															minor:[mySQLConnection serverMinorVersion] 
 														  release:[mySQLConnection serverReleaseVersion]];
-	
+														  
+#ifndef SP_REFACTOR	
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
 	
 	// ...but hide the icon while the document is temporary
 	if ([self isUntitled]) [[parentWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
+#endif
 
 	// Get the mysql version
 	mySQLVersion = [[NSString alloc] initWithString:[mySQLConnection serverVersionString]];
@@ -319,7 +390,9 @@
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 		selectedDatabase = [[NSString alloc] initWithString:[connectionController database]];
+#ifndef SP_REFACTOR /* [spHistoryControllerInstance updateHistoryEntries] */
 		[spHistoryControllerInstance updateHistoryEntries];
+#endif
 	}
 
 	// Ensure the connection encoding is set to utf8 for database/table name retrieval
@@ -332,19 +405,28 @@
 
 	[databaseDataInstance setConnection:mySQLConnection];
 	
+#ifndef SP_REFACTOR /* setServerSupport: */
 	// Pass the support class to the data instance
 	[databaseDataInstance setServerSupport:serverSupport];
-	
+#endif
+
+#ifdef SP_REFACTOR /* glue */
+	tablesListInstance = [[SPTablesList alloc] init];
+	[tablesListInstance setDatabaseDocument:self];	
+#endif	
+
 	// Set the connection on the tables list instance - this updates the table list while the connection
 	// is still UTF8
 	[tablesListInstance setConnection:mySQLConnection];
 
+#ifndef SP_REFACTOR /* set connection encoding from prefs */
 	// Set the connection encoding if necessary
 	NSNumber *encodingType = [prefs objectForKey:SPDefaultEncoding];
 	
 	if ([encodingType intValue] != SPEncodingAutodetect) {
 		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
 	}
+#endif
 
 	// For each of the main controllers, assign the current connection
 	[tableSourceInstance setConnection:mySQLConnection];
@@ -357,6 +439,7 @@
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	
+#ifndef SP_REFACTOR /* update custom query editor */
 	// Set the custom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
@@ -436,6 +519,11 @@
 	}
 
 	(void)[self databaseEncoding];
+#endif
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
+		[delegate performSelector:@selector(databaseDocumentDidConnect:) withObject:self];
+#endif
 }
 
 /**
@@ -464,6 +552,8 @@
  */
 - (IBAction)setDatabases:(id)sender;
 {
+#ifndef SP_REFACTOR /* ui manipulation */
+
 	if (!chooseDatabaseButton) return;
 
 	[chooseDatabaseButton removeAllItems];
@@ -473,6 +563,7 @@
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Add Database...", @"menu item to add db") action:@selector(addDatabase:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItemWithTitle:NSLocalizedString(@"Refresh Databases", @"menu item to refresh databases") action:@selector(setDatabases:) keyEquivalent:@""];
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
+#endif
 
 	MCPResult *queryResult = [mySQLConnection listDBs];
 
@@ -499,6 +590,7 @@
 		}
 	}
 
+#ifndef SP_REFACTOR /* ui manipulation */
 	// Add system databases
 	for (NSString *db in allSystemDatabases) 
 	{
@@ -517,7 +609,10 @@
 	}
 
 	(![self database]) ? [chooseDatabaseButton selectItemAtIndex:0] : [chooseDatabaseButton selectItemWithTitle:[self database]];
+#endif
 }
+
+#ifndef SP_REFACTOR /* chooseDatabase: */
 
 /**
  * Selects the database choosen by the user, using a child task if necessary,
@@ -543,12 +638,14 @@
 	// Select the database
 	[self selectDatabase:[chooseDatabaseButton titleOfSelectedItem] item:[self table]];
 }
+#endif
 
 /**
  * Select the specified database and, optionally, table.
  */
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem
 {
+#ifndef SP_REFACTOR /* update navigator controller */
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:NO];
 
@@ -562,6 +659,7 @@
 		}
 		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
 	}
+#endif
 
 	// Start a task
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
@@ -577,6 +675,7 @@
 	}
 }
 
+#ifndef SP_REFACTOR /* operations on whole databases */
 /**
  * opens the add-db sheet and creates the new db
  */
@@ -731,6 +830,7 @@
 	
 	[processListController displayProcessListWindow];
 }
+#endif
 
 /**
  * Returns an array of all available database names
@@ -748,6 +848,7 @@
 	return allSystemDatabases;
 }
 
+#ifndef SP_REFACTOR /* sheetDidEnd: */
 /**
  * Alert sheet method. Invoked when an alert sheet is dismissed.
  *
@@ -820,6 +921,7 @@
 			nil, nil, parentWindow, self, nil, nil,
 			[error objectAtIndex:1]);
 }
+#endif
 
 /**
  * Reset the current selected database name
@@ -844,12 +946,16 @@
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
+#ifndef SP_REFACTOR /* [self updateWindowTitle:self] */
 				[self updateWindowTitle:self];
+#endif
 			}
 		} else {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
+#ifndef SP_REFACTOR /* [self updateWindowTitle:self] */
 			[self updateWindowTitle:self];
+#endif
 		}
 	}
 
@@ -857,10 +963,12 @@
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
+#ifndef SP_REFACTOR /* navigatorSchemaPathExistsForDatabase: */
 - (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname
 {
 	return [[SPNavigatorController sharedNavigatorController] schemaPathExistsForConnection:[self connectionID] andDatabase:dbname];
 }
+#endif
 
 - (NSDictionary*)getDbStructure
 {
@@ -871,6 +979,8 @@
 {
 	return [[SPNavigatorController sharedNavigatorController] allSchemaKeysForConnection:[self connectionID]];
 }
+
+#ifndef SP_REFACTOR /* console and navigator methods */
 
 #pragma mark -
 #pragma mark Console methods
@@ -952,6 +1062,7 @@
 		[[[SPNavigatorController sharedNavigatorController] window] makeKeyAndOrderFront:self];
 	}
 }
+#endif
 
 #pragma mark -
 #pragma mark Task progress and notification methods
@@ -1227,7 +1338,7 @@
 - (void) centerTaskWindow
 {
 	NSPoint newBottomLeftPoint;
-	NSRect mainWindowRect = [parentWindow frame];
+	NSRect mainWindowRect = [[NSApp keyWindow] frame];
 	NSRect taskWindowRect = [taskProgressWindow frame];
 
 	newBottomLeftPoint.x = roundf(mainWindowRect.origin.x + mainWindowRect.size.width/2 - taskWindowRect.size.width/2);
@@ -1426,6 +1537,7 @@
 
 #pragma mark -
 #pragma mark Table Methods
+#ifndef SP_REFACTOR /* whole table operations */
 
 /**
  * Copies if sender == self or displays or the CREATE TABLE syntax of the selected table(s) to the user .
@@ -2188,6 +2300,8 @@
 	[newTableDocument setStateFromConnectionFile:[[self fileURL] path]];
 }
 
+#endif
+
 /**
  * Ask the connection controller to initiate connection, if it hasn't
  * already.  Used to support automatic connections on window open,
@@ -2203,13 +2317,16 @@
 	[mySQLConnection disconnect];
 	_isConnected = NO;
 
+#ifndef SP_REFACTOR /* growl */
 	// Disconnected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [parentTabViewItem label]]
 													  document:self
 											  notificationName:@"Disconnected"];
+#endif
 }
 
+#ifndef SP_REFACTOR /* observeValueForKeyPath: */
 /**
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
@@ -2219,6 +2336,7 @@
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
 	}
 }
+#endif
 
 /**
  * Is current document Untitled?
@@ -2235,7 +2353,7 @@
  */
 - (BOOL)couldCommitCurrentViewActions
 {
-	[parentWindow endEditingFor:nil];
+	[[NSApp keyWindow] endEditingFor:nil];
 	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
 
 		// Table structure view
@@ -2340,8 +2458,10 @@
 
 	tabTitle = [NSMutableString string];
 
+#ifndef SP_REFACTOR /* Add the MySQL version to the window title */
 	// Add the MySQL version to the window title if enabled in prefs
 	if ([prefs boolForKey:SPDisplayServerVersionInWindowTitle]) [tabTitle appendFormat:@"(MySQL %@)\n", [self mySQLVersion]];
+#endif
 
 	[tabTitle appendString:[self name]];
 	if ([self database]) {
@@ -2421,6 +2541,7 @@
 	[queryProgressBar stopAnimation:self];
 }
 
+#ifndef SP_REFACTOR /* applicationWillTerminate: */
 /**
  * Invoked when the application will terminate
  */
@@ -3882,6 +4003,7 @@
 			[parentWindow setRepresentedURL:nil];
 	}
 }
+#endif
 
 /**
  * Retrieve the NSURL for the .spf file for this connection instance (if any)
@@ -3891,6 +4013,7 @@
 	return [[spfFileURL copy] autorelease];
 }
 
+#ifndef SP_REFACTOR /* writeSafelyToURL: */
 /**
  * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
  * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
@@ -3917,6 +4040,7 @@
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"string"] count])
 		);
 }
+#endif
 
 /**
  * The window title for this document.
@@ -3930,7 +4054,7 @@
 	} 
 	return [[[self fileURL] path] lastPathComponent];
 }
-
+#ifndef SP_REFACTOR /* state saving and setting */
 #pragma mark -
 #pragma mark State saving and setting
 
@@ -4552,6 +4676,7 @@
 	[self endTask];
 	[taskPool drain];
 }
+#endif
 
 #pragma mark -
 #pragma mark Connection controller delegate methods
@@ -4561,12 +4686,14 @@
  */
 - (void)connectionControllerInitiatingConnection:(id)controller
 {
+#ifndef SP_REFACTOR /* ui manipulation */
 	// Update the window title to indicate that we are trying to establish a connection
 	[parentTabViewItem setLabel:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
 	
 	if ([parentWindowController selectedTableDocument] == self) {
 		[parentWindow setTitle:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
 	}	
+#endif
 }
 
 /**
@@ -4574,9 +4701,14 @@
  */
 - (void)connectionControllerConnectAttemptFailed:(id)controller
 {
+#ifndef SP_REFACTOR /* updateWindowTitle: */
 	// Reset the window title
 	[self updateWindowTitle:self];
+#endif
 }
+
+
+#ifndef SP_REFACTOR /* scheme scripting methods */
 
 #pragma mark -
 #pragma mark Scheme scripting methods
@@ -5183,6 +5315,7 @@
 
 	return (NSDictionary*)env;
 }
+#endif
 
 #pragma mark -
 #pragma mark Text field delegate methods
@@ -5211,6 +5344,7 @@
 
 #pragma mark -
 #pragma mark General sheet delegate methods
+#ifndef SP_REFACTOR /* window:willPositionSheet:usingRect: */
 
 - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
 
@@ -5234,10 +5368,11 @@
 	rect.origin.y -= [[parentWindowController valueForKey:@"tabBar"] frame].size.height - 1;
 	return rect;
 }
+#endif
 
 #pragma mark -
 #pragma mark SplitView delegate methods
-
+#ifndef SP_REFACTOR /* SplitView delegate methods */
 /**
  * tells the splitView that it can collapse views
  */
@@ -5365,6 +5500,9 @@
 	_isSavedInBundle = savedInBundle;
 }
 
+#endif
+
+
 #pragma mark -
 
 /**
@@ -5372,7 +5510,7 @@
  */
 - (void)dealloc
 {
-
+#ifndef SP_REFACTOR /* Unregister observers */
 	// Unregister observers
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
 	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
@@ -5388,23 +5526,30 @@
 	
 	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
 	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+#endif
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
+#ifndef SP_REFACTOR /* release nib objects */
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	[nibObjectsToRelease release];
+#endif
 
 	[allDatabases release];
 	[allSystemDatabases release];
+#ifndef SP_REFACTOR /* dealloc ivars */
 	[printWebView release];
+#endif
 	[taskProgressWindow close];
 	
 	if (selectedTableName) [selectedTableName release];
 	if (connectionController) [connectionController release];
+#ifndef SP_REFACTOR /* dealloc ivars */
 	if (processListController) [processListController release];
 	if (serverVariablesController) [serverVariablesController release];
+#endif
 	if (mySQLConnection) [mySQLConnection release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
@@ -5420,15 +5565,29 @@
 	if (titleAccessoryView) [titleAccessoryView release];
 	if (taskProgressWindow) [taskProgressWindow release];
 	if (serverSupport) [serverSupport release];
+#ifndef SP_REFACTOR /* dealloc ivars */
 	if (processID) [processID release];
+#endif
 	if (runningActivitiesArray) [runningActivitiesArray release];
 	
 	[super dealloc];
 }
 
+- (NSArray*)allTableNames
+{
+	return [tablesListInstance allTableNames];
+}
+
+- (SPTablesList*)tablesListInstance
+{
+	return tablesListInstance;
+}
+
 @end
 
 @implementation SPDatabaseDocument (PrivateAPI)
+
+#ifndef SP_REFACTOR /* whole database operations */
 
 - (void)_copyDatabase 
 {
@@ -5579,6 +5738,8 @@
 	[self updateWindowTitle:self];
 }
 
+#endif
+
 /**
  * Select the specified database and, optionally, table.
  */
@@ -5586,6 +5747,7 @@
 {
 	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
 	NSString *targetDatabaseName = [selectionDetails objectForKey:@"database"];
+#ifndef SP_REFACTOR /* update history controller */
 	NSString *targetItemName = [selectionDetails objectForKey:@"item"];
 
 	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
@@ -5594,12 +5756,17 @@
 		[spHistoryControllerInstance updateHistoryEntries];
 		[spHistoryControllerInstance setModifyingState:YES];
 	}
+#endif
 
 	if (![targetDatabaseName isEqualToString:selectedDatabase]) {
 
 		// Attempt to select the specified database, and abort on failure
+#ifndef SP_REFACTOR /* patch */
 		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
 			|| ![mySQLConnection selectDB:targetDatabaseName])
+#else
+		if ( ![mySQLConnection selectDB:targetDatabaseName] )
+#endif
 		{
 
 			// End the task first to ensure the database dropdown can be reselected
@@ -5610,28 +5777,37 @@
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
 
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 			}
 
 			[taskPool drain];
 			return;
 		}
 
+#ifndef SP_REFACTOR /* chooseDatabaseButton selectItemWithTitle: */
 		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
+#endif
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+#ifndef SP_REFACTOR /* patch */
 		selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
+#else
+		selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
+#endif
 
+#ifndef SP_REFACTOR /* clear SPTablesList selection */
 		// If the item has changed, clear the item selection for cleaner loading
 		if (![targetItemName isEqualToString:[self table]]) {
 			[[tablesListInstance onMainThread] setTableListSelectability:YES];
 			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
+#endif
 		
 		// Set the connection of SPTablesList and TablesDump to reload tables in db
 		[tablesListInstance setConnection:mySQLConnection];
 		[tableDumpInstance setConnection:mySQLConnection];
 
+#ifndef SP_REFACTOR /* update history controller and ui manip */
 		// Update the window title
 		[self updateWindowTitle:self];
 
@@ -5647,8 +5823,10 @@
 			[[parentWindow onMainThread] makeFirstResponder:listFilterField];
 		else
 			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+#endif
 	}
 
+#ifndef SP_REFACTOR /* update selected table in SPTablesList */
 	// If a the table has changed, update the selection
 	if (![targetItemName isEqualToString:[self table]]) {
 		if (targetItemName) {
@@ -5659,8 +5837,9 @@
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
 	}
-
+#endif
 	[self endTask];
+#ifndef SP_REFACTOR /* triggered commands */
 
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
 	for(NSString* cmdPath in triggeredCommands) {
@@ -5698,8 +5877,14 @@
 			}
 		}
 	}
+#endif
+
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(databaseDidChange:)] )
+		[delegate performSelectorOnMainThread:@selector(databaseDidChange:) withObject:self waitUntilDone:NO];
+#endif
 
 	[taskPool drain];
-
 }
+
 @end

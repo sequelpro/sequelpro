@@ -26,14 +26,15 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <MCPKit/MCPKit.h>
+#ifndef SP_REFACTOR /* headers */
 #import <WebKit/WebKit.h>
+#endif
 
-@class SPConnectionController, 
-	   SPProcessListController, 
-	   SPServerVariablesController, 
-	   SPUserManager, 
-	   SPWindowController,
-	   SPServerSupport;
+@class SPConnectionController,
+#ifndef SP_REFACTOR /* class forward decls */
+SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
+#endif
+SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
@@ -42,15 +43,19 @@
  */
 @interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol>
 {
+#ifdef SP_REFACTOR /* patch */
+	id delegate;
+#endif
+
 	// IBOutlets
-	IBOutlet id tablesListInstance;
-	IBOutlet id tableSourceInstance;
-	IBOutlet id tableContentInstance;
+	SPTablesList* tablesListInstance;
+	SPTableStructure* tableSourceInstance;				
+	SPTableContent* tableContentInstance;
 	IBOutlet id tableRelationsInstance;
 	IBOutlet id tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
-	IBOutlet id tableDataInstance;
+	SPTableData* tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;
@@ -60,7 +65,9 @@
 	IBOutlet id statusTableView;
 	IBOutlet id statusTableCopyChecksum;
 	
+#ifndef SP_REFACTOR /* ivars */
     SPUserManager *userManagerInstance;
+#endif
 	SPServerSupport *serverSupport;
 	
 	IBOutlet NSSearchField *listFilterField;
@@ -137,13 +144,15 @@
 	
 	// Controllers
 	SPConnectionController *connectionController;
+#ifndef SP_REFACTOR /* ivars */
 	SPProcessListController *processListController;
 	SPServerVariablesController *serverVariablesController;
-	
+#endif
 	MCPConnection *mySQLConnection;
+#ifndef SP_REFACTOR /* ivars */
 
 	NSInteger currentTabIndex;
-
+#endif
 	NSString *selectedTableName;
 	SPTableType selectedTableType;
 
@@ -154,14 +163,18 @@
 
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
 	NSMutableArray *nibObjectsToRelease;
+#endif
 
 	NSMenu *selectEncodingMenu;
 	BOOL _supportsEncoding;
 	BOOL _isConnected;
 	NSInteger _isWorkingLevel;
+#ifndef SP_REFACTOR /* ivars */
 	BOOL _mainNibLoaded;
+#endif
 	BOOL databaseListIsSelectable;
 	NSInteger _queryMode;
 	BOOL _isSavedInBundle;
@@ -182,7 +195,9 @@
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
 	
+#ifndef SP_REFACTOR /* ivars */
 	WebView *printWebView;
+#endif
 	
 	NSMutableArray *allDatabases;
 	NSMutableArray *allSystemDatabases;
@@ -198,6 +213,7 @@
 
 	NSString *keyChainID;
 	
+#ifndef SP_REFACTOR /* ivars */
 	NSThread *printThread;
 	
 	id statusValues;
@@ -208,30 +224,47 @@
 	SPWindowController *parentWindowController;
 	NSWindow *parentWindow;
 	NSTabViewItem *parentTabViewItem;
+#endif
 	BOOL isProcessing;
+#ifndef SP_REFACTOR /* ivars */
 	NSString *processID;
+#endif
 }
 
+#ifdef SP_REFACTOR /* ivars */
+@property (readwrite, assign) id delegate;
+@property (readonly) NSMutableArray* allDatabases;
+#endif
+
+#ifndef SP_REFACTOR /* ivars */
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
+#endif
 @property (readwrite, assign) BOOL isProcessing;
+#ifndef SP_REFACTOR /* ivars */
 @property (readwrite, retain) NSString *processID;
+#endif
 @property (readonly) SPServerSupport *serverSupport;
 
+#ifndef SP_REFACTOR /* method decls */
 - (BOOL)isUntitled;
 - (BOOL)couldCommitCurrentViewActions;
 
 - (void)initQueryEditorWithString:(NSString *)query;
 
 // Connection callback and methods
+#endif
 - (void)setConnection:(MCPConnection *)theConnection;
 - (MCPConnection *)getConnection;
 - (void)setKeychainID:(NSString *)theID;
 
 // Database methods
 - (IBAction)setDatabases:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)chooseDatabase:(id)sender;
+#endif
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)refreshTables:(id)sender;
@@ -241,6 +274,7 @@
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
+#endif
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
 - (NSDictionary *)getDbStructure;
@@ -269,6 +303,7 @@
 - (void)updateEncodingMenuWithSelectedEncoding:(NSNumber *)encodingTag;
 - (NSNumber *)encodingTagFromMySQLEncoding:(NSString *)mysqlEncoding;
 - (NSString *)mysqlEncodingFromEncodingTag:(NSNumber *)encodingTag;
+#ifndef SP_REFACTOR /* method decls */
 
 // Table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
@@ -296,7 +331,9 @@
 - (void)flushPrivileges:(id)sender;
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
+#endif
 - (void)refreshCurrentDatabase;
+#ifndef SP_REFACTOR /* method decls */
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)validateSaveConnectionAccessory:(id)sender;
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences contextInfo:(NSDictionary*)contextInfo;
@@ -312,6 +349,7 @@
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
 - (IBAction)toggleNavigator:(id)sender;
+#endif
 
 // Accessor methods
 - (NSString *)host;
@@ -326,6 +364,7 @@
 - (BOOL)isSaveInBundle;
 - (NSURL *)fileURL;
 - (NSString *)displayName;
+#ifndef SP_REFACTOR /* method decls */
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
@@ -361,8 +400,11 @@
 - (void)didBecomeActiveTabInWindow;
 - (void)tabDidBecomeKey;
 - (void)tabDidResize;
+#endif
+
 - (void)setIsProcessing:(BOOL)value;
 - (BOOL)isProcessing;
+#ifndef SP_REFACTOR /* method decls */
 - (void)setParentWindow:(NSWindow *)aWindow;
 - (NSWindow *)parentWindow;
 
@@ -379,5 +421,17 @@
 - (BOOL)setState:(NSDictionary *)stateDetails;
 - (void)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
+#endif
+
+#ifdef SP_REFACTOR /* method decls */
+- (SPConnectionController*)createConnectionController;
+- (void)connect;
+- (NSArray*)allTableNames;
+- (SPTablesList*)tablesListInstance;
+- (SPTableData*)tableDataInstance;
+- (void)setTableSourceInstance:(SPTableStructure*)source;
+- (void)setTableContentInstance:(SPTableContent*)content;
+- (void)setTableDataInstance:(SPTableData*)data;
+#endif
 
 @end

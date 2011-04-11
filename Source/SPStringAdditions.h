@@ -77,7 +77,9 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
 
+#ifndef SP_REFACTOR /* run self as bash commands */
 - (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerInstance:(id)caller contextInfo:(NSDictionary*)contextInfo error:(NSError**)theError;
 - (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError;
+#endif
 
 @end

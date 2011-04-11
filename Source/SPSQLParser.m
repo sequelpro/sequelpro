@@ -780,7 +780,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 										if (delimiter) [delimiter release];
 										delimiter = [[NSString alloc] initWithString:[delimiterCommandParts objectAtIndex:2]];
 										delimiterLengthMinusOne = [delimiter length] - 1;
-										parsedToPosition = currentStringIndex + [[delimiterCommandParts objectAtIndex:1] length];
+										parsedToPosition = currentStringIndex + [(NSString*)[delimiterCommandParts objectAtIndex:1] length];
 										
 										// Drop back to standard non-delimiter mode if the delimiter has ended
 										if ([delimiter isEqualToString:[NSString stringWithFormat:@"%C", character]]) {

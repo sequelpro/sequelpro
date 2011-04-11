@@ -28,6 +28,7 @@
 #define SP_MAX_CELL_WIDTH 400
 
 @class SPDataStorage;
+@class SPTableContent;
 
 /*!
 	@class copyTable
@@ -39,13 +40,15 @@
 */
 @interface SPCopyTable : SPTableView
 {
-	id tableInstance;                 // the table content view instance
+	SPTableContent* tableInstance;                 // the table content view instance
 	id mySQLConnection;               // current MySQL connection
 	NSArray* columnDefinitions;       // array of NSDictionary containing info about columns
 	NSString* selectedTable;          // the name of the current selected table
 	SPDataStorage* tableStorage;      // the underlying storage array holding the table data
 
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 
 	NSRange fieldEditorSelectedRange;
 	NSString *copyBlobFileDirectory;
@@ -84,6 +87,7 @@
 */
 - (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
+#ifndef SP_REFACTOR /* method decls */
 /*!
 	@method	 rowsAsTabStringWithHeaders:onlySelectedRows:
 	@abstract   getter of the selected rows or all of the table for copy
@@ -105,6 +109,7 @@
 	@result	 The above described string, or nil if nothing selected
 */
 - (NSString *)rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling;
+#endif
 
 /*
  * Generate a string in form of INSERT INTO <table> VALUES () of 
@@ -171,6 +176,8 @@
 - (IBAction)executeBundleItemForDataTable:(id)sender;
 
 - (void)selectTableRows:(NSArray*)rowIndices;
+
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
 
 @end
 

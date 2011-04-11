@@ -23,6 +23,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPNavigatorController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "RegexKitLite.h"
 #import "SPNavigatorOutlineView.h"
 #import "ImageAndTextCell.h"
@@ -34,18 +35,23 @@
 #import "SPDatabaseViewController.h"
 
 #import <objc/message.h>
+#endif
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
+#ifndef SP_REFACTOR /* pasteboard types */
 #define DragFromNavigatorPboardType  @"SPDragFromNavigatorPboardType"
 #define DragTableDataFromNavigatorPboardType  @"SPDragTableDataFromNavigatorPboardType"
+#endif
 
 @implementation SPNavigatorController
 
+#ifndef SP_REFACTOR /* unused sort func */
 static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* context)
 {
 	return (NSComparisonResult)objc_msgSend(s1, @selector(localizedCompare:), s2);
 }
+#endif
 
 
 /**
@@ -80,13 +86,14 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		cachedSortedKeys    = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
 		updatingConnections = [[NSMutableArray alloc] init];
+#ifndef SP_REFACTOR
 		selectedKey2        = @"";
 		ignoreUpdate        = NO;
 		isFiltered          = NO;
 		isFiltering         = NO;
 		[syncButton setState:NSOffState];
 		NSDictionaryClass   = [NSDictionary class];
-
+#endif
 	}
 
 	return self;
@@ -103,6 +110,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(updatingConnections)  [updatingConnections release];
 	if(expandStatus2) [expandStatus2 release];
 	if(cachedSortedKeys) [cachedSortedKeys release];
+#ifndef SP_REFACTOR /* dealloc ivars */
 	[connectionIcon release];
 	[databaseIcon release];
 	[tableIcon release];
@@ -110,6 +118,10 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[procedureIcon release];
 	[functionIcon release];
 	[fieldIcon release];
+#endif
+#ifdef SP_REFACTOR /* patch */
+	[super dealloc];
+#endif
 }
 /**
  * The following base protocol methods are implemented to ensure the singleton status of this class.
@@ -125,6 +137,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (void)release { }
 
+#ifndef SP_REFACTOR
 /**
  * Set the window's auto save name and initialise display
  */
@@ -487,6 +500,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[[schemaData objectForKey:connectionID] removeObjectForKey:db_id];
 	[outlineSchema2 reloadData];
 }
+#endif
 
 - (NSDictionary *)dbStructureForConnection:(NSString*)connectionID
 {
@@ -550,6 +564,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 }
 
+#ifndef SP_REFACTOR
 
 - (BOOL)isUpdatingConnection:(NSString*)connectionID
 {
@@ -1253,4 +1268,5 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		}
 	return @"";
 }
+#endif
 @end

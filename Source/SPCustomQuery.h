@@ -46,9 +46,17 @@
 #define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
+#ifndef SP_REFACTOR
 @class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView, SPFieldEditorController;
+#else
+@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, NSSplitView, SPFieldEditorController;
+#endif
 
+#ifndef SP_REFACTOR
 @interface SPCustomQuery : NSObject
+#else
+@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
+#endif
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
@@ -101,21 +109,29 @@
 	IBOutlet NSMenuItem *previousHistoryMenuItem;
 	IBOutlet NSMenuItem *nextHistoryMenuItem;
 
+#ifndef SP_REFACTOR
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
 	IBOutlet NSSearchFieldCell *helpSearchFieldCell;
 	IBOutlet NSSegmentedControl *helpNavigator;
 	IBOutlet NSSegmentedControl *helpTargetSelector;
+#endif
 
 	IBOutlet NSButton *queryInfoButton;
+#ifndef SP_REFACTOR
 	IBOutlet BWSplitView *queryInfoPaneSplitView;
+#else
+	IBOutlet NSSplitView *queryInfoPaneSplitView;
+#endif
 
 	SPFieldEditorController *fieldEditor;
 
 	SPQueryFavoriteManager *favoritesManager;
 
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 	MCPConnection *mySQLConnection;
 
 	NSString *usedQuery;
@@ -129,9 +145,11 @@
 
 	NSUInteger queryStartPosition;
 
+#ifndef SP_REFACTOR
 	NSUInteger helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
+#endif
 
 	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
@@ -181,6 +199,7 @@
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
+#ifndef SP_REFACTOR
 - (IBAction)showHelpForCurrentWord:(id)sender;
 - (IBAction)showHelpForSearchString:(id)sender;
 - (IBAction)helpSegmentDispatcher:(id)sender;
@@ -190,6 +209,7 @@
 - (IBAction)helpSelectHelpTargetMySQL:(id)sender;
 - (IBAction)helpSelectHelpTargetPage:(id)sender;
 - (IBAction)helpSelectHelpTargetWeb:(id)sender;
+#endif
 - (IBAction)filterQueryFavorites:(id)sender;
 - (IBAction)filterQueryHistory:(id)sender;
 - (IBAction)saveQueryHistory:(id)sender;
@@ -226,6 +246,7 @@
 - (void) clearResultViewDetailsToRestore;
 - (void) autosizeColumns;
 
+#ifndef SP_REFACTOR
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString calledByAutoHelp:(BOOL)autoHelp;
@@ -233,6 +254,7 @@
 - (void)helpTargetValidation;
 - (void)openMySQLonlineDocumentationWithString:(NSString *)searchString;
 - (NSWindow *)helpWebViewWindow;
+#endif
 - (void)setMySQLversion:(NSString *)theVersion;
 
 // Task interaction

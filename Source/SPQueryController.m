@@ -32,7 +32,6 @@
 #define MESSAGE_TRUNCATE_CHARACTER_LENGTH 256
 
 // Table view column identifier constants
-static NSString *SPTableViewMessageColumnID    = @"message";
 static NSString *SPTableViewDateColumnID       = @"messageDate";
 static NSString *SPTableViewConnectionColumnID = @"messageConnection";
 
@@ -158,20 +157,41 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)awakeFromNib
 {
+#ifndef SP_REFACTOR
 	prefs = [NSUserDefaults standardUserDefaults];
+#endif
 
 	[self setWindowFrameAutosaveName:@"QueryConsole"];
 
 	// Show/hide table columns
-	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:![prefs boolForKey:SPConsoleShowTimestamps]];
-	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:![prefs boolForKey:SPConsoleShowConnections]];
-
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:
+#ifndef SP_REFACTOR
+	![prefs boolForKey:SPConsoleShowTimestamps]
+#else
+	YES
+#endif
+	];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:
+#ifndef SP_REFACTOR
+	![prefs boolForKey:SPConsoleShowConnections]
+#else
+	YES
+#endif
+	];
+	
+#ifndef SP_REFACTOR
 	showSelectStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowSelectsAndShows];
 	showHelpStatementsAreDisabled = ![prefs boolForKey:SPConsoleShowHelps];
+#else
+	showSelectStatementsAreDisabled = YES;
+	showHelpStatementsAreDisabled = YES;
+#endif
 
 	[self _updateFilterState];
 
+#ifndef SP_REFACTOR
 	[loggingDisabledTextField setStringValue:([prefs boolForKey:SPConsoleEnableLogging]) ? @"" : NSLocalizedString(@"Query logging is currently disabled", @"query logging disabled label")];
+#endif
 
 	// Setup data formatter
 	dateFormatter = [[NSDateFormatter alloc] init];
@@ -181,11 +201,17 @@ static SPQueryController *sharedQueryController = nil;
 	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 	[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
 
+#ifndef SP_REFACTOR
 	// Set the process table view's vertical gridlines if required
 	[consoleTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+#endif
 
 	// Set the strutcture and index view's font
+#ifndef SP_REFACTOR
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+#else
+	BOOL useMonospacedFont = YES;
+#endif
 
 	for (NSTableColumn *column in [consoleTableView tableColumns])
 	{
@@ -540,16 +566,20 @@ static SPQueryController *sharedQueryController = nil;
 
 		// Set the global history coming from the Prefs as default if available
 		if(![historyContainer objectForKey:[new absoluteString]]) {
+#ifndef SP_REFACTOR
 			if([prefs objectForKey:SPQueryHistory]) {
 				NSMutableArray *arr = [[NSMutableArray alloc] init];
 				[arr addObjectsFromArray:[prefs objectForKey:SPQueryHistory]];
 				[historyContainer setObject:arr forKey:[new absoluteString]];
 				[arr release];
 			} else {
+#endif
 				NSMutableArray *arr = [[NSMutableArray alloc] init];
 				[historyContainer setObject:[NSMutableArray array] forKey:[new absoluteString]];
 				[arr release];
+#ifndef SP_REFACTOR
 			}
+#endif
 		}
 
 		// Set the doc-based content filters
@@ -652,9 +682,11 @@ static SPQueryController *sharedQueryController = nil;
 				[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];
 
 
+#ifndef SP_REFACTOR
 	// User did choose to clear the global history list
 	if(![fileURL isFileURL] && ![historyArray count])
 		[prefs setObject:historyArray forKey:SPQueryHistory];
+#endif
 }
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
@@ -665,7 +697,11 @@ static SPQueryController *sharedQueryController = nil;
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
-	NSInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
+#ifndef SP_REFACTOR
+	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
+#else
+	NSUInteger maxHistoryItems = 20;
+#endif
 
 	// Save each history item due to its document source
 	if([historyContainer objectForKey:[fileURL absoluteString]]) {
@@ -675,7 +711,7 @@ static SPQueryController *sharedQueryController = nil;
 		[uniquifier addItemsWithTitles:[historyContainer objectForKey:[fileURL absoluteString]]];
 		[uniquifier insertItemWithTitle:history atIndex:0];
 
-		while ( [uniquifier numberOfItems] > maxHistoryItems )
+		while ( (NSUInteger)[uniquifier numberOfItems] > maxHistoryItems )
 			[uniquifier removeItemAtIndex:[uniquifier numberOfItems]-1];
 
 		[self replaceHistoryByArray:[uniquifier itemTitles] forFileURL:fileURL];
@@ -685,17 +721,19 @@ static SPQueryController *sharedQueryController = nil;
 	// Save history items coming from each Untitled document in the global Preferences successively
 	// regardingless of the source document.
 	if(![fileURL isFileURL]) {
+#ifndef SP_REFACTOR
 
 		// Remove all duplicates by using a NSPopUpButton
 		NSPopUpButton *uniquifier = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0,0,0,0) pullsDown:YES];
 		[uniquifier addItemsWithTitles:[prefs objectForKey:SPQueryHistory]];
 		[uniquifier insertItemWithTitle:history atIndex:0];
 
-		while ( [uniquifier numberOfItems] > maxHistoryItems )
+		while ( (NSUInteger)[uniquifier numberOfItems] > maxHistoryItems )
 			[uniquifier removeItemAtIndex:[uniquifier numberOfItems]-1];
 
 		[prefs setObject:[uniquifier itemTitles] forKey:SPQueryHistory];
 		[uniquifier release];
+#endif
 	}
 }
 
@@ -773,6 +811,7 @@ static SPQueryController *sharedQueryController = nil;
 			[result addObject:fav];
 	}
 
+#ifndef SP_REFACTOR
 	if(includeGlobals && [prefs objectForKey:SPQueryFavorites]) {
 		for(id fav in [prefs objectForKey:SPQueryFavorites]) {
 			if([fav objectForKey:@"tabtrigger"] && [[fav objectForKey:@"tabtrigger"] isEqualToString:tabTrigger]) {
@@ -781,6 +820,7 @@ static SPQueryController *sharedQueryController = nil;
 			}
 		}
 	}
+#endif
 
 	return [result autorelease];
 }

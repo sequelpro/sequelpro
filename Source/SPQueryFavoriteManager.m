@@ -30,7 +30,9 @@
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
+#ifndef SP_REFACTOR
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
+#endif
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -50,7 +52,9 @@
 {
 	if ((self = [super initWithWindowNibName:@"QueryFavoriteManager"])) {
 
+#ifndef SP_REFACTOR
 		prefs = [NSUserDefaults standardUserDefaults];
+#endif
 
 		favorites = [[NSMutableArray alloc] init];
 		
@@ -95,12 +99,14 @@
 			@"", @"query",
 			nil]];
 
+#ifndef SP_REFACTOR
 	// Build data source for global queryFavorites (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
 	if([prefs objectForKey:SPQueryFavorites]) {
 		for(id fav in [prefs objectForKey:SPQueryFavorites])
 			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
+#endif
 
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"name", 
@@ -131,8 +137,10 @@
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
 	
+#ifndef SP_REFACTOR /* split view delegate */
 	// Set the button bar delegate 
 	[splitViewButtonBar setSplitViewDelegate:self];
+#endif
 }
 
 #pragma mark -
@@ -297,7 +305,9 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
+#ifndef SP_REFACTOR
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
+#endif
 	
 	[encodingPopUp setEnabled:YES];
 	
@@ -379,8 +389,10 @@
 		[[SPQueryController sharedQueryController] replaceFavoritesByArray:
 			[self queryFavoritesForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
 
+#ifndef SP_REFACTOR
 		// Update global preferences' list
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
+#endif
 
 		// Inform all opened documents to update the query favorites list
 		for(id doc in [[NSApp delegate] orderedDocuments])
@@ -756,7 +768,7 @@
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
@@ -784,7 +796,7 @@
 				[favoritesTableView reloadData];
 				[spf release];
 			} else {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
@@ -810,8 +822,10 @@
 		if (returnCode == NSOKButton) {
 			NSError *error = nil;
 		
+#ifndef SP_REFACTOR
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
+#endif
 		
 			[[favoriteQueryTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
 		
@@ -846,7 +860,7 @@
 											errorDescription:&err];
 
 			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting query favorite data", @"error while converting query favorite data")]
+				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while converting query favorite data", @"error while converting query favorite data")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
