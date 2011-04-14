@@ -82,7 +82,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		doImport          = [NSNumber numberWithInteger:0];
 		doNotImport       = [NSNumber numberWithInteger:1];
 		isEqual           = [NSNumber numberWithInteger:2];
-		doImportString    = @"‚Äï";
+		doImportString    = @"―";
 		doNotImportString = @" ";
 		isEqualString     = @"=";
 		newTableMode      = NO;
@@ -254,8 +254,8 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	NSInteger i;
 	for(i=0; i<numberOfImportColumns; i++) {
-		[fieldMappingGlobalValues addObject:@"‚Ä¶"];
-		[fieldMappingGlobalValuesSQLMarked addObject:@"‚Ä¶"];
+		[fieldMappingGlobalValues addObject:@"…"];
+		[fieldMappingGlobalValuesSQLMarked addObject:@"…"];
 	}
 
 }
@@ -556,7 +556,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			if([column objectForKey:@"length"])
 				[type appendFormat:@"(%@)", [column objectForKey:@"length"]];
 			if([column objectForKey:@"values"])
-				[type appendFormat:@"(%@)", [[column objectForKey:@"values"] componentsJoinedByString:@"¬¶"]];
+				[type appendFormat:@"(%@)", [[column objectForKey:@"values"] componentsJoinedByString:@"¦"]];
 
 			if([column objectForKey:@"isprimarykey"]) {
 				[type appendFormat:@",%@",@"PRIMARY"];
@@ -1803,7 +1803,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 				if([[self selectedImportMethod] isEqualToString:@"UPDATE"])
 					[c addItemWithTitle:NSLocalizedString(@"Match Field", @"match field menu item")];
 				[m addItem:[NSMenuItem separatorItem]];
-				NSMenuItem *menuItem = [m addItemWithTitle:NSLocalizedString(@"Add Value or Expression‚Ä¶", @"add global value or expression menu item") action:@selector(addGlobalSourceVariable:) keyEquivalent:@"g"];
+				NSMenuItem *menuItem = [m addItemWithTitle:NSLocalizedString(@"Add Value or Expression…", @"add global value or expression menu item") action:@selector(addGlobalSourceVariable:) keyEquivalent:@"g"];
 				[menuItem setKeyEquivalentModifierMask:(NSAlternateKeyMask|NSCommandKeyMask)];
 				[c addItemWithTitle:[NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]]];
 				[[m itemAtIndex:[c numberOfItems]-1] setEnabled:NO];
