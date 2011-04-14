@@ -480,7 +480,7 @@
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
-		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ ‚Äì %@%@%@%@", 
+		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@%@%@", 
 			[columnDefinition objectForKey:@"name"], 
 			[columnDefinition objectForKey:@"type"], 
 			([columnDefinition objectForKey:@"length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"length"]] : @"", 
@@ -829,7 +829,7 @@
 		}
 		// Filter task came from filter table
 		else if(activeFilter == 1){
-			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ ‚Äì %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
+			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
 		}
 	} else {
 		// Trigger a full reload if required
@@ -960,7 +960,7 @@
 	}
 
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
-	// by BINARY if the user pressed ‚áß while invoking 'Filter' otherwise it will
+	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 	// replaced by @"".
 	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
@@ -975,14 +975,14 @@
 
 	// Current selected filter type
 	if(![contentFilters objectForKey:compareType]) {
-		NSLog(@"Error while retrieving filters. Filter type ‚Äú%@‚Äù unknown.", compareType);
+		NSLog(@"Error while retrieving filters. Filter type “%@” unknown.", compareType);
 		NSBeep();
 		return nil;
 	}
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
 
 	if(![filter objectForKey:@"NumberOfArguments"]) {
-		NSLog(@"Error while retrieving filter clause. No ‚ÄúClause‚Äù or/and ‚ÄúNumberOfArguments‚Äù key found.");
+		NSLog(@"Error while retrieving filter clause. No “Clause” or/and “NumberOfArguments” key found.");
 		NSBeep();
 		return nil;
 	}
@@ -1053,7 +1053,7 @@
 
 	// Check number of placeholders and given 'NumberOfArguments'
 	if([clause replaceOccurrencesOfString:@"%@" withString:@"%@" options:NSLiteralSearch range:NSMakeRange(0, [clause length])] != numberOfArguments) {
-		NSLog(@"Error while setting filter string. ‚ÄúNumberOfArguments‚Äù differs from the number of arguments specified in ‚ÄúClause‚Äù.");
+		NSLog(@"Error while setting filter string. “NumberOfArguments” differs from the number of arguments specified in “Clause”.");
 		NSBeep();
 		[argument release];
 		[firstBetweenArgument release];
@@ -1399,7 +1399,7 @@
 - (IBAction)toggleFilterField:(id)sender
 {
 
-	// Check if user called "Edit Filter‚Ä¶"
+	// Check if user called "Edit Filter…"
 	if([[compareField selectedItem] tag] == (NSInteger)[[contentFilters objectForKey:compareType] count]) {
 		[self openContentFilterManager];
 		return;
@@ -2435,7 +2435,7 @@
 					[tip setString:[[filter objectForKey:@"Clause"] stringByReplacingOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"]];
 					if([tip isMatchedByRegex:@"(?<!\\\\)\\$BINARY"]) {
 						[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@""];
-						[tip appendString:NSLocalizedString(@"\n\nPress ‚áß for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
+						[tip appendString:NSLocalizedString(@"\n\nPress ⇧ for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
 					}
 					[tip flushCachedRegexData];
 					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
@@ -2453,8 +2453,8 @@
 		}
 
 	[menu addItem:[NSMenuItem separatorItem]];
-	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filters‚Ä¶", @"edit filter") action:NULL keyEquivalent:@""];
-	[item setToolTip:NSLocalizedString(@"Edit user-defined Filters‚Ä¶", @"edit user-defined filter")];
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filters…", @"edit filter") action:NULL keyEquivalent:@""];
+	[item setToolTip:NSLocalizedString(@"Edit user-defined Filters…", @"edit user-defined filter")];
 	[item setTag:i];
 	[menu addItem:item];
 	[item release];
@@ -2856,7 +2856,7 @@
 			[argument appendFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]];
 		}
 		else if ([tempValue isSPNotLoaded]) {
-			NSLog(@"Exceptional case: SPNotLoaded object found for method ‚ÄúargumentForRow:‚Äù!");
+			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
 			return @"";
 		}
 		else {
@@ -3901,7 +3901,7 @@
 				}
 
 
-				// This shouldn't happen ‚Äì for safety reasons
+				// This shouldn't happen – for safety reasons
 				if ( ![mySQLConnection affectedRows] ) {
 #ifndef SP_REFACTOR
 					if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
@@ -4310,7 +4310,7 @@
 	if (aTableView == tableContentView) {
 		NSString *tmp;
 
-		// By holding ‚åò, ‚áß, or/and ‚å• copies selected rows as SQL INSERTS
+		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
 		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
 			tmp = [tableContentView rowsAsSqlInsertsOnlySelectedRows:YES];
@@ -4623,7 +4623,7 @@
 	// Table font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{«û·π∂·∏π√ú‚àëzgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 		[tableContentView setFont:tableFont];
 		[tableContentView reloadData];
 	}
@@ -4682,7 +4682,7 @@
 
 	BOOL lookInAllFields = NO;
 
-	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|‚â†|‚â§|‚â•)\\s*(.*?)\\s*$";
+	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
 	NSInteger editedRow = [filterTableView editedRow];
 	
@@ -4728,9 +4728,9 @@
 			if([filterCell length]) {
 
 				// Recode special operators
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â†" withString:@"!="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â§" withString:@"<="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â•" withString:@">="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
 
 				if(numberOfValues)
 					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];

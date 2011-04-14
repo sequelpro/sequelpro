@@ -1168,7 +1168,7 @@
 }
 
 /*
- * Add or remove "‚ÅÑ*  *‚ÅÑ" for each line in the current query
+ * Add or remove "⁄*  *⁄" for each line in the current query
  * a given selection
  */
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection
@@ -1221,8 +1221,8 @@
 
 /*
  * Add or remove "-- " for each line in the current query or selection,
- * if the selection is in-line wrap selection into ‚ÅÑ* block comments and
- * place the caret after ‚ÅÑ* to allow to enter !xxxxxx e.g.
+ * if the selection is in-line wrap selection into ⁄* block comments and
+ * place the caret after ⁄* to allow to enter !xxxxxx e.g.
  */
 - (void)commentOut
 {
@@ -1594,7 +1594,7 @@
 		[[dataCell formatter] setFieldType:[columnDefinition objectForKey:@"type"]];
 		[theCol setDataCell:dataCell];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
-		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ ‚Äì %@%@", [columnDefinition objectForKey:@"name"], [columnDefinition objectForKey:@"type"], ([columnDefinition objectForKey:@"char_length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"char_length"]] : @""]];
+		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@", [columnDefinition objectForKey:@"name"], [columnDefinition objectForKey:@"type"], ([columnDefinition objectForKey:@"char_length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"char_length"]] : @""]];
 
 #ifndef SP_REFACTOR
 		// Set the width of this column to saved value if exists and maps to a real column
@@ -2045,7 +2045,7 @@
 				return;
 			}
 
-			// This shouldn't happen ‚Äì for safety reasons
+			// This shouldn't happen – for safety reasons
 			if ( ![mySQLConnection affectedRows] ) {
 #ifndef SP_REFACTOR
 				if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
@@ -3145,7 +3145,7 @@
 				aRange = [desc rangeOfRegex:@"\\[HELP ([^ ]*?)\\]" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length+53, [desc length]-53-aRange.location-aRange.length) capture:1 error:&err1];
 				if(aRange.location != NSNotFound) {
 					aUrl = [[desc substringWithRange:aRange] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ ‚Äú%@‚Äù' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
+					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
 				}
 				else
 					break;
@@ -3160,7 +3160,7 @@
 			// 	aRange = [desc rangeOfRegex:@"(?<!\\w)([A-Z_]{2,}( [A-Z_]{2,})?)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
 			// 	if(aRange.location != NSNotFound) {
 			// 		aUrl = [desc substringWithRange:aRange];
-			// 		[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ ‚Äú%@‚Äù' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
+			// 		[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
 			// 	}
 			// 	else
 			// 		break;
@@ -3184,7 +3184,7 @@
 		if (r) [theResult dataSeek:0];
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
-			[theHelp appendFormat:@"<br><i>%@ ‚Äú%@‚Äù</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString];
+			[theHelp appendFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString];
 		else
 			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help ‚Äì Categories", @"mysql help categories"), searchString];
 
@@ -3193,7 +3193,7 @@
 		for ( i = 0 ; i < r ; i++ ) {
 			NSArray *anArray = [theResult fetchRowAsArray];
 			NSString *topic = [anArray objectAtIndex:[anArray count]-2];
-			[theHelp appendFormat:@"<li><a title='%@ ‚Äú%@‚Äù' href='%@' class='internallink'>%@</a></li>",
+			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>",
 				NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic];
 		}
 		[theHelp appendString:@"</ul>"];
@@ -3375,7 +3375,7 @@
 		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent]
 		action:NULL keyEquivalent:@""];
 	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:[NSString stringWithFormat:@"‚Äò%@‚Äô based favorites",
+	[headerMenuItem setToolTip:[NSString stringWithFormat:@"‘%@’ based favorites",
 		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent]]];
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
@@ -3387,7 +3387,7 @@
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@‚á•", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
 			    attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3412,7 +3412,7 @@
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@‚á•", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
 			    attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3514,7 +3514,7 @@
 	// Result Table Font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{«û·π∂·∏π√ú‚àëzgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 		[customQueryView setFont:tableFont];
 		[customQueryView reloadData];
 	}
@@ -3641,7 +3641,7 @@
 			[menuItem setToolTip:NSLocalizedString(@"Clear the global history list", @"clear the global history list tooltip message")];
 #ifndef SP_REFACTOR /* if ( [tableDocumentInstance isUntitled] ) */
 		} else {
-			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Clear History for ‚Äú%@‚Äù", @"clear history for ‚Äú%@‚Äù menu title"), [tableDocumentInstance displayName]]];
+			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Clear History for “%@”", @"clear history for “%@” menu title"), [tableDocumentInstance displayName]]];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the document-based history list", @"clear the document-based history list tooltip message")];
 		}
 #endif
@@ -3726,7 +3726,7 @@
 
 		// an error occurred while reading
 		if (helpHTMLTemplate == nil) {
-			NSLog(@"%@", [NSString stringWithFormat:@"Error reading ‚Äú%@.html‚Äù!<br>%@", SPHTMLHelpTemplate, [error localizedFailureReason]]);
+			NSLog(@"%@", [NSString stringWithFormat:@"Error reading “%@.html”!<br>%@", SPHTMLHelpTemplate, [error localizedFailureReason]]);
 			NSBeep();
 		}
 

@@ -5224,7 +5224,7 @@
 {
 	[runningActivitiesArray addObject:commandDict];
 #ifndef SP_REFACTOR
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 #else
 	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 #endif
@@ -5260,7 +5260,7 @@
 	}
 
 #ifndef SP_REFACTOR
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
 #else
 	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 #endif

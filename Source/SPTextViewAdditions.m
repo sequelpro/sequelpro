@@ -4,7 +4,7 @@
 //  SPTextViewAdditions.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on April 05, 2009
+//  Created by Hans-J√∂rg Bibiko on April 05, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -524,7 +524,7 @@
 			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSLog(@"“%@” file couldn't be read.", infoPath);
+		NSLog(@"‚Äú%@‚Äù file couldn't be read.", infoPath);
 		NSBeep();
 		if (cmdData) [cmdData release];
 		return;
@@ -643,7 +643,7 @@
 			if(inputFileError != nil) {
 				NSString *errorMessage  = [inputFileError localizedDescription];
 				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+								  [NSString stringWithFormat:@"%@ ‚Äú%@‚Äù:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 				if (cmdData) [cmdData release];
 				return;
 			}
@@ -763,7 +763,7 @@
 			} else if([err code] != 9) { // Suppress an error message if command was killed
 				NSString *errorMessage  = [err localizedDescription];
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+								  [NSString stringWithFormat:@"%@ ‚Äú%@‚Äù:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 			}
 
 		}

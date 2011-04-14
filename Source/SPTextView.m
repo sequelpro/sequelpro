@@ -4,7 +4,7 @@
 //  SPTextView.m
 //  sequel-pro
 //
-//  Created by Carsten Blüm.
+//  Created by Carsten Bl√ºm.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -490,10 +490,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 								NSString *fieldpath = [field substringFromIndex:[field rangeOfString:SPUniqueSchemaDelimiter].location];
 								NSArray *def = [theTable objectForKey:field];
 								NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:3], [def objectAtIndex:5]];
-								// Check if type definition contains a , if so replace the bracket content by … and add 
+								// Check if type definition contains a , if so replace the bracket content by ‚Ä¶ and add 
 								// the bracket content as "list" key to prevend the token field to split them by ,
 								if(typ && [typ rangeOfString:@","].length) {
-									NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
+									NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(‚Ä¶)"];
 									NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
 									[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 										[[field componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", 
@@ -520,7 +520,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			if(desc) [desc release];
 		} else {
 
-			// [possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"fetching table data…", @"fetching table data for completion in progress message"), @"path", @"", @"noCompletion", nil]];
+			// [possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"fetching table data‚Ä¶", @"fetching table data for completion in progress message"), @"path", @"", @"noCompletion", nil]];
 
 			// Add all database names to completions list
 			for (id obj in [tablesListInstance allDatabaseNames])
@@ -924,7 +924,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 /**
  * Checks if the caret adjoins to an alphanumeric char  |word or word| or wo|rd
- * Exception for word| and char is a “(” to allow e.g. auto-pairing () for functions
+ * Exception for word| and char is a ‚Äú(‚Äù to allow e.g. auto-pairing () for functions
  */
 - (BOOL) isCaretAdjacentToAlphanumCharWithInsertionOf:(unichar)aChar
 {
@@ -1455,10 +1455,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 				if(![field hasPrefix:@"  "]) {
 					NSArray *def = [theTable objectForKey:field];
 					NSString *typ = [NSString stringWithFormat:@"%@ %@ %@", [def objectAtIndex:0], [def objectAtIndex:1], [def objectAtIndex:2]];
-					// Check if type definition contains a , if so replace the bracket content by … and add 
+					// Check if type definition contains a , if so replace the bracket content by ‚Ä¶ and add 
 					// the bracket content as "list" key to prevend the token field to split them by ,
 					if(typ && [typ rangeOfString:@","].length) {
-						NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(…)"];
+						NSString *t = [typ stringByReplacingOccurrencesOfRegex:@"\\(.*?\\)" withString:@"(‚Ä¶)"];
 						NSString *lst = [typ stringByMatching:@"\\(([^\\)]*?)\\)" capture:1L];
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
@@ -1489,7 +1489,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		}
 	}
 	else {
-		NSLog(@"“%@” is not a valid completion list", kind);
+		NSLog(@"‚Äú%@‚Äù is not a valid completion list", kind);
 		NSBeep();
 		return;
 	}
@@ -1600,7 +1600,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 
 /**
- * Selects the current snippet defined by “currentSnippetIndex”
+ * Selects the current snippet defined by ‚ÄúcurrentSnippetIndex‚Äù
  */
 - (void)selectCurrentSnippet
 {
@@ -1637,8 +1637,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 					[self setSelectedRange:r2];
 					NSString *snip = [[self string] substringWithRange:r2];
 					
- 					if([snip length] > 2 && [snip hasPrefix:@"¦"] && [snip hasSuffix:@"¦"]) {
-						BOOL fuzzySearchMode = ([snip hasPrefix:@"¦¦"] && [snip hasSuffix:@"¦¦"]) ? YES : NO;
+ 					if([snip length] > 2 && [snip hasPrefix:@"¬¶"] && [snip hasSuffix:@"¬¶"]) {
+						BOOL fuzzySearchMode = ([snip hasPrefix:@"¬¶¬¶"] && [snip hasSuffix:@"¬¶¬¶"]) ? YES : NO;
 						NSInteger offset = (fuzzySearchMode) ? 2 : 1;
 						NSRange insertRange = NSMakeRange(r2.location,0);
 						NSString *newSnip = [snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))];
@@ -1646,7 +1646,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 							[self showCompletionListFor:newSnip atRange:NSMakeRange(r2.location, 0) fuzzySearch:fuzzySearchMode];
 							return;
 						} else {
-							NSArray *list = [[snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))] componentsSeparatedByString:@"¦"];
+							NSArray *list = [[snip substringWithRange:NSMakeRange(1*offset,[snip length]-(2*offset))] componentsSeparatedByString:@"¬¶"];
 							NSMutableArray *possibleCompletions = [[[NSMutableArray alloc] initWithCapacity:[list count]] autorelease];
 							for(id w in list)
 								[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"dummy-small", @"image", nil]];
@@ -1741,7 +1741,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 
-		// Replace `${x:…}` by ${x:`…`} for convience 
+		// Replace `${x:‚Ä¶}` by ${x:`‚Ä¶`} for convience 
 		[snip replaceOccurrencesOfRegex:@"`(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}`" withString:@"${$1:`$2`}"];
 		[snip flushCachedRegexData];
 
@@ -1762,7 +1762,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 			// Check for snippet number 19 (to simplify regexp)
 			if(snipCnt>18 || snipCnt<0) {
-				NSLog(@"Only snippets in the range of 0…18 allowed.");
+				NSLog(@"Only snippets in the range of 0‚Ä¶18 allowed.");
 				[self endSnippetSession];
 				break;
 			}
@@ -1825,9 +1825,9 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			[theHintString flushCachedRegexData];
 
 #ifndef SP_REFACTOR
-			// If inside the snippet hint $(�) is defined run � as BASH command
-			// and replace $(�) by the return string of that command. Please note
-			// only one $(�) statement is allowed within one ${�} snippet environment.
+			// If inside the snippet hint $(…) is defined run … as BASH command
+			// and replace $(…) by the return string of that command. Please note
+			// only one $(…) statement is allowed within one ${…} snippet environment.
 			NSRange tagRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\((.*)\\)"];
 			if(tagRange.length) {
 				[theHintString flushCachedRegexData];
@@ -1840,7 +1840,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 					} else if([err code] != 9) { // Suppress an error message if command was killed
 						NSString *errorMessage  = [err localizedDescription];
 						SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-										  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [theHintString substringWithRange:cmdRange], errorMessage]);
+										  [NSString stringWithFormat:@"%@ ‚Äú%@‚Äù:\n%@", NSLocalizedString(@"Error for", @"error for message"), [theHintString substringWithRange:cmdRange], errorMessage]);
 					}
 				} else {
 					[theHintString replaceCharactersInRange:tagRange withString:@""];
@@ -1880,7 +1880,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 				// Check for snippet number 19 (to simplify regexp)
 				if(snipCnt>18 || snipCnt<0) {
-					NSLog(@"Only snippets in the range of 0…18 allowed.");
+					NSLog(@"Only snippets in the range of 0‚Ä¶18 allowed.");
 					[self endSnippetSession];
 					break;
 				}
@@ -1928,7 +1928,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			snippetControlArray[snippetControlMax][2] = 0;
 		}
 
-		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} → ${1:a}
+		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} ‚Üí ${1:a}
 		NSString *ure = @"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
 		while([snip isMatchedByRegex:ure]) {
 			NSRange escapeRange = [snip rangeOfRegex:ure capture:0L];
@@ -2128,7 +2128,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
-	// Check if user pressed ⌥ to allow composing of accented characters.
+	// Check if user pressed ‚å• to allow composing of accented characters.
 	// e.g. for US keyboard "⌥u a" to insert ä
 	// or for non-US keyboards to allow to enter dead keys
 	// e.g. for German keyboard ` is a dead key, press space to enter `
@@ -2248,12 +2248,12 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			return;
 		}
 	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
+		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ‚åò+, ‚åò=, and ‚åò numpad +
 		{
 			[self makeTextSizeLarger];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
+		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ‚åò- and numpad -
 		{
 			[self makeTextSizeSmaller];
 			return;
@@ -2417,7 +2417,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 }
 
 /**
- * The following moveWord... routines are needed to be able to recognize a db schema à la
+ * The following moveWord... routines are needed to be able to recognize a db schema √† la
  * db.table.field as ONE word while navigating and selecting by the keyboard
  */
 - (void)moveWordRight:(id)sender
@@ -2692,7 +2692,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// If text larger than SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING
 	// do highlighting partly (max SP_SYNTAX_HILITE_BIAS*2).
 	// The approach is to take the middle position of the current view port
-	// and highlight only ±SP_SYNTAX_HILITE_BIAS of that middle position
+	// and highlight only ¬±SP_SYNTAX_HILITE_BIAS of that middle position
 	// considering of line starts resp. ends
 	if(strlength > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
 	{
@@ -3373,7 +3373,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #pragma mark drag&drop
 
 /**
- * Insert the content of a dragged file path or if ⌘ is pressed
+ * Insert the content of a dragged file path or if ‚åò is pressed
  * while dragging insert the file path
  */
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
@@ -3404,7 +3404,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		NSUInteger characterIndex = [self characterIndexOfPoint:draggingLocation];
 		[self setSelectedRange:NSMakeRange(characterIndex,0)];
 
-		// Check if user pressed  ⌘ while dragging for inserting only the file path
+		// Check if user pressed  ‚åò while dragging for inserting only the file path
 		if([sender draggingSourceOperationMask] == 4)
 		{
 			[self insertText:filepath];
@@ -3593,7 +3593,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	
 	[result release];
 
-	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
+	NSLog(@"%@ ‚Äò%@‚Äô.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
 }
 
 // Do nothing if NSColorPanel was opened from the NSTextView
