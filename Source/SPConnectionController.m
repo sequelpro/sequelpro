@@ -507,8 +507,8 @@
 
 	// Only display the connection error message if there is a window visible and the connection attempt
 	// wasn't cancelled even though it failed.
-	if ([[NSApp keyWindow] isVisible] && (!mySQLConnectionCancelled)) {
-		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, [NSApp keyWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+	if ([[tableDocument parentWindow] isVisible] && (!mySQLConnectionCancelled)) {
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, [tableDocument parentWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 	}
 }
 
@@ -1329,7 +1329,7 @@
 	// If SSL was enabled, check it was established correctly
 	if (useSSL && ([self type] == SPTCPIPConnection || [self type] == SPSocketConnection)) {
 		if (![mySQLConnection isConnectedViaSSL]) {
-			SPBeginAlertSheet(NSLocalizedString(@"SSL connection not established", @"SSL requested but not used title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], nil, nil, nil, NSLocalizedString(@"You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted.", @"SSL connection requested but not established error detail"));
+			SPBeginAlertSheet(NSLocalizedString(@"SSL connection not established", @"SSL requested but not used title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], nil, nil, nil, NSLocalizedString(@"You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted.", @"SSL connection requested but not established error detail"));
 		} else {
 #ifndef SP_REFACTOR /* [tableDocument setStatusIconToImageWithName:@"titlebarlock"] */
 			[tableDocument setStatusIconToImageWithName:@"titlebarlock"];

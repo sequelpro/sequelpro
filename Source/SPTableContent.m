@@ -478,7 +478,7 @@
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
-		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ ‚Äì %@%@%@%@", 
+		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@%@%@", 
 			[columnDefinition objectForKey:@"name"], 
 			[columnDefinition objectForKey:@"type"], 
 			([columnDefinition objectForKey:@"length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"length"]] : @"", 
@@ -599,7 +599,7 @@
 	}
 
 	// Store the current first responder so filter field doesn't steal focus
-	id currentFirstResponder = [[NSApp keyWindow] firstResponder];
+	id currentFirstResponder = [[tableDocumentInstance parentWindow] firstResponder];
 
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
@@ -643,7 +643,7 @@
 		contentPage = pageToRestore;
 
 	// Restore first responder
-	[[NSApp keyWindow] makeFirstResponder:currentFirstResponder];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:currentFirstResponder];
 
 	// Set the state of the table buttons
 	[addButton setEnabled:(enableInteraction && [tablesListInstance tableType] == SPTableTypeTable)];
@@ -859,15 +859,15 @@
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		if(activeFilter == 0) {
 			if(filterString)
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection getLastErrorMessage]]);
 			else
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection getLastErrorMessage]]);
 		}
 		// Filter task came from filter table
 		else if(activeFilter == 1){
-			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ ‚Äì %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
+			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
 		}
 	} else {
 		// Trigger a full reload if required
@@ -998,7 +998,7 @@
 	}
 
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
-	// by BINARY if the user pressed ‚áß while invoking 'Filter' otherwise it will
+	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 	// replaced by @"".
 	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
@@ -1013,21 +1013,21 @@
 
 	// Current selected filter type
 	if(![contentFilters objectForKey:compareType]) {
-		NSLog(@"Error while retrieving filters. Filter type ‚Äú%@‚Äù unknown.", compareType);
+		NSLog(@"Error while retrieving filters. Filter type “%@” unknown.", compareType);
 		NSBeep();
 		return nil;
 	}
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
 
 	if(![filter objectForKey:@"NumberOfArguments"]) {
-		NSLog(@"Error while retrieving filter clause. No ‚ÄúClause‚Äù or/and ‚ÄúNumberOfArguments‚Äù key found.");
+		NSLog(@"Error while retrieving filter clause. No “Clause” or/and “NumberOfArguments” key found.");
 		NSBeep();
 		return nil;
 	}
 
 	if(![filter objectForKey:@"Clause"] || ![(NSString *)[filter objectForKey:@"Clause"] length]) {
 
-		SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 					  NSLocalizedString(@"Content Filter clause is empty.", @"content filter clause is empty tooltip."));
 
 		return nil;
@@ -1091,7 +1091,7 @@
 
 	// Check number of placeholders and given 'NumberOfArguments'
 	if([clause replaceOccurrencesOfString:@"%@" withString:@"%@" options:NSLiteralSearch range:NSMakeRange(0, [clause length])] != numberOfArguments) {
-		NSLog(@"Error while setting filter string. ‚ÄúNumberOfArguments‚Äù differs from the number of arguments specified in ‚ÄúClause‚Äù.");
+		NSLog(@"Error while setting filter string. “NumberOfArguments” differs from the number of arguments specified in “Clause”.");
 		NSBeep();
 		[argument release];
 		[firstBetweenArgument release];
@@ -1465,7 +1465,7 @@
 - (IBAction)toggleFilterField:(id)sender
 {
 
-	// Check if user called "Edit Filter‚Ä¶"
+	// Check if user called "Edit Filter…"
 	if([[compareField selectedItem] tag] == (NSInteger)[[contentFilters objectForKey:compareType] count]) {
 		[self openContentFilterManager];
 		return;
@@ -1788,7 +1788,7 @@
 	if ( [tableContentView numberOfSelectedRows] < 1 )
 		return;
 	if ( [tableContentView numberOfSelectedRows] > 1 ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
 		return;
 	}
 
@@ -1851,7 +1851,7 @@
 	//	return;
 
 	// cancel editing (maybe this is not the ideal method -- see xcode docs for that method)
-	[[NSApp keyWindow] endEditingFor:nil];
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
 
 	if (![tableContentView numberOfSelectedRows])
@@ -1904,7 +1904,7 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.", @"delete rows informative message"), (long)[tableContentView numberOfSelectedRows]]];
 	}
 
-	[alert beginSheetModalForWindow:[NSApp keyWindow] modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
 /**
@@ -2521,7 +2521,7 @@
 					[tip setString:[[filter objectForKey:@"Clause"] stringByReplacingOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"]];
 					if([tip isMatchedByRegex:@"(?<!\\\\)\\$BINARY"]) {
 						[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@""];
-						[tip appendString:NSLocalizedString(@"\n\nPress ‚áß for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
+						[tip appendString:NSLocalizedString(@"\n\nPress ⇧ for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
 					}
 					[tip flushCachedRegexData];
 					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
@@ -2539,8 +2539,8 @@
 		}
 
 	[menu addItem:[NSMenuItem separatorItem]];
-	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filters‚Ä¶", @"edit filter") action:NULL keyEquivalent:@""];
-	[item setToolTip:NSLocalizedString(@"Edit user-defined Filters‚Ä¶", @"edit user-defined filter")];
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filters…", @"edit filter") action:NULL keyEquivalent:@""];
+	[item setToolTip:NSLocalizedString(@"Edit user-defined Filters…", @"edit user-defined filter")];
 	[item setTag:i];
 	[menu addItem:item];
 	[item release];
@@ -2573,7 +2573,7 @@
 
 	// Open query favorite manager
 	[NSApp beginSheet:[contentFilterManager window]
-	   modalForWindow:[NSApp keyWindow]
+	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:contentFilterManager
 	   didEndSelector:nil
 		  contextInfo:nil];
@@ -2698,7 +2698,7 @@
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
 #ifndef SP_REFACTOR
 		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 		} else {
 			NSBeep();
@@ -2728,7 +2728,7 @@
 		if ( isEditingNewRow ) {
 #ifndef SP_REFACTOR
 			if ( [prefs boolForKey:SPReloadAfterAddingRow] ) {
-				[[NSApp keyWindow] endEditingFor:nil];
+				[[tableDocumentInstance parentWindow] endEditingFor:nil];
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			} else {
@@ -2750,7 +2750,7 @@
 			// Reload table if set to - otherwise no action required.
 #ifndef SP_REFACTOR
 			if ( [prefs boolForKey:SPReloadAfterEditingRow] ) {
-				[[NSApp keyWindow] endEditingFor:nil];
+				[[tableDocumentInstance parentWindow] endEditingFor:nil];
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			}
@@ -2762,7 +2762,7 @@
 
 	// Report errors which have occurred
 	} else {
-		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [NSApp keyWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
 	}
@@ -2906,7 +2906,7 @@
 		// the right values to use in the WHERE statement.  Throw an error if this is the case.
 #ifndef SP_REFACTOR
 		if ( [prefs boolForKey:SPLoadBlobsAsNeeded] && [self tableContainsBlobOrTextColumns] ) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  NSLocalizedString(@"You can't hide blob and text fields when working with tables without index.", @"message of panel when trying to edit tables without index and with hidden blob/text fields"));
 			[keys removeAllObjects];
 			[tableContentView deselectAll:self];
@@ -2934,7 +2934,7 @@
 			[argument appendFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]];
 		}
 		else if ([tempValue isSPNotLoaded]) {
-			NSLog(@"Exceptional case: SPNotLoaded object found for method ‚ÄúargumentForRow:‚Äù!");
+			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
 			return @"";
 		}
 		else {
@@ -3150,7 +3150,7 @@
 {
 	// error := first object is the title , second the message, only one button OK
 	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"),
-			nil, nil, [NSApp keyWindow], self, nil, nil,
+			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[error objectAtIndex:1]);
 }
 
@@ -4004,7 +4004,7 @@
 
 				// Check for errors while UPDATE
 				if ([mySQLConnection queryErrored]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [NSApp keyWindow], self, nil, nil,
+					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
 									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
 
 					[tableDocumentInstance endTask];
@@ -4013,11 +4013,11 @@
 				}
 
 
-				// This shouldn't happen ‚Äì for safety reasons
+				// This shouldn't happen – for safety reasons
 				if ( ![mySQLConnection affectedRows] ) {
 #ifndef SP_REFACTOR
 					if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-						SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+						SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 										  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
 					} else {
 						NSBeep();
@@ -4029,7 +4029,7 @@
 				}
 
 			} else {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"),
 											(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
 
@@ -4166,7 +4166,7 @@
 	[self loadTableValues];
 
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
 		[tableDocumentInstance endTask];
 		[sortPool drain];
@@ -4328,7 +4328,7 @@
 
 			MCPResult *tempResult = [mySQLConnection queryString:query];
 			if (![tempResult numOfRows]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 				return NO;
 			}
@@ -4405,7 +4405,7 @@
 						 usingEncoding:[mySQLConnection stringEncoding]
 						  isObjectBlob:isBlob
 							isEditable:isFieldEditable
-							withWindow:[NSApp keyWindow]
+							withWindow:[tableDocumentInstance parentWindow]
 								sender:self
 						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 											[NSNumber numberWithInteger:rowIndex], @"row",
@@ -4431,7 +4431,7 @@
 	if (aTableView == tableContentView) {
 		NSString *tmp;
 
-		// By holding ‚åò, ‚áß, or/and ‚å• copies selected rows as SQL INSERTS
+		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
 		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
 			tmp = [tableContentView rowsAsSqlInsertsOnlySelectedRows:YES];
@@ -4651,7 +4651,7 @@
 	if([tableContentView isCellEditingMode]) {
 		NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
 		NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
-		NSPoint pos = [[NSApp keyWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
+		NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
 		pos.y -= 20;
 		switch(numberOfPossibleUpdateRows) {
 			case -1:
@@ -4744,7 +4744,7 @@
 	// Table font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{«û·π∂·∏π√ú‚àëzgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 		[tableContentView setFont:tableFont];
 		[tableContentView reloadData];
 	}
@@ -4803,7 +4803,7 @@
 
 	BOOL lookInAllFields = NO;
 
-	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|‚â†|‚â§|‚â•)\\s*(.*?)\\s*$";
+	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
 	NSInteger editedRow = [filterTableView editedRow];
 	
@@ -4849,9 +4849,9 @@
 			if([filterCell length]) {
 
 				// Recode special operators
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â†" withString:@"!="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â§" withString:@"<="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â•" withString:@">="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
 
 				if(numberOfValues)
 					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];

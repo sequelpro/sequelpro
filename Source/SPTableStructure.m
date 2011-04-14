@@ -516,7 +516,7 @@
 						   alternateButton:nil 
 							   otherButton:nil 
 				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@",@"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection getLastErrorMessage]]] 
-				  beginSheetModalForWindow:[NSApp keyWindow] 
+				  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 							 modalDelegate:self 
 							didEndSelector:NULL 
 							   contextInfo:NULL];
@@ -539,7 +539,7 @@
 				   alternateButton:nil 
 					   otherButton:nil 
 		 informativeTextWithFormat:type] 
-		  beginSheetModalForWindow:[NSApp keyWindow] 
+		  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 					 modalDelegate:self 
 					didEndSelector:NULL 
 					   contextInfo:NULL];
@@ -642,7 +642,7 @@
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 
-		[alert beginSheetModalForWindow:[NSApp keyWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
+		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"cannotremovefield"];
 
 	}
 
@@ -680,7 +680,7 @@
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
-	[alert beginSheetModalForWindow:[NSApp keyWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
 }
 
 /**
@@ -697,7 +697,7 @@
 
 		// Begin the sheet
 		[NSApp beginSheet:resetAutoIncrementSheet
-		   modalForWindow:[NSApp keyWindow]
+		   modalForWindow:[tableDocumentInstance parentWindow]
 			modalDelegate:self
 		   didEndSelector:@selector(resetAutoincrementSheetDidEnd:returnCode:contextInfo:)
 			  contextInfo:nil];
@@ -766,7 +766,7 @@
 	autoIncrementIndex = nil;
 	[tableSourceView reloadData];
 	currentlyEditingRow = -1;
-	[[NSApp keyWindow] makeFirstResponder:tableSourceView];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 	return YES;
 }
 
@@ -901,9 +901,9 @@
 
 	// Save any edits which have been made but not saved to the table yet;
 	// but not for any NSSearchFields which could cause a crash for undo, redo.
-	id currentFirstResponder = [[NSApp keyWindow] firstResponder];
+	id currentFirstResponder = [[tableDocumentInstance parentWindow] firstResponder];
 	if (currentFirstResponder && [currentFirstResponder isKindOfClass:[NSView class]] && [(NSView *)currentFirstResponder isDescendantOf:tableSourceView]) {
-		[[NSApp keyWindow] endEditingFor:nil];
+		[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	}
 
 	// If no rows are currently being edited, or a save is already in progress, return success at once.
@@ -1185,7 +1185,7 @@
 		if([mySQLConnection getLastErrorID] == 1146) { // If the current table doesn't exist anymore
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp keyWindow], self, nil, nil,
+							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"),
 							  selectedTable, [mySQLConnection getLastErrorMessage]]);
 
@@ -1208,14 +1208,14 @@
 		if (isEditingNewRow) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"),
 							  NSLocalizedString(@"Edit row", @"Edit row button"),
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [NSApp keyWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@' via\n\n%@\n\nMySQL said: %@", @"error adding field informative message"),
 							  [theRow objectForKey:@"name"], queryString, [mySQLConnection getLastErrorMessage]]);
 		}
 		else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"),
 							  NSLocalizedString(@"Edit row", @"Edit row button"),
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [NSApp keyWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@' via\n\n%@\n\nMySQL said: %@", @"error changing field informative message"),
 							  [theRow objectForKey:@"name"], queryString, [mySQLConnection getLastErrorMessage]]);
 		}
@@ -1260,7 +1260,7 @@
 
 	// Display the error sheet
 	SPBeginAlertSheet([errorDictionary objectForKey:@"title"], NSLocalizedString(@"OK", @"OK button"),
-			nil, nil, [NSApp keyWindow], self, nil, nil,
+			nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 			[errorDictionary objectForKey:@"message"]);
 }
 
@@ -1342,7 +1342,7 @@
 		
 		// Problem: reentering edit mode for first cell doesn't function
 		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
-		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[NSApp keyWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
+		[tableSourceView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 	}
 	
 	// Discard changes and cancel editing
@@ -1650,7 +1650,7 @@
 	[tableDocumentInstance endTask];
 
 	// Preserve focus on table for keyboard navigation
-	[[NSApp keyWindow] makeFirstResponder:tableSourceView];
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 
 	[pool drain];
 }

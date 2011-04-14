@@ -129,7 +129,7 @@
 					[chooseKeyButton selectItemWithTag:SPPrimaryKeyMenuTag];
 
 					[NSApp beginSheet:keySheet
-					   modalForWindow:[NSApp keyWindow] modalDelegate:self
+					   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 					   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						  contextInfo:@"autoincrementindex" ];
 				}
@@ -352,7 +352,7 @@
 	[mySQLConnection queryString:queryString];
 	
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil,
+		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection getLastErrorMessage]]);
 	} 
 	else {
@@ -475,7 +475,7 @@
 		[[control window] makeFirstResponder:control];
 		[self addRowToDB];
 		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-		[[NSApp keyWindow] makeFirstResponder:tableSourceView];
+		[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 		
 		return YES;
 	}

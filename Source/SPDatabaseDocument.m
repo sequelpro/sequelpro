@@ -1338,7 +1338,7 @@
 - (void) centerTaskWindow
 {
 	NSPoint newBottomLeftPoint;
-	NSRect mainWindowRect = [[NSApp keyWindow] frame];
+	NSRect mainWindowRect = [parentWindow frame];
 	NSRect taskWindowRect = [taskProgressWindow frame];
 
 	newBottomLeftPoint.x = roundf(mainWindowRect.origin.x + mainWindowRect.size.width/2 - taskWindowRect.size.width/2);
@@ -2353,7 +2353,7 @@
  */
 - (BOOL)couldCommitCurrentViewActions
 {
-	[[NSApp keyWindow] endEditingFor:nil];
+	[parentWindow endEditingFor:nil];
 	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
 
 		// Table structure view
@@ -5777,7 +5777,7 @@
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
 
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp keyWindow], self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
 			}
 
 			[taskPool drain];
