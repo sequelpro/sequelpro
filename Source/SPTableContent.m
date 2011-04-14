@@ -109,9 +109,7 @@
 		isLimited = NO;
 		isInterruptedLoad = NO;
 
-#ifndef SP_REFACTOR /* init ivars */
 		prefs = [NSUserDefaults standardUserDefaults];
-#endif
 
 		usedQuery = [[NSString alloc] initWithString:@""];
 
@@ -239,7 +237,11 @@
 	}
 
 	// Post a notification that a query will be performed
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#endif
 
 	// Set up the table details for the new table, and trigger an interface update
 	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -279,7 +281,11 @@
 		[[tableContentView onMainThread] setNeedsDisplay:YES];
 
 	// Post the notification that the query is finished
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 
 	// Clear any details to restore now that they have been restored
 	[self clearDetailsToRestore];
@@ -459,11 +465,7 @@
 		}
 	}
 
-#ifndef SP_REFACTOR /* patch */
 	NSString *nullValue = [prefs objectForKey:SPNullValue];
-#else
-	NSString* nullValue = @"NULL";
-#endif
 #ifndef SP_REFACTOR /* get font from prefs */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 #else
@@ -478,7 +480,7 @@
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
-		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@%@%@", 
+		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ ‚Äì %@%@%@%@", 
 			[columnDefinition objectForKey:@"name"], 
 			[columnDefinition objectForKey:@"type"], 
 			([columnDefinition objectForKey:@"length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"length"]] : @"", 
@@ -637,9 +639,7 @@
 	}
 
 	// Restore page number if limiting is set
-#ifndef SP_REFACTOR /* patch */
 	if ([prefs boolForKey:SPLimitResults])
-#endif
 		contentPage = pageToRestore;
 
 	// Restore first responder
@@ -697,7 +697,11 @@
 	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 
 	// Notify any listeners that a query has started
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#endif
 
 	// Start construction of the query string
 	queryString = [NSMutableString stringWithFormat:@"SELECT %@%@ FROM %@", (activeFilter == 1 && [self tableFilterString] && filterTableDistinct) ? @"DISTINCT " : @"", [self fieldListForQuery], [selectedTable backtickQuotedString]];
@@ -718,23 +722,14 @@
 		if (isDesc) [queryString appendString:@" DESC"];
 	}
 
-#ifndef SP_REFACTOR /* patch */
 	// Check to see if a limit needs to be applied
 	if ([prefs boolForKey:SPLimitResults]) 
-#else
-	if ( YES ) 
-#endif
 	{
 		// Ensure the page supplied is within the appropriate limits
 		if (contentPage <= 0)
 			contentPage = 1;
-#ifndef SP_REFACTOR /* patch */
 		else if (contentPage > 1 && (NSInteger)(contentPage - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
 			contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
-#else
-		else if (contentPage > 1 && (contentPage - 1) * 1000 >= maxNumRows)
-			contentPage = ceil((CGFloat)maxNumRows / 1000);
-#endif
 
 		// If the result set is from a late page, take a copy of the string to allow resetting limit
 		// if no results are found
@@ -743,22 +738,11 @@
 		}
 
 		// Append the limit settings
-		[queryString appendFormat:@" LIMIT %ld,%ld", (long)((contentPage-1)*
-#ifndef SP_REFACTOR /* patch */
-		[prefs integerForKey:SPLimitResultsValue]), (long)[prefs integerForKey:SPLimitResultsValue]
-#else
-		1000), (long)1000
-#endif
-		];
+		[queryString appendFormat:@" LIMIT %ld,%ld", (long)((contentPage-1)*[prefs integerForKey:SPLimitResultsValue]), (long)[prefs integerForKey:SPLimitResultsValue]];
 
 		// Update the approximate count of the rows to load
-#ifndef SP_REFACTOR /* patch */
 		rowsToLoad = rowsToLoad - (contentPage-1)*[prefs integerForKey:SPLimitResultsValue];
 		if (rowsToLoad > [prefs integerForKey:SPLimitResultsValue]) rowsToLoad = [prefs integerForKey:SPLimitResultsValue];
-#else
-		rowsToLoad = rowsToLoad - (contentPage-1)*1000;
-		if (rowsToLoad > 1000) rowsToLoad = 1000;
-#endif
 	}
 
 	// If within a task, allow this query to be cancelled
@@ -786,30 +770,14 @@
 	if (streamingResult) [streamingResult release];
 
 	// If the result is empty, and a late page is selected, reset the page
-	if (!fullTableReloadRequired 
-#ifndef SP_REFACTOR
-	&& [prefs boolForKey:SPLimitResults]
-#endif
-	 && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
+	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
 		contentPage = 1;
 		previousTableRowsCount = tableRowsCount;
-		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, 
-#ifndef SP_REFACTOR
-		(long)[prefs integerForKey:SPLimitResultsValue]
-#else
-		(long)1000
-#endif
-		];
+		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
 		streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
 		if (streamingResult) {
-			[self processResultIntoDataStorage:streamingResult approximateRowCount:
-#ifndef SP_REFACTOR
-			[prefs integerForKey:SPLimitResultsValue]
-#else
-			1000
-#endif
-			];
+			[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
 			[streamingResult release];
 		}
 	}
@@ -822,17 +790,7 @@
 	// End cancellation ability
 	[tableDocumentInstance disableTaskCancellation];
 
-	if (
-#ifndef SP_REFACTOR
-		[prefs boolForKey:SPLimitResults] && 
-#endif
-		(contentPage > 1 || (NSInteger)tableRowsCount == 
-#ifndef SP_REFACTOR
-		[prefs integerForKey:SPLimitResultsValue]
-#else
-		1000
-#endif
-		))
+	if ([prefs boolForKey:SPLimitResults] && (contentPage > 1 || (NSInteger)tableRowsCount == [prefs integerForKey:SPLimitResultsValue]))
 	{
 		isLimited = YES;
 	} else {
@@ -854,7 +812,11 @@
 
 
 	// Notify listenters that the query has finished
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 
 	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
 		if(activeFilter == 0) {
@@ -867,7 +829,7 @@
 		}
 		// Filter task came from filter table
 		else if(activeFilter == 1){
-			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
+			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ ‚Äì %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
 		}
 	} else {
 		// Trigger a full reload if required
@@ -998,7 +960,7 @@
 	}
 
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
-	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
+	// by BINARY if the user pressed ‚áß while invoking 'Filter' otherwise it will
 	// replaced by @"".
 	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
@@ -1013,14 +975,14 @@
 
 	// Current selected filter type
 	if(![contentFilters objectForKey:compareType]) {
-		NSLog(@"Error while retrieving filters. Filter type “%@” unknown.", compareType);
+		NSLog(@"Error while retrieving filters. Filter type ‚Äú%@‚Äù unknown.", compareType);
 		NSBeep();
 		return nil;
 	}
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
 
 	if(![filter objectForKey:@"NumberOfArguments"]) {
-		NSLog(@"Error while retrieving filter clause. No “Clause” or/and “NumberOfArguments” key found.");
+		NSLog(@"Error while retrieving filter clause. No ‚ÄúClause‚Äù or/and ‚ÄúNumberOfArguments‚Äù key found.");
 		NSBeep();
 		return nil;
 	}
@@ -1091,7 +1053,7 @@
 
 	// Check number of placeholders and given 'NumberOfArguments'
 	if([clause replaceOccurrencesOfString:@"%@" withString:@"%@" options:NSLiteralSearch range:NSMakeRange(0, [clause length])] != numberOfArguments) {
-		NSLog(@"Error while setting filter string. “NumberOfArguments” differs from the number of arguments specified in “Clause”.");
+		NSLog(@"Error while setting filter string. ‚ÄúNumberOfArguments‚Äù differs from the number of arguments specified in ‚ÄúClause‚Äù.");
 		NSBeep();
 		[argument release];
 		[firstBetweenArgument release];
@@ -1209,13 +1171,7 @@
 
 	// If a limit is active, display a string suggesting a limit is active
 	} else if (!isFiltered && isLimited) {
-		NSUInteger limitStart = (contentPage-1)*
-#ifndef SP_REFACTOR
-		[prefs integerForKey:SPLimitResultsValue]
-#else
-		1000
-#endif
-		 + 1;
+		NSUInteger limitStart = (contentPage-1)*[prefs integerForKey:SPLimitResultsValue] + 1;
 		[countString appendFormat:NSLocalizedString(@"Rows %@ - %@ of %@%@ from table", @"text showing how many rows are in the limited result"),  [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:limitStart]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:(limitStart+tableRowsCount-1)]], maxNumRowsIsEstimate?@"~":@"", maxRowsString];
 
 	// If just a filter is active, show a count and an indication a filter is active
@@ -1227,13 +1183,7 @@
 
 	// If both a filter and limit is active, display full string
 	} else {
-		NSUInteger limitStart = (contentPage-1)*
-#ifndef SP_REFACTOR
-		[prefs integerForKey:SPLimitResultsValue]
-#else
-		1000
-#endif
-		 + 1;
+		NSUInteger limitStart = (contentPage-1)*[prefs integerForKey:SPLimitResultsValue] + 1;
 		[countString appendFormat:NSLocalizedString(@"Rows %@ - %@ from filtered matches", @"text showing how many rows are in the limited filter match"), [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:limitStart]], [numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:(limitStart+tableRowsCount-1)]]];
 	}
 
@@ -1400,26 +1350,10 @@
 	[self setPaginationViewVisibility:FALSE];
 
 	// Select the correct pagination value
-	if (
-#ifndef SP_REFACTOR
-			![prefs boolForKey:SPLimitResults] || 
-#endif
-			[paginationPageField integerValue] <= 0)
+	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
 		contentPage = 1;
-	else if (([paginationPageField integerValue] - 1) * 
-#ifndef SP_REFACTOR
-			[prefs integerForKey:SPLimitResultsValue] 
-#else
-			1000
-#endif
-			>= maxNumRows)
-		contentPage = ceil((CGFloat)maxNumRows / 
-#ifndef SP_REFACTOR
-		[prefs floatForKey:SPLimitResultsValue]
-#else
-		1000
-#endif
-		);
+	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
+		contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	else
 		contentPage = [paginationPageField integerValue];
 
@@ -1465,7 +1399,7 @@
 - (IBAction)toggleFilterField:(id)sender
 {
 
-	// Check if user called "Edit Filter…"
+	// Check if user called "Edit Filter‚Ä¶"
 	if([[compareField selectedItem] tag] == (NSInteger)[[contentFilters objectForKey:compareType] count]) {
 		[self openContentFilterManager];
 		return;
@@ -1541,13 +1475,7 @@
 		[paginationPageField setIntegerValue:(contentPage - 1)];
 		[self filterTable:sender];
 	} else if (sender == paginationNextButton) {
-		if ((NSInteger)contentPage * 
-#ifndef SP_REFACTOR
-			[prefs integerForKey:SPLimitResultsValue]
-#else
-			1000
-#endif
-			>= maxNumRows) return;
+		if ((NSInteger)contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
 		[paginationPageField setIntegerValue:(contentPage + 1)];
 		[self filterTable:sender];
 	}
@@ -1600,13 +1528,7 @@
  */
 - (void) updatePaginationState
 {
-	NSUInteger maxPage = ceil((CGFloat)maxNumRows / 
-#ifndef SP_REFACTOR	
-	[prefs floatForKey:SPLimitResultsValue]
-#else
-	1000
-#endif
-	);
+	NSUInteger maxPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	if (isFiltered && !isLimited) {
 		maxPage = contentPage;
 	}
@@ -1616,21 +1538,13 @@
 	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
 
 	// Set up the previous page button
-	if (
-#ifndef SP_REFACTOR
-	[prefs boolForKey:SPLimitResults] && 
-#endif
-	contentPage > 1)
+	if ([prefs boolForKey:SPLimitResults] && contentPage > 1)
 		[paginationPreviousButton setEnabled:enabledMode];
 	else
 		[paginationPreviousButton setEnabled:NO];
 
 	// Set up the next page button
-	if (
-#ifndef SP_REFACTOR
-	[prefs boolForKey:SPLimitResults] && 
-#endif
-	contentPage < maxPage)
+	if ([prefs boolForKey:SPLimitResults] && contentPage < maxPage)
 		[paginationNextButton setEnabled:enabledMode];
 	else
 		[paginationNextButton setEnabled:NO];
@@ -2521,7 +2435,7 @@
 					[tip setString:[[filter objectForKey:@"Clause"] stringByReplacingOccurrencesOfRegex:@"(?<!\\\\)(\\$\\{.*?\\})" withString:@"[arg]"]];
 					if([tip isMatchedByRegex:@"(?<!\\\\)\\$BINARY"]) {
 						[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY" withString:@""];
-						[tip appendString:NSLocalizedString(@"\n\nPress ⇧ for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
+						[tip appendString:NSLocalizedString(@"\n\nPress ‚áß for binary search (case-sensitive).", @"\n\npress shift for binary search tooltip message")];
 					}
 					[tip flushCachedRegexData];
 					[tip replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:[[fieldField titleOfSelectedItem] backtickQuotedString]];
@@ -2539,8 +2453,8 @@
 		}
 
 	[menu addItem:[NSMenuItem separatorItem]];
-	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filters…", @"edit filter") action:NULL keyEquivalent:@""];
-	[item setToolTip:NSLocalizedString(@"Edit user-defined Filters…", @"edit user-defined filter")];
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Filters‚Ä¶", @"edit filter") action:NULL keyEquivalent:@""];
+	[item setToolTip:NSLocalizedString(@"Edit user-defined Filters‚Ä¶", @"edit user-defined filter")];
 	[item setTag:i];
 	[menu addItem:item];
 	[item release];
@@ -2666,7 +2580,11 @@
 		[rowValuesToSave addObject:fieldValue];
 	}
 
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#endif
 	NSMutableString *queryString;
 
 	// Use INSERT syntax when creating new rows
@@ -2692,7 +2610,11 @@
 	// Run the query
 	[mySQLConnection queryString:queryString];
 
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
@@ -2934,7 +2856,7 @@
 			[argument appendFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]];
 		}
 		else if ([tempValue isSPNotLoaded]) {
-			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
+			NSLog(@"Exceptional case: SPNotLoaded object found for method ‚ÄúargumentForRow:‚Äù!");
 			return @"";
 		}
 		else {
@@ -3176,13 +3098,7 @@
 		}
 
 		if ([data isKindOfClass:[NSString class]]
-			&& [data isEqualToString:
-#ifndef SP_REFACTOR
-			[prefs objectForKey:SPNullValue]
-#else
-			@"NULL"
-#endif
-			] && [[NSArrayObjectAtIndex(dataColumns, column) objectForKey:@"null"] boolValue])
+			&& [data isEqualToString:[prefs objectForKey:SPNullValue]] && [[NSArrayObjectAtIndex(dataColumns, column) objectForKey:@"null"] boolValue])
 		{
 			data = [[NSNull null] retain];
 		}
@@ -3616,25 +3532,11 @@
 	// Check whether the estimated count requires updating, ie if the retrieved count exceeds it
 	if (checkStatusCount) {
 		NSInteger foundMaxRows;
-#ifndef SP_REFACTOR
 		if ([prefs boolForKey:SPLimitResults])
-#else
-		if ( YES )
-#endif
 		{
-			foundMaxRows = ((contentPage - 1) * 
-#ifndef SP_REFACTOR
-			[prefs integerForKey:SPLimitResultsValue]
-#else
-			1000
-#endif
-			) + tableRowsCount;
+			foundMaxRows = ((contentPage - 1) * [prefs integerForKey:SPLimitResultsValue]) + tableRowsCount;
 			if (foundMaxRows > maxNumRows) {
-#ifndef SP_REFACTOR
 				if ((NSInteger)tableRowsCount == [prefs integerForKey:SPLimitResultsValue]) 
-#else
-				if (tableRowsCount == 1000) 
-#endif
 				{
 					maxNumRows = foundMaxRows + 1;
 					maxNumRowsIsEstimate = YES;
@@ -3642,13 +3544,7 @@
 					maxNumRows = foundMaxRows;
 					maxNumRowsIsEstimate = NO;
 				}
-			} else if (!isInterruptedLoad && !isFiltered && (NSInteger)tableRowsCount < 
-#ifndef SP_REFACTOR
-			[prefs integerForKey:SPLimitResultsValue]
-#else
-			1000
-#endif
-			) {
+			} else if (!isInterruptedLoad && !isFiltered && (NSInteger)tableRowsCount < [prefs integerForKey:SPLimitResultsValue]) {
 				maxNumRows = foundMaxRows;
 				maxNumRowsIsEstimate = NO;
 			}
@@ -3836,11 +3732,7 @@
 			return [theValue wktString];
 
 		if ([theValue isNSNull])
-#ifndef SP_REFACTOR
 			return [prefs objectForKey:SPNullValue];
-#else
-			return @"NULL";
-#endif
 
 		if ([theValue isKindOfClass:[NSData class]])
 			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
@@ -3978,11 +3870,7 @@
 				} else {
 					if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 						newObject = @"CURRENT_TIMESTAMP";
-#ifndef SP_REFACTOR
 					} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
-#else
-					} else if([anObject isEqualToString:@"NULL"]) {
-#endif
 						newObject = @"NULL";
 					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
 						newObject = [(NSString*)anObject getGeomFromTextString];
@@ -4013,7 +3901,7 @@
 				}
 
 
-				// This shouldn't happen – for safety reasons
+				// This shouldn't happen ‚Äì for safety reasons
 				if ( ![mySQLConnection affectedRows] ) {
 #ifndef SP_REFACTOR
 					if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
@@ -4076,13 +3964,7 @@
 		if (anObject) {
 
 			// Restore NULLs if necessary
-			if ([anObject isEqualToString:
-#ifndef SP_REFACTOR
-			[prefs objectForKey:SPNullValue]
-#else
-			@"NULL"
-#endif
-			] && [[column objectForKey:@"null"] boolValue])
+			if ([anObject isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue])
 				anObject = [NSNull null];
 
 			[tableValues replaceObjectInRow:rowIndex column:[[aTableColumn identifier] integerValue] withObject:anObject];
@@ -4389,11 +4271,8 @@
 
 			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
 			if ([cellValue isNSNull])
-#ifndef SP_REFACTOR
 				cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
-#else
-				cellValue = [NSString stringWithString:@"NULL"];
-#endif
+
 			NSInteger editedColumn = 0;
 			for(NSTableColumn* col in [tableContentView tableColumns]) {
 				if([[col identifier] isEqualToNumber:[aTableColumn identifier]]) break;
@@ -4431,7 +4310,7 @@
 	if (aTableView == tableContentView) {
 		NSString *tmp;
 
-		// By holding ⌘, ⇧, or/and ⌥ copies selected rows as SQL INSERTS
+		// By holding ‚åò, ‚áß, or/and ‚å• copies selected rows as SQL INSERTS
 		// otherwise \t delimited lines
 		if([[NSApp currentEvent] modifierFlags] & (NSCommandKeyMask|NSShiftKeyMask|NSAlternateKeyMask))
 			tmp = [tableContentView rowsAsSqlInsertsOnlySelectedRows:YES];
@@ -4744,7 +4623,7 @@
 	// Table font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{«û·π∂·∏π√ú‚àëzgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 		[tableContentView setFont:tableFont];
 		[tableContentView reloadData];
 	}
@@ -4803,7 +4682,7 @@
 
 	BOOL lookInAllFields = NO;
 
-	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
+	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|‚â†|‚â§|‚â•)\\s*(.*?)\\s*$";
 	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
 	NSInteger editedRow = [filterTableView editedRow];
 	
@@ -4849,9 +4728,9 @@
 			if([filterCell length]) {
 
 				// Recode special operators
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â†" withString:@"!="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â§" withString:@"<="];
+				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*‚â•" withString:@">="];
 
 				if(numberOfValues)
 					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];

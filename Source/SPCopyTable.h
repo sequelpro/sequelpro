@@ -46,9 +46,7 @@
 	NSString* selectedTable;          // the name of the current selected table
 	SPDataStorage* tableStorage;      // the underlying storage array holding the table data
 
-#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
-#endif
 
 	NSRange fieldEditorSelectedRange;
 	NSString *copyBlobFileDirectory;

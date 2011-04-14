@@ -98,9 +98,7 @@
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
-#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
-#endif
 	NSInteger currentlyEditingRow, maxNumRows;
 
 	NSMutableDictionary *contentFilters;

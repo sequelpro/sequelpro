@@ -618,11 +618,7 @@ NSInteger kBlobAsImageFile = 4;
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
-#ifndef SP_REFACTOR
 	NSString *nullString = [prefs objectForKey:SPNullValue];
-#else
-	NSString *nullString = @"NULL";
-#endif
 	Class nsDataClass = [NSData class];
 	Class mcpGeometryData = [MCPGeometryData class];
 	NSStringEncoding connectionEncoding = [mySQLConnection stringEncoding];
@@ -796,11 +792,7 @@ NSInteger kBlobAsImageFile = 4;
 
 		// Replace NULLs with their placeholder string
 		else if ([contentString isNSNull]) {
-#ifndef SP_REFACTOR /* patch */
 			contentString = [prefs objectForKey:SPNullValue];
-#else
-			contentString = @"NULL";
-#endif
 
 		// Same for cells for which loading has been deferred - likely blobs
 		} else if ([contentString isSPNotLoaded]) {
@@ -1434,9 +1426,7 @@ NSInteger kBlobAsImageFile = 4;
 - (void) awakeFromNib
 {
 	columnDefinitions = nil;
-#ifndef SP_REFACTOR
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
-#endif
 
 	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
 		[super awakeFromNib];

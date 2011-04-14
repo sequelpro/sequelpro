@@ -68,9 +68,7 @@
 
 		fieldValidation = [[SPTableFieldValidation alloc] init];
 		
-#ifndef SP_REFACTOR /* patch */
 		prefs = [NSUserDefaults standardUserDefaults];
-#endif
 	}
 
 	return self;
@@ -236,7 +234,11 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
+#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
@@ -337,11 +339,7 @@
 		if(![theField objectForKey:@"default"])
 			[theField setObject:@"" forKey:@"default"];
 		else if([[theField objectForKey:@"default"] isKindOfClass:[NSNull class]])
-#ifndef SP_REFACTOR /* patch */
 			[theField setObject:[prefs stringForKey:SPNullValue] forKey:@"default"];
-#else
-			[theField setObject:@"NULL" forKey:@"default"];
-#endif
 
 		// Init Extra field
 		[theField setObject:@"None" forKey:@"Extra"];
@@ -368,7 +366,11 @@
 	autoIncrementIndex = nil;
 
 	// Send the query finished/work complete notification
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 
 	[theTableFields release];
 }
@@ -477,7 +479,7 @@
 
 	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 
-#ifndef SP_REFACTOR
+#ifndef SP_REFACTOR /* prefs access */
 	[tableFields insertObject:[NSMutableDictionary
 							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
@@ -854,11 +856,7 @@
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
 	NSInteger i;
-#ifndef SP_REFACTOR /* patch */
 	id prefsNullValue = [prefs objectForKey:SPNullValue];
-#else
-	id prefsNullValue = @"NULL";
-#endif
 
 	// Ensure table information is returned as strings to avoid problems with some server versions
 	[theResult setReturnDataAsStrings:YES];
@@ -984,11 +982,7 @@
 			[queryString appendString:@"\n NULL"];
 		}
 		// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
-#ifndef SP_REFACTOR /* patch */
 		if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) 
-#else
-		if ([[theRow objectForKey:@"default"] isEqualToString:@"NULL"]) 
-#endif
 		{
 			if ([[theRow objectForKey:@"null"] integerValue] == 1) {
 				[queryString appendString:@"\n DEFAULT NULL "];
@@ -1061,11 +1055,7 @@
 		if (![theRowExtra isEqualToString:@"AUTO_INCREMENT"]) {
 
 			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
-#ifndef SP_REFACTOR /* patch */
 			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) 
-#else
-			if ([[theRow objectForKey:@"default"] isEqualToString:@"NULL"]) 
-#endif
 			{
 				if ([[theRow objectForKey:@"null"] integerValue] == 1) {
 					[queryString appendString:@"\n DEFAULT NULL"];
@@ -1403,17 +1393,9 @@
 - (NSString *)defaultValueForField:(NSString *)field
 {
 	if ( ![defaultValues objectForKey:field] ) {
-#ifndef SP_REFACTOR /* patch */
 		return [prefs objectForKey:SPNullValue];
-#else
-		return @"NULL";
-#endif
 	} else if ( [[defaultValues objectForKey:field] isMemberOfClass:[NSNull class]] ) {
-#ifndef SP_REFACTOR /* patch */
 		return [prefs objectForKey:SPNullValue];
-#else
-		return @"NULL";
-#endif
 	} else {
 		return [defaultValues objectForKey:field];
 	}
@@ -1462,11 +1444,7 @@
 	NSMutableArray *tempResult  = [NSMutableArray array];
 	NSMutableArray *tempResult2 = [NSMutableArray array];
 
-#ifndef SP_REFACTOR /* patch */
 	NSString *nullValue = [prefs stringForKey:SPNullValue];
-#else
-	NSString *nullValue = @"NULL";
-#endif
 	CFStringRef escapedNullValue = CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL);
 
 	MCPResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];

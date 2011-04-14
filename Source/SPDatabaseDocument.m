@@ -74,6 +74,7 @@
 
 #ifdef SP_REFACTOR /* headers */
 #import "SPAlertSheets.h"
+#import "NSNotificationAdditions.h"
 #endif
 
 @interface SPDatabaseDocument (PrivateAPI)
@@ -931,7 +932,11 @@
 	NSString *dbName = nil;
 
 	// Notify listeners that a query has started
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
+#endif
 
 	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	if (![mySQLConnection queryErrored]) {
@@ -960,7 +965,11 @@
 	}
 
 	//query finished
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
+#endif
 }
 
 #ifndef SP_REFACTOR /* navigatorSchemaPathExistsForDatabase: */
@@ -3961,6 +3970,7 @@
 	// If the task interface is visible, and this tab is frontmost, re-center the task child window
 	if (_isWorkingLevel && [parentWindowController selectedTableDocument] == self) [self centerTaskWindow];
 }
+#endif
 
 /**
  * Set the parent window
@@ -3969,7 +3979,9 @@
 {
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
+#ifndef SP_REFACTOR
 		[aWindow makeFirstResponder:[connectionController valueForKey:@"favoritesTable"]];
+#endif
 		[connectionController performSelector:@selector(updateFavoriteSelection:) withObject:self afterDelay:0.0];
 	}
 
@@ -3986,6 +3998,7 @@
 	return parentWindow;
 }
 
+#ifndef SP_REFACTOR
 #pragma mark -
 #pragma mark NSDocument compatibility
 
@@ -5210,7 +5223,11 @@
 - (void)registerActivity:(NSDictionary*)commandDict
 {
 	[runningActivitiesArray addObject:commandDict];
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+#ifndef SP_REFACTOR
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
+#endif
 
 	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
 		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
@@ -5242,7 +5259,11 @@
 		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 	}
 
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
+#ifndef SP_REFACTOR
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
+#endif
 
 }
 

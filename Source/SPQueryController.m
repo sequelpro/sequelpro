@@ -157,7 +157,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)awakeFromNib
 {
-#ifndef SP_REFACTOR
+#ifndef SP_REFACTOR /* init ivars */
 	prefs = [NSUserDefaults standardUserDefaults];
 #endif
 

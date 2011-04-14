@@ -82,9 +82,15 @@ NSString *SPLoadBlobsAsNeeded                    = @"LoadBlobsAsNeeded";
 NSString *SPTableRowCountQueryLevel              = @"TableRowCountQueryLevel";
 NSString *SPTableRowCountCheapSizeBoundary       = @"TableRowCountCheapLookupSizeBoundary";
 NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
+#ifndef SP_REFACTOR
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
+#else
+NSString *SPLimitResults                         = @"SPLimitResults";
+NSString *SPLimitResultsValue                    = @"SPLimitResultsValue";
+NSString *SPNullValue                            = @"SPNullValue";
+#endif
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";

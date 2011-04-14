@@ -135,9 +135,7 @@
 
 	NSString *sourcePath;
 
-#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
-#endif
 	
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;

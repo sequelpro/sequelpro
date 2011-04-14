@@ -7,7 +7,7 @@
 //  Created by Hans-J. Bibiko on May 14, 2009.
 //
 //  This class is based on TextMate's TMDIncrementalPopUp implementation
-//  (Dialog plugin) written by Joachim Mårtensson, Allan Odgaard, and H.-J. Bibiko.
+//  (Dialog plugin) written by Joachim M√•rtensson, Allan Odgaard, and H.-J. Bibiko.
 //   see license: http://svn.textmate.org/trunk/LICENSE
 //
 //  This program is free software; you can redistribute it and/or modify

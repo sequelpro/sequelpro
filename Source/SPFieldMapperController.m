@@ -89,9 +89,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		addGlobalSheetIsOpen = NO;
 		toBeEditedRowIndexes = [[NSMutableIndexSet alloc] init];
 
-#ifndef SP_REFACTOR /* init ivars */
 		prefs = [NSUserDefaults standardUserDefaults];
-#endif
 
 		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
 		databaseDataInstance = [tablesListInstance valueForKeyPath:@"databaseDataInstance"];
@@ -1118,18 +1116,12 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		for(id item in [fieldMappingImportArray objectAtIndex:0]) {
 			i++;
 			if ([item isNSNull]) {
-				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, 
-#ifndef SP_REFACTOR
-				[prefs objectForKey:SPNullValue]
-#else
-				@"NULL"
-#endif
-				]];
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, [prefs objectForKey:SPNullValue]]];
 			} else if ([item isSPNotLoaded]) {
 				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, @"DEFAULT"]];
 			} else {
 				if([(NSString*)item length] > 20)
-					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@â€¦", i, [item substringToIndex:20]]];
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@É", i, [item substringToIndex:20]]];
 				else
 					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@", i, item]];
 			}
@@ -1517,13 +1509,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, 
-#ifndef SP_REFACTOR
-			[prefs objectForKey:SPNullValue]
-#else
-			@"NULL"
-#endif
-			]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
 		else if ([[fieldMappingButtonOptions objectAtIndex:i] isSPNotLoaded])
 			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, @"DEFAULT"]];
 		else
@@ -1534,13 +1520,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	if((NSInteger)[fieldMappingGlobalValues count]>numberOfImportColumns)
 		for( ; i < [fieldMappingGlobalValues count]; i++) {
 			if ([NSArrayObjectAtIndex(fieldMappingGlobalValues, i) isNSNull])
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. <%@>", i+1, 
-#ifndef SP_REFACTOR
-				[prefs objectForKey:SPNullValue]
-#else
-				@"NULL"
-#endif
-				]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
 			else
 				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
 		}

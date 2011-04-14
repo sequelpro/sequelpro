@@ -438,7 +438,7 @@
 		[self initiateMySQLConnection];
 	} 
 	else {
-		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting‚Ä¶", @"SSH connecting titlebar marker")];
+		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting…", @"SSH connecting titlebar marker")];
 	}
 }
 

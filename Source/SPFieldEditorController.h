@@ -159,9 +159,7 @@
 	BOOL wasCutPaste;
 	BOOL selectionChanged;
 
-#ifndef SP_REFACTOR
 	NSUserDefaults *prefs;
-#endif
 
 	NSDictionary *qlTypes;
 

@@ -112,7 +112,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) awakeFromNib
 {
-#ifndef SP_REFACTOR
+#ifndef SP_REFACTOR /* init ivars */
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 #endif
@@ -1825,9 +1825,9 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			[theHintString flushCachedRegexData];
 
 #ifndef SP_REFACTOR
-			// If inside the snippet hint $(…) is defined run … as BASH command
-			// and replace $(…) by the return string of that command. Please note
-			// only one $(…) statement is allowed within one ${…} snippet environment.
+			// If inside the snippet hint $(�) is defined run � as BASH command
+			// and replace $(�) by the return string of that command. Please note
+			// only one $(�) statement is allowed within one ${�} snippet environment.
 			NSRange tagRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\((.*)\\)"];
 			if(tagRange.length) {
 				[theHintString flushCachedRegexData];
@@ -2129,7 +2129,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
-	// e.g. for US keyboard "⌥ a" to insert ä
+	// e.g. for US keyboard "⌥u a" to insert ä
 	// or for non-US keyboards to allow to enter dead keys
 	// e.g. for German keyboard ` is a dead key, press space to enter `
 	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)

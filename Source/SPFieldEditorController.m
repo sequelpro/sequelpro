@@ -4,7 +4,7 @@
 //  SPFieldEditorController.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on July 16, 2009
+//  Created by Hans-J√∂rg Bibiko on July 16, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -65,9 +65,8 @@
 		callerInstance = nil;
 		doGroupDueToChars = NO;
 
-#ifndef SP_REFACTOR
 		prefs = [NSUserDefaults standardUserDefaults];
-#endif
+
 		// Used for max text length recognition if last typed char is a non-space char
 		editTextViewWasChanged = NO;
 
@@ -214,13 +213,7 @@
 		[bitSheetNULLButton setEnabled:_allowNULL];
 
 		// Check for NULL
-		if([sheetEditData isEqualToString:
-#ifndef SP_REFACTOR
-		[prefs objectForKey:SPNullValue]
-#else
-		@"NULL"
-#endif
-		]) {
+		if([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			[bitSheetNULLButton setState:NSOnState];
 			[self setToNull:bitSheetNULLButton];
 		} else {
@@ -406,13 +399,7 @@
 			[callerInstance setFieldEditorSelectedRange:NSMakeRange(0,0)];
 
 			// If the string content is NULL select NULL for convenience
-			if([stringValue isEqualToString:
-#ifndef SP_REFACTOR
-			[prefs objectForKey:SPNullValue]
-#else
-			@"NULL"
-#endif
-			])
+			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
 				[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
 
 			// Set focus
@@ -583,13 +570,7 @@
 	// - for max text length (except for NULL value string) select the part which won't be saved
 	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
-		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:
-#ifndef SP_REFACTOR
-					[prefs objectForKey:SPNullValue]
-#else
-					@"NULL"
-#endif
-					]) {
+		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
@@ -1109,13 +1090,7 @@
 			[sheetEditData release];
 		}
 
-		NSString *nullString = 
-#ifndef SP_REFACTOR
-		[prefs objectForKey:SPNullValue]
-#else
-		@"NULL"
-#endif
-		;
+		NSString *nullString = [prefs objectForKey:SPNullValue];
 		sheetEditData = [[NSString stringWithString:nullString] retain];
 		[bitSheetIntegerTextField setStringValue:nullString];
 		[bitSheetHexTextField setStringValue:nullString];
@@ -1316,13 +1291,7 @@
 {
 
 	if(textView == editTextView && (maxTextLength > 0)
-		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:
-#ifndef SP_REFACTOR
-		[prefs objectForKey:SPNullValue]
-#else
-		@"NULL"
-#endif
-		]) {
+		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 
 		NSInteger newLength;
 

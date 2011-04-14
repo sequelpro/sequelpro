@@ -320,7 +320,11 @@
 #endif
 
 		// Notify listeners of the table change
+#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+#else
+		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+#endif
 
 		return;
 	}
@@ -463,7 +467,11 @@
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	// Notify listeners of the table change now that the state is fully set up.
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+#ifndef SP_REFACTOR
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+#else
+		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+#endif
 #ifndef SP_REFACTOR /* [spHistoryControllerInstance restoreViewStates] */
 
 	// Restore view states as appropriate
@@ -473,7 +481,7 @@
 	// Load the currently selected view if looking at a table or view
 	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
 	{
-#ifndef SP_REFACTOR /* load everything in Coda */
+#ifndef SP_REFACTOR /* load everything */
 		NSInteger selectedTabViewIndex = [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]];
 
 		switch (selectedTabViewIndex) {
@@ -481,13 +489,13 @@
 #endif
 				[tableSourceInstance loadTable:selectedTableName];
 				structureLoaded = YES;
-#ifndef SP_REFACTOR /* load everything in Coda */
+#ifndef SP_REFACTOR /* load everything */
 				break;
 			case SPTableViewContent:
 #endif
 				[tableContentInstance loadTable:selectedTableName];
 				contentLoaded = YES;
-#ifndef SP_REFACTOR /* load everything in Coda */
+#ifndef SP_REFACTOR /* load everything */
 				break;
 			case SPTableViewStatus:
 				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];

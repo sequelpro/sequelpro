@@ -25,11 +25,20 @@
 
 @interface NSNotificationCenter (NSNotificationCenterAdditions)
 
+#ifndef SP_REFACTOR
 - (void)postNotificationOnMainThread:(NSNotification *)notification;
 - (void)postNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)wait;
 
 - (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object;
 - (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo;
 - (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)wait;
+#else
+- (void)sequelProPostNotificationOnMainThread:(NSNotification *)notification;
+- (void)sequelProPostNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)wait;
+
+- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object;
+- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo;
+- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)wait;
+#endif
 
 @end

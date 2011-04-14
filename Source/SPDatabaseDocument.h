@@ -222,7 +222,9 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 
 	// Properties
 	SPWindowController *parentWindowController;
+#endif
 	NSWindow *parentWindow;
+#ifndef SP_REFACTOR /* ivars */
 	NSTabViewItem *parentTabViewItem;
 #endif
 	BOOL isProcessing;
@@ -404,10 +406,10 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 
 - (void)setIsProcessing:(BOOL)value;
 - (BOOL)isProcessing;
-#ifndef SP_REFACTOR /* method decls */
 - (void)setParentWindow:(NSWindow *)aWindow;
 - (NSWindow *)parentWindow;
 
+#ifndef SP_REFACTOR /* method decls */
 // Scripting
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
 - (void)registerActivity:(NSDictionary*)commandDict;

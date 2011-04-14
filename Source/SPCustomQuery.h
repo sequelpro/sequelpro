@@ -129,9 +129,7 @@
 
 	SPQueryFavoriteManager *favoritesManager;
 
-#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
-#endif
 	MCPConnection *mySQLConnection;
 
 	NSString *usedQuery;

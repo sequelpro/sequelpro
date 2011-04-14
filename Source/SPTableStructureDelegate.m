@@ -150,11 +150,7 @@
 	else if([[aTableColumn identifier] isEqualToString:@"null"]) {
 		if([[currentRow objectForKey:@"null"] integerValue] != [anObject integerValue]) {
 			if([anObject integerValue] == 0) {
-#ifndef SP_REFACTOR /* patch */
 				if([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]])
-#else
-				if([[currentRow objectForKey:@"default"] isEqualToString:@"NULL"])
-#endif
 					[currentRow setObject:@"" forKey:@"default"];
 			}
 			[tableSourceView reloadData];
@@ -313,11 +309,7 @@
 	
 	// Add the default value, skip it for auto_increment
 	if([originalRow objectForKey:@"Extra"] && ![[originalRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
-#ifndef SP_REFACTOR /* patch */
 		if ([[originalRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-#else
-		if ([[originalRow objectForKey:@"default"] isEqualToString:@"NULL"]) {
-#endif
 			if ([[originalRow objectForKey:@"null"] integerValue] == 1) {
 				[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
 			}

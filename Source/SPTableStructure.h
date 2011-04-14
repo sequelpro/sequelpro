@@ -72,9 +72,7 @@
 	NSMutableDictionary *oldRow, *enumFields;
 	NSDictionary *defaultValues;
 	NSInteger currentlyEditingRow;
-#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
-#endif
 	NSArray *collations;
 	NSArray *typeSuggestions;
 	NSArray *extraFieldSuggestions;
