@@ -1353,7 +1353,7 @@
 	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
 		contentPage = 1;
 	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
-		contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+		contentPage = ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	else
 		contentPage = [paginationPageField integerValue];
 
@@ -1405,7 +1405,7 @@
 		return;
 	}
 
-	// Remember last selection for "Edit filter‚Ä¶"
+	// Remember last selection for "Edit filter…"
 	lastSelectedContentFilterIndex = [[compareField selectedItem] tag];
 
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:lastSelectedContentFilterIndex];
@@ -1528,7 +1528,7 @@
  */
 - (void) updatePaginationState
 {
-	NSUInteger maxPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+	NSUInteger maxPage = ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	if (isFiltered && !isLimited) {
 		maxPage = contentPage;
 	}
