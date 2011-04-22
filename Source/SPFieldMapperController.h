@@ -26,7 +26,11 @@
 
 @class SPTextView, SPTableView, SPTablesList;
 
-@interface SPFieldMapperController : NSWindowController 
+#ifndef SP_REFACTOR
+@interface SPFieldMapperController : NSWindowController
+#else
+@interface SPFieldMapperController : NSWindowController <NSTokenFieldCellDelegate>
+#endif
 {
 	IBOutlet SPTableView *fieldMapperTableView;
 	IBOutlet id fieldMapperTableScrollView;

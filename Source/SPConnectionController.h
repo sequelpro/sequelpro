@@ -24,17 +24,24 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <MCPKit/MCPKit.h>
-
 #import "SPConnectionControllerDelegateProtocol.h"
+
+#ifndef SP_REFACTOR /* headers */
+#endif
 
 @class SPDatabaseDocument, 
 	   SPFavoritesController, 
-	   SPKeychain, 
 	   SPSSHTunnel,
 	   SPTreeNode,
-	   SPFavoriteNode,
-	   SPFavoritesOutlineView,
-	   BWAnchoredButtonBar;
+	   SPFavoritesOutlineView
+#ifndef SP_REFACTOR /* class decl */
+	   ,SPKeychain, 
+	   BWAnchoredButtonBar, 
+	   SPFavoriteNode
+#endif
+;
+
+#ifndef SP_REFACTOR /* class decl */
 
 @interface NSObject (BWAnchoredButtonBar)
 
@@ -52,11 +59,24 @@
 	
 	MCPConnection *mySQLConnection;
 	
+#ifndef SP_REFACTOR	/* ivars */
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
-
+	SPKeychain *keychain;
+	NSUserDefaults *prefs;
+	NSMutableArray *favorites;
+#endif
+	SPSSHTunnel *sshTunnel;
+	MCPConnection *mySQLConnection;
+#ifndef SP_REFACTOR	/* ivars */
+	BOOL automaticFavoriteSelection;
+#endif
+	BOOL cancellingConnection;
+	BOOL isConnecting;
+#ifndef SP_REFACTOR	/* ivars */
 	// Standard details
 	NSInteger previousType;
+#endif
 	NSInteger type;
 	NSString *name;
 	NSString *host;
@@ -85,6 +105,7 @@
 
 	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
+#ifndef SP_REFACTOR	/* ivars */
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
 	NSString *connectionSSHKeychainItemAccount;
@@ -143,10 +164,13 @@
 	BOOL isConnecting;
 	BOOL cancellingConnection;
     BOOL reverseFavoritesSort;
+#endif
+
 	BOOL mySQLConnectionCancelled;
 	BOOL automaticFavoriteSelection;
 	BOOL favoriteNameFieldWasTouched;
 	
+#ifndef SP_REFACTOR	/* ivars */
 	NSImage *folderImage;
 	NSUserDefaults *prefs;
 	
@@ -154,9 +178,10 @@
 	SPFavoriteNode *currentFavorite;
 	SPFavoritesController *favoritesController;
 	SPFavoritesSortItem previousSortItem, currentSortItem;
+#endif
 }
 
-@property (readwrite, assign) id <SPConnectionControllerDelegateProtocol> delegate;
+@property (readwrite, assign) id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 @property (readwrite, assign) NSInteger type;
 @property (readwrite, retain) NSString *name;
 @property (readwrite, retain) NSString *host;
@@ -178,11 +203,13 @@
 @property (readwrite, assign) NSInteger sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
+#ifndef SP_REFACTOR	/* ivars */
 
 @property (readwrite, retain) NSString *connectionKeychainItemName;
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+#endif
 
 @property (readonly, assign) BOOL isConnecting;
 
@@ -190,6 +217,7 @@
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)cancelMySQLConnection:(id)sender;
 
 // Interface interaction
@@ -220,4 +248,5 @@
 - (IBAction)importFavorites:(id)sender;
 - (IBAction)exportFavorites:(id)sender;
 
+#endif
 @end

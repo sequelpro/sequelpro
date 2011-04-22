@@ -541,6 +541,7 @@
 
 #pragma mark -
 #pragma mark Split view delegate methods
+#ifndef SP_REFACTOR /* Split view delegate methods */
 
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
@@ -576,6 +577,7 @@
 		}
 	}
 }
+#endif
 
 #pragma mark -
 #pragma mark Combo box delegate methods

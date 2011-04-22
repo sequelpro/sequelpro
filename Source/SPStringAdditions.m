@@ -452,6 +452,7 @@
 
 }
 
+#ifndef SP_REFACTOR /* run self as bash commands */
 /**
  * Run self as BASH command(s) and return the result.
  * This task can be interrupted by pressing ⌘.
@@ -739,6 +740,7 @@
 {
 	return [self runBashCommandWithEnvironment:shellEnvironment atCurrentDirectoryPath:path callerInstance:nil contextInfo:nil error:theError];
 }
+#endif
 
 /**
  * Returns the minimum of a, b and c.

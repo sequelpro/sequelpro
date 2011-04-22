@@ -31,9 +31,15 @@
 
 @end
 
-@interface SPContentFilterManager : NSWindowController 
+#ifndef SP_REFACTOR /* ivars */
+@interface SPContentFilterManager : NSWindowController
+#else
+@interface SPContentFilterManager : NSWindowController <NSOpenSavePanelDelegate>
+#endif
 {
+#ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
+#endif
 	
 	SPDatabaseDocument *tableDocumentInstance;
 	NSURL *delegatesFileURL;

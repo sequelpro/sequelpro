@@ -26,6 +26,7 @@
 
 @interface SPNavigatorController : NSWindowController 
 {
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet id outlineSchema2;
 	IBOutlet id navigatorWindow;
 	IBOutlet id infoTable;
@@ -36,7 +37,7 @@
 	IBOutlet id schema12SplitView;
 
 	NSUserDefaults *prefs;
-
+#endif
 	NSMutableDictionary *schemaData;
 	NSMutableDictionary *schemaDataFiltered;
 	NSMutableDictionary *allSchemaKeys;
@@ -44,7 +45,7 @@
 	NSMutableArray *updatingConnections;
 	NSMutableDictionary *expandStatus2;
 	NSMutableDictionary *cachedSortedKeys;
-
+#ifndef SP_REFACTOR /* ivars */
 	NSString *selectedKey2;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
@@ -60,11 +61,12 @@
 	NSImage *fieldIcon;
 	
 	Class NSDictionaryClass;
-	
+#endif	
 }
 
 + (SPNavigatorController *)sharedNavigatorController;
 
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)outlineViewAction:(id)sender;
 - (IBAction)reloadAllStructures:(id)sender;
 - (IBAction)filterTree:(id)sender;
@@ -74,11 +76,13 @@
 - (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type;
 
 - (void)updateNavigator:(NSNotification *)aNotification;
+#endif
 
 - (NSDictionary *)dbStructureForConnection:(NSString*)connectionID;
 - (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID;
 - (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID ignoreFields:(BOOL)ignoreFields;
 
+#ifndef SP_REFACTOR /* method decls */
 - (BOOL)isUpdatingConnection:(NSString*)connectionID;
 - (BOOL)isUpdating;
 
@@ -91,5 +95,6 @@
 
 - (BOOL)schemaPathExistsForConnection:(NSString*)connectionID andDatabase:(NSString*)dbname;
 - (void)removeDatabase:(NSString*)db_id forConnectionID:(NSString*)connectionID;
+#endif
 
 @end

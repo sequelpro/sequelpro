@@ -25,17 +25,19 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPDatabaseDocument, SPTableFieldValidation;
+@class SPDatabaseDocument, SPTableFieldValidation, SPTableData, SPDatabaseData, SPTablesList, SPIndexesController;
 
 @interface SPTableStructure : NSObject 
 {
-	IBOutlet id tablesListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTablesList* tablesListInstance;
+	IBOutlet SPTableData* tableDataInstance;
+	IBOutlet SPDatabaseDocument* tableDocumentInstance;
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet id tableInfoInstance;
 	IBOutlet id extendedTableInfoInstance;
-	IBOutlet id indexesController;
-	IBOutlet id databaseDataInstance;
+#endif
+	IBOutlet SPIndexesController* indexesController;
+	IBOutlet SPDatabaseData* databaseDataInstance;
 
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
@@ -84,6 +86,13 @@
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;
 - (void)setTableDetails:(NSDictionary *)tableDetails;
+
+#ifdef SP_REFACTOR /* method decls */
+- (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
+- (void)setTableListInstance:(SPTablesList*)list;
+- (void)setTableDataInstance:(SPTableData*)data;
+#endif
+- (void)showErrorSheetWith:(NSDictionary *)errorDictionary;
 
 // Edit methods
 - (IBAction)addField:(id)sender;

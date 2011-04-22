@@ -24,13 +24,21 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTablesList.h"
+#ifndef SP_REFACTOR /* headers */
+#import "SPConnectionController.h"
+#endif
 #import "SPDatabaseDocument.h"
-#import "SPDatabaseViewController.h"
 #import "SPTableStructure.h"
+#import "SPDatabaseViewController.h"
+
+#ifndef SP_REFACTOR /* headers */
 #import "SPTableContent.h"
+#endif
 #import "SPTableData.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPTableInfo.h"
 #import "SPDataImport.h"
+#import "SPTableView.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
@@ -50,6 +58,7 @@
 - (void)renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 
 @end
+#endif
 
 @implementation SPTablesList
 
@@ -66,10 +75,13 @@
 	NSUInteger i;
 	NSString *previousSelectedTable = nil;
 	NSString *previousFilterString = nil;
+#ifndef SP_REFACTOR /* table list filtering */
 	BOOL previousTableListIsSelectable = tableListIsSelectable;
+#endif
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	if (selectedTableName) previousSelectedTable = [[NSString alloc] initWithString:selectedTableName];
+#ifndef SP_REFACTOR /* table list filtering */
 	if (isTableListFiltered) {
 		previousFilterString = [[NSString alloc] initWithString:[listFilterField stringValue]];
 		if (filteredTables) [filteredTables release];
@@ -84,13 +96,18 @@
 	tableListIsSelectable = YES;
 	[[tablesListView onMainThread] deselectAll:self];
 	tableListIsSelectable = previousTableListIsSelectable;
+#endif
 	[tables removeAllObjects];
 	[tableTypes removeAllObjects];
 
 	if ([tableDocumentInstance database]) {
 
 		// Notify listeners that a query has started
+#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#else
+		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+#endif
 
 		// Use UTF8 for identifier-based queries
 		if (changeEncoding) {
@@ -131,6 +148,7 @@
 		// Reorder the tables in alphabetical order
 		[tables sortArrayUsingSelector:@selector(localizedCompare:) withPairedMutableArrays:tableTypes, nil];
 
+#ifndef SP_REFACTOR /* table procedures and functions */
 		/* Grab the procedures and functions
 		 *
 		 * Using information_schema gives us more info (for information window perhaps?) but breaks
@@ -170,7 +188,7 @@
 				}
 			}
 		}
-		/*
+#endif		/*
 		BOOL addedPFHeader = FALSE;
 		NSString *pQuery = [NSString stringWithFormat:@"SHOW PROCEDURE STATUS WHERE db = '%@'",[tableDocumentInstance database]];
 		theResult = [mySQLConnection queryString:pQuery];
@@ -226,7 +244,11 @@
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 		// Notify listeners that the query has finished
+#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 	}
 
 	// Add the table headers even if no tables were found
@@ -239,7 +261,9 @@
 	
 	[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeNone] atIndex:0];
 
+#ifndef SP_REFACTOR /* ui manipulation */
 	[[tablesListView onMainThread] reloadData];
+#endif
 
 	// if the previous selected table still exists, select it
 	// but not if the update was called from SPTableData since it calls that method
@@ -247,9 +271,11 @@
 	// or if the table name contains characters which are not supported by the current set encoding
 	if ( ![sender isKindOfClass:[SPTableData class]] && previousSelectedTable != nil && [tables indexOfObject:previousSelectedTable] < [tables count]) {
 		NSInteger itemToReselect = [tables indexOfObject:previousSelectedTable];
+#ifndef SP_REFACTOR /* ui manipulation */
 		tableListIsSelectable = YES;
 		[[tablesListView onMainThread] selectRowIndexes:[NSIndexSet indexSetWithIndex:itemToReselect] byExtendingSelection:NO];
 		tableListIsSelectable = previousTableListIsSelectable;
+#endif
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemToReselect]];
 		selectedTableType = (SPTableType)[[tableTypes objectAtIndex:itemToReselect] integerValue];
@@ -260,6 +286,7 @@
 		selectedTableType = SPTableTypeNone;
 	}
 
+#ifndef SP_REFACTOR /* table list filtering */
 	// Determine whether or not to preserve the existing filter, and whether to
 	// show or hide the list filter based on the number of tables
 	if ([tables count] > 20) {
@@ -276,6 +303,7 @@
 	if ([tableDocumentInstance database]) {
 		[[[listFilterField cell] onMainThread] setPlaceholderString:NSLocalizedString(@"Filter", @"filter label")];
 	}
+#endif
 
 	if (previousSelectedTable) [previousSelectedTable release];
 	if (previousFilterString) [previousFilterString release];
@@ -288,6 +316,7 @@
 		// User press refresh button ergo force update
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
 }
+#ifndef SP_REFACTOR /* whole table operations */
 
 /**
  * Adds a new table to the tables-array (no changes in mysql-db)
@@ -657,6 +686,8 @@
 #pragma mark -
 #pragma mark Additional methods
 
+#endif
+
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
@@ -665,6 +696,8 @@
 	mySQLConnection = theConnection;
 	[self updateTables:self];
 }
+
+#ifndef SP_REFACTOR /* ui validation */
 
 /**
  * Performs interface validation for various controls.
@@ -701,6 +734,7 @@
 		[copyTableButton performClick:object];
 	}
 }
+#endif
 
 /**
  * Updates application state to match the current selection, including
@@ -714,17 +748,23 @@
 {
 	// First handle empty or multiple selections
 	if (!selectionDetails || ![selectionDetails objectForKey:@"name"]) {
+#ifndef SP_REFACTOR /* ui manipulation */
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
-
+#endif
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release];
 
+#ifndef SP_REFACTOR /* ui manipulation */
 		if ([indexes count]) {
 			selectedTableName = [[NSString alloc] initWithString:@""];
 		}
 		else {
+#endif
 			selectedTableName = nil;
+#ifndef SP_REFACTOR /* ui manipulation */
 		}
+#endif
+#ifndef SP_REFACTOR /* ui manipulation */
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
 		// if at least one item is selected
@@ -825,6 +865,7 @@
 		[[tableSubMenu itemAtIndex:10] setHidden:NO];
 
 		return;
+#endif
 	}
 
 	// If a new selection has been provided, store variables and update the interface to match
@@ -836,6 +877,7 @@
 	selectedTableName = [[NSString alloc] initWithString:selectedItemName];
 	selectedTableType = selectedItemType;
 
+#ifndef SP_REFACTOR /* ui manipulation */
 	// Remove the "current selection" item for filtered lists if appropriate
 	if (isTableListFiltered && [tablesListView selectedRow] < (NSInteger)[filteredTables count] - 2 && [filteredTables count] > 2
 		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-2] integerValue] == SPTableTypeNone
@@ -1006,7 +1048,10 @@
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 	}
+#endif
 }
+
+#ifndef SP_REFACTOR /* getters */
 
 #pragma mark -
 #pragma mark Getter methods
@@ -1054,6 +1099,7 @@
 	}
 	return selTables;
 }
+#endif
 
 /**
  * Returns the currently selected table or nil if no table or mulitple tables are selected
@@ -1202,6 +1248,7 @@
 	// If no match found, return failure
 	if (itemIndex == NSNotFound) return NO;
 
+#ifndef SP_REFACTOR /* table list filtering */
 	if (!isTableListFiltered) {
 		[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:itemIndex] byExtendingSelection:NO];
 	} else {
@@ -1210,18 +1257,25 @@
 			[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:filteredIndex] byExtendingSelection:NO];
 		} else {
 			[tablesListView deselectAll:nil];
+#endif
 			if (selectedTableName) [selectedTableName release];
 			selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemIndex]];
-			selectedTableType = (SPTableType)[[tableTypes objectAtIndex:itemIndex] integerValue];
+			selectedTableType = [[tableTypes objectAtIndex:itemIndex] integerValue];
+#ifndef SP_REFACTOR /* table list filtering */
 			[self updateFilter:self];
+#endif
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
+#ifndef SP_REFACTOR /* table list filtering */
 		}
 	}
 
 	[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+#endif
 
 	return YES;
 }
+
+#ifndef SP_REFACTOR /* tableView datasource/delegate */
 
 /**
  * Try to select items using the provided names in theNames; returns YES if at least
@@ -1360,6 +1414,9 @@
 	return ![tableDocumentInstance isWorking];
 }
 
+
+#ifndef SP_REFACTOR
+
 /**
  * Renames a table (in tables-array and mysql-db).
  */
@@ -1419,6 +1476,7 @@
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
+#endif
 
 #pragma mark -
 #pragma mark TableView delegate methods
@@ -1428,15 +1486,16 @@
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
+
+	// When enter/return is used, save the row.
 	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ) {
-		//save current line
 		[[control window] makeFirstResponder:control];
 		return TRUE;
 
+	// When the escape key is used, abort the rename.
 	} else if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] ||
 		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 
-		//abort editing
 		[control abortEditing];
 		[[NSApp mainWindow] makeFirstResponder:tablesListView];
 
@@ -1847,6 +1906,7 @@
 {
 	return (splitView == tableListSplitView ? NSZeroRect : proposedEffectiveRect);
 }
+#endif
 
 
 #pragma mark -
@@ -1859,21 +1919,28 @@
 {
 	if ((self = [super init])) {
 		tables = [[NSMutableArray alloc] init];
+#ifndef SP_REFACTOR
 		filteredTables = tables;
+#endif
 		tableTypes = [[NSMutableArray alloc] init];
+#ifndef SP_REFACTOR
 		filteredTableTypes = tableTypes;
 		isTableListFiltered = NO;
 		tableListIsSelectable = YES;
+#endif
 		tableListContainsViews = NO;
 		selectedTableType = SPTableTypeNone;
 		selectedTableName = nil;
 		[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
+#ifndef SP_REFACTOR /* font */
 		smallSystemFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+#endif
 	}
 
 	return self;
 }
 
+#ifndef SP_REFACTOR /* awakeFromNib */
 /**
  * Standard awakeFromNib method for interface loading.
  */
@@ -1903,6 +1970,9 @@
 		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
 	}
 
+	// Disable tab edit behaviour in the tables list
+	[tablesListView setTabEditingDisabled:YES];
+
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
@@ -1917,6 +1987,7 @@
 	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:@"SPDragTableDataFromNavigatorPboardType", nil]];
 
 }
+#endif
 
 /**
  * Standard dealloc method.
@@ -1927,13 +1998,24 @@
 
 	[tables release];
 	[tableTypes release];
+#ifndef SP_REFACTOR
 	if (isTableListFiltered && filteredTables) [filteredTables release];
 	if (isTableListFiltered && filteredTableTypes) [filteredTableTypes release];
+#endif
 	if (selectedTableName) [selectedTableName release];
 
 	[super dealloc];
 }
 
+
+#ifdef SP_REFACTOR /* glue */
+- (void)setDatabaseDocument:(SPDatabaseDocument*)val
+{
+	tableDocumentInstance = val;
+}
+#endif
+
+#ifndef SP_REFACTOR /* operations performed on whole tables */
 @end
 
 @implementation SPTablesList (PrivateAPI)
@@ -2148,7 +2230,9 @@
 		[self updateFilter:self];
 		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 
+		// Select the newly created table and switch to the table structure view for easier setup
 		[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
+		[tableDocumentInstance viewStructure:self];
 
 		// Query the structure of all databases in the background (mainly for completion)
 		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
@@ -2437,6 +2521,68 @@
 	}
 
 	[NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
+}
+#endif
+
+/**
+ * Check tableName for length and if the tableName doesn't match
+ * against current database table/view names (case-insensitive).
+ */
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType
+{
+    return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
+}
+
+/**
+ * Check tableName for length and if the tableName doesn't match
+ * against current database table/view names (case-insensitive).
+ */
+- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
+{
+	BOOL isValid = YES;
+
+	// delete trailing whitespaces since 'foo  ' or '   ' are not valid table names
+	NSString *fieldStr = [tableName stringByMatching:@"(.*?)\\s*$" capture:1];
+	NSString *lowercaseFieldStr = [fieldStr lowercaseString];
+
+	// If table name has trailing whitespaces return 'no valid'
+	if([fieldStr length] != [tableName length]) return NO;
+
+	// empty table names are invalid
+	if([fieldStr length] == 0) return NO;
+
+
+	NSArray *similarTables;
+	switch (tableType) {
+		case SPTableTypeView:
+		case SPTableTypeTable:
+			similarTables = [self allTableAndViewNames];
+			break;
+		case SPTableTypeProc:
+			similarTables = [self allProcedureNames];
+			break;
+		case SPTableTypeFunc:
+			similarTables = [self allFunctionNames];
+			break;
+		default:
+		// if some other table type is given, just return yes
+		// better a mysql error than not being able to change something at all
+		return YES;
+	}
+
+	for(id table in similarTables) {
+		//compare case insensitive here
+		if([lowercaseFieldStr isEqualToString:[table lowercaseString]]) {
+			if (ignoreSelectedTable) {
+				// if table is the selectedTable, ignore it
+				// we must compare CASE SENSITIVE here!
+				if ([table isEqualToString:selectedTableName]) continue;
+			}
+			isValid = NO;
+			break;
+		}
+	}
+	return isValid;
 }
 
 @end

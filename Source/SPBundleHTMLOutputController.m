@@ -145,6 +145,11 @@
 			[webView makeTextSmaller:nil];
 			return;
 		}
+		if([charactersIgnMod isEqualToString:@"0"]) // return the text size to the default size
+		{
+			[webView makeTextStandardSize:nil];
+			return;
+		}
 		if([theEvent keyCode] == 123) // goBack
 		{
 			if([webView canGoBack])

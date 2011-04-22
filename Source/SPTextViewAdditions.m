@@ -389,7 +389,6 @@
  */
 - (IBAction)insertNULLvalue:(id)sender
 {
-
 	id prefs = [NSUserDefaults standardUserDefaults];
 	if ([self respondsToSelector:@selector(insertText:)]) {
 		if([prefs stringForKey:SPNullValue] && [[prefs stringForKey:SPNullValue] length])
@@ -482,6 +481,19 @@
 	[self setEditable:editableStatus];
 }
 
+/**
+ * Increase the textView's font size by 1
+ */
+- (void)makeTextStandardSize
+{
+	NSFont *aFont = [self font];
+	BOOL editableStatus = [self isEditable];
+	[self setEditable:YES];
+	[self setFont:[[NSFontManager sharedFontManager] convertFont:aFont toSize:11.0f]];
+	[self setEditable:editableStatus];
+}
+
+#ifndef SP_REFACTOR
 - (IBAction)executeBundleItemForInputField:(id)sender
 {
 
@@ -859,5 +871,6 @@
 	else if([anEvent deltaZ]<-5.0)
 		[self makeTextSizeSmaller];
 }
+#endif
 
 @end

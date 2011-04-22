@@ -214,7 +214,7 @@
 		NSString *varName = [NSString stringWithUTF8String:ivar_getName(vars[j])];
 		
 		if ([varName hasPrefix:@"supports"]) {
-			[description appendFormat:@"\t%@ = %@\n", varName, ((BOOL)object_getIvar(self, vars[j])) ? @"YES" : @"NO"];
+			[description appendFormat:@"\t%@ = %@\n", varName, (object_getIvar(self, vars[j])) ? @"YES" : @"NO"];
 		}
 	}
 	

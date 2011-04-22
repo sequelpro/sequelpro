@@ -79,12 +79,15 @@
  */
 - (void)awakeFromNib
 {
+#ifndef SP_REFACTOR /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
+#endif
+#ifndef SP_REFACTOR /* set font from prefs */
 	// Set the strutcture and index view's font
 	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[indexesTableView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+#endif
 
 	extraFieldSuggestions = [[NSArray arrayWithObjects:
 		@"None",
@@ -159,12 +162,15 @@
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
+#ifndef SP_REFACTOR /* add prefs observer */
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+#endif	
 
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
-	
+
+#ifndef SP_REFACTOR /* patch */
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
 	{
 		if ([col isHidden]) {
@@ -178,6 +184,21 @@
 				[[viewColumnsMenu itemWithTag:12] setState:NSOffState];
 		}
 	}
+#else
+	for (NSTableColumn *col in [tableSourceView tableColumns]) 
+	{
+		if ([col isHidden]) {
+			if ([[col identifier] isEqualToString:@"Key"])
+				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:7]] setState:NSOffState];
+			else if ([[col identifier] isEqualToString:@"encoding"])
+				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:10]] setState:NSOffState];
+			else if ([[col identifier] isEqualToString:@"collation"])
+				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:11]] setState:NSOffState];
+			else if ([[col identifier] isEqualToString:@"comment"])
+				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:12]] setState:NSOffState];
+		}
+	}
+#endif
 	
 	[tableSourceView reloadData];
 }
@@ -213,7 +234,11 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
+#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
@@ -341,7 +366,11 @@
 	autoIncrementIndex = nil;
 
 	// Send the query finished/work complete notification
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#else
+	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+#endif
 
 	[theTableFields release];
 }
@@ -373,7 +402,12 @@
 {
 	NSString *newTableName = [tableDetails objectForKey:@"name"];
 	NSMutableDictionary *newDefaultValues;
-	BOOL enableInteraction = ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] || ![tableDocumentInstance isWorking];
+
+	BOOL enableInteraction = 
+#ifndef SP_REFACTOR /* patch */
+	![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] ||
+#endif
+	![tableDocumentInstance isWorking];
 
 	// Update the selected table name
 	if (selectedTable) [selectedTable release], selectedTable = nil;
@@ -445,10 +479,17 @@
 
 	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 
+#ifndef SP_REFACTOR /* prefs access */
 	[tableFields insertObject:[NSMutableDictionary
 							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
+#else
+	[tableFields insertObject:[NSMutableDictionary
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", @"1", @"", @"NULL", @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
+							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
+					  atIndex:insertIndex];
+#endif
 
 	[tableSourceView reloadData];
 	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
@@ -769,8 +810,10 @@
 	if (valueAsString == nil || ![valueAsString length]) {
 		// reload data and bail
 		[tableDataInstance resetAllData];
+#ifndef SP_REFACTOR
 		[extendedTableInfoInstance loadTable:selTable];
 		[tableInfoInstance tableChanged:nil];
+#endif
 		return;
 	}
 
@@ -793,10 +836,14 @@
 	[tableDataInstance resetStatusData];
 	if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
 		[tableDataInstance resetAllData];
+#ifndef SP_REFACTOR
 		[extendedTableInfoInstance loadTable:selTable];
+#endif
 	}
 
+#ifndef SP_REFACTOR
 	[tableInfoInstance tableChanged:nil];
+#endif
 }
 
 /**
@@ -808,14 +855,14 @@
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
-	NSUInteger i;
+	NSInteger i;
 	id prefsNullValue = [prefs objectForKey:SPNullValue];
 
 	// Ensure table information is returned as strings to avoid problems with some server versions
 	[theResult setReturnDataAsStrings:YES];
 
 	if (numOfRows) [theResult dataSeek:0];
-	for ( i = 0 ; i < numOfRows ; i++ ) {
+	for ( i = 0 ; i < (NSInteger)numOfRows ; i++ ) {
 		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
 
 		// Replace NSNull instances with the NULL string from preferences
@@ -862,7 +909,11 @@
 	isSavingRow = YES;
 
 	// Save any edits which have been made but not saved to the table yet.
+#ifndef SP_REFACTOR /* patch */
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
+#else
+	[[tableSourceView window] endEditingFor:nil];
+#endif
 
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
@@ -880,7 +931,7 @@
  * returns YES if row written to db, otherwies NO
  * returns YES if no row is beeing edited and nothing has to be written to db
  */
-- (BOOL)addRowToDB;
+- (BOOL)addRowToDB
 {
 	if ((!isEditingRow) || (currentlyEditingRow == -1)) return YES;
 
@@ -931,7 +982,8 @@
 			[queryString appendString:@"\n NULL"];
 		}
 		// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
-		if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+		if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) 
+		{
 			if ([[theRow objectForKey:@"null"] integerValue] == 1) {
 				[queryString appendString:@"\n DEFAULT NULL "];
 			}
@@ -1003,7 +1055,8 @@
 		if (![theRowExtra isEqualToString:@"AUTO_INCREMENT"]) {
 
 			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
-			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) 
+			{
 				if ([[theRow objectForKey:@"null"] integerValue] == 1) {
 					[queryString appendString:@"\n DEFAULT NULL"];
 				}
@@ -1161,6 +1214,24 @@
 	}
 }
 
+#ifdef SP_REFACTOR /* glue */
+- (void)setDatabaseDocument:(SPDatabaseDocument*)doc
+{
+	tableDocumentInstance = doc;
+}
+
+- (void)setTableListInstance:(SPTablesList*)list
+{
+	tablesListInstance = list;
+}
+
+- (void)setTableDataInstance:(SPTableData*)data
+{
+	tableDataInstance = data;
+}
+
+#endif
+
 /**
  * A method to show an error sheet after a short delay, so that it can
  * be called from within an endSheet selector. This should be called on
@@ -1280,6 +1351,7 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
+#ifndef SP_REFACTOR /* observe prefs change */
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -1295,6 +1367,7 @@
 		[tableSourceView reloadData];
 		[indexesTableView reloadData];
 	}
+#endif
 }
 
 #pragma mark -
@@ -1441,8 +1514,10 @@
  */
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
+#ifndef SP_REFACTOR /* check toolbar mode */
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
+#endif
 
 	[tableSourceView setEnabled:NO];
 	[addFieldButton setEnabled:NO];
@@ -1462,8 +1537,10 @@
  */
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
+#ifndef SP_REFACTOR /* check toolbar mode */
 	// Only re-enable elements if the current tab is the structure view
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
+#endif
 
 	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable);
 

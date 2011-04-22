@@ -125,6 +125,12 @@
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
+		if([charactersIgnMod isEqualToString:@"0"]) // return the text size to the default size; ⌘0
+		{
+			[self makeTextStandardSize];
+			[self saveChangedFontInUserDefaults];
+			return;
+		}
 	}
 
 	// Allow undo grouping if user typed a ' ' (for word level undo)
