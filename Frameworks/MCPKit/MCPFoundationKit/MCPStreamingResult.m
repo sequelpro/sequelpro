@@ -226,14 +226,12 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 		id cellData = nil;
 		char *theData = NULL;
 
-		// In fully streaming mode, copy across the data for the MYSQL_ROW
+		// In fully streaming mode, get a reference to the data for the MYSQL_ROW
 		if (fullyStreaming) {
 			if (theRow[i] == NULL) {
 				cellData = [NSNull null];
 			} else {
-				theData = calloc(sizeof(char), fieldLengths[i]+1);
-				memcpy(theData, theRow[i], fieldLengths[i]);
-				theData[fieldLengths[i]] = '\0';
+				theData = theRow[i];
 			}
 
 		// In cached-streaming mode, use a reference to the downloaded data
@@ -281,7 +279,7 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 					}
 					// For string data, convert to text
 					else {
-						cellData = [NSString stringWithCString:theData encoding:mEncoding];
+						cellData = [[[NSString alloc] initWithBytes:theData length:fieldLengths[i] encoding:mEncoding] autorelease];
 					}
 
 					break;
@@ -327,9 +325,6 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 					cellData = [NSData dataWithBytes:theData length:fieldLengths[i]];
 				break;
 			}
-
-			// Free the data if it was originally allocated
-			if (fullyStreaming) free(theData);
 
 			// If a creator returned a nil object, replace with NSNull
 			if (cellData == nil) cellData = [NSNull null];
