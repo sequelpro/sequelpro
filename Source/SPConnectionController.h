@@ -49,26 +49,27 @@
 
 @end
 
+#endif
+
 @interface SPConnectionController : NSObject 
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
 	SPDatabaseDocument *dbDocument;
 	SPSSHTunnel *sshTunnel;
+	
+#ifndef SP_REFACTOR	/* ivars */
 	SPKeychain *keychain;
+#endif
 	
 	MCPConnection *mySQLConnection;
 	
 #ifndef SP_REFACTOR	/* ivars */
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
-	SPKeychain *keychain;
 	NSUserDefaults *prefs;
 	NSMutableArray *favorites;
-#endif
-	SPSSHTunnel *sshTunnel;
-	MCPConnection *mySQLConnection;
-#ifndef SP_REFACTOR	/* ivars */
+
 	BOOL automaticFavoriteSelection;
 #endif
 	BOOL cancellingConnection;
@@ -161,18 +162,13 @@
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
 	
 	BOOL isEditing;
-	BOOL isConnecting;
-	BOOL cancellingConnection;
     BOOL reverseFavoritesSort;
 #endif
-
 	BOOL mySQLConnectionCancelled;
-	BOOL automaticFavoriteSelection;
 	BOOL favoriteNameFieldWasTouched;
 	
 #ifndef SP_REFACTOR	/* ivars */
 	NSImage *folderImage;
-	NSUserDefaults *prefs;
 	
 	SPTreeNode *favoritesRoot;
 	SPFavoriteNode *currentFavorite;

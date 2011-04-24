@@ -70,6 +70,7 @@
 #ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
+#import "SPConnectionHandler.h"
 #endif
 
 #ifdef SP_REFACTOR /* headers */
@@ -3866,7 +3867,6 @@
  */
 - (void)parentTabDidClose
 {
-
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
@@ -3885,7 +3885,6 @@
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[self setParentWindow:nil];
-
 }
 
 /**
