@@ -31,6 +31,7 @@
 #import <MCPKit/MCPKit.h>
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
+#import "SPTableView.h"
 #import "SPDatabaseViewController.h"
 #import "SPTableStructure.h"
 
@@ -111,6 +112,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	BOOL useMonospacedFont = NO;
 #endif
 
+	// Set the double-click action in blank areas of the table to create new rows
+	[indexesTableView setEmptyDoubleClickAction:@selector(addIndex:)];
+
 	for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 	{
 		[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -134,6 +138,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)addIndex:(id)sender
 {
+
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([dbDocument isWorking] || [tablesList tableType] != SPTableTypeTable) return;
+	
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
 

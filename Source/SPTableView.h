@@ -25,8 +25,11 @@
 @interface SPTableView : NSTableView
 {
 	BOOL tabEditingDisabled;
+	SEL emptyDoubleClickAction;
 }
 
 @property (readwrite, assign) BOOL tabEditingDisabled;
+
+- (void)setEmptyDoubleClickAction:(SEL)aSelector;
 
 @end

@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, BWAnchoredButtonBar;
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPTableView, MCPConnection, BWAnchoredButtonBar;
 
 @interface SPIndexesController : NSWindowController 
 {
@@ -34,7 +34,7 @@
 	IBOutlet SPTableData *tableData;
 	
 	// Index table view
-	IBOutlet NSTableView *indexesTableView;
+	IBOutlet SPTableView *indexesTableView;
 	IBOutlet NSButton *addIndexButton;
 	IBOutlet NSButton *removeIndexButton;
 	

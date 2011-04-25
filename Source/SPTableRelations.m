@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
+#import "SPTableView.h"
 #import "SPAlertSheets.h"
 
 @interface SPTableRelations (PrivateAPI)
@@ -61,6 +62,9 @@
 	// Set the table relation view's vertical gridlines if required
 	[relationsTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	
+	// Set the double-click action in blank areas of the table to create new rows
+	[relationsTableView setEmptyDoubleClickAction:@selector(addRelation:)];
+
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
 	
@@ -163,6 +167,10 @@
  */
 - (IBAction)addRelation:(id)sender
 {
+
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
+
 	// Set up the controls
 	[addRelationTableBox setTitle:[NSString stringWithFormat:NSLocalizedString(@"Table: %@", @"Add Relation sheet title, showing table name"), [tablesListInstance tableName]]];
 

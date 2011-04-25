@@ -28,6 +28,7 @@
 #import "SPDatabaseData.h"
 #import "SPDatabaseViewController.h"
 #import "SPTableData.h"
+#import "SPTableView.h"
 #import "SPTableFieldValidation.h"
 
 @implementation SPTableStructure (SPTableStructureDelegate)

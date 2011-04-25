@@ -163,6 +163,9 @@
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
 
+	// Set the double-click action in blank areas of the table to create new rows
+	[tableContentView setEmptyDoubleClickAction:@selector(addRow:)];
+
 	// Load the pagination view, keeping references to the top-level objects for later release
 	NSArray *paginationViewTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ContentPaginationView" bundle:[NSBundle mainBundle]];
@@ -1654,6 +1657,9 @@
 	NSMutableDictionary *column;
 	NSMutableArray *newRow = [NSMutableArray array];
 	NSUInteger i;
+
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
