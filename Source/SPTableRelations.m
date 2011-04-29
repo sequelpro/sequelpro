@@ -49,6 +49,7 @@
 {
 	if ((self = [super init])) {
 		relationData = [[NSMutableArray alloc] init];
+		prefs        = [NSUserDefaults standardUserDefaults];
 	}
 
 	return self;
@@ -175,7 +176,8 @@
 	[addRelationTableBox setTitle:[NSString stringWithFormat:NSLocalizedString(@"Table: %@", @"Add Relation sheet title, showing table name"), [tablesListInstance tableName]]];
 
 	[columnPopUpButton removeAllItems];
-	[columnPopUpButton addItemsWithTitles:[tableDataInstance columnNames]];
+	NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [[tableDataInstance columnNames] sortedArrayUsingSelector:@selector(compare:)] : [tableDataInstance columnNames];
+	[columnPopUpButton addItemsWithTitles:columnTitles];
 
 	[refTablePopUpButton removeAllItems];
 
@@ -559,7 +561,8 @@
 
 	// Add the valid columns
 	if ([validColumns count] > 0) {
-		[refColumnPopUpButton addItemsWithTitles:validColumns];
+		NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [validColumns sortedArrayUsingSelector:@selector(compare:)] : validColumns;
+		[refColumnPopUpButton addItemsWithTitles:columnTitles];
 
 		[refColumnPopUpButton setEnabled:YES];
 		[confirmAddRelationButton setEnabled:YES];

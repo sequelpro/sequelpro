@@ -288,6 +288,7 @@ extern NSString *SPNullValue;
 extern NSString *SPGlobalResultTableFont;
 extern NSString *SPFilterTableDefaultOperator;
 extern NSString *SPFilterTableDefaultOperatorLastItems;
+extern NSString *SPAlphabeticalTableSorting;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;

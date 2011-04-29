@@ -53,6 +53,7 @@
 	MCPConnection *connection;
 
 	NSMutableArray *relationData;
+	NSUserDefaults *prefs;
 }
 
 @property (readonly) NSMutableArray *relationData;

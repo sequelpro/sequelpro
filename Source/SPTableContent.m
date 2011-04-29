@@ -609,10 +609,8 @@
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
 	[fieldField removeAllItems];
-	[fieldField addItemsWithTitles:columnNames];
-	for ( i = 0 ; i < [fieldField numberOfItems] ; i++ ) {
-		[[fieldField itemAtIndex:i] setTag:i];
-	}
+	NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [columnNames sortedArrayUsingSelector:@selector(compare:)] : columnNames;
+	[fieldField addItemsWithTitles:columnTitles];
 	[compareField setEnabled:YES];
 	[self setCompareTypes:self];
 	[argumentField setEnabled:YES];
@@ -2346,8 +2344,8 @@
 	[compareField removeAllItems];
 
 	NSString *fieldTypeGrouping;
-	if([[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"])
-		fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
+	if([[tableDataInstance columnWithName:[fieldField titleOfSelectedItem]] objectForKey:@"typegrouping"])
+		fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[fieldField titleOfSelectedItem]] objectForKey:@"typegrouping"]];
 	else
 		return;
 
@@ -2393,7 +2391,7 @@
 	} else  {
 		compareType = @"";
 		NSBeep();
-		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"type"], fieldTypeGrouping);
+		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[fieldField titleOfSelectedItem]] objectForKey:@"type"], fieldTypeGrouping);
 	}
 
 	// Add IS NULL and IS NOT NULL as they should always be available
@@ -3330,7 +3328,7 @@
 
 	theDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 						[self tableFilterString], @"menuLabel",
-						[[fieldField selectedItem] title], @"filterField",
+						[fieldField titleOfSelectedItem], @"filterField",
 						[[compareField selectedItem] title], @"filterComparison",
 						[NSNumber numberWithInteger:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
