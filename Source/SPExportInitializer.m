@@ -282,8 +282,11 @@
 		// Create custom filename if required
 		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-				
+		// Only append the extension if necessary
+		if (![[exportFilename pathExtension] length]) {
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		}
+		
 		file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
 		[exportFiles addObject:file];
