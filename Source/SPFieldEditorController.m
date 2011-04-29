@@ -571,7 +571,7 @@
 	//   and suppress closing the sheet
 	if(sender == editSheetOkButton) {
 		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			[editTextView setSelectedRange:NSMakeRange(maxTextLength, [[editTextView textStorage] length] - maxTextLength)];
+			[editTextView setSelectedRange:NSMakeRange((NSUInteger)maxTextLength, [[editTextView textStorage] length] - (NSUInteger)maxTextLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
 			return;
