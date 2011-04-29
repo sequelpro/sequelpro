@@ -43,6 +43,10 @@ static const NSString *SPTableViewStructureColumnID = @"structure";
 static const NSString *SPTableViewContentColumnID   = @"content";
 static const NSString *SPTableViewDropColumnID      = @"drop";
 
+static const NSString *SPSQLExportStructureEnabled  = @"SQLExportStructureEnabled";
+static const NSString *SPSQLExportContentEnabled      = @"SQLExportContentEnabled";
+static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
+
 @interface SPExportController (PrivateAPI)
 
 - (void)_switchTab;
@@ -805,9 +809,9 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 	BOOL isHTML = (exportType == SPHTMLExport);
 	BOOL isPDF  = (exportType == SPPDFExport);
 	
-	BOOL structureEnabled = [[uiStateDict objectForKey:@"SQLExportStructureEnabled"] integerValue];
-	BOOL contentEnabled   = [[uiStateDict objectForKey:@"SQLExportContentEnabled"] integerValue];
-	BOOL dropEnabled      = [[uiStateDict objectForKey:@"SQLExportDropEnabled"] integerValue];
+	BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] integerValue];
+	BOOL contentEnabled   = [[uiStateDict objectForKey:SPSQLExportContentEnabled] integerValue];
+	BOOL dropEnabled      = [[uiStateDict objectForKey:SPSQLExportDropEnabled] integerValue];
 		
 	if (isCSV || isXML || isHTML || isPDF || (isSQL && ((!structureEnabled) || (!dropEnabled)))) {
 		enable = NO;
@@ -864,9 +868,9 @@ static const NSString *SPTableViewDropColumnID      = @"drop";
 {
 	NSMutableDictionary *uiStateDict = [[NSMutableDictionary alloc] init];
 		
-	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeStructureCheck state]] forKey:@"SQLExportStructureEnabled"];
-	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeContentCheck state]] forKey:@"SQLExportContentEnabled"];
-	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeDropSyntaxCheck state]] forKey:@"SQLExportDropEnabled"];
+	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeStructureCheck state]] forKey:SPSQLExportStructureEnabled];
+	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeContentCheck state]] forKey:SPSQLExportContentEnabled];
+	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeDropSyntaxCheck state]] forKey:SPSQLExportDropEnabled];
 	
 	[NSThread detachNewThreadSelector:@selector(_toggleExportButton:) toTarget:self withObject:uiStateDict];
 	
