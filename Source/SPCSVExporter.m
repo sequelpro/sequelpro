@@ -95,8 +95,7 @@
 	}
 	
 	// Check that we have all the required info before starting the export
-	if ((![self csvOutputFieldNames]) ||
-		(![self csvFieldSeparatorString]) ||
+	if ((![self csvFieldSeparatorString]) ||
 		(![self csvEscapeString]) ||
 		(![self csvLineEndingString]))
 	{
