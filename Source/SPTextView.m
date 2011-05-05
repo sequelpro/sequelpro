@@ -3444,13 +3444,13 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	} 
 	
 	// Insert selected items coming from the Navigator
-	if ( [[pboard types] containsObject:@"SPDragFromNavigatorPboardType"] ) {
+	if ( [[pboard types] containsObject:SPNavigatorPasteboardDragType] ) {
 		NSPoint draggingLocation = [sender draggingLocation];
 		draggingLocation = [self convertPoint:draggingLocation fromView:nil];
 		NSUInteger characterIndex = [self characterIndexOfPoint:draggingLocation];
 		[self setSelectedRange:NSMakeRange(characterIndex,0)];
 
-		NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[pboard dataForType:@"SPDragFromNavigatorPboardType"]] autorelease];
+		NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[pboard dataForType:SPNavigatorPasteboardDragType]] autorelease];
 		NSArray *draggedItems = [[NSArray alloc] initWithArray:(NSArray *)[unarchiver decodeObjectForKey:@"itemdata"]];
 		[unarchiver finishDecoding];
 

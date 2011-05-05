@@ -241,6 +241,8 @@ extern NSString *SPDefaultMonospacedFontName;
 extern NSString *SPDefaultPasteboardDragType;
 extern NSString *SPFavoritesPasteboardDragType;
 extern NSString *SPContentFilterPasteboardDragType;
+extern NSString *SPNavigatorPasteboardDragType;
+extern NSString *SPNavigatorTableDataPasteboardDragType;
 
 // File extensions
 extern NSString *SPFileExtensionDefault;

@@ -39,11 +39,6 @@
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
-#ifndef SP_REFACTOR /* pasteboard types */
-#define DragFromNavigatorPboardType  @"SPDragFromNavigatorPboardType"
-#define DragTableDataFromNavigatorPboardType  @"SPDragTableDataFromNavigatorPboardType"
-#endif
-
 @implementation SPNavigatorController
 
 #ifndef SP_REFACTOR /* unused sort func */
@@ -146,7 +141,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	prefs = [NSUserDefaults standardUserDefaults];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
-	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:DragTableDataFromNavigatorPboardType, DragFromNavigatorPboardType, NSStringPboardType, nil]];
+	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType, nil]];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
@@ -1108,7 +1103,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
 	// Provide data for our custom type, and simple NSStrings.
-	[pboard declareTypes:[NSArray arrayWithObjects:DragTableDataFromNavigatorPboardType, DragFromNavigatorPboardType, NSStringPboardType, nil] owner:self];
+	[pboard declareTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType, nil] owner:self];
 
 	// Collect the actual schema paths without leading connection ID
 	NSMutableArray *draggedItems = [NSMutableArray array];
@@ -1125,7 +1120,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:arraydata] autorelease];
 	[archiver encodeObject:draggedItems forKey:@"itemdata"];
 	[archiver finishEncoding];
-	[pboard setData:arraydata forType:DragFromNavigatorPboardType];
+	[pboard setData:arraydata forType:SPNavigatorPasteboardDragType];
 
 	if([draggedItems count] == 1) {
 		NSArray *pathComponents = [[draggedItems objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
@@ -1134,7 +1129,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			[pboard setString:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ SELECT * FROM %@", 
 					[[pathComponents lastObject] backtickQuotedString],
 					[pathComponents componentsJoinedByPeriodAndBacktickQuoted]
-				] forType:DragTableDataFromNavigatorPboardType];
+				] forType:SPNavigatorTableDataPasteboardDragType];
 		}
 	}
 	// For external destinations provide a comma separated string

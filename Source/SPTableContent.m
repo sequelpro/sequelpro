@@ -51,8 +51,10 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPCustomQuery.h"
 
-@interface SPTableContent (Private)
+@interface SPTableContent ()
+
 - (BOOL)cancelRowEditing;
+
 @end
 
 @implementation SPTableContent

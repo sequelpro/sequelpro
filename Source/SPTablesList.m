@@ -49,13 +49,20 @@
 #import "SPWindowController.h"
 #import "SPAppController.h"
 
-@interface SPTablesList (PrivateAPI)
+// Constants
+static NSString *SPAddRow         = @"SPAddRow";
+static NSString *SPAddNewTable    = @"SPAddNewTable";
+static NSString *SPRemoveTable    = @"SPRemoveTable";
+static NSString *SPTruncateTable  = @"SPTruncateTable";
+static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
-- (void)removeTable;
-- (void)truncateTable;
-- (void)addTable;
-- (void)copyTable;
-- (void)renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
+@interface SPTablesList ()
+
+- (void)_removeTable;
+- (void)_truncateTable;
+- (void)_addTable;
+- (void)_copyTable;
+- (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 
 @end
 #endif
@@ -383,7 +390,7 @@
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"addTable"];
+		  contextInfo:SPAddNewTable];
 }
 
 /**
@@ -471,7 +478,7 @@
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@? This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
 	}
 
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeRow"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPRemoveTable];
 }
 
 /**
@@ -518,7 +525,7 @@
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"copyTable"];
+		  contextInfo:SPDuplicateTable];
 }
 
 /**
@@ -604,7 +611,7 @@
 		[alert setInformativeText:NSLocalizedString(@"Are you sure you want to delete ALL records in the selected tables? This operation cannot be undone.", @"truncate tables informative message")];
 	}
 
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTable"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPTruncateTable];
 }
 
 /**
@@ -658,27 +665,27 @@
 	else if ([sheet respondsToSelector:@selector(window)])
 		[[sheet window] orderOut:nil];
 
-	if ([contextInfo isEqualToString:@"addRow"]) {
+	if ([contextInfo isEqualToString:SPAddRow]) {
 		alertSheetOpened = NO;
 	}
-	else if ([contextInfo isEqualToString:@"removeRow"]) {
+	else if ([contextInfo isEqualToString:SPRemoveTable]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self performSelector:@selector(removeTable) withObject:nil afterDelay:0.0];
+			[self performSelector:@selector(_removeTable) withObject:nil afterDelay:0.0];
 		}
 	}
-	else if ([contextInfo isEqualToString:@"truncateTable"]) {
+	else if ([contextInfo isEqualToString:SPTruncateTable]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self truncateTable];
+			[self _truncateTable];
 		}
 	}
-	else if ([contextInfo isEqualToString:@"addTable"]) {
+	else if ([contextInfo isEqualToString:SPAddNewTable]) {
 		if (returnCode == NSOKButton) {
-			[self addTable];
+			[self _addTable];
 		}
 	}
-	else if ([contextInfo isEqualToString:@"copyTable"]) {
+	else if ([contextInfo isEqualToString:SPDuplicateTable]) {
 		if (returnCode == NSOKButton) {
-			[self copyTable];
+			[self _copyTable];
 		}
 	}
 }
@@ -1449,7 +1456,7 @@
 
 	@try {
 		// first: update the database
-		[self renameTableOfType:selectedTableType from:selectedTableName to:newTableName];
+		[self _renameTableOfType:selectedTableType from:selectedTableName to:newTableName];
 
 		// second: update the table list
 		if (isTableListFiltered) {
@@ -1672,8 +1679,8 @@
 	NSPasteboard *pboard = [info draggingPasteboard];
 
 	// tables were dropped coming from the Navigator
-	if ( [[pboard types] containsObject:@"SPDragTableDataFromNavigatorPboardType"] ) {
-		NSString *query = [pboard stringForType:@"SPDragTableDataFromNavigatorPboardType"];
+	if ( [[pboard types] containsObject:SPNavigatorTableDataPasteboardDragType] ) {
+		NSString *query = [pboard stringForType:SPNavigatorTableDataPasteboardDragType];
 		if(!query) return NO;
 
 		[mySQLConnection queryString:query];
@@ -1984,7 +1991,7 @@
 											   object:tableDocumentInstance];
 
 
-	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:@"SPDragTableDataFromNavigatorPboardType", nil]];
+	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, nil]];
 
 }
 #endif
@@ -2016,14 +2023,11 @@
 #endif
 
 #ifndef SP_REFACTOR /* operations performed on whole tables */
-@end
-
-@implementation SPTablesList (PrivateAPI)
 
 /**
  * Removes the selected object (table, view, procedure, function, etc.) from the database and tableView.
  */
-- (void)removeTable
+- (void)_removeTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 	[tablesListView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
@@ -2117,7 +2121,7 @@
 /**
  * Trucates the selected table(s).
  */
-- (void)truncateTable
+- (void)_truncateTable
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
@@ -2159,7 +2163,7 @@
 /**
  * Adds a new table table to the database using the selected character set encoding and storage engine.
  */
-- (void)addTable
+- (void)_addTable
 {
 	NSString *charSetStatement = @"";
 	NSString *engineStatement  = @"";
@@ -2244,7 +2248,7 @@
 
 		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
-						  @selector(sheetDidEnd:returnCode:contextInfo:), @"addRow",
+						  @selector(sheetDidEnd:returnCode:contextInfo:), SPAddRow,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
 
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -2258,7 +2262,7 @@
 /**
  * Copies the currently selected object (table, view, procedure, function, etc.).
  */
-- (void)copyTable
+- (void)_copyTable
 {
 	NSString *tableType = @"";
 
@@ -2444,7 +2448,7 @@
  * This function ONLY changes the database. It does NOT refresh the views etc.
  * CAREFUL: This function raises an exception if renaming fails, and does not show an error message.
  */
-- (void)renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName
+- (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName
 {
 	// check if the name really changed
 	if ([oldTableName isEqualToString:newTableName]) return;
@@ -2456,17 +2460,21 @@
 		// this code should be improved in case we find out that something uses table names like mytable-1, mytable-2, etc.
 		NSString* tempTableName;
 		int tempNumber;
-		for(tempNumber=2; tempNumber<100; tempNumber++) {
+		
+		for (tempNumber=2; tempNumber<100; tempNumber++) 
+		{
 			tempTableName = [NSString stringWithFormat:@"%@-%d",selectedTableName,tempNumber];
 			if ([self isTableNameValid:tempTableName forType:tableType]) break;
 		}
+		
 		if (tempNumber==100) {
 			// we couldn't find a temporary name
 			[NSException raise:@"No Tempname found" format:NSLocalizedString(@"An error occured while renaming '%@'. No temporary name could be found. Please try renaming to something else first.", @"rename table error - no temporary name found"), oldTableName];
 		}
 
-		[self renameTableOfType:tableType from:oldTableName to:tempTableName];
-		[self renameTableOfType:tableType from:tempTableName to:newTableName];
+		[self _renameTableOfType:tableType from:oldTableName to:tempTableName];
+		[self _renameTableOfType:tableType from:tempTableName to:newTableName];
+		
 		return;
 	}
 
@@ -2478,6 +2486,7 @@
 		if ([mySQLConnection queryErrored]) {
 			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming '%@'.\n\nMySQL said: %@", @"rename table error informative message"), oldTableName, [mySQLConnection getLastErrorMessage]];
 		}
+		
 		return;
 	}
 
@@ -2523,66 +2532,5 @@
 	[NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
 }
 #endif
-
-/**
- * Check tableName for length and if the tableName doesn't match
- * against current database table/view names (case-insensitive).
- */
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType
-{
-    return [self isTableNameValid:tableName forType:tableType ignoringSelectedTable:NO];
-}
-
-/**
- * Check tableName for length and if the tableName doesn't match
- * against current database table/view names (case-insensitive).
- */
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable
-{
-	BOOL isValid = YES;
-
-	// delete trailing whitespaces since 'foo  ' or '   ' are not valid table names
-	NSString *fieldStr = [tableName stringByMatching:@"(.*?)\\s*$" capture:1];
-	NSString *lowercaseFieldStr = [fieldStr lowercaseString];
-
-	// If table name has trailing whitespaces return 'no valid'
-	if([fieldStr length] != [tableName length]) return NO;
-
-	// empty table names are invalid
-	if([fieldStr length] == 0) return NO;
-
-
-	NSArray *similarTables;
-	switch (tableType) {
-		case SPTableTypeView:
-		case SPTableTypeTable:
-			similarTables = [self allTableAndViewNames];
-			break;
-		case SPTableTypeProc:
-			similarTables = [self allProcedureNames];
-			break;
-		case SPTableTypeFunc:
-			similarTables = [self allFunctionNames];
-			break;
-		default:
-		// if some other table type is given, just return yes
-		// better a mysql error than not being able to change something at all
-		return YES;
-	}
-
-	for(id table in similarTables) {
-		//compare case insensitive here
-		if([lowercaseFieldStr isEqualToString:[table lowercaseString]]) {
-			if (ignoreSelectedTable) {
-				// if table is the selectedTable, ignore it
-				// we must compare CASE SENSITIVE here!
-				if ([table isEqualToString:selectedTableName]) continue;
-			}
-			isValid = NO;
-			break;
-		}
-	}
-	return isValid;
-}
 
 @end

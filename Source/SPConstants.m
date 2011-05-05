@@ -42,6 +42,8 @@ NSString *SPDefaultMonospacedFontName            = @"Monaco";
 NSString *SPDefaultPasteboardDragType            = @"SequelProPasteboard";
 NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
 NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
+NSString *SPNavigatorPasteboardDragType          = @"SPNavigatorPasteboardDragType";
+NSString *SPNavigatorTableDataPasteboardDragType = @"SPNavigatorTableDataPasteboardDragType"; 
 
 // File extensions
 NSString *SPFileExtensionDefault                 = @"spf";
