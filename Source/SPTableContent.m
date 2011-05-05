@@ -1669,9 +1669,13 @@
 		} else if ([[column objectForKey:@"default"] isEqualToString:@""]
 					&& ![[column objectForKey:@"null"] boolValue]
 					&& ([[column objectForKey:@"typegrouping"] isEqualToString:@"float"]
-						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"integer"]))
+						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"integer"]
+						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"bit"]))
 		{
 			[newRow addObject:@"0"];
+		} else if ([[column objectForKey:@"typegrouping"] isEqualToString:@"bit"] && [[column objectForKey:@"default"] hasPrefix:@"b'"] && [(NSString*)[column objectForKey:@"default"] length] > 3) {
+			// remove leading b' and final '
+			[newRow addObject:[[[column objectForKey:@"default"] substringFromIndex:2] substringToIndex:[(NSString*)[column objectForKey:@"default"] length]-3]];
 		} else {
 			[newRow addObject:[column objectForKey:@"default"]];
 		}

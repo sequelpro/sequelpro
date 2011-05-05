@@ -430,12 +430,22 @@ void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf);
 void _bytes2bin(Byte *n, NSUInteger nbytes, NSUInteger len, char *buf)
 {
 
+	// NSUInteger i = 0;
+	// nbytes--;
+	// while (++i <= len)
+	// 	buf[len - i] = ( (n[nbytes - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+	// 
+	// buf[len] = '\0';
+	// ↑ why does this code not working anymore?
+
 	NSUInteger i = 0;
 	nbytes--;
-	while (++i <= len)
-		buf[len - i] = ( (n[nbytes - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+	len--;
+	while (i <= len)
+		buf[len - i++] = ( (n[nbytes - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
 
-	buf[len] = '\0';
+	buf[len+1] = '\0';
+
 }
 
 /**

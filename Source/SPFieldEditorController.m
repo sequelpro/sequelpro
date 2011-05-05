@@ -225,10 +225,10 @@
 		// Init according bit check boxes
 		NSUInteger i = 0;
 		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
-		if([bitSheetNULLButton state] == NSOffState)
+		if([bitSheetNULLButton state] == NSOffState && maxBit <= [(NSString*)sheetEditData length])
 			for( i = 0; i<maxBit; i++ )
 				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]]
-					setState:([sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
+					setState:([(NSString*)sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
 		for( i = maxBit; i<64; i++ )
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
 

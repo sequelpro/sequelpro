@@ -516,7 +516,7 @@
 		}
 		// Check if UNSIGNED and ZEROFILL is allowed
 		else if([[aTableColumn identifier] isEqualToString:@"zerofill"] || [[aTableColumn identifier] isEqualToString:@"unsigned"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:theRowType])];
+			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:theRowType] && ![theRowType isEqualToString:@"BIT"])];
 		}
 		// Check if BINARY is allowed
 		else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
