@@ -122,6 +122,7 @@
 	
 	// Make a streaming request for the data if the data array isn't set
 	if ((![self csvDataArray]) && [self csvTableName]) {
+		totalRows       = [[[[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
 		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
 	}
 	

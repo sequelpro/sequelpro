@@ -302,15 +302,16 @@
 			
 			rowCount = [NSArrayObjectAtIndex(rowArray, 0) integerValue];
 						
-			// Set up a result set in streaming mode
-			streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
-			
-			NSArray *fieldNames = [streamingResult fetchFieldNames];
-			
-			// Inform the delegate that we are about to start writing data for the current table
-			[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
-							
 			if (rowCount) {
+
+				// Set up a result set in streaming mode
+				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
+				
+				NSArray *fieldNames = [streamingResult fetchFieldNames];
+				
+				// Inform the delegate that we are about to start writing data for the current table
+				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
+
 				queryLength = 0;
 				
 				// Lock the table for writing and disable keys if supported
@@ -474,6 +475,9 @@
 				
 				// Drain the autorelease pool
 				[sqlExportPool release];
+			
+				// Release the result set
+				[streamingResult release];
 			}
 			
 			if ([connection queryErrored]) {
@@ -484,9 +488,6 @@
 										   dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 			}
-			
-			// Release the result set
-			[streamingResult release];
 		}
 			
 		queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", [tableName tickQuotedString]]];

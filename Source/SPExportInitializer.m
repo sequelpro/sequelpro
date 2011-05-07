@@ -42,6 +42,7 @@
 #import "SPExportFile.h"
 #import "SPExportFileUtilities.h"
 #import "SPExportFilenameUtilities.h"
+#import "SPExportFileNameTokenObject.h"
 
 @implementation SPExportController (SPExportInitializer)
 
@@ -209,9 +210,16 @@
 		// If the user has selected to only export to a single file or this is a filtered or custom query 
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
+			NSString *selectedTableName = nil;
+			if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
 
-			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
-			
+			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
+
+			// Only append the extension if necessary
+			if (![[exportFilename pathExtension] length]) {
+				[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+			}
+
 			singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
@@ -280,7 +288,7 @@
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Create custom filename if required
-		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
+		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:nil] : [self generateDefaultExportFilename]];
 		
 		// Only append the extension if necessary
 		if (![[exportFilename pathExtension] length]) {
@@ -305,9 +313,16 @@
 		// If the user has selected to only export to a single file or this is a filtered or custom query 
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
+			NSString *selectedTableName = nil;
+			if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
 			
-			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil] : [self generateDefaultExportFilename]];
+			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
 						
+			// Only append the extension if necessary
+			if (![[exportFilename pathExtension] length]) {
+				[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+			}
+
 			singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		}
 		
@@ -374,13 +389,16 @@
 		
 		// Create custom filename if required
 		if (createCustomFilename) {
-			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:nil]];
+			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:nil]];
 		}
 		else {
 			[exportFilename setString:[tableDocumentInstance database]];
 		}
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		// Only append the extension if necessary
+		if (![[exportFilename pathExtension] length]) {
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		}
 		
 		file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
@@ -468,19 +486,27 @@
 		if (createCustomFilename) {
 			
 			// Create custom filename based on the selected format
-			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:table]];
+			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:table]];
 			
 			// If the user chose to use a custom filename format and we exporting to multiple files, make
 			// sure the table name is included to ensure the output files are unique.
 			if (exportTableCount > 1) {
-				[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
+				BOOL tableNameInTokens = NO;
+				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
+				for (id representedObject in representedObjects) {
+					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenContent] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
+				}
+				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
 			}
 		}
 		else {
 			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
 		}
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		// Only append the extension if necessary
+		if (![[exportFilename pathExtension] length]) {
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		}
 						
 		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		
@@ -522,19 +548,27 @@
 		if (createCustomFilename) {
 			
 			// Create custom filename based on the selected format
-			[exportFilename setString:[self expandCustomFilenameFormatFromString:[exportCustomFilenameTokenField stringValue] usingTableName:table]];
+			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:table]];
 			
 			// If the user chose to use a custom filename format and we exporting to multiple files, make
 			// sure the table name is included to ensure the output files are unique.
 			if (exportTableCount > 1) {
-				[exportFilename setString:([[exportCustomFilenameTokenField stringValue] rangeOfString:@"table" options:NSLiteralSearch].location == NSNotFound) ? [exportFilename stringByAppendingFormat:@"_%@", table] : exportFilename];
+				BOOL tableNameInTokens = NO;
+				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
+				for (id representedObject in representedObjects) {
+					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenContent] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
+				}
+				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
 			}
 		}
 		else {
 			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
 		}
 		
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		// Only append the extension if necessary
+		if (![[exportFilename pathExtension] length]) {
+			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+		}
 										
 		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
 		

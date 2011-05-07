@@ -370,6 +370,8 @@ extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
 extern NSString *SPSQLExportUseCompression;
 extern NSString *SPNoBOMforSQLdumpFile;
+extern NSString *SPExportLastDirectory;
+extern NSString *SPExportFilenameFormat;
 
 // Misc
 extern NSString *SPContentFilters;

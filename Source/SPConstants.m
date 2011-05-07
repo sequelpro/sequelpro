@@ -176,6 +176,8 @@ NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignm
 NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
 NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
 NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
+NSString *SPExportLastDirectory                  = @"SPExportLastDirectory";
+NSString *SPExportFilenameFormat                 = @"SPExportFilenameFormat";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";

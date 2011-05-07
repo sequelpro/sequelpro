@@ -1,11 +1,10 @@
 //
 //  $Id$
 //
-//  SPExportFilenameUtilities.h
+//  SPExportFileNameTokenObject.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 25, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Rowan Beentje on 3rd May 2011.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,23 +22,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPExportController.h"
+#import <Cocoa/Cocoa.h>
 
-/**
- * @category SPExportFilenameUtilities SPExportFilenameUtilities.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * Export filename utilities category.
- */
-@interface SPExportController (SPExportFilenameUtilities)
 
-- (void)updateDisplayedExportFilename;
-- (void)updateAvailableExportFilenameTokens;
-- (id)tokenObjectForString:(NSString *)stringToTokenize;
-- (void)tokenizeCustomFilenameTokenField;
-- (NSString *)generateDefaultExportFilename;
-- (NSString *)currentDefaultExportFileExtension;
-- (NSString *)expandCustomFilenameFormatUsingTableName:(NSString *)table;
+@interface SPExportFileNameTokenObject : NSObject<NSCoding> {
+	NSString *tokenContent;
+}
+
+@property(retain) NSString *tokenContent;
 
 @end

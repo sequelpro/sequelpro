@@ -25,11 +25,13 @@
 
 #import "SPExportControllerDelegate.h"
 #import "SPExportFilenameUtilities.h"
+#import "SPExportFileNameTokenObject.h"
 
 // Defined to suppress warnings
 @interface SPExportController (SPExportControllerPrivateAPI)
 
 - (void)_toggleExportButtonOnBackgroundThread;
+- (void)_updateExportFormatInformation;
 - (void)_switchTab;
 
 @end
@@ -54,6 +56,7 @@
 	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
 	
 	[self _toggleExportButtonOnBackgroundThread];
+	[self _updateExportFormatInformation];
 }
 
 #pragma mark -
@@ -77,6 +80,79 @@
 	[tabViewItem setView:exporterView];
 	
 	[self _switchTab];
+}
+
+#pragma mark -
+#pragma mark Token field delegate methods
+
+/**
+ * Use the default token style for matched tokens, plain text for all other text.
+ */
+- (NSTokenStyle)tokenField:(NSTokenField *)tokenField styleForRepresentedObject:(id)representedObject
+{
+	if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) return NSDefaultTokenStyle;
+
+	return NSPlainTextTokenStyle;
+}
+
+/**
+ * Take the default suggestion of new tokens - all untokenized text, as no tokenizing character is set - and
+ * split into many shorter tokens, using non-alphanumeric characters as (preserved) breaks.  This preserves
+ * all supplied characters and allows tokens to be typed.
+ */
+- (NSArray *)tokenField:(NSTokenField *)tokenField shouldAddObjects:(NSArray *)tokens atIndex:(NSUInteger)index
+{
+	NSMutableArray *processedTokens = [NSMutableArray array];
+	NSUInteger i, j;
+	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
+
+	for (NSString *inputToken in tokens) {
+		j = 0;
+		for (i = 0; i < [inputToken length]; i++) {
+			if (![alphanumericSet characterIsMember:[inputToken characterAtIndex:i]]) {
+				if (i > j) {
+					[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i-j)]]];
+				}
+				[processedTokens addObject:[inputToken substringWithRange:NSMakeRange(i, 1)]];
+				j = i+1;
+			}
+		}
+		if (j < i) {
+			[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i-j)]]];
+		}
+	}
+
+	return processedTokens;
+}
+
+- (NSString *)tokenField:(NSTokenField *)tokenField displayStringForRepresentedObject:(id)representedObject
+{
+	if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
+		return [(SPExportFileNameTokenObject *)representedObject tokenContent];
+	}
+
+	return representedObject;
+}
+
+/**
+ * Return the editing string untouched - implementing this method prevents whitespace trimming.
+ */
+- (id)tokenField:(NSTokenField *)tokenField representedObjectForEditingString:(NSString *)editingString
+{
+	return editingString;
+}
+
+/**
+ * During text entry into the token field, update the displayed filename and also
+ * trigger tokenization after a short delay.
+ */
+- (void)controlTextDidChange:(NSNotification *)aNotification
+{
+	if ([aNotification object] == exportCustomFilenameTokenField) {
+		[self updateDisplayedExportFilename];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tokenizeCustomFilenameTokenField) object:nil];
+		[self performSelector:@selector(tokenizeCustomFilenameTokenField) withObject:nil afterDelay:0.5];
+	}
 }
 
 #pragma mark -
