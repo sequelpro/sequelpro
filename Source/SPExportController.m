@@ -176,7 +176,7 @@ static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
 	}
 	[self updateDisplayedExportFilename];
 	
-	[self refreshTableList:self];
+	[self refreshTableList:nil];
 	
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
@@ -410,6 +410,21 @@ static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
  */
 - (IBAction)refreshTableList:(id)sender
 {		
+	NSMutableDictionary *tableDict = [[NSMutableDictionary alloc] init];
+	
+	// Before refreshing the list, preserve the user's table selection, but only if it was triggered by the UI.
+	if (sender) {
+		for (NSMutableArray *item in tables)
+		{
+			[tableDict setObject:[NSArray arrayWithObjects:
+								  [item objectAtIndex:1], 
+								  [item objectAtIndex:2], 
+								  [item objectAtIndex:3], 
+								  nil] 
+						  forKey:[item objectAtIndex:0]];
+		}
+	}
+	
 	[tables removeAllObjects];
 	
 	// For all modes, retrieve table and view names
@@ -454,7 +469,28 @@ static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
 		}	
 	}
 	
+	if (sender) {
+		// Restore the user's table selection
+		for (NSUInteger i = 0; i < [tables count]; i++)
+		{
+			NSMutableArray *oldSelection = [tableDict objectForKey:[[tables objectAtIndex:i] objectAtIndex:0]];
+			
+			if (oldSelection) {
+				
+				NSMutableArray *newItem = [[NSMutableArray alloc] initWithArray:oldSelection];
+				
+				[newItem insertObject:[[tables objectAtIndex:i] objectAtIndex:0] atIndex:0];
+				
+				[tables replaceObjectAtIndex:i withObject:newItem];
+				
+				[newItem release];
+			}
+		}
+	}
+	
 	[exportTableList reloadData];
+	
+	[tableDict release];
 }
 
 /**
@@ -465,7 +501,7 @@ static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
 	BOOL toggleStructure = NO;
 	BOOL toggleDropTable = NO;
 
-	[self refreshTableList:self];
+	[self refreshTableList:nil];
 
 	// Determine whether the structure and drop items should also be toggled
 	if (exportType == SPSQLExport) {
