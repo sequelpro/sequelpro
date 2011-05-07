@@ -4645,16 +4645,23 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	SEL action = [menuItem action];
+	
 	// Remove row
-	if ([menuItem action] == @selector(removeRow:)) {
-		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? @"Delete Rows" : @"Delete Row"];
+	if (action == @selector(removeRow:)) {
+		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Delete Rows", @"delete rows menu item plural") : NSLocalizedString(@"Delete Row", @"delete row menu item singular")];
 
 		return ([tableContentView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable);
 	}
 
 	// Duplicate row
-	if ([menuItem action] == @selector(copyRow:)) {
-		return ([tableContentView numberOfSelectedRows] == 1 && [tablesListInstance tableType] == SPTableTypeTable);
+	if (action == @selector(copyRow:)) {
+		return (([tableContentView numberOfSelectedRows]) == 1 && ([tablesListInstance tableType] == SPTableTypeTable));
+	}
+	
+	// Add new row
+	if (action == @selector(addRow:)) {
+		return ((![tableContentView numberOfSelectedRows]) && ([tablesListInstance tableType] == SPTableTypeTable));
 	}
 
 	return YES;
