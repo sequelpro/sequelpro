@@ -81,6 +81,7 @@
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem2;
+	IBOutlet NSMenuItem *separatorTableMenuItem3;
 #endif
 	
 	MCPConnection *mySQLConnection;
@@ -95,6 +96,7 @@
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem2;
+	IBOutlet NSMenuItem *separatorTableContextMenuItem3;
 #endif
 
 	NSMutableArray *tables;
