@@ -155,6 +155,7 @@ NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollap
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 NSString *SPProcessListTableColumnWidths         = @"ProcessListTableColumnWidths";
 NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
+NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
 NSString *SPProcessListEnableAutoRefresh         = @"ProcessListEnableAutoRefresh";
 NSString *SPProcessListAutoRrefreshInterval      = @"ProcessListAutoRrefreshInterval";
 NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";

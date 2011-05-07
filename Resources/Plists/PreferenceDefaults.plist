@@ -161,6 +161,8 @@
 	<integer>1000</integer>
 	<key>ProcessListShowProcessID</key>
 	<true/>
+	<key>ProcessListShowFullProcessList</key>
+	<false/>
 	<key>ProcessListEnableAutoRefresh</key>
 	<false/>
 	<key>ProcessListAutoRrefreshInterval</key>
@@ -172,7 +174,7 @@
 	<key>ResetAutoIncrementAfterDeletionOfAllRows</key>
 	<true/>
 	<key>FilterTableDefaultOperator</key>
-	<string>LIKE '%@%'</string>
+	<string>LIKE &apos;%@%&apos;</string>
 	<key>WebKitDeveloperExtras</key>
 	<true/>
 	<key>deletedDefaultBundles</key>

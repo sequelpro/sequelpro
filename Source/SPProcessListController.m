@@ -62,6 +62,8 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 		autoRefreshTimer = nil;
 		processListThreadRunning = NO;
 		
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
+		
 		processes = [[NSMutableArray alloc] init];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
@@ -288,6 +290,16 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 }
 
 /**
+ * Toggles the display of the FULL process list.
+ */
+- (IBAction)toggeleShowFullProcessList:(id)sender
+{
+	showFullProcessList = (!showFullProcessList);
+
+	[self refreshProcessList:self];
+}
+
+/**
  * Toggles whether or not auto refresh is enabled.
  */
 - (IBAction)toggleProcessListAutoRefresh:(id)sender
@@ -309,7 +321,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 }
 
 /**
- *
+ * Displays the set custom auto-refresh interval sheet.
  */
 - (IBAction)setCustomAutoRefreshInterval:(id)sender
 {
@@ -675,7 +687,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// Get processes
 	if ([connection isConnected]) {
 		
-		MCPResult *processList = [connection listProcesses];
+		MCPResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
 		
 		[processList setReturnDataAsStrings:YES];
 		
