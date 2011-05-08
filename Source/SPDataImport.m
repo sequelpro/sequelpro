@@ -712,6 +712,7 @@
 	NSUInteger csvRowsPerQuery = 50;
 	NSUInteger csvRowsThisQuery;
 	NSUInteger fileTotalLength = 0;
+	BOOL fileIsCompressed;
 	NSInteger rowsImported = 0;
 	NSInteger dataBufferLength = 0;
 	NSInteger dataBufferPosition = 0;
@@ -746,9 +747,14 @@
 		return;
 	}
 
-	// Grab the file length
+	// Grab the file length and status
 	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
+	fileIsCompressed = [csvFileHandle isCompressed];
+
+	// If importing a bzipped file, use indeterminate progress bars as no progress is available
+	BOOL useIndeterminate = NO;
+	if ([csvFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
 	// Reset progress interface
 	[errorsView setString:@""];
@@ -926,7 +932,7 @@
 				}
 
 				// Reset progress interface and open the progress sheet
-				[[singleProgressBar onMainThread] setIndeterminate:NO];
+				[[singleProgressBar onMainThread] setIndeterminate:useIndeterminate];
 				[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
 				[[singleProgressBar onMainThread] startAnimation:self];
 				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -1062,9 +1068,15 @@
 
 						rowsImported++;
 						csvRowsThisQuery++;
-						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
-						[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
-							[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+						if (fileIsCompressed) {
+							[singleProgressBar setDoubleValue:[csvFileHandle realDataReadLength]];
+							[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of CSV data", @"CSV import progress text where total size is unknown"),
+							[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]]]];			
+						} else {
+							[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
+							[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+								[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+						}
 					}
 				}
 
@@ -1089,15 +1101,27 @@
 								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
 						}
 						rowsImported++;
-						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
-						[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
-							[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+						if (fileIsCompressed) {
+							[singleProgressBar setDoubleValue:[csvFileHandle realDataReadLength]];
+							[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of CSV data", @"CSV import progress text where total size is unknown"),
+							[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]]]];			
+						} else {
+							[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:i] doubleValue]];
+							[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+								[NSString stringForByteSize:[[parsePositions objectAtIndex:i] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+						}
 					}
 				} else {
 					rowsImported += csvRowsThisQuery;
-					[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:csvRowsThisQuery-1] doubleValue]];
-					[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
-						[NSString stringForByteSize:[[parsePositions objectAtIndex:csvRowsThisQuery-1] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+					if (fileIsCompressed) {
+						[singleProgressBar setDoubleValue:[csvFileHandle realDataReadLength]];
+						[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of CSV data", @"CSV import progress text where total size is unknown"),
+						[NSString stringForByteSize:[[parsePositions objectAtIndex:csvRowsThisQuery-1] longValue]]]];			
+					} else {
+						[singleProgressBar setDoubleValue:[[parsePositions objectAtIndex:csvRowsThisQuery-1] doubleValue]];
+						[singleProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Imported %@ of %@", @"SQL import progress text"),
+							[NSString stringForByteSize:[[parsePositions objectAtIndex:csvRowsThisQuery-1] longValue]], [NSString stringForByteSize:fileTotalLength]]];
+					}
 				}
 
 				// Update the arrays
