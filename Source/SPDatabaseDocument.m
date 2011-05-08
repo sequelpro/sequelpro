@@ -77,6 +77,9 @@
 #import "NSNotificationAdditions.h"
 #endif
 
+// Constants
+static NSString *SPCreateSyntx = @"SPCreateSyntax";
+
 @interface SPDatabaseDocument (PrivateAPI)
 
 #ifndef SP_REFACTOR /* method decls */
@@ -2134,7 +2137,7 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 
-	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"CreateSyntax"];
+	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:SPCreateSyntx];
 }
 
 /**
@@ -3281,11 +3284,11 @@
 		}
 	}
 
-	if ([menuItem action] == @selector(import:)					||
-		[menuItem action] == @selector(removeDatabase:)			||
-		[menuItem action] == @selector(copyDatabase:)			||
-		[menuItem action] == @selector(renameDatabase:)			||
-		[menuItem action] == @selector(openDatabaseInNewTab:)	||
+	if ([menuItem action] == @selector(import:)				  ||
+		[menuItem action] == @selector(removeDatabase:)		  ||
+		[menuItem action] == @selector(copyDatabase:)		  ||
+		[menuItem action] == @selector(renameDatabase:)		  ||
+		[menuItem action] == @selector(openDatabaseInNewTab:) ||
 		[menuItem action] == @selector(refreshTables:))
 	{
 		return ([self database] != nil);
@@ -3419,12 +3422,12 @@
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if ([contextInfo isEqualToString:@"CreateSyntax"]) {
+		if ([contextInfo isEqualToString:SPCreateSyntx]) {
 
 			NSString *createSyntax = [createTableSyntaxTextView string];
 
 			if ([createSyntax length] > 0) {
-				NSString *output = [NSString stringWithFormat:@"-- Create syntax for '%@'\n\n%@\n", [self table], createSyntax]; 
+				NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax]; 
 
 				[output writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 			}
@@ -3576,7 +3579,7 @@
 /**
  * Return the identifier for the currently selected toolbar item, or nil if none is selected.
  */
-- (NSString *)selectedToolbarItemIdentifier;
+- (NSString *)selectedToolbarItemIdentifier
 {
 	return [mainToolbar selectedItemIdentifier];
 }
