@@ -48,14 +48,14 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 #endif
 
 	// IBOutlets
-	SPTablesList* tablesListInstance;
-	SPTableStructure* tableSourceInstance;				
-	SPTableContent* tableContentInstance;
+	IBOutlet SPTablesList* tablesListInstance;
+	IBOutlet SPTableStructure* tableSourceInstance;				
+	IBOutlet SPTableContent* tableContentInstance;
 	IBOutlet id tableRelationsInstance;
 	IBOutlet id tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
-	SPTableData* tableDataInstance;
+	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 	IBOutlet id spHistoryControllerInstance;

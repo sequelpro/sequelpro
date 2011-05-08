@@ -39,7 +39,7 @@
 
 @interface SPTablesList : NSObject 
 {
-	SPDatabaseDocument*	tableDocumentInstance;
+	IBOutlet SPDatabaseDocument*	tableDocumentInstance;
 #ifndef SP_REFACTOR /* ivars */
 	IBOutlet id tableSourceInstance;
 	IBOutlet id tableContentInstance;

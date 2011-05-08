@@ -32,10 +32,9 @@
 
 @class SPNarrowDownCompletion, SPDatabaseDocument, SPTablesList, SPCustomQuery;
 
-#ifndef SP_REFACTOR
 @interface SPTextView : NSTextView
-#else
-@interface SPTextView : NSTextView <NSTextStorageDelegate>
+#ifdef SP_REFACTOR
+<NSTextStorageDelegate>
 #endif
 {
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;

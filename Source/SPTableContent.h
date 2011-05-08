@@ -31,10 +31,9 @@
 
 @class SPTableData, SPDatabaseDocument, SPTablesList;
 
-#ifndef SP_REFACTOR
 @interface SPTableContent : NSObject
-#else
-@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource>
+#ifdef SP_REFACTOR
+<NSTableViewDelegate, NSTableViewDataSource>
 #endif
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
