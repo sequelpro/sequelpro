@@ -160,14 +160,14 @@
  */
 - (IBAction) closeTab:(id)sender
 {
-
 	// Return if the selected tab shouldn't be closed
 	if (![selectedTableDocument parentTabShouldClose]) return;
 
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {
 		[tabView removeTabViewItem:[tabView selectedTabViewItem]];
-	} else {
+	} 
+	else {
 		[[self window] performClose:self];
 	}
 }
@@ -569,6 +569,20 @@
 	[viewImage unlockFocus];
 
 	return [viewImage autorelease];
+}
+
+/**
+ * Displays the current tab's context menu.
+ */
+- (NSMenu *)tabView:(NSTabView *)aTabView menuForTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	NSMenu *menu = [[NSMenu alloc] init];
+	
+	[menu addItemWithTitle:NSLocalizedString(@"Close Tab", @"close tab context menu item") action:@selector(closeTab:) keyEquivalent:@""];
+	[menu insertItem:[NSMenuItem separatorItem] atIndex:1];
+	[menu addItemWithTitle:NSLocalizedString(@"Open in New Tab", @"open connection in new tab context menu item") action:@selector(openDatabaseInNewTab:) keyEquivalent:@""];
+	
+	return [menu autorelease];
 }
 
 /**
