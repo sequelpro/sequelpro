@@ -80,7 +80,7 @@
 // Constants
 static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
-@interface SPDatabaseDocument (PrivateAPI)
+@interface SPDatabaseDocument ()
 
 #ifndef SP_REFACTOR /* method decls */
 - (void)_addDatabase;
@@ -3177,7 +3177,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (IBAction)openDatabaseInNewTab:(id)sender
 {
-
 	// Add a new tab to the window
 	[[parentWindow windowController] addNewConnection:self];
 
@@ -5606,10 +5605,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 {
 	return tablesListInstance;
 }
-
-@end
-
-@implementation SPDatabaseDocument (PrivateAPI)
 
 #ifndef SP_REFACTOR /* whole database operations */
 

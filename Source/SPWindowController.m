@@ -42,7 +42,7 @@
 /**
  * awakeFromNib
  */
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 	selectedTableDocument = nil;
 
@@ -67,9 +67,13 @@
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
 	[tabBar setUsesSafariStyleDragging:YES];
 
-    // hook up add tab button
+    // Hook up add tab button
     [tabBar setCreateNewTabTarget:self];
     [tabBar setCreateNewTabAction:@selector(addNewConnection:)];
+	
+	// Set the double click target and action
+	[tabBar setDoubleClickTarget:self];
+	[tabBar setDoubleClickAction:@selector(openDatabaseInNewTab)];
 
 	// Retrieve references to the 'Close Window' and 'Close Tab' menus.  These are updated as window focus changes.
 	closeWindowMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1003];
@@ -100,7 +104,6 @@
  */
 - (IBAction) addNewConnection:(id)sender
 {
-
 	// Create a new database connection view
 	SPDatabaseDocument *newTableDocument = [[SPDatabaseDocument alloc] init];
 	[newTableDocument setParentWindowController:self];
@@ -326,9 +329,20 @@
 	}
 
 }
+
 - (void)setHideForSingleTab:(BOOL)hide
 {
 	[tabBar setHideForSingleTab:hide];
+}
+
+/**
+ * Opens the current connection in a new tab, but only if it's already connected.
+ */
+- (void)openDatabaseInNewTab
+{
+	if ([selectedTableDocument database]) {
+		[selectedTableDocument openDatabaseInNewTab:self];
+	}
 }
 
 #pragma mark -
