@@ -69,6 +69,8 @@
 		geometryFieldsMapIndex = [[NSMutableIndexSet alloc] init];
 		bitFields = [[NSMutableArray alloc] init];
 		bitFieldsMapIndex = [[NSMutableIndexSet alloc] init];
+		nullableNumericFields = [[NSMutableArray alloc] init];
+		nullableNumericFieldsMapIndex = [[NSMutableIndexSet alloc] init];
 		fieldMappingArray = nil;
 		fieldMappingGlobalValueArray = nil;
 		fieldMappingTableColumnNames = nil;
@@ -730,6 +732,8 @@
 	[geometryFieldsMapIndex removeAllIndexes];
 	[bitFields removeAllObjects];
 	[bitFieldsMapIndex removeAllIndexes];
+	[nullableNumericFields removeAllObjects];
+	[nullableNumericFieldsMapIndex removeAllIndexes];
 
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Import Finished"];
@@ -938,6 +942,16 @@
 				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 				[[singleProgressSheet onMainThread] makeKeyWindow];
 
+				// Set up index sets for use during row enumeration
+				for (i = 0; i < [fieldMappingArray count]; i++) {
+					if ([NSArrayObjectAtIndex(fieldMapperOperator, i) integerValue] == 0) {
+						NSString *fieldName = NSArrayObjectAtIndex(fieldMappingTableColumnNames, i);
+						if ([nullableNumericFields containsObject:fieldName]) {
+							[nullableNumericFieldsMapIndex addIndex:i];
+						}
+					}
+				}
+				
 				// Set up the field names import string for INSERT or REPLACE INTO
 				[insertBaseString appendString:csvImportHeaderString];
 				if(!importMethodIsUpdate) {
@@ -1287,12 +1301,15 @@
 	targetTableDetails = [selectedTableData informationForTable:selectedTableTarget];
 	[selectedTableData release];
 
-	// Store all field names which are of typegrouping 'geometry' and 'bit'
+	// Store all field names which are of typegrouping 'geometry' and 'bit', and check if
+	// numeric columns can hold NULL values to map empty strings to.
 	for(NSDictionary *field in [targetTableDetails objectForKey:@"columns"]) {
 		if([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"])
 			[geometryFields addObject:[field objectForKey:@"name"]];
 		if([[field objectForKey:@"typegrouping"] isEqualToString:@"bit"])
 			[bitFields addObject:[field objectForKey:@"name"]];
+		if(([[field objectForKey:@"typegrouping"] isEqualToString:@"float"] || [[field objectForKey:@"typegrouping"] isEqualToString:@"integer"]) && [[field objectForKey:@"null"] boolValue])
+			[nullableNumericFields addObject:[field objectForKey:@"name"]];
 	}
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
@@ -1509,8 +1526,10 @@
 			if ([cellData isSPNotLoaded])
 				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
-			if (cellData == [NSNull null]) {
+			// Insert a NULL if the cell is an NSNull, or is a nullable numeric field and empty
+			if (cellData == [NSNull null] || ([nullableNumericFieldsMapIndex containsIndex:i] && [[cellData description] isEqualToString:@""])) {
 				[valueString appendString:@"NULL"];
+
 			} else {
 				// Apply GeomFromText() for each geometry field
 				if([geometryFields count] && [geometryFieldsMapIndex containsIndex:i]) {
@@ -1674,7 +1693,9 @@
 	if (geometryFields) [geometryFields release];
 	if (geometryFieldsMapIndex) [geometryFieldsMapIndex release];
 	if (bitFields) [bitFields release];
+	if (nullableNumericFields) [nullableNumericFields release];
 	if (bitFieldsMapIndex) [bitFieldsMapIndex release];
+	if (nullableNumericFieldsMapIndex) [nullableNumericFieldsMapIndex release];
 
 	if (lastFilename) [lastFilename release];
 	if (prefs) [prefs release];

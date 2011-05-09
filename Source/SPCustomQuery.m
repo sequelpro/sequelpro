@@ -1980,11 +1980,13 @@
 	if (aTableView == customQueryView) {
 
 		NSDictionary *columnDefinition;
+		NSString *columnTypeGroup;
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
 			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
 				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
+				columnTypeGroup = [columnDefinition objectForKey:@"typegrouping"];
 				break;
 			}
 		}
@@ -2018,13 +2020,16 @@
 			} else {
 				if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 					newObject = @"CURRENT_TIMESTAMP";
-				} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
+				} else if ([anObject isEqualToString:[prefs stringForKey:SPNullValue]]
+							|| (([columnTypeGroup isEqualToString:@"float"] || [columnTypeGroup isEqualToString:@"integer"])
+								&& [[anObject description] isEqualToString:@""]))
+				{
 					newObject = @"NULL";
-				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+				} else if ([columnTypeGroup isEqualToString:@"geometry"]) {
 					newObject = [(NSString*)anObject getGeomFromTextString];
-				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+				} else if ([columnTypeGroup isEqualToString:@"bit"]) {
 					newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
-				} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
+				} else if ([columnTypeGroup isEqualToString:@"date"]
 							&& [[anObject description] isEqualToString:@"NOW()"]) {
 					newObject = @"NOW()";
 				} else {
