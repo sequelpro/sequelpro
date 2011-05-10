@@ -230,7 +230,6 @@
 	// If no table has been supplied, clear the table interface and return
 	if (!aTable || [aTable isEqualToString:@""]) {
 		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
-		[tableDocumentInstance performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
 		 
 		return;
 	}
