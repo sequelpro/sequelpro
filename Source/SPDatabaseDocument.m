@@ -2718,7 +2718,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if([[NSApp delegate] sessionURL])
 			filename = [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent];
 		else
-			filename = [NSString stringWithFormat:@"%@", @"session"];
+			filename = [NSString stringWithFormat:NSLocalizedString(@"Session",@"Initial filename for 'Save session' file")];
 
 		contextInfo = @"saveSession";
 	}

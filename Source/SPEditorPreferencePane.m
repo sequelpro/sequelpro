@@ -37,7 +37,7 @@ static NSString *SPDefaultColorSchemeName        = @"Default";
 static NSString *SPDefaultColorSchemeNameLC      = @"default";
 static NSString *SPCustomColorSchemeName         = @"User-defined";
 static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
-static NSString *SPDefaultExportColourSchemeName = @"MyTheme";
+#define SP_EXPORT_COLOR_SCHEME_NAME_STRING NSLocalizedString(@"MyTheme",@"Preferences : Themes : Initial filename for 'Export'")
 
 @interface SPEditorPreferencePane (PrivateAPI)
 
@@ -136,7 +136,7 @@ static NSString *SPDefaultExportColourSchemeName = @"MyTheme";
 	[panel setCanCreateDirectories:YES];
 	
 	[panel beginSheetForDirectory:nil 
-							 file:[SPDefaultExportColourSchemeName stringByAppendingPathExtension:SPColorThemeFileExtension] 
+							 file:[SP_EXPORT_COLOR_SCHEME_NAME_STRING stringByAppendingPathExtension:SPColorThemeFileExtension] 
 				   modalForWindow:[[self view] window] 
 					modalDelegate:self 
 				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 

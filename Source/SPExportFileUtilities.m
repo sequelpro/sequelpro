@@ -158,7 +158,7 @@ typedef enum
 	if (filesAlreadyExisting) {
 
 		// Set up a string for use if files had to be skipped.
-		NSString *additionalErrors = filesFailed ? NSLocalizedString(@"\n\n(In addition, one or more errors occurred while attempting to create the export files: %lu could not be created.  These will be ignored.", @"Additional export file errors") : @"";
+		NSString *additionalErrors = filesFailed ? NSLocalizedString(@"\n\n(In addition, one or more errors occurred while attempting to create the export files: %lu could not be created. These files will be ignored.)", @"Additional export file errors") : @"";
 
 		if (filesAlreadyExisting == 1) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"“%@” already exists. Do you want to replace it?", @"Export file already exists message"), [[[files objectAtIndex:0] exportFilePath] lastPathComponent]]];
