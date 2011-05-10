@@ -223,7 +223,6 @@
  */
 - (void)loadTable:(NSString *)aTable
 {
-
 	// Abort the reload if the user is still editing a row
 	if ( isEditingRow )
 		return;
@@ -231,6 +230,8 @@
 	// If no table has been supplied, clear the table interface and return
 	if (!aTable || [aTable isEqualToString:@""]) {
 		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
+		[tableDocumentInstance performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
+		 
 		return;
 	}
 
@@ -238,6 +239,8 @@
 	// while retrieving table data), or if the Rows variable is null, clear and return
 	if (![tableDataInstance tableEncoding] || [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull]) {
 		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
+		[tableDocumentInstance performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
+		
 		return;
 	}
 
@@ -1335,7 +1338,6 @@
  */
 - (IBAction)filterTable:(id)sender
 {
-
 	if(sender == filterTableFilterButton)
 		activeFilter = 1;
 	else if([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
