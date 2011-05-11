@@ -4905,6 +4905,20 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
+	if([command isEqualToString:@"RunQueryInQueryEditor"]) {
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSFileManager *fm = [NSFileManager defaultManager];
+		BOOL isDir;
+		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
+			NSError *inError = nil;
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
+			[fm removeItemAtPath:queryFileName error:nil];
+			if(inError == nil && query && [query length]) {
+				[customQueryInstance performQueries:[NSArray arrayWithObject:query] withCallback:NULL];
+			}
+		}
+		return;
+	}
 
 	if([command isEqualToString:@"CreateSyntaxForTables"]) {
 
