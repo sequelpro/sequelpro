@@ -998,6 +998,14 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 }
 
 #pragma mark -
+#pragma mark Accessors
+
+- (SPFavoritesOutlineView *)favoritesOutlineView
+{
+	return favoritesOutlineView;
+}
+
+#pragma mark -
 #pragma mark Key Value Observing
 
 /**

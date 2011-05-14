@@ -244,5 +244,8 @@
 - (IBAction)importFavorites:(id)sender;
 - (IBAction)exportFavorites:(id)sender;
 
+// Accessors
+- (SPFavoritesOutlineView *)favoritesOutlineView;
+
 #endif
 @end

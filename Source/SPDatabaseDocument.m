@@ -3981,7 +3981,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
 #ifndef SP_REFACTOR
-		[aWindow makeFirstResponder:[connectionController valueForKey:@"favoritesTable"]];
+		[aWindow makeFirstResponder:(NSView *)[connectionController favoritesOutlineView]];
 #endif
 		[connectionController performSelector:@selector(updateFavoriteSelection:) withObject:self afterDelay:0.0];
 	}
@@ -4268,12 +4268,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[self updateWindowTitle:self];
 
 	// Deselect all favorites on the connection controller
-	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
+	[[connectionController favoritesOutlineView] deselectAll:connectionController];
 
 	// Suppress the possibility to choose an other connection from the favorites
 	// if a connection should initialized by SPF file. Otherwise it could happen
 	// that the SPF file runs out of sync.
-	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
+	[[connectionController favoritesOutlineView] setEnabled:NO];
 
 	// Ensure the connection controller is set to a blank slate
 	[connectionController setName:@""];
