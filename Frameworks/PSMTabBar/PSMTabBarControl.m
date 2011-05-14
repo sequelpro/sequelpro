@@ -471,8 +471,6 @@
 	[self update];
 }
 
-
-
 - (id)createNewTabTarget
 {	
 	return _createNewTabTarget;
@@ -495,7 +493,25 @@
 	[[self addTabButton] setAction:selector];
 }
 
+- (id)doubleClickTarget
+{	
+	return _doubleClickTarget;
+}
 
+- (void)setDoubleClickTarget:(id)object
+{
+	_doubleClickTarget = object;
+}
+
+- (SEL)doubleClickAction
+{
+	return _doubleClickAction;	
+}
+
+- (void)setDoubleClickAction:(SEL)selector
+{
+	_doubleClickAction = selector;
+}
 
 - (NSInteger)cellMinWidth
 {
@@ -1327,6 +1343,11 @@
             [cell setCloseButtonOver:NO];
             [cell setCloseButtonPressed:YES];
 			_closeClicked = YES;
+		}
+		else if ([theEvent clickCount] == 2) {
+			[cell setCloseButtonOver:NO];
+			
+			[_doubleClickTarget performSelector:_doubleClickAction withObject:cell];
         } else {
             [cell setCloseButtonPressed:NO];
 			if (_selectsTabsOnMouseDown) {

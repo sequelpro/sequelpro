@@ -237,6 +237,8 @@ extern NSString *SPDefaultMonospacedFontName;
 extern NSString *SPDefaultPasteboardDragType;
 extern NSString *SPFavoritesPasteboardDragType;
 extern NSString *SPContentFilterPasteboardDragType;
+extern NSString *SPNavigatorPasteboardDragType;
+extern NSString *SPNavigatorTableDataPasteboardDragType;
 
 // File extensions
 extern NSString *SPFileExtensionDefault;
@@ -284,6 +286,7 @@ extern NSString *SPNullValue;
 extern NSString *SPGlobalResultTableFont;
 extern NSString *SPFilterTableDefaultOperator;
 extern NSString *SPFilterTableDefaultOperatorLastItems;
+extern NSString *SPAlphabeticalTableSorting;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;
@@ -342,6 +345,7 @@ extern NSString *SPTableInformationPanelCollapsed;
 extern NSString *SPTableColumnWidths;
 extern NSString *SPProcessListTableColumnWidths;
 extern NSString *SPProcessListShowProcessID;
+extern NSString *SPProcessListShowFullProcessList;
 extern NSString *SPProcessListEnableAutoRefresh;
 extern NSString *SPProcessListAutoRrefreshInterval;
 extern NSString *SPFavoritesSortedBy;
@@ -363,6 +367,8 @@ extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
 extern NSString *SPSQLExportUseCompression;
 extern NSString *SPNoBOMforSQLdumpFile;
+extern NSString *SPExportLastDirectory;
+extern NSString *SPExportFilenameFormat;
 
 // Misc
 extern NSString *SPContentFilters;

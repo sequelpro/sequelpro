@@ -51,8 +51,10 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPCustomQuery.h"
 
-@interface SPTableContent (Private)
+@interface SPTableContent ()
+
 - (BOOL)cancelRowEditing;
+
 @end
 
 @implementation SPTableContent
@@ -163,6 +165,9 @@
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
 
+	// Set the double-click action in blank areas of the table to create new rows
+	[tableContentView setEmptyDoubleClickAction:@selector(addRow:)];
+
 	// Load the pagination view, keeping references to the top-level objects for later release
 	NSArray *paginationViewTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ContentPaginationView" bundle:[NSBundle mainBundle]];
@@ -218,7 +223,6 @@
  */
 - (void)loadTable:(NSString *)aTable
 {
-
 	// Abort the reload if the user is still editing a row
 	if ( isEditingRow )
 		return;
@@ -226,6 +230,7 @@
 	// If no table has been supplied, clear the table interface and return
 	if (!aTable || [aTable isEqualToString:@""]) {
 		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
+		 
 		return;
 	}
 
@@ -233,6 +238,8 @@
 	// while retrieving table data), or if the Rows variable is null, clear and return
 	if (![tableDataInstance tableEncoding] || [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull]) {
 		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
+		[tableDocumentInstance performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
+		
 		return;
 	}
 
@@ -606,10 +613,8 @@
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
 	[fieldField removeAllItems];
-	[fieldField addItemsWithTitles:columnNames];
-	for ( i = 0 ; i < [fieldField numberOfItems] ; i++ ) {
-		[[fieldField itemAtIndex:i] setTag:i];
-	}
+	NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [columnNames sortedArrayUsingSelector:@selector(compare:)] : columnNames;
+	[fieldField addItemsWithTitles:columnTitles];
 	[compareField setEnabled:YES];
 	[self setCompareTypes:self];
 	[argumentField setEnabled:YES];
@@ -1332,7 +1337,6 @@
  */
 - (IBAction)filterTable:(id)sender
 {
-
 	if(sender == filterTableFilterButton)
 		activeFilter = 1;
 	else if([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
@@ -1655,6 +1659,9 @@
 	NSMutableArray *newRow = [NSMutableArray array];
 	NSUInteger i;
 
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
+
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
@@ -1665,9 +1672,13 @@
 		} else if ([[column objectForKey:@"default"] isEqualToString:@""]
 					&& ![[column objectForKey:@"null"] boolValue]
 					&& ([[column objectForKey:@"typegrouping"] isEqualToString:@"float"]
-						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"integer"]))
+						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"integer"]
+						|| [[column objectForKey:@"typegrouping"] isEqualToString:@"bit"]))
 		{
 			[newRow addObject:@"0"];
+		} else if ([[column objectForKey:@"typegrouping"] isEqualToString:@"bit"] && [[column objectForKey:@"default"] hasPrefix:@"b'"] && [(NSString*)[column objectForKey:@"default"] length] > 3) {
+			// remove leading b' and final '
+			[newRow addObject:[[[column objectForKey:@"default"] substringFromIndex:2] substringToIndex:[(NSString*)[column objectForKey:@"default"] length]-3]];
 		} else {
 			[newRow addObject:[column objectForKey:@"default"]];
 		}
@@ -2340,8 +2351,8 @@
 	[compareField removeAllItems];
 
 	NSString *fieldTypeGrouping;
-	if([[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"])
-		fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"typegrouping"]];
+	if([[tableDataInstance columnWithName:[fieldField titleOfSelectedItem]] objectForKey:@"typegrouping"])
+		fieldTypeGrouping = [NSString stringWithString:[[tableDataInstance columnWithName:[fieldField titleOfSelectedItem]] objectForKey:@"typegrouping"]];
 	else
 		return;
 
@@ -2387,7 +2398,7 @@
 	} else  {
 		compareType = @"";
 		NSBeep();
-		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[[fieldField selectedItem] title]] objectForKey:@"type"], fieldTypeGrouping);
+		NSLog(@"ERROR: unknown type for comparision: %@, in %@", [[tableDataInstance columnWithName:[fieldField titleOfSelectedItem]] objectForKey:@"type"], fieldTypeGrouping);
 	}
 
 	// Add IS NULL and IS NOT NULL as they should always be available
@@ -3324,7 +3335,7 @@
 
 	theDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
 						[self tableFilterString], @"menuLabel",
-						[[fieldField selectedItem] title], @"filterField",
+						[fieldField titleOfSelectedItem], @"filterField",
 						[[compareField selectedItem] title], @"filterComparison",
 						[NSNumber numberWithInteger:[[compareField selectedItem] tag]], @"filterComparisonTag",
 						[argumentField stringValue], @"filterValue",
@@ -4573,6 +4584,10 @@
 		// Call the field editor sheet
 		[self tableView:tableContentView shouldEditTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], column) row:row];
 
+		// send current event to field editor sheet
+		if([NSApp currentEvent])
+			[NSApp sendEvent:[NSApp currentEvent]];
+
 		return NO;
 
 	}
@@ -4635,16 +4650,23 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	SEL action = [menuItem action];
+	
 	// Remove row
-	if ([menuItem action] == @selector(removeRow:)) {
-		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? @"Delete Rows" : @"Delete Row"];
+	if (action == @selector(removeRow:)) {
+		[menuItem setTitle:([tableContentView numberOfSelectedRows] > 1) ? NSLocalizedString(@"Delete Rows", @"delete rows menu item plural") : NSLocalizedString(@"Delete Row", @"delete row menu item singular")];
 
 		return ([tableContentView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable);
 	}
 
 	// Duplicate row
-	if ([menuItem action] == @selector(copyRow:)) {
-		return ([tableContentView numberOfSelectedRows] == 1 && [tablesListInstance tableType] == SPTableTypeTable);
+	if (action == @selector(copyRow:)) {
+		return (([tableContentView numberOfSelectedRows]) == 1 && ([tablesListInstance tableType] == SPTableTypeTable));
+	}
+	
+	// Add new row
+	if (action == @selector(addRow:)) {
+		return ((![tableContentView numberOfSelectedRows]) && ([tablesListInstance tableType] == SPTableTypeTable));
 	}
 
 	return YES;

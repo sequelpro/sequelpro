@@ -38,6 +38,8 @@ NSString *SPDefaultMonospacedFontName            = @"Monaco";
 NSString *SPDefaultPasteboardDragType            = @"SequelProPasteboard";
 NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
 NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
+NSString *SPNavigatorPasteboardDragType          = @"SPNavigatorPasteboardDragType";
+NSString *SPNavigatorTableDataPasteboardDragType = @"SPNavigatorTableDataPasteboardDragType"; 
 
 // File extensions
 NSString *SPFileExtensionDefault                 = @"spf";
@@ -90,6 +92,7 @@ NSString *SPNullValue                            = @"SPNullValue";
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
+NSString *SPAlphabeticalTableSorting             = @"AlphabeticalTableSorting";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";
@@ -148,6 +151,7 @@ NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollap
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
 NSString *SPProcessListTableColumnWidths         = @"ProcessListTableColumnWidths";
 NSString *SPProcessListShowProcessID             = @"ProcessListShowProcessID";
+NSString *SPProcessListShowFullProcessList       = @"ProcessListShowFullProcessList";
 NSString *SPProcessListEnableAutoRefresh         = @"ProcessListEnableAutoRefresh";
 NSString *SPProcessListAutoRrefreshInterval      = @"ProcessListAutoRrefreshInterval";
 NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
@@ -169,6 +173,8 @@ NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignm
 NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
 NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
 NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
+NSString *SPExportLastDirectory                  = @"SPExportLastDirectory";
+NSString *SPExportFilenameFormat                 = @"SPExportFilenameFormat";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";

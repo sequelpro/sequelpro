@@ -1,10 +1,10 @@
 //
-//  $Id: SPTableView.h 866 2009-06-15 16:05:54Z bibiko $
+//  $Id$
 //
-//  SPTableView.h
+//  SPExportFileNameTokenObject.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on July 15, 2009
+//  Created by Rowan Beentje on 3rd May 2011.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,14 +22,27 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPTableView : NSTableView
+#import "SPExportFileNameTokenObject.h"
+
+
+@implementation SPExportFileNameTokenObject
+
+@synthesize tokenContent;
+
+#pragma mark -
+#pragma mark NSCoding compatibility
+
+- (id)initWithCoder:(NSCoder *)decoder
 {
-	BOOL tabEditingDisabled;
-	SEL emptyDoubleClickAction;
+	if ((self = [super init])) {
+		[self setTokenContent:[decoder decodeObjectForKey:@"TokenContent"]];
+	}
+	return self;
 }
 
-@property (readwrite, assign) BOOL tabEditingDisabled;
-
-- (void)setEmptyDoubleClickAction:(SEL)aSelector;
+- (void)encodeWithCoder:(NSCoder *)encoder
+{
+	[encoder encodeObject:[self tokenContent] forKey:@"TokenContent"];
+}
 
 @end

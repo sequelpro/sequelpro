@@ -107,6 +107,8 @@
 	NSMutableIndexSet *geometryFieldsMapIndex;
 	NSMutableArray *bitFields;
 	NSMutableIndexSet *bitFieldsMapIndex;
+	NSMutableArray *nullableNumericFields;
+	NSMutableIndexSet *nullableNumericFieldsMapIndex;
 
 	NSSavePanel *currentExportPanel;
 }

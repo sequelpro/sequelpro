@@ -1,10 +1,10 @@
 //
-//  $Id: SPTableView.h 866 2009-06-15 16:05:54Z bibiko $
+//  $Id$
 //
-//  SPTableView.h
+//  SPExportFileNameTokenObject.h
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on July 15, 2009
+//  Created by Rowan Beentje on 3rd May 2011.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,14 +22,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPTableView : NSTableView
-{
-	BOOL tabEditingDisabled;
-	SEL emptyDoubleClickAction;
+#import <Cocoa/Cocoa.h>
+
+
+@interface SPExportFileNameTokenObject : NSObject<NSCoding> {
+	NSString *tokenContent;
 }
 
-@property (readwrite, assign) BOOL tabEditingDisabled;
-
-- (void)setEmptyDoubleClickAction:(SEL)aSelector;
+@property(retain) NSString *tokenContent;
 
 @end

@@ -419,10 +419,7 @@ const OUR_CHARSET our_charsets60[] =
 		if (theRow[i] == NULL) {
 			theCurrentObj = [NSNull null];
 		} else {
-			char *theData = calloc(sizeof(char),theLengths[i]+1);
-			//char *theUselLess;
-			memcpy(theData, theRow[i],theLengths[i]);
-			theData[theLengths[i]] = '\0';
+			char *theData = theRow[i];
 
 			switch (theField[i].type) {
 				case FIELD_TYPE_TINY:
@@ -444,7 +441,7 @@ const OUR_CHARSET our_charsets60[] =
 				case FIELD_TYPE_SET:
 				case FIELD_TYPE_ENUM:
 				case FIELD_TYPE_NEWDATE: // Don't know what the format for this type is...
-					theCurrentObj = [NSString stringWithCString:theData encoding:mEncoding];
+					theCurrentObj = [[[NSString alloc] initWithBytes:theData length:theLengths[i] encoding:mEncoding] autorelease];
 					break;
 
 				case FIELD_TYPE_BIT:
@@ -478,8 +475,6 @@ const OUR_CHARSET our_charsets60[] =
 					theCurrentObj = [NSData dataWithBytes:theData length:theLengths[i]];
 					break;
 			}
-
-			free(theData);
 
 			// Some of the creators return nil object...
 			if (theCurrentObj == nil) {

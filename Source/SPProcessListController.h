@@ -58,6 +58,7 @@
 - (IBAction)killProcessQuery:(id)sender;
 - (IBAction)killProcessConnection:(id)sender;
 - (IBAction)toggleShowProcessID:(id)sender;
+- (IBAction)toggeleShowFullProcessList:(id)sender;
 - (IBAction)toggleProcessListAutoRefresh:(id)sender;
 - (IBAction)setAutoRefreshInterval:(id)sender;
 - (IBAction)setCustomAutoRefreshInterval:(id)sender;

@@ -74,6 +74,7 @@
 	IBOutlet NSWindow *exportProgressWindow;
 	IBOutlet NSTextField *exportProgressTitle;
 	IBOutlet NSTextField *exportProgressText;
+	IBOutlet NSTextField *exportFormatInfoText;
 	IBOutlet NSProgressIndicator *exportProgressIndicator;
 	
 	// Custom filename view
@@ -254,6 +255,7 @@
 - (IBAction)toggleSQLIncludeStructure:(id)sender;
 - (IBAction)toggleSQLIncludeContent:(id)sender;
 - (IBAction)toggleSQLIncludeDropSyntax:(id)sender;
+- (IBAction)toggleNewFilePerTable:(id)sender;
 
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 

@@ -138,7 +138,7 @@
 #pragma mark Other methods
 
 /**
- * Displays the process list sheet attached to the supplied window.
+ * Displays the server variables sheet attached to the supplied window.
  */
 - (void)displayServerVariablesSheetAttachedToWindow:(NSWindow *)window
 {
@@ -253,7 +253,7 @@
 #pragma mark Text field delegate methods
 
 /**
- * Apply the filter string to the current process list.
+ * Apply the filter string to the current variables list.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {

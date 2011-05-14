@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
+#import "SPTableView.h"
 #import "SPAlertSheets.h"
 
 @interface SPTableRelations (PrivateAPI)
@@ -48,6 +49,7 @@
 {
 	if ((self = [super init])) {
 		relationData = [[NSMutableArray alloc] init];
+		prefs        = [NSUserDefaults standardUserDefaults];
 	}
 
 	return self;
@@ -61,6 +63,9 @@
 	// Set the table relation view's vertical gridlines if required
 	[relationsTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	
+	// Set the double-click action in blank areas of the table to create new rows
+	[relationsTableView setEmptyDoubleClickAction:@selector(addRelation:)];
+
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
 	
@@ -163,11 +168,16 @@
  */
 - (IBAction)addRelation:(id)sender
 {
+
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
+
 	// Set up the controls
 	[addRelationTableBox setTitle:[NSString stringWithFormat:NSLocalizedString(@"Table: %@", @"Add Relation sheet title, showing table name"), [tablesListInstance tableName]]];
 	
 	[columnPopUpButton removeAllItems];
-	[columnPopUpButton addItemsWithTitles:[tableDataInstance columnNames]];
+	NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [[tableDataInstance columnNames] sortedArrayUsingSelector:@selector(compare:)] : [tableDataInstance columnNames];
+	[columnPopUpButton addItemsWithTitles:columnTitles];
 	
 	[refTablePopUpButton removeAllItems];
 	
@@ -540,7 +550,8 @@
 
 	// Add the valid columns
 	if ([validColumns count] > 0) {
-		[refColumnPopUpButton addItemsWithTitles:validColumns];
+		NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [validColumns sortedArrayUsingSelector:@selector(compare:)] : validColumns;
+		[refColumnPopUpButton addItemsWithTitles:columnTitles];
 
 		[refColumnPopUpButton setEnabled:YES];
 		[confirmAddRelationButton setEnabled:YES];

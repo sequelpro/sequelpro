@@ -25,6 +25,8 @@
 
 #import <MCPKit/MCPKit.h>
 
+@class SPTableView;
+
 @interface SPTableRelations : NSObject 
 {	
 	IBOutlet id tableDocumentInstance;
@@ -37,7 +39,7 @@
 	IBOutlet NSButton    *removeRelationButton;	
 	IBOutlet NSButton    *refreshRelationsButton;
 	IBOutlet NSTextField *labelTextField;		
-	IBOutlet NSTableView *relationsTableView;
+	IBOutlet SPTableView *relationsTableView;
 	IBOutlet NSPanel     *addRelationPanel;
 
 	IBOutlet NSBox         *addRelationTableBox;
@@ -51,6 +53,7 @@
 	MCPConnection *connection;
 
 	NSMutableArray *relationData;
+	NSUserDefaults *prefs;
 }
 
 @property (readonly) NSMutableArray *relationData;

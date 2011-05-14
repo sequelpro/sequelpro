@@ -29,6 +29,7 @@
 #import "SPTableInfo.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
+#import "SPTableView.h"
 #import "SPDatabaseData.h"
 #import "SPSQLParser.h"
 #import "SPAlertSheets.h"
@@ -83,6 +84,10 @@
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
+
+	// Set the double-click action in blank areas of the table to create new rows
+	[tableSourceView setEmptyDoubleClickAction:@selector(addField:)];
+
 #ifndef SP_REFACTOR /* set font from prefs */
 	// Set the strutcture and index view's font
 	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -474,6 +479,10 @@
  */
 - (IBAction)addField:(id)sender
 {
+
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
+
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 

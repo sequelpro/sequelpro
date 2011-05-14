@@ -66,53 +66,55 @@ enum {
 	
 	// Spring-loading.
 	NSTimer					*_springTimer;
-	NSTabViewItem				*_tabViewItemWithSpring;
+	NSTabViewItem			*_tabViewItemWithSpring;
 	
 	// drawing style
 	id<PSMTabStyle>			style;
-	BOOL						_canCloseOnlyTab;
-	BOOL						_disableTabClose;
-	BOOL						_hideForSingleTab;
-	BOOL						_showAddTabButton;
-	BOOL						_sizeCellsToFit;
-	BOOL						_useOverflowMenu;
-	BOOL						_alwaysShowActiveTab;
-	BOOL						_allowsScrubbing;
-	BOOL						_useSafariStyleDragging;
-	NSInteger					_resizeAreaCompensation;
-	PSMTabBarOrientation		_orientation;
-	BOOL						_automaticallyAnimates;
+	BOOL					_canCloseOnlyTab;
+	BOOL					_disableTabClose;
+	BOOL					_hideForSingleTab;
+	BOOL					_showAddTabButton;
+	BOOL					_sizeCellsToFit;
+	BOOL					_useOverflowMenu;
+	BOOL					_alwaysShowActiveTab;
+	BOOL					_allowsScrubbing;
+	BOOL					_useSafariStyleDragging;
+	NSInteger				_resizeAreaCompensation;
+	PSMTabBarOrientation	_orientation;
+	BOOL					_automaticallyAnimates;
 	NSTimer					*_animationTimer;
 	PSMTabBarTearOffStyle	_tearOffStyle;
 	
 	// behavior
-	BOOL						_allowsBackgroundTabClosing;
-	BOOL						_selectsTabsOnMouseDown;
-	BOOL						_createsTabOnDoubleClick;
-	id							_createNewTabTarget;
-	SEL							_createNewTabAction;
+	BOOL					_allowsBackgroundTabClosing;
+	BOOL					_selectsTabsOnMouseDown;
+	BOOL					_createsTabOnDoubleClick;
+	id						_createNewTabTarget;
+	SEL						_createNewTabAction;
+	id						_doubleClickTarget;
+	SEL						_doubleClickAction;
 	
 	// vertical tab resizing
-	BOOL						_allowsResizing;
-	BOOL						_resizing;
+	BOOL					_allowsResizing;
+	BOOL					_resizing;
 	
 	// cell width
-	NSInteger					_cellMinWidth;
-	NSInteger					_cellMaxWidth;
-	NSInteger					_cellOptimumWidth;
+	NSInteger				_cellMinWidth;
+	NSInteger				_cellMaxWidth;
+	NSInteger				_cellOptimumWidth;
 	
 	// animation for hide/show
-	NSInteger					_currentStep;
-	BOOL						_isHidden;
+	NSInteger				_currentStep;
+	BOOL					_isHidden;
 	IBOutlet id				partnerView;				// gets resized when hide/show
-	BOOL						_awakenedFromNib;
-	NSInteger					_tabBarWidth;
+	BOOL					_awakenedFromNib;
+	NSInteger				_tabBarWidth;
 	NSTimer					*_showHideAnimationTimer;
 	
 	// drag and drop
-	NSEvent					*_lastMouseDownEvent;	   // keep this for dragging reference
-	BOOL						_didDrag;
-	BOOL						_closeClicked;
+	NSEvent					*_lastMouseDownEvent;	    // keep this for dragging reference
+	BOOL					_didDrag;
+	BOOL					_closeClicked;
 	
 	// MVC help
 	IBOutlet id				delegate;
@@ -143,6 +145,11 @@ enum {
 - (void)setCreateNewTabTarget:(id)object;
 - (SEL)createNewTabAction;
 - (void)setCreateNewTabAction:(SEL)selector;
+
+- (id)doubleClickTarget;
+- (void)setDoubleClickTarget:(id)object;
+- (SEL)doubleClickAction;
+- (void)setDoubleClickAction:(SEL)selector;
 
 - (NSInteger)cellMinWidth;
 - (void)setCellMinWidth:(NSInteger)value;

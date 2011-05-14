@@ -25,7 +25,7 @@
 
 #import <MCPKit/MCPKit.h>
 
-@class SPDatabaseDocument, SPTableFieldValidation, SPTableData, SPDatabaseData, SPTablesList, SPIndexesController;
+@class SPDatabaseDocument, SPTableFieldValidation, SPTableData, SPDatabaseData, SPTablesList, SPIndexesController, SPTableView;
 
 @interface SPTableStructure : NSObject 
 {
@@ -43,7 +43,7 @@
 	IBOutlet id resetAutoIncrementSheet;
 	IBOutlet id resetAutoIncrementValue;
 	IBOutlet id resetAutoIncrementLine;
-	IBOutlet id tableSourceView;
+	IBOutlet SPTableView *tableSourceView;
 	IBOutlet id addFieldButton;
 	IBOutlet id copyFieldButton;
 	IBOutlet id removeFieldButton;
@@ -54,7 +54,7 @@
 	IBOutlet id addIndexButton;
 	IBOutlet id removeIndexButton;
 	IBOutlet id refreshIndexesButton;
-	IBOutlet id indexesTableView;
+	IBOutlet SPTableView *indexesTableView;
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
 

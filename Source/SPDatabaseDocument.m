@@ -78,7 +78,10 @@
 #import "NSNotificationAdditions.h"
 #endif
 
-@interface SPDatabaseDocument (PrivateAPI)
+// Constants
+static NSString *SPCreateSyntx = @"SPCreateSyntax";
+
+@interface SPDatabaseDocument ()
 
 #ifndef SP_REFACTOR /* method decls */
 - (void)_addDatabase;
@@ -2135,7 +2138,7 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 
-	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"CreateSyntax"];
+	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:SPCreateSyntx];
 }
 
 /**
@@ -2716,7 +2719,7 @@
 		if([[NSApp delegate] sessionURL])
 			filename = [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent];
 		else
-			filename = [NSString stringWithFormat:@"%@", @"session"];
+			filename = [NSString stringWithFormat:NSLocalizedString(@"Session",@"Initial filename for 'Save session' file")];
 
 		contextInfo = @"saveSession";
 	}
@@ -3175,7 +3178,6 @@
  */
 - (IBAction)openDatabaseInNewTab:(id)sender
 {
-
 	// Add a new tab to the window
 	[[parentWindow windowController] addNewConnection:self];
 
@@ -3282,11 +3284,11 @@
 		}
 	}
 
-	if ([menuItem action] == @selector(import:)					||
-		[menuItem action] == @selector(removeDatabase:)			||
-		[menuItem action] == @selector(copyDatabase:)			||
-		[menuItem action] == @selector(renameDatabase:)			||
-		[menuItem action] == @selector(openDatabaseInNewTab:)	||
+	if ([menuItem action] == @selector(import:)				  ||
+		[menuItem action] == @selector(removeDatabase:)		  ||
+		[menuItem action] == @selector(copyDatabase:)		  ||
+		[menuItem action] == @selector(renameDatabase:)		  ||
+		[menuItem action] == @selector(openDatabaseInNewTab:) ||
 		[menuItem action] == @selector(refreshTables:))
 	{
 		return ([self database] != nil);
@@ -3420,12 +3422,12 @@
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		if ([contextInfo isEqualToString:@"CreateSyntax"]) {
+		if ([contextInfo isEqualToString:SPCreateSyntx]) {
 
 			NSString *createSyntax = [createTableSyntaxTextView string];
 
 			if ([createSyntax length] > 0) {
-				NSString *output = [NSString stringWithFormat:@"-- Create syntax for '%@'\n\n%@\n", [self table], createSyntax]; 
+				NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax]; 
 
 				[output writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 			}
@@ -3577,7 +3579,7 @@
 /**
  * Return the identifier for the currently selected toolbar item, or nil if none is selected.
  */
-- (NSString *)selectedToolbarItemIdentifier;
+- (NSString *)selectedToolbarItemIdentifier
 {
 	return [mainToolbar selectedItemIdentifier];
 }
@@ -4902,6 +4904,20 @@
 		return;
 	}
 
+	if([command isEqualToString:@"RunQueryInQueryEditor"]) {
+		NSString *queryFileName = [NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, docProcessID];
+		NSFileManager *fm = [NSFileManager defaultManager];
+		BOOL isDir;
+		if([fm fileExistsAtPath:queryFileName isDirectory:&isDir] && !isDir) {
+			NSError *inError = nil;
+			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
+			[fm removeItemAtPath:queryFileName error:nil];
+			if(inError == nil && query && [query length]) {
+				[customQueryInstance performQueries:[NSArray arrayWithObject:query] withCallback:NULL];
+			}
+		}
+		return;
+	}
 
 	if([command isEqualToString:@"CreateSyntaxForTables"]) {
 
@@ -5602,10 +5618,6 @@
 {
 	return tablesListInstance;
 }
-
-@end
-
-@implementation SPDatabaseDocument (PrivateAPI)
 
 #ifndef SP_REFACTOR /* whole database operations */
 

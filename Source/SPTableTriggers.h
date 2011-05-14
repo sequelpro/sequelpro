@@ -25,6 +25,8 @@
 
 #import <MCPKit/MCPKit.h>
 
+@class SPTableView;
+
 @interface SPTableTriggers : NSObject 
 {
 	IBOutlet id tableDocumentInstance;
@@ -36,7 +38,7 @@
 	IBOutlet NSButton      *addTriggerButton;
 	IBOutlet NSButton      *removeTriggerButton;	
 	IBOutlet NSButton      *refreshTriggersButton;
-	IBOutlet NSTableView   *triggersTableView;
+	IBOutlet SPTableView   *triggersTableView;
 	IBOutlet NSPanel       *addTriggerPanel;
 	IBOutlet NSTextField   *labelTextField;
 	

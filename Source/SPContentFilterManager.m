@@ -233,10 +233,10 @@
 
 	// Duplicate a selected filter if sender == self
 	if(sender == self)
-		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[contentFilterNameTextField stringValue] stringByAppendingFormat:@" Copy"], [contentFilterTextView string], nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", nil]];
+		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithFormat:NSLocalizedString(@"%@ Copy",@"Content Filter Manager : Initial name of copied filter"),[contentFilterNameTextField stringValue]], [contentFilterTextView string], nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", nil]];
 	// Add a new filter
 	else
-		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Filter", @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
+		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
 
 	if([contentFilterTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex]+1;

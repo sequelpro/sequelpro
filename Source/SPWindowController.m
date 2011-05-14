@@ -42,7 +42,7 @@
 /**
  * awakeFromNib
  */
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 	selectedTableDocument = nil;
 
@@ -67,9 +67,13 @@
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
 	[tabBar setUsesSafariStyleDragging:YES];
 
-    // hook up add tab button
+    // Hook up add tab button
     [tabBar setCreateNewTabTarget:self];
     [tabBar setCreateNewTabAction:@selector(addNewConnection:)];
+	
+	// Set the double click target and action
+	[tabBar setDoubleClickTarget:self];
+	[tabBar setDoubleClickAction:@selector(openDatabaseInNewTab)];
 
 	// Retrieve references to the 'Close Window' and 'Close Tab' menus.  These are updated as window focus changes.
 	closeWindowMenuItem = [[[[NSApp mainMenu] itemWithTag:SPMainMenuFile] submenu] itemWithTag:1003];
@@ -100,7 +104,6 @@
  */
 - (IBAction) addNewConnection:(id)sender
 {
-
 	// Create a new database connection view
 	SPDatabaseDocument *newTableDocument = [[SPDatabaseDocument alloc] init];
 	[newTableDocument setParentWindowController:self];
@@ -160,14 +163,14 @@
  */
 - (IBAction) closeTab:(id)sender
 {
-
 	// Return if the selected tab shouldn't be closed
 	if (![selectedTableDocument parentTabShouldClose]) return;
 
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {
 		[tabView removeTabViewItem:[tabView selectedTabViewItem]];
-	} else {
+	} 
+	else {
 		[[self window] performClose:self];
 	}
 }
@@ -326,9 +329,20 @@
 	}
 
 }
+
 - (void)setHideForSingleTab:(BOOL)hide
 {
 	[tabBar setHideForSingleTab:hide];
+}
+
+/**
+ * Opens the current connection in a new tab, but only if it's already connected.
+ */
+- (void)openDatabaseInNewTab
+{
+	if ([selectedTableDocument database]) {
+		[selectedTableDocument openDatabaseInNewTab:self];
+	}
 }
 
 #pragma mark -
@@ -569,6 +583,20 @@
 	[viewImage unlockFocus];
 
 	return [viewImage autorelease];
+}
+
+/**
+ * Displays the current tab's context menu.
+ */
+- (NSMenu *)tabView:(NSTabView *)aTabView menuForTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	NSMenu *menu = [[NSMenu alloc] init];
+	
+	[menu addItemWithTitle:NSLocalizedString(@"Close Tab", @"close tab context menu item") action:@selector(closeTab:) keyEquivalent:@""];
+	[menu insertItem:[NSMenuItem separatorItem] atIndex:1];
+	[menu addItemWithTitle:NSLocalizedString(@"Open in New Tab", @"open connection in new tab context menu item") action:@selector(openDatabaseInNewTab:) keyEquivalent:@""];
+	
+	return [menu autorelease];
 }
 
 /**

@@ -34,9 +34,33 @@
 
 @end
 
+@interface SPTableView (PrivateAPI)
+
+- (void)_doubleClickAction;
+
+@end
+
+
 @implementation SPTableView
 
 @synthesize tabEditingDisabled;
+
+- (id) init
+{
+	if ((self = [super init])) {
+		emptyDoubleClickAction = NULL;
+	}
+	return self;
+}
+
+- (void) awakeFromNib
+{
+	[super setDoubleAction:@selector(_doubleClickAction)];
+	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
+		[super awakeFromNib];
+}
+
+#pragma mark -
 
 /**
  * Right-click at row will select that row before ordering out the contextual menu
@@ -190,6 +214,27 @@
 	while (columnIndex--) 
 	{
 		[[(NSTableColumn *)[tableColumns objectAtIndex:columnIndex] dataCell] setFont:font];
+	}
+}
+
+- (void)setEmptyDoubleClickAction:(SEL)aSelector
+{
+	emptyDoubleClickAction = aSelector;
+}
+
+@end
+
+
+@implementation SPTableView (PrivateAPI)
+
+/**
+ * On a double click, determine whether the action was in the empty area
+ * of the current table; if so, perform the assigned emptyDoubleClick action.
+ */
+- (void)_doubleClickAction
+{
+	if ([super clickedRow] == -1 && [super clickedColumn] == -1 && emptyDoubleClickAction) {
+		[[self delegate] performSelector:emptyDoubleClickAction];
 	}
 }
 

@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableData.h"
+#import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
 
@@ -75,6 +76,9 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	// Set the table triggers view's vertical gridlines if required
 	[triggersTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+
+	// Set the double-click action in blank areas of the table to create new rows
+	[triggersTableView setEmptyDoubleClickAction:@selector(addTrigger:)];
 
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
@@ -263,6 +267,10 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
  */
 - (IBAction)addTrigger:(id)sender
 {
+
+	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
+	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
+
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
