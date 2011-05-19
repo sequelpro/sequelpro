@@ -111,9 +111,15 @@ NSString *SPConsoleEnableImportExportLogging     = @"ConsoleEnableImportExportLo
 NSString *SPConsoleEnableErrorLogging            = @"ConsoleEnableErrorLogging";
 
 // Network Prefpane
+#ifndef SP_REFACTOR
 NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
 NSString *SPUseKeepAlive                         = @"UseKeepAlive";
 NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";
+#else
+NSString *SPConnectionTimeoutValue               = @"SPConnectionTimeoutValue";
+NSString *SPUseKeepAlive                         = @"SPUseKeepAlive";
+NSString *SPKeepAliveInterval                    = @"SPKeepAliveInterval";
+#endif
 
 // Editor Prefpane
 NSString *SPCustomQueryEditorFont                = @"CustomQueryEditorFont";

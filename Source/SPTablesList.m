@@ -872,9 +872,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[[tableSubMenu itemAtIndex:8] setHidden:NO];
 		[[tableSubMenu itemAtIndex:9] setHidden:NO];
 		[[tableSubMenu itemAtIndex:10] setHidden:NO];
+#endif
 
 		return;
-#endif
 	}
 
 	// If a new selection has been provided, store variables and update the interface to match
@@ -1333,6 +1333,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	return YES;
 }
+#endif
 
 #pragma mark -
 #pragma mark Data validation
@@ -1398,6 +1399,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	return isValid;
 }
 
+#ifndef SP_REFACTOR
 #pragma mark -
 #pragma mark Datasource methods
 

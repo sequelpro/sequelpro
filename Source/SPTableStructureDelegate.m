@@ -127,12 +127,14 @@
 
 				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
 				if ((![currentRow objectForKey:@"Key"] || [[currentRow objectForKey:@"Key"] isEqualToString:@""])) {
+#ifndef SP_REFACTOR
 					[chooseKeyButton selectItemWithTag:SPPrimaryKeyMenuTag];
 
 					[NSApp beginSheet:keySheet
 					   modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self
 					   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						  contextInfo:@"autoincrementindex" ];
+#endif
 				}
 			} else {
 				autoIncrementIndex = nil;

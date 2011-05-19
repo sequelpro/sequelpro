@@ -51,7 +51,11 @@
  */
 - (id)init
 {
+#ifndef SP_REFACTOR
 	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"])) {
+#else
+	if ((self = [super initWithWindowNibName:@"SQLFieldEditorSheet"])) {
+#endif
 		// force the nib to be loaded
 		(void) [self window];
 		counter = 0;
@@ -86,6 +90,7 @@
 		[menuItem setEnabled:NO];
 		[menu addItem:menuItem];
 		[menuItem release];
+#ifndef SP_REFACTOR
 		NSUInteger tag = 2;
 
 		// Load default QL types
@@ -112,7 +117,6 @@
 				[qlTypesItems addObject:type];
 			}
 		}
-#ifndef SP_REFACTOR
 		// Load user-defined QL types
 		if([prefs objectForKey:SPQuickLookTypes]) {
 			for(id type in [prefs objectForKey:SPQuickLookTypes]) {
@@ -125,10 +129,10 @@
 				[qlTypesItems addObject:type];
 			}
 		}
-#endif
 
 		qlTypes = [[NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes] retain];
 		[qlTypesItems release];
+#endif
 
 		fieldType = @"";
 		fieldEncoding = @"";
@@ -150,7 +154,9 @@
 		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
 
 	if ( sheetEditData ) [sheetEditData release];
+#ifndef SP_REFACTOR
 	if ( qlTypes ) [qlTypes release];
+#endif
 	if ( tmpDirPath ) [tmpDirPath release];
 	if ( esUndoManager ) [esUndoManager release];
 	if ( contextInfo ) [contextInfo release];
@@ -420,8 +426,10 @@
 		// After ordering out this sheet SPCopyTable remains the first responder thus set it hard.
 		// This only works in conjunction with [NSTextView becomeFirstResponder] and [NSTextView resignFirstResponder]
 		// which has to return YES.
+#ifndef SP_REFACTOR
 		if([[self window] firstResponder] == editTextView)
 			[[NSApp mainWindow] makeFirstResponder:[[self window] firstResponder]];
+#endif
 
 	}
 
@@ -480,7 +488,9 @@
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
+#ifndef SP_REFACTOR
 			[[NSApp mainWindow] makeFirstResponder:editTextView];
+#endif
 			break;
 		case 1: // image
 			[editTextView setHidden:YES];
@@ -750,10 +760,12 @@
  */
 - (IBAction)quickLookFormatButton:(id)sender
 {
+#ifndef SP_REFACTOR
 	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > (NSUInteger)[sender tag] - 2) {
 		NSDictionary *type = [[qlTypes objectForKey:@"QuickLookTypes"] objectAtIndex:[sender tag] - 2];
 		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] integerValue])];
 	}
+#endif
 }
 
 /**

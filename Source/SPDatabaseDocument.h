@@ -34,7 +34,7 @@
 #ifndef SP_REFACTOR /* class forward decls */
 SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
 #endif
-SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
+SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery;
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
@@ -85,7 +85,7 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 	IBOutlet id databaseCopySheet;
 	IBOutlet id databaseRenameSheet;
 
-	IBOutlet id queryProgressBar;
+	IBOutlet NSProgressIndicator* queryProgressBar;
 	IBOutlet NSBox *taskProgressLayer;
 	IBOutlet id taskProgressIndicator;
 	IBOutlet id taskDescriptionText;
@@ -234,8 +234,9 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 }
 
 #ifdef SP_REFACTOR /* ivars */
-@property (readwrite, assign) id delegate;
+@property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
+@property (assign) NSProgressIndicator* queryProgressBar;
 #endif
 
 #ifndef SP_REFACTOR /* ivars */
@@ -397,7 +398,9 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 // Tab methods
 - (void)makeKeyDocument;
 - (BOOL)parentTabShouldClose;
+#endif
 - (void)parentTabDidClose;
+#ifndef SP_REFACTOR
 - (void)willResignActiveTabInWindow;
 - (void)didBecomeActiveTabInWindow;
 - (void)tabDidBecomeKey;
@@ -430,10 +433,11 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport;
 - (void)connect;
 - (NSArray*)allTableNames;
 - (SPTablesList*)tablesListInstance;
-- (SPTableData*)tableDataInstance;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
-- (void)setTableDataInstance:(SPTableData*)data;
+
+@property (assign) SPTableData* tableDataInstance;
+@property (assign) SPCustomQuery* customQueryInstance;
 #endif
 
 @end

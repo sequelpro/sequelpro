@@ -58,6 +58,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 @synthesize table;
 @synthesize connection;
 
+#ifdef SP_REFACTOR
+@synthesize indexesTableView;
+@synthesize tableStructure;
+@synthesize addIndexButton;
+@synthesize removeIndexButton;
+#endif
+
 #pragma mark -
 
 /**
@@ -65,8 +72,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (id)init
 {
-	if ((self = [super initWithWindowNibName:@"IndexesView"])) {
+#ifndef SP_REFACTOR
+	NSString* nibName = @"IndexesView";
+#else
+	NSString* nibName = @"SQLIndexes";
+#endif
 
+	if ((self = [super initWithWindowNibName:nibName])) {
 		table = @"";
 
 		fields  = [[NSMutableArray alloc] init];
@@ -75,13 +87,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 #ifndef SP_REFACTOR /* init ivars */
 		prefs = [NSUserDefaults standardUserDefaults];
-#endif
 
 		showAdvancedView = NO;
 
 		heightOffset = 0;
 		windowMinWidth = [[self window] minSize].width;
 		windowMinHeigth = [[self window] minSize].height;
+#endif
 
 		// Create an array of field types that supporting specifying an index length prefix
 		supportsLength = [[NSArray alloc] initWithObjects:
@@ -233,6 +245,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 
+#ifndef SP_REFACTOR
 	// MyISAM and InnoDB tables only support BTREE storage types so disable the storage type popup button
 	// as it's the default anyway.
 	[indexStorageTypePopUpButton setEnabled:(!([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"]))];
@@ -240,6 +253,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// The ability to specify an index's key block size was added in MySQL 5.1.10 so disable the textfield
 	// if it's not supported.
 	[indexKeyBlockSizeTextField setEnabled:[[dbDocument serverSupport] supportsIndexKeyBlockSize]];
+#endif
 	
 	// Begin the sheet
 	[NSApp beginSheet:[self window]
@@ -314,7 +328,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	if (indexType == SPPrimaryKeyMenuTag) {
 		[indexNameTextField setEnabled:NO];
 		[indexNameTextField setStringValue:@"PRIMARY"];
+#ifndef SP_REFACTOR
 		[indexStorageTypePopUpButton setEnabled:NO];
+#endif
 	}
 	else {
 		[indexNameTextField setEnabled:YES];
@@ -323,8 +339,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			[indexNameTextField setStringValue:@""];
 		}
 		
+#ifndef SP_REFACTOR
 		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
 		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag)];
+#endif
 	}
 }
 
@@ -333,10 +351,12 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)closeSheet:(id)sender
 {
+#ifndef SP_REFACTOR
 	// Close the advanced options view if it's open
 	[indexAdvancedOptionsView setHidden:YES];
 	[indexAdvancedOptionsViewButton setState:NSOffState];
 	showAdvancedView = NO;
+#endif
 
 	// Hide the size column
 	[indexSizeTableColumn setHidden:YES];
@@ -346,8 +366,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
 	
+#ifndef SP_REFACTOR
 	// Clear the index key block size field
 	[indexKeyBlockSizeTextField setStringValue:@""];
+#endif
 }
 
 /**
@@ -396,6 +418,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)toggleAdvancedIndexOptionsView:(id)sender
 {
+#ifndef SP_REFACTOR
 	showAdvancedView = (!showAdvancedView);
 
 	[indexAdvancedOptionsViewButton setState:showAdvancedView];
@@ -404,6 +427,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexSizeTableColumn setHidden:(!showAdvancedView)];
 
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:(showAdvancedView) ? ([indexAdvancedOptionsView frame].size.height + 10) : 0];
+#endif
 }
 
 #pragma mark -
@@ -586,6 +610,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 				break;
 		}
 		
+#ifndef SP_REFACTOR
 		// If there is a key block size set it means the database version supports it
 		if ([[indexKeyBlockSizeTextField stringValue] length]) {
 			[indexDetails setObject:[NSNumber numberWithInteger:[indexKeyBlockSizeTextField integerValue]] forKey:SPNewIndexKeyBlockSize];
@@ -594,6 +619,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		if (([indexStorageTypePopUpButton indexOfSelectedItem] > 0) && ([[indexTypePopUpButton selectedItem] tag] != SPSpatialMenuTag)) {
 			[indexDetails setObject:[indexStorageTypePopUpButton titleOfSelectedItem] forKey:SPNewIndexStorageType];
 		}
+#endif
 
 		if ([NSThread isMainThread]) {
 			[NSThread detachNewThreadSelector:@selector(_addIndexUsingDetails:) toTarget:self withObject:indexDetails];
@@ -708,8 +734,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 	}
 
+#ifndef SP_REFACTOR
 	// Only toggle the sizes column if the advanced view is hidden and at least one field requires a size
 	if (!showAdvancedView) [indexSizeTableColumn setHidden:(!sizeRequired)];
+#endif
 
 	// Validate Add Button
 	[confirmAddIndexButton setEnabled:(!sizeRequiredFieldAndNotYetSet)];
@@ -908,11 +936,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	NSUInteger popUpMask        = [indexTypePopUpButton autoresizingMask];
 	NSUInteger nameFieldMask    = [indexNameTextField autoresizingMask];
 	NSUInteger scrollMask       = [indexedColumnsScrollView autoresizingMask];
+#ifndef SP_REFACTOR
 	NSUInteger buttonMask       = [indexAdvancedOptionsViewButton autoresizingMask];
 	NSUInteger textFieldMask    = [indexAdvancedOptionsViewLabelButton autoresizingMask];
 	NSUInteger advancedViewMask = [indexAdvancedOptionsView autoresizingMask];
+#endif
 	NSUInteger typeLabelMask    = [indexTypeLabel autoresizingMask];
 	NSUInteger nameLabelMask    = [indexNameLabel autoresizingMask];
+#ifndef SP_REFACTOR
 	NSUInteger buttonBarMask    = [(NSView*)anchoredButtonBar autoresizingMask];
 
 	NSRect frame = [[self window] frame];
@@ -923,21 +954,27 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		[[self window] setFrame:frame display:YES animate:YES];
 	}
+#endif
 
 	[indexTypePopUpButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameTextField setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexedColumnsScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+#ifndef SP_REFACTOR
 	[indexAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+#endif
 	[indexTypeLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+#ifndef SP_REFACTOR
 	[(NSView*)anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 
 	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
 
 	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
+#endif
 
+#ifndef SP_REFACTOR
 	frame.origin.y += heightOffset;
 	frame.size.height -= heightOffset;
 
@@ -947,16 +984,21 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	frame.size.height += heightOffset;
 
 	[[self window] setFrame:frame display:YES animate:YES];
+#endif
 
 	[indexTypePopUpButton setAutoresizingMask:popUpMask];
 	[indexNameTextField setAutoresizingMask:nameFieldMask];
 	[indexedColumnsScrollView setAutoresizingMask:scrollMask];
+#ifndef SP_REFACTOR
 	[indexAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
 	[indexAdvancedOptionsViewLabelButton setAutoresizingMask:textFieldMask];
 	[indexAdvancedOptionsView setAutoresizingMask:advancedViewMask];
+#endif
 	[indexTypeLabel setAutoresizingMask:typeLabelMask];
 	[indexNameLabel setAutoresizingMask:nameLabelMask];
+#ifndef SP_REFACTOR
 	[(NSView*)anchoredButtonBar setAutoresizingMask:buttonBarMask];
+#endif
 }
 
 #pragma mark -
@@ -977,5 +1019,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	[super dealloc];
 }
+
+
+#ifdef SP_REFACTOR
+- (void)setDatabaseDocument:(SPDatabaseDocument*)db
+{
+	dbDocument = db;
+}
+#endif
+
 
 @end

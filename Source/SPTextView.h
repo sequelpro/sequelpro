@@ -111,6 +111,12 @@
 @property(assign) BOOL completionIsOpen;
 @property(assign) BOOL completionWasReinvokedAutomatically;
 
+#ifdef SP_REFACTOR
+@property (assign) SPDatabaseDocument *tableDocumentInstance;
+@property (assign) SPTablesList *tablesListInstance;
+@property (assign) SPCustomQuery *customQueryInstance;
+#endif
+
 #ifndef SP_REFACTOR
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 #endif

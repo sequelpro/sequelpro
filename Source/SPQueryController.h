@@ -25,6 +25,7 @@
 
 @interface SPQueryController : NSWindowController 
 {
+#ifndef SP_REFACTOR /* ivars */
 	// QueryConsoleController
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
@@ -48,6 +49,7 @@
 	NSMutableDictionary *historyContainer;
 	NSMutableDictionary *contentFilterContainer;
 	NSUInteger numberOfMaxAllowedHistory;
+#endif
 
 	NSArray *completionKeywordList;
 	NSArray *completionFunctionList;
@@ -55,10 +57,10 @@
 
 #ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
-#endif
 	NSDateFormatter *dateFormatter;
 	
 	pthread_mutex_t consoleLock;
+#endif
 }
 
 @property (readwrite, retain) NSFont *consoleFont;

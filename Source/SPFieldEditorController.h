@@ -161,7 +161,9 @@
 
 	NSUserDefaults *prefs;
 
+#ifndef SP_REFACTOR
 	NSDictionary *qlTypes;
+#endif
 
 	NSInteger editSheetReturnCode;
 	BOOL _isGeometry;

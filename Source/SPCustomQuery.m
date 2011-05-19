@@ -35,7 +35,9 @@
 #import "SPFieldEditorController.h"
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPQueryFavoriteManager.h"
+#endif
 #import "SPQueryController.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
@@ -50,6 +52,15 @@
 #endif
 
 @implementation SPCustomQuery
+
+#ifdef SP_REFACTOR
+@synthesize textView;
+@synthesize customQueryView;
+@synthesize runAllButton;
+@synthesize tableDocumentInstance;
+@synthesize tablesListInstance;
+#endif
+
 
 @synthesize textViewWasChanged;
 
@@ -250,7 +261,7 @@
 		// init query favorites controller
 #ifndef SP_REFACTOR
 		[prefs synchronize];
-#endif
+
 		if(favoritesManager) [favoritesManager release];
 		favoritesManager = [[SPQueryFavoriteManager alloc] initWithDelegate:self];
 
@@ -260,6 +271,7 @@
 			modalDelegate:favoritesManager
 		   didEndSelector:nil
 			  contextInfo:nil];
+#endif
 	}
 	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite

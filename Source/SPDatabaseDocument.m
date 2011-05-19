@@ -39,7 +39,9 @@
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPExportController.h"
+#endif
 #import "SPQueryController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPWindowController.h"
 #endif
 #import "SPNavigatorController.h"
@@ -75,10 +77,13 @@
 #ifdef SP_REFACTOR /* headers */
 #import "SPAlertSheets.h"
 #import "NSNotificationAdditions.h"
+#import "SPCustomQuery.h"
 #endif
 
 // Constants
+#ifndef SP_REFACTOR
 static NSString *SPCreateSyntx = @"SPCreateSyntax";
+#endif
 
 @interface SPDatabaseDocument ()
 
@@ -107,6 +112,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #ifdef SP_REFACTOR /* ivars */
 @synthesize allDatabases;
 @synthesize delegate;
+@synthesize tableDataInstance;
+@synthesize customQueryInstance;
+@synthesize queryProgressBar;
 #endif
 
 - (id)init
@@ -211,22 +219,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	tableContentInstance = content;
 }
 
-- (void)setTableDataInstance:(SPTableData*)data
-{
-	tableDataInstance = data;
-}
-
-- (SPTableData*)tableDataInstance
-{
-	return tableDataInstance;
-}
-
 #endif
 
-#ifndef SP_REFACTOR /* awakeFromNib */
 
 - (void)awakeFromNib
 {
+#ifndef SP_REFACTOR
 	if (_mainNibLoaded) return;
 	_mainNibLoaded = YES;
 
@@ -258,7 +256,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	// Register a second observer for when the logging preference changes so we can tell the current connection about it
 	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-
+#endif
 	// Register for notifications
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
 												 name:@"SMySQLQueryWillBePerformed" object:self];
@@ -267,6 +265,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
 												 name:@"NSApplicationWillTerminateNotification" object:nil];
 
+#ifndef SP_REFACTOR
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
 	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
 
@@ -325,8 +324,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[taskProgressWindow setContentView:taskProgressLayer];
 
 	[contentViewSplitter setDelegate:self];
-}
 #endif
+}
 
 #ifndef SP_REFACTOR /* password sheet and history navigation */
 /**
@@ -443,10 +442,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR /* update custom query editor */
 	// Set the custom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
+#ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
 	
 	// Connected Growl notification
@@ -2553,12 +2552,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[queryProgressBar stopAnimation:self];
 }
 
-#ifndef SP_REFACTOR /* applicationWillTerminate: */
 /**
  * Invoked when the application will terminate
  */
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
+#ifndef SP_REFACTOR /* applicationWillTerminate: */
 
 	// Auto-save preferences to spf file based connection
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled])
@@ -2572,11 +2571,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// Note that this call does not need to be removed in release builds as leaks analysis output is only
 	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
 	[[SPLogger logger] dumpLeaks];
+#endif
 }
 
 #pragma mark -
 #pragma mark Menu methods
 
+#ifndef SP_REFACTOR 
 /**
  * Saves SP session or if Custom Query tab is active the editor's content as SQL file
  * If sender == nil then the call came from [self writeSafelyToURL:ofType:forSaveOperation:error]
@@ -3862,19 +3863,23 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// Return YES by default
 	return YES;
 }
+#endif
 
 /**
  * Invoked when the parent tab is about to close
  */
 - (void)parentTabDidClose
 {
-
+#ifndef SP_REFACTOR
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
+#endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
 								selector:@selector(doAutoCompletion) 
 								object:nil];
+#ifndef SP_REFACTOR
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
+#endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
 									selector:@selector(autoHelp) 
 									object:nil];
@@ -3883,13 +3888,16 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[mySQLConnection setDelegate:nil];
 	if (_isConnected) [self closeConnection];
 	else [connectionController cancelConnection];
+#ifndef SP_REFACTOR
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
+#endif
 	[createTableSyntaxWindow orderOut:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[self setParentWindow:nil];
 
 }
 
+#ifndef SP_REFACTOR
 /**
  * Invoked when the parent tab is currently the active tab in the
  * window, but is being switched away from, to allow cleaning up

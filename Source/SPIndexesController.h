@@ -23,9 +23,17 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPTableView, MCPConnection, BWAnchoredButtonBar;
+#ifndef SP_REFACTOR
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, BWAnchoredButtonBar, SPTableView;
+#else
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, SPTableView;
+#endif
 
+#ifndef SP_REFACTOR
 @interface SPIndexesController : NSWindowController 
+#else
+@interface SPIndexesController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
+#endif
 {
 	// Controllers
 	IBOutlet SPDatabaseDocument *dbDocument;
@@ -49,6 +57,7 @@
 	IBOutlet NSButton *addIndexedColumnButton;
 	IBOutlet NSButton *removeIndexedColumnButton;
 	IBOutlet NSButton *confirmAddIndexButton;
+#ifndef SP_REFACTOR
 	IBOutlet BWAnchoredButtonBar *anchoredButtonBar;
 	
 	// Advanced options view
@@ -57,6 +66,7 @@
 	IBOutlet NSButton *indexAdvancedOptionsViewLabelButton;
 	IBOutlet NSPopUpButton *indexStorageTypePopUpButton;
 	IBOutlet NSTextField *indexKeyBlockSizeTextField;
+#endif
 		
 	NSString *table;
 	
@@ -68,12 +78,23 @@
 	
 	MCPConnection *connection;
 	
+#ifndef SP_REFACTOR /* ivars */
 	BOOL showAdvancedView;
 	
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
+#endif
 }
+
+#ifdef SP_REFACTOR
+@property (assign) SPTableView* indexesTableView;
+@property (assign) SPTableStructure* tableStructure;
+@property (assign) NSButton* addIndexButton;
+@property (assign) NSButton* removeIndexButton;
+
+- (void)setDatabaseDocument:(SPDatabaseDocument*)db;
+#endif
 
 /**
  * @property table The table currently being viewed

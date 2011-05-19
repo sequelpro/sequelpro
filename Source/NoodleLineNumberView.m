@@ -327,7 +327,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		CGFloat yinsetMinY         = yinset - NSMinY(visibleRect);
 		CGFloat rectHeight;
 
-
 		for (line = (NSUInteger)(*lineNumberForCharacterIndexIMP)(self, lineNumberForCharacterIndexSel, range.location); line < count; line++)
 		{
 			lineIndex = [NSArrayObjectAtIndex(lines, line) unsignedIntegerValue];

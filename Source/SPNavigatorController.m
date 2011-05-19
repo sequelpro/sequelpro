@@ -68,6 +68,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	@synchronized(self) {
 		return [[self sharedNavigatorController] retain];
 	}
+#ifdef SP_REFACTOR
+	return nil;  // only here to stop clang's "can reach end of non-void function"
+#endif
 }
 
 - (id)init

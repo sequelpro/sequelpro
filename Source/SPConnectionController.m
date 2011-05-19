@@ -33,8 +33,8 @@
 #import "RegexKitLite.h"
 #endif
 #import "SPAlertSheets.h"
-#ifndef SP_REFACTOR /* headers */
 #import "SPKeychain.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPFavoritesPreferencePane.h"
 #endif
 #import "SPSSHTunnel.h"
@@ -82,12 +82,10 @@
 @synthesize sshKeyLocation;
 @synthesize sshPort;
 
-#ifndef SP_REFACTOR	/* ivars */
 @synthesize connectionKeychainItemName;
 @synthesize connectionKeychainItemAccount;
 @synthesize connectionSSHKeychainItemName;
 @synthesize connectionSSHKeychainItemAccount;
-#endif
 
 @synthesize isConnecting;
 #ifndef SP_REFACTOR	/* ivars */
@@ -110,11 +108,9 @@
 #endif
 		connectionKeychainID = nil;
 		connectionKeychainItemName = nil;
-#ifndef SP_REFACTOR	/* ivars */
 		connectionKeychainItemAccount = nil;
 		connectionSSHKeychainItemName = nil;
 		connectionSSHKeychainItemAccount = nil;
-#endif
 		mySQLConnection = nil;
 		sshTunnel = nil;
 		cancellingConnection = NO;
@@ -140,9 +136,10 @@
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollViewFrameChanged:) name:NSViewFrameDidChangeNotification object:nil];
 
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
+#endif
 		keychain = [[SPKeychain alloc] init];
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
-
+#ifndef SP_REFACTOR
 		favorites = nil;
 
 		// Load favorites
@@ -190,8 +187,8 @@
     [prefs removeObserver:self forKeyPath:SPFavorites];
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_REFACTOR /* dealloc ivars */
     [keychain release];
+#ifndef SP_REFACTOR /* dealloc ivars */
     [prefs release];
 
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
@@ -203,11 +200,9 @@
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
 	if (connectionKeychainID) [connectionKeychainID release];
 	if (connectionKeychainItemName) [connectionKeychainItemName release];
-#ifndef SP_REFACTOR /* dealloc ivars */
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
-#endif
     [super dealloc];
 }
 
@@ -222,7 +217,6 @@
  */
 - (IBAction)initiateConnection:(id)sender
 {
-#ifndef SP_REFACTOR /* validate connection details */
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));
@@ -279,6 +273,7 @@
 	isConnecting = YES;
 	cancellingConnection = NO;
 
+#ifndef SP_REFACTOR
 	// Disable the favorites outline view to prevent further connections attempts
 	[favoritesTable setEnabled:NO];
 
@@ -287,6 +282,7 @@
 	[connectButton setEnabled:NO];
 	[progressIndicator startAnimation:self];
 	[progressIndicatorText setHidden:NO];
+#endif
 
 	// Start the current tab's progress indicator
 	[tableDocument setIsProcessing:YES];
@@ -297,9 +293,11 @@
 	if (connectionKeychainItemName) {
 		if ([[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount] isEqualToString:[self password]]) {
 			[self setPassword:[[NSString string] stringByPaddingToLength:[[self password] length] withString:@"sp" startingAtIndex:0]];
+#ifndef SP_REFACTOR
 			[[standardPasswordField undoManager] removeAllActionsWithTarget:standardPasswordField];
 			[[socketPasswordField undoManager] removeAllActionsWithTarget:socketPasswordField];
 			[[sshPasswordField undoManager] removeAllActionsWithTarget:sshPasswordField];
+#endif
 		} else {
 			[connectionKeychainItemName release], connectionKeychainItemName = nil;
 			[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
@@ -308,7 +306,9 @@
 	if (connectionSSHKeychainItemName) {
 		if ([[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount] isEqualToString:[self sshPassword]]) {
 			[self setSshPassword:[[NSString string] stringByPaddingToLength:[[self sshPassword] length] withString:@"sp" startingAtIndex:0]];
+#ifndef SP_REFACTOR
 			[[sshSSHPasswordField undoManager] removeAllActionsWithTarget:sshSSHPasswordField];
+#endif
 		} else {
 			[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
 			[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
@@ -328,12 +328,11 @@
 		[self performSelector:@selector(initiateSSHTunnelConnection) withObject:nil afterDelay:0.0];
 		return;
 	}
-#endif
+
 	// ...or start the MySQL connection process directly
 	[self performSelector:@selector(initiateMySQLConnection) withObject:nil afterDelay:0.0];
 }
 
-#ifndef SP_REFACTOR /* cancelMySQLConnection: */
 /**
  * Cancels (or rather marks) the current connection is to be cancelled once established.
  *
@@ -343,16 +342,16 @@
  */
 - (IBAction)cancelMySQLConnection:(id)sender
 {
+#ifndef SP_REFACTOR
 	[connectButton setEnabled:NO];
 
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[progressIndicatorText display];
+#endif
 
 	mySQLConnectionCancelled = YES;
 }
-#endif
 
-#ifndef SP_REFACTOR /* initiateSSHTunnelConnection */
 /*
  * Initiate the SSH connection process.
  * This should only be called as part of initiateConnection:, and will indirectly
@@ -360,8 +359,10 @@
  */
 - (void)initiateSSHTunnelConnection
 {
+#ifndef SP_REFACTOR
 	[progressIndicatorText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
 	[progressIndicatorText display];
+#endif
 
 	// Trim whitespace and newlines from the SSH host field before attempting to connect
 	[self setSshHost:[[self sshHost] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
@@ -389,7 +390,6 @@
 	// itself as an argument - retain count should be one at this point.
 	[sshTunnel connect];
 }
-#endif
 
 /*
  * Cancel connection.
@@ -407,7 +407,6 @@
 	sshTunnel = nil;
 }
 
-#ifndef SP_REFACTOR /* sshTunnelCallback: */
 /*
  * A callback function for the SSH Tunnel setup process - will be called on a connection
  * state change, allowing connection to fail or proceed as appropriate.  If successful,
@@ -427,22 +426,27 @@
 	}
 
 	if (newState == PROXY_STATE_IDLE) {
+#ifndef SP_REFACTOR
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
+#endif
 		
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages]];
 		[self _restoreConnectionInterface];
 	} 
 	else if (newState == PROXY_STATE_CONNECTED) {
+#ifndef SP_REFACTOR
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
+#endif
 		
 		[self initiateMySQLConnection];
 	} 
 	else {
+#ifndef SP_REFACTOR
 		[tableDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting…", @"SSH connecting titlebar marker")];
+#endif
 	}
 }
 
-#endif
 
 /*
  * Set up the MySQL connection, either through a successful tunnel or directly in the background.
@@ -578,8 +582,6 @@
 	[tableDocument setConnection:mySQLConnection];
 }
 
-#ifndef SP_REFACTOR /* connection favorites and ssh key handling */
-
 #pragma mark -
 #pragma mark Interface interaction
 
@@ -588,12 +590,15 @@
  */
 - (IBAction)chooseKeyLocation:(id)sender
 {
+#ifndef SP_REFACTOR /* favorites */
 	[favoritesTable deselectAll:self];
+#endif
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
 	NSArray *permittedFileTypes = nil;
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 
+#ifndef SP_REFACTOR /* !!! ssh keys */
 	// Switch details by sender.
 	// First, SSH keys:
 	if (sender == sshSSHKeyButton) {
@@ -640,6 +645,7 @@
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
 		[openPanel setAccessoryView:sslCACertLocationHelp];
 	}
+#endif
 
 	[openPanel beginSheetForDirectory:directoryPath
 								 file:filePath
@@ -655,6 +661,7 @@
  */
 - (void)chooseKeyLocationSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
+#ifndef SP_REFACTOR /* !!! ssh key location */
 	NSString *abbreviatedFileName = [[openPanel filename] stringByAbbreviatingWithTildeInPath];
 
 	// SSH key file selection
@@ -692,8 +699,11 @@
 		}
 		[self setSslCACertFileLocation:abbreviatedFileName];
 	}
+#endif
 }
 
+
+#ifndef SP_REFACTOR /* connection favorites and ssh key handling */
 /**
  * Opens the preferences window, or brings it to the front, and switch to the favorites tab.
  * If a favorite is selected in the connection sheet, it is also select in the prefs window.
@@ -837,6 +847,7 @@
 		[connectionResizeContainer setFrame:frameRect];
 	}
 }
+#endif
 
 /**
  * Check the host field and ensure it isn't set to "localhost" for
@@ -873,6 +884,7 @@
 	}
 }
 
+#ifndef SP_REFACTOR
 #pragma mark -
 #pragma mark Favorites interaction
 
@@ -1393,12 +1405,12 @@
 #ifndef SP_REFACTOR /* set mysql connection settings from prefs */
 	// Set whether or not we should enable delegate logging according to the prefs
 	[mySQLConnection setDelegateQueryLogging:[prefs boolForKey:SPConsoleEnableLogging]];
+#endif
 
 	// Set options from preferences
 	[mySQLConnection setConnectionTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] integerValue]];
 	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:SPUseKeepAlive] boolValue]];
 	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] doubleValue]];
-#endif
 
 	// Connect
 	[mySQLConnection connect];
@@ -1436,10 +1448,8 @@
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect via the socket, or the request timed out.\n\nDouble-check that the socket path is correct and that you have the necessary privileges, and that the server is running.\n\nMySQL said: %@", @"message of panel when connection to host failed"), [mySQLConnection getLastErrorMessage]];
 				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Socket connection failed!", @"socket connection failed title") errorMessage:errorMessage detail:nil];
 			} else {
-#ifndef SP_REFACTOR /* error message requiring prefs access */
 				errorMessage = [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to host %@, or the request timed out.\n\nBe sure that the address is correct and that you have the necessary privileges, or try increasing the connection timeout (currently %ld seconds).\n\nMySQL said: %@", @"message of panel when connection to host failed"), [self host], (long)[[prefs objectForKey:SPConnectionTimeoutValue] integerValue], [mySQLConnection getLastErrorMessage]];
 				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Connection failed!", @"connection failed title") errorMessage:errorMessage detail:nil];
-#endif
 			}
 
 			// Tidy up

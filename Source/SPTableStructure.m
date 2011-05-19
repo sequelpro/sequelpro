@@ -45,6 +45,15 @@
 
 @implementation SPTableStructure
 
+#ifdef SP_REFACTOR
+@synthesize indexesController;
+@synthesize indexesTableView;
+@synthesize addFieldButton;
+@synthesize copyFieldButton;
+@synthesize removeFieldButton;
+@synthesize reloadFieldsButton;
+#endif
+
 #pragma mark -
 #pragma mark Initialization
 
@@ -171,9 +180,11 @@
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
 #endif	
 
+#ifndef SP_REFACTOR
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
+#endif
 
 #ifndef SP_REFACTOR /* patch */
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
@@ -190,6 +201,7 @@
 		}
 	}
 #else
+/*
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
 	{
 		if ([col isHidden]) {
@@ -203,6 +215,7 @@
 				[[viewColumnsMenu itemAtIndex:[viewColumnsMenu indexOfItemWithTag:12]] setState:NSOffState];
 		}
 	}
+*/
 #endif
 	
 	[tableSourceView reloadData];
@@ -428,9 +441,11 @@
 	[addFieldButton setEnabled:NO];
 	[copyFieldButton setEnabled:NO];
 	[removeFieldButton setEnabled:NO];
+#ifndef SP_REFACTOR
 	[addIndexButton setEnabled:NO];
 	[removeIndexButton setEnabled:NO];
 	[editTableButton setEnabled:NO];
+#endif
 
 	// If no table is selected, refresh the table/index display to blank and return
 	if (!selectedTable) {
@@ -457,14 +472,18 @@
 
 	defaultValues = [[NSDictionary dictionaryWithDictionary:newDefaultValues] retain];
 
+#ifndef SP_REFACTOR
 	// Enable the edit table button
 	[editTableButton setEnabled:enableInteraction];
+#endif
 
 	// If a view is selected, disable the buttons; otherwise enable.
 	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable) && enableInteraction;
 
 	[addFieldButton setEnabled:editingEnabled];
+#ifndef SP_REFACTOR
 	[addIndexButton setEnabled:editingEnabled];
+#endif
 
 	// Reload the views
 	[indexesTableView reloadData];
@@ -699,6 +718,7 @@
  */
 - (IBAction)resetAutoIncrement:(id)sender
 {
+#ifndef SP_REFACTOR
 	if ([sender tag] == 1) {
 
 		[resetAutoIncrementLine setHidden:YES];
@@ -718,6 +738,7 @@
 	else if ([sender tag] == 2) {
 		[self setAutoIncrementTo:@"1"];
 	}
+#endif
 }
 
 /**
@@ -725,12 +746,14 @@
  */
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
+#ifndef SP_REFACTOR
 	// Order out current sheet to suppress overlapping of sheets
 	[theSheet orderOut:nil];
 
 	if (returnCode == NSAlertDefaultReturn) {
 		[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 	}
+#endif
 }
 
 /**
@@ -786,7 +809,9 @@
 
 - (IBAction)unhideIndexesView:(id)sender
 {
+#ifndef SP_REFACTOR
 	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
+#endif
 }
 
 
@@ -1197,9 +1222,11 @@
 			[addFieldButton setEnabled:NO];
 			[copyFieldButton setEnabled:NO];
 			[removeFieldButton setEnabled:NO];
+#ifndef SP_REFACTOR
 			[addIndexButton setEnabled:NO];
 			[removeIndexButton setEnabled:NO];
 			[editTableButton setEnabled:NO];
+#endif
 			[tablesListInstance updateTables:self];
 			return NO;
 		}
@@ -1224,6 +1251,7 @@
 }
 
 #ifdef SP_REFACTOR /* glue */
+
 - (void)setDatabaseDocument:(SPDatabaseDocument*)doc
 {
 	tableDocumentInstance = doc;
@@ -1237,6 +1265,21 @@
 - (void)setTableDataInstance:(SPTableData*)data
 {
 	tableDataInstance = data;
+}
+
+- (void)setDatabaseDataInstance:(SPDatabaseData*)data
+{
+	databaseDataInstance = data;
+}
+
+- (void)setTableSourceView:(SPTableView*)tv
+{
+	tableSourceView = tv;
+}
+
+- (void)setEncodingPopupCell:(NSPopUpButtonCell*)cell
+{
+	encodingPopupCell = cell;
 }
 
 #endif
@@ -1294,6 +1337,7 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+#ifndef SP_REFACTOR
 
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
@@ -1324,6 +1368,7 @@
 			isCurrentExtraAutoIncrement = NO;
 		}
 	}
+#endif
 }
 
 /**
@@ -1533,12 +1578,16 @@
 	[removeFieldButton setEnabled:NO];
 	[copyFieldButton setEnabled:NO];
 	[reloadFieldsButton setEnabled:NO];
+#ifndef SP_REFACTOR
 	[editTableButton setEnabled:NO];
+#endif
 
 	[indexesTableView setEnabled:NO];
+#ifndef SP_REFACTOR
 	[addIndexButton setEnabled:NO];
 	[removeIndexButton setEnabled:NO];
 	[refreshIndexesButton setEnabled:NO];
+#endif
 }
 
 /**
@@ -1563,14 +1612,18 @@
 	}
 
 	[reloadFieldsButton setEnabled:YES];
+#ifndef SP_REFACTOR
 	[editTableButton setEnabled:YES];
+#endif
 
 	[indexesTableView setEnabled:YES];
 	[indexesTableView displayIfNeeded];
 
+#ifndef SP_REFACTOR
 	[addIndexButton setEnabled:editingEnabled];
 	[removeIndexButton setEnabled:(editingEnabled && ([indexesTableView numberOfSelectedRows] > 0))];
 	[refreshIndexesButton setEnabled:YES];
+#endif
 }
 
 #pragma mark -

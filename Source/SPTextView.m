@@ -102,6 +102,12 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize completionIsOpen;
 @synthesize completionWasReinvokedAutomatically;
 
+#ifdef SP_REFACTOR
+@synthesize tableDocumentInstance;
+@synthesize tablesListInstance;
+@synthesize customQueryInstance;
+#endif
+
 /**
  * Sort function (mainly used to sort the words in the textView)
  */
@@ -1953,10 +1959,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self insertText:snip];
 
 		// If autopair is enabled check whether snip begins with ( and ends with ), if so mark ) as pair-linked
-#ifndef SP_REFACTOR
-		if ([prefs boolForKey:SPCustomQueryAutoPairCharacters] &&
-#else
 		if (
+#ifndef SP_REFACTOR
+				[prefs boolForKey:SPCustomQueryAutoPairCharacters] &&
+#else
 #endif
 				 (([snip hasPrefix:@"("] && [snip hasSuffix:@")"])
 						|| ([snip hasPrefix:@"`"] && [snip hasSuffix:@"`"])
@@ -2170,8 +2176,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to SPCustomQuery
 	// and TAB as soft indention
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]){
+#ifndef SP_REFACTOR
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
+#endif
 
 		// Is TAB trigger active change selection according to {SHIFT}TAB
 		if(snippetControlCounter > -1){
@@ -2214,6 +2222,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		}
 
+#ifndef SP_REFACTOR
 		// Check if tab trigger is defined; if so insert it, otherwise pass through event
 		if(snippetControlCounter < 0 && [tabTrigger length] && [tableDocumentInstance fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[tableDocumentInstance fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
@@ -2225,7 +2234,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		// Check for TAB as indention for current line, i.e. left of the caret there are only white spaces
 		// but only if Soft Indent is set
-#ifndef SP_REFACTOR
 		if([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:YES]) {
 			if([self shiftSelectionRight]) return;
 		}
@@ -3412,7 +3420,11 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Check size and NSFileType
+#ifndef SP_REFACTOR
 		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
+#else
+		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+#endif
 		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];

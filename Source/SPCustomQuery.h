@@ -52,9 +52,10 @@
 @class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, NSSplitView, SPFieldEditorController;
 #endif
 
+#ifndef SP_REFACTOR
 @interface SPCustomQuery : NSObject 
-#ifdef SP_REFACTOR
-<NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
+#else
+@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
 #endif
 {
 	IBOutlet id tableDocumentInstance;
@@ -185,6 +186,14 @@
 	NSString *kCellEditorErrorNoMultiTabDb;
 	NSString *kCellEditorErrorTooManyMatches;
 }
+
+#ifdef SP_REFACTOR
+@property (assign) SPDatabaseDocument* tableDocumentInstance;
+@property (assign) SPTablesList* tablesListInstance;
+@property (assign) SPTextView *textView;
+@property (assign) SPCopyTable *customQueryView;
+@property (assign) NSButton* runAllButton;
+#endif
 
 @property(assign) BOOL textViewWasChanged;
 

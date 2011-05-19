@@ -30,9 +30,9 @@
 #import "SPFavoritesOutlineView.h"
 #endif
 
-@class SPDatabaseDocument, SPSSHTunnel
+@class SPDatabaseDocument, SPSSHTunnel, SPKeychain
 #ifndef SP_REFACTOR /* class decl */
-, SPKeychain, BWAnchoredButtonBar, SPFavoriteNode
+, BWAnchoredButtonBar, SPFavoriteNode
 #endif
 ;
 
@@ -59,8 +59,10 @@
 #ifndef SP_REFACTOR	/* ivars */
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
+#endif
 	SPKeychain *keychain;
 	NSUserDefaults *prefs;
+#ifndef SP_REFACTOR
 	NSMutableArray *favorites;
 #endif
 	SPSSHTunnel *sshTunnel;
@@ -100,11 +102,11 @@
 
 	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
-#ifndef SP_REFACTOR	/* ivars */
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
 	NSString *connectionSSHKeychainItemAccount;
 
+#ifndef SP_REFACTOR	/* ivars */
 	NSMutableArray *nibObjectsToRelease;
 
 	IBOutlet NSView *connectionView;
@@ -181,13 +183,10 @@
 @property (readwrite, assign) int sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
-#ifndef SP_REFACTOR	/* ivars */
-
 @property (readwrite, retain) NSString *connectionKeychainItemName;
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
-#endif
 
 @property (readonly, assign) BOOL isConnecting;
 #ifndef SP_REFACTOR	/* ivars */
@@ -198,7 +197,6 @@
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)cancelMySQLConnection:(id)sender;
 - (void)initiateSSHTunnelConnection;
 - (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
@@ -209,16 +207,19 @@
 
 // Interface interaction
 - (IBAction)chooseKeyLocation:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(id)sender;
+#endif
 
 // Connection details interaction
 - (BOOL)checkHost;
 
+#ifndef SP_REFACTOR
 // Favorites interaction
 - (void)updateFavorites;
 - (void)updateFavoriteSelection:(id)sender;
