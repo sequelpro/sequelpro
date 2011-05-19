@@ -284,7 +284,7 @@ static SPQueryController *sharedQueryController = nil;
 
 	[panel setAccessoryView:saveLogView];
 
-	[panel beginSheetForDirectory:nil file:@"untitled" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	[panel beginSheetForDirectory:nil file:NSLocalizedString(@"ConsoleLog",@"Console : Save as : Initial filename") modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 #endif
 }
 
