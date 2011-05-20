@@ -3073,15 +3073,16 @@
 {
 	NSString *version = nil;
 	if([[mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""] integerValue] < 42)
-		version = @"41";
+		version = @"4.1";
 	else
-		version = [mySQLversion stringByReplacingOccurrencesOfString:@"." withString:@""];
+		version = [NSString stringWithString:mySQLversion];
+
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:
 		[[NSString stringWithFormat:
 			SPMySQLSearchURL,
-			searchString,
 			version,
-			NSLocalizedString(@"en", @"MySQL search language code - eg in http://search.mysql.com/search?q=select&site=refman-50&lr=lang_en")]
+			NSLocalizedString(@"en", @"MySQL search language code - eg in http://search.mysql.com/search?q=select&site=refman-50&lr=lang_en"),
+			searchString]
 		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 }
 
