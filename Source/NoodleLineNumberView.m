@@ -91,7 +91,10 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		addObjectSel = @selector(addObject:);
 		numberWithUnsignedIntegerSel = @selector(numberWithUnsignedInteger:);
 		numberWithUnsignedIntegerIMP = [NSNumber methodForSelector:numberWithUnsignedIntegerSel];
+		rangeOfLineSel = @selector(getLineStart:end:contentsEnd:forRange:);
 
+		currentNumberOfLines = 1;
+		numberClass = [NSNumber class];
 
 	}
 
@@ -191,11 +194,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 	if(![self clientView]) return;
 
-	NSUInteger editMask = [[(NSTextView *)[self clientView] textStorage] editedMask];
-
 	// Invalidate the line indices only if text view was changed in length but not if the font was changed.
 	// They will be recalculated and recached on demand.
-	if(editMask != 1)
+	if([[(NSTextView *)[self clientView] textStorage] editedMask] != 1)
 		[self invalidateLineIndices];
 
 	[self setNeedsDisplay:YES];
@@ -498,41 +499,38 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	if ([view isKindOfClass:[NSTextView class]])
 	{
 
-		NSUInteger anIndex, stringLength, lineEnd, contentEnd, lastLine;
+		NSUInteger anIndex, stringLength, lineEnd, contentEnd;
 		NSString   *textString;
 		CGFloat    newThickness;
 
 		textString   = [view string];
 		stringLength = [textString length];
 
-		// Switch off line numbering if text larger than 6MB
+		// Switch off line numbering if text larger than 3MB
 		// for performance reasons.
 		// TODO improve performance maybe via threading
-		if(stringLength>6000000)
+		if(stringLength>3000000)
 			return;
 
-		if (lineIndices) [lineIndices release], lineIndices = nil;
-		// Init lineIndices with text length / 16 + 1
-		lineIndices = [[NSMutableArray alloc] initWithCapacity:((NSUInteger)stringLength>>4)+1];
+		lineIndices = [[NSMutableArray alloc] initWithCapacity:currentNumberOfLines];
 
 		anIndex = 0;
 
 		// Cache loop methods for speed
-		RangeOfLineIMP rangeOfLineIMP = (RangeOfLineIMP)[textString methodForSelector:lineRangeForRangeSel];
+		IMP rangeOfLineIMP = [textString methodForSelector:rangeOfLineSel];
 		addObjectIMP = [lineIndices methodForSelector:addObjectSel];
 		
 		do
 		{
-			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, anIndex));
-			lastLine = anIndex;
-			anIndex = NSMaxRange((*rangeOfLineIMP)(textString, lineRangeForRangeSel, NSMakeRange(anIndex, 0)));
+			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)(numberClass, numberWithUnsignedIntegerSel, anIndex));
+			(*rangeOfLineIMP)(textString, rangeOfLineSel, NULL, &anIndex, NULL, NSMakeRange(anIndex, 0));
 		}
 		while (anIndex < stringLength);
 
 		// Check if text ends with a new line.
-		[textString getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange(lastLine, 0)];
+		(*rangeOfLineIMP)(textString, rangeOfLineSel, NULL, &lineEnd, &contentEnd, NSMakeRange([[lineIndices lastObject] unsignedIntValue], 0));
 		if (contentEnd < lineEnd)
-			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)([NSNumber class], numberWithUnsignedIntegerSel, anIndex));
+			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)(numberClass, numberWithUnsignedIntegerSel, anIndex));
 
 		NSUInteger lineCount = [lineIndices count];
 		if(lineCount < 10)
@@ -554,7 +552,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		else
 			newThickness = 100;
 
-		if (fabs(currentRuleThickness - newThickness) > 1)
+		currentNumberOfLines = lineCount;
+
+		if (currentRuleThickness != newThickness)
 		{
 
 			currentRuleThickness = newThickness;

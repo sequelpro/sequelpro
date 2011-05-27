@@ -34,6 +34,7 @@
 
 	// Array of character indices for the beginning of each line
 	NSMutableArray  *lineIndices;
+	NSUInteger      currentNumberOfLines;
 
 	NSFont          *font;
 	NSColor         *textColor;
@@ -61,6 +62,8 @@
 	IMP numberWithUnsignedIntegerIMP;
 	SEL addObjectSel;
 	IMP addObjectIMP;
+	SEL rangeOfLineSel;
+	Class numberClass;
 
 	NSLayoutManager  *layoutManager;
 	NSTextContainer  *container;
