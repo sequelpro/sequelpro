@@ -4143,11 +4143,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		if (includePasswords) {
 			NSString *pw = [self keychainPasswordForConnection:nil];
-			if (![pw length]) pw = [connectionController password];
-			if (pw) 
-				[connection setObject:pw forKey:@"password"];
-			else
-				[connection setObject:@"" forKey:@"password"];
+			if (!pw) pw = [connectionController password];
+			if (pw) [connection setObject:pw forKey:@"password"];
 
 			if ([connectionController type] == SPSSHTunnelConnection) {
 				NSString *sshpw = [self keychainPasswordForSSHConnection:nil];

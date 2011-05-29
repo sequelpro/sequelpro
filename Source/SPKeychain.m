@@ -120,7 +120,7 @@
 	void *passwordData;
 	UInt32 passwordLength;
 	SecKeychainItemRef itemRef;
-	NSString *password = @"";
+	NSString *password = nil;
 
 	// Check supplied variables and replaces nils with empty strings
 	if (!name) name = @"";

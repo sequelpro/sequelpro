@@ -75,7 +75,7 @@
 {
 	
 	// If no keychain item is available, return an empty password
-	if (![connectionController connectionKeychainItemName]) return @"";
+	if (![connectionController connectionKeychainItemName]) return nil;
 	
 	// Otherwise, pull the password from the keychain using the details from this connection
 	SPKeychain *keychain = [[SPKeychain alloc] init];

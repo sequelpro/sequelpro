@@ -499,15 +499,15 @@
 	NSString *keychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:(([[currentFavorite objectForKey:@"type"] integerValue] == SPSocketConnection)?@"localhost":[currentFavorite objectForKey:@"host"]) database:[currentFavorite objectForKey:@"database"]];
 	NSString *passwordValue   = [keychain getPasswordForName:keychainName account:keychainAccount];
 	
-	[standardPasswordField setStringValue:passwordValue];
-	[socketPasswordField setStringValue:passwordValue];
-	[sshSQLPasswordField setStringValue:passwordValue];
+	[standardPasswordField setStringValue:passwordValue?passwordValue:@""];
+	[socketPasswordField setStringValue:passwordValue?passwordValue:@""];
+	[sshSQLPasswordField setStringValue:passwordValue?passwordValue:@""];
 	
 	// Retrieve the SSH keychain password if appropriate.
 	NSString *keychainSSHName    = [keychain nameForSSHForFavoriteName:[currentFavorite objectForKey:@"name"] id:[currentFavorite objectForKey:@"id"]];
 	NSString *keychainSSHAccount = [keychain accountForSSHUser:[currentFavorite objectForKey:@"sshUser"] sshHost:[currentFavorite objectForKey:@"sshHost"]];
-	
-	[sshPasswordField setStringValue:[keychain getPasswordForName:keychainSSHName account:keychainSSHAccount]];
+	NSString *sshPasswordValue   = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
+	[sshPasswordField setStringValue:sshPasswordValue?sshPasswordValue:@""];
 	
 	favoriteNameFieldWasTouched = YES;
 }
