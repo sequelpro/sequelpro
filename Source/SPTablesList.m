@@ -2092,7 +2092,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
 			}
 			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
-			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [tables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\n\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
 			[alert setAlertStyle:NSWarningAlertStyle];
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
 				[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
