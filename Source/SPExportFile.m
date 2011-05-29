@@ -98,7 +98,10 @@
 - (BOOL)delete
 {
 	if ((![self exportFilePath]) || (![self exportFileHandle]) || ([[self exportFilePath] length] == 0)) return NO;
-	
+
+	// Ensure the file is closed to allow all processing threads to close
+	[self close];
+
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
 	if ([fileManager fileExistsAtPath:[self exportFilePath]]) {
