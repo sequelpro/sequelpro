@@ -525,7 +525,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		} while (![self tryLockConnection]);
 		[self unlockConnection];
 
-		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
+		// Only close the connection if it appears to still be active, and not reading or
+		// writing.  This may result in a leak, but minimises crashes.
+		if (!mConnection->net.reading_or_writing && mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
@@ -580,6 +582,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	// Close the connection if it exists.
 	if (mConnected) {
+		mConnected = NO;
 
 		// Allow any pings or query cleanups to complete - within a time limit.
 		uint64_t startTime_t, currentTime_t;
@@ -594,11 +597,12 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		} while (![self tryLockConnection]);
 		[self unlockConnection];
 
-		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
+		// Only close the connection if it's not reading or writing - this may result
+		// in leaks, but minimises crashes.
+		if (!mConnection->net.reading_or_writing) mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
-	mConnected = NO;
 	isDisconnecting = NO;
 	[self lockConnection];
 
@@ -2012,6 +2016,13 @@ void pingThreadCleanup(void *pingDetails)
 		}
 	} else {
 		NSLog(@"Task cancelletion MySQL init failed.");
+	}
+
+	// As the attempt may have taken up to the connection timeout, check lock status
+	// again, returning if nothing is required.
+	if ([self tryLockConnection]) {
+		[self unlockConnection];
+		return;
 	}
 
 	// Reset the connection
