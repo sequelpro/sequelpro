@@ -27,143 +27,71 @@
 #import "pthread.h"
 
 @interface NSNotificationCenter (NSNotificationCenterAdditions_PrivateAPI)
-#ifndef SP_REFACTOR
-+ (void)_postNotification:(NSNotification *)notification;
-+ (void)_postNotificationName:(NSDictionary *)info;
-+ (void)_postNotificationForwarder:(NSDictionary *)info;
-#else
-+ (void)_sequelProPostNotification:(NSNotification *)notification;
-+ (void)_sequelProPostNotificationName:(NSDictionary *)info;
-+ (void)_sequelProPostNotificationForwarder:(NSDictionary *)info;
-#endif
++ (void)_postNotification:(NSNotification *)aNotification;
++ (void)_postNotificationWithDetails:(NSDictionary *)anInfoDictionary;
 @end
 
 @implementation NSNotificationCenter (NSNotificationCenterAdditions)
 
-#ifndef SP_REFACTOR
-- (void)postNotificationOnMainThread:(NSNotification *)notification 
-#else
-- (void)sequelProPostNotificationOnMainThread:(NSNotification *)notification 
-#endif
+- (void)postNotificationOnMainThread:(NSNotification *)aNotification
 {
-	if (pthread_main_np()) return [self postNotification:notification];
-	
-#ifndef SP_REFACTOR
-	[self postNotificationOnMainThread:notification waitUntilDone:NO];
-#else
-	[self sequelProPostNotificationOnMainThread:notification waitUntilDone:NO];
-#endif
+	if (pthread_main_np()) return [self postNotification:aNotification];
+
+	[self performSelectorOnMainThread:@selector(_postNotification:) withObject:aNotification waitUntilDone:NO];
 }
 
-#ifndef SP_REFACTOR
-- (void)postNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)shouldWaitUntilDone 
-#else
-- (void)sequelProPostNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)shouldWaitUntilDone 
-#endif
+- (void)postNotificationOnMainThread:(NSNotification *)aNotification waitUntilDone:(BOOL)shouldWaitUntilDone
 {
-	if (pthread_main_np()) return [self postNotification:notification];
+	if (pthread_main_np()) return [self postNotification:aNotification];
 
-#ifndef SP_REFACTOR
-	[self performSelectorOnMainThread:@selector(_postNotification:) withObject:notification waitUntilDone:shouldWaitUntilDone];
-#else	
-	[self performSelectorOnMainThread:@selector(_sequelProPostNotification:) withObject:notification waitUntilDone:shouldWaitUntilDone];
-#endif
+	[self performSelectorOnMainThread:@selector(_postNotification:) withObject:aNotification waitUntilDone:shouldWaitUntilDone];
 }
 
-#ifndef SP_REFACTOR
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object 
-#else
-- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object 
-#endif
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject
 {
-	if (pthread_main_np()) return [self postNotificationName:name object:object userInfo:nil];
-	
-#ifndef SP_REFACTOR
-	[self postNotificationOnMainThreadWithName:name object:object userInfo:nil waitUntilDone:NO];
-#else
-	[self sequelProPostNotificationOnMainThreadWithName:name object:object userInfo:nil waitUntilDone:NO];
-#endif
+	if (pthread_main_np()) return [self postNotificationName:aName object:anObject userInfo:nil];
+
+	[self postNotificationOnMainThreadWithName:aName object:anObject userInfo:nil waitUntilDone:NO];
 }
 
-#ifndef SP_REFACTOR
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo 
-#else
-- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo 
-#endif
-{	
-	if(pthread_main_np()) return [self postNotificationName:name object:object userInfo:userInfo];
-	
-#ifndef SP_REFACTOR
-	[self postNotificationOnMainThreadWithName:name object:object userInfo:userInfo waitUntilDone:NO];
-#else
-	[self sequelProPostNotificationOnMainThreadWithName:name object:object userInfo:userInfo waitUntilDone:NO];
-#endif
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo
+{
+	if(pthread_main_np()) return [self postNotificationName:aName object:anObject userInfo:aUserInfo];
+
+	[self postNotificationOnMainThreadWithName:aName object:anObject userInfo:aUserInfo waitUntilDone:NO];
 }
 
-#ifndef SP_REFACTOR
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)shouldWaitUntilDone 
-#else
-- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)shouldWaitUntilDone 
-#endif
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo waitUntilDone:(BOOL)shouldWaitUntilDone
 {
-	if (pthread_main_np()) return [self postNotificationName:name object:object userInfo:userInfo];
+	if (pthread_main_np()) return [self postNotificationName:aName object:anObject userInfo:aUserInfo];
 
 	NSMutableDictionary *info = [[NSMutableDictionary allocWithZone:nil] initWithCapacity:3];
-	
-	if (name) [info setObject:name forKey:@"name"];
-	if (object) [info setObject:object forKey:@"object"];
-	if (userInfo) [info setObject:userInfo forKey:@"userInfo"];
 
-#ifndef SP_REFACTOR
-	[[self class] performSelectorOnMainThread:@selector(_postNotificationName:) withObject:info waitUntilDone:shouldWaitUntilDone];
-#else
-	[[self class] performSelectorOnMainThread:@selector(_sequelProPostNotificationName:) withObject:info waitUntilDone:shouldWaitUntilDone];
-#endif
+	if (aName) [info setObject:aName forKey:@"name"];
+	if (anObject) [info setObject:anObject forKey:@"object"];
+	if (aUserInfo) [info setObject:aUserInfo forKey:@"userInfo"];
 
-	[info release];
+	[[self class] performSelectorOnMainThread:@selector(_postNotificationWithDetails:) withObject:info waitUntilDone:shouldWaitUntilDone];
 }
 
 @end
 
 @implementation NSNotificationCenter (NSNotificationCenterAdditions_PrivateAPI)
 
-#ifndef SP_REFACTOR
-+ (void)_postNotification:(NSNotification *)notification 
-#else
-+ (void)_sequelProPostNotification:(NSNotification *)notification 
-#endif
++ (void)_postNotification:(NSNotification *)aNotification
 {
-	[[self defaultCenter] postNotification:notification];
+	[[self defaultCenter] postNotification:aNotification];
 }
 
-#ifndef SP_REFACTOR
-+ (void)_postNotificationName:(NSDictionary *)info 
-#else
-+ (void)_sequelProPostNotificationName:(NSDictionary *)info 
-#endif
++ (void)_postNotificationWithDetails:(NSDictionary *)anInfoDictionary
 {
-	NSString *name = [info objectForKey:@"name"];
-	
-	id object = [info objectForKey:@"object"];
-	
-	NSDictionary *userInfo = [info objectForKey:@"userInfo"];
+	NSString *name = [anInfoDictionary objectForKey:@"name"];
+	id object = [anInfoDictionary objectForKey:@"object"];
+	NSDictionary *userInfo = [anInfoDictionary objectForKey:@"userInfo"];
 
 	[[self defaultCenter] postNotificationName:name object:object userInfo:userInfo];
-}
 
-#ifndef SP_REFACTOR
-+ (void)_postNotificationForwarder:(NSDictionary *)info 
-#else
-+ (void)_sequelProPostNotificationForwarder:(NSDictionary *)info 
-#endif
-{
-	NSString *name = [info objectForKey:@"name"];
-	
-	id object = [info objectForKey:@"object"];
-	
-	NSDictionary *userInfo = [info objectForKey:@"userInfo"];
-
-	[[self defaultCenter] postNotificationName:name object:object userInfo:userInfo];
+	[anInfoDictionary release];
 }
 
 @end

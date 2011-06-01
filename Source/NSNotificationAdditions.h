@@ -25,20 +25,11 @@
 
 @interface NSNotificationCenter (NSNotificationCenterAdditions)
 
-#ifndef SP_REFACTOR
-- (void)postNotificationOnMainThread:(NSNotification *)notification;
-- (void)postNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)wait;
+- (void)postNotificationOnMainThread:(NSNotification *)aNotification;
+- (void)postNotificationOnMainThread:(NSNotification *)aNotification waitUntilDone:(BOOL)shouldWaitUntilDone;
 
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object;
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo;
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)wait;
-#else
-- (void)sequelProPostNotificationOnMainThread:(NSNotification *)notification;
-- (void)sequelProPostNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)wait;
-
-- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object;
-- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo;
-- (void)sequelProPostNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)wait;
-#endif
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject;
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo;
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo waitUntilDone:(BOOL)shouldWaitUntilDone;
 
 @end
