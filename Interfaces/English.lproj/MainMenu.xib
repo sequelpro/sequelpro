@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="628"/>
+			<integer value="29"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1201,7 +1201,7 @@
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
 								</object>
-								<object class="NSMenuItem" id="64301087">
+								<object class="NSMenuItem" id="74844157">
 									<reference key="NSMenu" ref="172963563"/>
 									<bool key="NSIsAlternate">YES</bool>
 									<string key="NSTitle">Drop Database...</string>
@@ -3144,7 +3144,7 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">removeDatabase:</string>
 						<reference key="source" ref="63651044"/>
-						<reference key="destination" ref="64301087"/>
+						<reference key="destination" ref="74844157"/>
 					</object>
 					<int key="connectionID">1208</int>
 				</object>
@@ -3515,7 +3515,7 @@
 							<reference ref="219440274"/>
 							<reference ref="929597005"/>
 							<reference ref="988156931"/>
-							<reference ref="64301087"/>
+							<reference ref="74844157"/>
 						</object>
 						<reference key="parent" ref="693420496"/>
 					</object>
@@ -4596,7 +4596,7 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">1207</int>
-						<reference key="object" ref="64301087"/>
+						<reference key="object" ref="74844157"/>
 						<reference key="parent" ref="172963563"/>
 					</object>
 				</object>
@@ -4647,7 +4647,9 @@
 					<string>1095.IBPluginDependency</string>
 					<string>1101.IBPluginDependency</string>
 					<string>1102.IBPluginDependency</string>
+					<string>1103.IBAttributePlaceholdersKey</string>
 					<string>1103.IBPluginDependency</string>
+					<string>1104.IBAttributePlaceholdersKey</string>
 					<string>1104.IBPluginDependency</string>
 					<string>111.IBPluginDependency</string>
 					<string>111.ImportedFromIB2</string>
@@ -5020,7 +5022,23 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="952513030"/>
+							<string key="toolTip">Select the next tab in this window.  Can also be accessed via ⇧⌘] or ⌥⌘→</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSMutableDictionary">
+						<string key="NS.key.0">ToolTip</string>
+						<object class="IBToolTipAttribute" key="NS.object.0">
+							<string key="name">ToolTip</string>
+							<reference key="object" ref="591568093"/>
+							<string key="toolTip">Select the previous tab in this window.  Can also be accessed via ⇧⌘[ or ⌥⌘←</string>
+						</object>
+					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -5071,7 +5089,7 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{704, 478}, {64, 6}}</string>
+					<string>{{633, 476}, {64, 6}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
@@ -5299,7 +5317,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{648, 251}, {292, 233}}</string>
+					<string>{{577, 249}, {292, 233}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{829, 663}, {268, 173}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
