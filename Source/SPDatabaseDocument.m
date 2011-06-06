@@ -4123,7 +4123,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 				[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
 				[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
-				[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
+				if ([connectionController sshKeyLocation])
+					[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
 				if ([connectionController sshPort] && [[connectionController sshPort] length])
 					[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
 			break;
