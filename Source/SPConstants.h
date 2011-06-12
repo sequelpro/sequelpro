@@ -448,6 +448,9 @@ extern NSString *SPFavoriteSSLCertificateFileLocationKey;
 extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
 
+// Favorites import/export
+extern NSString *SPFavoritesDataRootKey;
+
 // Bundle Files and Bundle Editor
 extern NSString *SPBundleScopeQueryEditor;
 extern NSString *SPBundleScopeDataTable;

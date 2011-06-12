@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <MCPKit/MCPKit.h>
+#import "SPFavoritesExportProtocol.h"
 #import "SPConnectionControllerDelegateProtocol.h"
 
 #ifndef SP_REFACTOR /* headers */
@@ -51,7 +52,7 @@
 
 #endif
 
-@interface SPConnectionController : NSObject 
+@interface SPConnectionController : NSObject
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
@@ -160,6 +161,7 @@
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
+	IBOutlet NSView *exportPanelAccessoryView;
 	
 	BOOL isEditing;
     BOOL reverseFavoritesSort;

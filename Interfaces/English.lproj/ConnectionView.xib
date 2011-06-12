@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10J567</string>
-		<string key="IBDocument.InterfaceBuilderVersion">823</string>
+		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.InterfaceBuilderVersion">851</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
-		<string key="IBDocument.HIToolboxVersion">462.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
@@ -15,12 +15,14 @@
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>823</string>
+				<string>851</string>
 				<string>1.2.5</string>
 			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="5812"/>
+			<integer value="5468"/>
 			<integer value="4910"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -155,7 +157,7 @@
 															</object>
 														</object>
 														<double key="NSRowHeight">17</double>
-														<int key="NSTvFlags">390070272</int>
+														<int key="NSTvFlags">524288000</int>
 														<reference key="NSDelegate"/>
 														<reference key="NSDataSource"/>
 														<string key="NSAutosaveName">ConnectionView</string>
@@ -317,7 +319,6 @@
 																<reference key="NSMenu" ref="949612237"/>
 																<bool key="NSIsDisabled">YES</bool>
 																<bool key="NSIsSeparator">YES</bool>
-																<bool key="NSIsHidden">YES</bool>
 																<string key="NSTitle"/>
 																<string key="NSKeyEquiv"/>
 																<int key="NSMnemonicLoc">2147483647</int>
@@ -328,8 +329,6 @@
 															</object>
 															<object class="NSMenuItem" id="885080859">
 																<reference key="NSMenu" ref="949612237"/>
-																<bool key="NSIsDisabled">YES</bool>
-																<bool key="NSIsHidden">YES</bool>
 																<string key="NSTitle">Import...</string>
 																<string key="NSKeyEquiv"/>
 																<int key="NSMnemonicLoc">2147483647</int>
@@ -340,8 +339,6 @@
 															</object>
 															<object class="NSMenuItem" id="509439698">
 																<reference key="NSMenu" ref="949612237"/>
-																<bool key="NSIsDisabled">YES</bool>
-																<bool key="NSIsHidden">YES</bool>
 																<string key="NSTitle">Export...</string>
 																<string key="NSKeyEquiv"/>
 																<int key="NSMnemonicLoc">2147483647</int>
@@ -464,7 +461,6 @@
 														<string key="NSKeyEquiv"/>
 														<int key="NSKeyEquivModMask">1048576</int>
 														<int key="NSMnemonicLoc">2147483647</int>
-														<int key="NSState">1</int>
 														<reference key="NSImage" ref="1057150516"/>
 														<reference key="NSOnImage" ref="1022504326"/>
 														<reference key="NSMixedImage" ref="329345764"/>
@@ -2455,7 +2451,6 @@
 						<reference key="NSMenu" ref="9858888"/>
 						<bool key="NSIsDisabled">YES</bool>
 						<bool key="NSIsSeparator">YES</bool>
-						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -2464,8 +2459,6 @@
 					</object>
 					<object class="NSMenuItem" id="1069447512">
 						<reference key="NSMenu" ref="9858888"/>
-						<bool key="NSIsDisabled">YES</bool>
-						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle">Export...</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -2572,6 +2565,32 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{579, 51}</string>
+				<string key="NSClassName">NSView</string>
+			</object>
+			<object class="NSCustomView" id="927914916">
+				<reference key="NSNextResponder"/>
+				<int key="NSvFlags">268</int>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSTextField" id="102429131">
+						<reference key="NSNextResponder" ref="927914916"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{-3, 12}, {371, 34}}</string>
+						<reference key="NSSuperview" ref="927914916"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="557766306">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">138412032</int>
+							<string key="NSContents">Note that for security reasons, your connection favorite passwords are not included in the export.</string>
+							<reference key="NSSupport" ref="807120225"/>
+							<reference key="NSControlView" ref="102429131"/>
+							<reference key="NSBackgroundColor" ref="644242225"/>
+							<reference key="NSTextColor" ref="434026568"/>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{365, 52}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
@@ -4691,6 +4710,14 @@
 					</object>
 					<int key="connectionID">5811</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">exportPanelAccessoryView</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="927914916"/>
+					</object>
+					<int key="connectionID">5815</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -6389,6 +6416,30 @@
 						<reference key="object" ref="773701029"/>
 						<reference key="parent" ref="192444974"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5812</int>
+						<reference key="object" ref="927914916"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="102429131"/>
+						</object>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">AccessoryView</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5813</int>
+						<reference key="object" ref="102429131"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="557766306"/>
+						</object>
+						<reference key="parent" ref="927914916"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">5814</int>
+						<reference key="object" ref="557766306"/>
+						<reference key="parent" ref="102429131"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -6675,6 +6726,11 @@
 					<string>5790.IBPluginDependency</string>
 					<string>5791.IBPluginDependency</string>
 					<string>5793.IBPluginDependency</string>
+					<string>5812.IBEditorWindowLastContentRect</string>
+					<string>5812.IBPluginDependency</string>
+					<string>5813.IBPluginDependency</string>
+					<string>5813.IBViewBoundsToFrameTransform</string>
+					<string>5814.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7007,7 +7063,7 @@
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{725, 739}, {142, 123}}</string>
+					<string>{{461, 362}, {142, 123}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -7015,7 +7071,7 @@
 						<bytes key="NSTransformStruct">P4AAAL+AAAC/gAAAwagAAA</bytes>
 					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{129, -14}, {131, 169}}</string>
+					<string>{{0, -14}, {131, 169}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -7171,11 +7227,18 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{160, 101}, {128, 54}}</string>
+					<string>{{31, 101}, {128, 54}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<string>{{140, 543}, {365, 52}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAADAQAAAwmgAAA</bytes>
+					</object>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -7194,7 +7257,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">5811</int>
+			<int key="maxID">5815</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -7240,6 +7303,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7608,6 +7678,7 @@
 							<string>delegate</string>
 							<string>errorDetailText</string>
 							<string>errorDetailWindow</string>
+							<string>exportPanelAccessoryView</string>
 							<string>favoritesOutlineView</string>
 							<string>favoritesSortByMenuItem</string>
 							<string>helpButton</string>
@@ -7655,6 +7726,7 @@
 							<string>id</string>
 							<string>NSTextView</string>
 							<string>NSWindow</string>
+							<string>NSView</string>
 							<string>SPFavoritesOutlineView</string>
 							<string>NSMenuItem</string>
 							<string>NSButton</string>
@@ -7705,6 +7777,7 @@
 							<string>delegate</string>
 							<string>errorDetailText</string>
 							<string>errorDetailWindow</string>
+							<string>exportPanelAccessoryView</string>
 							<string>favoritesOutlineView</string>
 							<string>favoritesSortByMenuItem</string>
 							<string>helpButton</string>
@@ -7784,6 +7857,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">errorDetailWindow</string>
 								<string key="candidateClassName">NSWindow</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">exportPanelAccessoryView</string>
+								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">favoritesOutlineView</string>

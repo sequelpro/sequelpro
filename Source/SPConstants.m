@@ -254,6 +254,9 @@ NSString *SPFavoriteSSLCertificateFileLocationKey        = @"sslCertificateFileL
 NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocationEnabled";
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
 
+// Favorites import/export
+NSString *SPFavoritesDataRootKey                            = @"SPConnectionFavorites";
+
 // Bundle Files and Bundle Editor
 NSString *SPBundleScopeQueryEditor                          = @"editor";
 NSString *SPBundleScopeDataTable                            = @"datatable";

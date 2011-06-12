@@ -34,6 +34,8 @@
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		11D44DF0118F5887002AA43C /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; };
 		170EAA301311B7AA000AE5FE /* SPConnectionControllerDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 170EAA2F1311B7AA000AE5FE /* SPConnectionControllerDataSource.m */; };
+		17123A1C137F09C200D06442 /* SPFavoritesExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17123A1B137F09C100D06442 /* SPFavoritesExporter.m */; };
+		17123A1F137F09E500D06442 /* SPFavoritesImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17123A1E137F09E500D06442 /* SPFavoritesImporter.m */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
 		17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */ = {isa = PBXBuildFile; fileRef = 17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */; };
 		1723F08B12F1F9350008253B /* SPWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 1723F08A12F1F9350008253B /* SPWindow.m */; };
@@ -572,6 +574,10 @@
 		11D44DEF118F5887002AA43C /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = Frameworks/OCMock.framework; sourceTree = "<group>"; };
 		170EAA2E1311B7AA000AE5FE /* SPConnectionControllerDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDataSource.h; sourceTree = "<group>"; };
 		170EAA2F1311B7AA000AE5FE /* SPConnectionControllerDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerDataSource.m; sourceTree = "<group>"; };
+		17123A1A137F09C100D06442 /* SPFavoritesExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesExporter.h; sourceTree = "<group>"; };
+		17123A1B137F09C100D06442 /* SPFavoritesExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesExporter.m; sourceTree = "<group>"; };
+		17123A1D137F09E500D06442 /* SPFavoritesImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImporter.h; sourceTree = "<group>"; };
+		17123A1E137F09E500D06442 /* SPFavoritesImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesImporter.m; sourceTree = "<group>"; };
 		17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QLPreviewPanel.h; sourceTree = "<group>"; };
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
@@ -857,6 +863,7 @@
 		17F90E471210B42700274C98 /* SPExportFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFile.m; sourceTree = "<group>"; };
 		17F90E491210B43A00274C98 /* SPExportFileUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFileUtilities.h; sourceTree = "<group>"; };
 		17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFileUtilities.m; sourceTree = "<group>"; };
+		17F9185C13A415C5005EE9BD /* SPFavoritesExportProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesExportProtocol.h; sourceTree = "<group>"; };
 		17FDB04A1280778B00DBBBC2 /* SPFontPreviewTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFontPreviewTextField.h; sourceTree = "<group>"; };
 		17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFontPreviewTextField.m; sourceTree = "<group>"; };
 		296DC89E0F8FD336002A3258 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
@@ -1369,6 +1376,17 @@
 			name = "Database Actions";
 			sourceTree = "<group>";
 		};
+		17123A19137F098700D06442 /* Import & Export */ = {
+			isa = PBXGroup;
+			children = (
+				17123A1D137F09E500D06442 /* SPFavoritesImporter.h */,
+				17123A1E137F09E500D06442 /* SPFavoritesImporter.m */,
+				17123A1A137F09C100D06442 /* SPFavoritesExporter.h */,
+				17123A1B137F09C100D06442 /* SPFavoritesExporter.m */,
+			);
+			name = "Import & Export";
+			sourceTree = "<group>";
+		};
 		17128B890FE6DFFA0035DD75 /* QuickLook */ = {
 			isa = PBXGroup;
 			children = (
@@ -1784,7 +1802,8 @@
 				17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */,
 				170EAA2E1311B7AA000AE5FE /* SPConnectionControllerDataSource.h */,
 				170EAA2F1311B7AA000AE5FE /* SPConnectionControllerDataSource.m */,
-				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
+				17123A19137F098700D06442 /* Import & Export */,
+				17F9187013A4274A005EE9BD /* Delegate Protocols */,
 			);
 			name = "Connection View";
 			sourceTree = "<group>";
@@ -2260,6 +2279,15 @@
 				17F90E471210B42700274C98 /* SPExportFile.m */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		17F9187013A4274A005EE9BD /* Delegate Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				17F9185C13A415C5005EE9BD /* SPFavoritesExportProtocol.h */,
+				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
+			);
+			name = "Delegate Protocols";
 			sourceTree = "<group>";
 		};
 		17FDB0AC1280938000DBBBC2 /* Controls */ = {
@@ -3236,6 +3264,8 @@
 				1791352712F9ED16000B27C1 /* SPMutableArrayAdditions.m in Sources */,
 				170EAA301311B7AA000AE5FE /* SPConnectionControllerDataSource.m in Sources */,
 				582F02311370B52600B30621 /* SPExportFileNameTokenObject.m in Sources */,
+				17123A1C137F09C200D06442 /* SPFavoritesExporter.m in Sources */,
+				17123A1F137F09E500D06442 /* SPFavoritesImporter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -38,6 +38,8 @@
 #import "SPGeneralPreferencePane.h"
 #import "SPDatabaseViewController.h"
 #import "SPTreeNode.h"
+#import "SPFavoritesExporter.h"
+#import "SPFavoritesImporter.h"
 
 // Constants
 static NSString *SPRemoveNode              = @"RemoveNode";
@@ -989,6 +991,8 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 {
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	
+	[savePanel setAccessoryView:exportPanelAccessoryView];
+	
 	[savePanel beginSheetForDirectory:nil
 								 file:SPExportFavoritesFilename
 					   modalForWindow:[dbDocument parentWindow]
@@ -1131,9 +1135,20 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 /**
  * Called when the user dismisses either the import of export favorites panels.
  */
-- (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+	NSError *error = nil;
 	
+	if (contextInfo == SPExportFavorites) {
+		SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
+		
+		[exporter setDelegate:self];
+		
+		[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename] error:&error];
+	}
+	else if (contextInfo == SPImportFavorites) {
+		//SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
+	}
 }
 
 /**

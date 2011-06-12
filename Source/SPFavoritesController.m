@@ -104,7 +104,9 @@ static SPFavoritesController *sharedFavoritesController = nil;
 {
 	pthread_mutex_lock(&favoritesLock);
 	
-	[NSThread detachNewThreadSelector:@selector(_saveFavoritesDataInBackground:) toTarget:self withObject:[[[favoritesTree childNodes] objectAtIndex:0] dictionaryRepresentation]];
+	[NSThread detachNewThreadSelector:@selector(_saveFavoritesDataInBackground:) 
+							 toTarget:self 
+						   withObject:[[[favoritesTree childNodes] objectAtIndex:0] dictionaryRepresentation]];
 	
 	pthread_mutex_unlock(&favoritesLock);
 }

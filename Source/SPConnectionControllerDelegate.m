@@ -492,4 +492,20 @@ static NSString *SPDatabaseImage = @"database-small";
     return YES;
 }
 
+#pragma mark -
+#pragma mark Favorites import/export delegate methods
+
+/**
+ * Called by the favorites exporter when the export completes.
+ */
+- (void)favoritesExportCompletedWithError:(NSError *)error
+{	
+	if (error) {
+		[[NSAlert alertWithError:error] beginSheetModalForWindow:[dbDocument parentWindow] 
+												   modalDelegate:self
+												  didEndSelector:NULL
+													 contextInfo:NULL];	
+	}
+}
+
 @end

@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPFavoritesExporter.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on May 14, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,15 +23,30 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPConnectionController.h"
+#import "SPFavoritesExportProtocol.h"
+
+@interface SPFavoritesExporter : NSObject 
+{	
+	NSObject <SPFavoritesExportProtocol> *delegate;
+	
+	NSError *exportError;
+	
+	NSString *exportPath;
+	NSArray *exportFavorites;
+}
+
+@property (readwrite, assign) NSObject <SPFavoritesExportProtocol> *delegate;
 
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate category.
+ * @property exportPath The file path to export to
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesExportProtocol>
+@property (readwrite, retain) NSString *exportPath;
+
+/**
+ * @property exportFavorites The array of favorites to be exported
+ */
+@property (readwrite, retain) NSArray *exportFavorites;
+
+- (void)writeFavorites:(NSArray *)favorites toFile:(NSString *)path error:(NSError **)error;
 
 @end
