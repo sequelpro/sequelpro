@@ -3532,8 +3532,13 @@
 			if ([filterSettings objectForKey:@"secondBetweenField"])
 				secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
 		} else {
-			if ([filterSettings objectForKey:@"filterValue"] && ![[filterSettings objectForKey:@"filterValue"] isNSNull])
-				filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+			if ([filterSettings objectForKey:@"filterValue"] && ![[filterSettings objectForKey:@"filterValue"] isNSNull]) {
+				if ([[filterSettings objectForKey:@"filterValue"] isKindOfClass:[NSData class]]) {
+					filterValueToRestore = [[NSString alloc] initWithData:[filterSettings objectForKey:@"filterValue"] encoding:[mySQLConnection stringEncoding]];
+				} else {
+					filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+				}
+			}
 		}
 	}
 }
