@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="29"/>
+			<integer value="169"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -667,6 +667,14 @@
 									<string key="NSTitle">Insert NULL value</string>
 									<string key="NSKeyEquiv">N</string>
 									<int key="NSKeyEquivModMask">262144</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="625762401"/>
+									<reference key="NSMixedImage" ref="315854375"/>
+								</object>
+								<object class="NSMenuItem" id="513095088">
+									<reference key="NSMenu" ref="71086556"/>
+									<string key="NSTitle">Edit all fields in pop-up sheets</string>
+									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="625762401"/>
 									<reference key="NSMixedImage" ref="315854375"/>
@@ -2080,6 +2088,13 @@
 					</object>
 				</object>
 			</object>
+			<object class="NSUserDefaultsController" id="461495932">
+				<object class="NSMutableArray" key="NSDeclaredKeys">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<string>EditInSheetEnabled</string>
+				</object>
+				<bool key="NSSharedInstance">YES</bool>
+			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<object class="NSMutableArray" key="connectionRecords">
@@ -3148,6 +3163,22 @@
 					</object>
 					<int key="connectionID">1208</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: values.EditInSheetEnabled</string>
+						<reference key="source" ref="513095088"/>
+						<reference key="destination" ref="461495932"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="513095088"/>
+							<reference key="NSDestination" ref="461495932"/>
+							<string key="NSLabel">value: values.EditInSheetEnabled</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">values.EditInSheetEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1212</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3767,6 +3798,7 @@
 							<reference ref="765987997"/>
 							<reference ref="784426029"/>
 							<reference ref="496107824"/>
+							<reference ref="513095088"/>
 						</object>
 						<reference key="parent" ref="119995921"/>
 					</object>
@@ -4599,6 +4631,16 @@
 						<reference key="object" ref="74844157"/>
 						<reference key="parent" ref="172963563"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1209</int>
+						<reference key="object" ref="513095088"/>
+						<reference key="parent" ref="71086556"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1210</int>
+						<reference key="object" ref="461495932"/>
+						<reference key="parent" ref="0"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4684,6 +4726,7 @@
 					<string>1207.IBPluginDependency</string>
 					<string>1207.ImportedFromIB2</string>
 					<string>1207.notes</string>
+					<string>1209.IBPluginDependency</string>
 					<string>129.IBPluginDependency</string>
 					<string>129.ImportedFromIB2</string>
 					<string>130.IBEditorWindowLastContentRect</string>
@@ -5119,6 +5162,7 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{562, 439}, {64, 6}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5164,7 +5208,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{402, 179}, {280, 303}}</string>
+					<string>{{402, 159}, {313, 323}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{654, 613}, {157, 223}}</string>
@@ -5516,7 +5560,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1208</int>
+			<int key="maxID">1212</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -11393,6 +11437,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSTreeController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSUserDefaultsController</string>
+					<string key="superclassName">NSController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">AppKit.framework/Headers/NSUserDefaultsController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
