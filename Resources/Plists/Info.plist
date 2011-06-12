@@ -136,7 +136,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.9.8</string>
+	<string>0.9.9</string>
 	<key>CFBundleVersion</key>
 	<string></string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
@@ -157,7 +157,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2002-2010 Sequel Pro and CocoaMySQL team.</string>
+	<string>Copyright 2002-2011 Sequel Pro and CocoaMySQL team.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -312,5 +312,6 @@
 				<string>sequelpro</string>
 			</array>
 		</dict>
-	</array></dict>
+	</array>
+</dict>
 </plist>

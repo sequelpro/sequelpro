@@ -311,6 +311,32 @@
 		58CDB3400FCE13EF00F8ACA3 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */; };
 		58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
+		58D1004E13A57F940092E019 /* AboutPanel.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1001813A57F940092E019 /* AboutPanel.strings */; };
+		58D1004F13A57F940092E019 /* BundleEditor.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1001A13A57F940092E019 /* BundleEditor.strings */; };
+		58D1005013A57F940092E019 /* ConnectionErrorDialog.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1001C13A57F940092E019 /* ConnectionErrorDialog.strings */; };
+		58D1005113A57F940092E019 /* ConnectionView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1001E13A57F940092E019 /* ConnectionView.strings */; };
+		58D1005213A57F940092E019 /* Console.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002013A57F940092E019 /* Console.strings */; };
+		58D1005313A57F940092E019 /* ContentFilterManager.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002213A57F940092E019 /* ContentFilterManager.strings */; };
+		58D1005413A57F940092E019 /* ContentPaginationView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002413A57F940092E019 /* ContentPaginationView.strings */; };
+		58D1005513A57F940092E019 /* DatabaseProcessList.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002713A57F940092E019 /* DatabaseProcessList.strings */; };
+		58D1005613A57F940092E019 /* DatabaseServerVariables.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002913A57F940092E019 /* DatabaseServerVariables.strings */; };
+		58D1005713A57F940092E019 /* DataMigrationDialog.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002B13A57F940092E019 /* DataMigrationDialog.strings */; };
+		58D1005813A57F940092E019 /* DBView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002D13A57F940092E019 /* DBView.strings */; };
+		58D1005913A57F940092E019 /* EncodingPopupView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1002F13A57F940092E019 /* EncodingPopupView.strings */; };
+		58D1005A13A57F940092E019 /* ExportDialog.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003113A57F940092E019 /* ExportDialog.strings */; };
+		58D1005B13A57F940092E019 /* FieldEditorSheet.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003313A57F940092E019 /* FieldEditorSheet.strings */; };
+		58D1005C13A57F940092E019 /* ImportAccessory.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003513A57F940092E019 /* ImportAccessory.strings */; };
+		58D1005D13A57F940092E019 /* IndexesView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003713A57F940092E019 /* IndexesView.strings */; };
+		58D1005E13A57F940092E019 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003A13A57F940092E019 /* MainMenu.strings */; };
+		58D1005F13A57F940092E019 /* MainWindow.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003C13A57F940092E019 /* MainWindow.strings */; };
+		58D1006013A57F940092E019 /* Navigator.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1003E13A57F940092E019 /* Navigator.strings */; };
+		58D1006113A57F940092E019 /* Preferences.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004013A57F940092E019 /* Preferences.strings */; };
+		58D1006213A57F940092E019 /* PrintAccessory.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004213A57F940092E019 /* PrintAccessory.strings */; };
+		58D1006313A57F940092E019 /* ProgressIndicatorLayer.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004413A57F940092E019 /* ProgressIndicatorLayer.strings */; };
+		58D1006413A57F940092E019 /* QueryFavoriteManager.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004613A57F940092E019 /* QueryFavoriteManager.strings */; };
+		58D1006513A57F940092E019 /* SaveSPFAccessory.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004813A57F940092E019 /* SaveSPFAccessory.strings */; };
+		58D1006613A57F940092E019 /* SSHQuestionDialog.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004A13A57F940092E019 /* SSHQuestionDialog.strings */; };
+		58D1006713A57F940092E019 /* UserManagerView.strings in Resources */ = {isa = PBXBuildFile; fileRef = 58D1004C13A57F940092E019 /* UserManagerView.strings */; };
 		58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2E227101222670063EF1D /* SPTextAndLinkCell.m */; };
 		58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22B101222870063EF1D /* link-arrow-clicked.png */; };
 		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
@@ -1050,6 +1076,61 @@
 		58CDB32F0FCE138D00F8ACA3 /* SPSSHTunnel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSSHTunnel.m; sourceTree = "<group>"; };
 		58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SequelProTunnelAssistant.m; sourceTree = "<group>"; };
 		58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SequelProTunnelAssistant; sourceTree = BUILT_PRODUCTS_DIR; };
+		58D1001913A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/AboutPanel.strings; sourceTree = "<group>"; };
+		58D1001B13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/BundleEditor.strings; sourceTree = "<group>"; };
+		58D1001D13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ConnectionErrorDialog.strings; sourceTree = "<group>"; };
+		58D1001F13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ConnectionView.strings; sourceTree = "<group>"; };
+		58D1002113A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/Console.strings; sourceTree = "<group>"; };
+		58D1002313A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ContentFilterManager.strings; sourceTree = "<group>"; };
+		58D1002513A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ContentPaginationView.strings; sourceTree = "<group>"; };
+		58D1002613A57F940092E019 /* German */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = German; path = German.lproj/Credits.rtf; sourceTree = "<group>"; };
+		58D1002813A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/DatabaseProcessList.strings; sourceTree = "<group>"; };
+		58D1002A13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/DatabaseServerVariables.strings; sourceTree = "<group>"; };
+		58D1002C13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/DataMigrationDialog.strings; sourceTree = "<group>"; };
+		58D1002E13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/DBView.strings; sourceTree = "<group>"; };
+		58D1003013A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/EncodingPopupView.strings; sourceTree = "<group>"; };
+		58D1003213A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ExportDialog.strings; sourceTree = "<group>"; };
+		58D1003413A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/FieldEditorSheet.strings; sourceTree = "<group>"; };
+		58D1003613A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ImportAccessory.strings; sourceTree = "<group>"; };
+		58D1003813A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/IndexesView.strings; sourceTree = "<group>"; };
+		58D1003913A57F940092E019 /* German */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/Localizable.strings; sourceTree = "<group>"; };
+		58D1003B13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		58D1003D13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/MainWindow.strings; sourceTree = "<group>"; };
+		58D1003F13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/Navigator.strings; sourceTree = "<group>"; };
+		58D1004113A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/Preferences.strings; sourceTree = "<group>"; };
+		58D1004313A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/PrintAccessory.strings; sourceTree = "<group>"; };
+		58D1004513A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/ProgressIndicatorLayer.strings; sourceTree = "<group>"; };
+		58D1004713A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/QueryFavoriteManager.strings; sourceTree = "<group>"; };
+		58D1004913A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/SaveSPFAccessory.strings; sourceTree = "<group>"; };
+		58D1004B13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/SSHQuestionDialog.strings; sourceTree = "<group>"; };
+		58D1004D13A57F940092E019 /* German */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = German; path = German.lproj/UserManagerView.strings; sourceTree = "<group>"; };
+		58D100BD13A5807C0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/AboutPanel.strings; sourceTree = "<group>"; };
+		58D100BE13A580A70092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/BundleEditor.strings; sourceTree = "<group>"; };
+		58D100BF13A580C60092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ConnectionErrorDialog.strings; sourceTree = "<group>"; };
+		58D100C013A580D40092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ConnectionView.strings; sourceTree = "<group>"; };
+		58D100C113A581390092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Console.strings; sourceTree = "<group>"; };
+		58D100C213A5814B0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ContentFilterManager.strings; sourceTree = "<group>"; };
+		58D100C613A581800092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ContentPaginationView.strings; sourceTree = "<group>"; };
+		58D100C713A5818B0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/DatabaseProcessList.strings; sourceTree = "<group>"; };
+		58D100C813A581970092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/DatabaseServerVariables.strings; sourceTree = "<group>"; };
+		58D100C913A581A70092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/DataMigrationDialog.strings; sourceTree = "<group>"; };
+		58D100CA13A581B40092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/DBView.strings; sourceTree = "<group>"; };
+		58D100CB13A581C20092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/EncodingPopupView.strings; sourceTree = "<group>"; };
+		58D100CC13A581DB0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ExportDialog.strings; sourceTree = "<group>"; };
+		58D100CD13A581EB0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/FieldEditorSheet.strings; sourceTree = "<group>"; };
+		58D100CE13A581F50092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ImportAccessory.strings; sourceTree = "<group>"; };
+		58D100CF13A582750092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/IndexesView.strings; sourceTree = "<group>"; };
+		58D100D013A582830092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		58D100D113A582940092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/MainMenu.strings; sourceTree = "<group>"; };
+		58D100D213A582A40092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/MainWindow.strings; sourceTree = "<group>"; };
+		58D100D313A582B00092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Navigator.strings; sourceTree = "<group>"; };
+		58D100D413A582BE0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Preferences.strings; sourceTree = "<group>"; };
+		58D100D513A582C90092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/PrintAccessory.strings; sourceTree = "<group>"; };
+		58D100D613A582D30092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/ProgressIndicatorLayer.strings; sourceTree = "<group>"; };
+		58D100D713A582E00092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/QueryFavoriteManager.strings; sourceTree = "<group>"; };
+		58D100D813A582ED0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/SaveSPFAccessory.strings; sourceTree = "<group>"; };
+		58D100D913A582FA0092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/SSHQuestionDialog.strings; sourceTree = "<group>"; };
+		58D100DA13A583080092E019 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/UserManagerView.strings; sourceTree = "<group>"; };
 		58D2E227101222670063EF1D /* SPTextAndLinkCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextAndLinkCell.m; sourceTree = "<group>"; };
 		58D2E228101222670063EF1D /* SPTextAndLinkCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextAndLinkCell.h; sourceTree = "<group>"; };
 		58D2E22B101222870063EF1D /* link-arrow-clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-clicked.png"; sourceTree = "<group>"; };
@@ -1965,9 +2046,9 @@
 				1740F8370FC306C900CF3699 /* Plists */,
 				17E6418B0EF01FF7001BC333 /* Images */,
 				1740F8360FC306AE00CF3699 /* Scripting */,
+				58D1006813A57FAE0092E019 /* Localization Strings Files */,
 				1740F8350FC3069700CF3699 /* Templates */,
 				584756F7120A1B0B0057631F /* QuickLook Plugin */,
-				17DD52C4115074CB007D8950 /* Localizable.strings */,
 				17F90E2B1210B34900274C98 /* Credits.rtf */,
 				17CC993A10B4C9C80034CD7A /* License.rtf */,
 				17E641F50EF02088001BC333 /* Growl Registration Ticket.growlRegDict */,
@@ -2470,6 +2551,40 @@
 			name = Localization;
 			sourceTree = "<group>";
 		};
+		58D1006813A57FAE0092E019 /* Localization Strings Files */ = {
+			isa = PBXGroup;
+			children = (
+				58D1001813A57F940092E019 /* AboutPanel.strings */,
+				58D1001A13A57F940092E019 /* BundleEditor.strings */,
+				58D1001C13A57F940092E019 /* ConnectionErrorDialog.strings */,
+				58D1001E13A57F940092E019 /* ConnectionView.strings */,
+				58D1002013A57F940092E019 /* Console.strings */,
+				58D1002213A57F940092E019 /* ContentFilterManager.strings */,
+				58D1002413A57F940092E019 /* ContentPaginationView.strings */,
+				58D1002713A57F940092E019 /* DatabaseProcessList.strings */,
+				58D1002913A57F940092E019 /* DatabaseServerVariables.strings */,
+				58D1002B13A57F940092E019 /* DataMigrationDialog.strings */,
+				58D1002D13A57F940092E019 /* DBView.strings */,
+				58D1002F13A57F940092E019 /* EncodingPopupView.strings */,
+				58D1003113A57F940092E019 /* ExportDialog.strings */,
+				58D1003313A57F940092E019 /* FieldEditorSheet.strings */,
+				58D1003513A57F940092E019 /* ImportAccessory.strings */,
+				58D1003713A57F940092E019 /* IndexesView.strings */,
+				17DD52C4115074CB007D8950 /* Localizable.strings */,
+				58D1003A13A57F940092E019 /* MainMenu.strings */,
+				58D1003C13A57F940092E019 /* MainWindow.strings */,
+				58D1003E13A57F940092E019 /* Navigator.strings */,
+				58D1004013A57F940092E019 /* Preferences.strings */,
+				58D1004213A57F940092E019 /* PrintAccessory.strings */,
+				58D1004413A57F940092E019 /* ProgressIndicatorLayer.strings */,
+				58D1004613A57F940092E019 /* QueryFavoriteManager.strings */,
+				58D1004813A57F940092E019 /* SaveSPFAccessory.strings */,
+				58D1004A13A57F940092E019 /* SSHQuestionDialog.strings */,
+				58D1004C13A57F940092E019 /* UserManagerView.strings */,
+			);
+			name = "Localization Strings Files";
+			sourceTree = "<group>";
+		};
 		58DA884E103E1597000B98DF /* Debugging & Support */ = {
 			isa = PBXGroup;
 			children = (
@@ -2734,6 +2849,7 @@
 				Japanese,
 				French,
 				German,
+				ru,
 			);
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* sequel-pro */;
 			projectDirPath = "";
@@ -2923,6 +3039,32 @@
 				BC09D7E112A786FB0030DB64 /* cancel-hovered-highlighted.png in Resources */,
 				BC09D7E212A786FB0030DB64 /* cancel-hovered.png in Resources */,
 				BC09D7E312A786FB0030DB64 /* cancel.png in Resources */,
+				58D1004E13A57F940092E019 /* AboutPanel.strings in Resources */,
+				58D1004F13A57F940092E019 /* BundleEditor.strings in Resources */,
+				58D1005013A57F940092E019 /* ConnectionErrorDialog.strings in Resources */,
+				58D1005113A57F940092E019 /* ConnectionView.strings in Resources */,
+				58D1005213A57F940092E019 /* Console.strings in Resources */,
+				58D1005313A57F940092E019 /* ContentFilterManager.strings in Resources */,
+				58D1005413A57F940092E019 /* ContentPaginationView.strings in Resources */,
+				58D1005513A57F940092E019 /* DatabaseProcessList.strings in Resources */,
+				58D1005613A57F940092E019 /* DatabaseServerVariables.strings in Resources */,
+				58D1005713A57F940092E019 /* DataMigrationDialog.strings in Resources */,
+				58D1005813A57F940092E019 /* DBView.strings in Resources */,
+				58D1005913A57F940092E019 /* EncodingPopupView.strings in Resources */,
+				58D1005A13A57F940092E019 /* ExportDialog.strings in Resources */,
+				58D1005B13A57F940092E019 /* FieldEditorSheet.strings in Resources */,
+				58D1005C13A57F940092E019 /* ImportAccessory.strings in Resources */,
+				58D1005D13A57F940092E019 /* IndexesView.strings in Resources */,
+				58D1005E13A57F940092E019 /* MainMenu.strings in Resources */,
+				58D1005F13A57F940092E019 /* MainWindow.strings in Resources */,
+				58D1006013A57F940092E019 /* Navigator.strings in Resources */,
+				58D1006113A57F940092E019 /* Preferences.strings in Resources */,
+				58D1006213A57F940092E019 /* PrintAccessory.strings in Resources */,
+				58D1006313A57F940092E019 /* ProgressIndicatorLayer.strings in Resources */,
+				58D1006413A57F940092E019 /* QueryFavoriteManager.strings in Resources */,
+				58D1006513A57F940092E019 /* SaveSPFAccessory.strings in Resources */,
+				58D1006613A57F940092E019 /* SSHQuestionDialog.strings in Resources */,
+				58D1006713A57F940092E019 /* UserManagerView.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3323,6 +3465,8 @@
 			isa = PBXVariantGroup;
 			children = (
 				17DD52C5115074CB007D8950 /* English */,
+				58D1003913A57F940092E019 /* German */,
+				58D100D013A582830092E019 /* ru */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -3339,6 +3483,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				17DD52B811507217007D8950 /* English */,
+				58D1002613A57F940092E019 /* German */,
 			);
 			name = Credits.rtf;
 			sourceTree = "<group>";
@@ -3427,6 +3572,240 @@
 				58C3507410B9ADEA00D37E14 /* English */,
 			);
 			name = ContentPaginationView.xib;
+			sourceTree = "<group>";
+		};
+		58D1001813A57F940092E019 /* AboutPanel.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1001913A57F940092E019 /* German */,
+				58D100BD13A5807C0092E019 /* ru */,
+			);
+			name = AboutPanel.strings;
+			sourceTree = "<group>";
+		};
+		58D1001A13A57F940092E019 /* BundleEditor.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1001B13A57F940092E019 /* German */,
+				58D100BE13A580A70092E019 /* ru */,
+			);
+			name = BundleEditor.strings;
+			sourceTree = "<group>";
+		};
+		58D1001C13A57F940092E019 /* ConnectionErrorDialog.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1001D13A57F940092E019 /* German */,
+				58D100BF13A580C60092E019 /* ru */,
+			);
+			name = ConnectionErrorDialog.strings;
+			sourceTree = "<group>";
+		};
+		58D1001E13A57F940092E019 /* ConnectionView.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1001F13A57F940092E019 /* German */,
+				58D100C013A580D40092E019 /* ru */,
+			);
+			name = ConnectionView.strings;
+			sourceTree = "<group>";
+		};
+		58D1002013A57F940092E019 /* Console.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002113A57F940092E019 /* German */,
+				58D100C113A581390092E019 /* ru */,
+			);
+			name = Console.strings;
+			sourceTree = "<group>";
+		};
+		58D1002213A57F940092E019 /* ContentFilterManager.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002313A57F940092E019 /* German */,
+				58D100C213A5814B0092E019 /* ru */,
+			);
+			name = ContentFilterManager.strings;
+			sourceTree = "<group>";
+		};
+		58D1002413A57F940092E019 /* ContentPaginationView.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002513A57F940092E019 /* German */,
+				58D100C613A581800092E019 /* ru */,
+			);
+			name = ContentPaginationView.strings;
+			sourceTree = "<group>";
+		};
+		58D1002713A57F940092E019 /* DatabaseProcessList.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002813A57F940092E019 /* German */,
+				58D100C713A5818B0092E019 /* ru */,
+			);
+			name = DatabaseProcessList.strings;
+			sourceTree = "<group>";
+		};
+		58D1002913A57F940092E019 /* DatabaseServerVariables.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002A13A57F940092E019 /* German */,
+				58D100C813A581970092E019 /* ru */,
+			);
+			name = DatabaseServerVariables.strings;
+			sourceTree = "<group>";
+		};
+		58D1002B13A57F940092E019 /* DataMigrationDialog.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002C13A57F940092E019 /* German */,
+				58D100C913A581A70092E019 /* ru */,
+			);
+			name = DataMigrationDialog.strings;
+			sourceTree = "<group>";
+		};
+		58D1002D13A57F940092E019 /* DBView.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1002E13A57F940092E019 /* German */,
+				58D100CA13A581B40092E019 /* ru */,
+			);
+			name = DBView.strings;
+			sourceTree = "<group>";
+		};
+		58D1002F13A57F940092E019 /* EncodingPopupView.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003013A57F940092E019 /* German */,
+				58D100CB13A581C20092E019 /* ru */,
+			);
+			name = EncodingPopupView.strings;
+			sourceTree = "<group>";
+		};
+		58D1003113A57F940092E019 /* ExportDialog.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003213A57F940092E019 /* German */,
+				58D100CC13A581DB0092E019 /* ru */,
+			);
+			name = ExportDialog.strings;
+			sourceTree = "<group>";
+		};
+		58D1003313A57F940092E019 /* FieldEditorSheet.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003413A57F940092E019 /* German */,
+				58D100CD13A581EB0092E019 /* ru */,
+			);
+			name = FieldEditorSheet.strings;
+			sourceTree = "<group>";
+		};
+		58D1003513A57F940092E019 /* ImportAccessory.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003613A57F940092E019 /* German */,
+				58D100CE13A581F50092E019 /* ru */,
+			);
+			name = ImportAccessory.strings;
+			sourceTree = "<group>";
+		};
+		58D1003713A57F940092E019 /* IndexesView.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003813A57F940092E019 /* German */,
+				58D100CF13A582750092E019 /* ru */,
+			);
+			name = IndexesView.strings;
+			sourceTree = "<group>";
+		};
+		58D1003A13A57F940092E019 /* MainMenu.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003B13A57F940092E019 /* German */,
+				58D100D113A582940092E019 /* ru */,
+			);
+			name = MainMenu.strings;
+			sourceTree = "<group>";
+		};
+		58D1003C13A57F940092E019 /* MainWindow.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003D13A57F940092E019 /* German */,
+				58D100D213A582A40092E019 /* ru */,
+			);
+			name = MainWindow.strings;
+			sourceTree = "<group>";
+		};
+		58D1003E13A57F940092E019 /* Navigator.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1003F13A57F940092E019 /* German */,
+				58D100D313A582B00092E019 /* ru */,
+			);
+			name = Navigator.strings;
+			sourceTree = "<group>";
+		};
+		58D1004013A57F940092E019 /* Preferences.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004113A57F940092E019 /* German */,
+				58D100D413A582BE0092E019 /* ru */,
+			);
+			name = Preferences.strings;
+			sourceTree = "<group>";
+		};
+		58D1004213A57F940092E019 /* PrintAccessory.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004313A57F940092E019 /* German */,
+				58D100D513A582C90092E019 /* ru */,
+			);
+			name = PrintAccessory.strings;
+			sourceTree = "<group>";
+		};
+		58D1004413A57F940092E019 /* ProgressIndicatorLayer.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004513A57F940092E019 /* German */,
+				58D100D613A582D30092E019 /* ru */,
+			);
+			name = ProgressIndicatorLayer.strings;
+			sourceTree = "<group>";
+		};
+		58D1004613A57F940092E019 /* QueryFavoriteManager.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004713A57F940092E019 /* German */,
+				58D100D713A582E00092E019 /* ru */,
+			);
+			name = QueryFavoriteManager.strings;
+			sourceTree = "<group>";
+		};
+		58D1004813A57F940092E019 /* SaveSPFAccessory.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004913A57F940092E019 /* German */,
+				58D100D813A582ED0092E019 /* ru */,
+			);
+			name = SaveSPFAccessory.strings;
+			sourceTree = "<group>";
+		};
+		58D1004A13A57F940092E019 /* SSHQuestionDialog.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004B13A57F940092E019 /* German */,
+				58D100D913A582FA0092E019 /* ru */,
+			);
+			name = SSHQuestionDialog.strings;
+			sourceTree = "<group>";
+		};
+		58D1004C13A57F940092E019 /* UserManagerView.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				58D1004D13A57F940092E019 /* German */,
+				58D100DA13A583080092E019 /* ru */,
+			);
+			name = UserManagerView.strings;
 			sourceTree = "<group>";
 		};
 		B52460D90F8EF93B00171639 /* Console.xib */ = {
