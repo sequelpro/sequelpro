@@ -62,11 +62,11 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 		autoRefreshTimer = nil;
 		processListThreadRunning = NO;
 		
-		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
-		
 		processes = [[NSMutableArray alloc] init];
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
 	}
 	
 	return self;
