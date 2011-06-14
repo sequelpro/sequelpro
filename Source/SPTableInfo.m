@@ -126,9 +126,11 @@
 
 	[info removeAllObjects];
 
-	if ([[tableListInstance tableName] isEqualToString:@""]) {
+	if (![tableListInstance tableName]) {
 		[info addObject:NSLocalizedString(@"INFORMATION", @"header for blank info pane")];
-		[info addObject:NSLocalizedString(@"multiple selection", @"multiple selection")];
+		if ([[tableListInstance selectedTableItems] count]) {
+			[info addObject:NSLocalizedString(@"multiple selection", @"multiple selection")];
+		}
 		[infoTable reloadData];
 		return;
 	}

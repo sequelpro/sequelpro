@@ -144,10 +144,9 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		[tableTargetPopup addItemsWithTitles:allTableNames];
 
 		// Select either the currently selected table, or the first item in the list, or if no table in db switch to "New Table" mode
-		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil
-				&& ![[tablesListInstance tableName] isEqualToString:@""]
-				&& [allTableNames containsObject:[tablesListInstance tableName]]) {
-			[tableTargetPopup selectItemWithTitle:[tablesListInstance tableName]];
+		if ([[tablesListInstance selectedTableNames] count]
+				&& [allTableNames containsObject:[[tablesListInstance selectedTableNames] objectAtIndex:0]]) {
+			[tableTargetPopup selectItemWithTitle:[[tablesListInstance selectedTableNames] objectAtIndex:0]];
 		} else {
 			if([allTableNames count])
 				[tableTargetPopup selectItemAtIndex:3];
@@ -514,10 +513,9 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 
 		// Select either the currently selected table, or the first item in the list, or if no table in db switch to "New Table" mode
-		if ([[theDelegate valueForKeyPath:@"tableDocumentInstance"] table] != nil
-				&& ![[tablesListInstance tableName] isEqualToString:@""]
-				&& [allTableNames containsObject:[tablesListInstance tableName]]) {
-			[tableTargetPopup selectItemWithTitle:[tablesListInstance tableName]];
+		if ([[tablesListInstance selectedTableNames] count]
+				&& [allTableNames containsObject:[[tablesListInstance selectedTableNames] objectAtIndex:0]]) {
+			[tableTargetPopup selectItemWithTitle:[[tablesListInstance selectedTableNames] objectAtIndex:0]];
 		} else {
 			if([allTableNames count])
 				[tableTargetPopup selectItemAtIndex:3];

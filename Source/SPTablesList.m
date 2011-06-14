@@ -760,17 +760,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release];
-
-#ifndef SP_REFACTOR /* ui manipulation */
-		if ([indexes count]) {
-			selectedTableName = [[NSString alloc] initWithString:@""];
-		}
-		else {
-#endif
-			selectedTableName = nil;
-#ifndef SP_REFACTOR /* ui manipulation */
-		}
-#endif
+		selectedTableName = nil;
 #ifndef SP_REFACTOR /* ui manipulation */
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
@@ -1552,8 +1542,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if ([tablesListView numberOfSelectedRows] != 1) {
 
 		// Ensure the state is cleared
-		if ([tableDocumentInstance table]) [tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
-		else [self setSelectionState:nil];
+		if ([tableDocumentInstance table]) {
+			[tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
+		} else {
+			[self setSelectionState:nil];
+			[tableInfoInstance tableChanged:nil];
+		}
 		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
 		selectedTableType = SPTableTypeNone;
 		return;
