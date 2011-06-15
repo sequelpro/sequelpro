@@ -42,9 +42,6 @@
 	IBOutlet NSTextField *fallbackLabelField;
 	IBOutlet NSTextField *withBlobLabelField;
 	IBOutlet NSTextField *commandLabelField;
-	IBOutlet NSTextField *authorLabelField;
-	IBOutlet NSTextField *contactLabelField;
-	IBOutlet NSTextField *descriptionLabelField;
 	IBOutlet NSPopUpButton *inputPopupButton;
 	IBOutlet NSPopUpButton *inputFallbackPopupButton;
 	IBOutlet NSPopUpButton *outputPopupButton;
@@ -56,16 +53,16 @@
 	IBOutlet NSButton *saveButton;
 	IBOutlet NSButton *cancelButton;
 	IBOutlet NSButton *helpButton;
-	IBOutlet NSButton *showHideMetaButton;
+	IBOutlet NSButton *displayMetaInfoButton;
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
 	IBOutlet SRRecorderControl *keyEquivalentField;
 	IBOutlet NSButton *disabledCheckbox;
 	IBOutlet NSScrollView *commandScrollView;
-	IBOutlet NSScrollView *descriptionScrollView;
 	IBOutlet BWSplitView *splitView;
 
-	IBOutlet id undeleteSheet;
+	IBOutlet NSWindow *undeleteSheet;
+	IBOutlet NSWindow *metaInfoSheet;
 	IBOutlet NSTableView *undeleteTableView;
 
 	IBOutlet NSTreeController *commandBundleTreeController;
@@ -128,10 +125,11 @@
 - (IBAction)showHelp:(id)sender;
 - (IBAction)saveAndCloseWindow:(id)sender;
 - (IBAction)reloadBundles:(id)sender;
-- (IBAction)metaButtonChanged:(id)sender;
 - (IBAction)performClose:(id)sender;
 - (IBAction)undeleteDefaultBundles:(id)sender;
 - (IBAction)closeUndeleteDefaultBundlesSheet:(id)sender;
+- (IBAction)displayBundleMetaInfo:(id)sender;
+- (IBAction)closeSheet:(id)sender;
 
 - (BOOL)saveBundle:(NSDictionary*)bundle atPath:(NSString*)aPath;
 - (BOOL)cancelRowEditing;

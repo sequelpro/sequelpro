@@ -31,23 +31,6 @@
 
 @implementation SPAppController (SPAppleScriptSupport)
 
-//////////////// Examples to catch AS core events - maybe for further stuff
-// - (void)handleQuitEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-// {
-// 	[NSApp terminate:self];
-// }
-// - (void)handleOpenEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-// {
-// 	NSLog(@"OPEN ");
-// }
-// 
-// - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
-// {
-// 	NSAppleEventManager *aeManager = [NSAppleEventManager sharedAppleEventManager];
-// 	[aeManager setEventHandler:self andSelector:@selector(handleQuitEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEQuitApplication];
-// 	[aeManager setEventHandler:self andSelector:@selector(handleOpenEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenApplication];
-// }
-
 /**
  * Is needed to interact with AppleScript for set/get internal SP variables
  */

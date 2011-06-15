@@ -1483,10 +1483,10 @@
 		173567BA12AC1306000DCCEF /* Bundle Support */ = {
 			isa = PBXGroup;
 			children = (
-				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
-				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
 				BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */,
+				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
+				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 			);
 			name = "Bundle Support";
 			sourceTree = "<group>";

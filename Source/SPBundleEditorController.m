@@ -40,13 +40,12 @@
 
 #define SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING     @"SPBundleEditorSplitView"
 
-@interface SPBundleEditorController (PrivateAPI)
+@interface SPBundleEditorController ()
 
 - (void)_updateBundleDataView;
 - (id)_currentSelectedObject;
 - (id)_currentSelectedNode;
 - (void)_enableBundleDataInput:(BOOL)enabled;
-- (void)_enableMetaDataInput:(BOOL)enabled;
 - (void)_initTree;
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex;
@@ -73,12 +72,10 @@
 	}
 	
 	return self;
-
 }
 
 - (void)dealloc
 {
-
 	[inputGeneralScopePopUpMenu release];
 	[inputInputFieldScopePopUpMenu release];
 	[inputDataTableScopePopUpMenu release];
@@ -106,13 +103,12 @@
 	[shellVariableSuggestions release];
 	[deletedDefaultBundles release];
 
-	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
-	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
-	if(sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
-	if(bundlePath) [bundlePath release], bundlePath = nil;
+	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
+	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
+	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
+	if (bundlePath) [bundlePath release], bundlePath = nil;
 
 	[super dealloc];
-
 }
 
 - (void)awakeFromNib
@@ -799,14 +795,6 @@
 }
 
 /**
- * Show/Hide meta data input fields
- */
-- (IBAction)metaButtonChanged:(id)sender
-{
-	[self _enableMetaDataInput:([sender state] == NSOnState) ? YES : NO];
-}
-
-/**
  * Read all installed bundles and order front the Bundle Editor
  */
 - (IBAction)showWindow:(id)sender
@@ -840,7 +828,21 @@
 		[sender orderOut:nil];
 	else if ([sender respondsToSelector:@selector(window)])
 		[[sender window] orderOut:nil];
+}
 
+- (IBAction)displayBundleMetaInfo:(id)sender
+{
+	[NSApp beginSheet:metaInfoSheet
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+}
+
+- (IBAction)closeSheet:(id)sender
+{
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 /**
@@ -848,7 +850,6 @@
  */
 - (IBAction)saveAndCloseWindow:(id)sender
 {
-
 	// Commit all pending edits
 	if([commandBundleTreeController commitEditing]) {
 
@@ -1282,7 +1283,6 @@
  */
 - (void)outlineViewSelectionDidChange:(NSNotification *)aNotification
 {
-
 	if([aNotification object] != commandsOutlineView) return;
 
 	// Remember selected bundle name to reset the name if the user cancelled
@@ -1302,6 +1302,7 @@
 		[touchedBundleArray addObject:oldBundleName];
 
 	[self _updateBundleDataView];
+	
 	[commandTextView setSelectedRange:NSMakeRange(0,0)];
 }
 
@@ -1477,7 +1478,6 @@
 		[commandBundleTreeController rearrangeObjects];
 		[commandsOutlineView reloadData];
 	}
-
 }
 
 #pragma mark -
@@ -1488,17 +1488,17 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	SEL action = [menuItem action];
 	
-	if ( (action == @selector(duplicateCommandBundle:)) 
-		|| (action == @selector(revealCommandBundleInFinder:))
-		|| (action == @selector(saveBundle:))
-		|| (action == @selector(removeCommandBundle:))
-		) 
+	if ((action == @selector(duplicateCommandBundle:)) || 
+		(action == @selector(revealCommandBundleInFinder:)) ||
+		(action == @selector(saveBundle:)) || 
+		(action == @selector(removeCommandBundle:)) ||
+		(action == @selector(displayBundleMetaInfo:))) 
 	{
 		// Allow to record short-cuts used by the Bundle Editor
 		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
+		
 		return ([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey]);
 	}
 
@@ -1507,7 +1507,6 @@
 	}
 
 	return YES;
-
 }
 
 #pragma mark -
@@ -1674,18 +1673,8 @@
 	doGroupDueToChars = YES;
 }
 
-@end
-
-#pragma mark -
-
-@implementation SPBundleEditorController (PrivateAPI)
-
 - (void)_initTree
 {
-
-	[showHideMetaButton setState:NSOffState];
-	[self _enableMetaDataInput:NO];
-
 	// Re-init commandBundleTree
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kInputFieldScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kDataTableScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
@@ -1821,7 +1810,6 @@
  */
 - (void)_updateBundleDataView
 {
-
 	NSInteger anIndex;
 
 	if([commandsOutlineView selectedRow] < 0) return;
@@ -1989,7 +1977,6 @@
  */
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex
 {
-
 	NSString *unsortedBundleName = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:scopeIndex] objectForKey:kBundleNameKey];
 
 	if(!unsortedBundleName || ![unsortedBundleName length]) return scopeIndex;
@@ -2004,7 +1991,6 @@
 	}
 
 	return k;
-
 }
 
 /**
@@ -2012,7 +1998,6 @@
  */
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex
 {
-
 	NSString *bName = [[[[[[[commandBundleTreeController arrangedObjects] childNodes] objectAtIndex:0] childNodes] objectAtIndex:scopeIndex] representedObject] objectForKey:kBundleNameKey];
 	NSUInteger k = 0;
 	for(id i in [commandBundleTree objectForKey:kChildrenKey]) {
@@ -2042,24 +2027,7 @@
 	[authorTextField setEnabled:enabled];
 	[contactTextField setEnabled:enabled];
 	[descriptionTextView setEditable:enabled];
-}
-
-/**
- * Enable / disable meta input
- */
-- (void)_enableMetaDataInput:(BOOL)enabled
-{
-	[commandTextView setHidden:enabled];
-	[disabledCheckbox setHidden:enabled];
-	[commandLabelField setHidden:enabled];
-	[commandScrollView setHidden:enabled];
-	[authorLabelField setHidden:!enabled];
-	[contactLabelField setHidden:!enabled];
-	[descriptionLabelField setHidden:!enabled];
-	[descriptionTextView setHidden:!enabled];
-	[authorTextField setHidden:!enabled];
-	[contactTextField setHidden:!enabled];
-	[descriptionScrollView setHidden:!enabled];
+	[displayMetaInfoButton setEnabled:enabled];
 }
 
 /**
