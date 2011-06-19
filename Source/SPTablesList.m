@@ -2196,7 +2196,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [tableType backtickQuotedString]];
 	}
 
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (%@) %@ %@", [tableName backtickQuotedString], ([tableType isEqualToString:@"CSV"]) ? @"id INT NOT NULL" : @"id INT", charSetStatement, engineStatement];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, engineStatement];
 
 	// Create the table
 	[mySQLConnection queryString:createStatement];
