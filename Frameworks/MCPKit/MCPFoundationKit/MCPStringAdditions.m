@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  MCPStringAdditions.h
+//  MCPStringAdditions.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on March 25, 2010
@@ -23,24 +23,28 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Foundation/Foundation.h>
+
+
+@implementation NSString (MCPStringAdditions)
 
 /**
- * NSStringDataUsingLossyEncoding(aStr, enc, lossy) := [aStr dataUsingEncoding:enc allowLossyConversion:lossy]
+ * Returns the string quoted with backticks as required for MySQL identifiers
+ * eg.:  tablename    =>   `tablename`
+ *       my`table     =>   `my``table`
  */
-static inline NSData *NSStringDataUsingLossyEncoding(NSString *self, NSInteger encoding, NSInteger lossy) 
+- (NSString *)backtickQuotedString
 {
-	typedef NSData *(*SPStringDataUsingLossyEncodingMethodPtr)(NSString*, SEL, NSInteger, NSInteger);
-	static SPStringDataUsingLossyEncodingMethodPtr SPNSStringDataUsingLossyEncoding;
-	
-	if (!SPNSStringDataUsingLossyEncoding) SPNSStringDataUsingLossyEncoding = (SPStringDataUsingLossyEncodingMethodPtr)[self methodForSelector:@selector(dataUsingEncoding:allowLossyConversion:)];
-	
-	return SPNSStringDataUsingLossyEncoding(self, @selector(dataUsingEncoding:allowLossyConversion:), encoding, lossy);
+	return [NSString stringWithFormat: @"`%@`", [self stringByReplacingOccurrencesOfString:@"`" withString:@"``"]];
 }
 
-@interface NSString (MCPStringAdditions)
-
-- (NSString *)backtickQuotedString;
-- (NSString *)tickQuotedString;
+/**
+ * Returns the string quoted with ticks as required for MySQL identifiers
+ * eg.:  tablename    =>   'tablename'
+ *       my'table     =>   'my''table'
+ */
+- (NSString *)tickQuotedString
+{
+	return [NSString stringWithFormat: @"'%@'", [self stringByReplacingOccurrencesOfString:@"'" withString:@"''"]];
+}
 
 @end

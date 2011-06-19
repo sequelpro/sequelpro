@@ -34,8 +34,7 @@
 #import "MCPConnectionProxy.h"
 #import "MCPConnectionDelegate.h"
 #import "MCPStringAdditions.h"
-#import "SPStringAdditions.h"
-#import "RegexKitLite.h"
+#import "RegexKitLite.h" // TODO: Remove along with queryDbStructureWithUserInfo 
 #import "NSNotificationAdditions.h"
 
 #include <unistd.h>

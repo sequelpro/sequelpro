@@ -201,6 +201,7 @@
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
+		580316CF13AE7BB300235317 /* MCPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 580316CE13AE7BB300235317 /* MCPStringAdditions.m */; };
 		5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5806B76311A991EC00813A88 /* SPDocumentController.m */; };
 		580E8DB711EA774B000D8427 /* SequelProTabClose_Pressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */; };
 		580E8DB811EA774B000D8427 /* SequelProTabClose_Rollover.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAC11EA772C000D8427 /* SequelProTabClose_Rollover.png */; };
@@ -918,6 +919,7 @@
 		4D90B7A1101E0D1500D116A1 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
+		580316CE13AE7BB300235317 /* MCPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPStringAdditions.m; sourceTree = "<group>"; };
 		5806B76211A991EC00813A88 /* SPDocumentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDocumentController.h; sourceTree = "<group>"; };
 		5806B76311A991EC00813A88 /* SPDocumentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDocumentController.m; sourceTree = "<group>"; };
 		580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SequelProTabClose_Pressed.png; sourceTree = "<group>"; };
@@ -1742,6 +1744,7 @@
 				583B779710386B0200B21F7E /* MCPStreamingResult.h */,
 				583B779810386B0200B21F7E /* MCPStreamingResult.m */,
 				17DCC5C5115C202700F89A00 /* MCPStringAdditions.h */,
+				580316CE13AE7BB300235317 /* MCPStringAdditions.m */,
 				BCE97AEC125DC4EC0091ED3C /* MCPGeometryData.h */,
 				BCE97AED125DC4EC0091ED3C /* MCPGeometryData.m */,
 				17DC8E73126F4A8000E9AAEC /* Protocols */,
@@ -3127,6 +3130,7 @@
 				583B77D4103870C800B21F7E /* MCPStreamingResult.m in Sources */,
 				58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */,
 				BCE97AEF125DC4EC0091ED3C /* MCPGeometryData.m in Sources */,
+				580316CF13AE7BB300235317 /* MCPStringAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
