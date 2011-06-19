@@ -166,7 +166,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
-		lastPingSuccess		   = NO;
+		lastPingSuccess	       = NO;
+		delegate               = nil;
 		delegateSupportsConnectionLostDecisions = NO;
 		delegateResponseToWillQueryString = NO;
 		
