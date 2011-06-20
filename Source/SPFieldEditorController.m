@@ -315,10 +315,10 @@
 		// Set window's min size since no segment and quicklook buttons are hidden
 		if (_isBlob || _isBINARY || _isGeometry) {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
-			[usedSheet setMinSize:NSMakeSize(560, 200)];
+			[usedSheet setMinSize:NSMakeSize(650, 200)];
 		} else {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
-			[usedSheet setMinSize:NSMakeSize(340, 150)];
+			[usedSheet setMinSize:NSMakeSize(390, 150)];
 		}
 
 		[editTextView setEditable:_isEditable];
