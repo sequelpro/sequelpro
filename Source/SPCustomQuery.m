@@ -3408,7 +3408,9 @@
 			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
 			    attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
-		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		if ([favorite objectForKey:@"query"]) {
+			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		}
 		[item setAttributedTitle:titleString];
 		[item setIndentationLevel:1];
 		[menu addItem:item];
@@ -3433,7 +3435,9 @@
 			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
 			    attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
-		[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		if ([favorite objectForKey:@"query"]) {
+			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
+		}
 		[item setAttributedTitle:titleString];
 		[item setIndentationLevel:1];
 		[menu addItem:item];
