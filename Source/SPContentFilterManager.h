@@ -31,10 +31,9 @@
 
 @end
 
-#ifndef SP_REFACTOR /* ivars */
 @interface SPContentFilterManager : NSWindowController
-#else
-@interface SPContentFilterManager : NSWindowController <NSOpenSavePanelDelegate>
+#ifdef SP_REFACTOR /* ivars */
+<NSOpenSavePanelDelegate>
 #endif
 {
 #ifndef SP_REFACTOR /* ivars */

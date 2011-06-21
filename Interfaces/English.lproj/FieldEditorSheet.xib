@@ -2,18 +2,18 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10J567</string>
+		<string key="IBDocument.SystemVersion">10J869</string>
 		<string key="IBDocument.InterfaceBuilderVersion">851</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
-		<string key="IBDocument.HIToolboxVersion">462.00</string>
+		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			<string key="NS.object.0">851</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
-			<integer value="81"/>
+			<integer value="80"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -670,7 +670,7 @@
 				<string key="NSWindowTitle">BIT Editor</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{411, 218}</string>
+				<string key="NSWindowContentMaxSize">{439, 218}</string>
 				<string key="NSWindowContentMinSize">{411, 218}</string>
 				<object class="NSView" key="NSWindowView" id="539487490">
 					<reference key="NSNextResponder"/>
@@ -2762,7 +2762,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1058}}</string>
 				<string key="NSMinSize">{411, 240}</string>
-				<string key="NSMaxSize">{411, 240}</string>
+				<string key="NSMaxSize">{439, 240}</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -6978,13 +6978,13 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{905, 169}, {667, 428}}</string>
+					<string>{{374, 169}, {667, 428}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{905, 169}, {667, 428}}</string>
+					<string>{{374, 169}, {667, 428}}</string>
 					<integer value="1"/>
-					<integer value="0"/>
 					<boolean value="NO"/>
-					<string>{3.40282e+38, 3.40282e+38}</string>
+					<boolean value="NO"/>
+					<string>{667, 428}</string>
 					<string>{560, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
@@ -7525,15 +7525,15 @@
 					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAABDyIAAwhAAAA</bytes>
 					</object>
-					<string>{{535, 705}, {439, 218}}</string>
+					<string>{{535, 638}, {439, 218}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{535, 705}, {439, 218}}</string>
+					<string>{{535, 638}, {439, 218}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
 					<boolean value="YES"/>
 					<boolean value="YES"/>
-					<string>{411, 218}</string>
+					<string>{439, 218}</string>
 					<string>{411, 218}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -8005,6 +8005,703 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">setToNull:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>bitSheet</string>
+							<string>bitSheetBitButton0</string>
+							<string>bitSheetBitButton1</string>
+							<string>bitSheetBitButton10</string>
+							<string>bitSheetBitButton11</string>
+							<string>bitSheetBitButton12</string>
+							<string>bitSheetBitButton13</string>
+							<string>bitSheetBitButton14</string>
+							<string>bitSheetBitButton15</string>
+							<string>bitSheetBitButton16</string>
+							<string>bitSheetBitButton17</string>
+							<string>bitSheetBitButton18</string>
+							<string>bitSheetBitButton19</string>
+							<string>bitSheetBitButton2</string>
+							<string>bitSheetBitButton20</string>
+							<string>bitSheetBitButton21</string>
+							<string>bitSheetBitButton22</string>
+							<string>bitSheetBitButton23</string>
+							<string>bitSheetBitButton24</string>
+							<string>bitSheetBitButton25</string>
+							<string>bitSheetBitButton26</string>
+							<string>bitSheetBitButton27</string>
+							<string>bitSheetBitButton28</string>
+							<string>bitSheetBitButton29</string>
+							<string>bitSheetBitButton3</string>
+							<string>bitSheetBitButton30</string>
+							<string>bitSheetBitButton31</string>
+							<string>bitSheetBitButton32</string>
+							<string>bitSheetBitButton33</string>
+							<string>bitSheetBitButton34</string>
+							<string>bitSheetBitButton35</string>
+							<string>bitSheetBitButton36</string>
+							<string>bitSheetBitButton37</string>
+							<string>bitSheetBitButton38</string>
+							<string>bitSheetBitButton39</string>
+							<string>bitSheetBitButton4</string>
+							<string>bitSheetBitButton40</string>
+							<string>bitSheetBitButton41</string>
+							<string>bitSheetBitButton42</string>
+							<string>bitSheetBitButton43</string>
+							<string>bitSheetBitButton44</string>
+							<string>bitSheetBitButton45</string>
+							<string>bitSheetBitButton46</string>
+							<string>bitSheetBitButton47</string>
+							<string>bitSheetBitButton48</string>
+							<string>bitSheetBitButton49</string>
+							<string>bitSheetBitButton5</string>
+							<string>bitSheetBitButton50</string>
+							<string>bitSheetBitButton51</string>
+							<string>bitSheetBitButton52</string>
+							<string>bitSheetBitButton53</string>
+							<string>bitSheetBitButton54</string>
+							<string>bitSheetBitButton55</string>
+							<string>bitSheetBitButton56</string>
+							<string>bitSheetBitButton57</string>
+							<string>bitSheetBitButton58</string>
+							<string>bitSheetBitButton59</string>
+							<string>bitSheetBitButton6</string>
+							<string>bitSheetBitButton60</string>
+							<string>bitSheetBitButton61</string>
+							<string>bitSheetBitButton62</string>
+							<string>bitSheetBitButton63</string>
+							<string>bitSheetBitButton7</string>
+							<string>bitSheetBitButton8</string>
+							<string>bitSheetBitButton9</string>
+							<string>bitSheetBitLabel0</string>
+							<string>bitSheetBitLabel16</string>
+							<string>bitSheetBitLabel24</string>
+							<string>bitSheetBitLabel32</string>
+							<string>bitSheetBitLabel40</string>
+							<string>bitSheetBitLabel48</string>
+							<string>bitSheetBitLabel56</string>
+							<string>bitSheetBitLabel8</string>
+							<string>bitSheetCloseButton</string>
+							<string>bitSheetFieldName</string>
+							<string>bitSheetHexTextField</string>
+							<string>bitSheetIntegerTextField</string>
+							<string>bitSheetNULLButton</string>
+							<string>bitSheetOctalTextField</string>
+							<string>bitSheetOkButton</string>
+							<string>callerInstance</string>
+							<string>editImage</string>
+							<string>editSheet</string>
+							<string>editSheetCancelButton</string>
+							<string>editSheetFieldName</string>
+							<string>editSheetIsNotEditableCancelButton</string>
+							<string>editSheetOkButton</string>
+							<string>editSheetOpenButton</string>
+							<string>editSheetProgressBar</string>
+							<string>editSheetQuickLookButton</string>
+							<string>editSheetSegmentControl</string>
+							<string>editTextScrollView</string>
+							<string>editTextView</string>
+							<string>hexTextScrollView</string>
+							<string>hexTextView</string>
+							<string>sheetEditData</string>
+							<string>usedSheet</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>NSButton</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>bitSheet</string>
+							<string>bitSheetBitButton0</string>
+							<string>bitSheetBitButton1</string>
+							<string>bitSheetBitButton10</string>
+							<string>bitSheetBitButton11</string>
+							<string>bitSheetBitButton12</string>
+							<string>bitSheetBitButton13</string>
+							<string>bitSheetBitButton14</string>
+							<string>bitSheetBitButton15</string>
+							<string>bitSheetBitButton16</string>
+							<string>bitSheetBitButton17</string>
+							<string>bitSheetBitButton18</string>
+							<string>bitSheetBitButton19</string>
+							<string>bitSheetBitButton2</string>
+							<string>bitSheetBitButton20</string>
+							<string>bitSheetBitButton21</string>
+							<string>bitSheetBitButton22</string>
+							<string>bitSheetBitButton23</string>
+							<string>bitSheetBitButton24</string>
+							<string>bitSheetBitButton25</string>
+							<string>bitSheetBitButton26</string>
+							<string>bitSheetBitButton27</string>
+							<string>bitSheetBitButton28</string>
+							<string>bitSheetBitButton29</string>
+							<string>bitSheetBitButton3</string>
+							<string>bitSheetBitButton30</string>
+							<string>bitSheetBitButton31</string>
+							<string>bitSheetBitButton32</string>
+							<string>bitSheetBitButton33</string>
+							<string>bitSheetBitButton34</string>
+							<string>bitSheetBitButton35</string>
+							<string>bitSheetBitButton36</string>
+							<string>bitSheetBitButton37</string>
+							<string>bitSheetBitButton38</string>
+							<string>bitSheetBitButton39</string>
+							<string>bitSheetBitButton4</string>
+							<string>bitSheetBitButton40</string>
+							<string>bitSheetBitButton41</string>
+							<string>bitSheetBitButton42</string>
+							<string>bitSheetBitButton43</string>
+							<string>bitSheetBitButton44</string>
+							<string>bitSheetBitButton45</string>
+							<string>bitSheetBitButton46</string>
+							<string>bitSheetBitButton47</string>
+							<string>bitSheetBitButton48</string>
+							<string>bitSheetBitButton49</string>
+							<string>bitSheetBitButton5</string>
+							<string>bitSheetBitButton50</string>
+							<string>bitSheetBitButton51</string>
+							<string>bitSheetBitButton52</string>
+							<string>bitSheetBitButton53</string>
+							<string>bitSheetBitButton54</string>
+							<string>bitSheetBitButton55</string>
+							<string>bitSheetBitButton56</string>
+							<string>bitSheetBitButton57</string>
+							<string>bitSheetBitButton58</string>
+							<string>bitSheetBitButton59</string>
+							<string>bitSheetBitButton6</string>
+							<string>bitSheetBitButton60</string>
+							<string>bitSheetBitButton61</string>
+							<string>bitSheetBitButton62</string>
+							<string>bitSheetBitButton63</string>
+							<string>bitSheetBitButton7</string>
+							<string>bitSheetBitButton8</string>
+							<string>bitSheetBitButton9</string>
+							<string>bitSheetBitLabel0</string>
+							<string>bitSheetBitLabel16</string>
+							<string>bitSheetBitLabel24</string>
+							<string>bitSheetBitLabel32</string>
+							<string>bitSheetBitLabel40</string>
+							<string>bitSheetBitLabel48</string>
+							<string>bitSheetBitLabel56</string>
+							<string>bitSheetBitLabel8</string>
+							<string>bitSheetCloseButton</string>
+							<string>bitSheetFieldName</string>
+							<string>bitSheetHexTextField</string>
+							<string>bitSheetIntegerTextField</string>
+							<string>bitSheetNULLButton</string>
+							<string>bitSheetOctalTextField</string>
+							<string>bitSheetOkButton</string>
+							<string>callerInstance</string>
+							<string>editImage</string>
+							<string>editSheet</string>
+							<string>editSheetCancelButton</string>
+							<string>editSheetFieldName</string>
+							<string>editSheetIsNotEditableCancelButton</string>
+							<string>editSheetOkButton</string>
+							<string>editSheetOpenButton</string>
+							<string>editSheetProgressBar</string>
+							<string>editSheetQuickLookButton</string>
+							<string>editSheetSegmentControl</string>
+							<string>editTextScrollView</string>
+							<string>editTextView</string>
+							<string>hexTextScrollView</string>
+							<string>hexTextView</string>
+							<string>sheetEditData</string>
+							<string>usedSheet</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheet</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton0</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton1</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton10</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton11</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton12</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton13</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton14</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton15</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton16</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton17</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton18</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton19</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton2</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton20</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton21</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton22</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton23</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton24</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton25</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton26</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton27</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton28</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton29</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton3</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton30</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton31</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton32</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton33</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton34</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton35</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton36</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton37</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton38</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton39</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton4</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton40</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton41</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton42</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton43</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton44</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton45</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton46</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton47</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton48</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton49</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton5</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton50</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton51</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton52</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton53</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton54</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton55</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton56</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton57</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton58</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton59</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton6</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton60</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton61</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton62</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton63</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton7</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton8</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitButton9</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel0</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel16</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel24</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel32</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel40</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel48</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel56</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetBitLabel8</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetCloseButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetFieldName</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetHexTextField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetIntegerTextField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetNULLButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetOctalTextField</string>
+								<string key="candidateClassName">NSTextField</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">bitSheetOkButton</string>
+								<string key="candidateClassName">NSButton</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">callerInstance</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editImage</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheet</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetCancelButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetFieldName</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetIsNotEditableCancelButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetOkButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetOpenButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetProgressBar</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetQuickLookButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editSheetSegmentControl</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editTextScrollView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">editTextView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">hexTextScrollView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">hexTextView</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">sheetEditData</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">usedSheet</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>
