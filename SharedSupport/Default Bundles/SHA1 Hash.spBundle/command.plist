@@ -2,15 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>author</key>
+	<string>Abhi Beckert</string>
 	<key>category</key>
 	<string>Hash</string>
 	<key>command</key>
 	<string>#!/usr/bin/ruby
 
-require 'digest/sha1'
+# fetch selected text from STDIN
+selectedText = gets
 
-print Digest::SHA1.hexdigest(gets)
+# create sha1 hash
+require 'digest/sha1'
+hash = Digest::SHA1.hexdigest(selectedText)
+
+# output hash
+print hash
 </string>
+	<key>description</key>
+	<string>Convert the selected text to a sha1 hash.</string>
 	<key>input</key>
 	<string>selectedtext</string>
 	<key>input_fallback</key>
