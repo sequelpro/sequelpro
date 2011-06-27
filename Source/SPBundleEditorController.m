@@ -43,13 +43,15 @@
 @interface SPBundleEditorController ()
 
 - (void)_updateBundleDataView;
+- (void)_updateBundleMetaSummary;
 - (id)_currentSelectedObject;
 - (id)_currentSelectedNode;
-- (void)_enableBundleDataInput:(BOOL)enabled;
+- (void)_enableBundleDataInput:(BOOL)enabled bundleEnabled:(BOOL)bundleEnabled;
 - (void)_initTree;
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_arrangedCategoryIndexForScopeIndex:(NSUInteger)scopeIndex andCategory:(NSString*)category;
+- (void)_metaSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -835,7 +837,7 @@
 	[NSApp beginSheet:metaInfoSheet
 	   modalForWindow:[self window]
 		modalDelegate:self
-	   didEndSelector:nil
+	   didEndSelector:@selector(_metaSheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:nil];
 }
 
@@ -1290,9 +1292,9 @@
 	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
 	if(![[self _currentSelectedObject] objectForKey:kChildrenKey]) {
 		oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
-		[self _enableBundleDataInput:YES];
+		[self _enableBundleDataInput:YES bundleEnabled:![[[self _currentSelectedObject] objectForKey:@"disabled"] boolValue]];
 	} else {
-		[self _enableBundleDataInput:NO];
+		[self _enableBundleDataInput:NO bundleEnabled:NO];
 		if(oldBundleName) [oldBundleName release], oldBundleName = nil;
 	}
 
@@ -1802,7 +1804,7 @@
 
 	[commandsOutlineView expandItem:[commandsOutlineView itemAtRow:0] expandChildren:NO];
 	[self _updateBundleDataView];
-	[self _enableBundleDataInput:NO];
+	[self _enableBundleDataInput:NO bundleEnabled:NO];
 }
 
 /**
@@ -1950,10 +1952,36 @@
 		[fallbackLabelField setHidden:YES];
 	}
 
+	// Update the bundle summary text
+	[self _updateBundleMetaSummary];
+
 	// Validate add and remove bundle button in left bar
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
+}
+
+/**
+ * Update the bundle meta summary text
+ */
+- (void)_updateBundleMetaSummary
+{
+	NSDictionary *currentDict = [self _currentSelectedObject];
+	if (!currentDict) {
+		[metaInfoSummary setStringValue:@""];
+		return;
+	}
+
+	NSMutableString *metaString = [[[NSMutableString alloc] init] autorelease];
+	if ([currentDict objectForKey:@"author"]) {
+		[metaString appendFormat:@"(%@) ", [currentDict objectForKey:@"author"]];
+	} else if ([currentDict objectForKey:@"contact"]) {
+		[metaString appendFormat:@"(%@) ", [currentDict objectForKey:@"contact"]];
+	}
+
+	if ([currentDict objectForKey:@"description"]) [metaString appendString:[currentDict objectForKey:@"description"]];
+
+	[metaInfoSummary setStringValue:metaString];
 }
 
 /**
@@ -2011,23 +2039,29 @@
 /**
  * Enable / disable data input
  */
-- (void)_enableBundleDataInput:(BOOL)enabled
+- (void)_enableBundleDataInput:(BOOL)enabled bundleEnabled:(BOOL)bundleEnabled
 {
-	[nameTextField setEnabled:enabled];
-	[inputPopupButton setEnabled:enabled];
-	[inputFallbackPopupButton setEnabled:enabled];
-	[scopePopupButton setEnabled:enabled];
-	[commandTextView setEditable:enabled];
-	[outputPopupButton setEnabled:enabled];
-	[triggerPopupButton setEnabled:enabled];
-	[disabledCheckbox setEnabled:enabled];
-	[keyEquivalentField setEnabled:enabled];
-	[categoryTextField setEnabled:enabled];
-	[tooltipTextField setEnabled:enabled];
+
+	// Most of the interface requires both a bundle selected and enabled
+	BOOL enableInterface = enabled && bundleEnabled;
+	[nameTextField setEnabled:enableInterface];
+	[inputPopupButton setEnabled:enableInterface];
+	[inputFallbackPopupButton setEnabled:enableInterface];
+	[scopePopupButton setEnabled:enableInterface];
+	[commandTextView setEditable:enableInterface];
+	[outputPopupButton setEnabled:enableInterface];
+	[triggerPopupButton setEnabled:enableInterface];
+	[keyEquivalentField setEnabled:enableInterface];
+	[categoryTextField setEnabled:enableInterface];
+	[tooltipTextField setEnabled:enableInterface];
+
+	// Always leave the meta fields enabled, and the disabled checkbox.
 	[authorTextField setEnabled:enabled];
 	[contactTextField setEnabled:enabled];
 	[descriptionTextView setEditable:enabled];
 	[displayMetaInfoButton setEnabled:enabled];
+
+	[disabledCheckbox setEnabled:enabled];
 }
 
 /**
@@ -2082,6 +2116,13 @@
 	}
 
 	return returnIndex;
+}
+
+- (void)_metaSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet makeFirstResponder:nil];
+	
+	[self _updateBundleMetaSummary];
 }
 
 @end

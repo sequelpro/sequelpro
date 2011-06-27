@@ -53,6 +53,7 @@
 	IBOutlet NSButton *saveButton;
 	IBOutlet NSButton *cancelButton;
 	IBOutlet NSButton *helpButton;
+	IBOutlet NSTextField *metaInfoSummary;
 	IBOutlet NSButton *displayMetaInfoButton;
 	IBOutlet NSMenuItem *duplicateMenuItem;
 	IBOutlet NSMenuItem *revealInFinderMenuItem;
