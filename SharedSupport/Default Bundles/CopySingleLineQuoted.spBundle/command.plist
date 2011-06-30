@@ -7,7 +7,34 @@
 	<key>category</key>
 	<string>Query Editor</string>
 	<key>command</key>
-	<string>cat | perl -ne 'chomp;s/\t/    /g;s/"/\\"/g;print "\"".$_."\" . \"\\n\" .\n"' | sed '$ s/.........$//' | sed '$ s/$/;/' | __CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 pbcopy</string>
+	<string># read STDIN which contains the string data coming from the Query Editor
+# and pipe it to the following perl script
+cat | perl -ne '
+
+# delete final line ending
+chomp;
+
+# substitute TABs by SPACEs
+s/\t/    /g;
+
+# escape "
+s/"/\\"/g;
+
+# output text and pipe it to sed
+print "\"".$_."\" . \"\\n\" .\n"' | 
+
+# delete last ‘"\n" .’ (the 9 last characters)
+sed '$ s/.........$//' |
+
+# append ; 
+sed '$ s/$/;/' | 
+
+# pipe the result to the UNIX command pbcopy which pastes
+# the result into the clipboard;
+# __CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 tells pbcopy
+# that the string is UTF-8 encoded
+__CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 pbcopy
+</string>
 	<key>contact</key>
 	<string>znvy@ovovxb.qr</string>
 	<key>description</key>

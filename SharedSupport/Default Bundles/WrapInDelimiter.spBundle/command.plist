@@ -7,8 +7,15 @@
 	<key>category</key>
 	<string>Query Editor</string>
 	<key>command</key>
-	<string>echo "DELIMITER \${0:;;}"
+	<string># write DELIMITER plus ;; as suggestion selected as snippet
+echo "DELIMITER \${0:;;}"
+
+# `cat` reads the STDIN which contains the selected
+# text from the Query Editor and write it as selected
+# snippet plus the mirrowed suggested delimiter	
 echo "\${1:`cat`}\${1:\$0}"
+
+# write DELIMITER plus ;
 echo "DELIMITER ;"</string>
 	<key>contact</key>
 	<string>znvy@ovovxb.qr</string>
