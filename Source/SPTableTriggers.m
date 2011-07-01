@@ -267,7 +267,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
  */
 - (IBAction)addTrigger:(id)sender
 {
-
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 

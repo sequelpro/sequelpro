@@ -27,10 +27,9 @@
 
 @class SPDatabaseDocument, SPTableFieldValidation, SPTableData, SPDatabaseData, SPTablesList, SPIndexesController, SPTableView;
 
-#ifndef SP_REFACTOR
 @interface SPTableStructure : NSObject 
-#else
-@interface SPTableStructure : NSObject <NSTableViewDelegate, NSTableViewDataSource>
+#ifdef SP_REFACTOR
+<NSTableViewDelegate, NSTableViewDataSource>
 #endif
 {
 	IBOutlet SPTablesList* tablesListInstance;

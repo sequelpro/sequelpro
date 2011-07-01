@@ -22,11 +22,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-@interface SPBundleHTMLOutputController : NSWindowController {
-
+@interface SPBundleHTMLOutputController : NSWindowController 
+{
 	IBOutlet WebView *webView;
 
 	NSString       *docTitle;
@@ -35,7 +34,6 @@
 	NSString       *docUUID;
 	BOOL           suppressExceptionAlerting;
 	WebPreferences *webPreferences;
-
 }
 
 @property(readwrite,retain) NSString *docTitle;

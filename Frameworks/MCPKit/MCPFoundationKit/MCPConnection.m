@@ -34,8 +34,7 @@
 #import "MCPConnectionProxy.h"
 #import "MCPConnectionDelegate.h"
 #import "MCPStringAdditions.h"
-#import "SPStringAdditions.h"
-#import "RegexKitLite.h"
+#import "RegexKitLite.h" // TODO: Remove along with queryDbStructureWithUserInfo 
 #import "NSNotificationAdditions.h"
 
 #include <unistd.h>
@@ -166,7 +165,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
-		lastPingSuccess		   = NO;
+		lastPingSuccess	       = NO;
+		delegate               = nil;
 		delegateSupportsConnectionLostDecisions = NO;
 		delegateResponseToWillQueryString = NO;
 		

@@ -40,17 +40,18 @@
 
 #define SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING     @"SPBundleEditorSplitView"
 
-@interface SPBundleEditorController (PrivateAPI)
+@interface SPBundleEditorController ()
 
 - (void)_updateBundleDataView;
+- (void)_updateBundleMetaSummary;
 - (id)_currentSelectedObject;
 - (id)_currentSelectedNode;
-- (void)_enableBundleDataInput:(BOOL)enabled;
-- (void)_enableMetaDataInput:(BOOL)enabled;
+- (void)_enableBundleDataInput:(BOOL)enabled bundleEnabled:(BOOL)bundleEnabled;
 - (void)_initTree;
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex;
 - (NSUInteger)_arrangedCategoryIndexForScopeIndex:(NSUInteger)scopeIndex andCategory:(NSString*)category;
+- (void)_metaSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -73,12 +74,10 @@
 	}
 	
 	return self;
-
 }
 
 - (void)dealloc
 {
-
 	[inputGeneralScopePopUpMenu release];
 	[inputInputFieldScopePopUpMenu release];
 	[inputDataTableScopePopUpMenu release];
@@ -106,13 +105,12 @@
 	[shellVariableSuggestions release];
 	[deletedDefaultBundles release];
 
-	if(touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
-	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
-	if(sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
-	if(bundlePath) [bundlePath release], bundlePath = nil;
+	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
+	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
+	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
+	if (bundlePath) [bundlePath release], bundlePath = nil;
 
 	[super dealloc];
-
 }
 
 - (void)awakeFromNib
@@ -799,14 +797,6 @@
 }
 
 /**
- * Show/Hide meta data input fields
- */
-- (IBAction)metaButtonChanged:(id)sender
-{
-	[self _enableMetaDataInput:([sender state] == NSOnState) ? YES : NO];
-}
-
-/**
  * Read all installed bundles and order front the Bundle Editor
  */
 - (IBAction)showWindow:(id)sender
@@ -840,7 +830,21 @@
 		[sender orderOut:nil];
 	else if ([sender respondsToSelector:@selector(window)])
 		[[sender window] orderOut:nil];
+}
 
+- (IBAction)displayBundleMetaInfo:(id)sender
+{
+	[NSApp beginSheet:metaInfoSheet
+	   modalForWindow:[self window]
+		modalDelegate:self
+	   didEndSelector:@selector(_metaSheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:nil];
+}
+
+- (IBAction)closeSheet:(id)sender
+{
+	[NSApp endSheet:[sender window] returnCode:[sender tag]];
+	[[sender window] orderOut:self];
 }
 
 /**
@@ -848,7 +852,6 @@
  */
 - (IBAction)saveAndCloseWindow:(id)sender
 {
-
 	// Commit all pending edits
 	if([commandBundleTreeController commitEditing]) {
 
@@ -1282,7 +1285,6 @@
  */
 - (void)outlineViewSelectionDidChange:(NSNotification *)aNotification
 {
-
 	if([aNotification object] != commandsOutlineView) return;
 
 	// Remember selected bundle name to reset the name if the user cancelled
@@ -1290,9 +1292,9 @@
 	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
 	if(![[self _currentSelectedObject] objectForKey:kChildrenKey]) {
 		oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
-		[self _enableBundleDataInput:YES];
+		[self _enableBundleDataInput:YES bundleEnabled:![[[self _currentSelectedObject] objectForKey:@"disabled"] boolValue]];
 	} else {
-		[self _enableBundleDataInput:NO];
+		[self _enableBundleDataInput:NO bundleEnabled:NO];
 		if(oldBundleName) [oldBundleName release], oldBundleName = nil;
 	}
 
@@ -1302,6 +1304,7 @@
 		[touchedBundleArray addObject:oldBundleName];
 
 	[self _updateBundleDataView];
+	
 	[commandTextView setSelectedRange:NSMakeRange(0,0)];
 }
 
@@ -1477,7 +1480,6 @@
 		[commandBundleTreeController rearrangeObjects];
 		[commandsOutlineView reloadData];
 	}
-
 }
 
 #pragma mark -
@@ -1488,17 +1490,17 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	SEL action = [menuItem action];
 	
-	if ( (action == @selector(duplicateCommandBundle:)) 
-		|| (action == @selector(revealCommandBundleInFinder:))
-		|| (action == @selector(saveBundle:))
-		|| (action == @selector(removeCommandBundle:))
-		) 
+	if ((action == @selector(duplicateCommandBundle:)) || 
+		(action == @selector(revealCommandBundleInFinder:)) ||
+		(action == @selector(saveBundle:)) || 
+		(action == @selector(removeCommandBundle:)) ||
+		(action == @selector(displayBundleMetaInfo:))) 
 	{
 		// Allow to record short-cuts used by the Bundle Editor
 		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
+		
 		return ([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey]);
 	}
 
@@ -1507,7 +1509,6 @@
 	}
 
 	return YES;
-
 }
 
 #pragma mark -
@@ -1674,18 +1675,8 @@
 	doGroupDueToChars = YES;
 }
 
-@end
-
-#pragma mark -
-
-@implementation SPBundleEditorController (PrivateAPI)
-
 - (void)_initTree
 {
-
-	[showHideMetaButton setState:NSOffState];
-	[self _enableMetaDataInput:NO];
-
 	// Re-init commandBundleTree
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kInputFieldScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
 	[[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:kDataTableScopeArrayIndex] setObject:[NSMutableArray array] forKey:kChildrenKey];
@@ -1813,7 +1804,7 @@
 
 	[commandsOutlineView expandItem:[commandsOutlineView itemAtRow:0] expandChildren:NO];
 	[self _updateBundleDataView];
-	[self _enableBundleDataInput:NO];
+	[self _enableBundleDataInput:NO bundleEnabled:NO];
 }
 
 /**
@@ -1821,7 +1812,6 @@
  */
 - (void)_updateBundleDataView
 {
-
 	NSInteger anIndex;
 
 	if([commandsOutlineView selectedRow] < 0) return;
@@ -1962,10 +1952,36 @@
 		[fallbackLabelField setHidden:YES];
 	}
 
+	// Update the bundle summary text
+	[self _updateBundleMetaSummary];
+
 	// Validate add and remove bundle button in left bar
 	[removeButton setEnabled:([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey])];
 	[addButton setEnabled:([[commandBundleTreeController selectionIndexPath] length] > 1)];
 
+}
+
+/**
+ * Update the bundle meta summary text
+ */
+- (void)_updateBundleMetaSummary
+{
+	NSDictionary *currentDict = [self _currentSelectedObject];
+	if (!currentDict) {
+		[metaInfoSummary setStringValue:@""];
+		return;
+	}
+
+	NSMutableString *metaString = [[[NSMutableString alloc] init] autorelease];
+	if ([currentDict objectForKey:@"author"]) {
+		[metaString appendFormat:@"(%@) ", [currentDict objectForKey:@"author"]];
+	} else if ([currentDict objectForKey:@"contact"]) {
+		[metaString appendFormat:@"(%@) ", [currentDict objectForKey:@"contact"]];
+	}
+
+	if ([currentDict objectForKey:@"description"]) [metaString appendString:[currentDict objectForKey:@"description"]];
+
+	[metaInfoSummary setStringValue:metaString];
 }
 
 /**
@@ -1989,7 +2005,6 @@
  */
 - (NSUInteger)_arrangedScopeIndexForScopeIndex:(NSUInteger)scopeIndex
 {
-
 	NSString *unsortedBundleName = [[[commandBundleTree objectForKey:kChildrenKey] objectAtIndex:scopeIndex] objectForKey:kBundleNameKey];
 
 	if(!unsortedBundleName || ![unsortedBundleName length]) return scopeIndex;
@@ -2004,7 +2019,6 @@
 	}
 
 	return k;
-
 }
 
 /**
@@ -2012,7 +2026,6 @@
  */
 - (NSUInteger)_scopeIndexForArrangedScopeIndex:(NSUInteger)scopeIndex
 {
-
 	NSString *bName = [[[[[[[commandBundleTreeController arrangedObjects] childNodes] objectAtIndex:0] childNodes] objectAtIndex:scopeIndex] representedObject] objectForKey:kBundleNameKey];
 	NSUInteger k = 0;
 	for(id i in [commandBundleTree objectForKey:kChildrenKey]) {
@@ -2026,40 +2039,29 @@
 /**
  * Enable / disable data input
  */
-- (void)_enableBundleDataInput:(BOOL)enabled
+- (void)_enableBundleDataInput:(BOOL)enabled bundleEnabled:(BOOL)bundleEnabled
 {
-	[nameTextField setEnabled:enabled];
-	[inputPopupButton setEnabled:enabled];
-	[inputFallbackPopupButton setEnabled:enabled];
-	[scopePopupButton setEnabled:enabled];
-	[commandTextView setEditable:enabled];
-	[outputPopupButton setEnabled:enabled];
-	[triggerPopupButton setEnabled:enabled];
-	[disabledCheckbox setEnabled:enabled];
-	[keyEquivalentField setEnabled:enabled];
-	[categoryTextField setEnabled:enabled];
-	[tooltipTextField setEnabled:enabled];
+
+	// Most of the interface requires both a bundle selected and enabled
+	BOOL enableInterface = enabled && bundleEnabled;
+	[nameTextField setEnabled:enableInterface];
+	[inputPopupButton setEnabled:enableInterface];
+	[inputFallbackPopupButton setEnabled:enableInterface];
+	[scopePopupButton setEnabled:enableInterface];
+	[commandTextView setEditable:enableInterface];
+	[outputPopupButton setEnabled:enableInterface];
+	[triggerPopupButton setEnabled:enableInterface];
+	[keyEquivalentField setEnabled:enableInterface];
+	[categoryTextField setEnabled:enableInterface];
+	[tooltipTextField setEnabled:enableInterface];
+
+	// Always leave the meta fields enabled, and the disabled checkbox.
 	[authorTextField setEnabled:enabled];
 	[contactTextField setEnabled:enabled];
 	[descriptionTextView setEditable:enabled];
-}
+	[displayMetaInfoButton setEnabled:enabled];
 
-/**
- * Enable / disable meta input
- */
-- (void)_enableMetaDataInput:(BOOL)enabled
-{
-	[commandTextView setHidden:enabled];
-	[disabledCheckbox setHidden:enabled];
-	[commandLabelField setHidden:enabled];
-	[commandScrollView setHidden:enabled];
-	[authorLabelField setHidden:!enabled];
-	[contactLabelField setHidden:!enabled];
-	[descriptionLabelField setHidden:!enabled];
-	[descriptionTextView setHidden:!enabled];
-	[authorTextField setHidden:!enabled];
-	[contactTextField setHidden:!enabled];
-	[descriptionScrollView setHidden:!enabled];
+	[disabledCheckbox setEnabled:enabled];
 }
 
 /**
@@ -2114,6 +2116,13 @@
 	}
 
 	return returnIndex;
+}
+
+- (void)_metaSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[sheet makeFirstResponder:nil];
+	
+	[self _updateBundleMetaSummary];
 }
 
 @end

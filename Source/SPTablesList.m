@@ -340,7 +340,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	NSArray *engines = [databaseDataInstance getDatabaseStorageEngines];
 
 	// Add default menu item
-	[tableTypeButton addItemWithTitle:@"Default"];
+	[tableTypeButton addItemWithTitle:NSLocalizedString(@"Default",@"New Table Sheet : Table Engine Dropdown : Default")];
 	[[tableTypeButton menu] addItem:[NSMenuItem separatorItem]];
 
 	for (NSDictionary *engine in engines)
@@ -350,7 +350,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// Populate the table encoding popup button with a default menu item
 	[tableEncodingButton removeAllItems];
-	[tableEncodingButton addItemWithTitle:@"Default"];
+	[tableEncodingButton addItemWithTitle:NSLocalizedString(@"Default",@"New Table Sheet : Table Encoding Dropdown : Default")];
 
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
@@ -760,17 +760,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release];
-
-#ifndef SP_REFACTOR /* ui manipulation */
-		if ([indexes count]) {
-			selectedTableName = [[NSString alloc] initWithString:@""];
-		}
-		else {
-#endif
-			selectedTableName = nil;
-#ifndef SP_REFACTOR /* ui manipulation */
-		}
-#endif
+		selectedTableName = nil;
 #ifndef SP_REFACTOR /* ui manipulation */
 
 		// Set gear menu items Remove/Duplicate table/view according to the table types
@@ -1552,8 +1542,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if ([tablesListView numberOfSelectedRows] != 1) {
 
 		// Ensure the state is cleared
-		if ([tableDocumentInstance table]) [tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
-		else [self setSelectionState:nil];
+		if ([tableDocumentInstance table]) {
+			[tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
+		} else {
+			[self setSelectionState:nil];
+			[tableInfoInstance tableChanged:nil];
+		}
 		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
 		selectedTableType = SPTableTypeNone;
 		return;
@@ -2202,7 +2196,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [tableType backtickQuotedString]];
 	}
 
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (%@) %@ %@", [tableName backtickQuotedString], ([tableType isEqualToString:@"CSV"]) ? @"id INT NOT NULL" : @"id INT", charSetStatement, engineStatement];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, engineStatement];
 
 	// Create the table
 	[mySQLConnection queryString:createStatement];

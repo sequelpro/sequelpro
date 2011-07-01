@@ -4736,6 +4736,10 @@
 		// Call the field editor sheet
 		[self tableView:tableContentView shouldEditTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], column) row:row];
 
+		// send current event to field editor sheet
+		if([NSApp currentEvent])
+			[NSApp sendEvent:[NSApp currentEvent]];
+
 		return NO;
 
 	}

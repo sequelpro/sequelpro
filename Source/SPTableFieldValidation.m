@@ -25,7 +25,7 @@
 
 #import "SPTableFieldValidation.h"
 
-@interface SPTableFieldValidation (PrivateAPI)
+@interface SPTableFieldValidation ()
 
 - (NSString *)_formatType:(NSString *)type;
 

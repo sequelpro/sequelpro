@@ -31,10 +31,9 @@
 
 @end
 
-#ifndef SP_REFACTOR
 @interface SPQueryFavoriteManager : NSWindowController
-#else
-@interface SPQueryFavoriteManager : NSWindowController <NSOpenSavePanelDelegate>
+#ifdef SP_REFACTOR
+<NSOpenSavePanelDelegate>
 #endif
 {
 #ifndef SP_REFACTOR /* ivars */

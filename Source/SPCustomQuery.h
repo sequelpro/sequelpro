@@ -52,10 +52,9 @@
 @class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, NSSplitView, SPFieldEditorController;
 #endif
 
-#ifndef SP_REFACTOR
 @interface SPCustomQuery : NSObject 
-#else
-@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
+#ifdef SP_REFACTOR
+<NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
 #endif
 {
 	IBOutlet id tableDocumentInstance;
