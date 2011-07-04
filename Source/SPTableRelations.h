@@ -42,6 +42,7 @@
 	IBOutlet SPTableView *relationsTableView;
 	IBOutlet NSPanel     *addRelationPanel;
 
+	IBOutlet NSTextField   *constraintName;
 	IBOutlet NSBox         *addRelationTableBox;
 	IBOutlet NSPopUpButton *columnPopUpButton;
 	IBOutlet NSPopUpButton *refTablePopUpButton;
@@ -54,6 +55,7 @@
 
 	NSMutableArray *relationData;
 	NSUserDefaults *prefs;
+	NSMutableArray *takenConstraintNames;
 }
 
 @property (readonly) NSMutableArray *relationData;

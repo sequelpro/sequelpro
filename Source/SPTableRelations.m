@@ -48,8 +48,9 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		relationData = [[NSMutableArray alloc] init];
-		prefs        = [NSUserDefaults standardUserDefaults];
+		relationData         = [[NSMutableArray alloc] init];
+		prefs                = [NSUserDefaults standardUserDefaults];
+		takenConstraintNames = [[NSMutableArray alloc] init];
 	}
 
 	return self;
@@ -117,20 +118,27 @@
 	NSString *thatTable  = [refTablePopUpButton titleOfSelectedItem];
 	NSString *thatColumn = [refColumnPopUpButton titleOfSelectedItem];
 	
-	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD FOREIGN KEY (%@) REFERENCES %@ (%@)", 
-												[thisTable backtickQuotedString],
+	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD ",[thisTable backtickQuotedString]];
+	
+	//set constraint name?
+	if([[constraintName stringValue] length] > 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@"CONSTRAINT %@ ",[[constraintName stringValue] backtickQuotedString]]];
+	}
+	
+	query = [query stringByAppendingString:[NSString stringWithFormat:@"FOREIGN KEY (%@) REFERENCES %@ (%@)",
 												[thisColumn backtickQuotedString],
 												[thatTable backtickQuotedString],
-												[thatColumn backtickQuotedString]];
+												[thatColumn backtickQuotedString]]];
 	
+	NSArray *onActions = [NSArray arrayWithObjects:@"RESTRICT",@"CASCADE",@"SET NULL",@"NO ACTION",nil];
 	// If required add ON DELETE
-	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [[onDeletePopUpButton titleOfSelectedItem] uppercaseString]]];
+	if ([onDeletePopUpButton selectedTag] >= 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [onActions objectAtIndex:[onDeletePopUpButton selectedTag]]]];
 	}
 	
 	// If required add ON UPDATE
-	if ([onUpdatePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [[onUpdatePopUpButton titleOfSelectedItem] uppercaseString]]];
+	if ([onUpdatePopUpButton selectedTag] >= 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [onActions objectAtIndex:[onUpdatePopUpButton selectedTag]]]];
 	}
 	
 	// Execute query
@@ -190,6 +198,7 @@
 	}
 
 	// Get all InnoDB tables in the current database
+	// TODO: MySQL 4 compatibility
 	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
 
 	[result dataSeek:0];
@@ -198,6 +207,22 @@
 	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
+	
+	// Get a list of used constraint names for this db
+	[takenConstraintNames removeAllObjects];
+	result = [connection queryString:[NSString stringWithFormat:@"SELECT DISTINCT constraint_name FROM information_schema.table_constraints WHERE constraint_type = 'FOREIGN KEY' AND  constraint_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
+	
+	[result dataSeek:0];
+	
+	for (NSUInteger i = 0; i < [result numOfRows]; i++)
+	{
+		[takenConstraintNames addObject:[[[result fetchRowAsArray] objectAtIndex:0] lowercaseString]];
+	}
+	
+	// Reset other fields
+	[constraintName setStringValue:@""];
+	[onDeletePopUpButton selectItemAtIndex:0];
+	[onUpdatePopUpButton selectItemAtIndex:0];
 
 	// Restore encoding if appropriate
 	if (changeEncoding) [connection restoreStoredEncoding];
@@ -277,6 +302,40 @@
 	}
 
 	[self _refreshRelationDataForcingCacheRefresh:NO];
+}
+
+#pragma mark -
+#pragma mark TextField delegate methods
+
+- (void)controlTextDidChange:(NSNotification *)aNotification
+{
+	id field = [aNotification object];
+	
+	// Make sure the user does not enter a taken name
+	if (field == constraintName) {
+		
+		NSString *userValue = [[constraintName stringValue] lowercaseString];
+		BOOL taken = NO;
+		for(NSString *takenName in takenConstraintNames) {
+			if([takenName isEqualToString:userValue]) {
+				taken = YES;
+				break;
+			}
+		}
+		
+		//make field red and disable add button
+		if(taken) {
+			[constraintName setTextColor:[NSColor redColor]];
+			[confirmAddRelationButton setEnabled:NO];
+		}
+		//reset
+		else {
+			[constraintName setTextColor:[NSColor controlTextColor]];
+			[confirmAddRelationButton setEnabled:YES];
+		}
+		
+		return;
+	}
 }
 
 #pragma mark -
@@ -487,6 +546,9 @@
 	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
 	[relationData release], relationData = nil;
+	
+	[takenConstraintNames release];
+	takenConstraintNames = nil;
 
 	[super dealloc];
 }
