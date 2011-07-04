@@ -150,13 +150,12 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)addIndex:(id)sender
 {
-
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([dbDocument isWorking] || [tablesList tableType] != SPTableTypeTable) return;
 	
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
-
+	
 	// Reset visibility of the primary key item
 	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];
 
@@ -340,8 +339,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 		
 #ifndef SP_REFACTOR
+		NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
+		
 		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
-		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag)];
+		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"])];
 #endif
 	}
 }
