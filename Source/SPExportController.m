@@ -639,7 +639,7 @@ static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
 
 		// Check whether to save the export filename.  Save it if it's not blank and contains at least one
 		// token - this suggests it's not a one-off filename
-		if (![exportCustomFilenameTokenField stringValue]) {
+		if ([[exportCustomFilenameTokenField stringValue] length] < 1) {
 			[prefs removeObjectForKey:SPExportFilenameFormat];
 		} else {
 			BOOL saveFilename = NO;

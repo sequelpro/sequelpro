@@ -55,7 +55,7 @@
 	
 		[createTableStatement release];
 		
-		return [connection queryErrored];
+		return ![connection queryErrored];
 	}
 	
 	[createTableStatement release];
@@ -66,10 +66,10 @@
 - (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB withContent:(BOOL)copyWithContent
 {
 	// Copy the table structure
-	BOOL structureCopyResult = [self copyTable:tableName from:sourceDB to:targetDB];
+	BOOL structureCopySuccess = [self copyTable:tableName from:sourceDB to:targetDB];
 	
 	// Optionally copy the table data using an insert select
-	if (structureCopyResult && structureCopyResult && copyWithContent) {
+	if (structureCopySuccess && copyWithContent) {
 		
 		NSString *copyDataStatement = [NSString stringWithFormat:@"INSERT INTO %@.%@ SELECT * FROM %@.%@", 
 									   [targetDB backtickQuotedString],
@@ -80,12 +80,34 @@
 		
 		[connection queryString:copyDataStatement];		
 
-		if ([connection queryErrored]) return NO;
-		
-		return YES;
+		return ![connection queryErrored];
 	}
 	
-	return structureCopyResult;
+	return structureCopySuccess;
+}
+
+- (BOOL)copyTables:(NSArray *)tablesArray from:(NSString *)sourceDB to:(NSString *)targetDB withContent:(BOOL)copyWithContent
+{
+	BOOL success = YES;
+	
+	//disable foreign key checks
+	[connection queryString:@"/*!32352 SET foreign_key_checks=0 */"];
+	if([connection queryErrored]) 
+		success = NO;
+	
+	//copy tables
+	for(NSString *tableName in tablesArray) {
+		if(![self copyTable:tableName from:sourceDB to:targetDB withContent:copyWithContent])
+			success = NO;
+	}
+	
+	//enable foreign key checks
+	[connection queryString:@"/*!32352 SET foreign_key_checks=1 */"];
+	if([connection queryErrored]) 
+		success = NO;
+	
+	//done
+	return success;
 }
 
 - (BOOL)moveTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB 

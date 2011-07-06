@@ -64,21 +64,15 @@
 		return NO;
 	}
 
-	BOOL success = [self createDatabase:targetDatabaseName];
+	//abort here if database creation failed
+	if(![self createDatabase:targetDatabaseName]) 
+		return NO;
 	
 	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
 	
 	[dbActionTableCopy setConnection:connection];
 	
-	for (NSString *currentTable in tables) {
-		if ([dbActionTableCopy copyTable:currentTable 						
-									from:sourceDatabaseName
-									  to:targetDatabaseName
-							 withContent:copyWithContent]) {
-		} else {
-			success = NO;
-		}
-	}
+	BOOL success = [dbActionTableCopy copyTables:tables from:sourceDatabaseName to:targetDatabaseName withContent:copyWithContent];
 	
 	[dbActionTableCopy release];
 	
