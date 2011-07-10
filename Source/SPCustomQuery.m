@@ -1819,6 +1819,7 @@
 	NSArray *dataRow;
 	NSDictionary *theRow;
 	id field;
+	NSString *baseString = @"WHERE (";
 
 	//Look for all columns which are coming from "tableForColumn"
 	NSMutableArray *columnsForFieldTableName = [NSMutableArray array];
@@ -1829,7 +1830,7 @@
 
 	// Try to identify the field bijectively
 	NSMutableString *fieldIDQueryStr = [NSMutableString string];
-	[fieldIDQueryStr setString:@"WHERE ("];
+	[fieldIDQueryStr setString:baseString];
 
 	// --- Build WHERE clause ---
 	dataRow = [resultData rowContentsAtIndex:rowIndex];
@@ -1863,24 +1864,28 @@
 		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
 			[fieldIDQueryStr appendFormat:@"%@ IS NULL AND ", [[field objectForKey:@"org_name"] backtickQuotedString]];
 		} else {
-			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"]) {
-				if(includeBlobs) {
-					[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
-				}
+			NSString *fieldTypeGrouping = [field objectForKey:@"typegrouping"];
+
+			// Skip blob-type fields if requested
+			if (!includeBlobs
+				&& ([fieldTypeGrouping isEqualToString:@"textdata"]
+					||  [fieldTypeGrouping isEqualToString:@"blobdata"]
+					|| [[field objectForKey:@"type"] isEqualToString:@"BINARY"]
+					|| [[field objectForKey:@"type"] isEqualToString:@"VARBINARY"]))
+			{
+				continue;
 			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"] || [[field objectForKey:@"type"] isEqualToString:@"BINARY"] || [[field objectForKey:@"type"] isEqualToString:@"VARBINARY"]) {
-				if(includeBlobs) {
-					[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
-				}
-			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+
+			// If the field is of type BIT then it needs a binary prefix
+			if ([fieldTypeGrouping isEqualToString:@"bit"]) {
 				[fieldIDQueryStr appendFormat:@"%@=b'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
 			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"]) {
-				[fieldIDQueryStr appendFormat:@"%@=%@ AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
-			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+			else if ([fieldTypeGrouping isEqualToString:@"geometry"]) {
 				[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]];
+			}
+			// BLOB/TEXT data
+			else if ([aValue isKindOfClass:[NSData class]]) {
+				[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
 			}
 			else {
 				[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
@@ -1891,6 +1896,9 @@
 	// Remove last " AND "
 	if([fieldIDQueryStr length]>12)
 		[fieldIDQueryStr replaceCharactersInRange:NSMakeRange([fieldIDQueryStr length]-5,5) withString:@")"];
+
+	// Check for empty strings
+	if (![fieldIDQueryStr length] || [fieldIDQueryStr isEqualToString:baseString]) return nil;
 
 	return fieldIDQueryStr;
 }
