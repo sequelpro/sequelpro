@@ -594,6 +594,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doCancel:(id)sender
 {
+
+	// Change the first responder to end editing in any field
+	[[self window] makeFirstResponder:self];
+
 	[[self managedObjectContext] rollback];
 	
 	// Close sheet
@@ -609,9 +613,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSError *error = nil;
 	errorsString = [[NSMutableString alloc] init];
     
-    //Change the first responder to end editing in any field
-    [[self window] makeFirstResponder:self];
-    
+	// Change the first responder to end editing in any field
+	[[self window] makeFirstResponder:self];
+
 	isSaving = YES;
 	[[self managedObjectContext] save:&error];
 	isSaving = NO;
