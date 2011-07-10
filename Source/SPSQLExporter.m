@@ -31,8 +31,9 @@
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
 #import "SPTableData.h"
+#import "RegexKitLite.h"
 
-@interface SPSQLExporter (PrivateAPI)
+@interface SPSQLExporter ()
 
 - (NSString *)_createViewPlaceholderSyntaxForView:(NSString *)viewName;
 
@@ -50,6 +51,7 @@
 @synthesize sqlOutputIncludeUTF8BOM;
 @synthesize sqlOutputEncodeBLOBasHex;
 @synthesize sqlOutputIncludeErrors;
+@synthesize sqlOutputIncludeAutoIncrement;
 @synthesize sqlCurrentTableExportIndex;
 @synthesize sqlInsertAfterNValue;
 @synthesize sqlInsertDivider;
@@ -261,6 +263,11 @@
 							
 			if ([createTableSyntax isKindOfClass:[NSData class]]) {
 				createTableSyntax = [[[NSString alloc] initWithData:createTableSyntax encoding:[self exportOutputEncoding]] autorelease];
+			}
+			
+			// If necessary strip out the AUTO_INCREMENT from the table structure definition
+			if (![self sqlOutputIncludeAutoIncrement]) {
+				createTableSyntax = [createTableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"AUTO_INCREMENT=[0-9]+ "] withString:@""];
 			}
 			
 			[[self exportOutputFile] writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];

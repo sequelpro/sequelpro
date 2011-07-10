@@ -92,6 +92,7 @@
 	IBOutlet NSButton *exportSQLBLOBFieldsAsHexCheck;
 	IBOutlet NSTextField *exportSQLInsertNValueTextField;
 	IBOutlet NSPopUpButton *exportSQLInsertDividerPopUpButton;
+	IBOutlet NSButton *exportSQLIncludeAutoIncrementValueButton;
 	
 	// Excel
 	IBOutlet NSMatrix *exportExcelSheetOrFilePerTableMatrix;

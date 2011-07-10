@@ -275,6 +275,7 @@
 		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
 		[sqlExporter setSqlOutputEncodeBLOBasHex:[exportSQLBLOBFieldsAsHexCheck state]];
 		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
+		[sqlExporter setSqlOutputIncludeAutoIncrement:([exportSQLIncludeStructureCheck state] && [exportSQLIncludeAutoIncrementValueButton state])];
 		
 		[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
 		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];

@@ -35,10 +35,13 @@ typedef enum
 	SPExportErrorCancelExport   = 0,
 	SPExportErrorReplaceFiles   = 1,
 	SPExportErrorSkipErrorFiles = 2
-} SPExportErrorChoice;
+} 
+SPExportErrorChoice;
 
 @interface SPExportController (SPExportFileUtilitiesPrivateAPI)
-	- (void)_reopenExportSheet;
+
+- (void)_reopenExportSheet;
+
 @end
 
 @implementation SPExportController (SPExportFileUtilities)
@@ -301,10 +304,6 @@ typedef enum
 		[self performSelector:@selector(_reopenExportSheet) withObject:nil afterDelay:0.1];
 	}
 }
-
-@end
-
-@implementation SPExportController (SPExportFileUtilitiesPrivateAPI)
 
 /**
  * Re-open the export sheet without resetting the interface - for use on error.

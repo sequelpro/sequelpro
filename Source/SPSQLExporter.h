@@ -50,6 +50,7 @@
 	BOOL sqlOutputIncludeUTF8BOM;
 	BOOL sqlOutputEncodeBLOBasHex;
 	BOOL sqlOutputIncludeErrors;
+	BOOL sqlOutputIncludeAutoIncrement;
 	
 	SPSQLExportInsertDivider sqlInsertDivider;
 
@@ -108,6 +109,11 @@
  * @property sqlOutputIncludeErrors Include export errors
  */
 @property(readwrite, assign) BOOL sqlOutputIncludeErrors;
+
+/**
+ * @property sqlOutputIncludeAutoIncrement Include auto increment in structure definition
+ */
+@property(readwrite, assign) BOOL sqlOutputIncludeAutoIncrement;
 
 /**
  * @property sqlCurrentTableExportIndex Number of tables processed by exporter

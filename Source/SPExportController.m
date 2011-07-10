@@ -582,6 +582,8 @@ static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
  */
 - (IBAction)toggleSQLIncludeStructure:(id)sender
 {
+	[exportSQLIncludeAutoIncrementValueButton setEnabled:[sender state]];
+	
 	[[exportTableList tableColumnWithIdentifier:SPTableViewStructureColumnID] setHidden:(![sender state])];
 	
 	[self _toggleExportButtonOnBackgroundThread];
