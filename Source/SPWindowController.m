@@ -31,9 +31,9 @@
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
 
-@interface SPWindowController (PrivateAPI)
+@interface SPWindowController ()
 
-- (void) _updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
+- (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
 
 @end
 
@@ -760,28 +760,6 @@
 	return [selectedTableDocument performSelector:theSelector withObject:theObject];
 }
 
-@end
-
-@implementation SPWindowController (PrivateAPI)
-
-/**
- * Binds a tab bar item's progress indicator to the represented
- * tableDocument.
- */
-- (void) _updateProgressIndicatorForItem:(NSTabViewItem *)theItem
-{
-	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:theItem]];
-	[[theCell indicator] setControlSize:NSSmallControlSize];
-	SPDatabaseDocument *theDocument = [theItem identifier];
-
-	[[theCell indicator] setHidden:NO];
-	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-	[bindingOptions setObject:NSNegateBooleanTransformerName forKey:@"NSValueTransformerName"];
-	[[theCell indicator] bind:@"animate" toObject:theDocument withKeyPath:@"isProcessing" options:nil];
-	[[theCell indicator] bind:@"hidden" toObject:theDocument withKeyPath:@"isProcessing" options:bindingOptions];
-	[theDocument addObserver:self forKeyPath:@"isProcessing" options:0 context:nil];
-}
-
 /**
  * When receiving an update for a bound value - an observed value on the
  * document - ask the tab bar control to redraw as appropriate.
@@ -789,6 +767,24 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     [tabBar update];
+}
+
+/**
+ * Binds a tab bar item's progress indicator to the represented
+ * tableDocument.
+ */
+- (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem
+{
+	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:[tabView indexOfTabViewItem:theItem]];
+	[[theCell indicator] setControlSize:NSSmallControlSize];
+	SPDatabaseDocument *theDocument = [theItem identifier];
+	
+	[[theCell indicator] setHidden:NO];
+	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
+	[bindingOptions setObject:NSNegateBooleanTransformerName forKey:@"NSValueTransformerName"];
+	[[theCell indicator] bind:@"animate" toObject:theDocument withKeyPath:@"isProcessing" options:nil];
+	[[theCell indicator] bind:@"hidden" toObject:theDocument withKeyPath:@"isProcessing" options:bindingOptions];
+	[theDocument addObserver:self forKeyPath:@"isProcessing" options:0 context:nil];
 }
 
 @end

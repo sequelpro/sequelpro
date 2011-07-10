@@ -45,8 +45,8 @@ static const NSString *SPTableViewContentColumnID   = @"content";
 static const NSString *SPTableViewDropColumnID      = @"drop";
 
 static const NSString *SPSQLExportStructureEnabled  = @"SQLExportStructureEnabled";
-static const NSString *SPSQLExportContentEnabled      = @"SQLExportContentEnabled";
-static const NSString *SPSQLExportDropEnabled         = @"SQLExportDropEnabled";
+static const NSString *SPSQLExportContentEnabled    = @"SQLExportContentEnabled";
+static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 @interface SPExportController (PrivateAPI)
 

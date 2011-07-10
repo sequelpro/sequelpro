@@ -25,6 +25,9 @@
 
 #import "SPAboutController.h"
 
+static NSString *SPCreditsFilename = @"Credits";
+static NSString *SPLicenseFilename = @"License";
+
 @implementation SPAboutController
 
 /**
@@ -52,10 +55,10 @@
 	[appBuildVersionTextField setStringValue:[NSString stringWithFormat:@"%@ %@", (isNightly) ? NSLocalizedString(@"Nightly Build", @"nightly build label") : NSLocalizedString(@"Build", @"build label") , [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]]];
 
 	// Get the credits file contents
-	NSAttributedString *credits = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:@"Credits" ofType:@"rtf"] documentAttributes:nil] autorelease];
+	NSAttributedString *credits = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
 
 	// Get the license file contents
-	NSAttributedString *license = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:@"License" ofType:@"rtf"] documentAttributes:nil] autorelease];
+	NSAttributedString *license = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPLicenseFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
 	
 	// Set the credits
 	[[appCreditsTextView textStorage] appendAttributedString:credits];
