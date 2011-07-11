@@ -161,6 +161,6 @@ void SPBeginWaitingAlertSheet(
 
 	}
 	
-	[NSApp endModalSession:session];
-	[NSApp endSheet:[alert window]];
+	[[NSApp onMainThread] endModalSession:session];
+	[[NSApp onMainThread] endSheet:[alert window]];
 }
