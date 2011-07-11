@@ -41,7 +41,7 @@ static const NSString *SPTriggerDefiner    = @"TriggerDefiner";
 static const NSString *SPTriggerCreated    = @"TriggerCreated";
 static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
-@interface SPTableTriggers (PrivateAPI)
+@interface SPTableTriggers ()
 
 - (void)_editTriggerAtIndex:(NSInteger)index;
 - (void)_toggleConfirmAddTriggerButtonEnabled;

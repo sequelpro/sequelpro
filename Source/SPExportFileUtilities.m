@@ -132,7 +132,7 @@ SPExportErrorChoice;
  */
 - (void)errorCreatingExportFileHandles:(NSArray *)files
 {
-	// Get the number of files that already exists as well as couldn't be created because of other reasons
+	// Get the number of files that already exist as well as couldn't be created because of other reasons
 	NSUInteger filesAlreadyExisting = 0;
 	NSUInteger filesFailed = 0;
 	
@@ -140,17 +140,25 @@ SPExportErrorChoice;
 	{		
 		if ([file exportFileHandleStatus] == SPExportFileHandleExists) {
 			filesAlreadyExisting++;
-
+		} 
 		// For file handles that we failed to create for some unknown reason, ignore them and remove any 
 		// exporters that are associated with them.
-		} else if ([file exportFileHandleStatus] == SPExportFileHandleFailed) {
+		else if ([file exportFileHandleStatus] == SPExportFileHandleFailed) {
+			
 			filesFailed++;
+			
+			NSMutableArray *exportersToRemove = [[NSMutableArray alloc] init];
+			
 			for (SPExporter *exporter in exporters)
 			{
 				if ([[exporter exportOutputFile] isEqualTo:file]) {
-					[exporters removeObject:exporter];
+					[exportersToRemove addObject:exporter];
 				}
 			}
+			
+			[exporters removeObjectsInArray:exportersToRemove];
+			
+			[exportersToRemove release];
 		}
 	}
 
@@ -166,10 +174,12 @@ SPExportErrorChoice;
 		if (filesAlreadyExisting == 1) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"“%@” already exists. Do you want to replace it?", @"Export file already exists message"), [[[files objectAtIndex:0] exportFilePath] lastPathComponent]]];
 			[alert setInformativeText:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"A file with the same name already exists in the target folder. Replacing it will overwrite its current contents.", @"Export file already exists explanatory text"), additionalErrors]];
-		} else if (filesAlreadyExisting == [exportFiles count]) {
+		} 
+		else if (filesAlreadyExisting == [exportFiles count]) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"All the export files already exist. Do you want to replace them?", @"All export files already exist message")]];
 			[alert setInformativeText:[NSString stringWithFormat:@"%@%@", NSLocalizedString(@"Files with the same names already exist in the target folder. Replacing them will overwrite their current contents.", @"All export files already exist explanatory text"), additionalErrors]];
-		} else {
+		} 
+		else {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"%lu files already exist. Do you want to replace them?", @"Export file already exists message"), filesAlreadyExisting]];
 			[alert setInformativeText:[NSString stringWithFormat:@"%@%@", [NSString stringWithFormat:NSLocalizedString(@"%lu files with the same names already exist in the target folder. Replacing them will overwrite their current contents.", @"Some export files already exist explanatory text"), filesAlreadyExisting], additionalErrors]];
 		}
@@ -189,20 +199,21 @@ SPExportErrorChoice;
 			[[[alert buttons] objectAtIndex:2] setKeyEquivalent:@"s"];
 			[[[alert buttons] objectAtIndex:2] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		}
-
+	} 
 	// If one or multiple files failed, but only due to unhandled errors, show a short dialog
-	} else {
+	else {
 		if (filesFailed == 1) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"“%@” could not be created", @"Export file creation error title"), [[[files objectAtIndex:0] exportFilePath] lastPathComponent]]];
 			[alert setInformativeText:NSLocalizedString(@"An unhandled error occurred when attempting to create the export file.  Please check the details and try again.", @"Export file creation error explanatory text")];
-		} else if (filesFailed == [exportFiles count]) {
+		} 
+		else if (filesFailed == [exportFiles count]) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"No files could be created", @"All export files creation error title")]];
 			[alert setInformativeText:NSLocalizedString(@"An unhandled error occurred when attempting to create each of the export files.  Please check the details and try again.", @"All export files creation error explanatory text")];
-		} else {
+		} 
+		else {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"%lu files could not be created", @"Export files creation error title"), filesFailed]];
 			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"An unhandled error occurred when attempting to create %lu of the export files.  Please check the details and try again.", @"Export files creation error explanatory text"), filesFailed]];
 		}
-	
 
 		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
 		[[[alert buttons] objectAtIndex:0] setTag:SPExportErrorCancelExport];

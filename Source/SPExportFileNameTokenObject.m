@@ -24,7 +24,6 @@
 
 #import "SPExportFileNameTokenObject.h"
 
-
 @implementation SPExportFileNameTokenObject
 
 @synthesize tokenContent;
@@ -37,6 +36,7 @@
 	if ((self = [super init])) {
 		[self setTokenContent:[decoder decodeObjectForKey:@"TokenContent"]];
 	}
+	
 	return self;
 }
 

@@ -45,10 +45,10 @@
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
 
-@interface SPDataImport (PrivateAPI)
+@interface SPDataImport ()
 
-- (void) _importBackgroundProcess:(NSString *)filename;
-- (void) _resetFieldMappingGlobals;
+- (void)_importBackgroundProcess:(NSString *)filename;
+- (void)_resetFieldMappingGlobals;
 
 @end
 
@@ -1683,6 +1683,40 @@
 }
 
 #pragma mark -
+#pragma mark Private API
+
+/**
+ * Starts the import process on a background thread.
+ */
+- (void)_importBackgroundProcess:(NSString *)filename
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	NSString *fileType = [[importFormatPopup selectedItem] title];
+	
+	// Use the appropriate processing function for the file type
+	if ([fileType isEqualToString:@"SQL"])
+		[self importSQLFile:filename];
+	else if ([fileType isEqualToString:@"CSV"])
+		[self importCSVFile:filename];
+	
+	[pool release];
+}
+
+/**
+ * Release and reset any field mapping global variables.
+ */
+- (void)_resetFieldMappingGlobals
+{
+	if (csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
+	if (csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
+	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	if (fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
+	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
+	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
+	if (fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+}
+
+#pragma mark -
 
 /**
  * Dealloc.
@@ -1706,41 +1740,6 @@
 	[nibObjectsToRelease release];
 	
 	[super dealloc];
-}
-
-@end
-
-@implementation  SPDataImport (PrivateAPI)
-
-/**
- * Starts the import process on a background thread.
- */
-- (void) _importBackgroundProcess:(NSString *)filename
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSString *fileType = [[importFormatPopup selectedItem] title];
-
-	// Use the appropriate processing function for the file type
-	if ([fileType isEqualToString:@"SQL"])
-		[self importSQLFile:filename];
-	else if ([fileType isEqualToString:@"CSV"])
-		[self importCSVFile:filename];
-
-	[pool release];
-}
-
-/**
- * Release and reset any field mapping global variables.
- */
-- (void) _resetFieldMappingGlobals
-{
-	if (csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-	if (csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-	if (fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-	if (fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
 }
 
 @end

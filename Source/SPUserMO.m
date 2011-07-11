@@ -24,6 +24,11 @@
 
 #import "SPUserMO.h"
 
+static NSString *SPUserMOParentKey   = @"parent";
+static NSString *SPUserMOUserKey     = @"user";
+static NSString *SPUserMOHostKey     = @"host";
+static NSString *SPUserMOChildrenKey = @"children";
+
 @implementation NSManagedObject (CoreDataGeneratedAccessors)
 
 @dynamic user;
@@ -33,23 +38,17 @@
 
 - (NSString *)displayName
 {
-	return ([self valueForKey:@"parent"] == nil) ? self.user : self.host;
+	return ([self valueForKey:SPUserMOParentKey] == nil) ? self.user : self.host;
 }
 
 - (void)setDisplayName:(NSString *)value
 {
-    if ([self valueForKey:@"parent"] == nil)
-        [self setValue:value forKey:@"user"];
+    if ([self valueForKey:SPUserMOParentKey] == nil) {
+		[self setValue:value forKey:SPUserMOUserKey];
+	}
     else
     {
-        if (value == nil)
-        {
-            [self setValue:@"%" forKey:@"host"];
-        }
-        else 
-        {
-            [self setValue:value forKey:@"host"];
-        }
+		[self setValue:(value == nil) ? @"%" : value forKey:SPUserMOHostKey];
     }
 }
 
@@ -57,11 +56,12 @@
 {    
     NSSet *changedObjects = [[NSSet alloc] initWithObjects:&value count:1];
 
-    [self willChangeValueForKey:@"children" withSetMutation:NSKeyValueUnionSetMutation usingObjects:changedObjects];
-    [[self primitiveValueForKey:@"children"] addObject:value];
-    [self didChangeValueForKey:@"children" withSetMutation:NSKeyValueUnionSetMutation usingObjects:changedObjects];
+    [self willChangeValueForKey:SPUserMOChildrenKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:changedObjects];
+    [[self primitiveValueForKey:SPUserMOChildrenKey] addObject:value];
+    [self didChangeValueForKey:SPUserMOChildrenKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:changedObjects];
     
     [changedObjects release];
+	
 	value.user = self.user;
 }
 
@@ -69,9 +69,9 @@
 {
     NSSet *changedObjects = [[NSSet alloc] initWithObjects:&value count:1];
     
-    [self willChangeValueForKey:@"children" withSetMutation:NSKeyValueMinusSetMutation usingObjects:changedObjects];
-    [[self primitiveValueForKey:@"children"] removeObject:value];
-    [self didChangeValueForKey:@"children" withSetMutation:NSKeyValueMinusSetMutation usingObjects:changedObjects];
+    [self willChangeValueForKey:SPUserMOChildrenKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:changedObjects];
+    [[self primitiveValueForKey:SPUserMOChildrenKey] removeObject:value];
+    [self didChangeValueForKey:SPUserMOChildrenKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:changedObjects];
     
     [changedObjects release];
 }

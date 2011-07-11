@@ -29,7 +29,7 @@
 	NSString *fieldType;
 }
 
-@property(readwrite, assign) NSInteger textLimit;
-@property(readwrite, retain) NSString* fieldType;
+@property (readwrite, assign) NSInteger textLimit;
+@property (readwrite, retain) NSString* fieldType;
 
 @end

@@ -43,7 +43,6 @@
 
 @end
 
-
 @implementation SPDatabaseDocument (SPDatabaseViewController)
 
 #pragma mark -

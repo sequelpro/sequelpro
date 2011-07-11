@@ -22,13 +22,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
-
-@interface SPExportFileNameTokenObject : NSObject<NSCoding> {
+@interface SPExportFileNameTokenObject : NSObject<NSCoding> 
+{
 	NSString *tokenContent;
 }
 
-@property(retain) NSString *tokenContent;
+@property (retain) NSString *tokenContent;
 
 @end

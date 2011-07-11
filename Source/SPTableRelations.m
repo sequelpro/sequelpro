@@ -30,7 +30,7 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 
-@interface SPTableRelations (PrivateAPI)
+@interface SPTableRelations ()
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
@@ -552,10 +552,6 @@
 
 	[super dealloc];
 }
-
-@end
-
-@implementation SPTableRelations (PrivateAPI)
 
 /**
  * Refresh the displayed relations, optionally forcing a refresh of the underlying cache.
