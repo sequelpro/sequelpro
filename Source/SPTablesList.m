@@ -1809,11 +1809,16 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		NSUInteger i;
 		NSInteger lastTableType = NSNotFound, tableType;
 		NSRange substringRange;
+		NSString *filterString = [listFilterField stringValue];
 		for (i = 0; i < [tables count]; i++) {
 			tableType = [[tableTypes objectAtIndex:i] integerValue];
 			if (tableType == SPTableTypeNone) continue;
-			substringRange = [[tables objectAtIndex:i] rangeOfString:[listFilterField stringValue] options:NSCaseInsensitiveSearch];
-			if (substringRange.location == NSNotFound) continue;
+
+			// First check the table name against the string as a regex, falling back to direct string match
+			if (![[tables objectAtIndex:i] isMatchedByRegex:filterString]) {
+				substringRange = [[tables objectAtIndex:i] rangeOfString:filterString options:NSCaseInsensitiveSearch];
+				if (substringRange.location == NSNotFound) continue;
+			}
 
 			// Add a title if necessary
 			if ((tableType == SPTableTypeTable || tableType == SPTableTypeView) && lastTableType == NSNotFound)
