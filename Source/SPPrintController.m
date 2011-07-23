@@ -211,8 +211,10 @@
 
 	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
 
+	NSUInteger view = [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]];
+	
 	// Table source view
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0) {
+	if (view == 0) {
 
 		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
 
@@ -249,7 +251,7 @@
 		[indexes release];
 	}
 	// Table content view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
+	else if (view == 1) {
 
 		NSArray *data = [tableContentInstance currentDataResult];
 
@@ -266,7 +268,7 @@
 		[rows release];
 	}
 	// Custom query view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2) {
+	else if (view == 2) {
 
 		NSArray *data = [customQueryInstance currentResult];
 
@@ -283,7 +285,7 @@
 		[rows release];
 	}
 	// Table relations view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4) {
+	else if (view == 4) {
 
 		NSArray *data = [tableRelationsInstance relationDataForPrinting];
 
@@ -299,7 +301,7 @@
 		[rows release];
 	}
 	// Table triggers view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 5) {
+	else if (view == 5) {
 
 		NSArray *data = [tableTriggersInstance triggerDataForPrinting];
 
@@ -384,33 +386,30 @@
 {
 	NSArray *columns = nil;
 
+	NSUInteger view = [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]];
+	
 	// Table source view
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0
-		&& [[tableSourceInstance tableSourceForPrinting] count] > 0) {
+	if ((view == 0) && ([[tableSourceInstance tableSourceForPrinting] count] > 0)) {
 
 		columns = [[NSArray alloc] initWithArray:[[[tableSourceInstance tableSourceForPrinting] objectForKey:@"structure"] objectAtIndex:0] copyItems:YES];
 	}
 	// Table content view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1
-			 && [[tableContentInstance currentResult] count] > 0) {
+	else if ((view == 1) && ([[tableContentInstance currentResult] count] > 0)) {
 
 		columns = [[NSArray alloc] initWithArray:[[tableContentInstance currentResult] objectAtIndex:0] copyItems:YES];
 	}
 	// Custom query view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2
-			 && [[customQueryInstance currentResult] count] > 0) {
+	else if ((view == 2) && ([[customQueryInstance currentResult] count] > 0)) {
 
 		columns = [[NSArray alloc] initWithArray:[[customQueryInstance currentResult] objectAtIndex:0] copyItems:YES];
 	}
 	// Table relations view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 4
-			 && [[tableRelationsInstance relationDataForPrinting] count] > 0) {
+	else if ((view == 4) && ([[tableRelationsInstance relationDataForPrinting] count] > 0)) {
 
 		columns = [[NSArray alloc] initWithArray:[[tableRelationsInstance relationDataForPrinting] objectAtIndex:0] copyItems:YES];
 	}
 	// Table triggers view
-	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 5
-			 && [[tableTriggersInstance triggerDataForPrinting] count] > 0) {
+	else if ((view == 5) && ([[tableTriggersInstance triggerDataForPrinting] count] > 0)) {
 
 		columns = [[NSArray alloc] initWithArray:[[tableTriggersInstance triggerDataForPrinting] objectAtIndex:0] copyItems:YES];
 	}
