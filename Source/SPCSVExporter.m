@@ -31,8 +31,6 @@
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
 
-static NSString *SPDatabaseNULLString = @"NULL";
-
 @implementation SPCSVExporter
 
 @synthesize delegate;
@@ -294,12 +292,8 @@ static NSString *SPDatabaseNULLString = @"NULL";
 				[csvCellString setString:[csvCell description]];
 			}
 			
-			// Handle NULL values according to what the user specified
-			if ([csvCellString isEqualToString:SPDatabaseNULLString]) {
-				[csvString appendString:[self csvNULLString]];
-			} 
 			// Add empty strings as a pair of enclosing characters.
-			else if ([csvCellString length] == 0) {
+			if ([csvCellString length] == 0) {
 				[csvString appendString:[self csvEnclosingCharacterString]];
 				[csvString appendString:[self csvEnclosingCharacterString]];
 			}

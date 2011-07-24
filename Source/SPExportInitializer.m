@@ -33,6 +33,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
 #import "SPAlertSheets.h"
+#import "SPTableContent.h"
 
 #import "SPCSVExporter.h"
 #import "SPSQLExporter.h"
@@ -98,7 +99,7 @@
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			dataArray = [tableContentInstance currentResult];
+			dataArray = [tableContentInstance currentDataResultWithNULLs:YES];
 			break;
 		case SPQueryExport:
 			dataArray = [customQueryInstance currentResult];

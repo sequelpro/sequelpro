@@ -2215,82 +2215,103 @@
 }
 
 
-// Accessors
+#pragma mark -
+#pragma mark Data accessors
 
 /**
  * Returns the current result (as shown in table content view) as array, the first object containing the field
  * names as array, the following objects containing the rows as array.
  */
-- (NSArray *)currentDataResult
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs
 {
+	NSInteger i;
 	NSArray *tableColumns;
 	NSMutableArray *currentResult = [NSMutableArray array];
 	NSMutableArray *tempRow = [NSMutableArray array];
-	NSInteger i;
 
 	// Load table if not already done
-	if ( ![tableDocumentInstance contentLoaded] ) {
+	if (![tableDocumentInstance contentLoaded]) {
 		[self loadTable:[tableDocumentInstance table]];
 	}
 
 	tableColumns = [tableContentView tableColumns];
 
 	// Set field names as first line
-	for (NSTableColumn *aTableColumn in tableColumns) {
+	for (NSTableColumn *aTableColumn in tableColumns) 
+	{
 		[tempRow addObject:[[aTableColumn headerCell] stringValue]];
 	}
+	
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 
 	// Add rows
-	for ( i = 0 ; i < [self numberOfRowsInTableView:tableContentView] ; i++) {
+	for (i = 0; i < [self numberOfRowsInTableView:tableContentView]; i++) 
+	{
 		[tempRow removeAllObjects];
-		for (NSTableColumn *aTableColumn in tableColumns) {
+		
+		for (NSTableColumn *aTableColumn in tableColumns) 
+		{
 			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, [[aTableColumn identifier] integerValue]);
-			if ([o isNSNull])
-				[tempRow addObject:@"NULL"];
-			else if ([o isSPNotLoaded])
+			
+			if ([o isNSNull]) {
+				[tempRow addObject:(includeNULLs) ? [NSNull null] : [prefs objectForKey:SPNullValue]];
+			}
+			else if ([o isSPNotLoaded]) {
 				[tempRow addObject:NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
-			else if([o isKindOfClass:[NSString class]])
+			}
+			else if([o isKindOfClass:[NSString class]]) {
 				[tempRow addObject:[o description]];
+			}
 			else if([o isKindOfClass:[MCPGeometryData class]]) {
 				SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[o coordinates]];
 				NSImage *image = [v thumbnailImage];
 				NSString *imageStr = @"";
+				
 				if(image) {
 					NSString *maxSizeValue = @"WIDTH";
 					NSInteger imageWidth = [image size].width;
 					NSInteger imageHeight = [image size].height;
+					
 					if(imageHeight > imageWidth) {
 						maxSizeValue = @"HEIGHT";
 						imageWidth = imageHeight;
 					}
+					
 					if (imageWidth > 100) imageWidth = 100;
+					
 					imageStr = [NSString stringWithFormat:
 					@"<BR><IMG %@='%ld' SRC=\"data:image/auto;base64,%@\">",
 						maxSizeValue,
 						(long)imageWidth,
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64EncodingWithLineLength:0]];
 				}
+				
 				[v release];
 				[tempRow addObject:[NSString stringWithFormat:@"%@%@", [o wktString], imageStr]];
 			}
 			else {
 				NSImage *image = [[NSImage alloc] initWithData:o];
+				
 				if (image) {
 					NSInteger imageWidth = [image size].width;
+					
 					if (imageWidth > 100) imageWidth = 100;
 					[tempRow addObject:[NSString stringWithFormat:
 						@"<IMG WIDTH='%ld' SRC=\"data:image/auto;base64,%@\">",
 						(long)imageWidth,
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64EncodingWithLineLength:0]]];
-				} else {
+				} 
+				else {
 					[tempRow addObject:@"&lt;BLOB&gt;"];
 				}
+				
 				if(image) [image release];
 			}
 		}
+		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 	}
+	
 	return currentResult;
 }
 
@@ -2329,6 +2350,8 @@
 
 	return currentResult;
 }
+
+#pragma mark -
 
 // Additional methods
 
@@ -3849,7 +3872,7 @@
 	}
 	else 
 #endif
-		if (aTableView == tableContentView) {
+	if (aTableView == tableContentView) {
 
 		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 		id theValue = nil;
@@ -3893,7 +3916,6 @@
  */
 - (void)tableView:(SPCopyTable *)aTableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn*)aTableColumn row:(NSInteger)rowIndex
 {
-
 #ifndef SP_REFACTOR
 	if(aTableView == filterTableView) {
 		if(filterTableIsSwapped && [[aTableColumn identifier] integerValue] == 0) {

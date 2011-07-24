@@ -253,7 +253,7 @@
 	// Table content view
 	else if (view == 1) {
 
-		NSArray *data = [tableContentInstance currentDataResult];
+		NSArray *data = [tableContentInstance currentDataResultWithNULLs:NO];
 
 		heading = NSLocalizedString(@"Table Content", @"table content print heading");
 

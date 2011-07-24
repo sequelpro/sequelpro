@@ -205,9 +205,9 @@
 - (IBAction)toggleLookAllFieldsMode:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 
-// Getter methods
+// Data accessors
 - (NSArray *)currentResult;
-- (NSArray *)currentDataResult;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
 
 // Task interaction
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification;
