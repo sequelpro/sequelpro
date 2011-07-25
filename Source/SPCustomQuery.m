@@ -1467,21 +1467,29 @@
 	NSMutableArray *tempRow = [NSMutableArray array];
 	NSInteger i;
 
-	//set field names as first line
-	while ( (tableColumn = [enumerator nextObject]) ) {
+	// Set field names as first line
+	while ((tableColumn = [enumerator nextObject])) 
+	{
 		[tempRow addObject:[[tableColumn headerCell] stringValue]];
 	}
+	
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 
-	//add rows
-	for ( i = 0 ; i < [self numberOfRowsInTableView:customQueryView] ; i++) {
+	// Add rows
+	for (i = 0; i < [self numberOfRowsInTableView:customQueryView]; i++) 
+	{
 		[tempRow removeAllObjects];
+		
 		enumerator = [tableColumns objectEnumerator];
-		while ( (tableColumn = [enumerator nextObject]) ) {
+		
+		while ((tableColumn = [enumerator nextObject])) 
+		{
 			[tempRow addObject:[self tableView:customQueryView objectValueForTableColumn:tableColumn row:i]];
 		}
+		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 	}
+	
 	return currentResult;
 }
 
