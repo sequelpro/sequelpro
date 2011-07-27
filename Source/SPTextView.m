@@ -2415,7 +2415,13 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			}
 			return;
 		}
+
+// Let Xcode 3 match braces correctly...
+#ifndef SP_REFACTOR
 	}
+#else
+	}
+#endif
 	
 	// break down the undo grouping level for better undo behavior
 	[self breakUndoCoalescing];

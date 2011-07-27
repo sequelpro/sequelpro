@@ -200,11 +200,10 @@
 
 
 /**
- * Double-Click opens the connection.
+ * Prevent editing of outline view rows
  */
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-	if (!isConnecting) [self initiateConnection:self];
 	return NO;
 }
 @end

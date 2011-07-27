@@ -157,6 +157,7 @@
 
 		// Register double click for the favorites view (double click favorite to connect)
 		[favoritesTable setTarget:self];
+		[favoritesTable setDoubleAction:@selector(initiateConnection:)];
 		[favoritesTable registerForDraggedTypes:[NSArray arrayWithObject:favoritesPBoardType]];
 		[favoritesTable setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
 
@@ -217,6 +218,11 @@
  */
 - (IBAction)initiateConnection:(id)sender
 {
+
+	// If this action was triggered via a double-click on the favorites outline view,
+	// ensure that one of the connections was double-clicked, not the area above or below
+	if (sender == favoritesTable && [favoritesTable clickedRow] <= 0) return;
+
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));
