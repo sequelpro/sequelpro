@@ -121,6 +121,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
 
 	isNewFavorite = NO;
+    
+    // Add Lion Full Screen Menu Item
+    NSMenuItem *fullScreenMenuItem = [[NSMenuItem alloc] initWithTitle:@"Enter Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
+    [fullScreenMenuItem setKeyEquivalentModifierMask:NSControlKeyMask | NSCommandKeyMask];
+    
+    [[[[NSApp mainMenu] itemWithTag:3] submenu] addItem:[NSMenuItem separatorItem]];
+    [[[[NSApp mainMenu] itemWithTag:3] submenu] addItem:fullScreenMenuItem];
 }
 
 /**
