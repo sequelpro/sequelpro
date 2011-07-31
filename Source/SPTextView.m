@@ -3223,8 +3223,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	}
 	// Disable "Copy with Column Names" and "Copy as SQL INSERT"
 	// in the main menu
-	if ( [menuItem tag] == MENU_EDIT_COPY_WITH_COLUMN
-		|| [menuItem tag] == MENU_EDIT_COPY_AS_SQL ) {
+	if ( [menuItem tag] == SPEditMenuCopyWithColumns
+		|| [menuItem tag] == SPEditCopyAsSQL ) {
 		return NO;
 	}
 

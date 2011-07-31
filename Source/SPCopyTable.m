@@ -42,17 +42,16 @@
 #import "SPAppController.h"
 #import "SPTablesList.h"
 
-NSInteger MENU_EDIT_COPY             = 2001;
-NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
-NSInteger MENU_EDIT_COPY_AS_SQL      = 2003;
+NSInteger SPEditMenuCopy            = 2001;
+NSInteger SPEditMenuCopyWithColumns = 2002;
+NSInteger SPEditCopyAsSQL           = 2003;
 
-NSInteger kBlobExclude     = 1;
-NSInteger kBlobInclude     = 2;
-NSInteger kBlobAsFile      = 3;
-NSInteger kBlobAsImageFile = 4;
+static const NSInteger kBlobExclude     = 1;
+static const NSInteger kBlobInclude     = 2;
+static const NSInteger kBlobAsFile      = 3;
+static const NSInteger kBlobAsImageFile = 4;
 
 @implementation SPCopyTable
-
 
 /**
  * Hold the selected range of the current table cell editor to be able to set this passed
@@ -64,25 +63,21 @@ NSInteger kBlobAsImageFile = 4;
 /**
  * Cell editing in SPCustomQuery or for views in SPTableContent
  */
-- (BOOL) isCellEditingMode
+- (BOOL)isCellEditingMode
 {
-
 	return ([[self delegate] isKindOfClass:[SPCustomQuery class]] 
 		|| ([[self delegate] isKindOfClass:[SPTableContent class]] 
 				&& [(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] 
 				&& [(SPTablesList*)([(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"]) tableType] == SPTableTypeView));
-
 }
 
 /**
  * Check if current edited cell represents a class other than a normal NSString
  * like pop-up menus for enum or set
  */
-- (BOOL) isCellComplex
+- (BOOL)isCellComplex
 {
-
 	return (![[self preparedCellAtColumn:[self editedColumn] row:[self editedRow]] isKindOfClass:[SPTextAndLinkCell class]]);
-
 }
 
 #pragma mark -
@@ -90,33 +85,29 @@ NSInteger kBlobAsImageFile = 4;
 /**
  * Handles the general Copy action of selected rows in the table according to sender
  */
-- (void) copy:(id)sender
+- (void)copy:(id)sender
 {
 #ifndef SP_REFACTOR /* copy table rows */
 	NSString *tmp = nil;
 
-	if([sender tag] == MENU_EDIT_COPY_AS_SQL) {
+	if ([sender tag] == SPEditCopyAsSQL) {
 		tmp = [self rowsAsSqlInsertsOnlySelectedRows:YES];
-		if ( nil != tmp )
-		{
+		
+		if (tmp != nil){
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
-			[pb declareTypes:[NSArray arrayWithObjects: NSStringPboardType, nil]
-					   owner:nil];
+			[pb declareTypes:[NSArray arrayWithObjects: NSStringPboardType, nil] owner:nil];
 
 			[pb setString:tmp forType:NSStringPboardType];
 		}
-	} else {
-		tmp = [self rowsAsTabStringWithHeaders:([sender tag] == MENU_EDIT_COPY_WITH_COLUMN) onlySelectedRows:YES blobHandling:kBlobInclude];
-		if ( nil != tmp )
-		{
+	} 
+	else {
+		tmp = [self rowsAsTabStringWithHeaders:([sender tag] == SPEditMenuCopyWithColumns) onlySelectedRows:YES blobHandling:kBlobInclude];
+		
+		if (tmp != nil) {
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
-			[pb declareTypes:[NSArray arrayWithObjects:
-									NSTabularTextPboardType,
-									NSStringPboardType,
-									nil]
-					   owner:nil];
+			[pb declareTypes:[NSArray arrayWithObjects:NSTabularTextPboardType, NSStringPboardType, nil] owner:nil];
 
 			[pb setString:tmp forType:NSStringPboardType];
 			[pb setString:tmp forType:NSTabularTextPboardType];
@@ -130,7 +121,7 @@ NSInteger kBlobAsImageFile = 4;
  * the value in each field is from the objects description method
  */
 #ifndef SP_REFACTOR /* get rows as string */
-- (NSString *) rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
+- (NSString *)rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
 
@@ -268,7 +259,7 @@ NSInteger kBlobAsImageFile = 4;
  * Get selected rows a string of newline separated lines of , separated fields wrapped into quotes
  * the value in each field is from the objects description method
  */
-- (NSString *) rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
+- (NSString *)rowsAsCsvStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
 
@@ -408,21 +399,15 @@ NSInteger kBlobAsImageFile = 4;
  * Return selected rows as SQL INSERT INTO `foo` VALUES (baz) string.
  * If no selected table name is given `<table>` will be used instead.
  */
-- (NSString *) rowsAsSqlInsertsOnlySelectedRows:(BOOL)onlySelected
+- (NSString *)rowsAsSqlInsertsOnlySelectedRows:(BOOL)onlySelected
 {
-
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
 
-	NSIndexSet *selectedRows;
-	if(onlySelected)
-		selectedRows = [self selectedRowIndexes];
-	else
-		selectedRows = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [tableStorage count])];
+	NSIndexSet *selectedRows = (onlySelected) ? [self selectedRowIndexes] : [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [tableStorage count])];
 
-	NSArray *columns         = [self tableColumns];
-	NSUInteger numColumns    = [columns count];
-
-	NSMutableString *value   = [NSMutableString stringWithCapacity:10];
+	NSArray *columns      = [self tableColumns];
+	NSUInteger numColumns = [columns count];
+	NSMutableString *value = [NSMutableString stringWithCapacity:10];
 
 	id cellData = nil;
 
@@ -435,14 +420,18 @@ NSInteger kBlobAsImageFile = 4;
 
 	// Create an array of table column names
 	NSMutableArray *tbHeader = [NSMutableArray arrayWithCapacity:numColumns];
-	for (id enumObj in columns) {
+	
+	for (id enumObj in columns) 
+	{
 		[tbHeader addObject:[[enumObj headerCell] stringValue]];
 	}
 
 	// Create arrays of table column mappings and types for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	NSUInteger *columnTypes = malloc(numColumns * sizeof(NSUInteger));
-	for ( c = 0; c < numColumns; c++) {
+	
+	for (c = 0; c < numColumns; c++) 
+	{
 		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
 
 		NSString *t = [NSArrayObjectAtIndex(columnDefinitions, columnMappings[c]) objectForKey:@"typegrouping"];
@@ -471,12 +460,14 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	Class spTableContentClass = [SPTableContent class];
 	Class nsDataClass = [NSData class];
-	while ( rowIndex != NSNotFound )
+	
+	while (rowIndex != NSNotFound)
 	{
 		[value appendString:@"\t("];
 		cellData = nil;
 		rowCounter++;
-		for ( c = 0; c < numColumns; c++ )
+		
+		for (c = 0; c < numColumns; c++)
 		{
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
@@ -505,10 +496,11 @@ NSInteger kBlobAsImageFile = 4;
 				[value appendString:@"NULL, "];
 				continue;
 
-			} else if (cellData) {
+			} 
+			else if (cellData) {
 
 				// Check column type and insert the data accordingly
-				switch(columnTypes[c]) {
+				switch (columnTypes[c]) {
 
 					// Convert numeric types to unquoted strings
 					case 0:
@@ -538,48 +530,53 @@ NSInteger kBlobAsImageFile = 4;
 				}
 
 			// If nil is encountered, abort
-			} else {
+			} 
+			else {
 				NSBeep();
 				free(columnMappings);
 				free(columnTypes);
+				
 				return nil;
 			}
 		}
 
 		// Remove the trailing ', ' from the query
-		if ( [value length] > 2 )
-			[value deleteCharactersInRange:NSMakeRange([value length]-2, 2)];
-
+		if ([value length] > 2) {
+			[value deleteCharactersInRange:NSMakeRange([value length] - 2, 2)];
+		}
+			
 		valueLength += [value length];
 
 		// Close this VALUES group and set up the next one if appropriate
-		if ( rowCounter != penultimateRowIndex ) {
+		if (rowCounter != penultimateRowIndex) {
 
 			// Add a new INSERT starter command every ~250k of data.
-			if ( valueLength > 250000 ) {
+			if (valueLength > 250000) {
 				[result appendFormat:@"%@);\n\nINSERT INTO %@ (%@)\nVALUES\n",
 						value,
 						[(selectedTable == nil) ? @"<table>" : selectedTable backtickQuotedString],
 						[tbHeader componentsJoinedAndBacktickQuoted]];
 				[value setString:@""];
 				valueLength = 0;
-			} else {
+			} 
+			else {
 				[value appendString:@"),\n"];
 			}
 
-		} else {
+		} 
+		else {
 			[value appendString:@"),\n"];
 			[result appendString:value];
 		}
 
 		// Get the next selected row index
 		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
-
 	}
 
 	// Remove the trailing ",\n" from the query string
-	if ( [result length] > 3 )
+	if ([result length] > 3) {
 		[result deleteCharactersInRange:NSMakeRange([result length]-2, 2)];
+	}
 
 	[result appendString:@";\n"];
 
@@ -844,7 +841,6 @@ NSInteger kBlobAsImageFile = 4;
 
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {
-
 	NSMenu *menu = [self menu];
 #ifndef SP_REFACTOR /* menuForEvent: */
 
@@ -912,7 +908,6 @@ NSInteger kBlobAsImageFile = 4;
 		}
 
 		[bundleSubMenuItem release];
-
 	}
 #endif
 	return menu;
@@ -921,8 +916,7 @@ NSInteger kBlobAsImageFile = 4;
 
 - (void)selectTableRows:(NSArray*)rowIndices
 {
-
-	if(!rowIndices || ![rowIndices count]) return;
+	if (!rowIndices || ![rowIndices count]) return;
 
 	NSMutableIndexSet *selection = [NSMutableIndexSet indexSet];
 #ifndef SP_REFACTOR
@@ -940,14 +934,13 @@ NSInteger kBlobAsImageFile = 4;
 
 		[self selectRowIndexes:selection byExtendingSelection:NO];
 	}
-
 }
 
 /**
  * Only have the copy menu item enabled when row(s) are selected in
  * supported tables.
  */
-- (BOOL) validateMenuItem:(NSMenuItem*)anItem
+- (BOOL)validateMenuItem:(NSMenuItem*)anItem
 {
 #ifndef SP_REFACTOR /* validateMenuItem: */
 	NSInteger menuItemTag = [anItem tag];
@@ -957,7 +950,7 @@ NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Don't validate anything other than the copy commands
-	if (menuItemTag != MENU_EDIT_COPY && menuItemTag != MENU_EDIT_COPY_WITH_COLUMN && menuItemTag != MENU_EDIT_COPY_AS_SQL) {
+	if (menuItemTag != SPEditMenuCopy && menuItemTag != SPEditMenuCopyWithColumns && menuItemTag != SPEditCopyAsSQL) {
 		return YES;
 	}
 
@@ -967,12 +960,12 @@ NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Enable the Copy [with column names] commands if a row is selected
-	if (menuItemTag == MENU_EDIT_COPY || menuItemTag == MENU_EDIT_COPY_WITH_COLUMN) {
+	if (menuItemTag == SPEditMenuCopy || menuItemTag == SPEditMenuCopyWithColumns) {
 		return ([self numberOfSelectedRows] > 0);
 	}
 
 	// Enable the Copy as SQL commands if rows are selected and column definitions are available
-	if (menuItemTag == MENU_EDIT_COPY_AS_SQL) {
+	if (menuItemTag == SPEditCopyAsSQL) {
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
@@ -983,9 +976,8 @@ NSInteger kBlobAsImageFile = 4;
  * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */
-- (BOOL) control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-
 	NSInteger row, column;
 
 	row = [self editedRow];
@@ -1103,9 +1095,8 @@ NSInteger kBlobAsImageFile = 4;
 	return NO;
 }
 
-- (void) keyDown:(NSEvent *)theEvent
+- (void)keyDown:(NSEvent *)theEvent
 {
-
 	// RETURN or ENTER invoke editing mode for selected row
 	// by calling tableView:shouldEditTableColumn: to validate
 
@@ -1412,28 +1403,26 @@ NSInteger kBlobAsImageFile = 4;
 				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
 			}
-
 		}
 
 		if (cmdData) [cmdData release];
-
 	}
 #endif
 }
 
 #pragma mark -
 
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 	columnDefinitions = nil;
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 
-	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
+	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
-
+	}
 }
 
-- (void) dealloc
+- (void)dealloc
 {
 	if (columnDefinitions) [columnDefinitions release];
 #ifndef SP_REFACTOR

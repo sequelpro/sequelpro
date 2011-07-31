@@ -24,11 +24,15 @@
 
 #import "SPTableView.h"
 
+@class SPDataStorage;
+@class SPTableContent;
+
 #define SP_MAX_CELL_WIDTH_MULTICOLUMN 200
 #define SP_MAX_CELL_WIDTH 400
 
-@class SPDataStorage;
-@class SPTableContent;
+extern NSInteger SPEditMenuCopy;
+extern NSInteger SPEditMenuCopyWithColumns;
+extern NSInteger SPEditCopyAsSQL;
 
 /*!
 	@class copyTable
@@ -50,7 +54,6 @@
 
 	NSRange fieldEditorSelectedRange;
 	NSString *copyBlobFileDirectory;
-
 }
 
 @property(readwrite,assign) NSString *copyBlobFileDirectory;
@@ -178,7 +181,3 @@
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command;
 
 @end
-
-extern NSInteger MENU_EDIT_COPY;
-extern NSInteger MENU_EDIT_COPY_WITH_COLUMN;
-extern NSInteger MENU_EDIT_COPY_AS_SQL;
