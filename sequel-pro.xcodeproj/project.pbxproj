@@ -588,6 +588,7 @@
 		1723F04B12F1F8850008253B /* run-tests.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "run-tests.sh"; sourceTree = "<group>"; };
 		1723F08912F1F9350008253B /* SPWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindow.h; sourceTree = "<group>"; };
 		1723F08A12F1F9350008253B /* SPWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindow.m; sourceTree = "<group>"; };
+		17278EBB13E74938003DD92A /* SPFavoritesImportProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImportProtocol.h; sourceTree = "<group>"; };
 		17292441107AC41000B21980 /* SPXMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporter.h; sourceTree = "<group>"; };
 		17292442107AC41000B21980 /* SPXMLExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporter.m; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
@@ -2284,6 +2285,7 @@
 		17F9187013A4274A005EE9BD /* Delegate Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				17278EBB13E74938003DD92A /* SPFavoritesImportProtocol.h */,
 				17F9185C13A415C5005EE9BD /* SPFavoritesExportProtocol.h */,
 				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
 			);

@@ -37,7 +37,7 @@
 
 static NSString *SPDatabaseImage = @"database-small";
 
-@interface SPConnectionController (PrivateAPI)
+@interface SPConnectionController ()
 
 - (void)_checkHost;
 - (void)_favoriteTypeDidChange;
@@ -499,6 +499,19 @@ static NSString *SPDatabaseImage = @"database-small";
  * Called by the favorites exporter when the export completes.
  */
 - (void)favoritesExportCompletedWithError:(NSError *)error
+{	
+	if (error) {
+		[[NSAlert alertWithError:error] beginSheetModalForWindow:[dbDocument parentWindow] 
+												   modalDelegate:self
+												  didEndSelector:NULL
+													 contextInfo:NULL];	
+	}
+}
+
+/**
+ * Called by the favorites importer when the import completes.
+ */
+- (void)favoritesImportCompletedWithError:(NSError *)error
 {	
 	if (error) {
 		[[NSAlert alertWithError:error] beginSheetModalForWindow:[dbDocument parentWindow] 

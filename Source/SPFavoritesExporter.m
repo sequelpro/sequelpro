@@ -29,6 +29,7 @@
 @interface SPFavoritesExporter ()
 
 - (void)_writeFavoritesInBackground;
+- (void)_informDelegateOfExportCompletion:(NSError *)error;
 
 @end
 
@@ -44,11 +45,8 @@
  * @param favorites The array of favorites to be written
  * @param path      The file system path that the file is to be written to
  * @param filename  The filename of the file to be written
- * @param error     Upon return if an error occurred contains the NSError instance
- *
- * @return A BOOL indicating the success of the operation
  */
-- (void)writeFavorites:(NSArray *)favorites toFile:(NSString *)path error:(NSError **)error
+- (void)writeFavorites:(NSArray *)favorites toFile:(NSString *)path
 {
 	[self setExportFavorites:favorites];
 	[self setExportPath:path];
@@ -96,12 +94,19 @@
 		[errorString release];
 	}
 	
-	// Inform the delegate that the export has completed and pass the error instance
+	[self _informDelegateOfExportCompletion:error];
+	
+	[pool release];
+}
+
+/**
+ * Informs the delegate that the export process has completed.
+ */
+	 - (void)_informDelegateOfExportCompletion:(NSError *)error
+{
 	if ([self delegate] && [[self delegate] respondsToSelector:@selector(favoritesExportCompletedWithError:)]) {
 		[[self delegate] performSelectorOnMainThread:@selector(favoritesExportCompletedWithError:) withObject:error waitUntilDone:NO];
 	}
-	
-	[pool release];
 }
 
 @end

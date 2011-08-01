@@ -29,8 +29,6 @@
 {	
 	NSObject <SPFavoritesExportProtocol> *delegate;
 	
-	NSError *exportError;
-	
 	NSString *exportPath;
 	NSArray *exportFavorites;
 }
@@ -47,6 +45,6 @@
  */
 @property (readwrite, retain) NSArray *exportFavorites;
 
-- (void)writeFavorites:(NSArray *)favorites toFile:(NSString *)path error:(NSError **)error;
+- (void)writeFavorites:(NSArray *)favorites toFile:(NSString *)path;
 
 @end

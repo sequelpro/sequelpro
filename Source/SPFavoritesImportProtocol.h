@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPFavoritesImporter.h
+//  SPFavoritesImportProtocol.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on May 14, 2011
+//  Created by Stuart Connolly (stuconnolly.com) on August 1, 2011
 //  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,24 +23,20 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPFavoritesImportProtocol.h"
-
-@interface SPFavoritesImporter : NSObject 
-{
-	NSObject <SPFavoritesImportProtocol> *delegate;
-	
-	NSError *importError;
-	
-	NSString *importPath;
-}
-
-@property (readwrite, assign) NSObject <SPFavoritesImportProtocol> *delegate;
+/**
+ * @protocol SPFavoritesExportProtocol SPFavoritesExportProtocol.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/ 
+ *
+ * Favorites importer delegate protocol.
+ */
+@protocol SPFavoritesImportProtocol
 
 /**
- * @property exportPath The file path to import from
+ * Invoked when the favorites import proccess completes
+ *
+ * @param error An error instance. Anything other than nil indicates an error occurred.
  */
-@property (readwrite, retain) NSString *importPath;
-
-- (void)importFavoritesFromFileAtPath:(NSString *)path;
+- (void)favoritesImportCompletedWithError:(NSError *)error;
 
 @end

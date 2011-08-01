@@ -1136,18 +1136,18 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  * Called when the user dismisses either the import of export favorites panels.
  */
 - (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	NSError *error = nil;
-	
+{	
 	if (contextInfo == SPExportFavorites) {
 		SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 		
 		[exporter setDelegate:self];
 		
-		[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename] error:&error];
+		[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename]];
 	}
 	else if (contextInfo == SPImportFavorites) {
-		//SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
+		SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
+		
+		[importer setDelegate:self];
 	}
 }
 

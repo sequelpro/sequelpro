@@ -25,6 +25,29 @@
 
 #import "SPFavoritesImporter.h"
 
+@interface SPFavoritesImporter ()
+
+- (void)_importFavoritesInBackground;
+
+@end
+
 @implementation SPFavoritesImporter
+
+@synthesize delegate;
+@synthesize importPath;
+
+/**
+ *
+ * @param path The path of the file to import
+ */
+- (void)importFavoritesFromFileAtPath:(NSString *)path
+{
+	
+}
+
+- (void)_importFavoritesInBackground
+{
+	
+}
 
 @end
