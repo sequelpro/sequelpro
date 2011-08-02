@@ -221,7 +221,9 @@
 
 	// If this action was triggered via a double-click on the favorites outline view,
 	// ensure that one of the connections was double-clicked, not the area above or below
+#ifndef SP_REFACTOR
 	if (sender == favoritesTable && [favoritesTable clickedRow] <= 0) return;
+#endif
 
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {

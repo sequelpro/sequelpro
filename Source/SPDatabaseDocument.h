@@ -34,14 +34,18 @@
 #ifndef SP_REFACTOR /* class forward decls */
 SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
 #endif
-SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery;
+SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery;
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol>
+@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol
+#ifdef SP_REFACTOR /* patch */
+	, NSTextFieldDelegate
+#endif
+>
 {
 #ifdef SP_REFACTOR /* patch */
 	id delegate;
@@ -237,6 +241,7 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 @property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
 @property (assign) NSProgressIndicator* queryProgressBar;
+@property (assign) NSWindow* databaseSheet;
 #endif
 
 #ifndef SP_REFACTOR /* ivars */
@@ -251,8 +256,10 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 
 #ifndef SP_REFACTOR /* method decls */
 - (BOOL)isUntitled;
+#endif
 - (BOOL)couldCommitCurrentViewActions;
 
+#ifndef SP_REFACTOR /* method decls */
 - (void)initQueryEditorWithString:(NSString *)query;
 
 // Connection callback and methods
@@ -267,12 +274,14 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 - (IBAction)chooseDatabase:(id)sender;
 #endif
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)refreshTables:(id)sender;
 - (IBAction)copyDatabase:(id)sender;
+#endif
 - (IBAction)renameDatabase:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
@@ -436,8 +445,17 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
 
+@property (assign) SPDatabaseData* databaseDataInstance;
 @property (assign) SPTableData* tableDataInstance;
 @property (assign) SPCustomQuery* customQueryInstance;
+@property (assign) id databaseNameField;
+@property (assign) id databaseEncodingButton;
+@property (assign) id addDatabaseButton;
+
+@property (assign) id databaseRenameNameField;
+@property (assign) id renameDatabaseButton;
+@property (assign) id databaseRenameSheet;
+
 #endif
 
 @end

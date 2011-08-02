@@ -596,11 +596,7 @@
 #endif
 
 	// Notify listeners that a query has started
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#endif
 
 #ifndef SP_REFACTOR /* growl */
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
@@ -867,11 +863,7 @@
 		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
 
 		// Notify any listeners that the query has completed
-#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 
 #ifndef SP_REFACTOR /* growl */
 		// Perform the Growl notification for query completion
@@ -904,11 +896,7 @@
 	}
 
 	//query finished
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 
 #ifndef SP_REFACTOR /* growl */
 	// Query finished Growl notification

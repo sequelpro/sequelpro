@@ -29,9 +29,10 @@
 @class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, SPTableView;
 #endif
 
+#ifndef SP_REFACTOR
 @interface SPIndexesController : NSWindowController 
-#ifdef SP_REFACTOR
-<NSTableViewDelegate, NSTableViewDataSource>
+#else
+@interface SPIndexesController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
 #endif
 {
 	// Controllers

@@ -23,7 +23,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFieldEditorController.h"
+#ifndef SP_REFACTOR
 #import "QLPreviewPanel.h"
+#endif
 #import "SPDataCellFormatter.h"
 #import "RegexKitLite.h"
 #import "SPDataCellFormatter.h"
@@ -148,10 +150,12 @@
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
+#ifndef SP_REFACTOR
 	// On Mac OSX 10.6 QuickLook runs non-modal thus order out the panel
 	// if still visible
 	if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
 		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
+#endif
 
 	if ( sheetEditData ) [sheetEditData release];
 #ifndef SP_REFACTOR
@@ -828,7 +832,7 @@
  */
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
-
+#ifndef SP_REFACTOR
 	// Load QL via private framework (SDK 10.5)
 	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
 
@@ -906,7 +910,7 @@
 	} else {
 		[SPTooltip showWithObject:[NSString stringWithFormat:@"QuickLook is not available on that platform."]];
 	}
-
+#endif
 }
 
 /**
@@ -914,6 +918,7 @@
  */
 - (void)beginPreviewPanelControl:(id)panel
 {
+#ifndef SP_REFACTOR
 
 	// This document is now responsible of the preview panel
 	[panel setDelegate:self];
@@ -921,6 +926,7 @@
 
 	// Due to the unknown image format disable image sharing
 	[panel setShowsAddToiPhotoButton:NO];
+#endif
 
 }
 

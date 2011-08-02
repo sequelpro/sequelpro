@@ -48,7 +48,9 @@
 #ifndef SP_REFACTOR /* headers */
 #import "SPSQLParser.h"
 #import "SPTableData.h"
+#endif
 #import "SPDatabaseData.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPHistoryController.h"
@@ -78,6 +80,7 @@
 #import "SPAlertSheets.h"
 #import "NSNotificationAdditions.h"
 #import "SPCustomQuery.h"
+#import "SPDatabaseRename.h"
 #endif
 
 // Constants
@@ -87,12 +90,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 @interface SPDatabaseDocument ()
 
-#ifndef SP_REFACTOR /* method decls */
 - (void)_addDatabase;
+#ifndef SP_REFACTOR /* method decls */
 - (void)_copyDatabase;
+#endif
 - (void)_renameDatabase;
 - (void)_removeDatabase;
-#endif
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
 @end
@@ -115,6 +118,14 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 @synthesize tableDataInstance;
 @synthesize customQueryInstance;
 @synthesize queryProgressBar;
+@synthesize databaseSheet;
+@synthesize databaseNameField;
+@synthesize databaseEncodingButton;
+@synthesize addDatabaseButton;
+@synthesize databaseDataInstance;
+@synthesize databaseRenameSheet;
+@synthesize databaseRenameNameField;
+@synthesize renameDatabaseButton;
 #endif
 
 - (id)init
@@ -408,14 +419,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	[databaseDataInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR /* setServerSupport: */
 	// Pass the support class to the data instance
 	[databaseDataInstance setServerSupport:serverSupport];
-#endif
 
 #ifdef SP_REFACTOR /* glue */
 	tablesListInstance = [[SPTablesList alloc] init];
 	[tablesListInstance setDatabaseDocument:self];	
+	[tablesListInstance awakeFromNib];
 #endif	
 
 	// Set the connection on the tables list instance - this updates the table list while the connection
@@ -678,7 +688,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	}
 }
 
-#ifndef SP_REFACTOR /* operations on whole databases */
 /**
  * opens the add-db sheet and creates the new db
  */
@@ -730,6 +739,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 }
 
 
+#ifndef SP_REFACTOR /* operations on whole databases */
 /**
  * opens the copy database sheet and copies the databsae
  */
@@ -746,6 +756,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"copyDatabase"];
 }
+#endif
 
 /**
  * opens the rename database sheet and renames the databsae
@@ -769,8 +780,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (IBAction)removeDatabase:(id)sender
 {
+#ifndef SP_REFACTOR
 	// No database selected, bail
 	if ([chooseDatabaseButton indexOfSelectedItem] == 0) return;
+#endif
 
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 
@@ -792,6 +805,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Refreshes the tables list by calling SPTablesList's updateTables.
  */
@@ -851,7 +865,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	return allSystemDatabases;
 }
 
-#ifndef SP_REFACTOR /* sheetDidEnd: */
 /**
  * Alert sheet method. Invoked when an alert sheet is dismissed.
  *
@@ -862,11 +875,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
+#ifndef SP_REFACTOR
 	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
 		saveDocPrefSheetStatus = returnCode;
 		return;
 	}
+#endif
 
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
@@ -896,23 +910,27 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				[chooseDatabaseButton selectItemAtIndex:0];
 		}
 	} 
+#ifndef SP_REFACTOR
 	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _copyDatabase];		
 		}
 	}
+#endif
 	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];		
 		}
 	}
+#ifndef SP_REFACTOR
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
 		if (statusValues) [statusValues release], statusValues = nil;
 	}
-
+#endif
 }
 
+#ifndef SP_REFACTOR /* sheetDidEnd: */
 /**
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
@@ -2207,6 +2225,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 {
 	queryEditorInitString = [query retain];
 }
+#endif
 
 /**
  * Invoked when user hits the cancel button or close button in
@@ -2226,6 +2245,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[[sender window] orderOut:self];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Displays the user account manager.
  */
@@ -4123,8 +4143,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 				[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
 				[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
-				if ([connectionController sshKeyLocation])
-					[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
+				[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
 				if ([connectionController sshPort] && [[connectionController sshPort] length])
 					[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
 			break;
@@ -4144,8 +4163,11 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		if (includePasswords) {
 			NSString *pw = [self keychainPasswordForConnection:nil];
-			if (!pw) pw = [connectionController password];
-			if (pw) [connection setObject:pw forKey:@"password"];
+			if (![pw length]) pw = [connectionController password];
+			if (pw) 
+				[connection setObject:pw forKey:@"password"];
+			else
+				[connection setObject:@"" forKey:@"password"];
 
 			if ([connectionController type] == SPSSHTunnelConnection) {
 				NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
@@ -5613,6 +5635,11 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 	if (runningActivitiesArray) [runningActivitiesArray release];
 	
+#ifdef SP_REFACTOR 
+	if ( tablesListInstance ) [tablesListInstance release];
+	if ( customQueryInstance ) [customQueryInstance release];
+#endif
+	
 	[super dealloc];
 }
 
@@ -5656,6 +5683,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// Update DB list
 	[self setDatabases:self];
 }			 
+#endif
 
 - (void)_renameDatabase 
 {
@@ -5682,6 +5710,20 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	// Update DB list
 	[self setDatabases:self];
+
+#ifdef SP_REFACTOR
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+
+	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
+	{
+		if ( [allDatabases count] > 0 )
+		{
+			NSString* db = [databaseRenameNameField stringValue];
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:db];
+		}
+	}
+#endif
 }			 
 
 /**
@@ -5735,7 +5777,21 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
+#ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
+#endif
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+
+	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
+	{
+		if ( [allDatabases count] > 0 )
+		{
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:selectedDatabase];
+		}
+	}
+#endif
 }
 
 /**
@@ -5774,10 +5830,24 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
+#ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
+#endif
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+		
+	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
+	{
+		if ( [allDatabases count] > 0 )
+		{
+			NSString* db = [allDatabases objectAtIndex:0];
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:db];
+		}
+	}
+#endif
 }
 
-#endif
 
 /**
  * Select the specified database and, optionally, table.

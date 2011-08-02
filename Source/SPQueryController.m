@@ -50,7 +50,11 @@ static SPQueryController *sharedQueryController = nil;
 
 @implementation SPQueryController
 
+#ifndef SP_REFACTOR
+
 @synthesize consoleFont;
+
+#endif
 
 /**
  * Returns the shared query console.

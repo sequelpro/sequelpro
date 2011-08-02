@@ -63,7 +63,11 @@
 #endif
 }
 
+#ifndef SP_REFACTOR
+
 @property (readwrite, retain) NSFont *consoleFont;
+
+#endif
 
 + (SPQueryController *)sharedQueryController;
 

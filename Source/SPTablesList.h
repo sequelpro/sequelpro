@@ -26,7 +26,11 @@
 #import <MCPKit/MCPKit.h>
 
 @class SPHistoryController, SPTableView;
-@class SPDatabaseDocument;
+@class SPDatabaseDocument, SPDatabaseData, SPTableStructure, SPTableContent;
+
+#ifdef SP_REFACTOR
+@class SQLSidebarViewController;
+#endif
 
 @interface NSObject (NSSplitView)
 
@@ -38,34 +42,48 @@
 @end
 
 @interface SPTablesList : NSObject 
+#ifdef SP_REFACTOR
+<NSTextFieldDelegate>
+#endif
 {
 	IBOutlet SPDatabaseDocument*	tableDocumentInstance;
+	IBOutlet SPTableStructure* tableSourceInstance;
+	IBOutlet SPTableContent* tableContentInstance;
 #ifndef SP_REFACTOR /* ivars */
-	IBOutlet id tableSourceInstance;
-	IBOutlet id tableContentInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
-	IBOutlet id databaseDataInstance;
+#endif
+	IBOutlet SPDatabaseData* databaseDataInstance;
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet id tableInfoInstance;
 	IBOutlet id tableTriggersInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 
 	IBOutlet id copyTableSheet;
-	IBOutlet SPTableView *tablesListView;
+#endif
+	IBOutlet NSTableView *tablesListView;
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
 	IBOutlet NSButton *copyTableContentSwitch;
+#endif
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
 	IBOutlet id tableTypeButton;
 	IBOutlet id toolbarAddButton;
+#ifdef SP_REFACTOR
+	id toolbarDeleteButton;
+#endif
+#ifndef SP_REFACTOR
 	IBOutlet id toolbarActionsButton;
 	IBOutlet id toolbarReloadButton;
+#endif
 	IBOutlet id addTableButton;
+#ifndef SP_REFACTOR
 	IBOutlet id truncateTableButton;
 	IBOutlet NSSplitView *tableListSplitView;
 	IBOutlet NSSplitView *tableListFilterSplitView;
@@ -100,34 +118,32 @@
 #endif
 
 	NSMutableArray *tables;
-#ifndef SP_REFACTOR /* ivars */
 	NSMutableArray *filteredTables;
-#endif
 	NSMutableArray *tableTypes;
-#ifndef SP_REFACTOR /* ivars */
 	NSMutableArray *filteredTableTypes;
-#endif
 	NSInteger selectedTableType;
 	NSString *selectedTableName;
-#ifndef SP_REFACTOR /* ivars */
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;
-#endif
 	BOOL tableListContainsViews;
-#ifndef SP_REFACTOR /* ivars */
 	BOOL alertSheetOpened;
 
+#ifndef SP_REFACTOR /* ivars */
 	NSFont *smallSystemFont;
+#endif
+
+#ifdef SP_REFACTOR
+	SQLSidebarViewController* sidebarViewController;
 #endif
 }
 
 // IBAction methods
 - (IBAction)updateTables:(id)sender;
 
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)addTable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
 - (IBAction)truncateTable:(id)sender;
@@ -168,17 +184,31 @@
 - (void) showFilter;
 - (void) hideFilter;
 - (void) clearFilter;
+#endif
 - (IBAction) updateFilter:(id)sender;
 
 // Task interaction
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification;
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 - (void) setTableListSelectability:(BOOL)isSelectable;
-#endif
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
 #ifdef SP_REFACTOR /* method decls */
+@property (assign) SPTableStructure* tableSourceInstance;
+@property (assign) SPTableContent* tableContentInstance;
+@property (assign) id toolbarAddButton;
+@property (assign) id toolbarDeleteButton;
+@property (assign) id tableSheet;
+@property (assign) id tableNameField;
+@property (assign) id tableEncodingButton;
+@property (assign) id tableTypeButton;
+@property (assign) id databaseDataInstance;
+@property (assign) id addTableButton;
+@property (assign) NSTableView* tablesListView;
+@property (assign) SQLSidebarViewController* sidebarViewController;
+
+- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)setDatabaseDocument:(SPDatabaseDocument*)val;
 #endif
 @end

@@ -36,7 +36,9 @@
 #import "SPTableData.h"
 #import "SPQueryController.h"
 #import "SPTextAndLinkCell.h"
+#ifndef SP_REFACTOR
 #import "QLPreviewPanel.h"
+#endif
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
 #import "RegexKitLite.h"
