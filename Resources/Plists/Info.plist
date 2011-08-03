@@ -143,6 +143,8 @@
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>
 	<string>http://log.sequelpro.com/submit</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
