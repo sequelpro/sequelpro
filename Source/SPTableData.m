@@ -928,7 +928,7 @@
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected tables and return false
-	if ([[tableListInstance tableName] isEqualToString:@""] || ![tableListInstance tableName]) {
+	if (![tableListInstance tableName]) {
 		pthread_mutex_unlock(&dataProcessingLock);
 		return FALSE;
 	}

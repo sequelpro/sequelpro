@@ -40,4 +40,7 @@ static inline NSData *NSStringDataUsingLossyEncoding(NSString *self, NSInteger e
 
 @interface NSString (MCPStringAdditions)
 
+- (NSString *)backtickQuotedString;
+- (NSString *)tickQuotedString;
+
 @end

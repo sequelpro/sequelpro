@@ -25,11 +25,11 @@
 
 @interface NSNotificationCenter (NSNotificationCenterAdditions)
 
-- (void)postNotificationOnMainThread:(NSNotification *)notification;
-- (void)postNotificationOnMainThread:(NSNotification *)notification waitUntilDone:(BOOL)wait;
+- (void)postNotificationOnMainThread:(NSNotification *)aNotification;
+- (void)postNotificationOnMainThread:(NSNotification *)aNotification waitUntilDone:(BOOL)shouldWaitUntilDone;
 
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object;
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo;
-- (void)postNotificationOnMainThreadWithName:(NSString *)name object:(id)object userInfo:(NSDictionary *)userInfo waitUntilDone:(BOOL)wait;
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject;
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo;
+- (void)postNotificationOnMainThreadWithName:(NSString *)aName object:(id)anObject userInfo:(NSDictionary *)aUserInfo waitUntilDone:(BOOL)shouldWaitUntilDone;
 
 @end

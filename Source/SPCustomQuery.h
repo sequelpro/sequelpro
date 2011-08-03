@@ -186,6 +186,14 @@
 	NSString *kCellEditorErrorTooManyMatches;
 }
 
+#ifdef SP_REFACTOR
+@property (assign) SPDatabaseDocument* tableDocumentInstance;
+@property (assign) SPTablesList* tablesListInstance;
+@property (assign) SPTextView *textView;
+@property (assign) SPCopyTable *customQueryView;
+@property (assign) NSButton* runAllButton;
+#endif
+
 @property(assign) BOOL textViewWasChanged;
 
 // IBAction methods

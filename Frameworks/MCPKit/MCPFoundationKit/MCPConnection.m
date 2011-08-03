@@ -34,15 +34,14 @@
 #import "MCPConnectionProxy.h"
 #import "MCPConnectionDelegate.h"
 #import "MCPStringAdditions.h"
-#import "SPStringAdditions.h"
-#import "RegexKitLite.h"
+#import "RegexKitLite.h" // TODO: Remove along with queryDbStructureWithUserInfo 
 #import "NSNotificationAdditions.h"
 
 #include <unistd.h>
 #include <mach/mach_time.h>
 #include <SystemConfiguration/SystemConfiguration.h>
 
-const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS;
+const NSUInteger kMCPConnectionDefaultOption = CLIENT_COMPRESS | CLIENT_REMEMBER_OPTIONS | CLIENT_MULTI_RESULTS | CLIENT_INTERACTIVE;
 const char *kMCPConnectionDefaultSocket = MYSQL_UNIX_ADDR;
 const char *kMCPSSLCipherList = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
 const NSUInteger kMCPConnection_Not_Inited = 1000;
@@ -166,7 +165,8 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		lastQueryErrorId       = 0;
 		lastQueryErrorMessage  = nil;
 		lastQueryAffectedRows  = 0;
-		lastPingSuccess		   = NO;
+		lastPingSuccess	       = NO;
+		delegate               = nil;
 		delegateSupportsConnectionLostDecisions = NO;
 		delegateResponseToWillQueryString = NO;
 		
@@ -525,7 +525,9 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		} while (![self tryLockConnection]);
 		[self unlockConnection];
 
-		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
+		// Only close the connection if it appears to still be active, and not reading or
+		// writing.  This may result in a leak, but minimises crashes.
+		if (!mConnection->net.reading_or_writing && mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
@@ -580,6 +582,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	
 	// Close the connection if it exists.
 	if (mConnected) {
+		mConnected = NO;
 
 		// Allow any pings or query cleanups to complete - within a time limit.
 		uint64_t startTime_t, currentTime_t;
@@ -594,11 +597,12 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		} while (![self tryLockConnection]);
 		[self unlockConnection];
 
-		if (mConnection->net.vio && mConnection->net.buff) mysql_close(mConnection);
+		// Only close the connection if it's not reading or writing - this may result
+		// in leaks, but minimises crashes.
+		if (!mConnection->net.reading_or_writing) mysql_close(mConnection);
 		mConnection = NULL;
 	}
 	
-	mConnected = NO;
 	isDisconnecting = NO;
 	[self lockConnection];
 
@@ -2012,6 +2016,13 @@ void pingThreadCleanup(void *pingDetails)
 		}
 	} else {
 		NSLog(@"Task cancelletion MySQL init failed.");
+	}
+
+	// As the attempt may have taken up to the connection timeout, check lock status
+	// again, returning if nothing is required.
+	if ([self tryLockConnection]) {
+		[self unlockConnection];
+		return;
 	}
 
 	// Reset the connection
