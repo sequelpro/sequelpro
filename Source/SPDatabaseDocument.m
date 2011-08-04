@@ -3871,10 +3871,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void)parentTabDidClose
 {
-<<<<<<< .working
-=======
 #ifndef SP_REFACTOR
->>>>>>> .merge-right.r3375
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
