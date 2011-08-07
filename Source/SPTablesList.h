@@ -63,7 +63,7 @@
 
 	IBOutlet id copyTableSheet;
 #endif
-	IBOutlet NSTableView *tablesListView;
+	IBOutlet SPTableView *tablesListView;
 #ifndef SP_REFACTOR /* ivars */
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;

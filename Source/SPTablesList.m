@@ -1780,8 +1780,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (void) showFilter
 {
-	if ([tableListFilterSplitView collapsibleSubviewIsCollapsed])
+	if ([tableListFilterSplitView collapsibleSubviewIsCollapsed]) {
 		[tableListFilterSplitView performSelectorOnMainThread:@selector(toggleCollapse:) withObject:nil waitUntilDone:NO];
+	}
 }
 
 /**
@@ -1790,8 +1791,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (void) hideFilter
 {
-	if (![tableListFilterSplitView collapsibleSubviewIsCollapsed])
+	if (![tableListFilterSplitView collapsibleSubviewIsCollapsed]) {
 		[tableListFilterSplitView performSelectorOnMainThread:@selector(toggleCollapse:) withObject:nil waitUntilDone:NO];
+	}
 }
 
 /**

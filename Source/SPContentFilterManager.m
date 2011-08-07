@@ -53,16 +53,16 @@
 
 		contentFilters = [[NSMutableArray alloc] init];
 
-		if(managerDelegate == nil) {
+		if (managerDelegate == nil) {
 			NSBeep();
 			NSLog(@"ContentFilterManager was called without a delegate.");
 			return nil;
 		}
+		
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
 		delegatesFileURL = [tableDocumentInstance fileURL];
 
 		filterType = [NSString stringWithString:compareType];
-
 	}
 
 	return self;
@@ -71,6 +71,7 @@
 - (void)dealloc
 {
 	[contentFilters release];
+	
 	[super dealloc];
 }
 
@@ -79,7 +80,6 @@
  */
 - (void)awakeFromNib
 {
-
 	// Add global group row to contentFilters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			NSLocalizedString(@"Global",@"Content Filter Manager : Filter Entry List: 'Global' Header"), @"MenuLabel",
@@ -107,6 +107,7 @@
 		[delegatesFileURL absoluteString], @"headerOfFileURL",
 		@"", @"Clause",
 		nil]];
+	
 	if([[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL]) {
 		id filters = [[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL];
 		if([filters objectForKey:filterType])
@@ -117,6 +118,7 @@
 
 	// Select the first query if any
 	NSUInteger i = 0;
+	
 	for(i=0; i < [contentFilters count]; i++ )
 		if(![[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"])
 			break;
@@ -174,11 +176,13 @@
 			i++;
 			break;
 		}
+		
 		i++;
 	}
 
 	// Take all content filters until the next header or end of all content filters
 	NSUInteger numOfArgs;
+	
 	for ( ; i<[contentFilters count]; i++) {
 
 		if(![[contentFilters objectAtIndex:i] objectForKey:@"headerOfFileURL"]) {
@@ -215,7 +219,6 @@
 	return [tableDocumentInstance valueForKey:@"customQueryInstance"];
 }
 
-
 #pragma mark -
 #pragma mark IBAction methods
 
@@ -224,7 +227,6 @@
  */
 - (IBAction)addContentFilter:(id)sender
 {
-
 	NSMutableDictionary *filter;
 	NSUInteger insertIndex;
 
@@ -255,7 +257,6 @@
 
 	[removeButton setEnabled:([contentFilterTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:contentFilterNameTextField];
-
 }
 
 /**
@@ -421,12 +422,13 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	if([contentFilterTableView selectedRow] > -1) {
+	NSInteger row = [contentFilterTableView selectedRow];
+	
+	if ((row > -1) && (row < (NSInteger)[contentFilters count])) {	
+		
 		NSString *newName = [[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] objectForKey:@"MenuLabel"];
-		if(newName)
-			[contentFilterNameTextField setStringValue:newName];
-		else
-			[contentFilterNameTextField setStringValue:@""];
+		
+		[contentFilterNameTextField setStringValue:(newName) ? newName : @""];
 	}
 }
 
@@ -442,8 +444,8 @@
  * Returns the value for the requested table column and row index.
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{
-	if(![[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
+{	
+	if (![[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
 
 	return [[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
 }
@@ -791,28 +793,28 @@
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-	// Is disabled - do we need that?
-	// if ([contextInfo isEqualToString:@"removeAllFavorites"]) {
-	// 	if (returnCode == NSAlertAlternateReturn) {
-	// 		[favorites removeObjects:[queryFavoritesController arrangedObjects]];
-	// 	}
-	// }
-	if([contextInfo isEqualToString:@"removeSelectedFilters"]) {
+	if ([contextInfo isEqualToString:@"removeSelectedFilters"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
-			// get last index
+			// Get last index
 			NSUInteger currentIndex = [indexes lastIndex];
 
-			while (currentIndex != NSNotFound) {
+			while (currentIndex != NSNotFound) 
+			{
 				[contentFilters removeObjectAtIndex:currentIndex];
-				// get next index (beginning from the end)
+				
+				// Get next index (beginning from the end)
 				currentIndex = [indexes indexLessThanIndex:currentIndex];
 			}
-
+			
+			if ([contentFilters count] == 2) {
+				[contentFilterNameTextField setStringValue:@""];
+			}
+		
 			[contentFilterArrayController rearrangeObjects];
 			[contentFilterTableView reloadData];
-
+			
 			// Set focus to filter list to avoid an unstable state
 			[[self window] makeFirstResponder:contentFilterTableView];
 
@@ -826,7 +828,6 @@
  */
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	if (returnCode == NSOKButton) {
 
 		NSString *filename = [[panel filenames] objectAtIndex:0];
