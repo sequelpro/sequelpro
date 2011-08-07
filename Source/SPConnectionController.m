@@ -59,6 +59,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
 - (NSNumber *)_createNewFavoriteID;
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
+- (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
@@ -1393,6 +1394,17 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	}
 	
 	return favoriteNode;
+}
+
+/**
+ * Strips any invalid characters form the supplied string. Invalid is defined as any characters that should
+ * not be allowed to be enetered on the connection screen.
+ */
+- (NSString *)_stripInvalidCharactersFromString:(NSString *)subject
+{
+	NSString *result = [subject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	return [result stringByReplacingOccurrencesOfString:@"\n" withString:@""];
 }
 
 /**

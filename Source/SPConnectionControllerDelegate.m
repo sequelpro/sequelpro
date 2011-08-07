@@ -44,6 +44,8 @@ static NSString *SPDatabaseImage = @"database-small";
 - (void)_reloadFavoritesViewData;
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
+- (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
+
 @end
 
 @implementation SPConnectionController (SPConnectionControllerDelegate)
@@ -274,7 +276,9 @@ static NSString *SPDatabaseImage = @"database-small";
 - (void)controlTextDidChange:(NSNotification *)notification
 {
 	id field = [notification object];
-				
+	
+	[field setStringValue:[self _stripInvalidCharactersFromString:[field stringValue]]];
+	
 	if (((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) && [self selectedFavoriteNode]) {
 		
 		favoriteNameFieldWasTouched = YES;
