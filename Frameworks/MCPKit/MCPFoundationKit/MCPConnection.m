@@ -54,7 +54,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
  */
 @interface MCPConnection (PrivateAPI)
 
-- (void)_getServerVersionString;
+- (void)_updateConnectionVariables;
 - (BOOL)_isCurrentHostReachable;
 - (void)_setupKeepalivePingTimer;
 
@@ -460,6 +460,7 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, (unsigned int)connectionPort, theSocket, mConnectionFlags);
 	thePass = NULL;
 
+	// If the connection failed, record the error state and return
 	if (theRet != mConnection) {
 		[self unlockConnection];
 		[self setLastErrorMessage:nil];
@@ -469,21 +470,20 @@ static BOOL sTruncateLongFieldInLogs = YES;
 		return mConnected = NO;
 	}
 
+	// Set and reset connection flags
 	mConnected = YES;
 	userTriggeredDisconnect = NO;
 	connectionStartTime = mach_absolute_time();
 	lastKeepAliveTime = 0;
 	automaticReconnectAttempts = 0;
 	pingFailureCount = 0;
-	const char *mysqlStringEncoding = mysql_character_set_name(mConnection);
-	[encoding release];
-	encoding = [[NSString alloc] initWithUTF8String:mysqlStringEncoding];
-	stringEncoding = [MCPConnection encodingForMySQLEncoding:mysqlStringEncoding];
-	encodingUsesLatin1Transport = NO;
-	[self setLastErrorMessage:nil];
 	connectionThreadId = mConnection->thread_id;
+	[self setLastErrorMessage:nil];
+
 	[self unlockConnection];
-	[self timeZone]; // Getting the timezone used by the server.
+
+	// Update connection variables - server version, time zone, and connection encoding
+	[self _updateConnectionVariables];
 	
 	// Only attempt to set the max allowed packet if we have a connection
 	// The fetches may fail, in which case the class default (which should match
@@ -1036,14 +1036,8 @@ void pingThreadCleanup(void *pingDetails)
  */
 - (NSString *)serverVersionString
 {
-	if (mConnected) {
-		if (serverVersionString == nil) {
-			[self _getServerVersionString];
-		}
-
-		if (serverVersionString) {
-			return [NSString stringWithString:serverVersionString];
-		}
+	if (serverVersionString) {
+		return [NSString stringWithString:serverVersionString];
 	}
 
 	return nil;
@@ -1055,14 +1049,8 @@ void pingThreadCleanup(void *pingDetails)
 - (NSInteger)serverMajorVersion
 {
 	
-	if (mConnected) {
-		if (serverVersionString == nil) {
-			[self _getServerVersionString];
-		}
-
-		if (serverVersionString != nil) {
-			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] integerValue];
-		} 
+	if (serverVersionString != nil) {
+		return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0] integerValue];
 	} 
 	
 	return -1;
@@ -1073,15 +1061,8 @@ void pingThreadCleanup(void *pingDetails)
  */
 - (NSInteger)serverMinorVersion
 {
-	
-	if (mConnected) {
-		if (serverVersionString == nil) {
-			[self _getServerVersionString];
-		}
-		
-		if(serverVersionString != nil) {
-			return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] integerValue];
-		}
+	if (serverVersionString != nil) {
+		return [[[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1] integerValue];
 	}
 	
 	return -1;
@@ -1092,15 +1073,9 @@ void pingThreadCleanup(void *pingDetails)
  */
 - (NSInteger)serverReleaseVersion
 {
-	if (mConnected) {
-		if (serverVersionString == nil) {
-			[self _getServerVersionString];
-		}
-		
-		if (serverVersionString != nil) {
-			NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
-			return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] integerValue];
-		}
+	if (serverVersionString != nil) {
+		NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
+		return [[[s componentsSeparatedByString:@"-"] objectAtIndex:0] integerValue];
 	}
 	
 	return -1;
@@ -1343,7 +1318,8 @@ void pingThreadCleanup(void *pingDetails)
 }
 
 /**
- * The method used by !{initToHost:withLogin:password:usingPort:} and !{initToSocket:withLogin:password:}. Same information and use of the parameters:
+ * Trigger a connection to a server using the supplied details.  Any details supplied are
+ * stored for automatic reconnection attempts.
  *
  * - login is the user name
  * - pass is the password corresponding to the user name
@@ -1352,70 +1328,40 @@ void pingThreadCleanup(void *pingDetails)
  * - socket is the path to the socket (for the localhost)
  *
  * The socket is used if the host is set to !{@"localhost"}, to an empty or a !{nil} string
- * For the moment the implementation might not be safe if you have a nil pointer to one of the NSString* variables (underestand: I don't know what the result will be).
  */
 - (BOOL)connectWithLogin:(NSString *)login password:(NSString *)pass host:(NSString *)host port:(NSUInteger)port socket:(NSString *)aSocket
 {
-	const char *theLogin  = [self cStringFromString:login];
-	const char *theHost	  = [self cStringFromString:host];
-	const char *thePass	  = [self cStringFromString:pass];
-	const char *theSocket = [self cStringFromString:aSocket];
-	void	   *theRet;
-	
-	// Disconnect if it was already connected
-	if (mConnected) {
-		[self disconnect];
-		mConnection = mysql_init(NULL);
-		if (mConnection == NULL) return NO;
-	}
-	
-	if (mConnection != NULL) {
 
-		// Ensure the custom timeout option is set
-		mysql_options(mConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&connectionTimeout);
+	// Reset any stored connection settings
+	if (connectionHost) [connectionHost release], connectionHost = nil;
+	if (connectionLogin) [connectionLogin release], connectionLogin = nil;
+	if (connectionPassword) [connectionPassword release], connectionPassword = nil;
+	if (connectionSocket) [connectionSocket release], connectionSocket = nil;
 
-		// ensure that automatic reconnection is explicitly disabled - now handled manually.
-		my_bool falseBool = FALSE;
-		mysql_options(mConnection, MYSQL_OPT_RECONNECT, &falseBool);
+	// Determine whether a socket connection should be made
+	if (!host || ![host length] || [host isEqualToString:@"localhost"]) {
+		if (!aSocket || ![aSocket length]) {
+			aSocket = [self findSocketPath];
+			if (!aSocket) aSocket = @"";
+		}
+		connectionSocket = [[NSString alloc] initWithString:aSocket];
+		connectionPort = 0;
 
-		// Set the connection encoding to utf8
-		mysql_options(mConnection, MYSQL_SET_CHARSET_NAME, [encoding UTF8String]);
+	// Otherwise, use host and port details
+	} else {
+		connectionHost = [[NSString alloc] initWithString:host];
+		connectionPort = port;
 	}
 
-	if ([host isEqualToString:@""]) {
-		theHost = NULL;
-	}
-	
-	if (theSocket == NULL) {
-		theSocket = kMCPConnectionDefaultSocket;
-	}
+	// Store the username
+	connectionLogin = [[NSString alloc] initWithString:(login?login:@"")];
 
-	// Apply SSL if appropriate
-	if (useSSL) {
-		mysql_ssl_set(mConnection,
-						sslKeyFilePath ? [sslKeyFilePath UTF8String] : NULL,
-						sslCertificatePath ? [sslCertificatePath UTF8String] : NULL,
-						sslCACertificatePath ? [sslCACertificatePath UTF8String] : NULL,
-						NULL,
-						kMCPSSLCipherList);
-	}
-	
-	theRet = mysql_real_connect(mConnection, theHost, theLogin, thePass, NULL, (unsigned int)port, theSocket, mConnectionFlags);
-	if (theRet != mConnection) {
-		return mConnected = NO;
-	}
-	
-	mConnected = YES;
-	const char *mysqlStringEncoding = mysql_character_set_name(mConnection);
-	[encoding release];
-	encoding = [[NSString alloc] initWithUTF8String:mysqlStringEncoding];
-	stringEncoding = [MCPConnection encodingForMySQLEncoding:mysqlStringEncoding];
-	encodingUsesLatin1Transport = NO;
-	
-	// Getting the timezone used by the server.
-	[self timeZone]; 
-	
-	return mConnected;
+	// Store the password if supplied.  It is more secure to allow MCPConnection to ask the
+	// delegate to retrieve details - see delegate method keychainPasswordForConnection:)
+	if (pass) connectionPassword = [[NSString alloc] initWithString:pass];
+
+	// Trigger a connection and return the resulting status
+	return [self connect];
 }
 
 /**
@@ -3032,15 +2978,12 @@ void pingThreadCleanup(void *pingDetails)
 			[theSessionTZ dataSeek:0ULL];
 			theRow = [theSessionTZ fetchRowAsArray];
 			theTZName = [theRow objectAtIndex:1];
-			
-			if ( [theTZName isKindOfClass:[NSData class]] ) {
-				// MySQL 4.1.14 returns the mysql variables as NSData
-				theTZName = [self stringWithText:theTZName];
-			}
 		}
 		
 		if (theTZName) { // Old versions of the server does not support there own time zone ?
 			theTZ = [NSTimeZone timeZoneWithName:theTZName];
+			if (!theTZ) theTZ = [NSTimeZone timeZoneWithAbbreviation:theTZName];
+			if (!theTZ) theTZ = [NSTimeZone defaultTimeZone];
 		} else {
 			// By default set the time zone to the local one..
 			// Try to get the name using the previously available variable:
@@ -3052,6 +2995,8 @@ void pingThreadCleanup(void *pingDetails)
 			if (theTZName) {
 				// Finally we found one ...
 				theTZ = [NSTimeZone timeZoneWithName:theTZName];
+				if (!theTZ) theTZ = [NSTimeZone timeZoneWithAbbreviation:theTZName];
+				if (!theTZ) theTZ = [NSTimeZone defaultTimeZone];
 			} else {
 				theTZ = [NSTimeZone defaultTimeZone];
 				//theTZ = [NSTimeZone systemTimeZone];
@@ -3328,19 +3273,71 @@ void pingThreadCleanup(void *pingDetails)
 @implementation MCPConnection (PrivateAPI)
 
 /**
- * Get the server's version string
+ * Retrieve connection variables and use them to update local variables - incuding
+ * server version string, server time zone, and the current connection encoding.
  */
-- (void)_getServerVersionString
+- (void)_updateConnectionVariables;
 {
-	if (mConnected) {
-		MCPResult *theResult = [self queryString:@"SHOW VARIABLES LIKE 'version'"];
-		[theResult setReturnDataAsStrings:YES];
-		
-		if ([theResult numOfRows]) {
-			[theResult dataSeek:0];
-			serverVersionString = [[NSString stringWithString:[[theResult fetchRowAsArray] objectAtIndex:1]] retain];
+	if (!mConnected) return;
+
+	// Retrieve all the variables from the server
+	MCPResult *theResult = [self queryString:@"SHOW VARIABLES"];
+	[theResult setReturnDataAsStrings:YES];
+	if (![theResult numOfRows]) return;
+
+	// Step through the rows, converting into an NSDictionary
+	NSMutableDictionary *variables = [NSMutableDictionary new];
+	NSArray *variableRow = nil;
+	while ((variableRow = [theResult fetchRowAsArray])) {
+		[variables setObject:[variableRow objectAtIndex:1] forKey:[variableRow objectAtIndex:0]];
+	}
+
+	// Get the version string
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if ([variables objectForKey:@"version"]) {
+		serverVersionString = [[NSString alloc] initWithString:[variables objectForKey:@"version"]];
+	}
+
+	// Get the timezone
+	NSString *serverTimeZoneName = nil;
+	NSTimeZone *serverTimeZone = nil;
+	if ([variables objectForKey:@"time_zone"]) {
+		if ([[variables objectForKey:@"time_zone"] isEqualToString:@"SYSTEM"]) {
+			if ([variables objectForKey:@"system_time_zone"]) {
+				serverTimeZoneName = [variables objectForKey:@"system_time_zone"];
+			}
+		} else {
+			serverTimeZoneName = [variables objectForKey:@"time_zone"];
+		}
+	} else if ([variables objectForKey:@"timezone"]) {
+		serverTimeZoneName = [variables objectForKey:@"timezone"];
+	}
+	if (!serverTimeZoneName) {
+		serverTimeZone = [NSTimeZone defaultTimeZone];
+		NSLog(@"The time zone was not defined on the server, fallen back to default time zone: %@", serverTimeZone);
+	} else {
+		serverTimeZone = [NSTimeZone timeZoneWithName:serverTimeZoneName];
+		if (!serverTimeZone) [NSTimeZone timeZoneWithAbbreviation:serverTimeZoneName];
+		if (!serverTimeZone) {
+			serverTimeZone = [NSTimeZone defaultTimeZone];
+			NSLog(@"The time zone defined on the server (%@) was not recognised, fallen back to default time zone: %@", serverTimeZoneName, serverTimeZone);
 		}
 	}
+
+	if (mTimeZone) [mTimeZone release], mTimeZone = nil;
+	mTimeZone = [serverTimeZone retain];
+
+	// Get the connection encoding
+	NSString *serverEncoding = @"latin1";
+	if ([variables objectForKey:@"character_set_results"]) {
+		serverEncoding = [variables objectForKey:@"character_set_results"];
+	} else if ([variables objectForKey:@"character_set"]) {
+		serverEncoding = [variables objectForKey:@"character_set"];
+	}
+	if (encoding) [encoding release];
+	encoding = [[NSString alloc] initWithString:serverEncoding];
+	stringEncoding = [MCPConnection encodingForMySQLEncoding:[self cStringFromString:encoding]];
+	encodingUsesLatin1Transport = NO;
 }
 
 /**

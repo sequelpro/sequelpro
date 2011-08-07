@@ -438,6 +438,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	if ([encodingType intValue] != SPEncodingAutodetect) {
 		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
+	} else {
+#endif
+		[[self onMainThread] updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[mySQLConnection encoding]]];
+#ifndef SP_REFACTOR
 	}
 #endif
 
@@ -531,7 +535,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		}
 	}
 
-	(void)[self databaseEncoding];
+	if ([self database]) (void)[self databaseEncoding];
 #endif
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
