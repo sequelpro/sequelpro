@@ -3338,6 +3338,15 @@ void pingThreadCleanup(void *pingDetails)
 	encoding = [[NSString alloc] initWithString:serverEncoding];
 	stringEncoding = [MCPConnection encodingForMySQLEncoding:[self cStringFromString:encoding]];
 	encodingUsesLatin1Transport = NO;
+
+	// Check the interactive timeout - if it's below five minutes, increase it to ten to imprive timeout/keepalive behaviour
+	if ([variables objectForKey:@"interactive_timeout"]) {
+		if ([[variables objectForKey:@"interactive_timeout"] integerValue] < 300) {
+			[self queryString:@"SET interactive_timeout=600"];
+		}
+	}
+
+	[variables release];
 }
 
 /**
