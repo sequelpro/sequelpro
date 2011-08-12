@@ -1804,40 +1804,47 @@
 	NSUInteger i;
 
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	//if (![self saveRowOnDeselect]) return;
 
-	if ( [tableContentView numberOfSelectedRows] < 1 )
-		return;
-	if ( [tableContentView numberOfSelectedRows] > 1 ) {
+	if (![tableContentView numberOfSelectedRows]) return;
+	
+	if ([tableContentView numberOfSelectedRows] > 1) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
 		return;
 	}
 
-	//copy row
+	// Row contents
 	tempRow = [tableValues rowContentsAtIndex:[tableContentView selectedRow]];
 
 #ifndef SP_REFACTOR
-	//if we don't show blobs, read data for this duplicate column from db
+	// If we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
 		// Abort if there are no indices on this table - argumentForRow will display an error.
-		if (![[self argumentForRow:[tableContentView selectedRow]] length]){
+		if (![[self argumentForRow:[tableContentView selectedRow]] length]) {
 			return;
 		}
-		//if we have indexes, use argumentForRow
+		
+		// If we have indexes, use argumentForRow
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
 		dbDataRow = [queryResult fetchRowAsArray];
 	}
 #endif
 
-	//set autoincrement fields to NULL
+	// Set autoincrement fields to NULL
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	
 	[queryResult setReturnDataAsStrings:YES];
+	
 	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	for ( i = 0 ; i < [queryResult numOfRows] ; i++ ) {
+	
+	for (i = 0; i < [queryResult numOfRows]; i++) 
+	{
 		row = [queryResult fetchRowAsDictionary];
-		if ( [[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"] ) {
+		
+		if ([[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
 			[tempRow replaceObjectAtIndex:i withObject:[NSNull null]];
-		} else if ( [tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && 
+		} 
+		else if ([tableDataInstance columnIsBlobOrText:[row objectForKey:@"Field"]] && 
 #ifndef SP_REFACTOR
 				[prefs boolForKey:SPLoadBlobsAsNeeded] 
 #else
@@ -1848,20 +1855,25 @@
 		}
 	}
 
-	//insert the copied row
+	// Insert the copied row
 	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
 	tableRowsCount++;
 
-	//select row and go in edit mode
+	// Select row and go in edit mode
 	[tableContentView reloadData];
 	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView selectedRow]+1] byExtendingSelection:NO];
+	
 	isEditingRow = YES;
 	isEditingNewRow = YES;
+	
 	currentlyEditingRow = [tableContentView selectedRow];
 #ifndef SP_REFACTOR
-	if ( [multipleLineEditingButton state] == NSOffState )
+	if ([multipleLineEditingButton state]) {
 #endif
 		[tableContentView editColumn:0 row:[tableContentView selectedRow] withEvent:nil select:YES];
+#ifndef SP_REFACTOR
+	}
+#endif
 }
 
 /**
@@ -1869,16 +1881,10 @@
  */
 - (IBAction)removeRow:(id)sender
 {
-	// Check whether a save of the current row is required.
-	// if (![self saveRowOnDeselect])
-	//	return;
-
 	// cancel editing (maybe this is not the ideal method -- see xcode docs for that method)
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
-
-	if (![tableContentView numberOfSelectedRows])
-		return;
+	if (![tableContentView numberOfSelectedRows]) return;
 
 	NSAlert *alert = [NSAlert alertWithMessageText:@""
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
@@ -2120,7 +2126,8 @@
 				}
 
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
-			} else {
+			} 
+			else {
 				// if table has more than one PRIMARY KEY
 				// delete the row by using all PRIMARY KEYs in an OR clause
 				NSMutableString *deleteQuery = [NSMutableString string];
@@ -2170,20 +2177,20 @@
 
 			if (errors) {
 				NSArray *message;
-				//TODO: The following three messages are NOT localisable!
+								
 				if (errors < 0) {
 					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors*-1), ((errors*-1)>1)?@"s":@"", (errors>1)?@"were":@"was"],
+							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors *- 1), ((errors *-1 ) > 1) ? @"s" : @"", (errors>1) ? @"were" : @"was"],
 							   nil];
 				}
 				else {
 					if (primaryKeyFieldNames == nil)
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s"],
-								   nil];
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors > 1) ? @"s" : @"", (errors > 1) ? @"ve" : @"s"],
+								   nil]; 
 					else
 						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors>1)?@"s":@"", (errors>1)?@"ve":@"s", (errors>1)?@"s":@""],
+								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors > 1) ? @"s" : @"", (errors > 1) ? @"ve" : @"s", (errors > 1) ? @"s" : @""],
 								   nil];
 				}
 
@@ -2193,13 +2200,16 @@
 			}
 
 			// Refresh table content
-			if ( errors || reloadAfterRemovingRow ) {
+			if (errors || reloadAfterRemovingRow) {
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
-			} else {
-				for ( i = tableRowsCount - 1 ; i >= 0 ; i-- ) {
+			} 
+			else {
+				for ( i = tableRowsCount - 1; i >= 0; i--) 
+				{
 					if ([selectedRows containsIndex:i]) [tableValues removeRowAtIndex:i];
 				}
+				
 				tableRowsCount = [tableValues count];
 				[tableContentView reloadData];
 
@@ -2207,12 +2217,9 @@
 				maxNumRows -= affectedRows;
 				[self updateCountText];
 			}
+			
 			[tableContentView deselectAll:self];
-		} else {
-			// The user clicked cancel in the "sure you wanna delete" message
-			// restore editing or whatever
-		}
-
+		} 
 	}
 }
 
