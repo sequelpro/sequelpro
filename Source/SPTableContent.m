@@ -163,10 +163,12 @@
 
 		[contentFilters setDictionary:[NSPropertyListSerialization propertyListFromData:defaultFilterData
 				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
-		if(contentFilters == nil || readError != nil || convError != nil) {
+		
+		if (contentFilters == nil || readError != nil || convError != nil) {
 			NSLog(@"Error while reading 'ContentFilters.plist':\n%@\n%@", [readError localizedDescription], convError);
 			NSBeep();
-		} else {
+		} 
+		else {
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"number"] count]] forKey:@"number"];
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
 			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
@@ -176,7 +178,6 @@
 		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row");
 		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
 		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Query result editing error - could not match row being edited uniquely");
-
 	}
 
 	return self;
@@ -251,14 +252,11 @@
  * reloading table data into the data array and redrawing the table.
  *
  * @param aTable The to be loaded table name
- *
  */
 - (void)loadTable:(NSString *)aTable
 {
-
 	// Abort the reload if the user is still editing a row
-	if ( isEditingRow )
-		return;
+	if (isEditingRow) return;
 
 	// If no table has been supplied, clear the table interface and return
 	if (!aTable || [aTable isEqualToString:@""]) {
@@ -1802,9 +1800,9 @@
 	NSDictionary *row;
 	NSArray *dbDataRow = nil;
 	NSUInteger i;
-
+	
 	// Check whether a save of the current row is required.
-	//if (![self saveRowOnDeselect]) return;
+	if (![self saveRowOnDeselect]) return;
 
 	if (![tableContentView numberOfSelectedRows]) return;
 	
@@ -1812,13 +1810,14 @@
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"You can only copy single rows.", @"message of panel when trying to copy multiple rows"));
 		return;
 	}
-
+	
 	// Row contents
 	tempRow = [tableValues rowContentsAtIndex:[tableContentView selectedRow]];
 
 #ifndef SP_REFACTOR
 	// If we don't show blobs, read data for this duplicate column from db
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
+		
 		// Abort if there are no indices on this table - argumentForRow will display an error.
 		if (![[self argumentForRow:[tableContentView selectedRow]] length]) {
 			return;
@@ -1856,12 +1855,12 @@
 	}
 
 	// Insert the copied row
-	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow]+1];
+	[tableValues insertRowContents:tempRow atIndex:[tableContentView selectedRow] + 1];
 	tableRowsCount++;
 
 	// Select row and go in edit mode
 	[tableContentView reloadData];
-	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView selectedRow]+1] byExtendingSelection:NO];
+	[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:[tableContentView selectedRow] + 1] byExtendingSelection:NO];
 	
 	isEditingRow = YES;
 	isEditingNewRow = YES;
@@ -2640,7 +2639,6 @@
 		  contextInfo:nil];
 }
 
-
 /**
  * Tries to write a new row to the table.
  * Returns YES if row is written to table, otherwise NO; also returns YES if no row
@@ -2648,7 +2646,6 @@
  */
 - (BOOL)saveRowToTable
 {
-
 	// Only handle tables - views should be handled per-cell.
 	if ([tablesListInstance tableType] == SPTableTypeView) return NO;
 
@@ -2668,7 +2665,9 @@
 	NSUInteger i;
 	NSDictionary *fieldDefinition;
 	id rowObject;
-	for (i = 0; i < [dataColumns count]; i++) {
+	
+	for (i = 0; i < [dataColumns count]; i++) 
+	{
 		rowObject = [tableValues cellDataAtRow:currentlyEditingRow column:i];
 		fieldDefinition = NSArrayObjectAtIndex(dataColumns, i);
 
@@ -2800,7 +2799,8 @@
 				[[tableDocumentInstance parentWindow] endEditingFor:nil];
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
-			} else {
+			} 
+			else {
 #endif
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [dataColumns count] ; i++ ) {
@@ -2818,7 +2818,7 @@
 
 			// Reload table if set to - otherwise no action required.
 #ifndef SP_REFACTOR
-			if ( [prefs boolForKey:SPReloadAfterEditingRow] ) {
+			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
 				[[tableDocumentInstance parentWindow] endEditingFor:nil];
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
@@ -2830,7 +2830,8 @@
 		return YES;
 
 	// Report errors which have occurred
-	} else {
+	} 
+	else {
 		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
 		return NO;
@@ -2865,8 +2866,7 @@
  */
 - (BOOL)saveRowOnDeselect
 {
-
-	if([tablesListInstance tableType] == SPTableTypeView) {
+	if ([tablesListInstance tableType] == SPTableTypeView) {
 		isSavingRow = NO;
 		return YES;
 	}
@@ -2879,6 +2879,7 @@
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
+	
 	isSavingRow = YES;
 
 	// Attempt to save the row, and return YES if the save succeeded.
@@ -2889,6 +2890,7 @@
 
 	// Saving failed - return failure.
 	isSavingRow = NO;
+	
 	return NO;
 }
 

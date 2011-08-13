@@ -28,8 +28,7 @@
 #import <MCPKit/MCPKit.h>
 
 @class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
-
-@class SPTableData, SPDatabaseDocument, SPTablesList, SPTableStructure, SPTableList;
+@class SPTableData, SPDatabaseDocument, SPTablesList, SPTableStructure, SPTableList, SPContentFilterManager;
 
 #ifndef SP_REFACTOR
 @interface SPTableContent : NSObject
@@ -115,7 +114,7 @@
 	NSMutableDictionary *contentFilters;
 	NSMutableDictionary *numberOfDefaultFilters;
 	NSUInteger lastSelectedContentFilterIndex;
-	id contentFilterManager;
+	SPContentFilterManager *contentFilterManager;
 	NSUInteger contentPage;
 
 #ifndef SP_REFACTOR
@@ -157,7 +156,6 @@
 
 	SPFieldEditorController *fieldEditor;
 	NSRange fieldEditorSelectedRange;
-
 }
 
 - (void)setFieldEditorSelectedRange:(NSRange)aRange;
