@@ -4147,7 +4147,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 				[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
 				[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
-				[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
+				if ([connectionController sshKeyLocation])
+					[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
 				if ([connectionController sshPort] && [[connectionController sshPort] length])
 					[connection setObject:[NSNumber numberWithInteger:[[connectionController sshPort] integerValue]] forKey:@"ssh_port"];
 			break;
@@ -4167,11 +4168,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		if (includePasswords) {
 			NSString *pw = [self keychainPasswordForConnection:nil];
-			if (![pw length]) pw = [connectionController password];
-			if (pw) 
-				[connection setObject:pw forKey:@"password"];
-			else
-				[connection setObject:@"" forKey:@"password"];
+			if (!pw) pw = [connectionController password];
+			if (pw) [connection setObject:pw forKey:@"password"];
 
 			if ([connectionController type] == SPSSHTunnelConnection) {
 				NSString *sshpw = [self keychainPasswordForSSHConnection:nil];

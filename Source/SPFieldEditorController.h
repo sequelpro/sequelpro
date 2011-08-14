@@ -32,10 +32,9 @@
  * This class offers a sheet for editing different kind of data such as text, blobs (including images) as 
  * editSheet and bit fields as bitSheet. 
  */
-#ifndef SP_REFACTOR
 @interface SPFieldEditorController : NSWindowController
-#else
-@interface SPFieldEditorController : NSWindowController <NSComboBoxDataSource>
+#ifdef SP_REFACTOR
+<NSComboBoxDataSource>
 #endif
 {
 	IBOutlet id editSheetProgressBar;

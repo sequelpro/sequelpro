@@ -30,10 +30,9 @@
 @class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
 @class SPTableData, SPDatabaseDocument, SPTablesList, SPTableStructure, SPTableList, SPContentFilterManager;
 
-#ifndef SP_REFACTOR
 @interface SPTableContent : NSObject
-#else
-@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
+#ifdef SP_REFACTOR
+<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
 #endif
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
