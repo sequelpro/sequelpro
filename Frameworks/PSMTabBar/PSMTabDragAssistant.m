@@ -337,6 +337,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 		if ([[[self sourceTabBar] tabView] numberOfTabViewItems] == 1 && [self sourceTabBar] == control &&
 				[[[self sourceTabBar] delegate] respondsToSelector:@selector(tabView:newTabBarForDraggedTabViewItem:atPoint:)]) {
 			[[[self sourceTabBar] window] setAlphaValue:0.0f];
+			[[[self sourceTabBar] window] setIgnoresMouseEvents:YES];
 			
 			if ([_sourceTabBar tearOffStyle] == PSMTabBarTearOffAlphaWindow) {
 				[[_draggedView window] setAlphaValue:kPSMTabDragWindowAlpha];				

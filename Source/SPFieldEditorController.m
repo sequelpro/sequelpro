@@ -54,10 +54,11 @@
 - (id)init
 {
 #ifndef SP_REFACTOR
-	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"])) {
+	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"]))
 #else
-	if ((self = [super initWithWindowNibName:@"SQLFieldEditorSheet"])) {
+	if ((self = [super initWithWindowNibName:@"SQLFieldEditorSheet"]))
 #endif
+	{
 		// force the nib to be loaded
 		(void) [self window];
 		counter = 0;
@@ -161,6 +162,7 @@
 #ifndef SP_REFACTOR
 	if ( qlTypes ) [qlTypes release];
 #endif
+	if ( tmpFileName ) [tmpFileName release];
 	if ( tmpDirPath ) [tmpDirPath release];
 	if ( esUndoManager ) [esUndoManager release];
 	if ( contextInfo ) [contextInfo release];
@@ -786,7 +788,8 @@
 	// Create a temporary file name to store the data as file
 	// since QuickLook only works on files.
 	// Alternate the file name to suppress caching by using counter%2.
-	tmpFileName = [NSString stringWithFormat:@"%@SequelProQuickLook%d.%@", tmpDirPath, counter%2, type];
+	if (tmpFileName) [tmpFileName release];
+	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%d.%@", tmpDirPath, counter%2, type];
 
 	// if data are binary
 	if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {

@@ -234,6 +234,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	BOOL isProcessing;
 #ifndef SP_REFACTOR /* ivars */
 	NSString *processID;
+	BOOL windowTitleStatusViewIsVisible;
 #endif
 }
 
@@ -396,6 +397,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
 - (void)setTitlebarStatus:(NSString *)status;
 - (void)clearStatusIcon;
+- (void)updateTitlebarStatusVisibilityForcingHide:(BOOL)forceHide;
 
 // Toolbar methods
 - (void)updateWindowTitle:(id)sender;

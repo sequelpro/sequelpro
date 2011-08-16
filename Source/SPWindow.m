@@ -78,13 +78,17 @@
 			case '}':
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
 				{
-					return [[self windowController] selectNextDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectNextDocumentTab:)])
+						[[self windowController] selectNextDocumentTab:self];
+					return;
 				}
 				break;
 			case '{':
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
 				{
-					return [[self windowController] selectPreviousDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectPreviousDocumentTab:)])
+						[[self windowController] selectPreviousDocumentTab:self];
+					return;
 				}
 				break;
 
@@ -92,13 +96,17 @@
 			case NSRightArrowFunctionKey:
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSAlternateKeyMask | NSNumericPadKeyMask | NSFunctionKeyMask))
 				{
-					return [[self windowController] selectNextDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectNextDocumentTab:)])
+						[[self windowController] selectNextDocumentTab:self];
+					return;
 				}
 				break;
 			case NSLeftArrowFunctionKey:
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSAlternateKeyMask | NSNumericPadKeyMask | NSFunctionKeyMask))
 				{
-					return [[self windowController] selectPreviousDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectPreviousDocumentTab:)])
+						[[self windowController] selectPreviousDocumentTab:self];
+					return;
 				}
 				break;
 		}

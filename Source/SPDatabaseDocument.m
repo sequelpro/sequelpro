@@ -25,6 +25,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+// Forward-declare for 10.7 compatibility
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+enum {
+	NSFullScreenWindowMask = 1 << 14
+};
+#endif
+
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 
@@ -194,6 +201,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #ifndef SP_REFACTOR /* init ivars */
 		statusValues = nil;
 		printThread = nil;
+		windowTitleStatusViewIsVisible = NO;
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
 
 		// As this object is not an NSWindowController subclass, top-level objects in loaded nibs aren't
@@ -335,6 +343,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[taskProgressWindow setContentView:taskProgressLayer];
 
 	[contentViewSplitter setDelegate:self];
+
+	[self updateTitlebarStatusVisibilityForcingHide:NO];
 #endif
 }
 
@@ -3573,6 +3583,34 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[titleImageView setImage:nil];
 }
 
+/**
+ * Update the title bar status area visibility.  The status area is visible if the tab is
+ * frontmost in the window, and if the window is not fullscreen.
+ */
+- (void)updateTitlebarStatusVisibilityForcingHide:(BOOL)forceHide
+{
+	BOOL newIsVisible = !forceHide;
+	if (newIsVisible && [parentWindow styleMask] & NSFullScreenWindowMask) newIsVisible = NO;
+	if (newIsVisible && [parentWindowController selectedTableDocument] != self) newIsVisible = NO;
+	if (newIsVisible == windowTitleStatusViewIsVisible) return;
+
+	if (newIsVisible) {
+		NSView *windowFrame = [[parentWindow contentView] superview];
+		NSRect av = [titleAccessoryView frame];
+		NSRect initialAccessoryViewFrame = NSMakeRect(
+												[windowFrame frame].size.width - av.size.width - 30,
+												[windowFrame frame].size.height - av.size.height,
+												av.size.width,
+												av.size.height);
+		[titleAccessoryView setFrame:initialAccessoryViewFrame];
+		[windowFrame addSubview:titleAccessoryView];
+	} else {
+		[titleAccessoryView removeFromSuperview];
+	}
+
+	windowTitleStatusViewIsVisible = newIsVisible;
+}
+
 #pragma mark -
 #pragma mark Toolbar Methods
 
@@ -3929,9 +3967,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void)willResignActiveTabInWindow
 {
-
-	// Remove the icon accessory view from the title bar
-	[titleAccessoryView removeFromSuperview];
+	[self updateTitlebarStatusVisibilityForcingHide:YES];
 
 	// Remove the task progress window
 	[parentWindow removeChildWindow:taskProgressWindow];
@@ -3957,16 +3993,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	else
 		[parentWindow setRepresentedURL:nil];
 
-	// Add the icon accessory view to the title bar
-	NSView *windowFrame = [[parentWindow contentView] superview];
-	NSRect av = [titleAccessoryView frame];
-	NSRect initialAccessoryViewFrame = NSMakeRect(
-											[windowFrame frame].size.width - av.size.width - 30,
-											[windowFrame frame].size.height - av.size.height,
-											av.size.width,
-											av.size.height);
-	[titleAccessoryView setFrame:initialAccessoryViewFrame];
-	[windowFrame addSubview:titleAccessoryView];
+	[self updateTitlebarStatusVisibilityForcingHide:NO];
 
 	// Add the progress window to this window
 	[self centerTaskWindow];	
