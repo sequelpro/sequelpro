@@ -582,6 +582,11 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  */
 - (IBAction)toggleSQLIncludeStructure:(id)sender
 {
+	if (![sender state])
+	{
+		[exportSQLIncludeDropSyntaxCheck setState:NSOffState];
+	}
+	
 	[exportSQLIncludeDropSyntaxCheck setEnabled:[sender state]];
 	[exportSQLIncludeAutoIncrementValueButton setEnabled:[sender state]];
 	
