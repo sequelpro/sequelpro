@@ -650,12 +650,17 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		// token - this suggests it's not a one-off filename
 		if ([[exportCustomFilenameTokenField stringValue] length] < 1) {
 			[prefs removeObjectForKey:SPExportFilenameFormat];
-		} else {
+		} 
+		else {
 			BOOL saveFilename = NO;
+			
 			NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-			for (id aToken in representedObjects) {
+			
+			for (id aToken in representedObjects) 
+			{
 				if ([aToken isKindOfClass:[SPExportFileNameTokenObject class]]) saveFilename = YES;
 			}
+			
 			if (saveFilename) [prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:representedObjects] forKey:SPExportFilenameFormat];
 		}
 

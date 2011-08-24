@@ -219,40 +219,50 @@
 
 	// Walk through the token field, appending token replacements or strings
 	NSArray *representedFilenameParts = [exportCustomFilenameTokenField objectValue];
-	for (id filenamePart in representedFilenameParts) {
+	
+	for (id filenamePart in representedFilenameParts) 
+	{
 		if ([filenamePart isKindOfClass:[SPExportFileNameTokenObject class]]) {
 			NSString *tokenContent = [filenamePart tokenContent];
 
 			if ([tokenContent isEqualToString:NSLocalizedString(@"host", @"export filename host token")]) {
 				[string appendString:[tableDocumentInstance host]];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"database", @"export filename database token")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"database", @"export filename database token")]) {
 				[string appendString:[tableDocumentInstance database]];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"table", @"table")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"table", @"table")]) {
 				[string appendString:(table) ? table : @""];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"date", @"export filename date token")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"date", @"export filename date token")]) {
 				[dateFormatter setDateStyle:NSDateFormatterShortStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"year", @"export filename date token")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"year", @"export filename date token")]) {
 				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%Y" timeZone:nil locale:nil]];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"month", @"export filename date token")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"month", @"export filename date token")]) {
 				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%m" timeZone:nil locale:nil]];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"day", @"export filename date token")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"day", @"export filename date token")]) {
 				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%d" timeZone:nil locale:nil]];
 
-			} else if ([tokenContent isEqualToString:NSLocalizedString(@"time", @"export filename time token")]) {
+			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"time", @"export filename time token")]) {
 				[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 
 			}
-		} else {
+		} 
+		else {
 			[string appendString:filenamePart];
 		}
 	}
