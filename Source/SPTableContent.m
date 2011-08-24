@@ -1663,49 +1663,44 @@
 	NSArray *dataRow;
 	NSDictionary *theRow;
 	id field;
+	NSMutableArray *argumentParts = [NSMutableArray array];
 
-	//Look for all columns which are coming from "tableForColumn"
-	NSMutableArray *columnsForFieldTableName = [NSMutableArray array];
+	// Check the table/view columns and select only those coming from the supplied database and table
+	NSMutableArray *columnsInSpecifiedTable = [NSMutableArray array];
 	for(field in cqColumnDefinition) {
-		if([[field objectForKey:@"org_table"] isEqualToString:tableForColumn])
-			[columnsForFieldTableName addObject:field];
+		if([[field objectForKey:@"db"] isEqualToString:database] && [[field objectForKey:@"org_table"] isEqualToString:tableForColumn])
+			[columnsInSpecifiedTable addObject:field];
 	}
-
-	// Try to identify the field bijectively
-	NSMutableString *fieldIDQueryStr = [NSMutableString string];
-	[fieldIDQueryStr setString:@"WHERE ("];
 
 	// --- Build WHERE clause ---
 	dataRow = [tableValues rowContentsAtIndex:rowIndex];
 
-	// Get the primary key if there is one
+	// Get the primary key if there is one, using any columns present within it
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 	if ([theResult numOfRows]) [theResult dataSeek:0];
+	NSMutableArray *primaryColumnsInSpecifiedTable = [NSMutableArray array];
 	NSUInteger i;
 	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
 		theRow = [theResult fetchRowAsDictionary];
 		if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
-			for(field in columnsForFieldTableName) {
-				id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
+			for (field in columnsInSpecifiedTable) {
 				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
-					[fieldIDQueryStr appendFormat:@"%@.%@.%@ = %@)",
-						[database backtickQuotedString],
-						[tableForColumn backtickQuotedString],
-						[[theRow objectForKey:@"Field"] backtickQuotedString],
-						[aValue description]];
-					return fieldIDQueryStr;
+					[primaryColumnsInSpecifiedTable addObject:field];
 				}
 			}
 		}
 	}
 
-	// If there is no primary key, all found fields belonging to the same table are used in the argument
-	for(field in columnsForFieldTableName) {
+	// Determine whether to use the primary keys list or fall back to all fields when building the query string
+	NSMutableArray *columnsToQuery = [primaryColumnsInSpecifiedTable count] ? primaryColumnsInSpecifiedTable : columnsInSpecifiedTable;
+
+	// Build up the argument
+	for (field in columnsToQuery) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
 		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
-			[fieldIDQueryStr appendFormat:@"%@ IS NULL AND ", [[field objectForKey:@"org_name"] backtickQuotedString]];
+			[argumentParts addObject:[NSString stringWithFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]]];
 		} else {
 			NSString *fieldTypeGrouping = [field objectForKey:@"typegrouping"];
 
@@ -1721,25 +1716,25 @@
 
 			// If the field is of type BIT then it needs a binary prefix
 			if ([fieldTypeGrouping isEqualToString:@"bit"]) {
-				[fieldIDQueryStr appendFormat:@"%@=b'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=b'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]]];
 			}
 			else if ([fieldTypeGrouping isEqualToString:@"geometry"]) {
-				[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=X'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]]];
 			}
 			// BLOB/TEXT data
 			else if ([aValue isKindOfClass:[NSData class]]) {
-				[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=X'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]]];
 			}
 			else {
-				[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@='%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]]];
 			}
 		}
 	}
-	// Remove last " AND "
-	if([fieldIDQueryStr length]>12)
-		[fieldIDQueryStr replaceCharactersInRange:NSMakeRange([fieldIDQueryStr length]-5,5) withString:@")"];
 
-	return fieldIDQueryStr;
+	// Check for empty strings
+	if (![argumentParts count]) return nil;
+
+	return [NSString stringWithFormat:@"WHERE (%@)", [argumentParts componentsJoinedByString:@" AND "]];
 }
 
 /**
