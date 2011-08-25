@@ -1245,7 +1245,7 @@
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
 	numberOfImportDataColumns = [[importData objectAtIndex:0] count];
 
-	fieldMapperSheetStatus = 1;
+	fieldMapperSheetStatus = SPFieldMapperInProgress;
 	fieldMappingArrayHasGlobalVariables = NO;
 
 	// Init the field mapper controller
@@ -1264,8 +1264,14 @@
 	[[[fieldMapperController window] onMainThread] makeKeyWindow];
 
 	// Wait for field mapper sheet
-	while (fieldMapperSheetStatus == 1)
+	while (fieldMapperSheetStatus == SPFieldMapperInProgress)
 		usleep(100000);
+
+	// If the mapping was cancelled, abort the import
+	if (fieldMapperSheetStatus == SPFieldMapperCancelled) {
+		if (fieldMapperController) [fieldMapperController release];
+		return FALSE;
+	}
 
 	// Get mapping settings and preset some global variables
 	fieldMapperOperator  = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
@@ -1317,7 +1323,7 @@
 
 	if(fieldMapperController) [fieldMapperController release];
 
-	if(fieldMapperSheetStatus == 2)
+	if(fieldMapperSheetStatus == SPFieldMapperCompleted)
 		return YES;
 	else
 		return NO;
@@ -1329,7 +1335,7 @@
 - (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[sheet orderOut:self];
-	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
+	fieldMapperSheetStatus = (returnCode) ? SPFieldMapperCompleted : SPFieldMapperCancelled;
 }
 
 /**
