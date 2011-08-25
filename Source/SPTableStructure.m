@@ -1703,6 +1703,9 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+#ifndef SP_REFACTOR
+	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
+#endif
 
 	[tableFields release];
 	[oldRow release];

@@ -67,6 +67,7 @@
 	IBOutlet NSTextField *indexKeyBlockSizeTextField;
 #endif
 		
+	BOOL _mainNibLoaded;
 	NSString *table;
 	
 	NSMutableArray *fields, *indexes, *indexedFields, *supportsLength, *requiresLength;

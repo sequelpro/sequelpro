@@ -79,6 +79,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #endif
 
 	if ((self = [super initWithWindowNibName:nibName])) {
+		_mainNibLoaded = NO;
 		table = @"";
 
 		fields  = [[NSMutableArray alloc] init];
@@ -114,6 +115,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (void)awakeFromNib
 {
+
+	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
+	if (_mainNibLoaded) return;
+	_mainNibLoaded = YES;
+
 #ifndef SP_REFACTOR /* patch */
 	// Set the index tables view's vertical gridlines if required
 	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -1017,6 +1023,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[requiresLength release], requiresLength = nil;
 
 	if (indexedFields) [indexedFields release], indexedFields = nil;
+
+#ifndef SP_REFACTOR
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+#endif
 
 	[super dealloc];
 }

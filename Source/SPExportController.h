@@ -113,6 +113,11 @@
 
 	// Dot
 	IBOutlet NSButton *exportDotForceLowerTableNamesCheck;
+
+	/**
+	 * Whether the awakeFromNib routine has already been run
+	 */
+	BOOL mainNibLoaded;
 	
 	/**
 	 * Cancellation flag

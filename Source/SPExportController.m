@@ -83,7 +83,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		
 		[self setExportCancelled:NO];
 		[self setExportToMultipleFiles:YES];
-		
+
+		mainNibLoaded = NO;
+
 		exportType = SPSQLExport;
 		exportSource = SPTableExport;
 		exportTableCount = 0;
@@ -119,7 +121,12 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  * Upon awakening select the first toolbar item
  */
 - (void)awakeFromNib
-{	
+{
+
+	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
+	if (mainNibLoaded) return;
+	mainNibLoaded = YES;
+
 	// Select the 'selected tables' option
 	[exportInputPopUpButton selectItemAtIndex:SPTableExport];
 	
