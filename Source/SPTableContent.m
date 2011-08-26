@@ -2170,26 +2170,36 @@
 			[[SPQueryController sharedQueryController] setAllowConsoleUpdate:consoleUpdateStatus];
 
 			if (errors) {
-				NSArray *message;
+				NSMutableString *messageText = [NSMutableString stringWithCapacity:50];
+				NSString *messageTitle = NSLocalizedString(@"Unexpected number of rows removed!", @"Table Content : Remove Row : Result : n Error title");
 								
 				if (errors < 0) {
-					message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-							   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ more %@ deleted! Please check the Console and inform the Sequel Pro team!", @"message of panel when more rows were deleted"), (long)(errors *- 1), ((errors *-1 ) > 1) ? @"s" : @"", (errors>1) ? @"were" : @"was"],
-							   nil];
+					long numErrors = (long)(errors *- 1);
+					if(numErrors == 1)
+						[messageText appendString:NSLocalizedString(@"One additional row was removed!",@"Table Content : Remove Row : Result : Too Many : Part 1 : n+1 rows instead of n selected were deleted.")];
+					else
+						 [messageText appendFormat:NSLocalizedString(@"%ld additional rows were removed!",@"Table Content : Remove Row : Result : Too Many : Part 1 : n+y (y!=1) rows instead of n selected were deleted."),numErrors];
+					
+					[messageText appendString:NSLocalizedString(@" Please check the Console and inform the Sequel Pro team!",@"Table Content : Remove Row : Result : Too Many : Part 2 : Generic text")];
+					
 				}
 				else {
-					if (primaryKeyFieldNames == nil)
-						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and use a primary key for your table.", @"message of panel when not all selected fields have been deleted"), (long)errors, (errors > 1) ? @"s" : @"", (errors > 1) ? @"ve" : @"s"],
-								   nil]; 
+					//part 1 number of rows not deleted
+					if(errors == 1)
+						[messageText appendString:NSLocalizedString(@"One row was not removed.",@"Table Content : Remove Row : Result : Too Few : Part 1 : Only n-1 of n selected rows were deleted.")];
 					else
-						message = [NSArray arrayWithObjects:NSLocalizedString(@"Warning", @"warning"),
-								   [NSString stringWithFormat:NSLocalizedString(@"%ld row%@ ha%@ not been deleted. Reload the table to be sure that the rows exist and check the Console for possible errors inside the primary key%@ for your table.", @"message of panel when not all selected fields have been deleted by using primary keys"), (long)errors, (errors > 1) ? @"s" : @"", (errors > 1) ? @"ve" : @"s", (errors > 1) ? @"s" : @""],
-								   nil];
+						[messageText appendFormat:NSLocalizedString(@"%ld rows were not removed.",@"Table Content : Remove Row : Result : Too Few : Part 1 : n-x (x!=1) of n selected rows were deleted."),errors];
+					//part 2 generic help text
+					[messageText appendString:NSLocalizedString(@" Reload the table to be sure that the contents have not changed in the meantime.",@"Table Content : Remove Row : Result : Too Few : Part 2 : Generic help message")];
+					//part 3 primary keys
+					if (primaryKeyFieldNames == nil)
+						[messageText appendString:NSLocalizedString(@" You should also add a primary key to this table!",@"Table Content : Remove Row : Result : Too Few : Part 3 : no primary key in table generic message")];
+					else
+						[messageText appendString:NSLocalizedString(@" Check the Console for possible errors inside the primary key(s) of this table!",@"Table Content : Remove Row : Result : Too Few : Part 3 : Row not deleted when using primary key for DELETE statement.")];
 				}
 
 				[self performSelector:@selector(showErrorSheetWith:)
-						   withObject:message
+						   withObject:[NSArray arrayWithObjects:messageTitle,messageText,nil]
 						   afterDelay:0.3];
 			}
 
