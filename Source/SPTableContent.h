@@ -202,6 +202,7 @@
 - (IBAction)swapFilterTable:(id)sender;
 - (IBAction)toggleLookAllFieldsMode:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)showDefaultOperaterHelp:(id)sender;
 
 // Data accessors
 - (NSArray *)currentResult;

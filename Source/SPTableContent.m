@@ -3420,6 +3420,14 @@
 	[[sender window] orderOut:self];
 }
 
+/**
+ * Opens the content filter help page in the default browser.
+ */
+- (IBAction)showDefaultOperaterHelp:(id)sender
+{
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONTENTFILTERHELP]];
+}
+
 #pragma mark -
 #pragma mark Retrieving and setting table state
 
