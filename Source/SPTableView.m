@@ -37,6 +37,8 @@
 @interface SPTableView (PrivateAPI)
 
 - (void)_doubleClickAction;
+- (void)_disableDoubleClickAction:(NSNotification *)notification;
+- (void)_enableDoubleClickAction:(NSNotification *)notification;
 
 @end
 
@@ -58,6 +60,23 @@
 	[super setDoubleAction:@selector(_doubleClickAction)];
 	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
 		[super awakeFromNib];
+}
+
+/**
+ * Track window changes, in order to add listeners for when sheets are shown
+ * or hidden; this allows the double-click action to be disabled while sheets
+ * are open, preventing beeps when using the field editor on double-click.
+ */
+- (void) viewWillMoveToWindow:(NSWindow *)aWindow {
+	NSNotificationCenter *notifier = [NSNotificationCenter defaultCenter];
+
+	[notifier removeObserver:self name:NSWindowWillBeginSheetNotification object:nil];
+	[notifier removeObserver:self name:NSWindowDidEndSheetNotification object:nil];
+
+	if (aWindow) {
+		[notifier addObserver:self selector:@selector(_disableDoubleClickAction:) name:NSWindowWillBeginSheetNotification object:aWindow];
+		[notifier addObserver:self selector:@selector(_enableDoubleClickAction:) name:NSWindowDidEndSheetNotification object:aWindow];
+	}
 }
 
 #pragma mark -
@@ -237,5 +256,24 @@
 		[[self delegate] performSelector:emptyDoubleClickAction];
 	}
 }
+
+/**
+ * When a sheet is opened on this window, disable the double-click action.
+ * This prevents beeping when a double-click results in a rejected cell edit but
+ * opens a sheet such as the field editor sheet.
+ */
+- (void)_disableDoubleClickAction:(NSNotification *)notification
+{
+	[super setDoubleAction:NULL];
+}
+
+/**
+ * Restore the double-click action after the sheet is closed.
+ */
+- (void)_enableDoubleClickAction:(NSNotification *)notification
+{
+	[super setDoubleAction:@selector(_doubleClickAction)];
+}
+
 
 @end
