@@ -2228,6 +2228,15 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (void)_addTable
 {
+
+	// Ensure the task is performed on a background thread to group addition and loads
+	if ([NSThread isMainThread]) {
+		[NSThread detachNewThreadSelector:@selector(_addTable) toTarget:self withObject:nil];
+		return;
+	}
+	NSAutoreleasePool *tableAdditionPool = [[NSAutoreleasePool alloc] init];
+	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), [tableNameField stringValue]]];
+
 	NSString *charSetStatement = @"";
 	NSString *engineStatement  = @"";
 
@@ -2294,8 +2303,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		selectedTableName = [[NSString alloc] initWithString:tableName];
 		selectedTableType = SPTableTypeTable;
 
-		[self updateFilter:self];
-		[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+		[[self onMainThread] updateFilter:self];
+		[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
 
 		// Select the newly created table and switch to the table structure view for easier setup
 		[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
@@ -2317,11 +2326,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
 
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
-		[tablesListView reloadData];
+		[[tablesListView onMainThread] reloadData];
 	}
 
 	// Clear table name
-	[tableNameField setStringValue:@""];
+	[[tableNameField onMainThread] setStringValue:@""];
+
+	[tableDocumentInstance endTask];
+	[tableAdditionPool release];
 }
 
 #ifndef SP_REFACTOR
