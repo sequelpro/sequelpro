@@ -827,6 +827,9 @@
 			}
 			else if((flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
 			{
+				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
+				[theView setCompletionIsOpen:NO];
+				[self close];
 				[NSApp sendEvent:event];
 				break;
 			}
