@@ -993,6 +993,7 @@
 		58A8A72411A0148400B95749 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainWindow.xib; sourceTree = "<group>"; };
 		58A8A78F11A036C000B95749 /* SPWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowController.h; sourceTree = "<group>"; };
 		58A8A79011A036C000B95749 /* SPWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowController.m; sourceTree = "<group>"; };
+		58A98869140EF6C300E339FF /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = ru; path = ru.lproj/Credits.rtf; sourceTree = "<group>"; };
 		58B906E611BD989A000826E5 /* PSMTabBar.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PSMTabBar.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		58B906FA11BD9B34000826E5 /* AdiumGradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AdiumGradient.png; sourceTree = "<group>"; };
 		58B906FB11BD9B34000826E5 /* AquaTabClose_Front.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AquaTabClose_Front.png; sourceTree = "<group>"; };
@@ -3488,6 +3489,7 @@
 			children = (
 				17DD52B811507217007D8950 /* English */,
 				58D1002613A57F940092E019 /* German */,
+				58A98869140EF6C300E339FF /* ru */,
 			);
 			name = Credits.rtf;
 			sourceTree = "<group>";
