@@ -115,5 +115,19 @@
 	[super sendEvent:theEvent];
 }
 
+/**
+ * If this window is controlled by an SPWindowController, and thus supports being asked
+ * for the frontmost SPTableDocument, request the undoController for that table
+ * document.  This allows undo to be individual per tab rather than shared across the
+ * window.
+ */
+- (NSUndoManager *)undoManager
+{
+	if ([[self windowController] respondsToSelector:@selector(selectedTableDocument)]) {
+		NSLog(@"Test: %@", [[[[self windowController] selectedTableDocument] undoManager] description]);
+		return [[[self windowController] selectedTableDocument] undoManager];
+	}
+	return [super undoManager];
+}
 
 @end

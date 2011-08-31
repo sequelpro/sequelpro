@@ -170,6 +170,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 #ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
 	NSMutableArray *nibObjectsToRelease;
+	NSUndoManager *undoManager;
 #endif
 
 	NSMenu *selectEncodingMenu;
@@ -378,6 +379,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (NSURL *)fileURL;
 - (NSString *)displayName;
 #ifndef SP_REFACTOR /* method decls */
+- (NSUndoManager *)undoManager;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;

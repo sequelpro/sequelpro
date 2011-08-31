@@ -176,6 +176,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[printWebView setFrameLoadDelegate:self];
 
 		prefs = [NSUserDefaults standardUserDefaults];
+		undoManager = [[NSUndoManager alloc] init];
 #endif
 		queryEditorInitString = nil;
 
@@ -4128,6 +4129,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} 
 	return [[[self fileURL] path] lastPathComponent];
 }
+
+#ifndef SP_REFACTOR
+- (NSUndoManager *)undoManager
+{
+	return undoManager;
+}
+#endif
+
+
 #ifndef SP_REFACTOR /* state saving and setting */
 #pragma mark -
 #pragma mark State saving and setting
@@ -5629,11 +5639,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	[nibObjectsToRelease release];
+
 #endif
 
 	[allDatabases release];
 	[allSystemDatabases release];
 #ifndef SP_REFACTOR /* dealloc ivars */
+	[undoManager release];
 	[printWebView release];
 #endif
 	[taskProgressWindow close];

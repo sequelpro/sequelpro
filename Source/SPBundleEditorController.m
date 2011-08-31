@@ -109,6 +109,7 @@
 	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
 	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
 	if (bundlePath) [bundlePath release], bundlePath = nil;
+	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
 
 	[super dealloc];
 }

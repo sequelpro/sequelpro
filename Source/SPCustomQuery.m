@@ -2769,6 +2769,13 @@
 
 }
 
+#ifndef SP_REFACTOR
+- (NSUndoManager *)undoManagerForTextView:(NSTextView *)aTextView
+{
+	return [tableDocumentInstance undoManager];
+}
+#endif
+
 #pragma mark -
 #pragma mark SplitView delegate methods
 

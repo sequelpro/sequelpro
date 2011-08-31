@@ -644,7 +644,7 @@
     if (requestedResponse) {
         NSString *thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
         [sshPasswordField setStringValue:@""];
-        if ([delegate respondsToSelector:@selector(setUndoManager:)] && [delegate undoManager]) {
+        if ([delegate respondsToSelector:@selector(undoManager)] && [delegate undoManager]) {
             [[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
         } else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
             [[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];			
