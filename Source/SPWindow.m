@@ -124,7 +124,6 @@
 - (NSUndoManager *)undoManager
 {
 	if ([[self windowController] respondsToSelector:@selector(selectedTableDocument)]) {
-		NSLog(@"Test: %@", [[[[self windowController] selectedTableDocument] undoManager] description]);
 		return [[[self windowController] selectedTableDocument] undoManager];
 	}
 	return [super undoManager];

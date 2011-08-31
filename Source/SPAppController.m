@@ -1221,7 +1221,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	// Create a new window controller, and set up a new connection view within it.
 	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
-	[newWindowController addNewConnection:self];
 	NSWindow *newWindow = [newWindowController window];
 
 	// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
@@ -1236,6 +1235,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	if (!usedAutosave) {
 		[newWindow setFrameUsingName:@"DBView"];
 	}
+
+	// Add the connection view
+	[newWindowController addNewConnection:self];
 
 	// Cascade according to the statically stored cascade location.
 	cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
