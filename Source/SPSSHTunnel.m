@@ -431,7 +431,9 @@
 			[debugMessages addObject:[NSString stringWithString:message]];
 			[debugMessagesLock unlock];
 
-			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound) {
+			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound
+				|| [message rangeOfString:@"mux_client_request_session: master session id: "].location != NSNotFound)
+			{
 				connectionState = PROXY_STATE_CONNECTED;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
