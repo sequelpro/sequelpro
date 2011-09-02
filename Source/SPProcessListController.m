@@ -77,7 +77,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
  */
 - (void)awakeFromNib
 {	
-	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[(SPAppController*)[NSApp delegate] frontDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
+	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[(SPAppController*)[NSApp delegate] frontDocument] name]]];
 	
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	

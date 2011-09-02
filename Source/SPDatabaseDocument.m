@@ -763,7 +763,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 	
 	[databaseCopyNameField setStringValue:selectedDatabase];
-	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
+	[copyDatabaseMessageField setStringValue:selectedDatabase];
 	
 	[NSApp beginSheet:databaseCopySheet
 	   modalForWindow:parentWindow
