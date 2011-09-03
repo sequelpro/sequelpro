@@ -48,6 +48,7 @@ enum {
 #import "SPExportController.h"
 #endif
 #import "SPQueryController.h"
+#import "SPQueryDocumentsController.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPWindowController.h"
 #endif

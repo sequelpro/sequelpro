@@ -23,10 +23,17 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#ifndef SP_REFACTOR
+static NSString *SPQueryConsoleWindowAutoSaveName = @"QueryConsole";
+
+// Table view column identifier constants
+static NSString *SPTableViewDateColumnID       = @"messageDate";
+static NSString *SPTableViewConnectionColumnID = @"messageConnection";
+#endif
+
 @interface SPQueryController : NSWindowController 
 {
 #ifndef SP_REFACTOR /* ivars */
-	// QueryConsoleController
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
 	IBOutlet NSSearchField *consoleSearchField;
@@ -64,14 +71,11 @@
 }
 
 #ifndef SP_REFACTOR
-
 @property (readwrite, retain) NSFont *consoleFont;
-
 #endif
 
 + (SPQueryController *)sharedQueryController;
 
-// QueryConsoleController
 - (IBAction)copy:(id)sender;
 - (IBAction)clearConsole:(id)sender;
 - (IBAction)saveConsoleAs:(id)sender;
@@ -89,32 +93,5 @@
 - (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection;
 
 - (NSUInteger)consoleMessageCount;
-
-// Completion List Controller
-- (NSArray*)functionList;
-- (NSArray*)keywordList;
-- (NSString*)argumentSnippetForFunction:(NSString*)func;
-
-// DocumentsController
-- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;
-- (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL;
-
-- (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL;
-- (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL;
-- (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL;
-- (void)insertFavorite:(NSDictionary *)favorite atIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL;
-
-- (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
-- (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL;
-
-- (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL;
-
-- (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
-- (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
-- (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL;
-- (NSUInteger)numberOfHistoryItemsForFileURL:(NSURL *)fileURL;
-- (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL;
-
-- (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals;
 
 @end

@@ -27,6 +27,7 @@
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
+#import "SPQueryDocumentsController.h"
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
 #ifndef SP_REFACTOR /* headers */

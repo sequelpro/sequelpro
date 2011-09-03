@@ -34,6 +34,8 @@
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		11D44DF0118F5887002AA43C /* OCMock.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
+		1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */; };
+		1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */; };
 		17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */ = {isa = PBXBuildFile; fileRef = 17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */; };
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
@@ -76,6 +78,7 @@
 		1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB65127DD5EA00F468C8 /* SPNetworkPreferencePane.m */; };
 		1785EB6A127DD79300F468C8 /* SPEditorPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB69127DD79300F468C8 /* SPEditorPreferencePane.m */; };
 		1789343C0F30C1DD0097539A /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
+		17902612141025BB005F677F /* SPQueryControllerInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 17902611141025BB005F677F /* SPQueryControllerInitializer.m */; };
 		1792C13210AD752100ABE758 /* DatabaseServerVariables.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */; };
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
@@ -607,6 +610,10 @@
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
 		171312CD109D23C700FB465F /* SPTableTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTextFieldCell.m; sourceTree = "<group>"; };
+		1713C73E140D8AEF00CFD461 /* SPQueryDocumentsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryDocumentsController.h; sourceTree = "<group>"; };
+		1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryDocumentsController.m; sourceTree = "<group>"; };
+		1713C75D140D8D5900CFD461 /* SPQueryConsoleDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryConsoleDataSource.h; sourceTree = "<group>"; };
+		1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryConsoleDataSource.m; sourceTree = "<group>"; };
 		17148563125F5FF500321285 /* SPDatabaseCharacterSets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseCharacterSets.h; sourceTree = "<group>"; };
 		17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseCharacterSets.m; sourceTree = "<group>"; };
 		17292441107AC41000B21980 /* SPXMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporter.h; sourceTree = "<group>"; };
@@ -685,6 +692,8 @@
 		1789343A0F30C1DD0097539A /* SPStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditions.h; sourceTree = "<group>"; };
 		1789343B0F30C1DD0097539A /* SPStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditions.m; sourceTree = "<group>"; };
 		178934980F30CDA10097539A /* trim-application.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "trim-application.sh"; sourceTree = "<group>"; };
+		17902610141025BB005F677F /* SPQueryControllerInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryControllerInitializer.h; sourceTree = "<group>"; };
+		17902611141025BB005F677F /* SPQueryControllerInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryControllerInitializer.m; sourceTree = "<group>"; };
 		1791346512F75CC1000B27C1 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		1792C13110AD752100ABE758 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseServerVariables.xib; sourceTree = "<group>"; };
 		1792C13510AD75C800ABE758 /* SPServerVariablesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPServerVariablesController.h; sourceTree = "<group>"; };
@@ -1474,6 +1483,21 @@
 			name = Cells;
 			sourceTree = "<group>";
 		};
+		1713C73D140D88D400CFD461 /* Query Controller */ = {
+			isa = PBXGroup;
+			children = (
+				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
+				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				17902610141025BB005F677F /* SPQueryControllerInitializer.h */,
+				17902611141025BB005F677F /* SPQueryControllerInitializer.m */,
+				1713C75D140D8D5900CFD461 /* SPQueryConsoleDataSource.h */,
+				1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */,
+				1713C73E140D8AEF00CFD461 /* SPQueryDocumentsController.h */,
+				1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */,
+			);
+			name = "Query Controller";
+			sourceTree = "<group>";
+		};
 		173284E51088FEC20062E892 /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -1594,8 +1618,6 @@
 				174CE14110AB9281008F892B /* SPProcessListController.m */,
 				173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */,
 				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
-				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
-				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
 				1792C13510AD75C800ABE758 /* SPServerVariablesController.h */,
 				1792C13610AD75C800ABE758 /* SPServerVariablesController.m */,
 				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
@@ -1608,6 +1630,7 @@
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
+				1713C73D140D88D400CFD461 /* Query Controller */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -3352,6 +3375,9 @@
 				BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */,
 				583CA21512EC8B2200C9E763 /* SPWindow.m in Sources */,
 				582F02311370B52600B30621 /* SPExportFileNameTokenObject.m in Sources */,
+				1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */,
+				1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */,
+				17902612141025BB005F677F /* SPQueryControllerInitializer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

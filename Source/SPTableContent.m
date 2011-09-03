@@ -35,6 +35,7 @@
 #import "SPDataCellFormatter.h"
 #import "SPTableData.h"
 #import "SPQueryController.h"
+#import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
 #ifndef SP_REFACTOR
 #import "QLPreviewPanel.h"

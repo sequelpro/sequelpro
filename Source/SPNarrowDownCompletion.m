@@ -34,6 +34,7 @@
 #import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
+#import "SPQueryDocumentsController.h"
 
 #pragma mark -
 #pragma mark attribute definition 

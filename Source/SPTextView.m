@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPNarrowDownCompletion.h"
 #import "SPQueryController.h"
+#import "SPQueryDocumentsController.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
 #import "SPNavigatorController.h"

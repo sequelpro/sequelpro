@@ -39,6 +39,7 @@
 #import "SPQueryFavoriteManager.h"
 #endif
 #import "SPQueryController.h"
+#import "SPQueryDocumentsController.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
