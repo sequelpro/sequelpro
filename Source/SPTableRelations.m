@@ -32,6 +32,13 @@
 
 static NSString *SPRemoveRelation = @"SPRemoveRelation";
 
+static NSString *SPRelationNameKey      = @"name";
+static NSString *SPRelationColumnsKey   = @"columns";
+static NSString *SPRelationFKTableKey   = @"fk_table";
+static NSString *SPRelationFKColumnsKey = @"fk_columns";
+static NSString *SPRelationOnUpdateKey  = @"on_update";
+static NSString *SPRelationOnDeleteKey = @"on_delete";
+
 @interface SPTableRelations ()
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
@@ -454,12 +461,12 @@ static NSString *SPRemoveRelation = @"SPRemoveRelation";
 	{
 		NSMutableArray *temp = [[NSMutableArray alloc] init];
 
-		[temp addObject:[eachRelation objectForKey:@"name"]];
-		[temp addObject:[eachRelation objectForKey:@"columns"]];
-		[temp addObject:[eachRelation objectForKey:@"fk_table"]];
-		[temp addObject:[eachRelation objectForKey:@"fk_columns"]];
-		[temp addObject:([eachRelation objectForKey:@"on_update"]) ? [eachRelation objectForKey:@"on_update"] : @""];
-		[temp addObject:([eachRelation objectForKey:@"on_delete"]) ? [eachRelation objectForKey:@"on_delete"] : @""];
+		[temp addObject:[eachRelation objectForKey:SPRelationNameKey]];
+		[temp addObject:[eachRelation objectForKey:SPRelationColumnsKey]];
+		[temp addObject:[eachRelation objectForKey:SPRelationFKTableKey]];
+		[temp addObject:[eachRelation objectForKey:SPRelationFKColumnsKey]];
+		[temp addObject:([eachRelation objectForKey:SPRelationOnUpdateKey]) ? [eachRelation objectForKey:SPRelationOnUpdateKey] : @""];
+		[temp addObject:([eachRelation objectForKey:SPRelationOnDeleteKey]) ? [eachRelation objectForKey:SPRelationOnDeleteKey] : @""];
 
 		[data addObject:temp];
 
@@ -485,7 +492,7 @@ static NSString *SPRemoveRelation = @"SPRemoveRelation";
 
 			while (row != NSNotFound) 
 			{
-				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
+				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:SPRelationNameKey];
 				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
 
 				[connection queryString:query];
@@ -566,12 +573,12 @@ static NSString *SPRemoveRelation = @"SPRemoveRelation";
 		for (NSDictionary *constraint in constraints) 
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									 [constraint objectForKey:@"name"], @"name",
-									 [[constraint objectForKey:@"columns"] objectAtIndex:0], @"columns",
-									 [constraint objectForKey:@"ref_table"], @"fk_table",
-									 [constraint objectForKey:@"ref_columns"], @"fk_columns",
-									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
-									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
+									 [constraint objectForKey:SPRelationNameKey], SPRelationNameKey,
+									 [[constraint objectForKey:SPRelationColumnsKey] objectAtIndex:0], SPRelationColumnsKey,
+									 [constraint objectForKey:@"ref_table"], SPRelationFKTableKey,
+									 [constraint objectForKey:@"ref_columns"], SPRelationFKColumnsKey,
+									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), SPRelationOnUpdateKey,
+									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), SPRelationOnDeleteKey,
 									 nil]];
 			
 		}
@@ -602,7 +609,7 @@ static NSString *SPRemoveRelation = @"SPRemoveRelation";
 	[tableDataInstance resetAllData];
 	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
 	
-	NSArray *columns = [tableInfo objectForKey:@"columns"];
+	NSArray *columns = [tableInfo objectForKey:SPRelationColumnsKey];
 	
 	NSMutableArray *validColumns = [NSMutableArray array];
 	
@@ -610,7 +617,7 @@ static NSString *SPRemoveRelation = @"SPRemoveRelation";
 	for (NSDictionary *aColumn in columns) 
 	{
 		if ([[columnInfo objectForKey:@"type"] isEqualToString:[aColumn objectForKey:@"type"]]) {
-			[validColumns addObject:[aColumn objectForKey:@"name"]];
+			[validColumns addObject:[aColumn objectForKey:SPRelationNameKey]];
 		}
 	}
 	
