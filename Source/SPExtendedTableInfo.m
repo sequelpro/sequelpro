@@ -383,7 +383,6 @@
  */
 - (NSDictionary *)tableInformationForPrinting
 {
-
 	// Update possible pending comment changes by set the focus to create table syntax view
 	[[NSApp keyWindow] makeFirstResponder:tableCreateSyntaxTextView];
 

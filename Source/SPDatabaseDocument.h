@@ -240,6 +240,19 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 }
 
 #ifdef SP_REFACTOR /* ivars */
+@property (assign) SPDatabaseData* databaseDataInstance;
+@property (assign) SPTableData* tableDataInstance;
+@property (assign) SPCustomQuery* customQueryInstance;
+@property (assign) id databaseNameField;
+@property (assign) id databaseEncodingButton;
+@property (assign) id addDatabaseButton;
+
+@property (assign) id databaseRenameNameField;
+@property (assign) id renameDatabaseButton;
+@property (assign) id databaseRenameSheet;
+#endif
+
+#ifdef SP_REFACTOR /* ivars */
 @property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
 @property (assign) NSProgressIndicator* queryProgressBar;
@@ -448,17 +461,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (SPTablesList*)tablesListInstance;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
-
-@property (assign) SPDatabaseData* databaseDataInstance;
-@property (assign) SPTableData* tableDataInstance;
-@property (assign) SPCustomQuery* customQueryInstance;
-@property (assign) id databaseNameField;
-@property (assign) id databaseEncodingButton;
-@property (assign) id addDatabaseButton;
-
-@property (assign) id databaseRenameNameField;
-@property (assign) id renameDatabaseButton;
-@property (assign) id databaseRenameSheet;
 
 #endif
 

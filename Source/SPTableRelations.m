@@ -30,10 +30,14 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 
+static NSString *SPRemoveRelation = @"SPRemoveRelation";
+
 @interface SPTableRelations ()
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
+- (void)_loadUsedRelationNamesInBackground;
+- (void)_relationNamesLoaded;
 
 @end
 
@@ -51,6 +55,8 @@
 		relationData         = [[NSMutableArray alloc] init];
 		prefs                = [NSUserDefaults standardUserDefaults];
 		takenConstraintNames = [[NSMutableArray alloc] init];
+		
+		isRetrievingRelationNames = NO;
 	}
 
 	return self;
@@ -176,7 +182,6 @@
  */
 - (IBAction)addRelation:(id)sender
 {
-
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
@@ -206,17 +211,6 @@
 	for (NSUInteger i = 0; i < [result numOfRows]; i++)
 	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
-	}
-	
-	// Get a list of used constraint names for this db
-	[takenConstraintNames removeAllObjects];
-	result = [connection queryString:[NSString stringWithFormat:@"SELECT DISTINCT constraint_name FROM information_schema.table_constraints WHERE constraint_type = 'FOREIGN KEY' AND  constraint_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-	
-	[result dataSeek:0];
-	
-	for (NSUInteger i = 0; i < [result numOfRows]; i++)
-	{
-		[takenConstraintNames addObject:[[[result fetchRowAsArray] objectAtIndex:0] lowercaseString]];
 	}
 	
 	// Reset other fields
@@ -258,7 +252,7 @@
 		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
-		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
+		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:SPRemoveRelation];
 	}
 }
 
@@ -293,7 +287,8 @@
 		[addRelationButton setEnabled:enableInteraction];
 		[refreshRelationsButton setEnabled:enableInteraction];
 		[relationsTableView setEnabled:YES];
-	} else {
+	} 
+	else {
 		[addRelationButton setEnabled:NO];
 		[refreshRelationsButton setEnabled:NO];
 		[relationsTableView setEnabled:NO];
@@ -307,34 +302,31 @@
 #pragma mark -
 #pragma mark TextField delegate methods
 
-- (void)controlTextDidChange:(NSNotification *)aNotification
-{
-	id field = [aNotification object];
-	
+- (void)controlTextDidChange:(NSNotification *)notification
+{	
 	// Make sure the user does not enter a taken name
-	if (field == constraintName) {
+	if ([notification object] == constraintName) {
 		
-		NSString *userValue = [[constraintName stringValue] lowercaseString];
 		BOOL taken = NO;
-		for(NSString *takenName in takenConstraintNames) {
-			if([takenName isEqualToString:userValue]) {
+		NSString *userValue = [[constraintName stringValue] lowercaseString];
+		
+		for (NSString *takenName in takenConstraintNames) 
+		{
+			if ([takenName isEqualToString:userValue]) {
 				taken = YES;
 				break;
 			}
 		}
 		
-		//make field red and disable add button
-		if(taken) {
+		// Make field red and disable add button
+		if (taken) {
 			[constraintName setTextColor:[NSColor redColor]];
 			[confirmAddRelationButton setEnabled:NO];
 		}
-		//reset
 		else {
 			[constraintName setTextColor:[NSColor controlTextColor]];
 			[confirmAddRelationButton setEnabled:YES];
 		}
-		
-		return;
 	}
 }
 
@@ -366,7 +358,7 @@
  * Double-click action on table cells - for the time being, return
  * NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
@@ -376,7 +368,7 @@
 /**
  * Disable row selection while the document is working.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
 	return ![tableDocumentInstance isWorking];
 }
@@ -417,6 +409,26 @@
 
 #pragma mark -
 #pragma mark Other
+
+/**
+ * Loads the currently used relation names from information_schema.table_constraints.
+ */
+- (void)loadUsedRelationNames
+{
+	if (isRetrievingRelationNames) return;
+	
+	[dataProgressIndicator setHidden:NO];
+	[dataProgressIndicator startAnimation:self];
+	
+	[progressStatusTextField setHidden:NO];
+	
+	[constraintName setEnabled:NO];
+	[confirmAddRelationButton setEnabled:NO];
+	
+	isRetrievingRelationNames = YES;
+	
+	[NSThread detachNewThreadSelector:@selector(_loadUsedRelationNamesInBackground) toTarget:self withObject:nil];
+}
 
 /**
  * Returns an array of relation data to be used for printing purposes. The first element in the array is always
@@ -462,7 +474,7 @@
  */
 - (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-	if ([contextInfo isEqualToString:@"removeRelation"]) {
+	if ([contextInfo isEqualToString:SPRemoveRelation]) {
 
 		if (returnCode == NSAlertDefaultReturn) {
 
@@ -536,22 +548,7 @@
 }
 
 #pragma mark -
-
-/*
- * Dealloc.
- */
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	[relationData release], relationData = nil;
-	
-	[takenConstraintNames release];
-	takenConstraintNames = nil;
-
-	[super dealloc];
-}
+#pragma mark Private API
 
 /**
  * Refresh the displayed relations, optionally forcing a refresh of the underlying cache.
@@ -561,22 +558,22 @@
 	[relationData removeAllObjects];
 	
 	if ([tablesListInstance tableType] == SPTableTypeTable) {
-
+		
 		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
-
+		
 		NSArray *constraints = [tableDataInstance getConstraints];
-
+		
 		for (NSDictionary *constraint in constraints) 
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[constraint objectForKey:@"name"], @"name",
-									[[constraint objectForKey:@"columns"] objectAtIndex:0], @"columns",
-									[constraint objectForKey:@"ref_table"], @"fk_table",
-									[constraint objectForKey:@"ref_columns"], @"fk_columns",
-									([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
-									([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
-									nil]];
-
+									 [constraint objectForKey:@"name"], @"name",
+									 [[constraint objectForKey:@"columns"] objectAtIndex:0], @"columns",
+									 [constraint objectForKey:@"ref_table"], @"fk_table",
+									 [constraint objectForKey:@"ref_columns"], @"fk_columns",
+									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
+									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
+									 nil]];
+			
 		}
 	} 
 	
@@ -591,24 +588,24 @@
 {
 	NSString *column = [columnPopUpButton titleOfSelectedItem];
 	NSString *table = [refTablePopUpButton titleOfSelectedItem];
-
+	
 	[tableDataInstance resetAllData];
 	[tableDataInstance updateInformationForCurrentTable];
-
+	
 	NSDictionary *columnInfo = [[tableDataInstance columnWithName:column] copy];
-
+	
 	[refColumnPopUpButton setEnabled:NO];
 	[confirmAddRelationButton setEnabled:NO];
-
+	
 	[refColumnPopUpButton removeAllItems];
-
+	
 	[tableDataInstance resetAllData];
 	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
-
+	
 	NSArray *columns = [tableInfo objectForKey:@"columns"];
-
+	
 	NSMutableArray *validColumns = [NSMutableArray array];
-
+	
 	// Only add columns of the same data type
 	for (NSDictionary *aColumn in columns) 
 	{
@@ -616,17 +613,81 @@
 			[validColumns addObject:[aColumn objectForKey:@"name"]];
 		}
 	}
-
+	
 	// Add the valid columns
 	if ([validColumns count] > 0) {
 		NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [validColumns sortedArrayUsingSelector:@selector(compare:)] : validColumns;
+		
 		[refColumnPopUpButton addItemsWithTitles:columnTitles];
-
+		
 		[refColumnPopUpButton setEnabled:YES];
-		[confirmAddRelationButton setEnabled:YES];
+		
+		if (!isRetrievingRelationNames) {
+			[confirmAddRelationButton setEnabled:YES];
+		}
 	}
-
+	
 	[columnInfo release];
+}
+
+/**
+ * Loads all of the current foreign key relationship names for the current database. This method should be
+ * spawned on a separate thread.
+ */
+- (void)_loadUsedRelationNamesInBackground
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
+	[takenConstraintNames removeAllObjects];
+		
+	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT DISTINCT constraint_name FROM information_schema.table_constraints WHERE constraint_type = 'FOREIGN KEY' AND  constraint_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
+	
+	[result dataSeek:0];
+	
+	for (NSUInteger i = 0; i < [result numOfRows]; i++)
+	{
+		[takenConstraintNames addObject:[[[result fetchRowAsArray] objectAtIndex:0] lowercaseString]];
+	}
+	
+	// Update the UI on the main thread
+	[self performSelectorOnMainThread:@selector(_relationNamesLoaded) withObject:nil waitUntilDone:NO];
+	
+	[pool release];
+}
+
+/**
+ * Called on the main thread, once all the current table relation names have been loaded and re-enables all
+ * the relevant UI controls.
+ */
+- (void)_relationNamesLoaded
+{
+	[dataProgressIndicator setHidden:YES];
+	[dataProgressIndicator stopAnimation:self];
+	
+	[progressStatusTextField setHidden:YES];
+	
+	[constraintName setEnabled:YES];
+	[confirmAddRelationButton setEnabled:YES];
+	
+	[addRelationPanel makeFirstResponder:constraintName];
+	
+	isRetrievingRelationNames = NO;
+}
+
+#pragma mark -
+
+/*
+ * Dealloc.
+ */
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[relationData release], relationData = nil;
+	[takenConstraintNames release], takenConstraintNames = nil;
+
+	[super dealloc];
 }
 
 @end

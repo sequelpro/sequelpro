@@ -73,6 +73,7 @@ enum {
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
+#import "SPTableRelations.h"
 #endif
 #import "SPServerSupport.h"
 #ifndef SP_REFACTOR /* headers */
@@ -227,6 +228,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
+	
 	return connectionController;
 }
 
@@ -5890,7 +5892,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 }
 
-
 /**
  * Select the specified database and, optionally, table.
  */
@@ -5923,7 +5924,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			// End the task first to ensure the database dropdown can be reselected
 			[self endTask];
 
-			if ( [mySQLConnection isConnected] ) {
+			if ([mySQLConnection isConnected]) {
 
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
@@ -5970,10 +5971,14 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		// Set focus to table list filter field if visible
 		// otherwise set focus to Table List view
-		if ( [[tablesListInstance tables] count] > 20 )
+		if ([[tablesListInstance tables] count] > 20) {
 			[[parentWindow onMainThread] makeFirstResponder:listFilterField];
-		else
+		}
+		else {
 			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+		}
+		
+		[tableRelationsInstance loadUsedRelationNames];
 #endif
 	}
 
@@ -6031,8 +6036,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 
 #ifdef SP_REFACTOR /* glue */
-	if ( delegate && [delegate respondsToSelector:@selector(databaseDidChange:)] )
+	if (delegate && [delegate respondsToSelector:@selector(databaseDidChange:)]) {
 		[delegate performSelectorOnMainThread:@selector(databaseDidChange:) withObject:self waitUntilDone:NO];
+	}
 #endif
 
 	[taskPool drain];

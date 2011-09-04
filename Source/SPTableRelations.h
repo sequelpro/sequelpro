@@ -50,12 +50,16 @@
 	IBOutlet NSPopUpButton *onUpdatePopUpButton;
 	IBOutlet NSPopUpButton *onDeletePopUpButton;
 	IBOutlet NSButton      *confirmAddRelationButton;
+	IBOutlet NSProgressIndicator *dataProgressIndicator;
+	IBOutlet NSTextField *progressStatusTextField;
 		
 	MCPConnection *connection;
 
-	NSMutableArray *relationData;
 	NSUserDefaults *prefs;
+	NSMutableArray *relationData;
 	NSMutableArray *takenConstraintNames;
+	
+	BOOL isRetrievingRelationNames;
 }
 
 @property (readonly) NSMutableArray *relationData;
@@ -77,6 +81,7 @@
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Other
+- (void)loadUsedRelationNames;
 - (NSArray *)relationDataForPrinting;
 - (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
