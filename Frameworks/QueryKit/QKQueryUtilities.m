@@ -25,8 +25,17 @@
 
 #import "QKQueryUtilities.h"
 
+static NSString *QKUnrecognisedQueryOperatorException = @"QKUnrecognisedQueryOperator";
+
 @implementation QKQueryUtilities
 
+/**
+ * 
+ *
+ * @param operator
+ *
+ * @return 
+ */
 + (NSString *)operatorRepresentationForType:(QKQueryOperator)operator
 {
 	NSString *opString = nil;
@@ -37,7 +46,7 @@
 			opString = @"=";
 			break;
 		default:
-			[NSException raise:@"" format:@"Unrecognised query operator type: %d", operator];
+			[NSException raise:QKUnrecognisedQueryOperatorException format:@"Unrecognised query operator type: %d", operator];
 			break;
 	}
 	

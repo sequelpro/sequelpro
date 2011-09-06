@@ -78,6 +78,6 @@
 - (NSString *)query;
 
 - (void)addField:(NSString *)field;
-- (void)addParameter:(NSString *)field operator:(QKQueryOperator *)op value:(id)value;
+- (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value;
 
 @end

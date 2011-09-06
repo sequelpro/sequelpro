@@ -41,6 +41,13 @@ static NSString *SPTestFieldFour  = @"test_field4";
 - (void)setUp
 {
 	_query = [QKQuery selectQueryFromTable:SPTestTableName];
+	
+	[_query addField:SPTestFieldOne];
+	[_query addField:SPTestFieldTwo];
+	[_query addField:SPTestFieldThree];
+	[_query addField:SPTestFieldFour];
+	
+	[_query addParameter:SPTestFieldOne operator:QKEqualityOperator value:@"10"];
 }
 
 -(void)tearDown
@@ -53,12 +60,16 @@ static NSString *SPTestFieldFour  = @"test_field4";
 
 - (void)testSelectQueryTypeIsCorrect
 {
-	[_query addField:SPTestFieldOne];
-	[_query addField:SPTestFieldTwo];
-	[_query addField:SPTestFieldThree];
-	[_query addField:SPTestFieldFour];
-	
 	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+}
+
+- (void)testSelectQueryFieldsAreCorrect
+{
+	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", SPTestFieldOne, SPTestFieldTwo, SPTestFieldThree, SPTestFieldFour];
+	
+	NSLog(@"%@", _query);
+	
+	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
 }
 
 @end

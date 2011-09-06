@@ -179,7 +179,6 @@
 		17F90E2C1210B34900274C98 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17F90E2B1210B34900274C98 /* Credits.rtf */; };
 		17F90E481210B42700274C98 /* SPExportFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F90E471210B42700274C98 /* SPExportFile.m */; };
 		17F90E4B1210B43A00274C98 /* SPExportFileUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */; };
-		17FC35961413CF7200AC3602 /* QKQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FC358E1413CF7200AC3602 /* QKQuery.m */; };
 		17FC35C01413D13F00AC3602 /* QKQueryOperators.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC358B1413CF7200AC3602 /* QKQueryOperators.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17FC35C21413D14000AC3602 /* QKQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC358D1413CF7200AC3602 /* QKQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17FC35C31413D14100AC3602 /* QKQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FC358E1413CF7200AC3602 /* QKQuery.m */; };
@@ -527,7 +526,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 17FC35AB1413CFE700AC3602 /* QueryKit */;
+			remoteGlobalIDString = 17FC35AB1413CFE700AC3602;
 			remoteInfo = QueryKit;
 		};
 		5847571D120A1C6D0057631F /* PBXContainerItemProxy */ = {
@@ -3514,7 +3513,6 @@
 				1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */,
 				1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */,
 				17902612141025BB005F677F /* SPQueryControllerInitializer.m in Sources */,
-				17FC35961413CF7200AC3602 /* QKQuery.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
