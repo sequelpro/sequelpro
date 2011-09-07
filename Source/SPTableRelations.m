@@ -29,6 +29,7 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
+#import "RegexKitLite.h"
 
 static NSString *SPRemoveRelation = @"SPRemoveRelation";
 
@@ -43,8 +44,7 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
-- (void)_loadUsedRelationNamesInBackground;
-- (void)_relationNamesLoaded;
+- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -62,8 +62,6 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 		relationData         = [[NSMutableArray alloc] init];
 		prefs                = [NSUserDefaults standardUserDefaults];
 		takenConstraintNames = [[NSMutableArray alloc] init];
-		
-		isRetrievingRelationNames = NO;
 	}
 
 	return self;
@@ -111,6 +109,18 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 #pragma mark IB action methods
 
 /**
+ * Opens the relation sheet, in its current state (without any reset of fields)
+ */
+- (IBAction)openRelationSheet:(id)sender
+{
+	[NSApp beginSheet:addRelationPanel
+	   modalForWindow:[tableDocumentInstance parentWindow]
+		modalDelegate:self
+	   didEndSelector:nil 
+		  contextInfo:nil];
+}
+
+/**
  * Closes the relation sheet.
  */
 - (IBAction)closeRelationSheet:(id)sender
@@ -124,7 +134,8 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
  */
 - (IBAction)confirmAddRelation:(id)sender
 {
-	[self closeRelationSheet:self];
+	[dataProgressIndicator startAnimation:self];
+	[dataProgressIndicator setHidden:NO];
 	
 	NSString *thisTable  = [tablesListInstance tableName];
 	NSString *thisColumn = [columnPopUpButton titleOfSelectedItem];
@@ -157,11 +168,31 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 	// Execute query
 	[connection queryString:query];
 
+	[dataProgressIndicator setHidden:YES];
+	[dataProgressIndicator stopAnimation:self];
+
+	[self closeRelationSheet:self];
+
 	if ([connection queryErrored]) {
+
+		// Retrieve the last connection error message.
+		NSString *errorText = [connection getLastErrorMessage];
+
+		// An error ID of 1005 indicates a foreign key error.  These are thrown for many reasons, but the two
+		// most common are 121 (name probably in use) and 150 (types don't exactly match).
+		// Retrieve the InnoDB status and extract the most recent error for more helpful text.
+		if ([connection getLastErrorID] == 1005) {
+			NSString *statusText = [connection getFirstFieldFromQuery:@"SHOW INNODB STATUS"];
+			NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
+			if (detailErrorString) {
+				errorText = [NSString stringWithFormat:@"%@\n\nMySQL detail: %@", errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+			}
+		}
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);
+						  nil, nil, [NSApp mainWindow], self, @selector(_reopenRelationSheet:returnCode:contextInfo:), nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), errorText]);
 	} 
 	else {
 		[self _refreshRelationDataForcingCacheRefresh:YES];
@@ -219,7 +250,7 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
-	
+
 	// Reset other fields
 	[constraintName setStringValue:@""];
 	[onDeletePopUpButton selectItemAtIndex:0];
@@ -229,12 +260,8 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 	if (changeEncoding) [connection restoreStoredEncoding];
 
 	[self selectReferenceTable:nil];
-	
-	[NSApp beginSheet:addRelationPanel
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:nil 
-		  contextInfo:nil];
+
+	[self openRelationSheet:self];
 }
 
 /**
@@ -311,22 +338,12 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 
 - (void)controlTextDidChange:(NSNotification *)notification
 {	
-	// Make sure the user does not enter a taken name
-	if ([notification object] == constraintName) {
-		
-		BOOL taken = NO;
+	// Make sure the user does not enter a taken name, using the quickly-generated incomplete list
+	if ([notification object] == constraintName) {		
 		NSString *userValue = [[constraintName stringValue] lowercaseString];
 		
-		for (NSString *takenName in takenConstraintNames) 
-		{
-			if ([takenName isEqualToString:userValue]) {
-				taken = YES;
-				break;
-			}
-		}
-		
 		// Make field red and disable add button
-		if (taken) {
+		if ([takenConstraintNames containsObject:userValue]) {
 			[constraintName setTextColor:[NSColor redColor]];
 			[confirmAddRelationButton setEnabled:NO];
 		}
@@ -416,26 +433,6 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 
 #pragma mark -
 #pragma mark Other
-
-/**
- * Loads the currently used relation names from information_schema.table_constraints.
- */
-- (void)loadUsedRelationNames
-{
-	if (isRetrievingRelationNames) return;
-	
-	[dataProgressIndicator setHidden:NO];
-	[dataProgressIndicator startAnimation:self];
-	
-	[progressStatusTextField setHidden:NO];
-	
-	[constraintName setEnabled:NO];
-	[confirmAddRelationButton setEnabled:NO];
-	
-	isRetrievingRelationNames = YES;
-	
-	[NSThread detachNewThreadSelector:@selector(_loadUsedRelationNamesInBackground) toTarget:self withObject:nil];
-}
 
 /**
  * Returns an array of relation data to be used for printing purposes. The first element in the array is always
@@ -563,6 +560,12 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches
 {
 	[relationData removeAllObjects];
+
+	// Prepare the list of the used constraint names for this table.  Ideally this would include all the used names
+	// in the database, but the MySQL-provided method of requesting that information (table_constraints in
+	// information_schema) is generated live from db file scans, which cannot be cheaply done on servers with
+	// many databases.
+	[takenConstraintNames removeAllObjects];
 	
 	if ([tablesListInstance tableType] == SPTableTypeTable) {
 		
@@ -580,7 +583,7 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), SPRelationOnUpdateKey,
 									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), SPRelationOnDeleteKey,
 									 nil]];
-			
+			[takenConstraintNames addObject:[[constraint objectForKey:SPRelationNameKey] lowercaseString]];			
 		}
 	} 
 	
@@ -628,57 +631,18 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 		[refColumnPopUpButton addItemsWithTitles:columnTitles];
 		
 		[refColumnPopUpButton setEnabled:YES];
-		
-		if (!isRetrievingRelationNames) {
-			[confirmAddRelationButton setEnabled:YES];
-		}
+		[confirmAddRelationButton setEnabled:YES];
 	}
 	
 	[columnInfo release];
 }
 
 /**
- * Loads all of the current foreign key relationship names for the current database. This method should be
- * spawned on a separate thread.
+ * Reopen the add relation sheet, usually after an error message, with the previous content.
  */
-- (void)_loadUsedRelationNamesInBackground
+- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	[takenConstraintNames removeAllObjects];
-		
-	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT DISTINCT constraint_name FROM information_schema.table_constraints WHERE constraint_type = 'FOREIGN KEY' AND  constraint_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-	
-	[result dataSeek:0];
-	
-	for (NSUInteger i = 0; i < [result numOfRows]; i++)
-	{
-		[takenConstraintNames addObject:[[[result fetchRowAsArray] objectAtIndex:0] lowercaseString]];
-	}
-	
-	// Update the UI on the main thread
-	[self performSelectorOnMainThread:@selector(_relationNamesLoaded) withObject:nil waitUntilDone:NO];
-	
-	[pool release];
-}
-
-/**
- * Called on the main thread, once all the current table relation names have been loaded and re-enables all
- * the relevant UI controls.
- */
-- (void)_relationNamesLoaded
-{
-	[dataProgressIndicator setHidden:YES];
-	[dataProgressIndicator stopAnimation:self];
-	
-	[progressStatusTextField setHidden:YES];
-	
-	[constraintName setEnabled:YES];
-	[confirmAddRelationButton setEnabled:YES];
-	
-	[addRelationPanel makeFirstResponder:constraintName];
-	
-	isRetrievingRelationNames = NO;
+	[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
 }
 
 #pragma mark -

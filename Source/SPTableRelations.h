@@ -58,8 +58,6 @@
 	NSUserDefaults *prefs;
 	NSMutableArray *relationData;
 	NSMutableArray *takenConstraintNames;
-	
-	BOOL isRetrievingRelationNames;
 }
 
 @property (readonly) NSMutableArray *relationData;
@@ -68,6 +66,7 @@
 // IB action methods
 - (IBAction)addRelation:(id)sender;
 - (IBAction)removeRelation:(id)sender;
+- (IBAction)openRelationSheet:(id)sender;
 - (IBAction)closeRelationSheet:(id)sender;
 - (IBAction)confirmAddRelation:(id)sender;
 - (IBAction)selectTableColumn:(id)sender;
@@ -81,7 +80,6 @@
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Other
-- (void)loadUsedRelationNames;
 - (NSArray *)relationDataForPrinting;
 - (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 

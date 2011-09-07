@@ -5977,8 +5977,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		else {
 			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
 		}
-		
-		[tableRelationsInstance loadUsedRelationNames];
 #endif
 	}
 
