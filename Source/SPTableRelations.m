@@ -185,7 +185,13 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 			NSString *statusText = [connection getFirstFieldFromQuery:@"SHOW INNODB STATUS"];
 			NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
 			if (detailErrorString) {
-				errorText = [NSString stringWithFormat:@"%@\n\nMySQL detail: %@", errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+				errorText = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nDetail: %@", @"Add relation error detail intro"), errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+			}
+
+			// Detect name duplication if appropriate
+			if ([errorText isMatchedByRegex:@"errno: 121"] && [errorText isMatchedByRegex:@"already exists"]) {
+				[takenConstraintNames addObject:[[constraintName stringValue] lowercaseString]];
+				[self controlTextDidChange:[NSNotification notificationWithName:@"dummy" object:constraintName]];
 			}
 		}
 
