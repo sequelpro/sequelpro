@@ -59,6 +59,7 @@
 #ifndef SP_REFACTOR	/* ivars */
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
+	NSOpenPanel *keySelectionPanel;
 #endif
 	SPKeychain *keychain;
 	NSUserDefaults *prefs;
@@ -211,6 +212,7 @@
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
+- (IBAction)updateKeyLocationFileVisibility:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(id)sender;

@@ -45,6 +45,10 @@
 #import "SPDatabaseViewController.h"
 #endif
 
+@interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
+- (void)setShowsHiddenFiles:(BOOL)flag;
+@end
+
 @interface SPConnectionController (PrivateAPI)
 
 #ifndef SP_REFACTOR /* @interface */
@@ -604,7 +608,8 @@
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
 	NSArray *permittedFileTypes = nil;
-	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	keySelectionPanel = [NSOpenPanel openPanel];
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 
 #ifndef SP_REFACTOR /* !!! ssh keys */
 	// Switch details by sender.
@@ -624,7 +629,7 @@
 		}
 
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
-		[openPanel setAccessoryView:sshKeyLocationHelp];
+		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
 
 	// SSL key file location:
 	} else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
@@ -633,7 +638,7 @@
 			return;
 		}
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
-		[openPanel setAccessoryView:sslKeyFileLocationHelp];
+		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
 
 	// SSL certificate file location:
 	} else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
@@ -642,7 +647,7 @@
 			return;
 		}
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[openPanel setAccessoryView:sslCertificateLocationHelp];
+		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
 
 	// SSL CA certificate file location:
 	} else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
@@ -651,17 +656,17 @@
 			return;
 		}
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[openPanel setAccessoryView:sslCACertLocationHelp];
+		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
 #endif
 
-	[openPanel beginSheetForDirectory:directoryPath
-								 file:filePath
-								types:permittedFileTypes
-					   modalForWindow:[tableDocument parentWindow]
-						modalDelegate:self
-					   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:sender];
+	[keySelectionPanel beginSheetForDirectory:directoryPath
+										 file:filePath
+										types:permittedFileTypes
+							   modalForWindow:[tableDocument parentWindow]
+								modalDelegate:self
+							   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
+								  contextInfo:sender];
 }
 
 /**
@@ -740,6 +745,14 @@
 - (IBAction)updateSSLInterface:(id)sender
 {
 	[self resizeTabViewToConnectionType:[self type] animating:YES];
+}
+
+/**
+ * Toggle hidden file visiblity in response to accessory view changes
+ */
+- (IBAction)updateKeyLocationFileVisibility:(id)sender
+{
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 }
 
 #pragma mark -

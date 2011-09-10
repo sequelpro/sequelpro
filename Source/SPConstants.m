@@ -207,6 +207,7 @@ NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncod
 NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType";
 NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
+NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";

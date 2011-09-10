@@ -37,6 +37,10 @@
 
 @end
 
+@interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
+- (void)setShowsHiddenFiles:(BOOL)flag;
+@end
+
 @implementation SPFavoritesPreferencePane
 
 #pragma mark -
@@ -274,7 +278,8 @@
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
 	NSArray *permittedFileTypes = nil;
-	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	keySelectionPanel = [NSOpenPanel openPanel];
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 	
 	// Switch details by sender.
 	// First, SSH keys:
@@ -295,7 +300,7 @@
 		
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
 		
-		[openPanel setAccessoryView:sshKeyLocationHelp];
+		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
 		
 		// SSL key file location:
 	} 
@@ -306,7 +311,7 @@
 		}
 		
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
-		[openPanel setAccessoryView:sslKeyFileLocationHelp];
+		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
 		
 		// SSL certificate file location:
 	} 
@@ -317,7 +322,7 @@
 		}
 		
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[openPanel setAccessoryView:sslCertificateLocationHelp];
+		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
 		
 		// SSL CA certificate file location:
 	} 
@@ -328,16 +333,24 @@
 		}
 		
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[openPanel setAccessoryView:sslCACertLocationHelp];
+		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
 	
-	[openPanel beginSheetForDirectory:directoryPath
-								 file:filePath
-								types:permittedFileTypes
-					   modalForWindow:[[self view] window]
-						modalDelegate:self
-					   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:sender];
+	[keySelectionPanel beginSheetForDirectory:directoryPath
+										 file:filePath
+										types:permittedFileTypes
+							   modalForWindow:[[self view] window]
+								modalDelegate:self
+							   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
+								  contextInfo:sender];
+}
+
+/**
+ * Toggle hidden file visiblity in response to accessory view changes
+ */
+- (IBAction)updateKeyLocationFileVisibility:(id)sender
+{
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 }
 
 #pragma mark -

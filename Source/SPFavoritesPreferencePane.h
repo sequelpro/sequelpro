@@ -73,6 +73,8 @@
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 	
 	SPKeychain *keychain;
+
+	NSOpenPanel *keySelectionPanel;
 	
 	NSInteger favoriteType;
 	NSDictionary *currentFavorite;
@@ -92,6 +94,7 @@
 - (IBAction)chooseKeyLocation:(id)sender;
 - (IBAction)favoriteTypeDidChange:(id)sender;
 - (IBAction)chooseKeyLocation:(id)sender;
+- (IBAction)updateKeyLocationFileVisibility:(id)sender;
 
 - (void)selectFavorites:(NSArray *)favorites;
 
