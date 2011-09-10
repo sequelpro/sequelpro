@@ -31,12 +31,16 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "QKQueryParameter.h"
+#import "QKQueryUtilities.h"
 
 @implementation QKQueryParameter
 
 @synthesize _field;
 @synthesize _operator;
 @synthesize _value;
+
+#pragma mark -
+#pragma mark Initialisation
 
 + (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
 {
@@ -52,6 +56,21 @@
 	}
 	
 	return self;
+}
+
+#pragma mark -
+
+- (NSString *)description
+{
+	NSMutableString *string = [NSMutableString string]; 
+	
+	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	[string appendString:field];
+	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
+	[string appendString:[_value description]];
+	
+	return string;
 }
 
 #pragma mark -

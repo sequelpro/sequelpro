@@ -32,6 +32,13 @@
 
 #import "QKQueryOperators.h"
 
+/**
+ * @class QKQueryUtilities QKQueryUtilities.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * QueryKit utilities class. 
+ */
 @interface QKQueryUtilities : NSObject 
 
 + (NSString *)operatorRepresentationForType:(QKQueryOperator)operator;

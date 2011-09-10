@@ -33,6 +33,8 @@ static NSString *SPTestFieldTwo   = @"test_field2";
 static NSString *SPTestFieldThree = @"test_field3";
 static NSString *SPTestFieldFour  = @"test_field4";
 
+static NSString *SPTestParameterOne = @"10";
+
 @implementation QKSelectQueryTests
 
 #pragma mark -
@@ -47,7 +49,7 @@ static NSString *SPTestFieldFour  = @"test_field4";
 	[_query addField:SPTestFieldThree];
 	[_query addField:SPTestFieldFour];
 	
-	[_query addParameter:SPTestFieldOne operator:QKEqualityOperator value:@"10"];
+	[_query addParameter:SPTestFieldOne operator:QKEqualityOperator value:SPTestParameterOne];
 }
 
 -(void)tearDown
@@ -66,7 +68,7 @@ static NSString *SPTestFieldFour  = @"test_field4";
 - (void)testSelectQueryFieldsAreCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", SPTestFieldOne, SPTestFieldTwo, SPTestFieldThree, SPTestFieldFour];
-	
+			
 	NSLog(@"%@", _query);
 	
 	STAssertTrue([[_query query] hasPrefix:query], @"query fields");

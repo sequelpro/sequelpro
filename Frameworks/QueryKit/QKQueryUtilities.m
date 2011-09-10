@@ -37,11 +37,11 @@ static NSString *QKUnrecognisedQueryOperatorException = @"QKUnrecognisedQueryOpe
 @implementation QKQueryUtilities
 
 /**
- * 
+ * Returns a string representation of the supplied operator type.
  *
- * @param operator
+ * @param operator The operator
  *
- * @return 
+ * @return A string represenation of the operator.
  */
 + (NSString *)operatorRepresentationForType:(QKQueryOperator)operator
 {
@@ -51,6 +51,39 @@ static NSString *QKUnrecognisedQueryOperatorException = @"QKUnrecognisedQueryOpe
 	{
 		case QKEqualityOperator:
 			opString = @"=";
+			break;
+		case QKNotEqualOperator:
+			opString = @"!=";
+			break;
+		case QKLikeOperator:
+			opString = @"LIKE";
+			break;
+		case QKNotLikeOperator:
+			opString = @"NOT LIKE";
+			break;
+		case QKInOperator:
+			opString = @"IN";
+			break;
+		case QKNotInOperator:
+			opString = @"NOT IN";
+			break;
+		case QKIsNullOperator:
+			opString = @"IS NULL";
+			break;
+		case QKIsNotNullOperator:
+			opString = @"IS NOT NULL";
+			break;
+		case QKGreaterThanOperator:
+			opString = @">";
+			break;
+		case QKLessThanOperator:
+			opString = @"<";
+			break;
+		case QKGreaterThanOrEqualOperator:
+			opString = @">=";
+			break;
+		case QKLessThanOrEqualOperator:
+			opString = @"<=";
 			break;
 		default:
 			[NSException raise:QKUnrecognisedQueryOperatorException format:@"Unrecognised query operator type: %d", operator];

@@ -31,8 +31,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "QKQuery.h"
-#import "QKQueryParameter.h"
-#import "QKQueryUtilities.h"
 
 static NSString *QKNoQueryTypeException = @"QKNoQueryType";
 static NSString *QKNoQueryTableException = @"QKNoQueryTable";
@@ -44,6 +42,10 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 - (NSString *)_buildQuery;
 - (NSString *)_buildFieldList;
 - (NSString *)_buildConstraints;
+- (NSString *)_buildGroupByClause;
+- (NSString *)_buildOrderByClause;
+
+- (BOOL)_addString:(NSString *)string toArray:(NSMutableArray *)array;
 
 @end
 
@@ -82,6 +84,11 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		[self setQueryType:-1];
 		[self setQuoteFields:NO];
 		
+		_orderDescending = NO;
+		
+		_groupByFields = [[NSMutableArray alloc] init];
+		_orderByFields = [[NSMutableArray alloc] init];
+		
 		_query = [[NSMutableString alloc] init];
 	}
 	
@@ -96,29 +103,104 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	return _query ? [self _buildQuery] : @""; 
 }
 
+#pragma mark -
+#pragma mark Fields
+
 /**
  * Shortcut for adding a new field to this query.
  */
 - (void)addField:(NSString *)field
 {
-	[_fields addObject:field];
+	[self _addString:field toArray:_fields];
 }
 
 /**
- * Shortcut for adding a new parameter to this query.
+ * Convenience method for adding more than one field.
+ *
+ * @param The array (of strings) of fields to add.
+ */
+- (void)addFields:(NSArray *)fields
+{
+	for (NSString *field in fields)
+	{
+		[self addField:field];
+	}
+}
+
+#pragma mark -
+#pragma mark Parameters
+
+/**
+ * Adds the supplied parameter.
+ *
+ * @param parameter The parameter to add.
+ */
+- (void)addParameter:(QKQueryParameter *)parameter
+{
+	if ([parameter field] && ([[parameter field] length] > 0) && ((NSInteger)[parameter operator] > -1) && [parameter value]) {
+		[_parameters addObject:parameter];
+	} 
+}
+
+/**
+ * Convenience method for adding a new parameter.
  */
 - (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value
+{	
+	[self addParameter:[QKQueryParameter queryParamWithField:field operator:operator value:value]];
+}
+
+#pragma mark -
+#pragma mark Grouping
+
+/**
+ * Adds the supplied field to the query's GROUP BY clause.
+ */
+- (void)groupByField:(NSString *)field
 {
-	QKQueryParameter *param = [QKQueryParameter queryParamWithField:field operator:operator value:value];
+	[self _addString:field toArray:_groupByFields];
+}
+
+/**
+ * Convenience method for adding more than one field to the query's GROUP BY clause.
+ */
+- (void)groupByFields:(NSArray *)fields
+{
+	for (NSString *field in fields)
+	{
+		[self groupByField:field];
+	}
+}
+
+#pragma mark -
+#pragma mark Ordering
+
+/**
+ * Adds the supplied field to the query's ORDER BY clause.
+ */
+- (void)orderByField:(NSString *)field descending:(BOOL)descending
+{
+	_orderDescending = descending;
 	
-	[_parameters addObject:param];
+	[self _addString:field toArray:_orderByFields];
+}
+
+/**
+ * Convenience method for adding more than one field to the query's ORDER BY clause.
+ */
+- (void)orderByFields:(NSArray *)fields descending:(BOOL)descending
+{
+	for (NSString *field in fields)
+	{
+		[self orderByField:field descending:descending];
+	}
 }
 
 #pragma mark -
 #pragma mark Private API
 
 /**
- *
+ * Validates that everything necessary to build the query has been set.
  */
 - (void)_validateRequiements
 {
@@ -167,6 +249,19 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	if ([_parameters count] > 0) {
 		[_query appendString:@" WHERE "];
 		[_query appendString:[self _buildConstraints]];
+	}
+	
+	if (isSelect) {
+		NSString *groupBy = [self _buildGroupByClause];
+		NSString *orderBy = [self _buildOrderByClause];
+		
+		if ([groupBy length] > 0) {
+			[_query appendFormat:@" %@", groupBy];
+		}
+		
+		if ([orderBy length] > 0) {
+			[_query appendFormat:@" %@", orderBy];
+		}
 	}
 	
 	return _query;
@@ -222,11 +317,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (QKQueryParameter *param in _parameters)
 	{
-		NSString *field = [[param field] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-		
-		[constraints appendString:field];
-		[constraints appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:[param operator]]];
-		[constraints appendString:[[param value] description]];
+		[constraints appendFormat:@"%@ ", param];
 		
 		[constraints appendString:@" AND "];
 	}
@@ -236,6 +327,87 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	}
 	
 	return constraints;
+}
+								  
+/**
+ * Builds the string representation of the query's GROUP BY clause.
+ *
+ * @return The GROUP BY clause
+ */
+- (NSString *)_buildGroupByClause
+{
+	NSMutableString *groupBy = [NSMutableString string];
+	
+	if ([_groupByFields count] == 0) return groupBy;
+	
+	[groupBy appendString:@"GROUP BY "];
+	
+	for (NSString *field in _groupByFields)
+	{
+		[groupBy appendString:field];
+		[groupBy appendString:@", "];
+	}
+	
+	if ([groupBy hasSuffix:@", "]) {
+		[groupBy setString:[groupBy substringToIndex:([groupBy length] - 2)]];
+	}
+	
+	return groupBy;
+}
+
+/**
+ * Builds the string representation of the query's ORDER BY clause.
+ *
+ * @return The ORDER BY clause
+ */
+- (NSString *)_buildOrderByClause
+{
+	NSMutableString *orderBy = [NSMutableString string];
+	
+	if ([_orderByFields count] == 0) return orderBy;
+	
+	[orderBy appendString:@"ORDER BY "];
+	
+	for (NSString *field in _orderByFields)
+	{
+		[orderBy appendString:field];
+		[orderBy appendString:@", "];
+	}
+	
+	if ([orderBy hasSuffix:@", "]) {
+		[orderBy setString:[orderBy substringToIndex:([orderBy length] - 2)]];
+	}
+	
+	if (_orderDescending) {
+		[orderBy appendString:@" DESC"];
+	}
+	
+	return orderBy;
+}
+
+/**
+ * Adds the supplied string to the supplied array, but only if the length is greater than zero.
+ *
+ * @param string The string to add to the array
+ * @param array  The array to add the string to
+ *
+ * @return A BOOL indicating whether or not the string was added.
+ */
+- (BOOL)_addString:(NSString *)string toArray:(NSMutableArray *)array
+{
+	BOOL result = NO;
+	
+	if (!string || !array) return result;
+	
+	string = [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	if ([string length] > 0) {
+		[array addObject:string];
+		
+		result = YES;
+	}
+	
+	return result;
 }
 
 #pragma mark -
@@ -249,7 +421,13 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 - (void)dealloc
 {
+	if (_table) [_table release], _table = nil;
+	if (_database) [_database release], _database = nil;
 	if (_query) [_query release], _query = nil;
+	if (_parameters) [_parameters release], _parameters = nil;
+	if (_fields) [_fields release], _fields = nil;
+	if (_groupByFields) [_groupByFields release], _groupByFields = nil;
+	if (_orderByFields) [_orderByFields release], _orderByFields = nil;
 	
 	[super dealloc];
 }

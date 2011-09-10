@@ -32,7 +32,15 @@
 
 #import "QKQueryTypes.h"
 #import "QKQueryOperators.h"
+#import "QKQueryParameter.h"
 
+/**
+ * @class QKQuery QKQuery.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Main QueryKit query class.
+ */
 @interface QKQuery : NSObject 
 {
 	NSString *_database;
@@ -41,39 +49,42 @@
 	NSMutableString *_query;
 	NSMutableArray *_parameters;
 	NSMutableArray *_fields;
+	NSMutableArray *_groupByFields;
+	NSMutableArray *_orderByFields;
 	
 	QKQueryType _queryType;
 	
 	BOOL _quoteFields;
+	BOOL _orderDescending;
 }
 
 /**
- *
+ * @property _database The database the query is to be run against (optional).
  */
 @property (readwrite, retain, getter=database, setter=setDatabase:) NSString *_database;
 
 /**
- *
+ * @property _table The table the query is to be run against.
  */
 @property (readwrite, retain, getter=table, setter=setTable:) NSString *_table; 
 
 /**
- *
+ * @property _parameters The parameters (constraints) of the query.
  */
 @property (readwrite, retain, getter=parameters, setter=setParameters:) NSMutableArray *_parameters;
 
 /**
- *
+ * @property _fields The fields of the query.
  */
 @property (readwrite, retain, getter=fields, setter=setFields:) NSMutableArray *_fields;
 
 /**
- *
+ * @property _queryType The type of query to be built.
  */
 @property (readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
 
 /**
- *
+ * @property _quoteFields Indicates whether or not the query's fields should be quoted.
  */
 @property (readwrite, assign, getter=quoteFields, setter=setQuoteFields:) BOOL _quoteFields;
 
@@ -85,6 +96,15 @@
 - (NSString *)query;
 
 - (void)addField:(NSString *)field;
+- (void)addFields:(NSArray *)fields;
+
+- (void)addParameter:(QKQueryParameter *)parameter;
 - (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value;
+
+- (void)groupByField:(NSString *)field;
+- (void)groupByFields:(NSArray *)fields;
+
+- (void)orderByField:(NSString *)field descending:(BOOL)descending;
+- (void)orderByFields:(NSArray *)fields descending:(BOOL)descending;
 
 @end

@@ -32,6 +32,13 @@
 
 #import "QKQueryOperators.h"
 
+/**
+ * @class QKQueryParameter QKQueryParameter.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * QueryKit query parameter class. 
+ */
 @interface QKQueryParameter : NSObject 
 {
 	NSString *_field;
@@ -42,17 +49,17 @@
 }
 
 /**
- *
+ * @property _field The field component of the parameter.
  */
 @property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
 
 /**
- *
+ * @property _operator The operator component of the parameter.
  */
 @property (readwrite, assign, getter=operator, setter=setOperator:) QKQueryOperator _operator;
 
 /**
- *
+ *@property _value The value component of the parameter.
  */
 @property (readwrite, retain, getter=value, setter=setValue:) id _value;
 
