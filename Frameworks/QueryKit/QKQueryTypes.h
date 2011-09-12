@@ -30,6 +30,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+/**
+ * @enum QKQueryType
+ *
+ * Used to specify the type of query to be constructed.
+ */
 typedef enum
 {
 	QKSelectQuery,

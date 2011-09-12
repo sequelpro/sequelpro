@@ -31,8 +31,12 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 /**
- * Note that this is by no means complete list of available operators, only the most commonly used ones. Other
- * operators can be added as and when they are required.
+ * @enum QKQueryOperator
+ *
+ * Used to specify the operator to use for a specific query parameter. 
+ *
+ * Note that this is by no means a complete list of available operators, only the most commonly used ones. 
+ * Other operators can be added as and when they are required.
  */
 typedef enum
 {
