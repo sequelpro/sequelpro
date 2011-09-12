@@ -297,6 +297,9 @@
 - (void)importFileSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
+	// Ensure text inputs are completed, preventing dead character entry
+	[sheet makeFirstResponder:nil];
+
 	// Save values to preferences
 	[prefs setObject:[(NSOpenPanel*)sheet directory] forKey:@"openPath"];
 	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
