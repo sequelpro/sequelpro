@@ -3276,7 +3276,7 @@ void pingThreadCleanup(void *pingDetails)
  * Retrieve connection variables and use them to update local variables - incuding
  * server version string, server time zone, and the current connection encoding.
  */
-- (void)_updateConnectionVariables;
+- (void)_updateConnectionVariables
 {
 	if (!mConnected) return;
 
@@ -3301,7 +3301,7 @@ void pingThreadCleanup(void *pingDetails)
 	// Get the timezone
 	NSString *serverTimeZoneName = nil;
 	NSTimeZone *serverTimeZone = nil;
-	if ([variables objectForKey:@"time_zone"]) {
+	if ([variables objectForKey:@"time_zone"] && ![[variables objectForKey:@"time_zone"] isNSNull]) {
 		if ([[variables objectForKey:@"time_zone"] isEqualToString:@"SYSTEM"]) {
 			if ([variables objectForKey:@"system_time_zone"]) {
 				serverTimeZoneName = [variables objectForKey:@"system_time_zone"];
@@ -3309,7 +3309,7 @@ void pingThreadCleanup(void *pingDetails)
 		} else {
 			serverTimeZoneName = [variables objectForKey:@"time_zone"];
 		}
-	} else if ([variables objectForKey:@"timezone"]) {
+	} else if ([variables objectForKey:@"timezone"] && ![[variables objectForKey:@"timezone"] isNSNull]) {
 		serverTimeZoneName = [variables objectForKey:@"timezone"];
 	}
 	if (!serverTimeZoneName) {
