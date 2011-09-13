@@ -717,7 +717,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(exportCustomQueryResultAsFormat:)) {
-		return ([[customQueryInstance currentResult] count] > 1);
+		return (([[customQueryInstance currentResult] count] > 1) && (![tableDocumentInstance isProcessing]));
 	}
 	
 	return YES;
