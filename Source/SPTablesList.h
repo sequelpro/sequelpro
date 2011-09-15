@@ -98,6 +98,7 @@
 	IBOutlet NSMenuItem *openTableInNewTabMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
+	IBOutlet NSMenuItem *copyCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem2;
 	IBOutlet NSMenuItem *separatorTableMenuItem3;
 #endif
@@ -113,6 +114,7 @@
 	IBOutlet NSMenuItem *openTableInNewTabContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxContextMenuItem;
+	IBOutlet NSMenuItem *copyCreateSyntaxContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem2;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem3;
 #endif
