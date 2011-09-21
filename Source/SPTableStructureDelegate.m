@@ -327,7 +327,7 @@
 		else if (isTimestampType && ([[[originalRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 		}
-		else if ([[originalRow objectForKey:@"default"] length]) {
+		else if ([(NSString *)[originalRow objectForKey:@"default"] length]) {
 			[queryString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"default"]]];
 		}
 	}

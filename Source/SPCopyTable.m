@@ -756,6 +756,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSUInteger cellWidth, maxCellWidth, i;
 	NSRange linebreakRange;
 	double rowStep;
+	unichar breakChar;
 #ifndef SP_REFACTOR /* patch */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 #else
@@ -804,10 +805,26 @@ static const NSInteger kBlobAsImageFile = 4;
 				contentString = [contentString substringToIndex:500];
 			}
 
-			// If any linebreaks are present, use only the visible part of the string
-			linebreakRange = [contentString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]];
+			// If any linebreaks are present, they are displayed as single characters; replace them with pilcrow/
+			// reverse pilcrow to match display output width.
+			linebreakRange = [contentString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch];
 			if (linebreakRange.location != NSNotFound) {
-				contentString = [contentString substringToIndex:linebreakRange.location];
+				NSMutableString *singleLineString = [[[NSMutableString alloc] initWithString:contentString] autorelease];
+				while (linebreakRange.location != NSNotFound) {
+					breakChar = [singleLineString characterAtIndex:linebreakRange.location];
+					switch (breakChar) {
+						case '\n':
+							[singleLineString replaceCharactersInRange:linebreakRange withString:@"¶"];
+							break;
+						default:
+							[singleLineString replaceCharactersInRange:linebreakRange withString:@"⁋"];
+							if (breakChar == '\r' && NSMaxRange(linebreakRange) < [singleLineString length] && [singleLineString characterAtIndex:linebreakRange.location+1] == '\n') {
+								[singleLineString deleteCharactersInRange:NSMakeRange(linebreakRange.location+1, 1)];
+							}
+					}
+					linebreakRange = [singleLineString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch];
+				}
+				contentString = singleLineString;
 			}
 		}
 
@@ -1042,6 +1059,11 @@ static const NSInteger kBlobAsImageFile = 4;
 		if([self isCellComplex])
 			return NO;
 
+		// Check whether the editor is multiline - if so, allow the arrow down to change selection if it's not
+		// on the final line
+		if (NSMaxRange([[textView string] lineRangeForRange:[textView selectedRange]]) < [[textView string] length])
+			return NO;
+
 		NSInteger newRow = row+1;
 #ifndef SP_REFACTOR
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
@@ -1070,7 +1092,12 @@ static const NSInteger kBlobAsImageFile = 4;
 	{
 
 		// If enum field is edited ARROW key navigates through the popup list
-		if([self isCellComplex])
+		if ([self isCellComplex])
+			return NO;
+
+		// Check whether the editor is multiline - if so, allow the arrow up to change selection if it's not
+		// on the first line
+		if ([[textView string] lineRangeForRange:[textView selectedRange]].location > 0)
 			return NO;
 
 		if (row==0) return YES; //already at the beginning of the list

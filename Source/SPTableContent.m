@@ -4429,12 +4429,25 @@
 			}
 		}
 
-		// Open the sheet if the multipleLineEditingButton is enabled or the column was a blob or a text.
-		if ((
+		// Determine whether to open the sheet for editing; do so if the multipleLineEditingButton is enabled,
+		// or if the column was a blob or a text, or if it contains linebreaks.
+		BOOL useFieldEditor = NO;
 #ifndef SP_REFACTOR
-			[multipleLineEditingButton state] == NSOnState || 
+		if ([multipleLineEditingButton state] == NSOnState) useFieldEditor = YES;
 #endif
-			isBlob) && ![[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"]) {
+		if (!useFieldEditor && ![[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"] && isBlob) useFieldEditor = YES;
+		if (!useFieldEditor) {
+			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+			if (![cellValue isNSNull]
+				&& [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
+				&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
+			{
+				useFieldEditor = YES;
+			}
+		}
+
+		// Open the sheet if required
+		if (useFieldEditor) {
 
 			// A table is per definitionem editable
 			isFieldEditable = YES;
@@ -4769,16 +4782,21 @@
 
 	}
 
-	NSString *fieldType;
+	// Use the field editor sheet instead of inline editing if the target field is a text, blob, or binary
+	// type; if it contains linebreaks; or if the force-editing button is enabled.
+	BOOL useFieldEditor = NO;
+	NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
 
-	// Check if current edited field is a blob
-	if ((fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"])
-		&& ![fieldType isEqualToString:@"enum"] && ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"] 
 #ifndef SP_REFACTOR
-		|| [multipleLineEditingButton state] == NSOnState
+	if ([multipleLineEditingButton state] == NSOnState) useFieldEditor = YES;
 #endif
-		))
-	{
+
+	if (!useFieldEditor && fieldType && ![fieldType isEqualToString:@"enum"] && ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])) useFieldEditor = YES;
+
+	if (!useFieldEditor && [[aFieldEditor string] rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]].location != NSNotFound) useFieldEditor = YES;
+	
+	// Open the field editor sheet if required
+	if (useFieldEditor) {
 		[tableContentView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
 
 		// Cancel editing

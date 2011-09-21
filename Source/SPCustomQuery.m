@@ -2398,7 +2398,6 @@
 	if ( aTableView == customQueryView ) {
 
 		NSDictionary *columnDefinition;
-		BOOL isBlob = NO;
 
 		// Retrieve the column defintion
 		for(id c in cqColumnDefinition) {
@@ -2409,15 +2408,28 @@
 		}
 
 		// Check if current field is a blob
-		if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
-			|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-			isBlob = YES;
-		else
-			isBlob = NO;
+		BOOL isBlob = ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
+						|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
 
-		if ([multipleLineEditingButton state] == NSOnState || isBlob) {
+		// Determine whether to open the sheet for editing; do so if the multipleLineEditingButton is enabled,
+		// or if the column was a blob or a text, or if it contains linebreaks.
+		BOOL useFieldEditor = NO;
+#ifndef SP_REFACTOR
+		if ([multipleLineEditingButton state] == NSOnState) useFieldEditor = YES;
+#endif
+		if (!useFieldEditor && ![[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"] && isBlob) useFieldEditor = YES;
+		if (!useFieldEditor) {
+			id cellValue = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+			if (![cellValue isNSNull]
+				&& [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
+				&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
+			{
+				useFieldEditor = YES;
+			}
+		}
 
-			if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+		if (useFieldEditor) {
+			if (fieldEditor) [fieldEditor release], fieldEditor = nil;
 			fieldEditor = [[SPFieldEditorController alloc] init];
 
 			// Remember edited row for reselecting and setting the scroll view after reload
@@ -3829,7 +3841,7 @@
 	row = [customQueryView editedRow];
 	column = [customQueryView editedColumn];
 
-	// Retrieve the column defintion
+	// Retrieve the column definition
 	NSNumber *colIdentifier = [NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier];
 	for(id c in cqColumnDefinition) {
 		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:colIdentifier]) {
@@ -3869,19 +3881,23 @@
 		shouldBeginEditing = NO;
 	}
 
-	BOOL isBlob = NO;
-
-	// Check if current field is a blob
-	if([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"textdata"]
-		|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"])
-		isBlob = YES;
-	else
-		isBlob = NO;
-
+	NSString *fieldType = [columnDefinition objectForKey:@"typegrouping"];
 	isFieldEditable = shouldBeginEditing;
 
-	// Check if current edited field is a blob or should be displayed in field editor sheet
-	if (isBlob || [multipleLineEditingButton state] == NSOnState)
+	// Check if current field is a blob
+	BOOL isBlob = ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"]);
+
+	// Use the field editor sheet instead of inline editing if the target field is a text, blob, or binary
+	// type; if it contains linebreaks; or if the force-editing button is enabled.
+	BOOL useFieldEditor = NO;
+#ifndef SP_REFACTOR
+	if ([multipleLineEditingButton state] == NSOnState) useFieldEditor = YES;
+#endif
+	if (!useFieldEditor && fieldType && ![fieldType isEqualToString:@"enum"] && isBlob) useFieldEditor = YES;
+	if (!useFieldEditor && [[aFieldEditor string] rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]].location != NSNotFound) useFieldEditor = YES;
+	
+	// Open the field editor sheet if required
+	if (useFieldEditor)
 	{
 
 		[customQueryView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
