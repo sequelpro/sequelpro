@@ -2420,6 +2420,9 @@
 		if (!useFieldEditor && ![[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"] && isBlob) useFieldEditor = YES;
 		if (!useFieldEditor) {
 			id cellValue = [resultData cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
+			if ([cellValue isKindOfClass:[NSData class]]) {
+				cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];
+			}
 			if (![cellValue isNSNull]
 				&& [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
 				&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
