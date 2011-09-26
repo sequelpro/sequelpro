@@ -23,17 +23,16 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <QueryKit/QueryKit.h>
 #import "QKSelectQueryTests.h"
 
-static NSString *SPTestTableName = @"test_table";
+static NSString *QKTestTableName = @"test_table";
 
-static NSString *SPTestFieldOne   = @"test_field1";
-static NSString *SPTestFieldTwo   = @"test_field2";
-static NSString *SPTestFieldThree = @"test_field3";
-static NSString *SPTestFieldFour  = @"test_field4";
+static NSString *QKTestFieldOne   = @"test_field1";
+static NSString *QKTestFieldTwo   = @"test_field2";
+static NSString *QKTestFieldThree = @"test_field3";
+static NSString *QKTestFieldFour  = @"test_field4";
 
-static NSString *SPTestParameterOne = @"10";
+static NSString *QKTestParameterOne = @"10";
 
 @implementation QKSelectQueryTests
 
@@ -42,14 +41,14 @@ static NSString *SPTestParameterOne = @"10";
 
 - (void)setUp
 {
-	_query = [QKQuery selectQueryFromTable:SPTestTableName];
+	_query = [QKQuery selectQueryFromTable:QKTestTableName];
 	
-	[_query addField:SPTestFieldOne];
-	[_query addField:SPTestFieldTwo];
-	[_query addField:SPTestFieldThree];
-	[_query addField:SPTestFieldFour];
+	[_query addField:QKTestFieldOne];
+	[_query addField:QKTestFieldTwo];
+	[_query addField:QKTestFieldThree];
+	[_query addField:QKTestFieldFour];
 	
-	[_query addParameter:SPTestFieldOne operator:QKEqualityOperator value:SPTestParameterOne];
+	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:QKTestParameterOne];
 }
 
 #pragma mark -
@@ -62,9 +61,16 @@ static NSString *SPTestParameterOne = @"10";
 
 - (void)testSelectQueryFieldsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", SPTestFieldOne, SPTestFieldTwo, SPTestFieldThree, SPTestFieldFour];
+	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
 				
 	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
+}
+
+- (void)testSelectQueryConstraintsAreCorrect
+{
+	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], QKTestParameterOne];
+	
+	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"query constraints");
 }
 
 @end

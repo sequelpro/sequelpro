@@ -23,6 +23,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <QueryKit/QueryKit.h>
+
 #import <SenTestingKit/SenTestingKit.h>
 
 @interface QKSelectQueryTests : SenTestCase

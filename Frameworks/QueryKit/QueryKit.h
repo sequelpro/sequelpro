@@ -34,3 +34,4 @@
 #import <QueryKit/QKQueryTypes.h>
 #import <QueryKit/QKQueryOperators.h>
 #import <QueryKit/QKQueryParameter.h>
+#import <QueryKit/QKQueryUtilities.h>
