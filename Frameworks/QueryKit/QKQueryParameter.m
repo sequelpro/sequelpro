@@ -63,12 +63,12 @@
 - (NSString *)description
 {
 	NSMutableString *string = [NSMutableString string]; 
-	
+		
 	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
 	[string appendString:field];
 	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
-	[string appendString:[_value description]];
+	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
 	
 	return string;
 }

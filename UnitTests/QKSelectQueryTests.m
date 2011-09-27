@@ -32,7 +32,7 @@ static NSString *QKTestFieldTwo   = @"test_field2";
 static NSString *QKTestFieldThree = @"test_field3";
 static NSString *QKTestFieldFour  = @"test_field4";
 
-static NSString *QKTestParameterOne = @"10";
+static NSUInteger QKTestParameterOne = 10;
 
 @implementation QKSelectQueryTests
 
@@ -48,7 +48,7 @@ static NSString *QKTestParameterOne = @"10";
 	[_query addField:QKTestFieldThree];
 	[_query addField:QKTestFieldFour];
 	
-	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:QKTestParameterOne];
+	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 }
 
 #pragma mark -
@@ -68,7 +68,7 @@ static NSString *QKTestParameterOne = @"10";
 
 - (void)testSelectQueryConstraintsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], QKTestParameterOne];
+	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 	
 	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"query constraints");
 }

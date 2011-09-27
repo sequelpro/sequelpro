@@ -412,6 +412,9 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 #pragma mark -
 
+/**
+ * Same as calling -query.
+ */
 - (NSString *)description
 {
 	return [self query];
