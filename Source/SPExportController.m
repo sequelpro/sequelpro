@@ -55,6 +55,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_displayExportTypeOptions:(BOOL)display;
 - (void)_updateExportFormatInformation;
 - (void)_updateExportAdvancedOptionsLabel;
+- (void)_setPreviousExportFilenameAndPath;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -122,9 +123,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  */
 - (void)awakeFromNib
 {
-
 	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
 	if (mainNibLoaded) return;
+	
 	mainNibLoaded = YES;
 
 	// Select the 'selected tables' option
@@ -141,17 +142,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	
 	// Set the progress indicator's max value
 	[exportProgressIndicator setMaxValue:(NSInteger)[exportProgressIndicator bounds].size.width];
-
-	// If a directory has previously been selected, reselect it
-	if ([prefs objectForKey:SPExportLastDirectory]) {
-		[exportPathField setStringValue:[prefs objectForKey:SPExportLastDirectory]];
-	} else {
-
-		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
-		
-		// If found the set the default path to the user's desktop, otherwise use their home directory
-		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
-	}
 
 	// Empty the tokenizing character set for the filename field
 	[exportCustomFilenameTokenField setTokenizingCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@""]];
@@ -177,12 +167,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	// Select the correct tab
 	[exportTypeTabBar selectTabViewItemAtIndex:format];
 	
-	// Restore the export filename if it exists, and update the display
-	if ([prefs objectForKey:SPExportFilenameFormat]) {
-		[exportCustomFilenameTokenField setObjectValue:[NSKeyedUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPExportFilenameFormat]]];
-	}
-	[self updateDisplayedExportFilename];
+	[self _setPreviousExportFilenameAndPath];
 	
+	[self updateDisplayedExportFilename];
 	[self refreshTableList:nil];
 	
 	[exporters removeAllObjects];
@@ -781,7 +768,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	
 	// When exporting to SQL, only the selected tables option should be enabled
 	if (isSQL) {
-		// Programmatically changing the selected item of a popup button does not fire it's action, so updated
+		// Programmatically changing the selected item of a popup button does not fire it's action, so update
 		// the selected export source manually.
 		exportSource = SPTableExport;
 		
@@ -807,13 +794,17 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	// When switching to Dot export, ensure the server's lower_case_table_names value is checked the first time
 	// to set the export's link case sensitivity setting
 	if (isDot && serverLowerCaseTableNameValue == NSNotFound) {
+		
 		MCPResult *caseResult = [connection queryString:@"SHOW VARIABLES LIKE 'lower_case_table_names'"];
 		[caseResult setReturnDataAsStrings:YES];
+		
 		if ([caseResult numOfRows] == 1) {
 			serverLowerCaseTableNameValue = [[[caseResult fetchRowAsDictionary] objectForKey:@"Value"] integerValue];
-		} else {
+		} 
+		else {
 			serverLowerCaseTableNameValue = 0;
 		}
+		
 		[exportDotForceLowerTableNamesCheck setState:(serverLowerCaseTableNameValue == 0)?NSOffState:NSOnState];
 	}
 
@@ -893,10 +884,14 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	switch (exportType) {
 		case SPCSVExport:
 			if ([exportFilePerTableCheck state]) break;
+			
 			NSUInteger numberOfTables = 0;
-			for (NSMutableArray *eachTable in tables) {
+			
+			for (NSMutableArray *eachTable in tables) 
+			{
 				if ([[eachTable objectAtIndex:2] boolValue]) numberOfTables++;
 			}
+			
 			if (numberOfTables <= 1) break;
 		case SPXMLExport:
 		case SPDotExport:
@@ -923,19 +918,44 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 	if ([exportProcessLowMemoryButton state]) {
 		[optionsSummary addObject:NSLocalizedString(@"Low memory", @"Low memory export summary")];
-	} else {
+	} 
+	else {
 		[optionsSummary addObject:NSLocalizedString(@"Standard memory", @"Standard memory export summary")];
 	}
 
 	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPNoCompression) {
 		[optionsSummary addObject:NSLocalizedString(@"no compression", @"No compression export summary - within a sentence")];
-	} else if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPGzipCompression) {
+	} 
+	else if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPGzipCompression) {
 		[optionsSummary addObject:NSLocalizedString(@"Gzip compression", @"Gzip compression export summary - within a sentence")];
-	} else if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPBzip2Compression) {
+	} 
+	else if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPBzip2Compression) {
 		[optionsSummary addObject:NSLocalizedString(@"bzip2 compression", @"bzip2 compression export summary - within a sentence")];
 	}
 
 	[exportAdvancedOptionsViewLabelButton setTitle:[NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"Advanced", @"Advanced options short title"), [optionsSummary componentsJoinedByString:@", "]]];
+}
+
+/**
+ * Sets the previous export filename and path if available.
+ */
+- (void)_setPreviousExportFilenameAndPath
+{
+	// Restore the export filename if it exists, and update the display
+	if ([prefs objectForKey:SPExportFilenameFormat]) {
+		[exportCustomFilenameTokenField setObjectValue:[NSKeyedUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPExportFilenameFormat]]];
+	}
+	
+	// If a directory has previously been selected, reselect it
+	if ([prefs objectForKey:SPExportLastDirectory]) {
+		[exportPathField setStringValue:[prefs objectForKey:SPExportLastDirectory]];
+	} 
+	else {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
+		
+		// If found the set the default path to the user's desktop, otherwise use their home directory
+		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
+	}
 }
 
 /**
