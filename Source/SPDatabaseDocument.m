@@ -163,6 +163,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		triggersLoaded = NO;
 
 		selectedDatabase = nil;
+		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
 		mySQLConnection = nil;
 		mySQLVersion = nil;
 		allDatabases = nil;
@@ -549,7 +550,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		}
 	}
 
-	if ([self database]) (void)[self databaseEncoding];
+	if ([self database]) [self detectDatabaseEncoding];
 #endif
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
@@ -1535,10 +1536,19 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 }
 
 /**
- * Detect and return the database encoding.
- * Falls back to Latin1.
+ * Retrieve the current database encoding.  This will return Latin-1
+ * for unknown encodings.
  */
 - (NSString *)databaseEncoding
+{
+	return selectedDatabaseEncoding;
+}
+
+/**
+ * Detect and store the encoding of the currently selected database.
+ * Falls back to Latin-1 if the encoding cannot be retrieved.
+ */
+- (void)detectDatabaseEncoding
 {
 	MCPResult *charSetResult;
 	NSString *mysqlEncoding = nil;
@@ -1556,14 +1566,16 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
 
+	[selectedDatabaseEncoding release];
+
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
-		mysqlEncoding = @"latin1";
+		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
 		_supportsEncoding = NO;
+	} else {
+		selectedDatabaseEncoding = [mysqlEncoding retain];
 	}
-
-	return mysqlEncoding;
 }
 
 /**
@@ -5651,6 +5663,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[undoManager release];
 	[printWebView release];
 #endif
+	[selectedDatabaseEncoding release];
 	[taskProgressWindow close];
 	
 	if (selectedTableName) [selectedTableName release];
@@ -5953,6 +5966,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
+
+		// Update the stored database encoding, used for views, "default" table encodings, and to allow
+		// or disallow use of the "View using encoding" menu
+		[self detectDatabaseEncoding];
 #endif
 		
 		// Set the connection of SPTablesList and TablesDump to reload tables in db
