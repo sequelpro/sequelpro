@@ -28,9 +28,7 @@
 @interface SPFavoritesImporter : NSObject 
 {
 	NSObject <SPFavoritesImportProtocol> *delegate;
-	
-	NSError *importError;
-	
+		
 	NSString *importPath;
 }
 

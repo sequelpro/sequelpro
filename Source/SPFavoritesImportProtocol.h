@@ -33,7 +33,14 @@
 @protocol SPFavoritesImportProtocol
 
 /**
- * Invoked when the favorites import proccess completes
+ * Invoked when the favorites import process successfully imports the favorites data.
+ *
+ * @param data The imported data as a dictionary.
+ */
+- (void)favoritesImportData:(NSDictionary *)data;
+
+/**
+ * Invoked when the favorites import proccess completes.
  *
  * @param error An error instance. Anything other than nil indicates an error occurred.
  */

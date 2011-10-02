@@ -28,6 +28,8 @@
 @interface SPFavoritesImporter ()
 
 - (void)_importFavoritesInBackground;
+- (void)_informDelegateOfImportCompletion:(NSError *)error;
+- (void)_informDelegateOfImportDataAvailable:(NSDictionary *)data;
 
 @end
 
@@ -37,17 +39,63 @@
 @synthesize importPath;
 
 /**
+ * Imports the favorites from the file at the supplied path.
  *
  * @param path The path of the file to import
  */
 - (void)importFavoritesFromFileAtPath:(NSString *)path
 {
+	[self setImportPath:path];
 	
+	[NSThread detachNewThreadSelector:@selector(_importFavoritesInBackground) toTarget:self withObject:nil];
 }
 
+/**
+ * Starts the import process on a separate thread.
+ */
 - (void)_importFavoritesInBackground
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
+	NSError *error = nil;
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	NSDictionary *importData = nil;
+	
+	if ([fileManager fileExistsAtPath:[self importPath]]) {
+		importData = [[NSDictionary alloc] initWithContentsOfFile:[self importPath]];
+		
+		[self _informDelegateOfImportDataAvailable:importData];
+	}
+	else {
+		error = [NSError errorWithDomain:NSCocoaErrorDomain 
+									code:NSFileNoSuchFileError 
+								userInfo:[NSDictionary dictionaryWithObject:@"Import file does not exist." forKey:NSLocalizedDescriptionKey]];
+	}
+	
+	[self _informDelegateOfImportCompletion:error];
+	
+	[pool release];
+}
+
+/**
+ * Informs the delegate that the import process has completed.
+ */
+- (void)_informDelegateOfImportCompletion:(NSError *)error
+{
+	if ([self delegate] && [[self delegate] respondsToSelector:@selector(favoritesExportCompletedWithError:)]) {
+		[[self delegate] performSelectorOnMainThread:@selector(favoritesExportCompletedWithError:) withObject:error waitUntilDone:NO];
+	}
+}
+
+/**
+ * Informs the delegate that the imported data is available.
+ */
+- (void)_informDelegateOfImportDataAvailable:(NSDictionary *)data
+{
+	if ([self delegate] && [[self delegate] respondsToSelector:@selector(favoritesImportData:)]) {
+		[[self delegate] performSelectorOnMainThread:@selector(favoritesImportData:) withObject:data waitUntilDone:NO];
+	}
 }
 
 @end

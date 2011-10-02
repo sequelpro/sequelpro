@@ -489,8 +489,6 @@ static NSString *SPDatabaseImage = @"database-small";
 		else if (rows == 1) {
 			return (![[self selectedFavoriteNode] isGroup]);
 		}
-		
-		return YES;
 	}
 		
     return YES;
@@ -505,11 +503,26 @@ static NSString *SPDatabaseImage = @"database-small";
 - (void)favoritesExportCompletedWithError:(NSError *)error
 {	
 	if (error) {
-		[[NSAlert alertWithError:error] beginSheetModalForWindow:[dbDocument parentWindow] 
-												   modalDelegate:self
-												  didEndSelector:NULL
-													 contextInfo:NULL];	
+		
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites export error", @"favorites export error message")
+										 defaultButton:NSLocalizedString(@"OK", @"OK")
+									   alternateButton:nil 
+										   otherButton:nil 
+							 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The following error occurred during the export process:\n\n%@", @"favorites export error informative message"), [error localizedDescription]]];
+		
+		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
+						  modalDelegate:self
+						 didEndSelector:NULL
+							contextInfo:NULL];			
 	}
+}
+
+/**
+ * Called by the favorites importer when the imported data is available.
+ */
+- (void)favoritesImportData:(NSDictionary *)data
+{
+	
 }
 
 /**
@@ -518,10 +531,16 @@ static NSString *SPDatabaseImage = @"database-small";
 - (void)favoritesImportCompletedWithError:(NSError *)error
 {	
 	if (error) {
-		[[NSAlert alertWithError:error] beginSheetModalForWindow:[dbDocument parentWindow] 
-												   modalDelegate:self
-												  didEndSelector:NULL
-													 contextInfo:NULL];	
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites import error", @"favorites import error message")
+										 defaultButton:NSLocalizedString(@"OK", @"OK")
+									   alternateButton:nil 
+										   otherButton:nil 
+							 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]]];	
+		
+		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
+						  modalDelegate:self
+						 didEndSelector:NULL
+							contextInfo:NULL];
 	}
 }
 

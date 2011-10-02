@@ -44,7 +44,6 @@
  *
  * @param favorites The array of favorites to be written
  * @param path      The file system path that the file is to be written to
- * @param filename  The filename of the file to be written
  */
 - (void)writeFavorites:(NSArray *)favorites toFile:(NSString *)path
 {
@@ -102,7 +101,7 @@
 /**
  * Informs the delegate that the export process has completed.
  */
-	 - (void)_informDelegateOfExportCompletion:(NSError *)error
+- (void)_informDelegateOfExportCompletion:(NSError *)error
 {
 	if ([self delegate] && [[self delegate] respondsToSelector:@selector(favoritesExportCompletedWithError:)]) {
 		[[self delegate] performSelectorOnMainThread:@selector(favoritesExportCompletedWithError:) withObject:error waitUntilDone:NO];

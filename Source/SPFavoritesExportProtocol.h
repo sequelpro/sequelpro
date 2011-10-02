@@ -33,7 +33,7 @@
 @protocol SPFavoritesExportProtocol
 
 /**
- * Invoked when the favorites export proccess completes
+ * Invoked when the favorites export proccess completes.
  *
  * @param error An error instance. Anything other than nil indicates an error occurred.
  */

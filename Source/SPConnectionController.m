@@ -1138,17 +1138,21 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  */
 - (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
-	if (contextInfo == SPExportFavorites) {
-		SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
-		
-		[exporter setDelegate:self];
-		
-		[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename]];
-	}
-	else if (contextInfo == SPImportFavorites) {
-		SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
-		
-		[importer setDelegate:self];
+	if (returnCode == NSOKButton) {
+		if (contextInfo == SPExportFavorites) {
+			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
+			
+			[exporter setDelegate:self];
+			
+			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename]];
+		}
+		else if (contextInfo == SPImportFavorites) {
+			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
+			
+			[importer setDelegate:self];
+			
+			[importer importFavoritesFromFileAtPath:[panel filename]];
+		}
 	}
 }
 
