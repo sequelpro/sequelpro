@@ -232,6 +232,7 @@
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
 - (void)showErrorSheetWith:(id)error;
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
+- (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 
 // Retrieving and setting table state
 - (NSString *) sortColumnName;

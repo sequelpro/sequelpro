@@ -174,6 +174,17 @@ extern NSInteger SPEditCopyAsSQL;
 - (BOOL)isCellEditingMode;
 - (BOOL)isCellComplex;
 
+/*!
+	@method	 shouldUseFieldEditorForRow:column:
+	@abstract   Determine whether to trigger sheet editing or in-cell editing for a cell
+	@discussion Checks the column data type, and the cell contents if necessary, to check
+		the most appropriate editing type.
+	@param	 rowIndex The row in the table the cell is present in
+	@param	 colIndex The *original* column in the table the cell is present in (ie pre-reordering)
+	@result	 YES if sheet editing should be used, NO otherwise.
+*/
+- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex;
+
 - (IBAction)executeBundleItemForDataTable:(id)sender;
 
 - (void)selectTableRows:(NSArray*)rowIndices;

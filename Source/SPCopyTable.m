@@ -1155,6 +1155,45 @@ static const NSInteger kBlobAsImageFile = 4;
 }
 
 #pragma mark -
+#pragma mark Field editing checks
+
+/**
+ * Determine whether to use the sheet for editing; do so if the multipleLineEditingButton is enabled,
+ * or if the column was a blob or a text, or if it contains linebreaks.
+ */
+- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex
+{
+
+	// Retrieve the column definition
+	NSDictionary *columnDefinition = [[[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
+
+	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.
+#ifndef SP_REFACTOR
+	if ([prefs boolForKey:SPEditInSheetEnabled]) return YES;
+#endif
+
+	// If the column is a BLOB or TEXT column, and not an enum, trigger sheet editing
+	BOOL isBlob = ([columnType isEqualToString:@"textdata"] || [columnType isEqualToString:@"blobdata"]);
+	if (isBlob && ![columnType isEqualToString:@"enum"]) return YES;
+
+	// Otherwise, check the cell value for newlines.
+	id cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+	if ([cellValue isKindOfClass:[NSData class]]) {
+		cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];
+	}
+	if (![cellValue isNSNull]
+		&& [columnType isEqualToString:@"string"]
+		&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
+	{
+		return YES;
+	}
+
+	// Otherwise, use standard editing
+	return NO;
+}
+
+#pragma mark -
 #pragma mark Bundle Command Support
 
 - (IBAction)executeBundleItemForDataTable:(id)sender

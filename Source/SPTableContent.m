@@ -3256,11 +3256,15 @@
 			data = [[NSNull null] retain];
 		}
 		if(isFieldEditable) {
-			if([tablesListInstance tableType] == SPTableTypeView) {
+			if ([tablesListInstance tableType] == SPTableTypeView) {
+
 				// since in a view we're editing a field rather than a row
 				isEditingRow = NO;
+
 				// update the field and refresh the table
-				[self tableView:tableContentView setObjectValue:[[data copy] autorelease] forTableColumn:[tableContentView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
+				[self saveViewCellValue:[[data copy] autorelease] forTableColumn:[tableContentView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
+
+			// Otherwise, in tables, save back to the row store
 			} else {
 				[tableValues replaceObjectInRow:row column:column withObject:[[data copy] autorelease]];
 			}
@@ -3276,6 +3280,128 @@
 
 	if(row > -1 && editedColumn > -1)
 		[tableContentView editColumn:editedColumn row:row withEvent:nil select:YES];
+}
+
+- (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex
+{
+
+	// Field editing
+	NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[aTableColumn identifier] integerValue]];
+
+	// Resolve the original table name for current column if AS was used
+	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
+
+	if (!tableForColumn || ![tableForColumn length]) {
+		NSPoint pos = [NSEvent mouseLocation];
+		pos.y -= 20;
+		[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
+				atLocation:pos
+				ofType:@"text"];
+		NSBeep();
+		return;
+	}
+
+	// Resolve the original column name if AS was used
+	NSString *columnName = [columnDefinition objectForKey:@"org_name"];
+
+	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Updating field data...", @"updating field task description")];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+
+	[self storeCurrentDetailsForRestoration];
+
+	// Check if the IDstring identifies the current field bijectively and get the WHERE clause
+	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+	NSString *fieldIDQueryStr = [editStatus objectAtIndex:1];
+	NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
+
+	if(numberOfPossibleUpdateRows == 1) {
+
+		NSString *newObject = nil;
+		if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
+			newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+		} else if ( [anObject isKindOfClass:[NSNumber class]] ) {
+			newObject = [anObject stringValue];
+		} else if ( [anObject isKindOfClass:[NSData class]] ) {
+			newObject = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:anObject]];
+		} else {
+			if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
+				newObject = @"CURRENT_TIMESTAMP";
+			} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
+				newObject = @"NULL";
+			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+				newObject = [(NSString*)anObject getGeomFromTextString];
+			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+				newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
+			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
+						&& [[anObject description] isEqualToString:@"NOW()"]) {
+				newObject = @"NOW()";
+			} else {
+				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+			}
+		}
+
+		[mySQLConnection queryString:
+			[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1",
+				[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
+				[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryStr]];
+
+
+		// Check for errors while UPDATE
+		if ([mySQLConnection queryErrored]) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
+
+			[tableDocumentInstance endTask];
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+			return;
+		}
+
+
+		// This shouldn't happen – for safety reasons
+		if ( ![mySQLConnection affectedRows] ) {
+#ifndef SP_REFACTOR
+			if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
+				SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+								  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
+			} else {
+				NSBeep();
+			}
+#endif
+			[tableDocumentInstance endTask];
+			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+			return;
+		}
+
+	} else {
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"),
+									(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+		[tableDocumentInstance endTask];
+		return;
+
+	}
+
+	// Reload table after each editing due to complex declarations
+	if (isFirstChangeInView) {
+
+		// Set up the table details for the new table, and trigger an interface update
+		// if the view was modified for the very first time
+		NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+										selectedTable, @"name",
+										[tableDataInstance columns], @"columns",
+										[tableDataInstance columnNames], @"columnNames",
+										[tableDataInstance getConstraints], @"constraints",
+										nil];
+		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
+		isFirstChangeInView = NO;
+	}
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+	[tableDocumentInstance endTask];
+
+	[self loadTableValues];
 }
 
 #pragma mark -
@@ -4012,136 +4138,17 @@
 	else 
 #endif
 		if(aTableView == tableContentView) {
-		// If table data come from a view
-		if([tablesListInstance tableType] == SPTableTypeView) {
 
-			// Field editing
-			// if (fieldIDQueryString == nil) return;
-			NSDictionary *columnDefinition;
-
-			// Retrieve the column defintion
-			for(id c in cqColumnDefinition) {
-				if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
-					columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-					break;
-				}
-			}
-
-			// Resolve the original table name for current column if AS was used
-			NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
-
-			if(!tableForColumn || ![tableForColumn length]) {
-				NSPoint pos = [NSEvent mouseLocation];
-				pos.y -= 20;
-				[SPTooltip showWithObject:NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database")
-						atLocation:pos
-						ofType:@"text"];
-				NSBeep();
-				return;
-			}
-
-			// Resolve the original column name if AS was used
-			NSString *columnName = [columnDefinition objectForKey:@"org_name"];
-
-			[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Updating field data...", @"updating field task description")];
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-
-			[self storeCurrentDetailsForRestoration];
-
-			// Check if the IDstring identifies the current field bijectively and get the WHERE clause
-			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
-			NSString *fieldIDQueryStr = [editStatus objectAtIndex:1];
-			NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
-
-			if(numberOfPossibleUpdateRows == 1) {
-
-				NSString *newObject = nil;
-				if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
-					newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
-				} else if ( [anObject isKindOfClass:[NSNumber class]] ) {
-					newObject = [anObject stringValue];
-				} else if ( [anObject isKindOfClass:[NSData class]] ) {
-					newObject = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:anObject]];
-				} else {
-					if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
-						newObject = @"CURRENT_TIMESTAMP";
-					} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
-						newObject = @"NULL";
-					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
-						newObject = [(NSString*)anObject getGeomFromTextString];
-					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
-						newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
-					} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
-								&& [[anObject description] isEqualToString:@"NOW()"]) {
-						newObject = @"NOW()";
-					} else {
-						newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
-					}
-				}
-
-				[mySQLConnection queryString:
-					[NSString stringWithFormat:@"UPDATE %@.%@ SET %@.%@.%@ = %@ %@ LIMIT 1",
-						[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString],
-						[[columnDefinition objectForKey:@"db"] backtickQuotedString], [tableForColumn backtickQuotedString], [columnName backtickQuotedString], newObject, fieldIDQueryStr]];
-
-
-				// Check for errors while UPDATE
-				if ([mySQLConnection queryErrored]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
-
-					[tableDocumentInstance endTask];
-					[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-					return;
-				}
-
-
-				// This shouldn't happen – for safety reasons
-				if ( ![mySQLConnection affectedRows] ) {
-#ifndef SP_REFACTOR
-					if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-						SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-										  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
-					} else {
-						NSBeep();
-					}
-#endif
-					[tableDocumentInstance endTask];
-					[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-					return;
-				}
-
-			} else {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field the table `%@` was changed by an other user.", @"message of panel when error while updating field to db after enabling it"),
-											(long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", tableForColumn]);
-
-				[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-				[tableDocumentInstance endTask];
-				return;
-
-			}
-
-			// Reload table after each editing due to complex declarations
-			if(isFirstChangeInView) {
-				// Set up the table details for the new table, and trigger an interface update
-				// if the view was modified for the very first time
-				NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-												selectedTable, @"name",
-												[tableDataInstance columns], @"columns",
-												[tableDataInstance columnNames], @"columnNames",
-												[tableDataInstance getConstraints], @"constraints",
-												nil];
-				[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
-				isFirstChangeInView = NO;
-			}
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-			[tableDocumentInstance endTask];
-
-			[self loadTableValues];
-
+		// If the current cell should have been edited in a sheet, do nothing - field closing will have already
+		// updated the field.
+		if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue]]) {
 			return;
+		}
 
+		// If table data comes from a view, save back to the view
+		if([tablesListInstance tableType] == SPTableTypeView) {
+			[self saveViewCellValue:anObject forTableColumn:aTableColumn row:rowIndex];
+			return;
 		}
 
 		// Catch editing events in the row and if the row isn't currently being edited,
@@ -4417,43 +4424,16 @@
 			[tableContentView reloadData];
 		}
 
-		BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
-		BOOL isFieldEditable = YES;
+		// Open the editing sheet if required
+		if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue]])
+		{
 
-		// Retrieve the column defintion
-		NSDictionary *columnDefinition = nil;
-		for(id c in cqColumnDefinition) {
-			if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:[aTableColumn identifier]]) {
-				columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-				break;
-			}
-		}
+			// Retrieve the column definition
+			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[aTableColumn identifier] integerValue]];
+			BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[aTableColumn headerCell] stringValue]];
 
-		// Determine whether to open the sheet for editing; do so if the multipleLineEditingButton is enabled,
-		// or if the column was a blob or a text, or if it contains linebreaks.
-		BOOL useFieldEditor = NO;
-#ifndef SP_REFACTOR
-		if ([multipleLineEditingButton state] == NSOnState) useFieldEditor = YES;
-#endif
-		if (!useFieldEditor && ![[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"enum"] && isBlob) useFieldEditor = YES;
-		if (!useFieldEditor) {
-			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[aTableColumn identifier] integerValue]];
-			if ([cellValue isKindOfClass:[NSData class]]) {
-				cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];
-			}
-			if (![cellValue isNSNull]
-				&& [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
-				&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
-			{
-				useFieldEditor = YES;
-			}
-		}
-
-		// Open the sheet if required
-		if (useFieldEditor) {
-
-			// A table is per definitionem editable
-			isFieldEditable = YES;
+			// A table is per definition editable
+			BOOL isFieldEditable = YES;
 
 			// Check for Views if field is editable
 			if([tablesListInstance tableType] == SPTableTypeView) {
@@ -4785,21 +4765,9 @@
 
 	}
 
-	// Use the field editor sheet instead of inline editing if the target field is a text, blob, or binary
-	// type; if it contains linebreaks; or if the force-editing button is enabled.
-	BOOL useFieldEditor = NO;
-	NSString *fieldType = [[tableDataInstance columnWithName:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) headerCell] stringValue]] objectForKey:@"typegrouping"];
-
-#ifndef SP_REFACTOR
-	if ([multipleLineEditingButton state] == NSOnState) useFieldEditor = YES;
-#endif
-
-	if (!useFieldEditor && fieldType && ![fieldType isEqualToString:@"enum"] && ([fieldType isEqualToString:@"textdata"] || [fieldType isEqualToString:@"blobdata"])) useFieldEditor = YES;
-
-	if (!useFieldEditor && [[aFieldEditor string] rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]].location != NSNotFound) useFieldEditor = YES;
-	
 	// Open the field editor sheet if required
-	if (useFieldEditor) {
+	if ([tableContentView shouldUseFieldEditorForRow:row column:column])
+	{
 		[tableContentView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
 
 		// Cancel editing

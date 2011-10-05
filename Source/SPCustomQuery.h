@@ -278,6 +278,7 @@
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
+- (void)saveCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex;
 - (NSUInteger)numberOfQueries;
 - (NSRange)currentQueryRange;
