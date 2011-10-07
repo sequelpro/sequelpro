@@ -3317,7 +3317,8 @@ void pingThreadCleanup(void *pingDetails)
 		NSLog(@"The time zone was not defined on the server, fallen back to default time zone: %@", serverTimeZone);
 	} else {
 		serverTimeZone = [NSTimeZone timeZoneWithName:serverTimeZoneName];
-		if (!serverTimeZone) [NSTimeZone timeZoneWithAbbreviation:serverTimeZoneName];
+		if (!serverTimeZone) 
+			serverTimeZone = [NSTimeZone timeZoneWithAbbreviation:serverTimeZoneName];
 		if (!serverTimeZone) {
 			serverTimeZone = [NSTimeZone defaultTimeZone];
 			NSLog(@"The time zone defined on the server (%@) was not recognised, fallen back to default time zone: %@", serverTimeZoneName, serverTimeZone);
