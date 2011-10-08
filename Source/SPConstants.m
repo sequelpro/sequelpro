@@ -25,9 +25,6 @@
 
 #import "SPConstants.h"
 
-// Long running notification time for Growl messages
-const CGFloat SPLongRunningNotificationTime      = 3.0f;
-
 // Narrow down completion max rows
 const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
 
@@ -172,6 +169,7 @@ NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfter
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
 NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
+NSString *SPLongRunningQueryNotificationTime     = @"LongRunningQueryNotificationTime";
 
 // Import and export
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";

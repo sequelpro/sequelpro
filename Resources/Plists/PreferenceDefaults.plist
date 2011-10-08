@@ -183,5 +183,7 @@
 	<false/>
 	<key>CustomQuerySoftIndentWidth</key>
 	<integer>2</integer>
+	<key>LongRunningQueryNotificationTime</key>
+	<real>3</real>
 </dict>
 </plist>

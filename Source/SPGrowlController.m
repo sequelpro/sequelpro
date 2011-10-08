@@ -60,8 +60,11 @@ static SPGrowlController *sharedGrowlController = nil;
 {
     if ((self = [super init])) {
         [GrowlApplicationBridge setGrowlDelegate:self];
+		
 		timingNotificationName = nil;
 		timingNotificationStart = 0;
+		
+		longRunningQueryNotificationTime = [[NSUserDefaults standardUserDefaults] floatForKey:SPLongRunningQueryNotificationTime];
     }
     
     return self;
@@ -74,7 +77,6 @@ static SPGrowlController *sharedGrowlController = nil;
  */
 - (void)notifyWithTitle:(NSString *)title description:(NSString *)description document:(SPDatabaseDocument *)document notificationName:(NSString *)name
 {
-
 	// Ensure that the delayed notification call is made on the main thread
 	if (![NSThread isMainThread]) {
 		[[self onMainThread] notifyWithTitle:title description:description document:document notificationName:name];
@@ -127,9 +129,10 @@ static SPGrowlController *sharedGrowlController = nil;
 	// if it does, and the time exceeds the threshold, display the notification even for
 	// frontmost windows to provide feedback for long-running tasks.
 	if (timingNotificationName && [timingNotificationName isEqualToString:name]) {
-		if ([self milliTime] > (SPLongRunningNotificationTime * 1000) + timingNotificationStart) {
+		if ([self milliTime] > (longRunningQueryNotificationTime * 1000) + timingNotificationStart) {
 			postNotification = YES;
 		}
+		
 		[timingNotificationName release], timingNotificationName = nil;
 	}
 

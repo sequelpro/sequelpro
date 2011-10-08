@@ -32,7 +32,10 @@
 @interface SPGrowlController : SPSingleton <GrowlApplicationBridgeDelegate>
 {
 	NSString *timingNotificationName;
+	
 	double timingNotificationStart;
+	
+	CGFloat longRunningQueryNotificationTime;
 }
 
 // Singleton controller
