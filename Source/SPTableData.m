@@ -76,7 +76,6 @@
 	[mySQLConnection retain];
 }
 
-
 /**
  * Retrieve the encoding for the current table, using or refreshing the cache as appropriate.
  */
@@ -119,7 +118,6 @@
 
 	return [NSString stringWithString:tableCreateSyntax];
 }
-
 
 /**
  * Retrieve all columns for the current table as an array, using or refreshing the cache as appropriate.
@@ -191,7 +189,6 @@
 	return [columns objectAtIndex:columnIndex];
 }
 
-
 /**
  * Retrieve column names for the current table as an array, using or refreshing the cache as appropriate.
  */
@@ -209,7 +206,6 @@
 	}
 	return columnNames;
 }
-
 
 /**
  * Retrieve a NSDictionary containing all parameters of the column with a specific index, using or refreshing the cache as appropriate.
@@ -237,7 +233,6 @@
  *
  * @param colName The column name which should be checked.
  */
-
 - (BOOL) columnIsBlobOrText:(NSString *)colName
 {
 	// If processing is already in action, wait for it to complete
@@ -260,7 +255,6 @@
  *
  * @param colName The column name which should be checked.
  */
-
 - (BOOL) columnIsGeometry:(NSString *)colName
 {
 	// If processing is already in action, wait for it to complete
@@ -276,7 +270,6 @@
 
 	return (BOOL) ([[[self columnWithName:colName] objectForKey:@"typegrouping"] isEqualToString:@"geometry"]);
 }
-
 
 /**
  * Retrieve the table status value for a supplied key, using or refreshing the cache as appropriate.
@@ -307,7 +300,6 @@
 	[status setValue:value forKey:key];
 }
 
-
 /**
  * Retrieve all known status values as a dictionary, using or refreshing the cache as appropriate.
  */
@@ -321,7 +313,6 @@
 	}
 	return status;
 }
-
 
 /**
  * Flushes all caches - should be used on major changes, for example table changes.
@@ -348,7 +339,6 @@
 	}
 }
 
-
 /**
  * Flushes any status-related caches.
  */
@@ -366,7 +356,6 @@
 	[columns removeAllObjects];
 	[columnNames removeAllObjects];
 }
-
 
 /**
  * Retrieves the information for the current table and stores it in cache.
@@ -454,7 +443,6 @@
 	return TRUE;
 }
 
-
 /**
  * Retrieve the CREATE TABLE string for a table and analyse it to extract the field
  * details, primary key, unique keys, and table encoding.
@@ -481,6 +469,11 @@
 		[mySQLConnection storeEncodingForRestoration];
 		[mySQLConnection setEncoding:@"utf8"];
 	}
+	
+	// In cases where this method is called directly instead of via -updateInformationForCurrentTable
+	// (for example, from the exporters) clear the list of constraints to prevent the previous call's table
+	// constraints being included in the table information (issue 1206).
+	[constraints removeAllObjects];
 
 	// Retrieve the CREATE TABLE syntax for the table
 	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
@@ -614,11 +607,12 @@
 			[tableColumns addObject:d];
 
 		// TODO: Otherwise it's a key definition, check, or other 'metadata'.  Would be useful to parse/display these!
-		} else {
+		} 
+		else {
 			NSArray *parts = [fieldsParser splitStringByCharacter:' ' skippingBrackets:YES ignoringQuotedStrings:YES];
 
 			// Constraints
-			if( [[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"] ) {
+			if ([[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"]) {
 				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
 
 				// Extract the relevant details from the constraint string
@@ -643,9 +637,10 @@
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
 
 				NSUInteger nextOffs = 12;
-				if( [parts count] > 8 ) {
+				
+				if ([parts count] > 8) {
 					// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
-					if( [[parts objectAtIndex:9] hasPrefix:@"UPDATE"] ) {
+					if ([[parts objectAtIndex:9] hasPrefix:@"UPDATE"]) {
 						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"update"];
@@ -659,8 +654,8 @@
 												  forKey:@"update"];
 						}
 					}
-					else if( [NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"] ) {
-						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
+					else if ([NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"]) {
+						if ([NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"]) {
 							[constraintDetails setObject:@"SET NULL"
 												  forKey:@"delete"];
 							nextOffs = 13;
@@ -674,6 +669,7 @@
 						}
 					}
 				}
+				
 				if ([parts count] > nextOffs - 1) {
 					if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
 						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
@@ -700,9 +696,11 @@
 						}
 					}
 				}
+				
 				[constraints addObject:constraintDetails];
 				[constraintDetails release];
 			}
+			
 			// primary key
 			// add "isprimarykey" to the corresponding tableColumn
 			// add dict root "primarykeyfield" = <field> for faster accessing
@@ -718,6 +716,7 @@
 						}
 				}
 			}
+			
 			// unique keys
 			// add to each corresponding tableColumn the tag "unique" if given
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"UNIQUE"]  && [parts count] == 4) {
@@ -771,7 +770,6 @@
 	[createTableParser release];
 	[fieldParser release];
 
-
 	// this will be 'Table' or 'View'
 	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
@@ -785,8 +783,6 @@
 
 	return tableData;
 }
-
-
 
 /**
  * Retrieve information which can be used to display views.  Unlike tables, all the information
@@ -915,8 +911,6 @@
 
 	return viewData;
 }
-
-
 
 /**
  * Retrieve the status of a table as a dictionary and add it to the local cache for reuse.
@@ -1348,7 +1342,7 @@
 /**
  * Dealloc the class
  */
-- (void) dealloc
+- (void)dealloc
 {
 	[columns release];
 	[columnNames release];
@@ -1376,15 +1370,16 @@
 
 #ifdef SP_REFACTOR /* glue */
 
-- (void)setTableDocumentInstance:(SPDatabaseDocument*)doc
+- (void)setTableDocumentInstance:(SPDatabaseDocument *)doc
 {
 	tableDocumentInstance = doc;
 }
 
-- (void)setTableListInstance:(SPTablesList*)list
+- (void)setTableListInstance:(SPTablesList *)list
 {
 	tableListInstance = list;
 }
+
 #endif
 
 @end

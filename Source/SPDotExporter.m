@@ -108,16 +108,16 @@
 	// Process the tables
 	for (NSUInteger i = 0; i < [[self dotExportTables] count]; i++) 
 	{
-
 		// Check for cancellation flag
 		if ([self isCancelled]) {
 			[fkInfo release];
 			[pool release];
+			
 			return;
 		}
 					
 		NSString *tableName = NSArrayObjectAtIndex([self dotExportTables], i);
-		NSString *tableLinkName = [self dotForceLowerTableNames]?[tableName lowercaseString]:tableName;
+		NSString *tableLinkName = [self dotForceLowerTableNames] ? [tableName lowercaseString] : tableName;
 		NSDictionary *tableInfo = [[self dotTableData] informationForTable:tableName];
 					
 		// Set the current table
@@ -154,21 +154,24 @@
 		
 		// Check if any relations are available for the table
 		NSArray *tableConstraints = [tableInfo objectForKey:@"constraints"];
+		
 		if ([tableConstraints count]) {
-			for (NSDictionary* aConstraint in tableConstraints) {
-
+			
+			for (NSDictionary* constraint in tableConstraints) 
+			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
 					[fkInfo release];
 					[pool release];
+					
 					return;
 				}
 				
 				// Get the column references. Currently the columns themselves are an array,
 				// while reference columns and tables are comma separated if there are more than
 				// one.  Only use the first of each for the time being.
-				NSArray *originColumns = [aConstraint objectForKey:@"columns"];
-				NSArray *referenceColumns = [[aConstraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","];
+				NSArray *originColumns = [constraint objectForKey:@"columns"];
+				NSArray *referenceColumns = [[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","];
 				
 				NSString *extra = @"";
 				
@@ -176,12 +179,13 @@
 					extra = @" [ arrowhead=crow, arrowtail=odiamond ]";
 				}
 				
-				[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@", tableLinkName, [originColumns objectAtIndex:0], [aConstraint objectForKey:@"ref_table"], [[referenceColumns objectAtIndex:0] lowercaseString], extra]];
+				[fkInfo addObject:[NSString stringWithFormat:@"%@:%@ -> %@:%@ %@", tableLinkName, [originColumns objectAtIndex:0], [constraint objectForKey:@"ref_table"], [[referenceColumns objectAtIndex:0] lowercaseString], extra]];
 			}
 		}
 
 		// Update progress
 		NSInteger progress = (i * ([self exportMaxProgress] / [[self dotExportTables] count]));
+		
 		[self setExportProgressValue:progress];
 		[delegate performSelectorOnMainThread:@selector(dotExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 	}
@@ -193,7 +197,9 @@
 	
 	// Get the relations
 	for (id item in fkInfo) 
+	{
 		[metaString appendFormat:@"%@;\n", item];
+	}
 	
 	[fkInfo release];
 	
