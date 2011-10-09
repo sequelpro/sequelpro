@@ -93,7 +93,6 @@ NSString *SPNullValue                            = @"SPNullValue";
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
-NSString *SPAlphabeticalTableSorting             = @"AlphabeticalTableSorting";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";
@@ -170,6 +169,7 @@ NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfter
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
 NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
 NSString *SPLongRunningQueryNotificationTime     = @"LongRunningQueryNotificationTime";
+NSString *SPAlphabeticalTableSorting             = @"AlphabeticalTableSorting";
 
 // Import and export
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";

@@ -288,7 +288,6 @@ extern NSString *SPNullValue;
 extern NSString *SPGlobalResultTableFont;
 extern NSString *SPFilterTableDefaultOperator;
 extern NSString *SPFilterTableDefaultOperatorLastItems;
-extern NSString *SPAlphabeticalTableSorting;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;
@@ -359,6 +358,7 @@ extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
 extern NSString *SPPrintWarningRowLimit;
 extern NSString *SPDisplayServerVersionInWindowTitle;
 extern NSString *SPLongRunningQueryNotificationTime;
+extern NSString *SPAlphabeticalTableSorting;
 
 // Import and export
 extern NSString *SPCSVImportFieldTerminator;
