@@ -62,6 +62,7 @@
 @synthesize supportsCSVStorageEngine;
 @synthesize supportsTriggers;
 @synthesize supportsIndexKeyBlockSize;
+@synthesize supportsQuotingEngineTypeInCreateSyntax;
 @synthesize serverMajorVersion;
 @synthesize serverMinorVersion;
 @synthesize serverReleaseVersion;
@@ -153,7 +154,7 @@
 	supportsShowPrivileges = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
 
 	// MySQL 4.0.18+ and 4.1.2+ changed the TYPE option to ENGINE, but 4.x supports both
-	engineTypeQueryName = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:0]?@"ENGINE":@"TYPE";
+	engineTypeQueryName = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:0] ? @"ENGINE" : @"TYPE";
 
 	// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was available
 	supportsPre41StorageEngines = (![self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0]);
@@ -171,7 +172,10 @@
 	supportsTriggers = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:2];
 	
 	// Support for specifying an index's key block size wasn't added until MySQL 5.1.10
-	supportsIndexKeyBlockSize = [self isEqualToOrGreaterThanMajorVersion:5 minor:1 release:10];	
+	supportsIndexKeyBlockSize = [self isEqualToOrGreaterThanMajorVersion:5 minor:1 release:10];
+	
+	// MySQL 4.0 doesn't seem to like having the ENGINE/TYPE quoted in a table's create syntax
+	supportsQuotingEngineTypeInCreateSyntax = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
 }
 
 /**
@@ -234,29 +238,30 @@
  */
 - (void)_invalidate
 {
-	isMySQL3                           = NO;
-	isMySQL4                           = NO;
-	isMySQL5                           = NO;
-	isMySQL6                           = NO;
+	isMySQL3 = NO;
+	isMySQL4 = NO;
+	isMySQL5 = NO;
+	isMySQL6 = NO;
 	
-	supportsInformationSchema          = NO;
-	supportsSpatialExtensions          = NO;
-	supportsShowCharacterSet           = NO;
-	supportsCharacterSetDatabaseVar    = NO;
-	supportsPost41CharacterSetHandling = NO;
-	supportsCreateUser                 = NO;
-	supportsDropUser                   = NO;
-	supportsFullDropUser               = NO;
-	supportsUserMaxVars                = NO;
-	supportsShowPrivileges             = NO;
-	engineTypeQueryName                = @"ENGINE";
-	supportsInformationSchemaEngines   = NO;
-	supportsPre41StorageEngines        = NO;
-	supportsBlackholeStorageEngine     = NO;
-	supportsArchiveStorageEngine       = NO;
-	supportsCSVStorageEngine           = NO;
-	supportsTriggers                   = NO;
-	supportsIndexKeyBlockSize          = NO;
+	supportsInformationSchema               = NO;
+	supportsSpatialExtensions               = NO;
+	supportsShowCharacterSet                = NO;
+	supportsCharacterSetDatabaseVar         = NO;
+	supportsPost41CharacterSetHandling      = NO;
+	supportsCreateUser                      = NO;
+	supportsDropUser                        = NO;
+	supportsFullDropUser                    = NO;
+	supportsUserMaxVars                     = NO;
+	supportsShowPrivileges                  = NO;
+	engineTypeQueryName                     = @"ENGINE";
+	supportsInformationSchemaEngines        = NO;
+	supportsPre41StorageEngines             = NO;
+	supportsBlackholeStorageEngine          = NO;
+	supportsArchiveStorageEngine            = NO;
+	supportsCSVStorageEngine                = NO;
+	supportsTriggers                        = NO;
+	supportsIndexKeyBlockSize               = NO;
+	supportsQuotingEngineTypeInCreateSyntax = NO;
 }
 
 /**

@@ -2248,7 +2248,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (void)_addTable
 {
-
 	// Ensure the task is performed on a background thread to group addition and loads
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(_addTable) toTarget:self withObject:nil];
@@ -2279,7 +2278,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableTypeButton indexOfSelectedItem] > 0) {
-		engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [tableType backtickQuotedString]];
+		engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [[tableDocumentInstance serverSupport] supportsQuotingEngineTypeInCreateSyntax] ? [tableType backtickQuotedString] : tableType];
 	}
 
 	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, engineStatement];

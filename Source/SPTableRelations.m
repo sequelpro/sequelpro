@@ -38,7 +38,7 @@ static NSString *SPRelationColumnsKey   = @"columns";
 static NSString *SPRelationFKTableKey   = @"fk_table";
 static NSString *SPRelationFKColumnsKey = @"fk_columns";
 static NSString *SPRelationOnUpdateKey  = @"on_update";
-static NSString *SPRelationOnDeleteKey = @"on_delete";
+static NSString *SPRelationOnDeleteKey  = @"on_delete";
 
 @interface SPTableRelations ()
 
@@ -144,9 +144,9 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 	
 	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD ",[thisTable backtickQuotedString]];
 	
-	//set constraint name?
-	if([[constraintName stringValue] length] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@"CONSTRAINT %@ ",[[constraintName stringValue] backtickQuotedString]]];
+	// Set constraint name?
+	if ([[constraintName stringValue] length] > 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@"CONSTRAINT %@ ", [[constraintName stringValue] backtickQuotedString]]];
 	}
 	
 	query = [query stringByAppendingString:[NSString stringWithFormat:@"FOREIGN KEY (%@) REFERENCES %@ (%@)",
@@ -154,7 +154,8 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 												[thatTable backtickQuotedString],
 												[thatColumn backtickQuotedString]]];
 	
-	NSArray *onActions = [NSArray arrayWithObjects:@"RESTRICT",@"CASCADE",@"SET NULL",@"NO ACTION",nil];
+	NSArray *onActions = [NSArray arrayWithObjects:@"RESTRICT", @"CASCADE", @"SET NULL", @"NO ACTION", nil];
+	
 	// If required add ON DELETE
 	if ([onDeletePopUpButton selectedTag] >= 0) {
 		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [onActions objectAtIndex:[onDeletePopUpButton selectedTag]]]];
@@ -266,7 +267,6 @@ static NSString *SPRelationOnDeleteKey = @"on_delete";
 	if (changeEncoding) [connection restoreStoredEncoding];
 
 	[self selectReferenceTable:nil];
-
 	[self openRelationSheet:self];
 }
 
