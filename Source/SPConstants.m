@@ -208,7 +208,7 @@ NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
 NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
 
 // URLs
-NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
+NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";
 NSString *SPMySQLSearchURL                       = @"http://dev.mysql.com/doc/refman/%@/%@/%@.html";
 NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
 
