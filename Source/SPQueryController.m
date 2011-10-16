@@ -518,6 +518,8 @@ static SPQueryController *sharedQueryController = nil;
 	NSMutableString *consoleString = [NSMutableString string];
 	
 #ifndef SP_REFACTOR
+	NSArray *messageCopy = [messagesVisibleSet copy];
+	
 	for (SPConsoleMessage *message in messagesVisibleSet)
 	{
 		// As we are going to save the messages as an SQL file we need to comment
@@ -525,18 +527,22 @@ static SPQueryController *sharedQueryController = nil;
 		if (timeStamps || connections) [consoleString appendString:@"/* "];
 		
 		// If the timestamp column is not hidden we need to include them in the copy
-		if (timeStamps)
+		if (timeStamps) {
 			[consoleString appendFormat:@"%@ ", [dateFormatter stringFromDate:[message messageDate]]];
+		}
 		
 		// If the connection column is not hidden we need to include them in the copy
-		if (connections)
+		if (connections) {
 			[consoleString appendFormat:@"%@ ", [message messageConnection]];
+		}
 		
 		// Close the comment
 		if (timeStamps || connections) [consoleString appendString:@"*/ "];
 		
 		[consoleString appendFormat:@"%@\n", [message message]];
 	}
+	
+	[messageCopy release];
 #endif
 	
 	return consoleString;
