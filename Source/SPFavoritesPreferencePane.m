@@ -703,7 +703,7 @@
 		[[sheet window] orderOut:nil];
 	}
 	
-	// Remove the current database
+	// Remove the current favorite
 	if ([contextInfo isEqualToString:@"removeFavorite"]) {
 		if (returnCode == NSAlertDefaultReturn) {
 			
@@ -855,17 +855,17 @@
 		// Get the old keychain name and account strings
 		oldKeychainName = [keychain nameForFavoriteName:[currentFavorite objectForKey:@"name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
 		oldKeychainAccount = [keychain accountForUser:[currentFavorite objectForKey:@"user"] host:oldHostnameForPassword database:[currentFavorite objectForKey:@"database"]];
-		
-		// Delete the old keychain item
-		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
-		
-		// Set up the new keychain name and account strings
-		newKeychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
-		newKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:newHostnameForPassword database:[favoritesController valueForKeyPath:@"selection.database"]];
-		
-		// Add the new keychain item if the password field has a value
-		if ([passwordValue length])
-			[keychain addPassword:passwordValue forName:newKeychainName account:newKeychainAccount];
+
+		// If there's no new password, remove the old item from the keychain
+		if (![passwordValue length]) {
+			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Otherwise, set up the new keychain name and account strings and edit the item
+		} else {
+			newKeychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+			newKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:newHostnameForPassword database:[favoritesController valueForKeyPath:@"selection.database"]];
+			[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:passwordValue];
+		}
 		
 		// Synch password changes
 		[standardPasswordField setStringValue:passwordValue];
@@ -885,16 +885,16 @@
 		oldKeychainName = [keychain nameForSSHForFavoriteName:[currentFavorite objectForKey:@"name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
 		oldKeychainAccount = [keychain accountForSSHUser:[currentFavorite objectForKey:@"sshUser"] sshHost:[currentFavorite objectForKey:@"sshHost"]];
 		
-		// Delete the old keychain item
-		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
-		
-		// Set up the new keychain name and account strings
-		newKeychainName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
-		newKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
-		
-		// Add the new keychain item if the password field has a value
-		if ([[sshPasswordField stringValue] length])
-			[keychain addPassword:[sshPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+		// If there's no new password, delete the keychain item
+		if (![[sshPasswordField stringValue] length]) {
+			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Otherwise, set up the new keychain name and account strings and update the keychain item
+		} else {
+			newKeychainName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
+			newKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
+			[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:[sshPasswordField stringValue]];
+		}
 	}
 	
 	// Update the current favorite

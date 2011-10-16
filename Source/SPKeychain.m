@@ -232,6 +232,66 @@
 }
 
 /**
+ * Change the password for a keychain item.  This should be used instead of
+ * deleting and recreating the keychain item, as it allows preservation of
+ * access lists and works around Lion cacheing issues.
+ */
+- (void)updateItemWithName:(NSString *)name account:(NSString *)account toPassword:(NSString *)password
+{
+	[self updateItemWithName:name account:account toName:password account:name password:account];
+}
+
+/**
+ * Change the details for a keychain item.  This should be used instead of
+ * deleting and recreating the keychain item, as it allows preservation of
+ * access lists and works around Lion cacheing issues.
+ */
+- (void)updateItemWithName:(NSString *)name account:(NSString *)account toName:(NSString *)newName account:(NSString *)newAccount password:(NSString *)password
+{
+	OSStatus status;
+	SecKeychainItemRef itemRef;
+	SecKeychainAttribute attributes[2];
+	SecKeychainAttributeList attList;
+
+	// Retrieve a reference to the keychain item
+	status = SecKeychainFindGenericPassword(NULL,														// Default keychain
+											(UInt32)strlen([name UTF8String]), [name UTF8String],		// Service name and length
+											(UInt32)strlen([account UTF8String]), [account UTF8String],	// Account name and length
+											NULL, NULL,													// No password retrieval required
+											&itemRef);													// The item reference
+
+	if (status != noErr) {
+		NSLog(@"Error (%i) while trying to find keychain item to edit for name: %@ account: %@", (int)status, name, account);
+		SPBeginAlertSheet(NSLocalizedString(@"Error retrieving Keychain item to edit", @"error finding keychain item to edit message"), 
+						  NSLocalizedString(@"OK", @"OK button"), 
+						  nil, nil, [NSApp mainWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error finding keychain item to edit informative message"), status]);
+		return;
+	}
+
+	// Set up the attributes to modify
+	attributes[0].tag = kSecAccountItemAttr;
+	attributes[0].data = (unichar *)[newAccount UTF8String];
+	attributes[0].length = (UInt32)strlen([newAccount UTF8String]);
+	attributes[1].tag = kSecServiceItemAttr;
+	attributes[1].data = (unichar *)[newName UTF8String];
+	attributes[1].length = (UInt32)strlen([newName UTF8String]);
+	attList.count = 2;
+	attList.attr = attributes;
+
+	// Amend the keychain item
+	status = SecKeychainItemModifyAttributesAndData(itemRef, &attList, (UInt32)strlen([password UTF8String]), [password UTF8String]);
+
+	if (status != noErr) {
+		NSLog(@"Error (%i) while updating keychain item for name: %@ account: %@", (int)status, name, account);
+		SPBeginAlertSheet(NSLocalizedString(@"Error updating Keychain item", @"error updating keychain item message"), 
+						  NSLocalizedString(@"OK", @"OK button"), 
+						  nil, nil, [NSApp mainWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error updating keychain item informative message"), status]);
+	}
+}
+
+/**
  * Retrieve the keychain item name for a supplied name and id.
  */
 - (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID
