@@ -590,7 +590,7 @@
 			}
 			[fieldsParser setIgnoreCommentStrings:NO];
 
-			[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
+			[tableColumn setObject:[NSString stringWithFormat:@"%llu", [tableColumns count]] forKey:@"datacolumnindex"];
 			[tableColumn setObject:fieldName forKey:@"name"];
 
 			// Split the remaining field definition string by spaces and process
@@ -872,7 +872,7 @@
 		resultRow = [theResult fetchRowAsDictionary];
 
 		// Add the column index and name
-		[tableColumn setObject:[NSNumber numberWithInteger:[tableColumns count]] forKey:@"datacolumnindex"];
+		[tableColumn setObject:[NSString stringWithFormat:@"%llu", [tableColumns count]] forKey:@"datacolumnindex"];
 		[tableColumn setObject:[NSString stringWithString:[resultRow objectForKey:@"Field"]] forKey:@"name"];
 
 		// Populate type, length, and other available details from the Type columns

@@ -338,12 +338,10 @@
 - (void) setTableDetails:(NSDictionary *)tableDetails
 {
 	NSString *newTableName;
-	NSInteger i;
-	NSNumber 
+	NSInteger i, sortColumnNumberToRestore = NSNotFound;
 #ifndef SP_REFACTOR
-	*colWidth, 
+	NSNumber *colWidth;
 #endif
-	*sortColumnNumberToRestore = nil;
 	NSArray *columnNames;
 	NSDictionary *columnDefinition;
 	NSTableColumn	*theCol;
@@ -621,7 +619,7 @@
 
 		// Set the column to be reselected for sorting if appropriate
 		if (sortColumnToRestore && [sortColumnToRestore isEqualToString:[columnDefinition objectForKey:@"name"]])
-			sortColumnNumberToRestore = [columnDefinition objectForKey:@"datacolumnindex"];
+			sortColumnNumberToRestore = [[columnDefinition objectForKey:@"datacolumnindex"] integerValue];
 
 		// Add the column to the table
 		[tableContentView addTableColumn:theCol];
@@ -635,10 +633,10 @@
 #endif
 
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it.
-	if (sortColumnNumberToRestore) {
-		theCol = [tableContentView tableColumnWithIdentifier:sortColumnNumberToRestore];
+	if (sortColumnNumberToRestore != NSNotFound) {
+		theCol = [tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"lld", sortColumnNumberToRestore]];
 		if (sortCol) [sortCol release];
-		sortCol = [sortColumnNumberToRestore copy];
+		sortCol = [[NSNumber alloc] initWithInteger:sortColumnNumberToRestore];
 		[tableContentView setHighlightedTableColumn:theCol];
 		isDesc = !sortColumnToRestoreIsAsc;
 		if ( isDesc ) {
@@ -792,7 +790,7 @@
 		if (contentPage <= 0)
 			contentPage = 1;
 		else if (contentPage > 1 && (NSInteger)(contentPage - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
-			contentPage = ceil((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+			contentPage = ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 
 		// If the result set is from a late page, take a copy of the string to allow resetting limit
 		// if no results are found
@@ -3093,17 +3091,11 @@
  * -2 for other errors
  * and the used WHERE clause to identify
  */
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
 {
-	NSDictionary *columnDefinition = nil;
 
 	// Retrieve the column defintion
-	for(id c in cqColumnDefinition) {
-		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:columnIndex]) {
-			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-			break;
-		}
-	}
+	NSDictionary *columnDefinition = [NSDictionary dictionaryWithDictionary:[cqColumnDefinition objectAtIndex:[[[[tableContentView tableColumns] objectAtIndex:columnIndex] identifier] integerValue]]];
 
 	if(!columnDefinition)
 		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-2], @"", nil];
@@ -3234,15 +3226,14 @@
 
 	NSInteger row = -1;
 	NSInteger column = -1;
-	NSInteger editedColumn = -1;
 
 	if(contextInfo) {
-		row = [[contextInfo objectForKey:@"row"] integerValue];
-		column = [[contextInfo objectForKey:@"column"] integerValue];
-		editedColumn = [[contextInfo objectForKey:@"editedColumn"] integerValue];
+		row = [[contextInfo objectForKey:@"rowIndex"] integerValue];
+		column = [[contextInfo objectForKey:@"columnIndex"] integerValue];
 	}
 
 	if (data && contextInfo) {
+		NSTableColumn *theTableColumn = [[tableContentView tableColumns] objectAtIndex:column];
 		BOOL isFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
 		if (!isEditingRow && [tablesListInstance tableType] != SPTableTypeView) {
 			[oldRow setArray:[tableValues rowContentsAtIndex:row]];
@@ -3251,7 +3242,7 @@
 		}
 
 		if ([data isKindOfClass:[NSString class]]
-			&& [data isEqualToString:[prefs objectForKey:SPNullValue]] && [[NSArrayObjectAtIndex(dataColumns, column) objectForKey:@"null"] boolValue])
+			&& [data isEqualToString:[prefs objectForKey:SPNullValue]] && [[NSArrayObjectAtIndex(dataColumns, [[theTableColumn identifier] integerValue]) objectForKey:@"null"] boolValue])
 		{
 			data = [[NSNull null] retain];
 		}
@@ -3262,11 +3253,11 @@
 				isEditingRow = NO;
 
 				// update the field and refresh the table
-				[self saveViewCellValue:[[data copy] autorelease] forTableColumn:[tableContentView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
+				[self saveViewCellValue:[[data copy] autorelease] forTableColumn:theTableColumn row:row];
 
 			// Otherwise, in tables, save back to the row store
 			} else {
-				[tableValues replaceObjectInRow:row column:column withObject:[[data copy] autorelease]];
+				[tableValues replaceObjectInRow:row column:[[theTableColumn identifier] integerValue] withObject:[[data copy] autorelease]];
 			}
 		}
 	}
@@ -3278,8 +3269,8 @@
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
 
-	if(row > -1 && editedColumn > -1)
-		[tableContentView editColumn:editedColumn row:row withEvent:nil select:YES];
+	if(row > -1 && column > -1)
+		[tableContentView editColumn:column row:row withEvent:nil select:YES];
 }
 
 - (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex
@@ -3310,7 +3301,7 @@
 	[self storeCurrentDetailsForRestoration];
 
 	// Check if the IDstring identifies the current field bijectively and get the WHERE clause
-	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
 	NSString *fieldIDQueryStr = [editStatus objectAtIndex:1];
 	NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 
@@ -3895,7 +3886,7 @@
 
 		// Otherwise set the column width
 		NSTableColumn *aTableColumn = [tableContentView tableColumnWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
-		NSUInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] unsignedIntegerValue];
+		NSInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] integerValue];
 		[aTableColumn setWidth:targetWidth];
 	}
 	[tableContentView setDelegate:self];
@@ -4108,7 +4099,7 @@
 		// writing in gray if value was NULL
 		if ([aTableView editedColumn] != -1
 			&& [aTableView editedRow] == rowIndex
-			&& [[NSArrayObjectAtIndex([aTableView tableColumns], [aTableView editedColumn]) identifier] unsignedIntegerValue] == columnIndex) {
+			&& (NSUInteger)[[NSArrayObjectAtIndex([aTableView tableColumns], [aTableView editedColumn]) identifier] integerValue] == columnIndex) {
 			[cell setTextColor:blackColor];
 			return;
 		}
@@ -4214,7 +4205,7 @@
 
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
-	if ([[tableColumn identifier] isEqualTo:sortCol]) {
+	if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
 		if(isDesc) {
 			[sortCol release];
 			sortCol = nil;
@@ -4225,12 +4216,12 @@
 		}
 	} else {
 		isDesc = NO;
-		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:sortCol]];
+		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", [sortCol integerValue]]]];
 		if (sortCol) [sortCol release];
 		sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 	}
 
-	if(sortCol) {
+	if (sortCol) {
 		// Set the highlight and indicatorImage
 		[[tableContentView onMainThread] setHighlightedTableColumn:tableColumn];
 		if (isDesc) {
@@ -4437,7 +4428,7 @@
 
 			// Check for Views if field is editable
 			if([tablesListInstance tableType] == SPTableTypeView) {
-				NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+				NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
 				isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
 			}
 
@@ -4472,7 +4463,7 @@
 
 			NSInteger editedColumn = 0;
 			for(NSTableColumn* col in [tableContentView tableColumns]) {
-				if([[col identifier] isEqualToNumber:[aTableColumn identifier]]) break;
+				if([[col identifier] isEqualToString:[aTableColumn identifier]]) break;
 				editedColumn++;
 			}
 
@@ -4484,9 +4475,8 @@
 							withWindow:[tableDocumentInstance parentWindow]
 								sender:self
 						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-											[NSNumber numberWithInteger:rowIndex], @"row",
-											[aTableColumn identifier], @"column",
-											[NSNumber numberWithInteger:editedColumn], @"editedColumn",
+											[NSNumber numberWithInteger:rowIndex], @"rowIndex",
+											[NSNumber numberWithInteger:editedColumn], @"columnIndex",
 											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
 											nil]];
 
@@ -4734,7 +4724,7 @@
 	// from the keyboard show an error tooltip
 	// or bypass if numberOfPossibleUpdateRows == 1
 	if([tableContentView isCellEditingMode]) {
-		NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier]];
+		NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:[[NSArrayObjectAtIndex([tableContentView tableColumns], column) identifier] integerValue]];
 		NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 		NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[tableContentView convertPoint:[tableContentView frameOfCellAtColumn:column row:row].origin toView:nil]];
 		pos.y -= 20;

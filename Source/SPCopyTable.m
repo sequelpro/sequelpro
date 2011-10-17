@@ -152,7 +152,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -290,7 +290,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -432,7 +432,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	
 	for (c = 0; c < numColumns; c++) 
 	{
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 		NSString *t = [NSArrayObjectAtIndex(columnDefinitions, columnMappings[c]) objectForKey:@"typegrouping"];
 
@@ -611,7 +611,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -711,7 +711,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		if ([[NSThread currentThread] isCancelled]) return nil;
 
 		columnWidth = [self autodetectWidthForColumnDefinition:columnDefinition maxRows:100];
-		[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
+		[columnWidths setObject:[NSString stringWithFormat:@"%llu", columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
 		allColumnWidths += columnWidth;
 	}
 
@@ -721,7 +721,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 		// Look for columns that are wider than the multi-column max
 		for (NSString *columnIdentifier in columnWidths) {
-			columnWidth = [[columnWidths objectForKey:columnIdentifier] unsignedIntegerValue];
+			columnWidth = [[columnWidths objectForKey:columnIdentifier] integerValue];
 			if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) availableWidthToReduce += columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN;
 		}
 
@@ -733,7 +733,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		if (widthToReduce) {
 			NSArray *columnIdentifiers = [columnWidths allKeys];
 			for (NSString *columnIdentifier in columnIdentifiers) {
-				columnWidth = [[columnWidths objectForKey:columnIdentifier] unsignedIntegerValue];
+				columnWidth = [[columnWidths objectForKey:columnIdentifier] integerValue];
 				if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) {
 					columnWidth -= ceil((double)(columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN) / availableWidthToReduce * widthToReduce);
 					[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:columnIdentifier];
@@ -762,7 +762,7 @@ static const NSInteger kBlobAsImageFile = 4;
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
-	NSUInteger columnIndex = [[columnDefinition objectForKey:@"datacolumnindex"] unsignedIntegerValue];
+	NSUInteger columnIndex = (NSUInteger)[[columnDefinition objectForKey:@"datacolumnindex"] integerValue];
 	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName];
 	Class mcpGeometryData = [MCPGeometryData class];
 
@@ -1330,7 +1330,7 @@ static const NSInteger kBlobAsImageFile = 4;
 			NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 			NSUInteger c;
 			for ( c = 0; c < numColumns; c++ )
-				columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+				columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {

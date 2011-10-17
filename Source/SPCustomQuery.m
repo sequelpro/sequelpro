@@ -1618,15 +1618,6 @@
 		[customQueryView addTableColumn:theCol];
 		[theCol release];
 	}
-
-	[customQueryView sizeLastColumnToFit];
-
-	//tries to fix problem with last row (otherwise to small)
-	//sets last column to width of the first if smaller than 30
-	//problem not fixed for resizing window
-	if ( [[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]] width] < 30 )
-		[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:[theColumns count]-1]]
-				setWidth:[[customQueryView tableColumnWithIdentifier:[NSNumber numberWithInteger:0]] width]];
 }
 
 /**
@@ -1708,7 +1699,7 @@
 
 		// Otherwise set the column width
 		NSTableColumn *aTableColumn = [customQueryView tableColumnWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
-		NSUInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] unsignedIntegerValue];
+		NSUInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] integerValue];
 		[aTableColumn setWidth:targetWidth];
 	}
 	[customQueryView setDelegate:self];
@@ -1724,17 +1715,9 @@
  * -2 for other errors
  * and the used WHERE clause to identify
  */
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber*)columnIndex
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex
 {
-	NSDictionary *columnDefinition = nil;
-
-	// Retrieve the column defintion
-	for(id c in cqColumnDefinition) {
-		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:columnIndex]) {
-			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-			break;
-		}
-	}
+	NSDictionary *columnDefinition = [NSDictionary dictionaryWithDictionary:[cqColumnDefinition objectAtIndex:[[[[customQueryView tableColumns] objectAtIndex:columnIndex] identifier] integerValue]]];
 
 	if(!columnDefinition)
 		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-2], @"", nil];
@@ -1908,7 +1891,7 @@
 	NSString *columnName = [columnDefinition objectForKey:@"org_name"];
 
 	// Check if the IDstring identifies the current field bijectively and get the WHERE clause
-	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+	NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
 	fieldIDQueryString = [editStatus objectAtIndex:1];
 	NSInteger numberOfPossibleUpdateRows = [[editStatus objectAtIndex:0] integerValue];
 
@@ -2109,7 +2092,7 @@
 
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
-	if (sortField && [[tableColumn identifier] isEqualToNumber:sortField]) {
+	if (sortField && [[tableColumn identifier] integerValue] == [sortField integerValue]) {
 		if(isDesc) {
 			[sortField release];
 			sortField = nil;
@@ -2120,7 +2103,7 @@
 		}
 	} else {
 		isDesc = NO;
-		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:sortField]];
+		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", [sortField integerValue]]]];
 		if (sortField) [sortField release];
 		sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 	}
@@ -2344,7 +2327,7 @@
 	// cases.
 	if (isWorking) {
 		pthread_mutex_lock(&resultDataLock);
-		if (row < resultDataCount && [[aTableColumn identifier] unsignedIntegerValue] < [resultData columnCount]) {
+		if (row < resultDataCount && (NSUInteger)[[aTableColumn identifier] integerValue] < [resultData columnCount]) {
 			theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]) copy] autorelease];
 		}
 		pthread_mutex_unlock(&resultDataLock);
@@ -2415,7 +2398,13 @@
 			editedRow = rowIndex;
 			editedScrollViewRect = [customQueryScrollView documentVisibleRect];
 
-			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[aTableColumn identifier]];
+			NSInteger editedColumn = 0;
+			for (NSTableColumn* col in [customQueryView tableColumns]) {
+				if([[col identifier] isEqualToString:[aTableColumn identifier]]) break;
+				editedColumn++;
+			}
+
+			NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[aTableColumn identifier] integerValue]];
 			isFieldEditable = ([[editStatus objectAtIndex:0] integerValue] == 1) ? YES : NO;
 
 			NSString *fieldType = nil;
@@ -2456,8 +2445,8 @@
 							withWindow:[tableDocumentInstance parentWindow]
 								sender:self
 						   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-											[NSNumber numberWithInteger:rowIndex], @"row",
-											[aTableColumn identifier], @"column",
+											[NSNumber numberWithInteger:rowIndex], @"rowIndex",
+											[NSNumber numberWithInteger:editedColumn], @"columnIndex",
 											[NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
 											nil]];
 
@@ -3676,15 +3665,15 @@
 	NSInteger column = -1;
 
 	if(contextInfo) {
-		row = [[contextInfo objectForKey:@"row"] integerValue];
-		column = [[contextInfo objectForKey:@"column"] integerValue];
+		row = [[contextInfo objectForKey:@"rowIndex"] integerValue];
+		column = [[contextInfo objectForKey:@"columnIndex"] integerValue];
 	}
 
 	if (data && contextInfo) {
 		BOOL isResultFieldEditable = ([contextInfo objectForKey:@"isFieldEditable"]) ? YES : NO;
 
 		if(isResultFieldEditable) {
-			[self saveCellValue:[[data copy] autorelease] forTableColumn:[customQueryView tableColumnWithIdentifier:[contextInfo objectForKey:@"column"]] row:row];
+			[self saveCellValue:[[data copy] autorelease] forTableColumn:[[customQueryView tableColumns] objectAtIndex:column] row:row];
 		}
 	}
 
@@ -3821,17 +3810,11 @@
 	column = [customQueryView editedColumn];
 
 	// Retrieve the column definition
-	NSNumber *colIdentifier = [NSArrayObjectAtIndex([customQueryView tableColumns], column) identifier];
-	for(id c in cqColumnDefinition) {
-		if([[c objectForKey:@"datacolumnindex"] isEqualToNumber:colIdentifier]) {
-			columnDefinition = [NSDictionary dictionaryWithDictionary:c];
-			break;
-		}
-	}
+	columnDefinition = [NSDictionary dictionaryWithDictionary:[cqColumnDefinition objectAtIndex:[[[[customQueryView tableColumns] objectAtIndex:column] identifier] integerValue]]];
 
 	if(!columnDefinition) return NO;
 
-	NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:colIdentifier];
+	NSArray *editStatus = [self fieldEditStatusForRow:row andColumn:column];
 	NSInteger numberOfPossibleUpdateRows = [NSArrayObjectAtIndex(editStatus, 0) integerValue];
 	NSPoint pos = [[tableDocumentInstance parentWindow] convertBaseToScreen:[customQueryView convertPoint:[customQueryView frameOfCellAtColumn:column row:row].origin toView:nil]];
 	pos.y -= 20;
