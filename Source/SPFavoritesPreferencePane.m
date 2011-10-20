@@ -860,11 +860,16 @@
 		if (![passwordValue length]) {
 			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
 
-		// Otherwise, set up the new keychain name and account strings and edit the item
+		// Otherwise, set up the new keychain name and account strings and create or edit the item
 		} else {
 			newKeychainName = [keychain nameForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
 			newKeychainAccount = [keychain accountForUser:[favoritesController valueForKeyPath:@"selection.user"] host:newHostnameForPassword database:[favoritesController valueForKeyPath:@"selection.database"]];
-			[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:passwordValue];
+			if ([keychain passwordExistsForName:oldKeychainName account:oldKeychainAccount]) {
+				[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:passwordValue];
+			} else {
+				[keychain addPassword:passwordValue forName:newKeychainName account:newKeychainAccount];
+			}
+
 		}
 		
 		// Synch password changes
@@ -889,11 +894,16 @@
 		if (![[sshPasswordField stringValue] length]) {
 			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
 
-		// Otherwise, set up the new keychain name and account strings and update the keychain item
+
+		// Otherwise, set up the new keychain name and account strings and create or update the keychain item
 		} else {
 			newKeychainName = [keychain nameForSSHForFavoriteName:[favoritesController valueForKeyPath:@"selection.name"] id:[favoritesController valueForKeyPath:@"selection.id"]];
 			newKeychainAccount = [keychain accountForSSHUser:[favoritesController valueForKeyPath:@"selection.sshUser"] sshHost:[favoritesController valueForKeyPath:@"selection.sshHost"]];
-			[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:[sshPasswordField stringValue]];
+			if ([keychain passwordExistsForName:oldKeychainName account:oldKeychainAccount]) {
+				[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:[sshPasswordField stringValue]];
+			} else {
+				[keychain addPassword:[sshPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+			}
 		}
 	}
 	
