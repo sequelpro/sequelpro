@@ -82,7 +82,7 @@
  */
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion
 {
-	if ((self == [super init])) {
+	if ((self = [super init])) {
 		
 		serverMajorVersion   = majorVersion;
 		serverMinorVersion   = minorVersion;

@@ -89,7 +89,7 @@
  */
 - (id)init
 {
-	if ((self == [super init])) {
+	if ((self = [super init])) {
 		_mainNibLoaded = NO;
 		isWorking = NO;
 		pthread_mutex_init(&tableValuesLock, NULL);
