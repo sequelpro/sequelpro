@@ -761,7 +761,23 @@ static BOOL sTruncateLongFieldInLogs = YES;
 	if (!mConnected) return NO;
 
 	BOOL connectionVerified = FALSE;
-	
+
+	// If the connection is currently locked, it's probably in use - no need to check
+	// the connection.
+	if ([connectionLock condition] == MCPConnectionBusy) {
+
+		// However if a ping thread is active, might be a background ping - wait for it
+		// to complete, then check the connection.
+		if (pingThreadActive) {
+			while (pingThreadActive) {
+				usleep(10000);
+			}
+			return [self checkConnection];
+		}
+
+		return YES;
+	}
+
 	// Check whether the connection is still operational via a wrapped version of MySQL ping.
 	connectionVerified = [self pingConnectionUsingLoopDelay:400];
 
