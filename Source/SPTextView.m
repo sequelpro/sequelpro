@@ -2776,7 +2776,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		textRange = NSMakeRange(0,strlength);
 	}
 
-	[textStore beginEditing];
+	// [textStore beginEditing];
 
 	NSColor *tokenColor;
 
@@ -2905,7 +2905,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self setTypingAttributes:typeAttr];
 	}
 
-	[textStore endEditing];
+	// [textStore endEditing];
 
 	[self setNeedsDisplayInRect:[self bounds]];
 
