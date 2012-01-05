@@ -2818,6 +2818,7 @@ void pingThreadCleanup(void *pingDetails)
 										@"/opt/local/var/run/mysqld/mysqld.sock",	// Darwinports MySQL
 										@"/opt/local/var/run/mysql4/mysqld.sock",	// Darwinports MySQL 4
 										@"/opt/local/var/run/mysql5/mysqld.sock",	// Darwinports MySQL 5
+										@"/usr/local/zend/mysql/tmp/mysql.sock",	// Zend Server CE (see Issue #1251)
 										@"/var/run/mysqld/mysqld.sock",				// As used on Debian/Gentoo
 										@"/var/tmp/mysql.sock",						// As used on FreeBSD
 										@"/var/lib/mysql/mysql.sock",				// As used by Fedora
