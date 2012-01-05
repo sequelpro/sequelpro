@@ -206,7 +206,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	if([[clientView textStorage] editedMask] != 1)
 		[self invalidateLineIndices];
 
-	[self setNeedsDisplay:YES];
+	[self setNeedsDisplayInRect:[self bounds]];
 
 }
 
@@ -540,9 +540,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			(void)(*addObjectIMP)(lineIndices, addObjectSel, (*numberWithUnsignedIntegerIMP)(numberClass, numberWithUnsignedIntegerSel, anIndex));
 
 		NSUInteger lineCount = [lineIndices count];
-		if(lineCount < 10)
-			newThickness = maxWidthOfGlyph1;
-		else if(lineCount < 100)
+		if(lineCount < 100)
 			newThickness = maxWidthOfGlyph2;
 		else if(lineCount < 1000)
 			newThickness = maxWidthOfGlyph3;

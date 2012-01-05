@@ -2677,7 +2677,7 @@
 		currentQueryRange = NSMakeRange(0, 0);
 
 	[textView setQueryRange:qRange];
-	[textView setNeedsDisplay:YES];
+	[textView setNeedsDisplayInRect:[textView bounds]];
 
 	// disable "Comment Current Query" menu item if no current query is selectable
 	[commentCurrentQueryMenuItem setEnabled:(currentQueryRange.length) ? YES : NO];

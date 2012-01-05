@@ -241,22 +241,22 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #ifndef SP_REFACTOR
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
 		[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
 		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorHighlightQueryColor]) {
 		[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorCaretColor]) {
 		[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorSelectionColor]) {
 		[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]], NSBackgroundColorAttributeName, nil]];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryHighlightCurrentQuery]) {
 		[self setShouldHiliteQuery:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorCommentColor]) {
 		[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		if([[self string] length]<100000 && [self isEditable])
@@ -2729,7 +2729,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			end = strlength;
 		} else {
 			while(end < strlength && lengthChecker > 0) {
-				if([selfstr characterAtIndex:end]=='\n')
+				if(CFStringGetCharacterAtIndex((CFStringRef)selfstr, end)=='\n')
 					break;
 				end++;
 				lengthChecker--;
@@ -2750,7 +2750,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		lengthChecker = SP_SYNTAX_HILITE_BIAS;
 		if (start > 0)
 			while(start>0 && lengthChecker > 0) {
-				if([selfstr characterAtIndex:start]=='\n')
+				if(CFStringGetCharacterAtIndex((CFStringRef)selfstr, start)=='\n')
 					break;
 				start--;
 				lengthChecker--;
@@ -2759,6 +2759,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			start = start_temp;
 
 		textRange = NSMakeRange(start, end-start);
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
+		[[self layoutManager] ensureLayoutForCharacterRange:textRange];
+#endif
 
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
@@ -2771,6 +2775,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		// process syntax highlighting for the entire text view buffer
 		textRange = NSMakeRange(0,strlength);
 	}
+
+	[textStore beginEditing];
 
 	NSColor *tokenColor;
 
@@ -2887,6 +2893,21 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		// 	NSMutableAttributedStringAddAttributeValueRange(textStore, kBTQuote, kBTQuoteValue, tokenRange);
 
 	}
+
+	// set current textColor to the color of the caret's position - 1
+	// to try to suppress writing in normalColor before syntax highlighting 
+	NSUInteger ix = [self selectedRange].location;
+	if(ix > 1) {
+		NSMutableDictionary *typeAttr = [NSMutableDictionary dictionary];
+		[typeAttr setDictionary:[self typingAttributes]];
+		NSColor *c = [textStore attribute:NSForegroundColorAttributeName atIndex:ix-1 effectiveRange:nil];
+		if(c) [typeAttr setObject:c forKey:NSForegroundColorAttributeName];
+		[self setTypingAttributes:typeAttr];
+	}
+
+	[textStore endEditing];
+
+	[self setNeedsDisplayInRect:[self bounds]];
 
 }
 
@@ -3276,6 +3297,12 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 								selector:@selector(doAutoCompletion) 
 								object:nil];
 
+	// Cancel calling doSyntaxHighlighting for large text
+	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
+		[NSObject cancelPreviousPerformRequestsWithTarget:self 
+								selector:@selector(doSyntaxHighlighting) 
+								object:nil];
+
 	NSInteger editedMask = [textStore editedMask];
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
@@ -3293,12 +3320,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	if([[NSApp keyWindow] firstResponder] == self && !completionIsOpen && editedMask != 1 && [textStore changeInLength] == 1)
 		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:1.5];
 #endif
-
-	// Cancel calling doSyntaxHighlighting for large text
-	if([[self string] length] > SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING)
-		[NSObject cancelPreviousPerformRequestsWithTarget:self 
-								selector:@selector(doSyntaxHighlighting) 
-								object:nil];
 
 	// Do syntax highlighting/re-calculate snippet ranges only if the user really changed the text
 	if(editedMask != 1) {
@@ -3631,7 +3652,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self setEditable:YES];
 		[self setFont:nf];
 		[self setEditable:oldEditable];
-		[self setNeedsDisplay:YES];
+		[self setNeedsDisplayInRect:[self bounds]];
 		[prefs setObject:[NSArchiver archivedDataWithRootObject:nf] forKey:SPCustomQueryEditorFont];
 	}
 #endif
