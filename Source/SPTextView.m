@@ -2894,17 +2894,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	}
 
-	// set current textColor to the color of the caret's position - 1
-	// to try to suppress writing in normalColor before syntax highlighting 
-	NSUInteger ix = [self selectedRange].location;
-	if(ix > 1) {
-		NSMutableDictionary *typeAttr = [NSMutableDictionary dictionary];
-		[typeAttr setDictionary:[self typingAttributes]];
-		NSColor *c = [textStore attribute:NSForegroundColorAttributeName atIndex:ix-1 effectiveRange:nil];
-		if(c) [typeAttr setObject:c forKey:NSForegroundColorAttributeName];
-		[self setTypingAttributes:typeAttr];
-	}
-
 	// [textStore endEditing];
 
 	[self setNeedsDisplayInRect:[self bounds]];
