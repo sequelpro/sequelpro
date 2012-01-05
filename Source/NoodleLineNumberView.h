@@ -40,6 +40,7 @@
 	NSColor         *textColor;
 	NSColor         *alternateTextColor;
 	NSColor         *backgroundColor;
+	CGFloat         maxHeightOfGlyph;
 	CGFloat         maxWidthOfGlyph;
 	CGFloat         maxWidthOfGlyph1;
 	CGFloat         maxWidthOfGlyph2;
@@ -67,6 +68,8 @@
 
 	NSLayoutManager  *layoutManager;
 	NSTextContainer  *container;
+	NSTextView       *clientView;
+
 
 }
 

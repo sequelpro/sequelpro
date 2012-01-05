@@ -80,7 +80,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			[self font], NSFontAttributeName, 
 			[self textColor], NSForegroundColorAttributeName,
 			nil] retain];
-		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
+		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
+		maxWidthOfGlyph = s.width;
+		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
 		currentRuleThickness = 0.0f;
 
@@ -130,7 +132,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			font, NSFontAttributeName, 
 			[self textColor], NSForegroundColorAttributeName,
 			nil] retain];
-		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
+		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
+		maxWidthOfGlyph = s.width;
+		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
 	}
 }
@@ -154,7 +158,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			[self font], NSFontAttributeName, 
 			textColor, NSForegroundColorAttributeName,
 			nil] retain];
-		maxWidthOfGlyph = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes].width;
+		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
+		maxWidthOfGlyph = s.width;
+		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
 	}
 }
@@ -180,8 +186,9 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	{
 		layoutManager  = [(NSTextView*)aView layoutManager];
 		container      = [(NSTextView*)aView textContainer];
+		clientView     = (NSTextView*)[self clientView];
 
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[(NSTextView *)aView textStorage]];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textDidChange:) name:NSTextStorageDidProcessEditingNotification object:[clientView textStorage]];
 		[self invalidateLineIndices];
 	}
 
@@ -192,11 +199,11 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 - (void)textDidChange:(NSNotification *)notification
 {
 
-	if(![self clientView]) return;
+	if(!clientView) return;
 
 	// Invalidate the line indices only if text view was changed in length but not if the font was changed.
 	// They will be recalculated and recached on demand.
-	if([[(NSTextView *)[self clientView] textStorage] editedMask] != 1)
+	if([[clientView textStorage] editedMask] != 1)
 		[self invalidateLineIndices];
 
 	[self setNeedsDisplay:YES];
@@ -280,7 +287,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect
 {
-	id     view;
+
 	NSRect bounds;
 
 	bounds = [self bounds];
@@ -294,9 +301,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 	// 	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 	// }
 
-	view = [self clientView];
-
-	if ([view isKindOfClass:[NSTextView class]])
+	if ([clientView isKindOfClass:[NSTextView class]])
 	{
 		NSRect           visibleRect;
 		NSRange          range, nullRange;
@@ -304,15 +309,17 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		NSUInteger       rectCount, lineIndex, line, count;
 		NSRectArray      rects;
 		CGFloat          yinset;
-		NSSize           stringSize;
 		NSArray          *lines;
 
 		nullRange      = NSMakeRange(NSNotFound, 0);
 
-		yinset         = [view textContainerInset].height;
+		yinset         = [clientView textContainerInset].height;
 		visibleRect    = [[[self scrollView] contentView] bounds];
 
 		lines          = [self lineIndices];
+		count          = [lines count];
+
+		if(!count) return;
 
 		// Find the characters that are currently visible
 		range = [layoutManager characterRangeForGlyphRange:[layoutManager glyphRangeForBoundingRect:visibleRect inTextContainer:container] actualGlyphRange:NULL];
@@ -320,8 +327,6 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		// Fudge the range a tad in case there is an extra new line at end.
 		// It doesn't show up in the glyphs so would not be accounted for.
 		range.length++;
-
-		count = [lines count];
 
 		CGFloat boundsRULERMargin2 = NSWidth(bounds) - RULER_MARGIN2;
 		CGFloat boundsWidthRULER   = NSWidth(bounds) - RULER_MARGIN;
@@ -347,13 +352,16 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 					// Line numbers are internally stored starting at 0
 					labelText = [NSString stringWithFormat:@"%lu", (NSUInteger)(line + 1)];
 
-					stringSize = [labelText sizeWithAttributes:textAttributes];
+					// How many digits has the current line number?
+					NSUInteger idx = line + 1;
+					NSInteger numOfDigits = 0;
+					while(idx) { numOfDigits++; idx/=10; }
 
 					rectHeight = NSHeight(rects[0]);
 					// Draw string flush right, centered vertically within the line
 					[labelText drawInRect:
-					NSMakeRect(boundsWidthRULER - stringSize.width,
-						yinsetMinY + NSMinY(rects[0]) + ((NSInteger)(rectHeight - stringSize.height) >> 1),
+					NSMakeRect(boundsWidthRULER - (maxWidthOfGlyph * numOfDigits),
+						yinsetMinY + NSMinY(rects[0]) + ((NSInteger)(rectHeight - maxHeightOfGlyph) >> 1),
 						boundsRULERMargin2, rectHeight)
 						withAttributes:textAttributes];
 				}
@@ -494,16 +502,15 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 - (void)calculateLines
 {
-	id view = [self clientView];
 
-	if ([view isKindOfClass:[NSTextView class]])
+	if ([clientView isKindOfClass:[NSTextView class]])
 	{
 
 		NSUInteger anIndex, stringLength, lineEnd, contentEnd;
 		NSString   *textString;
 		CGFloat    newThickness;
 
-		textString   = [view string];
+		textString   = [clientView string];
 		stringLength = [textString length];
 
 		// Switch off line numbering if text larger than 3MB
