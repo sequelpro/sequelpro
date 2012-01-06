@@ -144,7 +144,7 @@
 	<key>CSVImportFieldEnclosedBy</key>
 	<string>&quot;</string>
 	<key>CSVImportFieldEscapeCharacter</key>
-	<string>\</string>
+	<string>\ or &quot;</string>
 	<key>CSVImportFirstLineIsHeader</key>
 	<true/>
 	<key>SQLExportUseCompression</key>

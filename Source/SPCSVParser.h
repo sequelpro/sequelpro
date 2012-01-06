@@ -73,6 +73,7 @@
 	NSScanner *csvScanner;
 
 	BOOL escapeStringIsFieldQuoteString;
+	BOOL useStrictEscapeMatching;
 }
 
 /* Retrieving data from the CSV string */
@@ -96,6 +97,7 @@
 - (void) setFieldQuoteString:(NSString *)theString convertDisplayStrings:(BOOL)convertString;
 - (void) setEscapeString:(NSString *)theString convertDisplayStrings:(BOOL)convertString;
 - (void) setNullReplacementString:(NSString *)nullString;
+- (void) setEscapeStringsAreMatchedStrictly:(BOOL)strictMatching;
 
 /* Init and internal update methods */
 - (void) _initialiseCSVParserDefaults;
