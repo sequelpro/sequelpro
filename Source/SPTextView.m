@@ -2760,10 +2760,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		textRange = NSMakeRange(start, end-start);
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
-		[[self layoutManager] ensureLayoutForCharacterRange:textRange];
-#endif
-
 		// only to be sure that nothing went wrongly
 		textRange = NSIntersectionRange(textRange, NSMakeRange(0, [textStore length])); 
 
