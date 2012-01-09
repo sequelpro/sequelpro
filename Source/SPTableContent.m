@@ -634,7 +634,7 @@
 
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it.
 	if (sortColumnNumberToRestore != NSNotFound) {
-		theCol = [tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"lld", sortColumnNumberToRestore]];
+		theCol = [tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)sortColumnNumberToRestore]];
 		if (sortCol) [sortCol release];
 		sortCol = [[NSNumber alloc] initWithInteger:sortColumnNumberToRestore];
 		[tableContentView setHighlightedTableColumn:theCol];
@@ -4216,7 +4216,7 @@
 		}
 	} else {
 		isDesc = NO;
-		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", [sortCol integerValue]]]];
+		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
 		if (sortCol) [sortCol release];
 		sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 	}

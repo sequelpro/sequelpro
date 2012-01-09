@@ -711,7 +711,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		if ([[NSThread currentThread] isCancelled]) return nil;
 
 		columnWidth = [self autodetectWidthForColumnDefinition:columnDefinition maxRows:100];
-		[columnWidths setObject:[NSString stringWithFormat:@"%llu", columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
+		[columnWidths setObject:[NSString stringWithFormat:@"%llu", (unsigned long long)columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
 		allColumnWidths += columnWidth;
 	}
 

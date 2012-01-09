@@ -2103,7 +2103,7 @@
 		}
 	} else {
 		isDesc = NO;
-		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", [sortField integerValue]]]];
+		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortField integerValue]]]];
 		if (sortField) [sortField release];
 		sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 	}
