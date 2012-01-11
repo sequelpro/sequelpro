@@ -145,7 +145,7 @@
 	
 	// Set the default favorite popup back to preference
 	if ([sender isKindOfClass:[NSMenuItem class]]) {
-		[generalPreferencePane resetDefaultFavoritePopupSelection];
+		[generalPreferencePane updateDefaultFavoritePopupSelection];
 	}
 }
 

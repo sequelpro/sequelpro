@@ -42,6 +42,6 @@
 - (IBAction)updateDefaultFavorite:(id)sender;
 
 - (void)updateDefaultFavoritePopup;
-- (void)resetDefaultFavoritePopupSelection;
+- (void)updateDefaultFavoritePopupSelection;
 
 @end

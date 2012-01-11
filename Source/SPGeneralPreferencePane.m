@@ -77,15 +77,17 @@
 	[editMenuItem release];
 	
 	// Select the default favorite from prefs
-	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed]) ? ([prefs integerForKey:SPDefaultFavorite] + 2) : 0];
+	[self updateDefaultFavoritePopupSelection];
 }
 
 /**
  * Resets the default favorite popup button selection based on the user's preferences.
  */
-- (void)resetDefaultFavoritePopupSelection
+- (void)updateDefaultFavoritePopupSelection
 {
-	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed]) ? ([prefs integerForKey:SPDefaultFavorite] + 2) : 0];
+	NSUInteger index = [prefs integerForKey:SPDefaultFavorite];
+	
+	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed] && index > 0 && index < [[defaultFavoritePopup itemArray] count]) ? index + 2 : 0];
 }
 
 #pragma mark -
