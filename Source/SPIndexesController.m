@@ -246,6 +246,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexedFields removeAllObjects];
 	[indexedFields addObject:initialField];
 
+	// Determine whether to show or hide the size column initially depending on whether the
+	// initial key has a required size
+	[indexSizeTableColumn setHidden:![requiresLength containsObject:[[initialField objectForKey:@"type"] uppercaseString]]];
+
 	[indexedColumnsTableView reloadData];
 
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
@@ -431,7 +435,15 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexAdvancedOptionsViewButton setState:showAdvancedView];
 	[indexAdvancedOptionsView setHidden:(!showAdvancedView)];
 
-	[indexSizeTableColumn setHidden:(!showAdvancedView)];
+	// When hiding the advanced options, the size column would normally be hidden as well
+	// - unless any of the ndexes fields have a required key size.
+	BOOL hideSizesColumn = !showAdvancedView;
+	if (hideSizesColumn) {
+		for (NSDictionary *aField in indexedFields) {
+			if ([requiresLength containsObject:[[aField objectForKey:@"type"] uppercaseString]]) hideSizesColumn = NO;
+		}
+	}
+	[indexSizeTableColumn setHidden:hideSizesColumn];
 
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:(showAdvancedView) ? ([indexAdvancedOptionsView frame].size.height + 10) : 0];
 #endif
@@ -452,7 +464,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	 	return [[indexes objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 	}
 	else {
-		return [[indexedFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+		id object = [[indexedFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+		if ([[tableColumn identifier] isEqualToString:@"Size"] && object) {
+			object = [NSNumber numberWithLongLong:[object longLongValue]];
+		}
+		return object;
 	}
 }
 
@@ -472,7 +488,16 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 	}
 	else {
-		[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
+
+		// Ensure conversion to string for Size column and its formatter
+		if ([object isKindOfClass:[NSNumber class]]) {
+			object = [NSString stringWithFormat:@"%llu", [object unsignedLongLongValue]];
+		}
+		if (object) {
+			[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
+		} else {
+			[[indexedFields objectAtIndex:rowIndex] removeObjectForKey:[tableColumn identifier]];
+		}
 	}
 
 	[self _reloadIndexedColumnsTableData];
