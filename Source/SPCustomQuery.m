@@ -52,6 +52,13 @@
 #import <BWToolkitFramework/BWToolkitFramework.h>
 #endif
 
+@interface SPCustomQuery (PrivateAPI)
+
+- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column;
+- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs;
+
+@end
+
 @implementation SPCustomQuery
 
 #ifdef SP_REFACTOR
@@ -61,7 +68,6 @@
 @synthesize tableDocumentInstance;
 @synthesize tablesListInstance;
 #endif
-
 
 @synthesize textViewWasChanged;
 
@@ -122,9 +128,8 @@
 	[self performQueries:queries withCallback:@selector(runAllQueriesCallback)];
 }
 
-- (void) runAllQueriesCallback
+- (void)runAllQueriesCallback
 {
-
 	// If no error was selected, reconstruct a given selection.  This
 	// may no longer be valid if the query text has changed in the
 	// meantime, so error-checking is required.
@@ -323,7 +328,7 @@
 	}
 }
 
-/*
+/**
  * Closes the sheet
  */
 - (IBAction)closeSheet:(id)sender
@@ -332,7 +337,7 @@
 	[[sender window] orderOut:self];
 }
 
-/*
+/**
  * Perform simple actions (which don't require their own method), triggered by selecting the appropriate menu item
  * in the "gear" action menu displayed beneath the cusotm query view.
  */
@@ -479,7 +484,6 @@
 
 - (IBAction)copyQueryHistory:(id)sender
 {
-
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
 	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -487,10 +491,11 @@
 
 }
 
-// "Clear History" menu item - clear query history
+/**
+ * 'Clear History' menu item - clear query history
+ */
 - (IBAction)clearQueryHistory:(id)sender
 {
-
 	NSString *infoString;
 
 #ifndef SP_REFACTOR /* if ([tableDocumentInstance isUntitled]) */
@@ -524,7 +529,7 @@
 
 }
 
-/*
+/* *
  * Set font panel's valid modes
  */
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
@@ -545,18 +550,21 @@
 #pragma mark -
 #pragma mark Query actions
 
-/*
+/**
  * Performs the mysql-query given by the user
  * sets the tableView columns corresponding to the mysql-result
  */
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
 {
 	NSString *taskString;
+	
 	if ([queries count] > 1) {
 		taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %lu...", @"Running multiple queries string"), 1, (unsigned long)[queries count]];
-	} else {
+	} 
+	else {
 		taskString = NSLocalizedString(@"Running query...", @"Running single query string");
 	}
+	
 	[tableDocumentInstance startTaskWithDescription:taskString];
 	[errorText setString:taskString];
 	[affectedRowsText setStringValue:@""];
@@ -569,7 +577,8 @@
 	// If a helper thread is already running, execute inline - otherwise detach a new thread for the queries
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
-	} else {
+	} 
+	else {
 		[self performQueriesTask:taskArguments];
 	}
 }
@@ -923,10 +932,9 @@
 		[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
 
 	[queryRunningPool release];
-
 }
 
-/*
+/**
  * Processes a supplied streaming result set, loading it into the data array.
  */
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
@@ -979,7 +987,7 @@
 	[dataLoadingPool drain];
 }
 
-/*
+/**
  * Retrieve the range of the query at a position specified
  * within the custom query text view.
  */
@@ -1104,7 +1112,7 @@
 	return queryRange;
 }
 
-/*
+/**
  * Retrieve the range of the query for the passed index seen from a start position
  * specified within the custom query text view.
  */
@@ -1145,7 +1153,7 @@
 	return theQueryRange;
 }
 
-/*
+/**
  * Retrieve the query at a position specified within the custom query
  * text view.  This will return nil if the position specified is beyond
  * the available string or if an empty query would be returned.
@@ -1168,13 +1176,12 @@
 		[textView setSelectedRange:currentQueryRange];
 }
 
-/*
+/**
  * Add or remove "⁄*  *⁄" for each line in the current query
  * a given selection
  */
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection
 {
-
 	BOOL isUncomment = NO;
 
 	NSRange oldRange = [textView selectedRange];
@@ -1217,10 +1224,9 @@
 	// something like /*!400000 or similar
 	if(!isUncomment)
 		[textView setSelectedRange:NSMakeRange(workingRange.location+2,0)];
-
 }
 
-/*
+/**
  * Add or remove "-- " for each line in the current query or selection,
  * if the selection is in-line wrap selection into ⁄* block comments and
  * place the caret after ⁄* to allow to enter !xxxxxx e.g.
@@ -1270,12 +1276,10 @@
 		// allow a fast (un)commenting of lines
 		[textView setSelectedRange:lineRange];
 		[textView insertText:n];
-
 	}
-
 }
 
-/*
+/**
  * Update the interface to reflect the query error state.
  * Should be performed on the main thread.
  */
@@ -1376,6 +1380,7 @@
 - (void) initQueryLoadTimer
 {
 	if (queryLoadTimer) [self clearQueryLoadTimer];
+	
 	queryLoadInterfaceUpdateInterval = 1;
 	queryLoadLastRowCount = 0;
 	queryLoadTimerTicksSinceLastUpdate = 0;
@@ -1436,48 +1441,63 @@
 			queryLoadInterfaceUpdateInterval = 25;
 			break;
 	}
+	
 	queryLoadTimerTicksSinceLastUpdate = 0;
 }
 
 #pragma mark -
 #pragma mark Accessors
 
-/*
- * Returns the current result (as shown in custom result view) as array,
- * the first object containing the field names as array,
- * the following objects containing the rows as array
+/**
+ * Returns the current result (as shown in custom result view) as an array, the first object containing 
+ * the field names as an array and the following objects containing the rows as arrays.
  */
 - (NSArray *)currentResult
-{
-	NSArray *tableColumns = [customQueryView tableColumns];
-	NSEnumerator *enumerator = [tableColumns objectEnumerator];
-	id tableColumn;
-	NSMutableArray *currentResult = [NSMutableArray array];
-	NSMutableArray *tempRow = [NSMutableArray array];
-	NSInteger i;
+{	
+	return [self currentDataResultWithNULLs:NO];
+}
 
+/**
+ * Returns the current result (as shown in custom result view) as an array, the first object containing 
+ * the field names as an array and the following objects containing the rows as arrays.
+ *
+ * @param includeNULLs Indicates whether to include NULLs as a native type
+ *                     or use the user's NULL string representation preference.
+ */
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs
+{
+	NSInteger i;	
+	id tableColumn;
+	NSMutableArray *tempRow = [[NSMutableArray alloc] init];
+	
 	// Set field names as first line
-	while ((tableColumn = [enumerator nextObject])) 
+	for (tableColumn in [customQueryView tableColumns])
 	{
 		[tempRow addObject:[[tableColumn headerCell] stringValue]];
 	}
 	
+	NSMutableArray *currentResult = [NSMutableArray array];
+	
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
-
+	
 	// Add rows
 	for (i = 0; i < [self numberOfRowsInTableView:customQueryView]; i++) 
 	{
 		[tempRow removeAllObjects];
 		
-		enumerator = [tableColumns objectEnumerator];
+		NSEnumerator *enumerator = [[customQueryView tableColumns] objectEnumerator];
 		
 		while ((tableColumn = [enumerator nextObject])) 
 		{
-			[tempRow addObject:[self tableView:customQueryView objectValueForTableColumn:tableColumn row:i]];
+			id value = [self _resultDataItemAtRow:i columnIndex:[[tableColumn identifier] integerValue]];
+			
+			[tempRow addObject:[self _convertResultDataValueToDisplayableRepresentation:value whilePreservingNULLs:YES]];			
 		}
 		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 	}
+	
+	[tempRow release];
 	
 	return currentResult;
 }
@@ -1485,7 +1505,7 @@
 #pragma mark -
 #pragma mark Additional methods
 
-/*
+/**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
 - (void)setConnection:(MCPConnection *)theConnection
@@ -1520,7 +1540,7 @@
 	[runSelectionMenuItem setEnabled:NO];
 }
 
-/*
+/**
  * Inserts the query in the textView and performs query
  */
 - (void)doPerformQueryService:(NSString *)query
@@ -1531,6 +1551,7 @@
 	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
 	[self runAllQueries:self];
 }
+
 - (void)doPerformLoadQueryService:(NSString *)query
 {
 	[textView shouldChangeTextInRange:NSMakeRange(0, [[textView string] length]) replacementString:query];
@@ -1623,7 +1644,7 @@
 /**
  * Provide a getter for the custom query result table's selected rows index set
  */
-- (NSIndexSet *) resultSelectedRowIndexes
+- (NSIndexSet *)resultSelectedRowIndexes
 {
 	return [customQueryView selectedRowIndexes];
 }
@@ -1631,7 +1652,7 @@
 /**
  * Provide a getter for the custom query result table's current viewport
  */
-- (NSRect) resultViewport
+- (NSRect)resultViewport
 {
 	return [customQueryView visibleRect];
 }
@@ -1647,7 +1668,7 @@
 /**
  * Set the selected row indexes to restore on next custom query result table load
  */
-- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
+- (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
 {
 	if (selectionIndexToRestore) [selectionIndexToRestore release], selectionIndexToRestore = nil;
 
@@ -1657,7 +1678,7 @@
 /**
  * Set the viewport to restore on next table load
  */
-- (void) setResultViewportToRestore:(NSRect)theViewport
+- (void)setResultViewportToRestore:(NSRect)theViewport
 {
 	selectionViewportToRestore = theViewport;
 }
@@ -1665,7 +1686,7 @@
 /**
  * Convenience method for storing all current settings for restoration
  */
-- (void) storeCurrentResultViewForRestoration
+- (void)storeCurrentResultViewForRestoration
 {
 	[self setResultSelectedRowIndexesToRestore:[self resultSelectedRowIndexes]];
 	[self setResultViewportToRestore:[self resultViewport]];
@@ -1674,7 +1695,7 @@
 /**
  * Convenience method for clearing any settings to restore
  */
-- (void) clearResultViewDetailsToRestore
+- (void)clearResultViewDetailsToRestore
 {
 	[self setResultSelectedRowIndexesToRestore:nil];
 	[self setResultViewportToRestore:NSZeroRect];
@@ -1702,13 +1723,14 @@
 		NSUInteger targetWidth = [[columnWidths objectForKey:[columnDefinition objectForKey:@"datacolumnindex"]] integerValue];
 		[aTableColumn setWidth:targetWidth];
 	}
+	
 	[customQueryView setDelegate:self];
 }
 
 #pragma mark -
 #pragma mark Field Editing
 
-/*
+/**
  * Check if table cell is editable
  * Returns as array the minimum number of possible changes or
  * -1 if no table name can be found or multiple table origins
@@ -1778,7 +1800,6 @@
 			[tableDocumentInstance endTask];
 			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 		}
-		
 	}
 
 	[tableDocumentInstance endTask];
@@ -1787,10 +1808,9 @@
 		fieldIDQueryStr = @"";
 
 	return [NSArray arrayWithObjects:[NSNumber numberWithInteger:[[tempRow objectAtIndex:0] integerValue]], fieldIDQueryStr, nil];
-
 }
 
-/*
+/**
  * Collect all columns for a given 'tableForColumn' table and
  * return a WHERE clause for identifying the field in question.
  */
@@ -1979,12 +1999,7 @@
  */
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	if (aTableView == customQueryView) {
-		return (resultData == nil) ? 0 : resultDataCount;
-	}
-	else {
-		return 0;
-	}
+	return (aTableView == customQueryView) ? (resultData == nil) ? 0 : resultDataCount : 0;
 }
 
 /**
@@ -1996,28 +2011,32 @@
 
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values
 		if ([cell respondsToSelector:@selector(setTextColor:)]) {
+			
+			id value = nil;
 			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
-			id theValue = nil;
 
 			// While the table is being loaded, additional validation is required - data
 			// locks must be used to avoid crashes, and indexes higher than the available
 			// rows or columns may be requested.  Use gray to show loading in these cases.
 			if (isWorking) {
 				pthread_mutex_lock(&resultDataLock);
+				
 				if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
-					theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+					value = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 				}
+				
 				pthread_mutex_unlock(&resultDataLock);
 
-				if (!theValue) {
+				if (!value) {
 					[cell setTextColor:[NSColor lightGrayColor]];
 					return;
 				}
-			} else {
-				theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+			} 
+			else {
+				value = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
 			}
 
-			[cell setTextColor:[theValue isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+			[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
 		}
 	}
 }
@@ -2025,42 +2044,14 @@
 /**
  * Returns the object for the requested column and row index.
  */
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == customQueryView) {
-		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
-		id theValue = nil;
-
-		// While the table is being loaded, additional validation is required - data
-		// locks must be used to avoid crashes, and indexes higher than the available
-		// rows or columns may be requested.  Return "..." to indicate loading in these
-		// cases.
-		if (isWorking) {
-			pthread_mutex_lock(&resultDataLock);
-			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
-				theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex) copy] autorelease];
-			}
-			pthread_mutex_unlock(&resultDataLock);
-
-			if (!theValue) return @"...";
-		} else {
-			theValue = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
-		}
-
-		if ([theValue isKindOfClass:[NSData class]])
-			return [theValue shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
-
-		if ([theValue isNSNull])
-			return [prefs objectForKey:SPNullValue];
-
-		if ([theValue isKindOfClass:[MCPGeometryData class]])
-			return [theValue wktString];
-
-	    return theValue;
+		
+		return [self _convertResultDataValueToDisplayableRepresentation:[self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue]] whilePreservingNULLs:NO];
 	}
-	else {
-		return @"";
-	}
+
+	return @"";
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -2078,12 +2069,11 @@
 	}
 }
 
-/*
+/**
  * Change the sort order by clicking at a column header
  */
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
-
 	// Prevent sorting while a query is running
 	if ([tableDocumentInstance isWorking]) return;
 	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
@@ -2218,7 +2208,6 @@
 
 }
 
-
 #pragma mark -
 #pragma mark TableView Drag & Drop datasource methods
 
@@ -2303,7 +2292,6 @@
  */
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(SPTextAndLinkCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
-
 	if([[aCell stringValue] length] < 2 || [tableDocumentInstance isWorking]) return nil;
 
 	// Suppress tooltip if another toolip is already visible, mainly displayed by a Bundle command
@@ -2371,12 +2359,11 @@
 	return nil;
 }
 
-/*
+/**
  * Double-click action on a field
  */
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-
 	// Only allow editing if a task is not active
 	if ([tableDocumentInstance isWorking]) return NO;
 
@@ -2451,11 +2438,11 @@
 											nil]];
 
 			return NO;
-
 		}
+		
 		return YES;
-
-	} else {
+	} 
+	else {
 		return YES;
 	}
 }
@@ -2610,37 +2597,42 @@
 	// Return the width, while the delegate is empty to prevent column resize notifications
 	[customQueryView setDelegate:nil];
 	[customQueryView performSelector:@selector(setDelegate:) withObject:self afterDelay:0.1];
+	
 	return targetWidth;
 }
 
 #pragma mark -
 #pragma mark TextView delegate methods
 
-/*
+/**
  * Traps enter key and performs query instead of inserting a line break if aTextView == textView
  * closes valueSheet if aTextView == valueTextField
  */
 - (BOOL)textView:(NSTextView *)aTextView doCommandBySelector:(SEL)aSelector
 {
-	if ( aTextView == textView ) {
-		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
-				[[[NSApp currentEvent] characters] isEqualToString:@"\003"] )
-		{
+	if (aTextView == textView) {
+		if ([aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
+			[[[NSApp currentEvent] characters] isEqualToString:@"\003"]) {
 			[self runAllQueries:self];
+			
 			return YES;
-		} else {
+		} 
+		else {
 			return NO;
 		}
 
-	} else if ( aTextView == valueTextField ) {
-		if ( [aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] )
-		{
+	} 
+	else if (aTextView == valueTextField) {
+		if ([aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)]) {
 			[self closeSheet:self];
+			
 			return YES;
-		} else {
+		} 
+		else {
 			return NO;
 		}
 	}
+	
 	return NO;
 }
 
@@ -2650,18 +2642,17 @@
 - (NSRange)textView:(NSTextView *)aTextView willChangeSelectionFromCharacterRange:(NSRange)oldSelectedCharRange toCharacterRange:(NSRange)newSelectedCharRange
 {
 	// Check if snippet session is still valid
-	if(!newSelectedCharRange.length && [textView isSnippetMode]) [textView checkForCaretInsideSnippet];
+	if (!newSelectedCharRange.length && [textView isSnippetMode]) [textView checkForCaretInsideSnippet];
 
 	return newSelectedCharRange;
 }
 
-/*
+/**
  * A notification posted when the selection changes within the text view;
  * used to control the run-currentrun-selection button state and action.
  */
 - (void)textViewDidChangeSelection:(NSNotification *)aNotification
 {
-
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
@@ -2747,7 +2738,6 @@
 	else if ([notification object] == queryHistorySearchField) {
 		[self filterQueryHistory:nil];
 	}
-
 }
 
 #ifndef SP_REFACTOR
@@ -2762,7 +2752,7 @@
 
 #ifndef SP_REFACTOR /* splitview delegate methods */
 
-/*
+/**
  * Tells the splitView that it can collapse views
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
@@ -2770,21 +2760,23 @@
 	return YES;
 }
 
-/*
+/**
  * Defines max position of splitView
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
 {
 	if (sender != queryInfoPaneSplitView) return (offset == 0) ? (proposedMax - 100) : (proposedMax - 73);
+	
 	return proposedMax;
 }
 
-/*
+/**
  * Defines min position of splitView
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
 	if (sender != queryInfoPaneSplitView) return proposedMin + 100;
+	
 	return proposedMin;
 }
 
@@ -2801,18 +2793,17 @@
 #pragma mark -
 #pragma mark MySQL Help
 
-/*
+/**
  * Set the MySQL version as X.Y for Help window title and online search
  */
 - (void)setMySQLversion:(NSString *)theVersion
 {
 	mySQLversion = [[theVersion substringToIndex:3] retain];
 	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] integerValue]];
-
 }
 
 #ifndef SP_REFACTOR
-/*
+/**
  * Return the Help window.
  */
 - (NSWindow *)helpWebViewWindow
@@ -2820,12 +2811,11 @@
 	return helpWebViewWindow;
 }
 
-/*
+/**
  * Show the data for "HELP 'searchString'".
  */
 - (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory calledByAutoHelp:(BOOL)autoHelp
 {
-
 	if(![searchString length]) return;
 
 	NSString *helpString = [self getHTMLformattedMySQLHelpFor:searchString calledByAutoHelp:autoHelp];
@@ -2859,7 +2849,6 @@
 		// order out Help window if Help is available
 		if(![helpString isEqualToString:SP_HELP_NOT_AVAILABLE])
 			[helpWebViewWindow orderFront:helpWebView];
-
 	}
 
 	// close Help window if no Help available
@@ -2882,11 +2871,9 @@
 
 	// load HTML formatted help into the webview
 	[[helpWebView mainFrame] loadHTMLString:helpString baseURL:nil];
-
 }
 
-
-/*
+/**
  * Show the data for "HELP 'search word'" according to helpTarget
  */
 - (IBAction)showHelpForSearchString:(id)sender
@@ -2909,7 +2896,7 @@
 	}
 }
 
-/*
+/**
  * Show the Help for the selected text in the webview
  */
 - (IBAction)showHelpForWebViewSelection:(id)sender
@@ -2932,7 +2919,7 @@
 }
 
 
-/*
+/**
  * Show the data for "HELP 'currentWord'"
  */
 - (IBAction)showHelpForCurrentWord:(id)sender
@@ -2941,7 +2928,7 @@
 	[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:NO];
 }
 
-/*
+/**
  * Find Next/Previous in current page
  */
 - (IBAction)helpSearchFindNextInPage:(id)sender
@@ -2950,6 +2937,7 @@
 		if(![helpWebView searchFor:[[helpSearchField stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] direction:YES caseSensitive:NO wrap:YES])
 			NSBeep();
 }
+
 - (IBAction)helpSearchFindPreviousInPage:(id)sender
 {
 	if(helpTarget == SP_HELP_SEARCH_IN_PAGE)
@@ -2957,7 +2945,7 @@
 			NSBeep();
 }
 
-/*
+/**
  * Navigation for back/TOC/forward
  */
 - (IBAction)helpSegmentDispatcher:(id)sender
@@ -2974,13 +2962,14 @@
 			[helpWebView goForward];
 			break;
 	}
+	
 	// validate goback and goforward buttons according history
 	[helpNavigator setEnabled:[[helpWebView backForwardList] backListCount] forSegment:SP_HELP_GOBACK_BUTTON];
 	[helpNavigator setEnabled:[[helpWebView backForwardList] forwardListCount] forSegment:SP_HELP_GOFORWARD_BUTTON];
 
 }
 
-/*
+/**
  * Set helpTarget according user choice via mouse and keyboard short-cuts.
  */
 - (IBAction)helpSelectHelpTargetMySQL:(id)sender
@@ -2989,18 +2978,21 @@
 	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_MYSQL];
 	[self helpTargetValidation];
 }
+
 - (IBAction)helpSelectHelpTargetPage:(id)sender
 {
 	helpTarget = SP_HELP_SEARCH_IN_PAGE;
 	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_PAGE];
 	[self helpTargetValidation];
 }
+
 - (IBAction)helpSelectHelpTargetWeb:(id)sender
 {
 	helpTarget = SP_HELP_SEARCH_IN_WEB;
 	[helpTargetSelector setSelectedSegment:SP_HELP_SEARCH_IN_WEB];
 	[self helpTargetValidation];
 }
+
 - (IBAction)helpTargetDispatcher:(id)sender
 {
 	helpTarget = [helpTargetSelector selectedSegment];
@@ -3025,7 +3017,7 @@
 }
 
 #ifndef SP_REFACTOR
-/*
+/**
  * Show the data for "HELP 'currentWord' invoked by autohelp"
  */
 - (void)showAutoHelpForCurrentWord:(id)sender
@@ -3034,7 +3026,7 @@
 	[self showHelpFor:searchString addToHistory:YES calledByAutoHelp:YES];
 }
 
-/*
+/**
  * Control the help search field behaviour.
  */
 - (void)helpTargetValidation
@@ -3068,7 +3060,7 @@
 		stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]]];
 }
 
-/*
+/**
  * Return the help string HTML formatted from executing "HELP 'searchString'".
  * If more than one help topic was found return a link list.
  */
@@ -3202,14 +3194,12 @@
 	[tableDetails release];
 
 	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
-
 }
 
-//////////////////////////////
-// WebView delegate methods //
-//////////////////////////////
+#pragma mark -
+#pragma mark WebView delegate methods
 
-/*
+/**
  * Link detector: If user clicked at an http link open it in the default browser,
  * otherwise search for it in the MySQL help. Additionally handle back/forward events from
  * keyboard and context menu.
@@ -3246,7 +3236,7 @@
 	}
 }
 
-/*
+/**
  * Manage contextual menu in helpWebView
  * Ignore "Reload", "Open Link", "Open Link in new Window", "Download link" etc.
  */
@@ -3358,6 +3348,7 @@
 		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
 			[historyMenu addItem:historyMenuItem];
 }
+
 /**
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
@@ -3506,7 +3497,7 @@
 	[[SPQueryController sharedQueryController] addHistory:entryString forFileURL:[tableDocumentInstance fileURL]];
 }
 
-/*
+/**
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -3529,7 +3520,6 @@
  */
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	if ([contextInfo isEqualToString:@"runAllContinueStopSheet"]) {
 		runAllContinueStopSheetReturnCode = returnCode;
 		return;
@@ -3792,14 +3782,13 @@
 	}
 }
 
-/*
+/**
  * If user selected a table cell which is a blob field and tried to edit it
  * cancel the fieldEditor, display the field editor sheet instead for editing
  * and re-enable the fieldEditor after editing.
  */
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)aFieldEditor
 {
-
 	if(![control isKindOfClass:[SPCopyTable class]]) return YES;
 
 	NSUInteger row, column;
@@ -3869,7 +3858,6 @@
 	[aFieldEditor setTextColor:[NSColor blackColor]];
 
 	return shouldBeginEditing;
-
 }
 
 /**
@@ -3878,7 +3866,6 @@
  */
 - (BOOL)control:(NSControl*)control textView:(NSTextView*)aTextView doCommandBySelector:(SEL)command
 {
-
 	if(control == queryHistorySearchField || control == queryFavoritesSearchField) {
 		if(command == @selector(moveDown:) || command == @selector(moveUp:)) {
 			[queryHistorySearchField abortEditing];
@@ -3914,22 +3901,10 @@
 
 			return TRUE;
 		}
-
-
 	}
 
 	return NO;
 }
-// - (void)menu:(NSMenu *)menu willHighlightItem:(NSMenuItem *)item
-// {
-// // Set the focus at the search field
-// // TODO : but no way out; always selecting first/last menu item
-// // because after setting focus to search field NSMenu selectedItemIndex is -1
-// 	if(item == queryHistorySearchMenuItem) {
-// 		[queryHistorySearchField selectText:nil];
-// 	}
-//
-// }
 
 /**
  * Setup various interface controls.
@@ -3976,6 +3951,71 @@
 		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:YES];
 	}
 }
+
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Retrieves the value from the underlying data storage at the supplied row and column indices.
+ *
+ * @param row    The row index
+ * @param column The column index
+ * 
+ * @return The value from the data storage
+ */
+- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column
+{
+	id value = nil;
+	
+	// While the table is being loaded, additional validation is required - data
+	// locks must be used to avoid crashes, and indexes higher than the available
+	// rows or columns may be requested.  Return "..." to indicate loading in these
+	// cases.
+	if (isWorking) {
+		pthread_mutex_lock(&resultDataLock);
+		
+		if (row < resultDataCount && column < [resultData columnCount]) {
+			value = [[SPDataStorageObjectAtRowAndColumn(resultData, row, column) copy] autorelease];
+		}
+		
+		pthread_mutex_unlock(&resultDataLock);
+		
+		if (!value) value = @"...";
+	} 
+	else {
+		value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+	}
+	
+	return value;
+}
+
+/**
+ * Converts the supplied value into it's displayable representation.
+ *
+ * @param value         The value to convert
+ * @param preserveNULLs Whether or not NULLs should be preserved or converted to the 
+ *                      user's NULL placeholder preference.
+ *
+ * @return The converted value
+ */
+- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs 
+{
+	if ([value isKindOfClass:[NSData class]]) {
+		value = [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+	}
+	
+	if ([value isNSNull] && !preserveNULLs) {
+		value = [prefs objectForKey:SPNullValue];
+	}
+	
+	if ([value isKindOfClass:[MCPGeometryData class]]) {
+		value = [value wktString];
+	}
+	
+	return value;
+}
+
+#pragma mark -
 
 /**
  * Dealloc.

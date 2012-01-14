@@ -238,6 +238,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
 
 // Retrieving and setting table state

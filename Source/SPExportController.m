@@ -796,6 +796,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	if (isDot && serverLowerCaseTableNameValue == NSNotFound) {
 		
 		MCPResult *caseResult = [connection queryString:@"SHOW VARIABLES LIKE 'lower_case_table_names'"];
+		
 		[caseResult setReturnDataAsStrings:YES];
 		
 		if ([caseResult numOfRows] == 1) {
