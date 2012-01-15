@@ -478,8 +478,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[self updateWindowTitle:self];
 	
 	// Connected Growl notification
+	NSString *serverDisplayName = nil;
+	if ([parentWindowController selectedTableDocument] == self) {
+		serverDisplayName = [parentWindow title];
+	} else {
+		serverDisplayName = [parentTabViewItem label];
+	}
+
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [parentWindow title]]
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), serverDisplayName]
 													  document:self
 											  notificationName:@"Connected"];
 
