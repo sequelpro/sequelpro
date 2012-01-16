@@ -579,23 +579,31 @@
  */
 - (IBAction)closeEditSheet:(id)sender
 {
-
 	editSheetReturnCode = 0;
 
 	// Validate the sheet data before saving them.
 	// - for max text length (except for NULL value string) select the part which won't be saved
 	//   and suppress closing the sheet
-	if(sender == editSheetOkButton) {
-		if (maxTextLength > 0 && [[editTextView textStorage] length] > maxTextLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			[editTextView setSelectedRange:NSMakeRange((NSUInteger)maxTextLength, [[editTextView textStorage] length] - (NSUInteger)maxTextLength)];
+	if (sender == editSheetOkButton) {
+		
+		unsigned long long maxLength = maxTextLength;
+		
+		// For FLOAT fields ignore the decimal point in the text when comparing lengths
+		if ([[fieldType uppercaseString] isEqualToString:@"FLOAT"] && ([[[editTextView textStorage] string] rangeOfString:@"."].location != NSNotFound)) {
+			maxLength++;
+		}
+		
+		if (maxLength > 0 && [[editTextView textStorage] length] > maxLength && ![[[editTextView textStorage] string] isEqualToString:[prefs objectForKey:SPNullValue]]) {
+			[editTextView setSelectedRange:NSMakeRange((NSUInteger)maxLength, [[editTextView textStorage] length] - (NSUInteger)maxLength)];
 			[editTextView scrollRangeToVisible:NSMakeRange([editTextView selectedRange].location,0)];
 			[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Text is too long. Maximum text length is set to %llu.", @"Text is too long. Maximum text length is set to %llu."), maxTextLength]];
+			
 			return;
 		}
 
 		editSheetReturnCode = 1;
 	}
-	else if(sender == bitSheetOkButton && _isEditable) {
+	else if (sender == bitSheetOkButton && _isEditable) {
 		editSheetReturnCode = 1;
 	}
 
@@ -626,7 +634,6 @@
 		[callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
 #endif
 	}
-
 }
 
 /**
@@ -1310,10 +1317,10 @@
  */
 - (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)r replacementString:(NSString *)replacementString
 {
-
-	if(textView == editTextView && (maxTextLength > 0)
-		&& ![ [[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-
+	if (textView == editTextView && 
+		(maxTextLength > 0) && 
+		![[[[editTextView textStorage] string] stringByAppendingString:replacementString] isEqualToString:[prefs objectForKey:SPNullValue]]) 
+	{
 		NSInteger newLength;
 
 		// Auxilary to ensure that eg textViewDidChangeSelection:
@@ -1322,52 +1329,83 @@
 		// (OK button).
 		editTextViewWasChanged = ([replacementString length] == 1);
 
-		// Pure attribute changes are ok.
+		// Pure attribute changes are ok
 		if (!replacementString) return YES;
 
 		// The exact change isn't known. Disallow the change to be safe.
-		if (r.location==NSNotFound) return NO;
+		if (r.location == NSNotFound) return NO;
 
 		// Length checking while using the Input Manager (eg for Japanese)
 		if ([textView hasMarkedText] && (maxTextLength > 0) && (r.location < maxTextLength)) {
-
+			
 			// User tries to insert a new char but max text length was already reached - return NO
-			if( !r.length  && ([[textView textStorage] length] >= maxTextLength) ) {
+			if (!r.length && ([[textView textStorage] length] >= maxTextLength)) {
 				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
 				[textView unmarkText];
+				
 				return NO;
 			}
-			// otherwise allow it if insertion point is valid for eg
+			// Otherwise allow it if insertion point is valid for eg
 			// a VARCHAR(3) field filled with two Chinese chars and one inserts the
 			// third char by typing its pronounciation "wo" - 2 Chinese chars plus "wo" would give
 			// 4 which is larger than max length.
 			// TODO this doesn't solve the problem of inserting more than one char. For now
 			// that part which won't be saved will be hilited if user pressed the OK button.
-			else if (r.location < maxTextLength)
+			else if (r.location < maxTextLength) {
 				return YES;
+			}
 		}
 
 		// Calculate the length of the text after the change.
-		newLength=[[[textView textStorage] string] length]+[replacementString length]-r.length;
+		newLength = [[[textView textStorage] string] length] + [replacementString length] - r.length;
 
+		NSUInteger textLength = [[[textView textStorage] string] length];
+		
+		unsigned long long originalMaxTextLength = maxTextLength;
+		
+		// For FLOAT fields ignore the decimal point in the text when comparing lengths
+		if ([[fieldType uppercaseString] isEqualToString:@"FLOAT"] && 
+			([[[textView textStorage] string] rangeOfString:@"."].location != NSNotFound)) {
+			
+			if ((NSUInteger)newLength == (maxTextLength + 1)) {
+				maxTextLength++;
+				textLength--;
+			}
+			else if ((NSUInteger)newLength > maxTextLength) {
+				textLength--;
+			}
+		}
+		
 		// If it's too long, disallow the change but try
 		// to insert a text chunk partially to maxTextLength.
 		if ((NSUInteger)newLength > maxTextLength) {
-
-			if((maxTextLength-[[textView textStorage] length]+[textView selectedRange].length) <= [replacementString length]) {
-				if(maxTextLength-[[textView textStorage] length]+[textView selectedRange].length)
-					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu. Inserted text was truncated.", @"Maximum text length is set to %llu. Inserted text was truncated."), maxTextLength]];
-				else
-					[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
-				[textView insertText:[replacementString substringToIndex:(NSUInteger)maxTextLength-[[textView textStorage] length]+[textView selectedRange].length]];
+			if ((maxTextLength - textLength + [textView selectedRange].length) <= [replacementString length]) {	
+			
+				NSString *tooltip = nil;
+				
+				if (maxTextLength - textLength + [textView selectedRange].length) {
+					tooltip = [NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu. Inserted text was truncated.", @"Maximum text length is set to %llu. Inserted text was truncated."), maxTextLength];
+				}
+				else {
+					tooltip = [NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength];
+				}
+				
+				[SPTooltip showWithObject:tooltip];
+												
+				[textView insertText:[replacementString substringToIndex:(NSUInteger)maxTextLength - textLength +[textView selectedRange].length]];
 			}
+			
+			maxTextLength = originalMaxTextLength;
+			
 			return NO;
 		}
+		
+		maxTextLength = originalMaxTextLength;
 
-		// Otherwise, allow it.
+		// Otherwise, allow it
 		return YES;
-
 	}
+	
 	return YES;
 }
 
@@ -1376,7 +1414,6 @@
  */
 - (void)textViewDidChangeSelection:(NSNotification *)notification
 {
-
 	if([notification object] == editTextView) {
 		// Do nothing if user really didn't changed text (e.g. for font size changing return)
 		if(!editTextViewWasChanged && (editSheetWillBeInitialized
