@@ -3255,7 +3255,7 @@ void pingThreadCleanup(void *pingDetails)
 	delegate = nil;
 
 	// Ensure the query lock is unlocked, thereafter setting to nil in case of pending calls
-	[self unlockConnection];
+	if ([connectionLock condition] != MCPConnectionIdle) [self unlockConnection];
 	[connectionLock release], connectionLock = nil;
 
 	// Clean up connections if necessary

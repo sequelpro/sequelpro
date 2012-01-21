@@ -51,7 +51,7 @@
 @end
 #endif
 
-@interface SPConnectionController : NSObject 
+@interface SPConnectionController : NSViewController 
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
