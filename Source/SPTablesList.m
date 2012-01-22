@@ -24,9 +24,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTablesList.h"
-#ifndef SP_REFACTOR /* headers */
-#import "SPConnectionController.h"
-#endif
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseViewController.h"
